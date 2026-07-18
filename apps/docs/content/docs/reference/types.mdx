@@ -1,0 +1,930 @@
+---
+title: Types
+description: Catalog of every TypeScript type exported by the @876/sdk auth and OAuth clients.
+---
+
+Every public type is exported from the package root and grouped here by domain:
+[Common](#common) (client configuration, errors, result envelopes),
+[Auth](#auth) (password and OTP flows, users, sessions), and [OAuth](#oauth)
+(relying-party Sign in with 876 token exchange).
+
+```ts
+import type {
+  // Common
+  ClientOptions,
+  SignInWith876Options,
+  OAuthOptions,
+  RequestOptions,
+  AuthCredentials,
+  AuthError,
+  AuthErrorCode,
+  Result,
+  // Auth
+  LoginParams,
+  LoginResult,
+  Session,
+  User,
+  AuthEvent,
+  ListProvidersResult,
+  // OAuth
+  AuthorizationUrlParams,
+  DiscoveryDocument,
+  IntrospectParams,
+  IntrospectResponse,
+  OAuthError,
+  OAuthResult,
+  PkcePair,
+  RefreshTokenParams,
+  RevokeParams,
+  RevokeResponse,
+  TokenParams,
+  TokenResponse,
+  UserInfo,
+  UserInfoParams,
+} from '@876/sdk'
+```
+
+<Callout type="info">
+  All app-owned timestamps (`createdAt`, `updatedAt` on app users) are **Unix
+  epoch seconds**. WorkOS-boundary timestamps (`createdAt`, `updatedAt`,
+  `lastSignInAt` on a WorkOS user) are **ISO 8601 strings**.
+</Callout>
+
+---
+
+## Common
+
+Shared configuration, error, and envelope types from `types/api.ts`. Used by
+every auth method.
+
+### ClientOptions
+
+Options passed to [`create876Client()`](/docs/auth/create-client). The base URL
+may be omitted; the SDK resolves env overrides, Codespaces browser dev, local
+dev, or the deployed API fallback.
+
+<TypeTable
+  type={{
+    apiKey: {
+      type: 'string',
+      description: "Optional app API key. Must start with '876_app_secret_'.",
+    },
+    baseUrl: {
+      type: 'string',
+      description:
+        'Optional API base URL override. Defaults to env, Codespaces browser dev, local dev, or the deployed API URL.',
+    },
+    fetch: {
+      type: 'typeof fetch',
+      description:
+        'Optional fetch implementation. Defaults to globalThis.fetch.',
+    },
+    credentials: {
+      type: 'AuthCredentials',
+      description:
+        "Optional credentials mode for fetch requests. Defaults to 'include'.",
+    },
+    oauth: {
+      type: 'OAuthOptions',
+      description:
+        'Optional OAuth config enabling the $876.oauth namespace. Requires clientId and redirectUri.',
+    },
+  }}
+/>
+
+### RequestOptions
+
+Per-request configuration accepted as the optional second argument of most auth
+methods.
+
+<TypeTable
+  type={{
+    signal: {
+      type: 'AbortSignal',
+      description: 'Optional AbortSignal to cancel the request in flight.',
+    },
+  }}
+/>
+
+### AuthCredentials
+
+The `credentials` mode for fetch requests; maps to the platform
+`RequestCredentials`.
+
+```ts
+type AuthCredentials = 'include' | 'omit' | 'same-origin'
+```
+
+### AuthError
+
+The error object populated in the `error` field of a failed [`Result`](#result).
+Client-safe — it never includes an HTTP status field.
+
+<TypeTable
+  type={{
+    code: {
+      type: 'AuthErrorCode',
+      description: 'A machine-readable error code.',
+      required: true,
+    },
+    message: {
+      type: 'string',
+      description: 'A human-readable error message.',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      description: 'Optional additional detail about the error.',
+    },
+    param: {
+      type: 'string',
+      description: 'Optional name of the parameter that caused the error.',
+    },
+  }}
+/>
+
+### AuthErrorCode
+
+`AuthErrorCode` is a string because auth methods may pass through backend-only
+API error codes that are not declared in the SDK-local registry.
+
+```ts
+type AuthErrorCode = string
+```
+
+Use `SdkAuthErrorCode` when calling SDK-local helpers such as
+`createAuthError()`.
+
+```ts
+type SdkAuthErrorCode =
+  | 'auth/client-not-configured'
+  | 'auth/invalid-credentials'
+  | 'auth/invalid-input'
+  | 'auth/invalid-response'
+  | 'auth/invalid-token'
+  | 'auth/missing-code'
+  | 'auth/missing-email'
+  | 'auth/missing-first-name'
+  | 'auth/missing-identifier'
+  | 'auth/missing-last-name'
+  | 'auth/missing-password'
+  | 'auth/network-error'
+```
+
+### Result
+
+The discriminated `{ data, error }` envelope returned by every auth method. On
+success `error` is `null`; on failure `data` is `null`. See the
+[result pattern](/docs/reference/result-pattern) for the recommended narrowing
+idiom.
+
+```ts
+type Result<TSuccess> =
+  | { data: TSuccess; error: null }
+  | { data: null; error: AuthError }
+```
+
+### SDK876Client
+
+The namespaced client returned by [`create876Client()`](/docs/auth/create-client).
+`auth` holds the implemented [Auth](#auth) methods; `users` exposes profile,
+addresses, and contacts sub-resources; `oauth` provides OIDC relying-party
+operations when configured.
+
+```ts
+type SDK876Client = ReturnType<typeof create876Client>
+```
+
+### SDK876AuthClient
+
+The `auth` namespace of [`SDK876Client`](#sdk876client) — the object exposing
+`login`, `register`, `getSession`, and the rest. Used as the `client` value by
+the embeddable auth UI.
+
+```ts
+type SDK876AuthClient = SDK876Client['auth']
+```
+
+---
+
+## Auth
+
+Method parameters, responses, users, sessions, and events from `types/auth.ts`.
+Each method's `*Result` type is `Result<*Response>`.
+
+### user
+
+The user object returned by the platform. A discriminated union of an **app
+user** (consumer / enterprise accounts the platform owns) and a **WorkOS user**
+(the raw WorkOS boundary user). Both carry `object: 'user'`; distinguish them by
+the presence of `accountType` (app user only).
+
+```ts
+type User = AppUser | WorkosUser
+```
+
+App user shape:
+
+<TypeTable
+  type={{
+    object: {
+      type: "'user'",
+      description: 'Object type discriminator.',
+      required: true,
+    },
+    id: {
+      type: 'string',
+      description: 'Unique identifier for the user.',
+      required: true,
+    },
+    email: {
+      type: 'string',
+      description: "The user's email address.",
+      required: true,
+    },
+    username: {
+      type: 'string | null',
+      description: 'Optional username login handle (3–32 chars).',
+    },
+    accountType: {
+      type: "'consumer' | 'enterprise'",
+      description: 'The account type.',
+      required: true,
+    },
+    emailVerified: {
+      type: 'boolean',
+      description: "Whether the user's email is verified.",
+      required: true,
+    },
+    firstName: {
+      type: 'string',
+      description: "The user's first name.",
+      required: true,
+    },
+    lastName: {
+      type: 'string',
+      description: "The user's last name.",
+      required: true,
+    },
+    middleName: {
+      type: 'string | null',
+      description: "The user's middle name, or null.",
+    },
+    avatar: {
+      type: 'string | null',
+      description: "URL of the user's avatar, or null.",
+    },
+    status: {
+      type: 'string',
+      description: "Account status, e.g. 'active' or 'inactive'.",
+      required: true,
+    },
+    stripeCustomerId: {
+      type: 'string | null',
+      description: 'Stripe customer ID, or null.',
+    },
+    createdAt: {
+      type: 'number',
+      description: 'Unix epoch seconds when the user was created.',
+      required: true,
+    },
+    updatedAt: {
+      type: 'number',
+      description: 'Unix epoch seconds when the user was last updated.',
+      required: true,
+    },
+  }}
+/>
+
+WorkOS user shape:
+
+<TypeTable
+  type={{
+    object: {
+      type: "'user'",
+      description: 'Object type discriminator.',
+      required: true,
+    },
+    id: {
+      type: 'string',
+      description: 'Unique identifier for the user.',
+      required: true,
+    },
+    email: {
+      type: 'string',
+      description: "The user's email address.",
+      required: true,
+    },
+    username: {
+      type: 'string | null',
+      description: 'Optional username login handle.',
+    },
+    emailVerified: {
+      type: 'boolean',
+      description: "Whether the user's email is verified.",
+      required: true,
+    },
+    profilePictureUrl: {
+      type: 'string | null',
+      description: "URL of the user's profile picture, or null.",
+    },
+    firstName: {
+      type: 'string | null',
+      description: "The user's first name, or null.",
+    },
+    lastName: {
+      type: 'string | null',
+      description: "The user's last name, or null.",
+    },
+    lastSignInAt: {
+      type: 'string | null',
+      description: 'ISO timestamp of the last sign-in, or null.',
+    },
+    locale: {
+      type: 'string | null',
+      description: "The user's locale string, or null.",
+    },
+    externalId: {
+      type: 'string | null',
+      description: 'An external identifier for the user, or null.',
+    },
+    metadata: {
+      type: 'Record<string, string>',
+      description: 'Arbitrary key-value metadata.',
+      required: true,
+    },
+    createdAt: {
+      type: 'string',
+      description: 'ISO timestamp when the user was created.',
+      required: true,
+    },
+    updatedAt: {
+      type: 'string',
+      description: 'ISO timestamp when the user was last updated.',
+      required: true,
+    },
+  }}
+/>
+
+### session
+
+The session object returned after successful authentication.
+
+<TypeTable
+  type={{
+    object: {
+      type: "'session'",
+      description: 'Object type discriminator.',
+      required: true,
+    },
+    user: {
+      type: 'User',
+      description: 'The authenticated user object.',
+      required: true,
+    },
+    sessionMeta: {
+      type: 'SessionMeta',
+      description: 'Optional session metadata.',
+    },
+    expiresAt: {
+      type: 'string | null',
+      description: 'Optional ISO timestamp when the session expires.',
+    },
+  }}
+/>
+
+### SessionMeta
+
+Lightweight metadata describing an active session.
+
+<TypeTable
+  type={{
+    object: {
+      type: "'session'",
+      description: 'Object type discriminator.',
+      required: true,
+    },
+    userId: {
+      type: 'string',
+      description: 'The unique identifier of the authenticated user.',
+      required: true,
+    },
+    expiresAt: {
+      type: 'string | null',
+      description: 'ISO timestamp when the session expires, or null.',
+    },
+  }}
+/>
+
+### AuthEvent
+
+A pending step that must be handled before authentication completes — for
+example `email_verification_required`. Carry the
+`pendingAuthenticationToken` into [`verifyEmailCode()`](/docs/auth/verify-email-code).
+
+<TypeTable
+  type={{
+    object: {
+      type: "'auth_event'",
+      description: 'Object type discriminator.',
+      required: true,
+    },
+    type: {
+      type: 'AuthEventType',
+      description: 'The kind of auth event.',
+      required: true,
+    },
+    email: {
+      type: 'string',
+      description: 'The email address associated with the event.',
+      required: true,
+    },
+    pendingAuthenticationToken: {
+      type: 'string',
+      description:
+        'Token to continue authentication after the event is handled.',
+    },
+  }}
+/>
+
+```ts
+type AuthEventType = 'email_verification_required'
+```
+
+### Email
+
+```ts
+type Email = string // validated, trimmed email address
+```
+
+### SocialProvider
+
+```ts
+type SocialProvider = string // lowercase provider id, e.g. 'google'
+```
+
+### ScreenHint
+
+```ts
+type ScreenHint = 'sign-in' | 'sign-up'
+```
+
+### AuthMethod
+
+```ts
+type AuthMethod = 'password' | 'otp' | 'sso'
+```
+
+### Method params
+
+Input types for each auth method.
+
+```ts
+type LoginParams = { identifier: string; password: string }
+
+type RegisterParams = {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+}
+
+type RegisterBusinessParams = {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+  organizationName: string
+}
+
+type SocialLoginParams = {
+  provider: SocialProvider
+  screenHint?: ScreenHint
+  loginHint?: string
+}
+
+type VerifyEmailCodeParams = {
+  code: string
+  pendingAuthenticationToken: string
+}
+
+type RecoverParams = { email: string }
+
+type ResetPasswordParams = { token: string; password: string }
+
+type LogoutParams = Record<string, never> // empty object
+
+type ResolveParams = { identifier: string }
+
+type SendMagicOtpParams = { email: string }
+
+type VerifyMagicOtpParams = { code: string; email: string }
+```
+
+### Method responses
+
+The success payload (`data`) for each method.
+
+```ts
+// login() / register() / registerBusiness() — a session or a pending event
+type LoginResponse = Session | AuthEvent
+type RegisterResponse = Session | AuthEvent
+
+// socialLogin() — a redirect to the provider
+type SocialLoginResponse = Redirect
+type Redirect = { url: string }
+
+// verifyEmailCode() / verifyMagicOtp() — the authenticated user
+type VerifyEmailCodeResponse = { user: User }
+type VerifyMagicOtpResponse = { user: User }
+
+// recover() / resetPassword() — a confirmation echoing the email
+type RecoverResponse = PasswordRecovery
+type ResetPasswordResponse = PasswordReset
+type PasswordRecovery = { email: string }
+type PasswordReset = { email: string }
+
+// logout() — an empty confirmation object
+type LogoutResponse = Logout
+type Logout = Record<string, never>
+
+// getSession() — the active session
+type GetSessionResponse = Session
+
+// resolve() — what auth methods are available for an identifier
+type ResolveResponse = {
+  email: string
+  exists?: boolean
+  business?: boolean
+  methods?: AuthMethod[]
+  ssoProvider?: SocialProvider | null
+}
+
+// sendMagicOtp() — when the code can next be re-sent
+type SendMagicOtpResponse = { email: string; canResendAt: number }
+```
+
+### Method results
+
+Every `*Result` is the [`Result`](#result) envelope wrapping the matching
+response.
+
+```ts
+type LoginResult = Result<LoginResponse>
+type RegisterResult = Result<RegisterResponse>
+type RegisterBusinessResult = RegisterResult
+type SocialLoginResult = Result<SocialLoginResponse>
+type VerifyEmailCodeResult = Result<VerifyEmailCodeResponse>
+type VerifyMagicOtpResult = Result<VerifyMagicOtpResponse>
+type RecoverResult = Result<RecoverResponse>
+type ResetPasswordResult = Result<ResetPasswordResponse>
+type LogoutResult = Result<LogoutResponse>
+type GetSessionResult = Result<GetSessionResponse>
+type ResolveResult = Result<ResolveResponse>
+type SendMagicOtpResult = Result<SendMagicOtpResponse>
+```
+
+---
+
+## OAuth
+
+Relying-party OAuth 2.1 / OIDC types from `types/oauth.ts`, used by
+[`createSignInWith876()`](/docs/oauth/create-oauth-client) and
+[`generatePkce()`](/docs/oauth/generate-pkce). OAuth methods return their own
+[`OAuthResult`](#oauthresult) envelope (not the auth `Result`).
+
+### SignInWith876Options
+
+Options passed to [`createSignInWith876()`](/docs/oauth/create-oauth-client).
+They configure a standalone relying-party OAuth client.
+
+<TypeTable
+  type={{
+    baseUrl: {
+      type: 'string',
+      description: '876 identity issuer origin.',
+      required: true,
+    },
+    clientId: {
+      type: 'string',
+      description: 'The registered OAuth client ID.',
+      required: true,
+    },
+    redirectUri: {
+      type: 'string',
+      description: 'The default redirect URI for this client.',
+      required: true,
+    },
+    clientSecret: {
+      type: 'string',
+      description:
+        'Optional client secret for confidential server-side clients. Never set it in browser bundles.',
+    },
+    fetch: {
+      type: 'typeof fetch',
+      description: 'Optional fetch implementation.',
+    },
+  }}
+/>
+
+### OAuthOptions
+
+The legacy `oauth` config block on [`ClientOptions`](#clientoptions) enables the
+`$876.oauth` namespace on the unified client. `baseUrl`, `apiKey`, and `fetch`
+are top-level `ClientOptions` shared with the `auth` namespace.
+
+<TypeTable
+  type={{
+    clientId: {
+      type: 'string',
+      description: 'The registered OAuth client ID.',
+      required: true,
+    },
+    redirectUri: {
+      type: 'string',
+      description: 'The default redirect URI for this client.',
+      required: true,
+    },
+    clientSecret: {
+      type: 'string',
+      description:
+        'Optional client secret for confidential (server-side) clients. Never set it in browser bundles.',
+    },
+  }}
+/>
+
+### AuthorizationUrlParams
+
+Input for building the authorization URL. `scope` defaults to
+`['openid', 'profile', 'email']`; `codeChallenge` is the S256 challenge derived
+from a [`PkcePair`](#pkcepair) and must be at least 43 characters.
+
+<TypeTable
+  type={{
+    codeChallenge: {
+      type: 'string',
+      description: 'S256 PKCE code challenge (min 43 chars).',
+      required: true,
+    },
+    scope: {
+      type: "('openid' | 'profile' | 'email' | 'offline_access')[]",
+      description:
+        'OAuth scopes accepted by the SDK helper. Include `offline_access` when the app needs refresh tokens.',
+    },
+    state: {
+      type: 'string',
+      description: 'Opaque value echoed back to prevent CSRF.',
+    },
+    nonce: {
+      type: 'string',
+      description: 'Value bound into the ID token to prevent replay.',
+    },
+    prompt: {
+      type: "'none' | 'consent' | 'login'",
+      description: 'Controls the provider prompt behavior.',
+    },
+    redirectUri: {
+      type: 'string',
+      description: 'Overrides the client default redirect URI.',
+    },
+  }}
+/>
+
+### TokenParams
+
+Input for exchanging an authorization code at the token endpoint.
+
+<TypeTable
+  type={{
+    code: {
+      type: 'string',
+      description: 'The authorization code returned to the redirect URI.',
+      required: true,
+    },
+    codeVerifier: {
+      type: 'string',
+      description: 'The original PKCE code verifier (min 43 chars).',
+      required: true,
+    },
+    redirectUri: {
+      type: 'string',
+      description: 'Overrides the client default redirect URI.',
+    },
+  }}
+/>
+
+### TokenResponse
+
+The token endpoint response.
+
+<TypeTable
+  type={{
+    access_token: {
+      type: 'string',
+      description: 'The bearer access token.',
+      required: true,
+    },
+    token_type: {
+      type: "'Bearer'",
+      description: 'Always the literal "Bearer".',
+      required: true,
+    },
+    expires_in: {
+      type: 'number',
+      description: 'Lifetime of the access token in seconds.',
+      required: true,
+    },
+    scope: {
+      type: 'string',
+      description: 'Space-delimited granted scopes.',
+      required: true,
+    },
+    id_token: {
+      type: 'string',
+      description:
+        'The signed OIDC ID token (JWT). Present on authorization-code exchange when `openid` is granted; omitted on refresh.',
+    },
+    refresh_token: {
+      type: 'string | null',
+      description:
+        'Refresh token returned when `offline_access` is granted. Refresh responses rotate this value; persist the newest token server-side only.',
+    },
+  }}
+/>
+
+### RefreshTokenParams
+
+```ts
+type RefreshTokenParams = { refreshToken: string }
+```
+
+### IntrospectParams
+
+```ts
+type IntrospectParams = { token: string }
+```
+
+### IntrospectResponse
+
+RFC 7662-style token introspection response. Inactive, expired, malformed, or
+non-access tokens return `{ active: false }`; active tokens include metadata.
+
+<TypeTable
+  type={{
+    active: {
+      type: 'boolean',
+      description: 'Whether the access token is currently active.',
+      required: true,
+    },
+    scope: {
+      type: 'string | null',
+      description: 'Space-delimited granted scopes. Present when active.',
+    },
+    client_id: {
+      type: 'string | null',
+      description:
+        'OAuth client ID the token was issued to. Present when active.',
+    },
+    sub: {
+      type: 'string | null',
+      description: '876 user subject. Present when active.',
+    },
+    token_type: {
+      type: "'Bearer' | null",
+      description: 'Token type. Present when active.',
+    },
+    exp: {
+      type: 'number | null',
+      description: 'Unix-seconds expiry time. Present when active.',
+    },
+    iat: {
+      type: 'number | null',
+      description: 'Unix-seconds issued-at time. Present when active.',
+    },
+  }}
+/>
+
+### UserInfoParams
+
+```ts
+type UserInfoParams = { accessToken: string }
+```
+
+### UserInfo
+
+The userinfo endpoint response. All fields except `sub` are optional, depending
+on granted scopes.
+
+```ts
+type UserInfo = {
+  sub: string
+  email?: string
+  email_verified?: boolean
+  name?: string
+  given_name?: string
+  family_name?: string
+  picture?: string
+}
+```
+
+### RevokeParams
+
+```ts
+type RevokeParams = { token: string }
+```
+
+### RevokeResponse
+
+```ts
+type RevokeResponse = { revoked: true }
+```
+
+### PkcePair
+
+The verifier/challenge pair produced by
+[`generatePkce()`](/docs/oauth/generate-pkce).
+
+```ts
+type PkcePair = { codeVerifier: string; codeChallenge: string }
+```
+
+### DiscoveryDocument
+
+The OIDC discovery metadata returned by the provider's well-known endpoint.
+
+```ts
+type DiscoveryDocument = {
+  issuer: string
+  authorization_endpoint: string
+  token_endpoint: string
+  userinfo_endpoint: string
+  revocation_endpoint: string
+  introspection_endpoint: string
+  jwks_uri: string
+  response_types_supported: 'code'[]
+  grant_types_supported: ('authorization_code' | 'refresh_token')[]
+  subject_types_supported: 'public'[]
+  id_token_signing_alg_values_supported: 'RS256'[]
+  scopes_supported: ('openid' | 'profile' | 'email' | 'offline_access')[]
+  code_challenge_methods_supported: 'S256'[]
+  token_endpoint_auth_methods_supported: (
+    | 'none'
+    | 'client_secret_basic'
+    | 'client_secret_post'
+  )[]
+  claims_supported: string[]
+}
+```
+
+### OAuthError & OAuthErrorCode
+
+The OAuth error object and its code union.
+
+```ts
+type OAuthError = { code: OAuthErrorCode; message: string }
+
+type OAuthErrorCode =
+  | 'oauth/access-denied'
+  | 'oauth/client-not-configured'
+  | 'oauth/consent-required'
+  | 'oauth/invalid-client'
+  | 'oauth/invalid-grant'
+  | 'oauth/invalid-input'
+  | 'oauth/invalid-redirect-uri'
+  | 'oauth/invalid-response'
+  | 'oauth/invalid-scope'
+  | 'oauth/invalid-token'
+  | 'oauth/login-required'
+  | 'oauth/network-error'
+  | 'oauth/unsupported-grant-type'
+```
+
+### OAuthResult
+
+The `{ data, error }` envelope returned by every OAuth method.
+
+```ts
+type OAuthResult<TSuccess> =
+  | { data: TSuccess; error: null }
+  | { data: null; error: OAuthError }
+```
+
+### OAuthClient
+
+The relying-party OAuth surface returned by `createSignInWith876()`. Its methods
+cover discovery, authorization-URL generation, token exchange, userinfo, and
+revocation. The unified `create876Client().oauth` namespace has the same method
+shape for compatibility.
+
+```ts
+type OAuthClient = ReturnType<typeof createSignInWith876>
+```
+
+---
+
+## Related
+
+- [Result pattern](/docs/reference/result-pattern) — how to narrow `{ data, error }`
+- [Error codes](/docs/reference/error-codes) — full `auth/*` catalog
+- [`create876Client()`](/docs/auth/create-client) — construct the unified client
+- [createSignInWith876()](/docs/oauth/create-oauth-client) — configure Sign in with 876

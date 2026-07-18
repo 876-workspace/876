@@ -1,0 +1,21 @@
+/// A member: a core 876 user's ACCESS GRANT to the admin console.
+///
+/// This is NOT a copy of the user's identity — name, email, avatar, etc. live in
+/// the 876 identity API and are resolved at read time via `$876`. The row is
+/// keyed by the opaque 876 user ID itself, so it is 1:1 with the identity user
+/// and carries no surrogate ID. The presence of an active row IS "this 876 user
+/// may use Console" — the sole gate. The identity API has NO knowledge
+/// of Console access (no `is_staff` echo); absence here = no access.
+model Member {
+  /// The opaque core 876 user ID (e.g. `user_…`). Cross-service reference — no FK.
+  userId    String   @id @map("user_id")
+  roleName  String   @map("role_name")
+  /// "active" | "suspended". Suspended members are denied at the guard.
+  status    String   @default("active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  role      Role     @relation(fields: [roleName], references: [name], onUpdate: Cascade)
+
+  @@index([roleName])
+  @@map("console_members")
+}

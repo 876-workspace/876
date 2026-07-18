@@ -1,0 +1,17 @@
+/// Account-owned Notepad content (shared portable widget).
+model NotepadNote {
+  id              String  @id
+  ownerAccountId  String  @map("owner_account_id")
+  title           String
+  body            String
+  color           String?
+  pinned          Boolean @default(false)
+  createdAt       Int     @map("created_at")
+  updatedAt       Int     @map("updated_at")
+  /// Convex document id from the one-time migration; unique when present.
+  legacyConvexId  String? @unique @map("legacy_convex_id")
+
+  @@index([ownerAccountId, updatedAt(sort: Desc)], name: "notepad_notes_owner_updated_idx")
+  @@index([updatedAt(sort: Desc)], name: "notepad_notes_updated_idx")
+  @@map("notepad_notes")
+}

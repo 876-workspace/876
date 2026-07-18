@@ -1,0 +1,314 @@
+---
+title: Auth Flows
+description: Step-by-step diagrams for every authentication flow in the 876 platform.
+---
+
+All authentication in 876 passes through `@876/app` — the only application where users type passwords or OTP codes. All other apps get tokens through the OIDC authorization-code flow.
+
+---
+
+## 1. Direct login (email/password or magic OTP)
+
+```
+User types credentials in @876/app login page
+        │
+        ▼
+POST /auth/login  (or /auth/magic-otp/verify)
+        │
+        ▼
+WorkOS verifies credentials
+        │
+        ├── AuthSession { access_token, user, organization_id? }
+        │         │
+        │   complete_auth()  ← domains/auth/session_state.py
+        │     1. ensure_from_workos()   → find or create User row
+        │     2. resolve org if organization_id present → set realm
+        │     3. create Session row in DB
+        │     4. seal_session()         → sign the cookie
+        │     5. set_session_cookie()   → attach to HTTP response
+        │         │
+        │   Return { object: "session", user: {...} }
+        │
+        └── AuthEvent { kind: "email_verification_required", ... }
+                  │
+            Return { object: "auth_event", type: "email_verification_required", ... }
+            (the UI shows the verification code input; no session yet)
+```
+
+After `complete_auth()` runs, the browser holds the `876-session` cookie and the user is signed in across all 876 apps that share the cookie domain.
+
+---
+
+## 2. Email verification (new accounts)
+
+New accounts require email verification before a session is issued.
+
+```
+POST /auth/register
+        │
+        ▼
+Returns auth_event { type: "email_verification_required", pendingAuthenticationToken }
+        │
+User enters the code they received by email
+        │
+        ▼
+POST /auth/verify-email  { code, pendingAuthenticationToken }
+        │
+        ▼
+WorkOS verifies → returns AuthSession
+        │
+        ▼
+complete_auth() → Session row + 876-session cookie (same path as login above)
+```
+
+---
+
+## 3. Social / SSO login (Google, Microsoft, Apple)
+
+```
+User clicks "Sign in with Google" in @876/app login page
+        │
+        ▼
+POST /auth/social-login { provider: "google" }
+        │
+        ▼
+Returns { authorizationUrl: "https://accounts.google.com/..." }
+        │
+Browser redirects to Google
+        │
+Google redirects back → @876/app /oauth/callback?code=...
+        │
+        ▼
+GET /auth/callback  (consumer app Next.js route handler)
+        │
+        ▼
+WorkOS exchanges the code → AuthSession { user, organization_id? }
+        │
+        ▼
+complete_auth() → Session row + 876-session cookie
+```
+
+If `organization_id` is present in the AuthSession (user authenticated via enterprise SSO), the session gets `realm = "enterprise"` and `org_id` is set.
+
+---
+
+## 4. OIDC authorization-code + PKCE flow
+
+This is how `@876/app`, `@876/enterprise`, and `@876/console` get their app-domain session after the user has already signed in at `@876/app`.
+
+```
+Next.js app (e.g. @876/enterprise) — no app-domain session
+        │
+        ▼
+App redirects browser to:
+  GET @876/api/oauth/authorize
+    ?client_id=...
+    &code_challenge=<sha256(code_verifier)>
+    &code_challenge_method=S256
+    &scope=openid profile
+    &state=<csrf_token>
+        │
+Consumer app route handler (apps/876/src/app/oauth/authorize/route.ts):
+  ① Unseals the 876-session cookie → gets userId (and orgId if enterprise realm)
+  ② Adds headers:
+       x-internal-key: <API_INTERNAL_KEY>
+       X-User-Id: user_01...
+       X-Org-Id: org_01...  (if enterprise)
+  ③ Proxies to → GET @876/api/oauth/authorize
+        │
+        ▼
+@876/api /oauth/authorize:
+  - Trusts X-User-Id because x-internal-key is present
+  - Checks if the app needs consent
+      → yes: redirect to consent screen
+      → no (internal apps skip consent): issue authorization_code
+  - Stores AuthorizationCode row with org_id from X-Org-Id
+        │
+        ▼
+Browser redirects to app's /oauth/callback?code=...&state=...
+        │
+        ▼
+App server route (e.g. apps/enterprise/src/app/callback/route.ts):
+  POST @876/api/oauth/token  (via $876.oauth.exchangeCodeForToken)
+    { grant_type: "authorization_code", code, code_verifier }
+        │
+        ▼
+API returns:
+  {
+    access_token:  "...(JWT: realm + org_id claims)...",
+    id_token:      "...(JWT: user claims)...",
+    refresh_token: "...(if offline_access scope)...",
+    expires_in:    3600
+  }
+        │
+        ▼
+App calls POST /auth/oauth/session  (via $876.auth.createSessionFromOAuth)
+  { id_token: "..." }
+        │
+        ▼
+API validates id_token → creates app-domain 876-session cookie
+        │
+        ▼
+App redirects to the original returnTo path
+```
+
+<Callout type="info">
+  The `876-session` cookie is set **once** on the client app's domain — the
+  session the client app reads on every request.
+</Callout>
+
+### The PKCE code verifier
+
+The `code_verifier` is a random 43–128 character string generated by the app before the redirect. It is stored server-side between the authorize redirect and the callback. The `code_challenge` sent to the authorize endpoint is `BASE64URL(SHA256(code_verifier))`. The API verifies this on the token exchange — this prevents authorization code interception attacks.
+
+```ts
+import { generatePkce } from '@876/sdk'
+
+const { codeVerifier, codeChallenge } = await generatePkce()
+// Store codeVerifier in server-side session storage
+// Include codeChallenge in the authorize redirect URL
+```
+
+---
+
+## 5. OAuth consent flow
+
+When a user authorizes a third-party app (not an internal first-party app), the consent screen is shown between authorize and the code redirect.
+
+```
+GET @876/api/oauth/authorize
+        │ (consent required)
+        ▼
+Redirect → consent screen
+        │
+User sees "Grant access to <App Name>" screen
+        │
+        ├── User approves → POST /api/oauth/consent/approve
+        │         │
+        │   API issues authorization_code
+        │   Redirect → app callback
+        │
+        └── User denies → POST /api/oauth/consent/deny
+                  │
+            Redirect → app callback with error=access_denied
+```
+
+---
+
+## 6. Client credentials grant (service-to-service)
+
+Backend services that need to call the API without a user use the `client_credentials` grant. The service must be provisioned as a **confidential** OAuth client.
+
+```
+POST @876/api/oauth/token
+  Content-Type: application/x-www-form-urlencoded
+
+  grant_type=client_credentials
+  &client_id=<client_id>
+  &client_secret=<client_secret>
+  &scope=profile email
+        │
+        ▼
+API validates client_id + client_secret
+Issues an access token:
+  {
+    "sub": "<client_id>",   ← the app is the subject, not a user
+    "token_use": "service",
+    "scope": "profile email"
+  }
+```
+
+`openid` and `offline_access` scopes are rejected for this grant — they only apply to human user sessions.
+
+---
+
+## 7. Token refresh
+
+Access tokens expire (default 1 hour). If `offline_access` scope was granted, a refresh token was also issued.
+
+```
+POST @876/api/oauth/token
+  grant_type=refresh_token
+  &refresh_token=876_rt_...
+  &client_id=...
+        │
+        ▼
+API rotates the token:
+  - Marks old token as used_at
+  - Issues new access_token + new refresh_token
+  - If old token was already used → revokes entire token family (reuse detection)
+```
+
+---
+
+## 8. Logout (RP-initiated)
+
+```
+App calls POST /auth/logout
+        │
+        ▼
+API deletes Session row + clears cookie on response
+        │
+Browser navigates to:
+  GET @876/api/oauth/end-session
+    ?id_token_hint=<id_token>
+    &post_logout_redirect_uri=https://app.example.com/logged-out
+        │
+        ▼
+API:
+  1. Verifies id_token_hint JWT (must have token_use: "id")
+  2. Extracts user_id + session_id (the "sid" claim)
+  3. Deletes the Session row from DB
+  4. Validates post_logout_redirect_uri against app's allowed_logout_uris
+  5. Redirects to post_logout_redirect_uri
+```
+
+---
+
+## Auth events (non-fatal intermediate states)
+
+Some API responses are not errors but are not complete sessions either. These `auth_event` objects are returned with `object: "auth_event"`:
+
+| `type`                        | Meaning                           | Next step                                  |
+| ----------------------------- | --------------------------------- | ------------------------------------------ |
+| `email_verification_required` | New account needs to verify email | Show code input, call `/auth/verify-email` |
+| `mfa_challenge`               | User has MFA enrolled             | Show MFA prompt                            |
+| `mfa_enrollment`              | User must enroll MFA              | Show enrollment flow                       |
+| `sso_required`                | Email is enterprise-SSO-only      | Redirect to SSO provider                   |
+
+Branch on the `object` discriminator in every auth call:
+
+```typescript
+const result = await $876.auth.login({ identifier, password })
+if (result.error) {
+  /* show error */
+  return
+}
+
+if (result.data.object === 'auth_event') {
+  if (result.data.type === 'email_verification_required') {
+    router.push('/verify-email')
+  }
+  // handle other event types...
+} else {
+  // result.data.object === 'session' — sign-in complete
+  router.push('/dashboard')
+}
+```
+
+---
+
+## Relay routes (request-based URL resolution)
+
+The consumer app (`@876/app`) determines the URLs for client apps (`APP_URL`, `ENTERPRISE_URL`, etc.) from the **incoming request's host header** rather than from hardcoded environment variables. This means the auth flow works correctly behind multiple domains (preview deployments, staging, production) without reconfiguration.
+
+The relay routes in `apps/876/src/app/auth/complete/route.ts` and related handlers extract the origin from `request.headers.get('host')` and construct redirect targets dynamically.
+
+## Related
+
+- [Identity Model](/docs/getting-started/identity) — realm, users, orgs, memberships
+- [Sessions](/docs/getting-started/sessions) — cookie structure and multi-account
+- [Account Types](/docs/getting-started/account-types) — per-app access guards
+- [`POST /auth/login`](/docs/auth/post-auth-login) — direct login endpoint
+- [`GET /oauth/authorize`](/docs/oauth/get-oauth-authorize) — OIDC authorize endpoint
+- [`POST /oauth/token`](/docs/oauth/post-oauth-token) — code exchange and refresh

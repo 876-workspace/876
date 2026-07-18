@@ -1,0 +1,28 @@
+---
+title: '@876/db'
+description: Database layer for Prisma and PostgreSQL.
+---
+
+<Callout type="warn">
+  The `@876/db` package is not yet published or available. The content below
+  documents the planned interface. The database layer currently lives directly
+  within the `@876/api` FastAPI application.
+</Callout>
+
+The `@876/db` package encapsulates Prisma, the Postgres adapter, and database generation for internal data access.
+
+## Dependencies
+
+- `@prisma/client`
+- `@prisma/adapter-pg`
+- `pg`
+- `server-only` (Restricts this package to server environments, ensuring DB connections don't leak into the browser)
+
+## Commands
+
+```bash
+pnpm --filter @876/db generate
+pnpm --filter @876/db db:push
+pnpm --filter @876/db db:migrate
+pnpm --filter @876/db typecheck
+```

@@ -1,0 +1,399 @@
+---
+title: '@876/sdk'
+description: Consumer-tier typed client for auth, OAuth, apps, and connected grants. Browser-safe.
+---
+
+`@876/sdk` is a **transport-only** TypeScript client. It validates inputs, sends requests to the FastAPI backend, parses responses, and normalizes errors into `{ data, error }` envelopes. It does not own cookies, server session state, database access, provider calls, or navigation.
+
+## Choosing the right client
+
+There are exactly two clients:
+
+| Need                                                             | Use          |
+| ---------------------------------------------------------------- | ------------ |
+| Auth a user, manage their own session, list their own apps       | `@876/sdk`   |
+| Read or write users, orgs, memberships on behalf of the platform | `@876/admin` |
+
+If what you're writing could reach the browser — use `@876/sdk`. The admin client requires `API_INTERNAL_KEY` which must never appear in a browser bundle.
+
+---
+
+## Setup
+
+Each app initializes one client and exports it as `$876`:
+
+```typescript
+// apps/876/src/lib/876-server.ts
+import { create876Client } from '@876/sdk'
+
+export const $876 = create876Client({
+  apiKey: process.env.API_876_KEY,
+})
+```
+
+For browser-side code, add `credentials: 'include'` so the `HttpOnly` session cookie is stored and forwarded automatically:
+
+```typescript
+export const $876Browser = create876Client({
+  apiKey: process.env.NEXT_PUBLIC_876_API_KEY,
+  credentials: 'include',
+})
+```
+
+### Per-request options
+
+Every method accepts optional per-request options:
+
+```typescript
+await $876.auth.login(params, {
+  requestId: 'req_01...', // forwarded as x-request-id for API log correlation
+  signal: controller.signal, // AbortSignal to cancel the fetch
+})
+```
+
+---
+
+## Auth methods — `$876.auth.*`
+
+### Login
+
+```typescript
+const result = await $876.auth.login({
+  identifier: 'alice@example.com', // email or username
+  password: 'hunter2',
+})
+
+if (result.error) {
+  console.error(result.error.code, result.error.message)
+  return
+}
+
+if (result.data.object === 'session') {
+  // Auth complete — cookie is already set
+  console.log('Signed in as', result.data.user.id)
+} else if (result.data.object === 'auth_event') {
+  // Intermediate step required (e.g. email verification, MFA)
+  if (result.data.type === 'email_verification_required') {
+    router.push('/verify-email')
+  }
+}
+```
+
+### Register
+
+```typescript
+const result = await $876.auth.register({
+  email: 'alice@example.com',
+  password: 'hunter2',
+  firstName: 'Alice',
+  lastName: 'Smith',
+})
+```
+
+### Email verification
+
+After registration, new accounts receive a verification code before a session is issued:
+
+```typescript
+const result = await $876.auth.verifyEmailCode({
+  email: 'alice@example.com',
+  code: '123456',
+  pendingAuthenticationToken: '...', // from the auth_event response
+})
+```
+
+### Magic OTP (passwordless)
+
+```typescript
+// 1. Send the OTP
+await $876.auth.sendMagicOtp({ email: 'alice@example.com' })
+
+// 2. Verify the code the user enters
+const result = await $876.auth.verifyMagicOtp({
+  email: 'alice@example.com',
+  code: '123456',
+})
+```
+
+### Social login (Google, Microsoft, Apple)
+
+```typescript
+// Convenience methods
+const result = await $876.auth.loginWithGoogle()
+// result.data.authorizationUrl → redirect the browser here
+
+// Or use the generic method
+const result = await $876.auth.social('google')
+// result.data.authorizationUrl → redirect the browser here
+
+// Or the full params version
+const result = await $876.auth.socialLogin({
+  provider: 'google', // or 'microsoft', 'apple'
+  screenHint: 'sign-up', // optional
+})
+window.location.href = result.data.authorizationUrl
+```
+
+### Password recovery and reset
+
+```typescript
+// Send a password reset email
+await $876.auth.recover({ email: 'alice@example.com' })
+
+// Reset the password using the token from the email
+const result = await $876.auth.resetPassword({
+  token: '...',
+  password: 'new-secure-password',
+})
+```
+
+### Session lookup
+
+```typescript
+// Get the current session (requires credentials: 'include' or a valid cookie)
+const result = await $876.auth.getSession()
+if (result.error || !result.data) {
+  // No active session
+  return
+}
+console.log('Current user:', result.data.user.email)
+```
+
+### Logout
+
+```typescript
+const result = await $876.auth.logout()
+if (result.error) {
+  console.error('Logout failed:', result.error.message)
+  return
+}
+// Cookie cleared by the API — redirect to homepage
+window.location.href = '/'
+```
+
+### OIDC session bridge
+
+After a PKCE callback, exchange the ID token for an app-domain session cookie:
+
+```typescript
+await $876.auth.createSessionFromOAuth({ idToken: tokens.idToken })
+```
+
+### Email resolution
+
+Resolve how an email should authenticate (password, SSO, etc.):
+
+```typescript
+const result = await $876.auth.resolve({ email: 'alice@acme.com' })
+// result.data.method: 'password' | 'sso' | 'magic_otp'
+```
+
+---
+
+## Response shape
+
+Every auth call returns a discriminated union. Always branch on `object`:
+
+```typescript
+// Session — authentication is complete
+{
+  object: 'session',
+  user: {
+    id: 'user_01...',
+    email: 'alice@example.com',
+    firstName: 'Alice',
+    lastName: 'Smith',
+    emailVerified: true,
+    role: 'user',
+    accountType: 'consumer',
+    // ...
+  }
+}
+
+// Auth event — flow must continue
+{
+  object: 'auth_event',
+  type: 'email_verification_required',
+  email: 'alice@example.com',
+  pendingAuthenticationToken: '...'
+}
+```
+
+Auth event types:
+
+| `type`                        | Next step                                  |
+| ----------------------------- | ------------------------------------------ |
+| `email_verification_required` | Show code input → call `verifyEmailCode()` |
+| `mfa_challenge`               | Show MFA prompt                            |
+| `mfa_enrollment`              | Show MFA enrollment flow                   |
+| `sso_required`                | Redirect to SSO provider                   |
+
+<Callout type="note">
+  The SDK method is `$876.auth.verifyEmailCode()`, which calls `POST
+  /auth/verify-email`.
+</Callout>
+
+---
+
+## OAuth methods — `$876.oauth.*`
+
+Used by apps that act as OIDC relying parties (receiving tokens from 876 as the identity provider).
+
+```typescript
+const $876 = create876Client({
+  apiKey: process.env.API_876_KEY,
+  oauth: {
+    clientId: process.env.OAUTH_CLIENT_ID,
+    redirectUri: 'https://myapp.com/oauth/callback',
+  },
+})
+```
+
+### Build the authorization URL
+
+```typescript
+import { generatePkce } from '@876/sdk'
+
+const { codeVerifier, codeChallenge } = await generatePkce()
+// Store codeVerifier server-side — it is needed at the callback step
+
+const { data: url } = $876.oauth.getAuthorizationUrl({
+  scope: ['openid', 'profile', 'email'],
+  codeChallenge,
+  state: 'random-csrf-token',
+})
+// Redirect browser to `url`
+```
+
+### Exchange the authorization code
+
+```typescript
+// In the /oauth/callback route handler (server-side only)
+const { data: tokens } = await $876.oauth.exchangeCodeForToken({
+  code: searchParams.get('code'),
+  codeVerifier, // retrieved from server-side storage
+})
+
+// tokens.accessToken  — JWT with realm + org_id claims
+// tokens.idToken      — JWT with user claims
+// tokens.refreshToken — if offline_access scope was requested
+```
+
+### Refresh an access token
+
+```typescript
+const { data: refreshed } = await $876.oauth.refreshToken({
+  refreshToken: tokens.refreshToken,
+})
+```
+
+---
+
+## App management — `$876.apps.*`
+
+For developers registering and managing their own OAuth client apps:
+
+```typescript
+// List my apps
+const { data } = await $876.apps.list()
+
+// Register a new OAuth client
+const { data: app } = await $876.apps.create({
+  name: 'My Integration',
+  redirectUris: ['https://myapp.com/callback'],
+  clientType: 'public',
+})
+
+// Get a specific app
+const { data: app } = await $876.apps.retrieve('app_01...')
+
+// Get the app for the current API key
+const { data: app } = await $876.apps.current()
+```
+
+<Callout type="note">
+  API key management (`listApiKeys`, `createApiKey`, `revokeApiKey`) and app
+  deletion are only available through `@876/admin` on the server side. The SDK
+  does not expose privileged operations.
+</Callout>
+
+---
+
+## Connected apps — `$876.oauthGrants.*`
+
+For showing users which third-party apps have authorized access to their account:
+
+```typescript
+// List grants (which apps have access)
+const { data: grants } = await $876.oauthGrants.list(userId)
+
+// Revoke a grant (disconnect an app)
+await $876.oauthGrants.revoke(userId, grantId)
+```
+
+---
+
+## Data conventions
+
+### `{ data, error }` envelope
+
+Every method returns a `{ data, error }` envelope. A successful call has `error: null`; a failed call has `data: null`. Never access `data` without checking `error` first:
+
+```typescript
+const result = await $876.auth.getSession()
+if (result.error) {
+  console.error(result.error.code, result.error.message)
+  return
+}
+console.log(result.data.email) // safe
+```
+
+<Callout type="warn">
+  `@876/sdk` only exposes self-scoped user operations (`/users/me/*`). To
+  retrieve another user by ID, use `@876/admin`'s `$876.users.retrieve(userId)`
+  from a server-only context with the internal key. Never call admin methods
+  from the browser or SDK tier.
+</Callout>
+
+### List responses
+
+```typescript
+{
+  object: 'list',
+  data: T[],
+  has_more: boolean,
+  url: string,
+  total_count: number | null
+}
+```
+
+### Cursor pagination
+
+Pagination uses item IDs (not page numbers or offsets):
+
+```typescript
+// First page
+const { data: page1 } = await $876.apps.list({ limit: 25 })
+
+// Next page
+if (page1.has_more) {
+  const { data: page2 } = await $876.apps.list({
+    limit: 25,
+    starting_after: page1.data.at(-1)?.id,
+  })
+}
+```
+
+### Timestamps
+
+All timestamps are **Unix seconds**. Multiply by 1000 before passing to `new Date()`:
+
+```typescript
+new Date(user.createdAt * 1000)
+```
+
+---
+
+## Route mapping
+
+<APIClientUsageMap />

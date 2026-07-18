@@ -1,5 +1,0 @@
-@import '@876/ui/styles.css';
-
-/* App-local content sources so Tailwind generates every utility used here.
-   Shared design tokens + auth CSS now live in @876/ui (theme.css). */
-@source '../';

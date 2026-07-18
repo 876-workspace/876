@@ -1,0 +1,8 @@
+/// Console configuration. Fills the previously-stubbed settings UI.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

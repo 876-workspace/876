@@ -1,0 +1,139 @@
+---
+title: Account Types
+description: How 876 separates consumer and enterprise identities, how they correlate, and what each app checks.
+---
+
+## One identity, two surfaces
+
+Every 876 account is a single identity in the database — one row in the `users` table, one set of credentials, one session cookie. What changes between the **consumer app** (`@876/app`, port 3000) and the **enterprise app** (`@876/console`, port 3002) is not the identity itself but the **context** the identity is operating in and the **guards** each app enforces before granting access.
+
+---
+
+## The two account surfaces
+
+### Consumer account
+
+A consumer account is the baseline. Any registered 876 user has one. It gives access to:
+
+- Personal info, password, security settings
+- Linked apps and developer app registrations
+- Data & privacy controls
+- Wallet & subscriptions (feature-flagged)
+- Family sharing (feature-flagged)
+
+The consumer app checks:
+
+1. **Session cookie present** — proxy (`proxy.ts`) reads the `876-session` cookie. No cookie → redirect to `/auth/start` (consumer app login).
+2. **`userId` resolves to a real user** — RSC layouts call `requireSession`, then `findAuthRoutingUser(userId)` via the admin client. If the user no longer exists, they're sent to the consumer home or a suspended page.
+3. **User is active and not banned** — `requireActiveUser` checks `user.status === 'active' && !user.banned`.
+4. **Feature flags** — gated pages (e.g. `/app/family`, `/app/wallet-subscriptions`) check the user's enabled feature slugs. If the flag is off, the nav item is hidden and the route redirects away.
+
+### Enterprise account
+
+An enterprise account is a consumer identity **plus an active membership** in at least one organization. The enterprise app (`@876/console`) enforces this at every route.
+
+The enterprise app checks:
+
+1. **Session cookie present** — proxy reads the same `876-session` cookie. No cookie → redirect to `/login`, which links to `/auth/start` to begin the PKCE flow.
+2. **`userId` resolves to a real user** — `findAuthRoutingUser(userId)` via admin client.
+3. **Active membership exists** — `requireOrgMembership(userId, slug)` calls `GET /auth/routing/memberships?userId=...&orgSlug=...&status=active`. No matching active membership → fallback to consumer app.
+4. **Organization is active** — `resolvePrimaryOrganizationPath` filters memberships to those where `organization.status === 'active'`. An org in a suspended/archived state is skipped when choosing where to land the user.
+5. **Role-scoped pages** (future) — admin-only org settings pages will check `membership.role` against the required role set.
+
+---
+
+## How the two correlate
+
+```
+users table (one row per person)
+  ├── consumer app: accessed directly by userId (session cookie userId)
+  └── memberships table: links user → organization
+        └── enterprise app: checked by userId + org slug
+```
+
+A user who registers on 876 starts as a **consumer-only** identity. They become an enterprise user when an org admin (or the seed script) inserts an active `memberships` row for them. The same `users` row and the same `876-session` cookie are used in both apps — there is no second set of credentials.
+
+---
+
+## The auth flow (handled by `@876/app`)
+
+All apps — consumer, enterprise, and Console — redirect to the consumer app (`@876/app`) for sign-in. The consumer app owns the login page and the PKCE flow.
+
+```
+App (any) — no session
+  → proxy → redirect to @876/app /auth/start?returnTo=<path>
+  → user enters credentials at consumer app login page
+  → consumer app: POST /api/auth/login → Python API sets 876-session cookie
+  → consumer app /auth/complete → resolves where to send the user:
+      - /app/* path          → consumer app
+      - /org/* path          → enterprise app
+      - /a/* path            → Console (requires console:access permission)
+  → [for PKCE apps] API issues auth code → redirect to app's /oauth/callback
+  → app /oauth/callback exchanges code → calls /auth/oauth/session → API sets app-domain session cookie
+  → app redirects to original returnTo
+```
+
+The `876-session` cookie is set **once** on the **client app domain** — the session the client app reads on every request.
+
+---
+
+## Guard decision tree
+
+### Consumer app (`/app/*`)
+
+```
+Request to /app/*
+  → proxy: 876-session cookie?
+      No  → redirect to /auth/start → PKCE flow
+      Yes → decode userId from cookie → allow to RSC
+  → RSC layout: requireSession('/app')
+      → requireActiveUser(userId)
+          → findAuthRoutingUser(userId) → /users/:id (admin key + internal key)
+              null → redirect /auth/start
+          → user.banned || user.status !== 'active' → redirect /suspended
+      → feature gate? → check enabledFeatureSlugs
+```
+
+### Enterprise app (`/org/:slug/*`)
+
+```
+Request to /org/:slug/*
+  → proxy: 876-session cookie?
+      No  → redirect to /login → /auth/start → PKCE flow
+      Yes → decode userId → allow to RSC
+  → RSC layout: requireOrgMembership(userId, slug)
+      → findAuthRoutingUser(userId) → /users/:id
+          null → redirect consumerUrl('/app')
+      → findActiveMembershipBySlug(userId, slug)
+          → GET /auth/routing/memberships?userId=...&orgSlug=...&status=active
+          null → redirect consumerUrl('/app')
+      → return { user, membership }
+```
+
+---
+
+## Fallback behavior
+
+| Situation                | Consumer app result              | Enterprise app result                      |
+| ------------------------ | -------------------------------- | ------------------------------------------ |
+| No session cookie        | → /auth/start                    | → /auth/start                              |
+| User deleted from DB     | → auth start                     | → consumer `/app`                          |
+| User banned/suspended    | → `/suspended` page              | → consumer `/suspended`                    |
+| No active org membership | — (not checked)                  | → consumer `/app`                          |
+| Org suspended            | — (not checked)                  | → `/org/join` (no active memberships left) |
+| Feature flag off         | nav item hidden, route redirects | —                                          |
+
+---
+
+## Key env vars per app
+
+| Var                          | Consumer          | Enterprise        | Console           |
+| ---------------------------- | ----------------- | ----------------- | ----------------- |
+| `API_URL`                    | optional override | optional override | optional override |
+| `API_876_KEY`                | ✓                 | ✓                 | ✓                 |
+| `API_INTERNAL_KEY`           | ✓ (guards)        | ✓ (guards)        | ✓                 |
+| `SESSION_COOKIE_NAME`        | `876-session`     | `876-session`     | `876-session`     |
+| `ENTERPRISE_OAUTH_CLIENT_ID` | —                 | ✓                 | —                 |
+| `NEXT_PUBLIC_AUTH_URL`       | ✓                 | ✓                 | ✓                 |
+| `NEXT_PUBLIC_APP_URL`        | self              | ✓                 | ✓                 |
+| `NEXT_PUBLIC_ENTERPRISE_URL` | ✓                 | self              | ✓                 |

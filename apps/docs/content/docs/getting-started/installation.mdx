@@ -1,0 +1,93 @@
+---
+title: Installation
+description: Add the @876/sdk package to your project and verify your runtime meets the requirements.
+---
+
+The `@876/sdk` package is a lightweight, request-only JavaScript SDK that runs
+in any environment with a global `fetch` — modern browsers, Node.js, and Edge
+runtimes. It ships ESM-only with full TypeScript types and holds no session or
+database state of its own.
+
+## Install
+
+Add the package with your preferred package manager.
+
+```bash
+# pnpm (recommended)
+pnpm add @876/sdk
+
+# npm
+npm install @876/sdk
+
+# yarn
+yarn add @876/sdk
+```
+
+## Requirements
+
+<TypeTable
+  type={{
+    'Node.js': {
+      type: '>=20',
+      description:
+        'Required for ESM, native fetch, and the Web Crypto API used by PKCE helpers.',
+    },
+    TypeScript: {
+      type: '>=5.0',
+      description:
+        'Optional but recommended. The SDK ships its own .d.ts declarations.',
+    },
+    Runtime: {
+      type: 'fetch + crypto.subtle',
+      description:
+        'Any environment with a global fetch. PKCE generation also needs Web Crypto (crypto.subtle).',
+    },
+  }}
+/>
+
+<Callout type="info">
+  The SDK is ESM-only (`"type": "module"`). Import it with `import`, not
+  `require()`.
+</Callout>
+
+## Dependencies and bundle
+
+The SDK is built for predictable, minimal footprint:
+
+- **One runtime dependency** — [`zod`](https://zod.dev) is used for runtime
+  validation of options, parameters, and responses. There are no other runtime
+  dependencies.
+- **Tree-shakable** — the package is marked side-effect free, so bundlers drop
+  the clients and helpers you do not import.
+- **Request-only** — no bundled state management, cookie handling, or UI. Your
+  app owns cookies, session storage, and navigation.
+
+## Verify the install
+
+Import the client factory and create an instance. This confirms the package
+resolves and types are wired up.
+
+```ts
+import { create876Client } from '@876/sdk'
+
+const $876 = create876Client()
+
+console.log(typeof $876.auth.login) // "function"
+```
+
+`create876Client()` accepts an optional `baseUrl` override, an `apiKey` (public
+app secret prefixed `876_app_secret_`), a custom `fetch` implementation, and a
+`credentials` mode that defaults to `'include'`. See
+[Configuration](/docs/getting-started/configuration) for the full option set.
+
+<Callout type="warn">
+  In the browser, the default `credentials: 'include'` is required so the
+  `HttpOnly` session cookie set by the API is stored and sent on subsequent
+  requests. The SDK never reads or writes the cookie itself.
+</Callout>
+
+## Related
+
+- [Configuration](/docs/getting-started/configuration) — API URL resolution, credentials, and API key
+- [`create876Client()`](/docs/auth/create-client) — the namespaced auth client factory
+- [createSignInWith876()](/docs/oauth/create-oauth-client) — the OAuth/OIDC client factory

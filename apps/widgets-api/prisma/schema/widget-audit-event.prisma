@@ -1,0 +1,14 @@
+/// Audit trail for administrative mutations of widget-owned content.
+model WidgetAuditEvent {
+  id                   String @id
+  widgetId             String @map("widget_id")
+  action               String
+  resourceId           String @map("resource_id")
+  actorUserId          String @map("actor_user_id")
+  targetOwnerAccountId String @map("target_owner_account_id")
+  occurredAt           Int    @map("occurred_at")
+
+  @@index([widgetId, occurredAt], name: "widget_audit_events_widget_occurred_idx")
+  @@index([resourceId, occurredAt], name: "widget_audit_events_resource_occurred_idx")
+  @@map("widget_audit_events")
+}

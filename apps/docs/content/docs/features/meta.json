@@ -1,0 +1,14 @@
+{
+  "title": "Features",
+  "pages": [
+    "index",
+    "get-features",
+    "post-features",
+    "delete-features-by-feature-id",
+    "get-features-by-feature-id",
+    "patch-features-by-feature-id",
+    "post-features-users-by-user-id-features",
+    "delete-features-users-by-user-id-features-by-feature-id",
+    "patch-features-users-by-user-id-features-by-feature-id"
+  ]
+}

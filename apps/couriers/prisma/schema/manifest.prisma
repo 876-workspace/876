@@ -1,0 +1,99 @@
+/// A shipping manifest grouping packages for a single consolidated US-to-Jamaica shipment.
+/// Created after packages are received at the warehouse and ready for consolidation.
+/// Once SEALED, the package list is locked — the manifest is presented to Jamaica Customs
+/// (JCA) via ASYCUDA World on arrival and the contents cannot change after that point.
+///
+/// Air shipments use MAWB/HAWB numbers; sea shipments use a Bill of Lading.
+/// Both modes use the same model — mode-specific fields are nullable and only populated
+/// for the relevant mode.
+model Manifest {
+  id             String         @id @default(cuid())
+  tenantId       String         @map("tenant_id")
+  /// Origin US warehouse this shipment departed from.
+  warehouseId    String?        @map("warehouse_id")
+  manifestNumber String         @map("manifest_number")
+  status         ManifestStatus @default(DRAFT)
+  mode           ShipmentMode
+  description    String?
+  notes          String?
+
+  // ── Air freight ─────────────────────────────────────────────────────────────
+  /// Master Air Waybill — issued by the airline to the freight forwarder (consolidator).
+  /// Format: 3-digit airline prefix + 8 digits, e.g. "006-12345678".
+  mawbNumber       String? @map("mawb_number")
+  /// House Air Waybill — issued by the forwarder to the courier company for this consolidation.
+  hawbNumber       String? @map("hawb_number")
+  airline          String?
+  flightNumber     String? @map("flight_number")
+  /// IATA departure airport code (e.g. "MIA" for Miami).
+  departureAirport String? @map("departure_airport")
+  /// IATA arrival airport code (e.g. "KIN" for Norman Manley, Kingston).
+  arrivalAirport   String? @map("arrival_airport")
+
+  // ── Sea freight ──────────────────────────────────────────────────────────────
+  /// Bill of Lading number — sea freight equivalent of the airway bill.
+  billOfLading  String? @map("bill_of_lading")
+  vesselName    String? @map("vessel_name")
+  voyageNumber  String? @map("voyage_number")
+  departurePort String? @map("departure_port")
+  arrivalPort   String? @map("arrival_port")
+
+  // ── Shared ────────────────────────────────────────────────────────────────────
+  /// US-side freight forwarder or consolidator handling this shipment.
+  forwarderName String? @map("forwarder_name")
+
+  // ── Timeline (all Unix seconds) ───────────────────────────────────────────────
+  /// When the manifest was finalized and locked (status → SEALED).
+  sealedAt           Int? @map("sealed_at")
+  /// Actual departure timestamp.
+  departedAt         Int? @map("departed_at")
+  /// Estimated arrival in Jamaica — set at seal time, updated if schedule changes.
+  estimatedArrivalAt Int? @map("estimated_arrival_at")
+  /// Actual arrival timestamp in Jamaica (airport/port).
+  arrivedAt          Int? @map("arrived_at")
+  /// When Jamaica Customs (JCA/ASYCUDA) released the shipment.
+  clearedAt          Int? @map("cleared_at")
+
+  // ── Customs (JCA / ASYCUDA World) ─────────────────────────────────────────────
+  /// ASYCUDA World manifest-level customs entry reference assigned on declaration acceptance.
+  customsEntryNumber String? @map("customs_entry_number")
+
+  // ── Stored totals — computed at seal time, immutable after sealing ─────────────
+  /// Total number of packages on this manifest (snapshot at seal).
+  totalPackages      Int    @default(0) @map("total_packages")
+  /// Sum of chargeable weights across all packages, in lbs (snapshot at seal).
+  totalWeight        Float? @map("total_weight")
+  /// Sum of declared values across all packages in smallest currency unit (snapshot at seal).
+  totalDeclaredValue Int?   @map("total_declared_value")
+
+  createdAt Int @map("created_at")
+  updatedAt Int @map("updated_at")
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  packages  Package[]
+
+  @@unique([tenantId, manifestNumber], name: "manifests_tenant_id_manifest_number_key")
+  @@index([tenantId], name: "manifests_tenant_id_idx")
+  @@map("manifests")
+}
+
+enum ManifestStatus {
+  /// Packages being added; manifest not yet finalized.
+  DRAFT
+  /// Manifest finalized and locked — no further package changes permitted.
+  SEALED
+  /// Departed the US warehouse, en route to Jamaica.
+  IN_TRANSIT
+  /// Arrived in Jamaica (airport or port).
+  ARRIVED
+  /// Held by Jamaica Customs pending inspection, missing documents, or duty owed.
+  CUSTOMS_HOLD
+  /// Customs cleared — packages released for distribution to branches.
+  CLEARED
+}
+
+enum ShipmentMode {
+  AIR
+  SEA
+}

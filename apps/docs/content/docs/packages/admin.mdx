@@ -1,0 +1,451 @@
+---
+title: '@876/admin'
+description: Internal-key-tier server-only client for privileged CRUD on users, orgs, memberships, apps, and roles.
+---
+
+`@876/admin` wraps FastAPI operations that require the internal key. It is used from server components, route handlers, and auth guards in first-party apps. **The internal key must never be exposed to the browser.**
+
+## When to use `@876/admin` vs `@876/sdk`
+
+| I need to...                                               | Use          |
+| ---------------------------------------------------------- | ------------ |
+| Read or write **any** user, org, membership, or role       | `@876/admin` |
+| Auth a user, manage their own session, list their own apps | `@876/sdk`   |
+
+`AdminDep` in FastAPI requires `x-internal-key` to match `API_INTERNAL_KEY`. The admin client sends this header automatically. Consumer code must never import `@876/admin`.
+
+---
+
+## Setup
+
+Each app initializes the client once in a `server-only` module:
+
+```typescript
+// apps/console/src/lib/console/api.ts
+import 'server-only'
+import { create876AdminClient } from '@876/admin'
+
+export const $876 = create876AdminClient({
+  baseUrl: process.env.API_URL, // http://127.0.0.1:4000 server-side
+  internalKey: process.env.API_INTERNAL_KEY,
+  apiKey: process.env.API_876_KEY,
+})
+```
+
+<Callout type="warn">
+  In GitHub Codespaces, `NEXT_PUBLIC_API_URL` must be the HTTPS-forwarded URL
+  (e.g. `https://<codespace>-4000.app.github.dev`). The server-side `API_URL`
+  stays `http://127.0.0.1:4000`. Never share the internal key across processes
+  or expose it in client bundles.
+</Callout>
+
+The consumer app uses a separate instance for auth guards:
+
+```typescript
+// apps/876/src/lib/auth/guards.ts  (server-only)
+import { create876AdminClient } from '@876/admin'
+
+export const adminClient = create876AdminClient({
+  baseUrl: process.env.API_URL,
+  internalKey: process.env.API_INTERNAL_KEY,
+})
+```
+
+Every request from the admin client includes:
+
+- `x-internal-key: <API_INTERNAL_KEY>` — satisfies `AdminDep`
+- `x-api-key: <API_876_KEY>` — satisfies `require_api_key` (when `apiKey` is set)
+- `x-request-id: <requestId>` — correlates logs across Next.js and FastAPI (when `requestId` is set)
+
+---
+
+## Users — `$876.users.*`
+
+```typescript
+// List all users (paginated)
+const { data } = await $876.users.list({ limit: 25 })
+// data = { object: 'list', data: User[], has_more: boolean, total_count: number }
+
+// Cursor to next page
+const { data: page2 } = await $876.users.list({
+  limit: 25,
+  starting_after: data.data.at(-1)?.id,
+})
+
+// Full-text search (email, username, name)
+const { data } = await $876.users.search({ query: 'alice' })
+
+// Get one user by platform ID
+const { data: user } = await $876.users.retrieve('user_01...')
+
+// Get by username
+const { data: user } = await $876.users.retrieveByUsername('alice')
+
+// Get by WorkOS user ID (internal use only)
+const { data: user } = await $876.users.retrieveByWorkosId('wos_user_01...')
+
+// Update
+await $876.users.update('user_01...', {
+  role: 'admin',
+  status: 'active',
+})
+
+// Delete (hard delete)
+await $876.users.delete('user_01...')
+
+// Create a new user (also creates the WorkOS user and sends a setup email)
+const { data: newUser } = await $876.users.create({
+  email: 'charlie@example.com',
+  firstName: 'Charlie',
+  lastName: 'Brown',
+  role: 'user', // optional — defaults to 'user'
+  username: 'charlie', // optional
+})
+
+// Ensure (find-or-create from WorkOS auth result — used internally by auth service)
+await $876.users.ensure({
+  workosUserId: 'wos_user_01...',
+  email: 'alice@example.com',
+  firstName: 'Alice',
+  lastName: 'Smith',
+})
+```
+
+### AdminUser — extra fields vs UserResponse
+
+The admin client returns `AdminUser` objects which include fields not in the
+consumer `UserResponse`:
+
+| Field                | Type             | Notes                                         |
+| -------------------- | ---------------- | --------------------------------------------- |
+| `role`               | `string`         | `user` \| `staff` \| `admin` \| `super_admin` |
+| `permissions`        | `string[]`       | Derived from `role` at serialization time     |
+| `banned`             | `boolean`        | Whether the user is banned                    |
+| `banned_reason`      | `string \| null` | Reason shown in Console                       |
+| `company`            | `string \| null` | Enterprise display name                       |
+| `company_short_name` | `string \| null` | Abbreviated company name                      |
+| `company_logo`       | `string \| null` | Company logo URL                              |
+| `private_metadata`   | `object \| null` | Internal metadata, never returned to clients  |
+
+### User feature flags
+
+```typescript
+// List feature flags for a user
+const { data: features } = await $876.users.listFeatures('user_01...')
+
+// Enable a feature — use feature_id (not slug)
+await $876.users.addFeature('user_01...', { feature_id: 'feat_01...' })
+
+// Disable a feature — pass the feature_id string
+await $876.users.removeFeature('user_01...', 'feat_01...')
+```
+
+<Callout type="warn">
+  Feature grant/revoke takes `feature_id` (the platform `feat_01...` ID), not
+  the feature slug. Look up the `feature_id` first via `$876.features.list()` or
+  `$876.features.retrieve(id)` if you only have a slug.
+</Callout>
+
+### OAuth grants (admin view)
+
+```typescript
+// List grants for a user (which apps have authorized access)
+const { data: grants } = await $876.users.listOauthGrants('user_01...')
+
+// Revoke a specific grant
+await $876.users.revokeOauthGrant('user_01...', 'grant_01...')
+```
+
+---
+
+## Organizations — `$876.orgs.*`
+
+```typescript
+// List all orgs
+const { data } = await $876.orgs.list({ limit: 25 })
+
+// Search orgs
+const { data } = await $876.orgs.search({ query: 'acme' })
+
+// Get by platform ID
+const { data: org } = await $876.orgs.retrieve('org_01...')
+
+// Get by slug
+const { data: org } = await $876.orgs.retrieveBySlug('acme')
+
+// Create
+const { data: org } = await $876.orgs.create({
+  name: 'Acme Corp',
+  slug: 'acme',
+})
+
+// Update
+await $876.orgs.update('org_01...', {
+  name: 'Acme Corporation',
+  status: 'active',
+})
+
+// Delete
+await $876.orgs.delete('org_01...')
+```
+
+### Org memberships
+
+```typescript
+// List all members of an org
+const { data } = await $876.orgs.listMemberships('org_01...')
+
+// Add a user to an org directly
+await $876.orgs.createMembership('org_01...', {
+  userId: 'user_01...',
+  role: 'member',
+  status: 'active',
+})
+
+// Invite by email
+await $876.orgs.createInvite('org_01...', {
+  email: 'bob@acme.com',
+  role: 'member',
+})
+```
+
+---
+
+## Memberships — `$876.memberships.*`
+
+```typescript
+// Create a membership
+await $876.memberships.create({
+  organizationId: 'org_01...',
+  userId: 'user_01...',
+  role: 'admin',
+  status: 'active',
+})
+
+// List (filterable by org or user)
+const { data } = await $876.memberships.list({
+  organization_id: 'org_01...', // filter by org
+  // or:
+  user_id: 'user_01...', // filter by user
+})
+
+// Get one membership
+const { data: m } = await $876.memberships.retrieve('membership_01...')
+
+// Update role or status
+await $876.memberships.update('membership_01...', {
+  role: 'admin',
+  status: 'active',
+})
+
+// Delete (removes user from org)
+await $876.memberships.delete('membership_01...')
+```
+
+---
+
+## Auth routing helpers
+
+These are used internally by app guards to determine where to route a user after sign-in:
+
+```typescript
+// Get a user with their routing-relevant fields (status, role, features, memberships)
+const { data: user } = await $876.auth.findAuthRoutingUser('user_01...')
+
+// Get active memberships for routing (used by enterprise app)
+const { data } = await $876.auth.getRoutingMemberships({
+  userId: 'user_01...',
+  orgSlug: 'acme',
+  status: 'active',
+})
+```
+
+---
+
+## Apps and API keys — `$876.apps.*` / `$876.apiKeys.*`
+
+```typescript
+// List all registered OAuth apps (platform-wide)
+const { data } = await $876.apps.list()
+
+// Create an OAuth client (confidential for server-to-server)
+const { data } = await $876.apps.create({
+  name: 'Acme Integration',
+  clientType: 'confidential',
+  redirectUris: ['https://acme.com/callback'],
+})
+// data.clientSecret is shown once — store it securely
+
+// Get one app
+const { data: app } = await $876.apps.retrieve('app_01...')
+
+// Get by client_id
+const { data: app } = await $876.apps.retrieveByClientId('client_876_...')
+
+// Update
+await $876.apps.update('app_01...', { name: 'Renamed' })
+
+// Delete
+await $876.apps.delete('app_01...')
+
+// API key management
+const { data: keys } = await $876.apiKeys.list('app_01...')
+const { data: key } = await $876.apiKeys.create('app_01...', {
+  name: 'production',
+})
+await $876.apiKeys.revoke('app_01...', 'apikey_01...')
+```
+
+<Callout type="note">
+  `AppUpdate` does **not** allow changing `redirect_uris` or `scopes_allowed`
+  after creation. Those fields are set at `POST /apps` time only. Create a new
+  app if you need different redirect URIs.
+</Callout>
+
+---
+
+## Roles — `$876.roles.*`
+
+```typescript
+// List all roles
+const { data } = await $876.roles.list()
+
+// Get one role
+const { data: role } = await $876.roles.retrieve('admin')
+
+// Create a custom role
+await $876.roles.create({
+  name: 'billing-admin',
+  permissions: ['billing:read', 'billing:write'],
+})
+
+// Update
+await $876.roles.update('billing-admin', { permissions: ['billing:read'] })
+
+// Delete
+await $876.roles.delete('billing-admin')
+```
+
+---
+
+## Data conventions
+
+All list responses:
+
+```typescript
+{
+  object: 'list',
+  data: T[],
+  has_more: boolean,
+  url: string,
+  total_count: number | null
+}
+```
+
+Cursor pagination (never use offset):
+
+```typescript
+const { data: page1 } = await $876.users.list({ limit: 25 })
+if (page1.has_more) {
+  const { data: page2 } = await $876.users.list({
+    limit: 25,
+    starting_after: page1.data.at(-1)?.id,
+  })
+}
+```
+
+All timestamps are **Unix seconds**. Always check `result.error` before accessing `result.data`:
+
+```typescript
+const result = await $876.users.retrieve(userId)
+if (result.error) {
+  console.error(result.error.code, result.error.message)
+  return
+}
+console.log(result.data.email) // safe
+```
+
+---
+
+## Addresses — `$876.addresses.*`
+
+The standalone `/addresses` endpoint manages addresses for both users and
+organizations via a shared domain. (The user-scoped `/users/{id}/addresses`
+routes are mirrors with implicit `userId` scoping.)
+
+```typescript
+// List addresses for a user or org
+const { data } = await $876.addresses.list({ userId: 'usr_01...' })
+const { data } = await $876.addresses.list({ organizationId: 'org_01...' })
+
+// Create an address
+const { data: addr } = await $876.addresses.create({
+  userId: 'usr_01...',
+  type: 'billing', // 'billing' | 'shipping' | 'other'
+  line1: '1 Kingsway',
+  city: 'Kingston',
+  country_code: 'JM',
+})
+
+// Retrieve / update / delete
+const { data } = await $876.addresses.retrieve('addr_01...')
+await $876.addresses.update('addr_01...', { city: 'Montego Bay' })
+await $876.addresses.delete('addr_01...')
+```
+
+<Callout type="note">
+  Note that user-self-service addresses (`/users/me/addresses`) use a different
+  type enum: `home | work | other`. The admin standalone `/addresses` endpoint
+  uses `billing | shipping | other`. Choose based on context.
+</Callout>
+
+---
+
+## Audit events — `$876.auditEvents.*`
+
+```typescript
+// List audit events (admin only)
+const { data } = await $876.auditEvents.list({
+  user_id: 'usr_01...', // optional filter
+  event: 'login', // optional filter
+  app_name: '876', // optional filter
+})
+
+// Audit events are created automatically by the API and SDK;
+// manual creation is only needed for custom app-level events.
+await $876.auditEvents.create({
+  event: 'feature.toggled',
+  userId: 'usr_01...',
+  properties: { featureId: 'feat_01...' },
+})
+```
+
+Key `AuditEvent` fields: `id`, `event`, `source`, `app_name`, `app_id`,
+`user_id`, `path`, `request_id`, `session_id`, `distinct_id`, `properties`,
+`created_at`.
+
+---
+
+## Geo lookups (public endpoints)
+
+These are unauthenticated endpoints used by address forms and org-setup flows.
+They can be called directly without an API key:
+
+```typescript
+// GET /geo/currencies — list enabled currencies
+// GET /geo/countries — list enabled countries
+// GET /geo/countries/{country_code}/regions — list regions for a country
+
+// Example (using fetch directly — no admin client needed):
+const res = await fetch(`${process.env.API_URL}/geo/countries/JM/regions`)
+const { data: regions } = await res.json()
+```
+
+The `region_id` from these responses maps to `Organization.region_id` and
+`Address.region_id` in create/update schemas.
+
+---
+
+## Route mapping
+
+<APIClientUsageMap />

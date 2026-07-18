@@ -1,0 +1,11 @@
+{
+  "title": "Memberships",
+  "pages": [
+    "index",
+    "get-memberships",
+    "post-memberships",
+    "delete-memberships-by-membership-id",
+    "get-memberships-by-membership-id",
+    "patch-memberships-by-membership-id"
+  ]
+}

@@ -1,0 +1,48 @@
+---
+title: 876 Packages
+description: The internal packages that make up the 876 platform.
+---
+
+876 uses Turborepo to manage internal packages, ensuring code sharing across apps and APIs.
+
+<Cards>
+  <Card
+    title="@876/sdk"
+    href="/docs/packages/sdk"
+    description="Request-only auth and OAuth client used by browser auth flows and relying-party OAuth helpers."
+  />
+  <Card
+    title="@876/admin"
+    href="/docs/packages/admin"
+    description="Privileged server-side admin client for Console and first-party server components."
+  />
+  <Card
+    title="@876/billing"
+    href="/docs/packages/billing"
+    description="Versioned client for the standalone Billing service, with tenant and server-only administration tiers."
+  />
+  <Card
+    title="@876/core"
+    href="/docs/packages/core"
+    description="Shared types, auth helpers, error registries, and legacy data fetchers."
+  />
+  <Card
+    title="@876/ui"
+    href="/docs/packages/ui"
+    description="Shared shadcn/ui-style primitives and chart components."
+  />
+  <Card
+    title="@876/db"
+    href="/docs/packages/db"
+    description="Database layer for Prisma and PostgreSQL."
+  />
+  <Card
+    title="@876/analytics"
+    href="/docs/packages/analytics"
+    description="Shared analytics package for PostHog and reporting."
+  />
+</Cards>
+
+## Generated client-to-route map
+
+<APIClientUsageMap />

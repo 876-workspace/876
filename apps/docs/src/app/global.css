@@ -1,0 +1,132 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/black.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-openapi/css/preset.css';
+
+@source '../../node_modules/fumadocs-ui/dist/**/*.js';
+@source '../../node_modules/fumadocs-openapi/dist/**/*.js';
+
+/*
+ * 876 brand palette, mirrored from the shared design system
+ * (packages/ui/src/styles.css). Subtle black / functional green / warm gold —
+ * no neon. The Fumadocs `--color-fd-*` tokens below are mapped onto these so
+ * the docs read like the rest of the product (and like the Stripe/Mozilla
+ * references: calm cool-gray canvas, white content cards, restrained accent).
+ */
+:root {
+  --876-green: oklch(0.48 0.165 148);
+  --876-green-deep: oklch(0.36 0.135 150);
+  --876-gold: oklch(0.76 0.17 82);
+
+  /* [A1] Hybrid surfaces — chrome blends into one near-white plane; only genuine
+     content cards lift (white + --doc-elevation). Canvas + muted pulled up toward
+     white and the divider softened to a hairline (Tailwind/Figma look). */
+  --color-fd-background: oklch(0.99 0.003 255);
+  --color-fd-foreground: oklch(0.23 0.015 262);
+  --color-fd-muted: oklch(0.982 0.003 255);
+  --color-fd-muted-foreground: oklch(0.5 0.014 262);
+  --color-fd-popover: oklch(1 0 0);
+  --color-fd-popover-foreground: oklch(0.23 0.015 262);
+  --color-fd-card: oklch(1 0 0);
+  --color-fd-card-foreground: oklch(0.23 0.015 262);
+  --color-fd-border: oklch(0.94 0.003 258);
+  /* [/A1] */
+  --color-fd-primary: var(--876-green);
+  --color-fd-primary-foreground: oklch(0.99 0.004 145);
+  --color-fd-secondary: oklch(0.96 0.004 255);
+  --color-fd-secondary-foreground: oklch(0.28 0.02 260);
+  /* Hover/active surfaces carry only a whisper of green. */
+  --color-fd-accent: oklch(0.95 0.012 150);
+  --color-fd-accent-foreground: var(--876-green-deep);
+  --color-fd-ring: var(--876-green);
+
+  /* Soft elevation for cards / code rail in light mode (the "pop"). */
+  --doc-elevation:
+    0 1px 2px oklch(0.23 0.02 262 / 6%), 0 8px 24px oklch(0.23 0.02 262 / 5%);
+}
+
+.dark {
+  /* Lightened green keeps contrast on dark surfaces (design-system recipe). */
+  --876-green: oklch(0.78 0.15 150);
+
+  --color-fd-background: oklch(0.165 0.004 250);
+  --color-fd-foreground: oklch(0.985 0 0);
+  --color-fd-muted: oklch(0.225 0.004 250);
+  /* Raised from the fumadocs default (60%) so rail/param labels stay legible. */
+  --color-fd-muted-foreground: oklch(0.78 0.012 250);
+  --color-fd-popover: oklch(0.205 0.004 250);
+  --color-fd-popover-foreground: oklch(0.985 0 0);
+  --color-fd-card: oklch(0.205 0.004 250);
+  --color-fd-card-foreground: oklch(0.985 0 0);
+  --color-fd-border: oklch(0.32 0.006 255);
+  --color-fd-primary: var(--876-green);
+  --color-fd-primary-foreground: oklch(0.16 0.02 150);
+  --color-fd-secondary: oklch(0.25 0.006 250);
+  --color-fd-secondary-foreground: oklch(0.96 0 0);
+  --color-fd-accent: oklch(0.27 0.02 150);
+  --color-fd-accent-foreground: oklch(0.9 0.05 150);
+  --color-fd-ring: var(--876-green);
+
+  --doc-elevation: 0 1px 2px oklch(0 0 0 / 40%), 0 12px 32px oklch(0 0 0 / 32%);
+}
+
+/* Give the docs layout extra room for the three-column (prose + code rail). */
+:root {
+  --fd-layout-width: 1600px;
+}
+
+/* [A2] Warm/deepen the active sidebar item in light mode — the brand green at 10%
+   on near-white reads stale. Thicker bar, richer green (green-deep), stronger tint,
+   bolder label. Light only; the dark treatment is untouched. */
+:root:not(.dark) #nd-sidebar a[data-active='true']::before {
+  width: 3px;
+  border-radius: 2px;
+  background-color: var(--876-green-deep);
+}
+:root:not(.dark) #nd-sidebar a[data-active='true'] {
+  background-color: color-mix(in oklab, var(--876-green) 14%, transparent);
+  color: var(--876-green-deep);
+  font-weight: 600;
+}
+/* [/A2] */
+
+/* [A3] Callout pop (both modes — see tracker). Fumadocs ships a timid 2px bar at
+   50% opacity inset by padding. Pin a flush, full-strength 4px accent bar to the
+   inline-start edge and enlarge the icon, keeping the rounded card corners. The
+   `callout-876` hook is added by the wrapper in mdx-components.tsx. */
+.callout-876 {
+  position: relative;
+  overflow: hidden;
+  padding-inline-start: 1rem;
+}
+/* The bar is the callout's first child: div[role="none"]. */
+.callout-876 > [role='none']:first-child {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 4px;
+  border-radius: 0;
+  background-color: var(--callout-color);
+}
+.callout-876 > svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+/* [/A3] */
+
+/* [A4] Reading-optimized prose scale (docs only). Tailwind's type scale is
+   open-source; we lift the docs body to ~16px with a calmer line-height and a
+   clearer heading rhythm. Tailwind Typography sizes headings in `em`, so bumping
+   the `.prose` base font-size scales the whole hierarchy proportionally. Scoped to
+   docs `.prose` — the dense SaaS apps keep their compact scale. */
+.prose {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+.prose :where(h2):not(:where([class~='not-prose'] *)) {
+  font-size: 1.5em;
+}
+.prose :where(h3):not(:where([class~='not-prose'] *)) {
+  font-size: 1.25em;
+}
+/* [/A4] */

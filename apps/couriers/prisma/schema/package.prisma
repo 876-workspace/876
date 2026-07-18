@@ -1,0 +1,162 @@
+/// A package tracked by a tenant on behalf of a customer.
+/// Lifecycle: PRE_ALERT (customer-submitted) → RECEIVED → IN_TRANSIT → ARRIVED → READY_FOR_PICKUP → COLLECTED / UNCLAIMED.
+/// trackingNum is nullable — pre-alerts may be submitted before the carrier has assigned one.
+/// A partial unique constraint (tenant_id, tracking_num WHERE tracking_num IS NOT NULL) is enforced at the DB level via migration.
+model Package {
+  id               String        @id @default(cuid())
+  tenantId         String        @map("tenant_id")
+  customerId       String        @map("customer_id")
+  /// Assigned delivery branch — defaults to the customer's home branch but can be overridden.
+  branchId         String?       @map("branch_id")
+  mailboxId        String?       @map("mailbox_id")
+  carrierId        String?       @map("carrier_id")
+  sellerId         String?       @map("seller_id")
+  categoryId       String?       @map("category_id")
+  /// Opaque Billing invoice ID. Billing owns the commercial document; Couriers
+  /// stores only the operational package-to-invoice association.
+  billingInvoiceId String?       @map("billing_invoice_id")
+  /// Manifest this package is assigned to. Set when the package is grouped for a shipment.
+  manifestId       String?       @map("manifest_id")
+  trackingNum      String?       @map("tracking_num")
+  status           PackageStatus @default(PRE_ALERT)
+  packageType      PackageType   @default(CARTON) @map("package_type")
+  description      String?
+  quantity         Int           @default(1)
+
+  // ── Weight & dimensions (all measured at US warehouse) ──────────────────────
+  /// Measured weight in lbs as received at warehouse.
+  actualWeight      Float? @map("actual_weight")
+  /// Rounded/chargeable weight in lbs used for billing calculations.
+  chargeableWeight  Float? @map("chargeable_weight")
+  /// Package length in inches.
+  length            Float?
+  /// Package width in inches.
+  width             Float?
+  /// Package height in inches.
+  height            Float?
+  /// Dimensional weight in lbs: (L × W × H in inches) / 139 for air, / 166 for sea.
+  /// Staff may enter this directly or the app computes it from dimensions.
+  /// Chargeable weight = max(actualWeight, dimensionalWeight) per carrier rules.
+  dimensionalWeight Float? @map("dimensional_weight")
+
+  // ── Value & customs ──────────────────────────────────────────────────────────
+  /// Declared purchase price in the tenant's currency smallest unit (e.g. cents).
+  declaredValue      Int?    @map("declared_value")
+  /// Harmonized System tariff code (8–10 digits for Jamaica).
+  hsCode             String? @map("hs_code")
+  /// Country where the goods were manufactured — required by JCA for all imports.
+  countryOfOrigin    String? @map("country_of_origin")
+  /// Whether this package is flagged for customs duty assessment.
+  hasCustomsDuty     Boolean @default(false) @map("has_customs_duty")
+  /// Import duty assessed by Jamaica Customs, in smallest currency unit.
+  importDutyAmount   Int?    @map("import_duty_amount")
+  /// General Consumption Tax assessed by JCA (15% of CIF + duty), in smallest currency unit.
+  gctAmount          Int?    @map("gct_amount")
+  /// Package-level ASYCUDA customs entry number — set for high-value items requiring individual clearance.
+  customsEntryNumber String? @map("customs_entry_number")
+  /// When Jamaica Customs cleared this specific package.
+  customsClearedAt   Int?    @map("customs_cleared_at")
+  /// Reason a package is held at customs (missing docs, duty owed, permit required, etc.).
+  customsHoldReason  String? @map("customs_hold_reason")
+
+  // ── Safety ───────────────────────────────────────────────────────────────────
+  /// Whether the package contains dangerous goods / hazardous materials.
+  isHazardous Boolean @default(false) @map("is_hazardous")
+
+  // ── Receipt condition ─────────────────────────────────────────────────────────
+  /// Condition notes recorded when the package was received at the warehouse
+  /// (e.g. "Dented corner", "Torn outer packaging", "Good condition").
+  condition String?
+
+  // ── Collection ────────────────────────────────────────────────────────────────
+  /// Set when status transitions to COLLECTED. Null means not yet collected.
+  collectedAt   Int?    @map("collected_at")
+  /// Contact.id of the person who collected the package. Null means the customer themselves collected it.
+  collectedById String? @map("collected_by_id")
+
+  createdAt Int @map("created_at")
+  updatedAt Int @map("updated_at")
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer    CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  branch      Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  mailbox     Mailbox?               @relation(fields: [mailboxId], references: [id], onDelete: SetNull)
+  carrier     Carrier?               @relation(fields: [carrierId], references: [id], onDelete: SetNull)
+  seller      Seller?                @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  category    PackageCategory?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  manifest    Manifest?              @relation(fields: [manifestId], references: [id], onDelete: SetNull)
+  collectedBy Contact?               @relation("PackageCollectedBy", fields: [collectedById], references: [id], onDelete: SetNull)
+  documents   PackageDocument[]
+  notes       PackageNote[]
+
+  @@index([tenantId], name: "packages_tenant_id_idx")
+  @@index([customerId], name: "packages_customer_id_idx")
+  @@index([manifestId], name: "packages_manifest_id_idx")
+  @@index([billingInvoiceId], name: "packages_billing_invoice_id_idx")
+  @@index([tenantId, trackingNum], name: "packages_tenant_id_tracking_num_idx")
+  @@map("packages")
+}
+
+enum PackageType {
+  CARTON
+  ENVELOPE
+  BAG
+  PALLET
+  OTHER
+}
+
+enum PackageStatus {
+  /// Customer submitted a pre-alert; package not yet received at warehouse.
+  PRE_ALERT
+  /// Package received at the US warehouse.
+  RECEIVED
+  /// Package in transit (en route to Jamaica).
+  IN_TRANSIT
+  /// Package has arrived in Jamaica.
+  ARRIVED
+  /// Package is at the branch and ready for customer collection.
+  READY_FOR_PICKUP
+  /// Package has been collected.
+  COLLECTED
+  /// Package was not collected and has been flagged as unclaimed.
+  UNCLAIMED
+}
+
+/// A file or image attached to a package (e.g. customer receipt, seller invoice).
+/// url is a storage-layer reference; the application resolves it to a signed/public URL.
+model PackageDocument {
+  id        String              @id @default(cuid())
+  packageId String              @map("package_id")
+  type      PackageDocumentType
+  name      String
+  url       String
+  createdAt Int                 @map("created_at")
+  updatedAt Int                 @map("updated_at")
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId], name: "package_documents_package_id_idx")
+  @@map("package_documents")
+}
+
+enum PackageDocumentType {
+  RECEIPT
+  INVOICE
+  OTHER
+}
+
+/// An internal staff note on a package.
+/// authorId is an opaque 876 user ID — resolved through $876 at read time.
+model PackageNote {
+  id        String @id @default(cuid())
+  packageId String @map("package_id")
+  authorId  String @map("author_id")
+  body      String
+  createdAt Int    @map("created_at")
+  updatedAt Int    @map("updated_at")
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId], name: "package_notes_package_id_idx")
+  @@map("package_notes")
+}

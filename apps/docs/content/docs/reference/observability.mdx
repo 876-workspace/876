@@ -1,0 +1,166 @@
+---
+title: Observability
+description: Structured logging, request-id correlation, Sentry, and PostHog analytics conventions.
+---
+
+876 observability has two separate responsibilities:
+
+- **Structured logging** for operational debugging across Vercel and FastAPI.
+- **Product analytics** for behavior and funnel tracking in PostHog.
+
+Both systems use the same correlation value when possible: `x-request-id`.
+
+## Request ID flow
+
+Next.js `src/proxy.ts` mints `x-request-id` with `crypto.randomUUID()` when an
+incoming browser request does not already include one. The proxy forwards that
+header to the server render with `NextResponse.next({ request: { headers } })`
+and returns it on the HTTP response.
+
+Server-side app wrappers read that header and pass it to package clients:
+
+```ts
+const client = create876AdminClient({
+  internalKey: process.env.API_INTERNAL_KEY,
+  apiKey: process.env.API_876_KEY,
+  requestId,
+})
+```
+
+`@876/admin` and `@876/sdk` attach `x-request-id` in their centralized fetch
+helpers. FastAPI reads the incoming header or generates a `req_*` ID for direct
+API callers, binds it to the request logging context, tags Sentry events, and
+returns it on the API response.
+
+## Logging contract
+
+FastAPI logs request lifecycle events through request logging middleware:
+
+- `request_started`: method, safe path, request ID.
+- `request_completed`: method, safe path, status, duration, request ID.
+- `request_error`: method, safe path, duration, traceback, request ID.
+
+Next.js server logs use app-local `logger` helpers with:
+
+- `LOG_LEVEL=debug | info | warn | error`.
+- Pretty development output.
+- Single-line JSON production output.
+- Optional `requestId` in the log context.
+
+## Never log
+
+- `Authorization`, `Cookie`, `Set-Cookie`, `x-internal-key`, `x-api-key`, or
+  `X-876-API-Key` values.
+- Request or response bodies for `/auth/*` and `/oauth/*`.
+- Passwords, OTP codes, magic-link tokens, bearer tokens, API keys, client
+  secrets, or session cookie contents.
+- Production PII such as email addresses and names when an ID is sufficient.
+- Database URLs or environment variable values.
+
+## Sentry
+
+Sentry is configured in each runtime where available:
+
+- Consumer app: client, server, and edge configs.
+- Console: client, server, edge, instrumentation, and global error
+  boundary.
+- FastAPI: optional `sentry-sdk` initialization when `SENTRY_DSN` is present.
+
+All Sentry config disables default PII collection. Next.js configs scrub user
+email, username, IP address, auth headers, cookies, API keys, and internal keys
+before events are sent.
+
+## PostHog
+
+The consumer app and Console share one PostHog project. Events include
+app-level super-properties:
+
+- `app_name`: `876-consumer` or `console`.
+- `app_version`: from `NEXT_PUBLIC_APP_VERSION`.
+- `app_environment`: from `NEXT_PUBLIC_APP_ENVIRONMENT` or `NODE_ENV`.
+
+Client providers initialize PostHog once, disable automatic pageview capture,
+and send explicit `$pageview` plus `page_viewed` events on route changes.
+Global browser `error` and `unhandledrejection` events are captured as typed
+analytics events.
+
+User identity is synced to PostHog on identify calls. The shared runtime sends
+the canonical user ID plus profile fields such as name, full name, email, first
+name, last name, username, avatar URL, account status, email verification state,
+and `profile_synced_at`.
+
+## Shared analytics runtime
+
+Browser analytics runtime code lives in `@876/analytics`. Apps should not copy
+PostHog initialization, page tracking, global error listeners, sanitization, or
+identity sync locally.
+
+Each app owns only:
+
+- Its event catalog, exported as typed constants.
+- Its app name, PostHog identity storage key, and lifecycle event mapping.
+- Its feature-specific calls to `track()`.
+
+Example:
+
+```ts
+import { createBrowserAnalytics } from '@876/analytics'
+
+import { InternalAppEvent, type InternalAppEventName } from './events'
+
+export const { AnalyticsProvider, resetAnalyticsIdentity, track } =
+  createBrowserAnalytics<InternalAppEventName>({
+    appName: 'internal-app',
+    identifyStorageKey: '876.internal-app.analytics.identified_user_id',
+    events: {
+      pageViewed: InternalAppEvent.PageViewed,
+      pageViewedDetailed: InternalAppEvent.PageViewedDetailed,
+      unhandledException: InternalAppEvent.UnhandledException,
+      unhandledRejection: InternalAppEvent.UnhandledRejection,
+    },
+  })
+```
+
+When adding another internal app, add `@876/analytics` as a dependency, include
+it in the Next.js `transpilePackages` list, define app-specific events, and wrap
+the root provider with `AnalyticsProvider`.
+
+## Environment variables
+
+FastAPI:
+
+```bash
+SENTRY_DSN=
+LOG_LEVEL=info
+ENVIRONMENT=development
+```
+
+Next.js apps:
+
+```bash
+LOG_LEVEL=info
+NEXT_PUBLIC_SENTRY_DSN=
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+NEXT_PUBLIC_APP_VERSION=
+NEXT_PUBLIC_APP_ENVIRONMENT=production
+```
+
+## Package interfaces
+
+`@876/sdk` accepts request IDs per method call:
+
+```ts
+await $876.auth.login(params, {
+  requestId: 'req_...',
+})
+```
+
+`@876/admin` accepts a request ID at client construction:
+
+```ts
+create876AdminClient({
+  internalKey: process.env.API_INTERNAL_KEY,
+  requestId: 'req_...',
+})
+```

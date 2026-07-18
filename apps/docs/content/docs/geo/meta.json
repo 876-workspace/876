@@ -1,0 +1,9 @@
+{
+  "title": "Geo",
+  "pages": [
+    "index",
+    "get-geo-countries",
+    "get-geo-countries-by-country-code-regions",
+    "get-geo-currencies"
+  ]
+}

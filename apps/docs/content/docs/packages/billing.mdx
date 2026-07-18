@@ -1,0 +1,93 @@
+---
+title: '@876/billing'
+description: Versioned tenant, integration, and server-only reconciliation clients for the standalone 876 Billing service.
+---
+
+`@876/billing` is the integration boundary for the standalone Billing bounded
+context. Billing owns commercial customers, invoices, quotes, plans, prices, and
+subscriptions in its own database. Core users, organizations, applications, and
+entitlements are stored only as opaque IDs with no cross-database foreign keys.
+
+## Client tiers
+
+| Import                     | Credential                          | Intended consumers                                   |
+| -------------------------- | ----------------------------------- | ---------------------------------------------------- |
+| `@876/billing`             | Authenticated Billing session       | Billing UI and tenant-scoped product operations      |
+| `@876/billing/integration` | Service key or scoped OAuth token   | Organization and customer interoperability           |
+| `@876/billing/admin`       | `BILLING_INTERNAL_KEY`, server-only | Console catalogue/subscription projection and repair |
+
+The canonical HTTP base path is `/api/v1`. The machine-readable contract is
+available from `GET /api/v1/openapi` on the Billing service.
+
+## Tenant client
+
+```ts
+import { create876BillingClient } from '@876/billing'
+
+const $billing = create876BillingClient({
+  baseUrl: 'https://billing.example.com',
+  credentials: 'include',
+})
+
+const result = await $billing.invoices.create({
+  customerId: 'blcus_...',
+  currency: 'JMD',
+  lines: [{ description: 'Restaurant order 1042', unitAmount: 125000 }],
+})
+```
+
+Native applications are public OAuth clients. They must authenticate through
+876 identity with authorization code + PKCE and must never contain a Billing
+internal key. The current public client slice uses the Billing session; bearer
+and tenant-key tiers require an explicit security/scoping design before release.
+
+## Organization integration client
+
+```ts
+import 'server-only'
+import { create876BillingIntegrationClient } from '@876/billing/integration'
+
+export const $billingIntegration = create876BillingIntegrationClient({
+  baseUrl: process.env.BILLING_URL,
+  serviceKey: process.env.BILLING_INTERNAL_KEY,
+})
+```
+
+This is the official cross-application interface for Billing-owned workspace
+and customer data. Console uses the server service credential. External apps
+use a short-lived OAuth token with explicit Billing scopes. Both target the
+same `/api/v1/integrations/organizations/{organizationId}/...` resources.
+
+## Console reconciliation client
+
+```ts
+import 'server-only'
+import { create876AdminClient } from '@876/billing/admin'
+
+export const $billing = create876AdminClient({
+  baseUrl: process.env.BILLING_URL,
+  internalKey: process.env.BILLING_INTERNAL_KEY,
+})
+```
+
+The admin surface exposes idempotent `ensure` operations for products, plans,
+prices, customers, and subscriptions. Console can safely replay a core object by
+its opaque reference. Before ensuring a subscription, Console resolves and
+ensures every referenced catalogue dependency, preventing out-of-order delivery
+from leaving a subscription missing in Billing.
+
+```ts
+await $billing.subscriptions.ensure({
+  externalReference: coreSubscription.id,
+  sourceAppId: coreSubscription.app_id,
+  customerId: billingCustomer.id,
+  items: coreSubscription.items.map((item) => ({
+    priceEntitlementReferenceId: item.price_id,
+    quantity: item.quantity,
+  })),
+})
+```
+
+All responses use `{ data, error }`. Resources include an `object`
+discriminator, money is expressed in integer minor units, and timestamps are
+Unix seconds.

@@ -1,0 +1,17 @@
+/// Staff annotations on a platform subject (a user or an organization),
+/// referenced by opaque core 876 ID. Fills the previously-stubbed MC notes UI.
+model Note {
+  id          String   @id
+  /// "user" | "organization"
+  subjectType String   @map("subject_type")
+  /// Opaque core 876 user/org ID. Cross-service reference — no FK.
+  subjectId   String   @map("subject_id")
+  body        String
+  /// Opaque 876 user ID of the authoring MC user (no FK; notes survive churn).
+  authorId    String?  @map("author_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([subjectType, subjectId], name: "notes_subject_type_subject_id_idx")
+  @@map("notes")
+}

@@ -1,0 +1,39 @@
+# Railway configuration for @876/couriers (Couriers SaaS Next.js app)
+#
+# IMPORTANT — Railway Dashboard Setup:
+#   • Root Directory:   (leave blank — must be repo root so shared packages/ are accessible)
+#   • Config File Path: apps/couriers/railway.toml  (Settings → Config-as-code)
+#   • Watch Paths:      apps/couriers/**, packages/**   (avoids rebuilding on unrelated app changes)
+#
+# Builder is RAILPACK (Railway's default, successor to the deprecated Nixpacks).
+# Railpack reads `packageManager: pnpm@11.3.0` from the root package.json and
+# provisions that exact pnpm via a current corepack, with a Node version that
+# satisfies pnpm 11's engines (>= 22.13). Do not switch back to Nixpacks: its
+# pinned nixpkgs tops out at Node 22.11 and its corepack fails on pnpm 11
+# (see docs/railway.md → Troubleshooting for the full failure history).
+#
+# Couriers owns an app-local Prisma (Postgres) datastore. Attach a Railway
+# Postgres plugin and reference it here: DATABASE_URL must be set (e.g. to
+# ${{Postgres.DATABASE_URL}}). Migrations are applied on each deploy via the
+# pre-deploy command below; `db:generate` runs in the build so the Prisma
+# client matches the committed schema.
+
+[build]
+builder = "RAILPACK"
+# Install full monorepo, build shared SDK, regenerate the Prisma client, then build this app only.
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @876/sdk build && pnpm --filter @876/couriers db:generate && pnpm --filter @876/couriers build"
+
+[deploy]
+# Apply pending Prisma migrations to the attached Postgres before the app boots.
+preDeployCommand = "pnpm --filter @876/couriers db:deploy"
+# PORT is injected by Railway as an env var; the app's `start` script reads it
+# via `${PORT:-3003}` (sh expansion inside the script). Do NOT append
+# `-- --port $PORT` here — Railway start commands are not guaranteed a shell,
+# so `$PORT` can reach the process as a literal string and crash it.
+startCommand = "pnpm --filter @876/couriers start"
+# `/` requires a session (proxy redirects to /login); healthchecks need a 200,
+# so probe the public /login route instead.
+healthcheckPath = "/login"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

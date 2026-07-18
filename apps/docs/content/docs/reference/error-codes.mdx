@@ -1,0 +1,123 @@
+---
+title: Error Codes
+description: SDK-local error codes and pass-through API error behavior.
+---
+
+Every failed SDK call resolves to a `{ data: null, error }` envelope rather than
+throwing. The `error` object carries a stable, machine-readable `code` you can
+branch on, plus a human-readable `message`. Auth methods return an
+[`AuthError`](/docs/auth/create-client); OAuth methods return an
+[`OAuthError`](/docs/oauth/create-oauth-client).
+
+```ts
+const result = await $876.auth.login({ identifier, password })
+
+if (result.error) {
+  switch (result.error.code) {
+    case 'auth/invalid-credentials':
+      // Show "wrong email or password"
+      break
+    case 'auth/too-many-requests':
+      // Back off and retry later
+      break
+    default:
+      console.error(result.error.message)
+  }
+}
+```
+
+Error codes are namespaced by prefix: `auth/*` for the auth client and
+`oauth/*` for the OAuth client. The SDK has a small local registry for errors
+it creates before or outside an API response, such as missing input, network
+failure, and malformed responses. API-only `auth/*` errors can still pass
+through from FastAPI with the API-provided message.
+
+## Error shape
+
+An `AuthError` always includes a `code` and `message`, and may include an
+optional `description` and the offending `param`.
+
+<TypeTable
+  type={{
+    code: {
+      type: 'AuthErrorCode',
+      description:
+        'The stable, machine-readable error code (e.g. "auth/invalid-credentials"). Branch on this.',
+      required: true,
+    },
+    message: {
+      type: 'string',
+      description:
+        'A human-readable, display-ready message. Defaults per code but may be overridden.',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      description: 'Optional additional detail about the failure.',
+    },
+    param: {
+      type: 'string',
+      description:
+        'Optional name of the input field that caused the error, when applicable.',
+    },
+  }}
+/>
+
+An `OAuthError` has a narrower shape: only `code` and `message`.
+
+<Callout type="info">
+  Client-safe errors never include HTTP status codes. Always branch on `code`,
+  not on a status field — the SDK normalizes transport and server failures into
+  these codes.
+</Callout>
+
+## SDK auth errors
+
+Created locally by the SDK before an API response is available, or when the SDK
+normalizes transport/response failures.
+
+| Code                         | Default message                                        |
+| ---------------------------- | ------------------------------------------------------ |
+| `auth/client-not-configured` | Authentication is not configured for this environment. |
+| `auth/invalid-credentials`   | The sign-in information you entered is incorrect.      |
+| `auth/invalid-input`         | Please check your input.                               |
+| `auth/invalid-response`      | Unexpected auth response. Please try again.            |
+| `auth/invalid-token`         | Invalid authentication token. Please sign in again.    |
+| `auth/missing-code`          | Please enter the verification code.                    |
+| `auth/missing-email`         | Please enter your email address.                       |
+| `auth/missing-first-name`    | Please enter your first name.                          |
+| `auth/missing-identifier`    | Please enter your username or email.                   |
+| `auth/missing-last-name`     | Please enter your last name.                           |
+| `auth/missing-password`      | Please enter your password.                            |
+| `auth/network-error`         | Unable to connect to the server. Please try again.     |
+
+<Callout type="info">
+  `AuthErrorCode` is a string because auth responses may include backend-only
+  API codes. `SdkAuthErrorCode` is the narrower union for errors created by the
+  SDK itself.
+</Callout>
+
+## OAuth error codes
+
+Returned by every `oauth.*` method as `error.code` on an `OAuthError`.
+
+| Code                           | Meaning                                                  |
+| ------------------------------ | -------------------------------------------------------- |
+| `oauth/access-denied`          | The resource owner denied the authorization request.     |
+| `oauth/consent-required`       | User consent is required to complete this authorization. |
+| `oauth/invalid-client`         | The OAuth client is invalid.                             |
+| `oauth/invalid-grant`          | The authorization grant is invalid.                      |
+| `oauth/invalid-input`          | The submitted OAuth parameters failed validation.        |
+| `oauth/invalid-redirect-uri`   | The redirect URI is not allowed for this client.         |
+| `oauth/invalid-response`       | The OAuth provider returned an invalid response.         |
+| `oauth/invalid-scope`          | One or more requested scopes are not allowed.            |
+| `oauth/invalid-token`          | The access token is invalid.                             |
+| `oauth/login-required`         | The user must sign in to complete this request.          |
+| `oauth/network-error`          | The OAuth request failed due to a network error.         |
+| `oauth/unsupported-grant-type` | The OAuth grant type is not supported.                   |
+
+## Related
+
+- [`login()`](/docs/auth/login) — example of branching on `error.code`
+- [`create876Client()`](/docs/auth/create-client) — the auth client factory
+- [createSignInWith876()](/docs/oauth/create-oauth-client) — the Sign in with 876 client factory

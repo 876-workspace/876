@@ -1,0 +1,22 @@
+{
+  "title": "Organizations",
+  "pages": [
+    "index",
+    "get-organizations",
+    "post-organizations",
+    "delete-organizations-by-organization-id",
+    "get-organizations-by-organization-id",
+    "patch-organizations-by-organization-id",
+    "get-organizations-by-organization-id-invites",
+    "post-organizations-by-organization-id-invites",
+    "delete-organizations-by-organization-id-invites-by-invite-id",
+    "get-organizations-by-organization-id-memberships",
+    "post-organizations-by-organization-id-memberships",
+    "delete-organizations-by-organization-id-purge",
+    "get-organizations-by-slug-by-slug",
+    "get-organizations-invite-by-token",
+    "post-organizations-invite-by-token-accept",
+    "get-organizations-search",
+    "post-organizations-setup"
+  ]
+}

@@ -1,0 +1,21 @@
+/// Global registry of shipping carriers (e.g. UPS, USPS, FedEx, DHL).
+/// Platform-wide seed data — not tenant-scoped.
+/// trackingUrlTemplate uses {tracking_number} as the placeholder,
+/// e.g. "https://www.ups.com/track?tracknum={tracking_number}".
+/// The application substitutes the package's trackingNum to produce a clickable link.
+model Carrier {
+  id                  String  @id @default(cuid())
+  name                String  @unique
+  slug                String  @unique
+  logoUrl             String? @map("logo_url")
+  websiteUrl          String? @map("website_url")
+  /// URL template with {tracking_number} placeholder for direct tracking deep-links.
+  trackingUrlTemplate String? @map("tracking_url_template")
+  isActive            Boolean @default(true) @map("is_active")
+  createdAt           Int     @map("created_at")
+  updatedAt           Int     @map("updated_at")
+
+  packages Package[]
+
+  @@map("carriers")
+}

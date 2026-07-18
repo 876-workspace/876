@@ -1,0 +1,11 @@
+{
+  "title": "Addresses",
+  "pages": [
+    "index",
+    "get-addresses",
+    "post-addresses",
+    "delete-addresses-by-address-id",
+    "get-addresses-by-address-id",
+    "patch-addresses-by-address-id"
+  ]
+}

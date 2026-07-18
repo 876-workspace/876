@@ -1,0 +1,47 @@
+{
+  "name": "@876/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack --port 3003",
+    "prebuild": "pnpm --filter @876/sdk build",
+    "build": "next build",
+    "start": "next start --port 3003",
+    "postinstall": "fumadocs-mdx",
+    "sync:openapi": "tsx scripts/sync-openapi.ts",
+    "generate:api-internals": "tsx scripts/generate-api-internals.ts",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "clean": "rm -rf .next .turbo .source"
+  },
+  "dependencies": {
+    "@876/analytics": "workspace:*",
+    "@876/core": "workspace:*",
+    "@876/sdk": "workspace:*",
+    "@scalar/api-client-react": "2.0.21",
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.6.0",
+    "fumadocs-core": "16.9.3",
+    "fumadocs-openapi": "10.10.2",
+    "fumadocs-ui": "16.9.3",
+    "next": "16.2.6",
+    "next-themes": "0.4.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.3",
+    "@tailwindcss/postcss": "4.3.0",
+    "@types/mdx": "2.0.13",
+    "@types/node": "25.6.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "fumadocs-mdx": "15.0.10",
+    "tailwindcss": "4.3.0",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

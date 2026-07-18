@@ -1,0 +1,35 @@
+// Couriers app-local database (Prisma 7, multi-file schema).
+//
+// Follows the platform-services pattern: app-local operational data only.
+// Core 876 entities (users, orgs) are referenced by opaque ID — no cross-DB FK.
+// Identity details are resolved through the `$876` client surface at read time.
+//
+// What lives here: courier tenants, operational customer profiles, packages,
+// warehouses, branches, staff, sellers, carriers, and package categories.
+// Shared customers, catalog, commercial documents, payments, taxes, and ledgers
+// belong to the 876 Billing data plane.
+// What does NOT: identity/platform data (users, orgs, memberships) — those stay in the 876 identity API.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/lib/db/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Domain {
+  id        String  @id @default(cuid())
+  tenantId  String  @map("tenant_id")
+  hostname  String  @unique
+  isPrimary Boolean @default(false) @map("is_primary")
+  verified  Boolean @default(false)
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([hostname], name: "domains_hostname_idx")
+  @@map("domains")
+}

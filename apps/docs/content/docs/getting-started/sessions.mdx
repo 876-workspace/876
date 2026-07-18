@@ -1,0 +1,117 @@
+---
+title: Sessions
+description: How the 876 session cookie is structured, signed, and used across all apps.
+---
+
+## The session cookie
+
+When a user signs in, the FastAPI API creates two things:
+
+1. A `Session` row in the database — the authoritative record that a session exists
+2. A signed **session cookie** that Next.js apps can read without a database round-trip
+
+The cookie is set as `HttpOnly; SameSite=Lax` so browser JavaScript cannot read it.
+
+### What's in the cookie
+
+```json
+{
+  "userId": "user_01abc...",
+  "email": "alice@example.com",
+  "firstName": "Alice",
+  "lastName": "Smith",
+  "emailVerified": true,
+  "avatar": null,
+  "username": "alice",
+  "realm": "consumer",
+  "orgId": null,
+  "exp": 1789000000,
+  "sid": "session_01xyz...",
+  "accounts": [
+    {
+      "userId": "user_01abc...",
+      "email": "alice@example.com",
+      "realm": "consumer",
+      "orgId": null,
+      "sid": "session_01xyz..."
+    }
+  ]
+}
+```
+
+Key fields:
+
+- `userId` — platform user ID (never the WorkOS ID)
+- `realm` — `"consumer"` or `"enterprise"` (see [Identity Model](/docs/getting-started/identity))
+- `orgId` — set when `realm === "enterprise"`
+- `sid` — the active session ID, matching a row in the `sessions` table
+- `accounts` — all signed-in accounts on this device (multi-account feature)
+- `exp` — Unix timestamp when the cookie expires (400 days)
+
+### How the cookie is signed
+
+`seal_session()` in `core/session.py` builds the JSON payload and appends an HMAC-SHA256 hex digest computed with `SESSION_COOKIE_SECRET`. The final cookie value is:
+
+```
+base64url( JSON_payload + "." + hex_hmac )
+```
+
+Next.js apps decode the cookie using `unsealSession876()` in each app's `lib/auth/session-cookie.ts`. That function skips signature verification intentionally (edge runtime compatibility) and only reads the payload for routing decisions. The Python API verifies the HMAC when the cookie arrives at a protected endpoint.
+
+### `SESSION_COOKIE_SECRET`
+
+This shared symmetric key must be identical in the Python API and all Next.js apps (`process.env.SESSION_COOKIE_SECRET`). A mismatch breaks every existing session.
+
+---
+
+## Who sets and reads the cookie
+
+| Where                           | What                                                                                                |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `@876/api` (`session_state.py`) | Sets the cookie on every successful auth response                                                   |
+| `@876/app` `proxy.ts`           | Reads it to check whether the user is signed in before routing                                      |
+| `@876/app` `proxy.ts`           | Reads `realm` to route enterprise vs consumer users                                                 |
+| `@876/enterprise` `proxy.ts`    | Same as above                                                                                       |
+| `@876/console` `proxy.ts`       | Checks a session exists; permission checks happen in RSC layouts                                    |
+| `@876/app` `oauth/_identity.ts` | Unseals it to extract `userId` and `orgId`, forwarded as `X-User-Id` / `X-Org-Id` on OAuth requests |
+
+---
+
+## Multi-account sessions
+
+A single cookie can hold multiple signed-in accounts — for example, a personal account and a work account. The `accounts` array tracks them, with each entry containing a `sid` that identifies its DB session row.
+
+When a user signs into a second account, `merge_accounts()` in `core/session.py` deduplicates by `userId` and appends the new entry. The top-level cookie fields always reflect the **active** account.
+
+Switching the active account is a server-side operation: the app calls `POST /auth/session/switch`, the API verifies the target `sid` belongs to the cookie's own `accounts` list, then re-seals the cookie with the new account at the top level.
+
+---
+
+## The DB Session row
+
+Every auth-completing event creates a row in the `sessions` table:
+
+```python
+Session(
+    id=session_id,    # matches cookie "sid"
+    user_id=...,
+    app_id=None,      # None for first-party sessions; set for OIDC sessions
+    token_hash=...,   # SHA-256 of the raw session token
+    expires_at=...,
+)
+```
+
+This is the source of truth. If this row is deleted (via logout, admin revocation, or the OIDC `end_session_endpoint`), the session is dead even if the cookie still exists. Protected endpoints check the DB row.
+
+### OIDC sessions vs first-party sessions
+
+When a user completes the OIDC authorization-code flow via `POST /oauth/token`, a separate Session row is created with `app_id` set to the requesting app. The access token hash is stored in `token_hash`. The `GET /oauth/userinfo` and `POST /oauth/introspect` endpoints look up this row.
+
+First-party sessions (direct login via `@876/app`) have `app_id = None`.
+
+## Related
+
+- [Identity Model](/docs/getting-started/identity) — users, orgs, memberships, realm
+- [Auth Flows](/docs/getting-started/auth-flows) — the full sign-in sequences including PKCE
+- [`POST /auth/login`](/docs/auth/post-auth-login) — endpoint that creates the session
+- [`POST /auth/session/switch`](/docs/auth/post-auth-sessions-switch) — multi-account switching

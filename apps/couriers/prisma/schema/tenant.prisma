@@ -1,0 +1,31 @@
+model Tenant {
+  id            String       @id @default(cuid())
+  orgId         String       @unique @map("org_id")
+  slug          String       @unique
+  name          String
+  mailboxPrefix String?      @map("mailbox_prefix")
+  status        TenantStatus @default(ACTIVE)
+  createdAt     Int          @map("created_at")
+  updatedAt     Int          @map("updated_at")
+
+  domains           Domain[]
+  customers         CourierCustomerProfile[]
+  packages          Package[]
+  warehouses        Warehouse[]
+  branches          Branch[]
+  staffPositions    StaffPosition[]
+  staffMembers      StaffMember[]
+  packageCategories PackageCategory[]
+  manifests         Manifest[]
+  cashSessions      CashSession[]
+  customerIdTypes   CustomerIdType[]
+  customerDocuments CustomerDocument[]
+
+  @@map("tenants")
+}
+
+enum TenantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}

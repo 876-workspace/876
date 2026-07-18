@@ -1,0 +1,87 @@
+---
+title: 876 Internal Documentation
+description: Internal architecture, API route internals, and client usage for the 876 platform.
+---
+
+This docs site is the engineering map for the current 876 backend and client
+boundary. It is intentionally internal-first: the FastAPI backend owns database
+access, provider calls, OAuth provider logic, sessions, API-key validation, and
+business rules. The Next.js applications call that backend through typed client
+packages instead of direct backend fetches.
+
+## Architecture
+
+<Cards>
+  <Card
+    title="Identity Model"
+    href="/docs/getting-started/identity"
+    description="Users, organizations, memberships, and the realm security context (consumer vs enterprise)."
+  />
+  <Card
+    title="Auth Flows"
+    href="/docs/getting-started/auth-flows"
+    description="Step-by-step diagrams for every sign-in path: direct, social, PKCE, client-credentials, and logout."
+  />
+  <Card
+    title="Sessions"
+    href="/docs/getting-started/sessions"
+    description="Session cookie structure, signing, multi-account support, and the DB Session row."
+  />
+  <Card
+    title="Account Types"
+    href="/docs/getting-started/account-types"
+    description="How consumer and enterprise surfaces differ and what each app checks before granting access."
+  />
+</Cards>
+
+## API boundary
+
+<Cards>
+  <Card
+    title="Auth"
+    href="/docs/auth"
+    description="First-party auth routes, SDK methods, execution flow, schemas, and app call sites."
+  />
+  <Card
+    title="Users"
+    href="/docs/users"
+    description="User administration routes with admin-client mappings and backend source excerpts."
+  />
+  <Card
+    title="Packages"
+    href="/docs/packages"
+    description="Internal workspace packages including API clients, UI components, database adapter, and analytics."
+  />
+  <Card
+    title="Observability"
+    href="/docs/reference/observability"
+    description="Structured logging, request-id correlation, Sentry, and PostHog analytics conventions."
+  />
+</Cards>
+
+## Access model
+
+- Public routes are limited to health and OAuth/OIDC provider endpoints that
+  must be reachable by browsers or relying-party servers.
+- Protected app routes require a valid `876_app_secret_*` API key through the
+  top-level FastAPI dependency.
+- Admin operations additionally require `x-internal-key`, and the internal key
+  is only used server-side by first-party applications.
+- Auth/session state is created and validated by the API; the SDK packages are
+  request transports and do not own session storage.
+- Browser, Next.js server, package-client, and FastAPI logs are correlated with
+  `x-request-id`; see [Observability](/docs/reference/observability).
+
+## Documentation source of truth
+
+The route pages in each API domain are generated from
+the Python routers, route signatures, Pydantic model references, implemented
+`AppHTTPException` calls, OAuth error helpers, SDK/admin client paths, and
+first-party app call sites. Regenerate them after backend or client changes:
+
+```bash
+pnpm --filter @876/docs generate:api-internals
+```
+
+The HTTP contract blocks are rendered from `apps/docs/openapi.json`, which is
+synced separately from the live FastAPI OpenAPI document.

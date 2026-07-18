@@ -1,0 +1,21 @@
+/// Classification categories for packages — used for filtering, reporting, and display.
+/// System categories have tenantId = null and are available to all tenants.
+/// Tenant-custom categories are scoped to their tenantId and override or extend the system list.
+/// Examples: Electronics, Apparel, Supplements, Food Items, Mail, Fitness, Footwear.
+model PackageCategory {
+  id        String  @id @default(cuid())
+  tenantId  String? @map("tenant_id")
+  name      String
+  slug      String
+  /// Optional icon identifier (e.g. icon name from the icon registry).
+  icon      String?
+  isActive  Boolean @default(true) @map("is_active")
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant   Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  packages Package[]
+
+  @@unique([tenantId, slug], name: "package_categories_tenant_id_slug_key")
+  @@map("package_categories")
+}

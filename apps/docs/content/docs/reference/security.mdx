@@ -1,0 +1,157 @@
+---
+title: Security Model
+description: Auth tiers, the session cookie, OAuth token handling, the role/permission model, and the platform trust boundary.
+---
+
+This page is the canonical reference for how 876 authenticates callers, authorizes
+operations, and protects identity data. It reflects the platform-wide security
+review of 2026-06-11.
+
+## Trust boundary at a glance
+
+876 is one identity behind many product apps. The FastAPI core (`@876/api`) owns
+every database and provider call; Next.js apps never touch the database directly.
+Three caller tiers reach the API, in increasing privilege:
+
+| Tier           | Credential                            | Dependency        | Reaches                                                    |
+| -------------- | ------------------------------------- | ----------------- | ---------------------------------------------------------- |
+| App API key    | `876_app_secret_*` (`X-876-API-Key`)  | `require_api_key` | The protected router; self-scoped resources.               |
+| User session   | OAuth **access** token (`Bearer`)     | `SessionDep`      | `/users/me/*` and other self-scoped, user-owned endpoints. |
+| Internal/admin | `API_INTERNAL_KEY` (`x-internal-key`) | `AdminDep`        | All admin CRUD: users, orgs, memberships, roles, features. |
+
+**`AdminDep` (the internal key) is the real authorization authority.** The
+fine-grained `console:*` permission checks live in the Console
+Next.js route handlers (`requireConsolePermission`), which authorize the operator's
+session before calling the admin client. Any holder of `API_INTERNAL_KEY` is
+trusted fully by the API regardless of platform role, so the internal key must
+never reach a browser bundle and admin routes must never be exposed on a
+browser-reachable surface.
+
+## API key tier
+
+App API keys are stored only as SHA-256 hashes (`api_keys.key_hash`); the
+plaintext `876_app_secret_*` value is shown exactly once at creation and never
+again. `require_api_key` validates the prefix, looks the key up by hash, and
+rejects revoked or expired keys. Internal-key comparison uses
+`hmac.compare_digest` (constant time).
+
+## Session cookie
+
+Auth-completing responses set a session cookie sealed by `apps/api/core/session.py`:
+`base64url(JSON payload + "." + hex(HMAC-SHA256(payload, secret)))`.
+
+- The cookie is **signed, not encrypted.** It carries identity fields, the active
+  `sid`, and the upstream access token. It is `HttpOnly`, `SameSite=Lax`, and
+  `Secure` in production. Because it is not encrypted, do not add secrets to the
+  payload beyond what the apps require for routing.
+- Next.js apps verify the HMAC with `verifySession876` in
+  `@876/core/auth/session-cookie` (Web Crypto, works on Node and Edge). This is
+  the **only** reader that may back an authorization decision —
+  `decodeSession876Insecure` exists for display fallbacks and must never
+  authorize anything.
+- The verifier **fails closed**: in production, when no secret is configured it
+  returns `null` and every cookie is treated as invalid rather than trusted.
+- The signing secret resolves identically on both sides:
+  `SESSION_COOKIE_SECRET`, then `WORKOS_COOKIE_PASSWORD`, then a dev-only
+  constant outside production. Keep the API (`resolved_session_cookie_secret`)
+  and `@876/core` (`resolveSessionCookieSecret`) in lockstep — a divergence
+  silently breaks every session.
+
+`proxy.ts` runs on the Edge with only the sealed cookie snapshot and performs
+coarse routing only. Fine-grained permission and feature checks belong in RSC
+layouts and route handlers, which fetch authoritative user state from the API.
+
+## OAuth and bearer tokens
+
+The OAuth provider (`apps/api/domains/oauth`) issues RS256 JWTs signed with the
+provider key:
+
+- **PKCE is effectively required.** An authorization code stores its
+  `code_challenge`; token exchange recomputes `sha256_base64url(code_verifier)`
+  and rejects a mismatch, so a flow with no challenge cannot complete. Only
+  `S256` is implemented.
+- `redirect_uri` is matched **exactly** against the app's registered list and
+  re-validated for safety; there is no prefix or substring matching.
+- Client secrets are compared with `hmac.compare_digest` against a stored hash.
+- Refresh tokens are opaque, stored hashed, single-use, and rotated; presenting
+  a rotated token revokes the whole token family (reuse detection).
+- The provider signing key **must** be configured in production
+  (`OAUTH_PRIVATE_KEY`). The in-process fallback key is dev-only — the API
+  refuses to sign with it when `IS_PRODUCTION` is set, because a per-instance
+  ephemeral key produces tokens other instances cannot verify.
+
+Every issued token carries a `token_use` claim (`access`, `id`, or `service`).
+`resolve_principal` accepts a bearer token as a user session **only** when
+`token_use == "access"`. id tokens and client-credentials (`service`) tokens are
+rejected for session authorization, so a client cannot present any token it holds
+as the user's first-party session.
+
+> Note: bearer access tokens currently authorize self-scoped `/users/me/*`
+> endpoints without per-endpoint OAuth **scope** enforcement. Treat granular
+> scope enforcement on resource endpoints as the next hardening step; until then
+> the consented scope is not a boundary on the `/users/me` surface.
+
+## Role and permission model
+
+There are two **independent** role systems. Do not conflate them.
+
+### Platform roles
+
+`users.role` is one of four system roles, derived to a permission list by
+`apps/api/core/permissions.py`. The roles table seeds these and supports custom
+DB-backed roles.
+
+| Role          | Console access     | Notable grants                              |
+| ------------- | ------------------ | ------------------------------------------- |
+| `user`        | none               | —                                           |
+| `staff`       | read-only          | `console:access`                            |
+| `admin`       | full management    | all `console:*` except `danger_zone`        |
+| `super_admin` | full + danger zone | everything, including `console:danger_zone` |
+
+Enforcement notes:
+
+- The platform's effective authorization granularity is the `console:*`
+  scopes, checked in Console route handlers. The fine-grained
+  `users:*` / `organizations:*` / `memberships:*` / `apps:*` resource
+  permissions exist in role definitions but are not individually enforced at
+  call sites today.
+- **`console:danger_zone` gates irreversible deletes.** User deletion and
+  organization deletion require `danger_zone` (super_admin only), not the broader
+  resource write scope. This is the intended super-admin fence around destructive
+  operations.
+- **All role changes flow through one guard.** `assertRoleChangeAllowed`
+  (`apps/console/src/lib/auth/role-change.ts`) is the single source of
+  truth: only a super_admin may grant `super_admin` or alter an existing
+  super_admin. Both the dedicated `/role` route and the generic user-update route
+  call it, so no update path can set `users.role` unchecked. The API additionally
+  rejects assigning a role that does not exist.
+- The permission picker in the role editors renders from one canonical catalog
+  (`apps/console/src/lib/console/permissions.ts`), so every
+  enforced permission is grantable and the editors cannot drift.
+
+### Organization roles
+
+`memberships.role` and `invite_tokens.role` are `owner`, `admin`, or `member`,
+validated server-side on input (responses stay permissive for legacy rows) and
+kept in sync with `membershipRoleSchema` in `@876/core`. Org roles are scoped to
+a single organization and are separate from platform roles; base org-workspace
+affordances on the org membership role, not on the platform role.
+
+## Transport security
+
+All four Next.js apps send a baseline set of response headers:
+`Content-Security-Policy: frame-ancestors 'none'`, `X-Frame-Options: DENY`,
+`X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+`Strict-Transport-Security`, and a restrictive `Permissions-Policy`. CORS on the
+API uses an explicit origin allowlist with explicit method and header allowlists.
+
+## Deployment checklist
+
+Set these before going to production; several controls fail closed without them:
+
+- `IS_PRODUCTION=true` — enables the `Secure` cookie flag and the OAuth key guard.
+- `SESSION_COOKIE_SECRET` — a strong random secret, identical for the API and all apps.
+- `OAUTH_PRIVATE_KEY` (and `OAUTH_KEY_ID`) — a stable RSA key; never rely on the fallback.
+- `OAUTH_ISSUER` — pin the issuer instead of falling back to the request `Host` header.
+- `API_INTERNAL_KEY` — set and held only by server-side admin/internal callers.
+- Never commit real secrets; only local, non-sensitive `.env.development` values are tracked.

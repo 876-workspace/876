@@ -1,0 +1,20 @@
+/// A person authorized to collect packages on behalf of a customer.
+/// Either linked to an existing 876 account (userId set) or identified by
+/// name + phone only. Staff verify identity at pickup against this record.
+model Contact {
+  id         String  @id @default(cuid())
+  customerId String  @map("customer_id")
+  name       String
+  phone      String?
+  /// Opaque 876 user ID — set when the contact has a 876 account; null otherwise.
+  userId     String? @map("user_id")
+  isActive   Boolean @default(true) @map("is_active")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  customer          CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  collectedPackages Package[]              @relation("PackageCollectedBy")
+
+  @@index([customerId], name: "contacts_customer_id_idx")
+  @@map("contacts")
+}

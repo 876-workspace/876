@@ -1,1 +1,0 @@
-"""Jamaica directory domain package."""

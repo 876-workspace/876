@@ -1,0 +1,43 @@
+/// A courier-context customer: a 876 consumer user enrolled in a tenant.
+/// userId references a core 876 user — opaque ID, no cross-DB FK.
+/// branchId is the customer's assigned home branch — set at enrollment and used as the
+/// default routing destination for all incoming packages.
+/// trn is the Jamaica Taxpayer Registration Number — required by JCA for commercial
+/// customs clearance on high-value imports. Stored here as courier-operational data,
+/// not in the 876 identity API.
+model CourierCustomerProfile {
+  id                String         @id @default(cuid())
+  tenantId          String         @map("tenant_id")
+  userId            String         @map("user_id")
+  /// Opaque reference to the shared customer in the organization's Billing workspace.
+  billingCustomerId String         @map("billing_customer_id")
+  /// Home branch assigned at enrollment. Packages route here by default.
+  branchId          String?        @map("branch_id")
+  status            CustomerStatus @default(ACTIVE)
+  /// Jamaica Taxpayer Registration Number — required for customs clearance of commercial/high-value imports.
+  trn               String?        @map("trn")
+  /// Whether this is a commercial/business account. Commercial accounts may receive different duty treatment.
+  isCommercial      Boolean        @default(false) @map("is_commercial")
+  firstSeenAt       Int            @map("first_seen_at")
+  createdAt         Int            @map("created_at")
+  updatedAt         Int            @map("updated_at")
+
+  tenant    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch    Branch?            @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  mailboxes Mailbox[]
+  packages  Package[]
+  addresses CustomerAddress[]
+  contacts  Contact[]
+  documents CustomerDocument[]
+
+  @@unique([tenantId, userId], name: "courier_customer_profiles_tenant_user_key", map: "courier_customer_profiles_tenant_user_key")
+  @@unique([tenantId, billingCustomerId], name: "courier_customer_profiles_tenant_billing_customer_key", map: "courier_customer_profiles_tenant_billing_customer_key")
+  @@index([userId], name: "courier_customer_profiles_user_id_idx")
+  @@index([branchId], name: "courier_customer_profiles_branch_id_idx")
+  @@map("courier_customer_profiles")
+}
+
+enum CustomerStatus {
+  ACTIVE
+  SUSPENDED
+}

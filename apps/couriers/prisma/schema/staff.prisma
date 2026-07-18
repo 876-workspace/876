@@ -1,0 +1,42 @@
+/// A staff position title within a tenant (e.g. "Branch Manager", "Delivery Driver", "Customer Service").
+/// Positions are tenant-scoped — each organization defines their own operational hierarchy.
+/// These are courier-app roles, distinct from 876 platform org roles (which govern platform access).
+model StaffPosition {
+  id        String  @id @default(cuid())
+  tenantId  String  @map("tenant_id")
+  name      String
+  isActive  Boolean @default(true) @map("is_active")
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members StaffMember[]
+
+  @@unique([tenantId, name], name: "staff_positions_tenant_id_name_key")
+  @@index([tenantId], name: "staff_positions_tenant_id_idx")
+  @@map("staff_positions")
+}
+
+/// A staff member employed by a tenant, optionally assigned to a branch and position.
+/// userId is an opaque 876 user ID — identity details (name, email) resolved through $876 at read time.
+/// A staff member may be unassigned to a branch (e.g. a head-office employee).
+model StaffMember {
+  id         String  @id @default(cuid())
+  tenantId   String  @map("tenant_id")
+  userId     String  @map("user_id")
+  branchId   String? @map("branch_id")
+  positionId String? @map("position_id")
+  isActive   Boolean @default(true) @map("is_active")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch       Branch?        @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  position     StaffPosition? @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  cashSessions CashSession[]
+
+  @@unique([tenantId, userId], name: "staff_members_tenant_id_user_id_key")
+  @@index([tenantId], name: "staff_members_tenant_id_idx")
+  @@index([userId], name: "staff_members_user_id_idx")
+  @@map("staff_members")
+}

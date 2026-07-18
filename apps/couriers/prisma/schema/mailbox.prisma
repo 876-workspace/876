@@ -1,0 +1,19 @@
+/// A mailbox number assigned to a customer within a tenant.
+/// Most organizations assign one per customer; the isPrimary flag marks the default.
+/// number is alphanumeric and unique per tenant (used as address identifier at a Warehouse).
+model Mailbox {
+  id         String  @id @default(cuid())
+  customerId String  @map("customer_id")
+  tenantId   String  @map("tenant_id")
+  number     String
+  isPrimary  Boolean @default(false) @map("is_primary")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  packages Package[]
+
+  @@unique([tenantId, number], name: "mailboxes_tenant_id_number_key")
+  @@index([customerId], name: "mailboxes_customer_id_idx")
+  @@map("mailboxes")
+}

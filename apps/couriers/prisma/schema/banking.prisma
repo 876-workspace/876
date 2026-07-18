@@ -1,0 +1,60 @@
+/// A staff member's shift-based cash collection session.
+/// This is a Couriers operational record. Deposit accounts, payments, balances,
+/// and ledger entries stay in the shared Billing finance workspace.
+///
+/// A staff member may only have one OPEN session at a time.
+/// Enforced at the application level — Prisma does not support partial unique indexes.
+model CashSession {
+  id                      String            @id @default(cuid())
+  tenantId                String            @map("tenant_id")
+  staffMemberId           String            @map("staff_member_id")
+  /// Opaque Billing bank-account ID used to settle this drawer.
+  billingDepositAccountId String            @map("billing_deposit_account_id")
+  /// ISO 4217 snapshot for the drawer amounts in this session.
+  currencyCode            String            @map("currency_code")
+  status                  CashSessionStatus @default(OPEN)
+  /// Starting float (cash in drawer at session open), in smallest currency unit.
+  openingBalance          Int               @map("opening_balance")
+  /// Computed at close: openingBalance + sum of cash payments in this session.
+  expectedClosingBalance  Int?              @map("expected_closing_balance")
+  /// Physically counted cash at session close, in smallest currency unit.
+  actualClosingBalance    Int?              @map("actual_closing_balance")
+  /// Difference between actual and expected closing balance (positive = over, negative = short).
+  variance                Int?
+  openedAt                Int               @map("opened_at")
+  closedAt                Int?              @map("closed_at")
+  reconciledAt            Int?              @map("reconciled_at")
+  notes                   String?
+  createdAt               Int               @map("created_at")
+  updatedAt               Int               @map("updated_at")
+
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  staffMember StaffMember          @relation(fields: [staffMemberId], references: [id], onDelete: Restrict)
+  payments    CashSessionPayment[]
+
+  @@index([tenantId], name: "cash_sessions_tenant_id_idx")
+  @@index([staffMemberId], name: "cash_sessions_staff_member_id_idx")
+  @@index([billingDepositAccountId], name: "cash_sessions_billing_deposit_account_id_idx")
+  @@map("cash_sessions")
+}
+
+/// Operational association between a cash shift and its shared Billing payment.
+/// No amount, status, payment method, or ledger data is duplicated here.
+model CashSessionPayment {
+  id               String @id @default(cuid())
+  cashSessionId    String @map("cash_session_id")
+  billingPaymentId String @unique @map("billing_payment_id")
+  createdAt        Int    @map("created_at")
+  updatedAt        Int    @map("updated_at")
+
+  cashSession CashSession @relation(fields: [cashSessionId], references: [id], onDelete: Cascade)
+
+  @@index([cashSessionId], name: "cash_session_payments_cash_session_id_idx")
+  @@map("cash_session_payments")
+}
+
+enum CashSessionStatus {
+  OPEN
+  CLOSED
+  RECONCILED
+}

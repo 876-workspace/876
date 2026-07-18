@@ -1,0 +1,25 @@
+{
+  "title": "Auth",
+  "pages": [
+    "index",
+    "post-auth-callback",
+    "post-auth-login",
+    "post-auth-logout",
+    "post-auth-magic-otp-send",
+    "post-auth-magic-otp-verify",
+    "post-auth-oauth-session",
+    "get-auth-providers",
+    "post-auth-recover",
+    "post-auth-refresh",
+    "post-auth-register",
+    "post-auth-register-business",
+    "post-auth-reset-password",
+    "post-auth-resolve",
+    "get-auth-routing-memberships",
+    "get-auth-session",
+    "post-auth-sessions-by-sid-signout",
+    "post-auth-sessions-switch",
+    "post-auth-social-login",
+    "post-auth-verify-email"
+  ]
+}

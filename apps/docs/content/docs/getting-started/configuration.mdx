@@ -1,0 +1,127 @@
+---
+title: Configuration
+description: Create a 876 client, resolve the API base URL, and choose a credentials mode.
+---
+
+The `@876/sdk` package exposes a single factory, `create876Client()`, that
+returns a namespaced, request-only client. The factory is synchronous, takes an
+optional `ClientOptions` object, and never stores session state — your app owns
+cookies and navigation.
+
+```ts
+import { create876Client } from '@876/sdk'
+
+const $876 = create876Client()
+
+const result = await $876.auth.login({
+  identifier: 'alejandra@example.com',
+  password: 'my-secure-password',
+})
+```
+
+The returned client has an implemented `auth` namespace (`$876.auth.*`). The
+`users` and `orgs` namespaces are reserved for future SDK resources.
+
+## Options
+
+All options are optional. Calling `create876Client()` with no arguments resolves
+the base URL from the environment and defaults `credentials` to `'include'`.
+
+<TypeTable
+  type={{
+    baseUrl: {
+      type: 'string',
+      description:
+        'Optional 876 API URL override. When omitted, the SDK resolves env, Codespaces browser dev, local dev, or the deployed API fallback.',
+    },
+    apiKey: {
+      type: 'string',
+      description:
+        "Server-side app API key. Must start with '876_app_secret_'. Empty strings are treated as unset. Never expose this in the browser.",
+    },
+    credentials: {
+      type: "'include' | 'omit' | 'same-origin'",
+      description:
+        'The fetch credentials policy. Defaults to "include" so the HttpOnly session cookie is stored and sent.',
+    },
+    fetch: {
+      type: 'typeof fetch',
+      description:
+        'A custom fetch implementation. Defaults to globalThis.fetch. Useful for tests or non-standard runtimes.',
+    },
+  }}
+/>
+
+<Callout type="info">
+  Options are validated with Zod when the client is created. An invalid `apiKey`
+  prefix or an unexpected option key will throw at `create876Client()` time, not
+  on the first request.
+</Callout>
+
+## Resolving the base URL
+
+You do not have to pass `baseUrl` explicitly. The SDK resolves it in this order:
+
+1. The explicit `baseUrl` option, if provided.
+2. `NEXT_PUBLIC_876_API_URL`, then `NEXT_PUBLIC_API_URL`, read from the
+   environment.
+3. In browser-side GitHub Codespaces development, the matching forwarded port
+   `4000` URL (for example `https://<codespace>-4000.app.github.dev`).
+4. `http://localhost:4000` when `NODE_ENV` is not `production`.
+5. The deployed 876 API in production.
+
+The `auth/client-not-configured` code is still reserved for runtimes that
+explicitly disable URL resolution or future client variants that require extra
+configuration; normal SDK/API URL resolution no longer requires apps to provide
+an endpoint manually.
+
+```ts
+// Resolves baseUrl automatically for production, local dev, and Codespaces.
+const $876 = create876Client()
+```
+
+## Credentials mode
+
+The 876 API authenticates browser sessions with an `HttpOnly` cookie. Because
+the SDK never reads or writes that cookie, the browser must be told to store and
+send it via the fetch `credentials` policy.
+
+- **`include`** (default) — send and store cookies, including cross-origin. Use
+  this for browser apps that call the API on a different origin.
+- **`same-origin`** — send cookies only when the API shares the app's origin.
+- **`omit`** — never send cookies. Use this for stateless server-to-server
+  calls that authenticate with an `apiKey`.
+
+<Callout type="warn">
+  The SDK is request-only and holds no session state. In the browser you
+  **must** use a credentials mode that sends cookies (`include` or
+  `same-origin`) so the session cookie set by the API persists across requests.
+</Callout>
+
+## Server-side usage
+
+In a trusted server context (Node.js, a Next.js Server Action, a route handler)
+you can authenticate as your registered app with an `apiKey` instead of a user
+session cookie. Set `credentials: 'omit'` for these stateless calls and keep the
+key in an environment variable.
+
+```ts
+import { create876Client } from '@876/sdk'
+
+const $876 = create876Client({
+  apiKey: process.env.API_876_SECRET_KEY, // starts with "876_app_secret_"
+  credentials: 'omit',
+})
+```
+
+<Callout type="error">
+  **Never** ship your `apiKey` to the browser or inline it into a client bundle.
+  Keep it in a server-only environment variable. Keys are validated to start
+  with `876_app_secret_`.
+</Callout>
+
+## Related
+
+- [`login()`](/docs/auth/login) — authenticate a user once the client is configured
+- [Result pattern](/docs/reference/result-pattern) — how every method reports success and failure
+- [Type reference](/docs/reference/types) — `ClientOptions`, `AuthError`, and shared SDK types

@@ -1,0 +1,129 @@
+---
+title: Result Envelope
+description: How the discriminated { data, error } envelope works across every 876 SDK method.
+---
+
+Every method in the 876 SDK returns a **result envelope** — a discriminated
+union of exactly two shapes: a success branch carrying `data`, or a failure
+branch carrying `error`. There are no thrown exceptions for expected outcomes,
+and the two branches are mutually exclusive: when `data` is present `error` is
+`null`, and vice versa. This is the same pattern used by the Stripe SDKs and
+keeps error handling explicit and type-safe.
+
+## The three envelope types
+
+The SDK exposes one envelope type per namespace. They are structurally
+identical — `{ data, error }` — and differ only in the error type they carry.
+
+<TypeTable
+  type={{
+    'Result<T>': {
+      type: '{ data: T, error: null } | { data: null, error: AuthError }',
+      description:
+        'Returned by every $876.auth method (login, register, getSession, getProviders, …).',
+    },
+    'OAuthResult<T>': {
+      type: '{ data: T, error: null } | { data: null, error: OAuthError }',
+      description:
+        'Returned by Sign in with 876 OAuth methods (token, userInfo, revoke, discover).',
+    },
+  }}
+/>
+
+```ts
+// Both resolve to the same shape, parameterized by the success payload T.
+type Result<T> = { data: T; error: null } | { data: null; error: AuthError }
+
+type OAuthResult<T> =
+  | { data: T; error: null }
+  | { data: null; error: OAuthError }
+```
+
+Method-specific aliases such as `LoginResult` or `GetSessionResult` are just
+`Result<T>` instantiated with the relevant success payload — for example
+`LoginResult` is `Result<Session | AuthEvent>`.
+
+## Check the error first
+
+The envelope is a discriminated union keyed on which field is `null`. Narrow it
+by checking `error` first: inside the `if (result.error)` block TypeScript knows
+`data` is `null`, and after the guard it knows `data` is the success payload.
+
+```ts
+import { create876Client } from '@876/sdk'
+
+const $876 = create876Client()
+
+const result = await $876.auth.login({
+  identifier: 'alejandra@example.com',
+  password: 'my-secure-password',
+})
+
+if (result.error) {
+  // result.data is null here.
+  console.error(result.error.code, result.error.message)
+  return
+}
+
+// result.data is the success payload here — fully typed, non-null.
+console.log(result.data.object)
+```
+
+<Callout type="info">
+  Always branch on `result.error` (or `if (result.data === null)`) before
+  touching `result.data`. The union is not collapsed for you — reading `data`
+  without narrowing first will surface its `null` side in the types.
+</Callout>
+
+## The error shapes
+
+Each envelope carries a different error type. All are plain, client-safe objects
+with no HTTP status field.
+
+<TypeTable
+  type={{
+    AuthError: {
+      type: '{ code: AuthErrorCode, message: string, description?: string, param?: string }',
+      description:
+        'Carried by Result<T>. code is a machine-readable auth/* value; param names the offending field when applicable.',
+    },
+    OAuthError: {
+      type: '{ code: OAuthErrorCode, message: string }',
+      description: 'Carried by OAuthResult<T>. code is an oauth/* value.',
+    },
+  }}
+/>
+
+`code` is the field to branch on programmatically; `message` is human-readable
+and not stable enough to match against. See the
+[error code catalog](/docs/reference/error-codes) for SDK-local auth errors,
+API pass-through behavior, and OAuth error values.
+
+```ts
+if (result.error) {
+  switch (result.error.code) {
+    case 'auth/invalid-credentials':
+      // Show a "wrong email or password" message.
+      break
+    case 'auth/too-many-requests':
+      // Back off and retry later.
+      break
+    default:
+      // Fall back to result.error.message.
+      break
+  }
+}
+```
+
+## Network failures are envelopes too
+
+The SDK does not throw on connection errors. A failed request resolves to the
+error branch with a network code — `auth/network-error` for `Result`,
+`oauth/network-error` for `OAuthResult` — so a single `if (result.error)` check
+covers both validation failures and transport failures.
+
+## Related
+
+- [Error codes](/docs/reference/error-codes) — the full `auth/*` and `oauth/*` catalog
+- [Types](/docs/reference/types) — `Session`, `AuthEvent`, `User`, and other payloads
+- [`login()`](/docs/auth/login) — a method that returns `Result<Session | AuthEvent>`

@@ -1,0 +1,85 @@
+---
+title: Inter-application integrations
+description: The standard contract for communication between 876 bounded contexts and external applications.
+---
+
+876 applications never connect to another application's database. Each bounded
+context owns its schema, business rules, migrations, and provider calls. A
+consumer combines resources by opaque IDs through the owning service's typed,
+versioned client.
+
+## Standard interface
+
+Every product integration follows the same layers:
+
+1. A versioned resource API under `/api/v1` owned by the product service.
+2. A typed package subpath such as `@876/billing/integration`.
+3. A server-only singleton in the consuming app, for example
+   `$billingIntegration` in Console.
+4. Thin consuming-app route handlers for browser mutations. These authorize
+   locally, call the typed integration client, and contain no product logic.
+5. Correlated `x-request-id` propagation across the complete request chain.
+
+Reads and writes are resource-oriented (`organizations.retrieve`,
+`customers.list/create/retrieve/update/delete`). Responses use `{ data, error }`,
+Stripe-style `object` discriminators, Unix-second timestamps, integer minor-unit
+money, and cursor pagination once a collection can exceed one page.
+
+## Authentication tiers
+
+| Caller                                 | Credential                          | Authorization                                                                   |
+| -------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------- |
+| Console or another trusted 876 service | Product-specific server service key | Secret remains server-side; the caller also enforces its local staff permission |
+| Customer-installed or third-party app  | Short-lived 876 OAuth access token  | Explicit product scopes plus active membership in the target organization       |
+| Browser UI                             | Same-origin session to its own app  | A thin server route exchanges local authorization for the product client call   |
+
+Billing currently defines `billing.organizations.read`,
+`billing.customers.read`, and `billing.customers.write`. Third-party apps use
+authorization code with PKCE and request only the scopes they need. Service
+keys are never exposed to a browser or distributed to customer applications.
+Billing publishes RFC 9728 protected-resource metadata at
+`/.well-known/oauth-protected-resource`, allowing integration clients to
+discover the identity authorization server and supported Billing scopes.
+
+This follows the OAuth Security Best Current Practice requirements for least
+privilege, exact redirect matching, and authorization code + PKCE. As the token
+service evolves, access tokens should also become audience-restricted to the
+specific product resource server and sender-constrained where practical.
+
+## Billing reference implementation
+
+```ts
+import 'server-only'
+import { create876BillingIntegrationClient } from '@876/billing/integration'
+
+const $billingIntegration = create876BillingIntegrationClient({
+  baseUrl: process.env.BILLING_URL,
+  serviceKey: process.env.BILLING_INTERNAL_KEY,
+})
+
+const [organization, customers] = await Promise.all([
+  $billingIntegration.organizations.retrieve('org_...'),
+  $billingIntegration.customers.list('org_...'),
+])
+```
+
+The Billing service resolves the opaque core organization ID to its own tenant
+internally. Customer responses never expose Billing's internal `tenantId`.
+Console composes these Billing-owned resources with identity data from `$876`;
+it does not join databases or import Billing services.
+
+## Asynchronous communication
+
+Synchronous APIs remain the source for queries and commands. When cross-service
+events are introduced, publish a CloudEvents-compatible envelope with a stable
+event type, source, subject ID, timestamp, schema version, and idempotency ID.
+Delivery is at-least-once, so consumers must deduplicate and reconcile from the
+owning API. Webhooks must be signed, timestamped, retryable, and observable.
+
+Primary standards:
+
+- [OAuth 2.0 Security Best Current Practice (RFC 9700)](https://www.rfc-editor.org/rfc/rfc9700)
+- [OAuth 2.0 Resource Indicators (RFC 8707)](https://www.rfc-editor.org/rfc/rfc8707)
+- [OAuth 2.0 Protected Resource Metadata (RFC 9728)](https://www.rfc-editor.org/rfc/rfc9728)
+- [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html)
+- [CloudEvents 1.0.2](https://github.com/cloudevents/spec/tree/v1.0.2)

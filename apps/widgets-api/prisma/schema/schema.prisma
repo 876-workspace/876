@@ -1,0 +1,11 @@
+// Widgets bounded-context database (Prisma 7).
+// Only apps/widgets-api may connect. Hosts never receive this URL.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/lib/db/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

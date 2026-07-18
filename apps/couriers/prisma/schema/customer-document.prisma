@@ -1,0 +1,59 @@
+/// Reference table for identity document types accepted by tenants.
+/// System types (tenantId = null) are seeded globally: TRN, Passport, Driver's License, etc.
+/// Tenants can add custom types (e.g. "Work Permit", "Nexus Card") by setting tenantId.
+/// This data is courier-local — it serves customs clearance and package-collection KYC
+/// workflows, not platform-level authentication.
+model CustomerIdType {
+  id        String  @id @default(cuid())
+  /// Null for system-wide types; set for tenant-defined custom types.
+  tenantId  String? @map("tenant_id")
+  name      String
+  slug      String
+  /// Whether this type requires an expiry date (e.g. passport, driver's license — yes; TRN — no).
+  hasExpiry Boolean @default(false) @map("has_expiry")
+  isActive  Boolean @default(true) @map("is_active")
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant    Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  documents CustomerDocument[]
+
+  @@unique([tenantId, slug], name: "customer_id_types_tenant_id_slug_key")
+  @@index([tenantId], name: "customer_id_types_tenant_id_idx")
+  @@map("customer_id_types")
+}
+
+/// An identity document on file for a customer.
+/// Stores the document number, an optional file upload (scan/photo), and verification state.
+/// A customer can have multiple documents of different types (e.g. TRN + Passport).
+/// fileUrl is a storage-layer reference resolved to a signed URL at read time.
+/// verifiedById is an opaque 876 user ID — the staff member who verified the document.
+model CustomerDocument {
+  id           String  @id @default(cuid())
+  tenantId     String  @map("tenant_id")
+  customerId   String  @map("customer_id")
+  typeId       String  @map("type_id")
+  /// The document number (e.g. TRN "123-456-789", passport "A1234567").
+  number       String?
+  /// Expiry date as Unix seconds. Required for document types where hasExpiry = true.
+  expiresAt    Int?    @map("expires_at")
+  /// Storage-layer URL for a scanned copy or photo of the document.
+  fileUrl      String? @map("file_url")
+  /// Whether a staff member has manually verified the document is genuine.
+  isVerified   Boolean @default(false) @map("is_verified")
+  /// When the document was verified by staff.
+  verifiedAt   Int?    @map("verified_at")
+  /// Opaque 876 user ID of the staff member who verified this document.
+  verifiedById String? @map("verified_by_id")
+  notes        String?
+  createdAt    Int     @map("created_at")
+  updatedAt    Int     @map("updated_at")
+
+  tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type     CustomerIdType         @relation(fields: [typeId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId], name: "customer_documents_tenant_id_idx")
+  @@index([customerId], name: "customer_documents_customer_id_idx")
+  @@map("customer_documents")
+}

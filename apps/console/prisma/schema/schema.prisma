@@ -1,0 +1,27 @@
+// Console's own primary database (Prisma 7, multi-file schema).
+//
+// This is the FIRST proving instance of the platform-services pattern
+// (see `.agents/rules/platform-services.md`): an app/service owns its own
+// bounded-context datastore and references core 876 identity entities by
+// OPAQUE ID only — never by a cross-database foreign key. Identity details
+// (name, email, avatar, org slug) are resolved at read time through the
+// `$876` client surface, not joined here.
+//
+// What lives here: admin-console-internal state only (MC users/access grants,
+// MC roles, notes, settings). What does NOT: identity/platform data (the real
+// user/org records,
+// memberships, org-roles, features, audit_events, vendors/customers/locations)
+// — those stay in the 876 identity API and are reached through `$876`.
+//
+// Multi-file: this file holds the generator + datasource; each model lives in
+// its own sibling `*.prisma` file in this folder. The schema folder is wired in
+// `prisma.config.ts` (`schema: "prisma/schema"`).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../../src/lib/db/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

@@ -1,0 +1,17 @@
+{
+  "title": "OAuth Provider",
+  "pages": [
+    "index",
+    "get-oauth-well-known-jwks-json",
+    "get-oauth-well-known-openid-configuration",
+    "get-oauth-authorize",
+    "get-oauth-consent",
+    "post-oauth-consent-approve",
+    "post-oauth-consent-deny",
+    "get-oauth-end-session",
+    "post-oauth-introspect",
+    "post-oauth-revoke",
+    "post-oauth-token",
+    "get-oauth-userinfo"
+  ]
+}

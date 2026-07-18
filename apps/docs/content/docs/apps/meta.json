@@ -1,0 +1,19 @@
+{
+  "title": "Apps",
+  "pages": [
+    "index",
+    "get-apps",
+    "post-apps",
+    "delete-apps-by-app-id",
+    "get-apps-by-app-id",
+    "patch-apps-by-app-id",
+    "get-apps-by-app-id-api-keys",
+    "post-apps-by-app-id-api-keys",
+    "delete-apps-by-app-id-api-keys-by-key-id",
+    "patch-apps-by-app-id-api-keys-by-key-id",
+    "post-apps-by-app-id-api-keys-by-key-id-revoke",
+    "get-apps-by-app-id-features",
+    "get-apps-current",
+    "get-apps-public-by-client-id"
+  ]
+}

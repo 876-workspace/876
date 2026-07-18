@@ -79,7 +79,6 @@ next-env.d.ts
 .netlify
 
 # Claude Code workflow scratch worktrees (transient, auto-cleaned)
-.claude/settings.local.json
 .claude/worktrees/
 .claude/sessions/
 # Local implementation tracker — not committed to git

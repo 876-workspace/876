@@ -1,0 +1,13 @@
+{
+  "title": "Getting Started",
+  "pages": [
+    "index",
+    "installation",
+    "configuration",
+    "quickstart",
+    "account-types",
+    "identity",
+    "sessions",
+    "auth-flows"
+  ]
+}

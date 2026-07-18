@@ -1,0 +1,3 @@
+# Prisma 7 generates the Console DB client into the source tree
+# (server-only); it is rebuilt by `pnpm db:generate` and must never be committed.
+/src/lib/mc-db/generated/

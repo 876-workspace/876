@@ -1,0 +1,15 @@
+/// The Console role/permission catalog. Seeded from
+/// `src/permissions.ts` (`SYSTEM_ROLE_DEFINITIONS`), which was relocated out of
+/// the identity API's `core/permissions.py`. MC members reference a role by name.
+model Role {
+  name        String   @id
+  displayName String   @map("display_name")
+  description String   @default("")
+  permissions String[]
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  members     Member[]
+
+  @@map("roles")
+}

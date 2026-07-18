@@ -1,0 +1,20 @@
+---
+title: '@876/core'
+description: Shared contracts, auth helpers, errors, timestamps, and legacy fetch utilities.
+---
+
+`@876/core` is the shared support package. It contains cross-package types,
+error registries, timestamp helpers, auth validation helpers, and some legacy
+data fetchers used by route guards.
+
+New backend operations should be implemented in FastAPI first and exposed
+through `@876/admin` or `@876/sdk`. Do not add raw FastAPI fetch logic to a
+Next.js application when a typed client method is the correct boundary.
+
+## Practical responsibilities
+
+- Shared app-owned type definitions.
+- Auth and redirect helper utilities.
+- Client-safe error constants and helpers.
+- Unix-second timestamp helpers.
+- Compatibility fetchers used by existing auth guard code.

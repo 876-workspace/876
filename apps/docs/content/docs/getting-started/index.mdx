@@ -1,0 +1,72 @@
+---
+title: Getting Started
+description: Install, configure, and make your first call with the 876 Auth SDK.
+---
+
+The `@876/sdk` package is a request-only TypeScript client for the 876
+authentication platform. It wraps the auth and OAuth HTTP endpoints in typed
+methods that return a consistent `{ data, error }` [result
+envelope](/docs/reference/result-pattern) — no exceptions to catch and no
+hidden session state to manage.
+
+## Overview
+
+The SDK is intentionally thin. It does not store sessions, read cookies, or
+perform navigation; your app owns all of that. The client only builds requests,
+validates parameters, and parses responses.
+
+A typical integration looks like this:
+
+```ts
+import { create876Client } from '@876/sdk'
+
+const $876 = create876Client()
+
+const result = await $876.auth.login({
+  identifier: 'alejandra@example.com',
+  password: 'my-secure-password',
+})
+
+if (result.error) {
+  console.error(result.error.code, result.error.message)
+} else if (result.data.object === 'session') {
+  console.log('Signed in as', result.data.user.id)
+}
+```
+
+The factory returns a namespaced client. `$876.auth.*` covers the email,
+password, magic-link, and social flows, and `$876.oauth.*` covers the OAuth 2.0
+/ OIDC "Sign in with 876" provider flows — pass an `oauth` config block to
+enable it. Everything lives on the single `create876Client()`.
+
+<Callout type="info">
+  In the browser, rely on the default `credentials: 'include'` so the `HttpOnly`
+  session cookie set by the API is stored and sent on later requests. The SDK
+  never touches the cookie itself.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card
+    title="Installation"
+    href="/docs/getting-started/installation"
+    description="Add @876/sdk to your project with pnpm and confirm the peer requirements."
+  />
+  <Card
+    title="Configuration"
+    href="/docs/getting-started/configuration"
+    description="Create a client, understand API URL resolution, and choose a credentials mode."
+  />
+  <Card
+    title="Quick Start"
+    href="/docs/getting-started/quickstart"
+    description="Run an end-to-end login and read the result envelope."
+  />
+</Cards>
+
+## Related
+
+- [Result pattern](/docs/reference/result-pattern) — how every method reports success and failure
+- [`login()`](/docs/auth/login) — authenticate an existing user
+- [Type reference](/docs/reference/types) — shared SDK types

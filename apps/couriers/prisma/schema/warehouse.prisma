@@ -1,0 +1,24 @@
+/// A US receiving address owned by a tenant.
+/// Packages sent by customers are delivered here using the customer's mailbox number.
+/// A tenant may have multiple warehouses (e.g. a dedicated Amazon address).
+model Warehouse {
+  id         String  @id @default(cuid())
+  tenantId   String  @map("tenant_id")
+  name       String
+  street1    String  @map("street_1")
+  street2    String? @map("street_2")
+  city       String
+  state      String?
+  country    String  @default("US")
+  postalCode String? @map("postal_code")
+  isPrimary  Boolean @default(false) @map("is_primary")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  manifests Manifest[]
+
+  @@unique([tenantId, name], name: "warehouses_tenant_id_name_key")
+  @@index([tenantId], name: "warehouses_tenant_id_idx")
+  @@map("warehouses")
+}

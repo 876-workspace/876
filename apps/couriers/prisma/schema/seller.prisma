@@ -1,0 +1,18 @@
+/// Global registry of online retailers and sellers (e.g. Amazon, Best Buy, eBay).
+/// Platform-wide seed data — not tenant-scoped. Customers link packages to a seller
+/// when submitting pre-alerts so staff and customers can identify the source.
+/// logoUrl is a CDN/storage reference; websiteUrl is the canonical storefront URL.
+model Seller {
+  id         String  @id @default(cuid())
+  name       String  @unique
+  slug       String  @unique
+  logoUrl    String? @map("logo_url")
+  websiteUrl String? @map("website_url")
+  isActive   Boolean @default(true) @map("is_active")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  packages Package[]
+
+  @@map("sellers")
+}

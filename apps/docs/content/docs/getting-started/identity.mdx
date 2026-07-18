@@ -1,0 +1,765 @@
+---
+title: Identity Model
+description: How 876 models users, organizations, memberships, identities, profiles, and accounts — including the terminology that trips everyone up.
+---
+
+This page is the definitive reference for how people and organizations are
+represented in the platform. Read it when you're unsure which "account" or
+"identity" concept applies to the code you're writing, or why a user shows up
+differently in Console vs. the 876 app vs. the enterprise org portal.
+
+---
+
+## The Core Records at a Glance
+
+```
+WorkOS (external IdP)
+  └── user_01...                          # WorkOS User ID
+         │
+         ▼
+    ┌─────────────┐    1:1    ┌───────────────┐
+    │    User     │──────────▶│  UserProfile  │
+    │  usr_01...  │           │  (display bio)│
+    └─────────────┘           └───────────────┘
+           │  1:N
+           ▼
+    ┌─────────────┐       linked sign-in providers
+    │   Account   │       (Google, Apple, email+pw, etc.)
+    │ (provider)  │
+    └─────────────┘
+           │  Session is separate
+           ▼
+    ┌─────────────┐
+    │   Session   │       sealed cookie + DB row
+    │  ses_01...  │
+    └─────────────┘
+
+    ┌─────────────┐  Membership  ┌─────────────────┐
+    │    User     │◀────────────▶│  Organization   │
+    │  usr_01...  │   mbr_01...  │   org_01...     │
+    └─────────────┘              └─────────────────┘
+```
+
+---
+
+## Terminology — The Four Terms That Get Confused
+
+<Callout type="warn">
+  "Account", "profile", "identity", and "user" are all overloaded in common
+  speech. Here is exactly what each means **in this codebase**. Read this before
+  writing code that touches auth or users.
+</Callout>
+
+### User
+
+A `User` is the **global, persistent, canonical identity record** in our
+database (`users` table). It is created once during registration or on first
+SSO login and is never scoped to any single app or organization.
+
+- Platform ID format: `usr_01...`
+- This is the anchor. Everything else hangs off it.
+- Think of it as the person's **passport** for the entire platform.
+
+```python
+# DB model — users table
+class User:
+    id: str                   # usr_01...
+    workos_user_id: str       # user_01... (internal only, never returned to clients)
+    stripe_customer_id: str | None
+    email: str                # canonical, lowercased, unique
+    username: str | None      # optional handle, max 32 chars, alphanumeric + ._-
+    email_verified: bool
+    first_name: str
+    last_name: str
+    middle_name: str | None
+    avatar: str | None        # URL
+    role: str                 # Console assignment: "user" | "staff" | "admin" | "owner"
+    platform_role: str | None # reserved platform marker, e.g. "owner"
+    status: str               # "active" | "inactive" | "suspended"
+    phone: str | None
+    phone_verified: bool
+    banned: bool
+    banned_reason: str | None
+    metadata_: dict | None    # public metadata
+    private_metadata: dict | None  # internal-only, never returned to clients
+    created_at: int           # Unix seconds
+    updated_at: int           # Unix seconds
+```
+
+A `User` has **relationships** to:
+
+- `UserProfile` (1:1) — extended display info
+- `Account[]` — linked sign-in providers (Google, Apple, email+pw, etc.)
+- `Session[]` — active sessions (DB-backed, revocable)
+- `Membership[]` — org memberships
+- `OauthGrant[]` — apps the user has authorized
+- `UserFeature[]` — per-user feature flag overrides
+- `Address[]` — saved addresses
+- `Contact[]` — address book entries
+- `UserSocialProfile[]` — optional linked public social profiles
+
+Users do **not** own applications. Registered OAuth apps are owned by
+organizations only. The current first-party app records are internal Efesto
+Technologies, Inc. apps.
+
+---
+
+### Profile
+
+`UserProfile` is the **extended presentation layer** for a User. It holds
+display-oriented and demographic fields that are not needed for auth or billing.
+
+```python
+# DB model — user_profiles table
+class UserProfile:
+    id: str
+    user_id: str              # FK → users (1:1, unique)
+    bio: str | None
+    display_name: str | None  # preferred name shown in UIs
+    nickname: str | None
+    gender: str | None        # "male" | "female" | "other"
+    date_of_birth: str | None
+    language: str | None
+    timezone: str | None
+    phone_number: str | None
+    website: str | None
+    location: str | None
+    created_at: int
+    updated_at: int
+```
+
+**Key distinction from User:** `first_name` / `last_name` / `avatar` live on
+`User` (they are needed by auth, JWT claims, and admin tooling). `display_name`,
+`bio`, `timezone`, and everything else that is "how you present yourself" lives
+on `UserProfile`.
+
+**Access pattern:**
+
+- Consumer can read/update their own profile via `GET/PATCH /users/me/profile`
+- Admin can read/update any profile via `GET/PATCH /users/{user_id}/profile`
+
+---
+
+### Account (Provider Link) — ⚠️ Not What You Think
+
+<Callout type="warn">
+  "Account" is overloaded in two completely different ways in the codebase. Read
+  both definitions carefully.
+</Callout>
+
+#### Meaning 1: Linked Auth Provider (`accounts` table)
+
+An `Account` record represents one **linked sign-in method** for a User. For
+example, a user who signed up with email+password and later linked their Google
+account has **two Account rows**.
+
+```python
+# DB model — accounts table
+class Account:
+    id: str
+    user_id: str              # FK → users
+    account_id: str           # the provider's own user ID for this person
+    provider_id: str          # FK → auth_providers.id, e.g. "google"
+    provider_type: str        # "oauth" | "credential"
+    access_token: str | None  # NEVER returned to API clients
+    refresh_token: str | None # NEVER returned to API clients
+    password: str | None      # Hashed, for credential type. NEVER returned.
+    created_at: int
+    updated_at: int
+```
+
+The **API response** (`AccountResponse`) strips everything sensitive:
+
+```json
+{
+  "object": "account",
+  "id": "...",
+  "provider_id": "google",
+  "provider_type": "oauth",
+  "created_at": 1700000000,
+  "updated_at": 1700000000
+}
+```
+
+`auth_providers` is the local source of truth for provider display state. It
+stores lowercase provider IDs (`google`, `apple`, `microsoft`, etc.), display
+labels, icon slugs, enabled state, and the provider-specific WorkOS ID used
+server-side. SDK/UI code renders from `GET /auth/providers` instead of
+hardcoding provider availability.
+
+### Social Profiles
+
+Social platform definitions live in `social_platforms`; user-selected links
+live in `user_social_profiles`. Keep this normalized: do not add one column per
+social network to `users` or `user_profiles`, and do not store arrays of IDs on
+the user row.
+
+The API seeds popular platforms such as Instagram, X, Facebook, LinkedIn,
+YouTube, TikTok, GitHub, GitLab, Threads, Bluesky, Discord, Telegram, Snapchat,
+Pinterest, and Twitch. No platform is assigned to any user until a user-facing
+profile-linking flow is implemented.
+
+### Deletes
+
+Production deletes are soft deletes. Soft-deletable records use
+`deleted_at`, `deleted_by`, and `deletion_reason`; end-user reads filter them
+out and Console may opt into showing them with a clear deleted state.
+Development defaults to hard delete via `DELETION_MODE=hard`. Set
+`DELETION_MODE=soft` to test production delete behavior locally.
+
+Retrieved via: `GET /users/{user_id}/accounts` (AdminDep only).
+
+#### Meaning 2: "Accounts" in the Session Cookie
+
+The session cookie has an `accounts` array that means the **set of signed-in
+users on this device**. This is the multi-account switcher concept — like how
+Gmail lets you be logged in as both personal and work. Each entry in this array
+is a different `User`, each with their own active `Session`.
+
+```json
+{
+  "accounts": [
+    {
+      "id": "usr_alice",
+      "email": "alice@personal.com",
+      "sid": "ses_01...",
+      "realm": "consumer",
+      "orgId": null
+    },
+    {
+      "id": "usr_alice",
+      "email": "alice@acme.com",
+      "sid": "ses_02...",
+      "realm": "enterprise",
+      "orgId": "org_acme"
+    }
+  ]
+}
+```
+
+> **Rule of thumb:** If you see `accounts` in DB/API code it means OAuth
+> provider links. If you see `accounts` in session/cookie code it means
+> signed-in users on device.
+
+---
+
+### Identity (or "Connection")
+
+"Identity" in the context of WorkOS means the **external authentication
+credential** — the specific login method a user used to authenticate. WorkOS
+tracks these as "identities" on the `AuthenticationEvent`. We store the
+platform-side representation as an `Account` row.
+
+A single `User` can have multiple identities:
+
+- `google` (personal Gmail, mapped server-side to WorkOS `GoogleOAuth`)
+- `apple` (Apple ID, mapped server-side to WorkOS `AppleOAuth`)
+- `email` credential (password-based)
+- An Okta or Microsoft Entra SSO connection via WorkOS (enterprise SSO)
+
+All of them resolve to the **same** `User` because they all share the same
+`workos_user_id`.
+
+---
+
+## Organization
+
+An `Organization` is an **enterprise tenant** — a business, team, or company
+that uses the platform. It has its own members, settings, and can be linked to
+an SSO provider via WorkOS.
+
+```python
+# DB model — organizations table
+class Organization:
+    id: str                             # org_01...
+    workos_organization_id: str | None  # "org_01..." WorkOS ID (internal)
+    name: str | None                    # display name, e.g. "Acme Corp"
+    short_name: str | None              # abbreviated, e.g. "Acme"
+    slug: str                           # URL slug, e.g. "acme-corp"
+    status: str                         # "active" | "suspended" | "archived"
+    logo_url: str | None
+    primary_phone: str | None
+    primary_email: str | None
+    website_url: str | None
+    address_line1 / address_line2: str | None
+    city: str | None
+    region_id: str | None               # FK → regions
+    country_code: str | None            # ISO 3166-1 alpha-2, e.g. "JM"
+    currency_code: str | None           # ISO 4217, default "JMD"
+    enrollment_completed_at: int | None # null = enrollment incomplete
+    metadata_: dict | None
+    created_at: int
+    updated_at: int
+```
+
+---
+
+## Membership
+
+`Membership` is the **join record** that connects a `User` to an `Organization`,
+with a role and status. A user can belong to many organizations, each with a
+different role.
+
+```
+User ──┐
+       ├── Membership (role: "owner",  status: "active")  ──▶ Org A
+       ├── Membership (role: "member", status: "active")  ──▶ Org B
+       └── Membership (role: "admin",  status: "invited") ──▶ Org C
+```
+
+```python
+# DB model — memberships table
+class Membership:
+    id: str                          # mbr_01...
+    organization_id: str             # FK → organizations
+    user_id: str                     # FK → users
+    workos_membership_id: str | None # WorkOS membership ID (internal)
+    role: str                        # "owner" | "admin" | "member"
+    status: str                      # "active" | "invited" | "suspended" | "removed"
+    created_at: int
+    updated_at: int
+```
+
+**Org roles vs. platform roles** — these are completely different concepts:
+
+| Scope         | Field              | Values                                  | Controls                             |
+| ------------- | ------------------ | --------------------------------------- | ------------------------------------ |
+| Platform-wide | `users.role`       | `user`, `staff`, `admin`, `super_admin` | Console access                       |
+| Org-scoped    | `memberships.role` | `owner`, `admin`, `member`              | What the user can do inside that org |
+
+A `super_admin` on the platform can still be just a `member` within an org (or
+have no membership at all). These are orthogonal.
+
+---
+
+## Platform Roles & Permissions
+
+`users.role` determines what parts of Console and privileged APIs a
+person can access. Permissions are **derived at runtime** from the `roles` DB
+table — they are not stored on the user.
+
+| Role          | Who                   | Console                                                                                  | Resource Access                        |
+| ------------- | --------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------- |
+| `user`        | Everyone by default   | No access at all                                                                         | None                                   |
+| `staff`       | Support team          | `access`, `support`                                                                      | Read: users, orgs, memberships, apps   |
+| `admin`       | Platform admins       | `access`, `support`, `settings`, `billing`, `users`, `organizations`, `apps`, `features` | Read + Write: users, orgs, memberships |
+| `super_admin` | Owners / platform ops | Everything above + `danger_zone`                                                         | Full write including destructive ops   |
+
+### Full Permission Reference
+
+```
+console:access          — Can enter Console
+console:support         — Support queue access
+console:settings        — Platform settings page
+console:billing         — Billing dashboard
+console:users           — User management section
+console:organizations   — Org management section
+console:apps            — OAuth app management
+console:features        — Feature flag management
+console:danger_zone     — High-risk ops (super_admin only)
+
+users:read / users:list / users:search
+organizations:read / organizations:list / organizations:search
+memberships:read / memberships:list
+apps:read / apps:list
+
+users:create / users:update
+organizations:create / organizations:update
+memberships:create / memberships:update
+```
+
+<Callout type="note">
+  Role elevation is **AdminDep only**. `POST /users/ensure` (API-key tier)
+  always creates users with `role="user"`. Only `PATCH /users/{id}` with the
+  internal key can change a role, and the value must exist in the `roles` table.
+</Callout>
+
+---
+
+## Realm — Security Context for a Session
+
+When a user signs in, 876 assigns a **realm** to that session. This is a
+security context, not a permanent account property.
+
+| Realm          | Triggered by                       | Session contains   | App routing             |
+| -------------- | ---------------------------------- | ------------------ | ----------------------- |
+| `"consumer"`   | Email/pw, Google, Apple, Magic OTP | `orgId: null`      | → `/app/*` routes       |
+| `"enterprise"` | WorkOS SSO through a linked org    | `orgId: "org_..."` | → `/org/:slug/*` routes |
+
+The same physical person can have **two active sessions** on the same device:
+
+- `alice@gmail.com` → consumer realm, `orgId: null`
+- `alice@acme.com` → enterprise realm via Acme's Okta SSO, `orgId: "org_acme"`
+
+These produce separate sealed cookie entries in the `accounts[]` array. One
+session never elevates into the other.
+
+<Callout type="warn">
+  Email domain alone is never enough for enterprise realm. A user who signs in
+  via Gmail with `alice@acme.com` does **not** automatically get access to the
+  Acme enterprise org. They must authenticate through the Acme SSO connection
+  configured in WorkOS.
+</Callout>
+
+---
+
+## WorkOS IDs vs. Platform IDs
+
+WorkOS is the underlying auth provider. We maintain our own ID namespace and
+never expose WorkOS IDs to clients.
+
+| Entity       | WorkOS format        | Platform format | Stored in                              |
+| ------------ | -------------------- | --------------- | -------------------------------------- |
+| User         | `user_01Hx...`       | `usr_01Hx...`   | `users.workos_user_id`                 |
+| Organization | `org_01Hx...`        | `org_01Hx...`   | `organizations.workos_organization_id` |
+| Membership   | `membership_01Hx...` | `mbr_01Hx...`   | `memberships.workos_membership_id`     |
+
+All API responses, URLs, SDK calls, and frontend code use platform IDs only.
+WorkOS IDs are internal bookkeeping.
+
+---
+
+## Session Structure
+
+Sessions are **DB-backed** (for revocability) and **cookie-transported**
+(iron-session style sealed payload).
+
+```python
+# DB model — sessions table
+class Session:
+    id: str               # ses_01... — this is the "sid" in cookies
+    user_id: str          # FK → users
+    app_id: str | None    # null for first-party sessions
+    token_hash: str       # SHA-256 of the raw token, unique
+    expires_at: int       # Unix seconds — TTL is 400 days from creation
+    ip_address: str | None
+    user_agent: str | None
+    created_at: int
+    updated_at: int
+```
+
+### Sealed Cookie Payload
+
+```json
+{
+  "user": {
+    "id": "usr_01...",
+    "email": "alice@example.com",
+    "firstName": "Alice",
+    "lastName": "Smith",
+    "emailVerified": true,
+    "username": "alice",
+    "avatar": null
+  },
+  "sid": "ses_01...",
+  "realm": "consumer",
+  "orgId": null,
+  "accounts": [
+    {
+      "id": "usr_01...",
+      "email": "alice@example.com",
+      "firstName": "Alice",
+      "lastName": "Smith",
+      "emailVerified": true,
+      "username": "alice",
+      "avatar": null,
+      "sid": "ses_01...",
+      "realm": "consumer",
+      "orgId": null
+    }
+  ]
+}
+```
+
+The `user` snapshot in the cookie is **not** the full `UserResponse`. It is a
+lighter `user_identity_dict` shape with no role, no permissions, no stripe ID.
+Full user data (role, permissions, features) is fetched from the API in server
+components using the internal key.
+
+---
+
+## The `Principal` Dataclass
+
+Every FastAPI route handler receives an authenticated `Principal` from
+`core/security.py`. This is the runtime identity object.
+
+```python
+@dataclass
+class Principal:
+    user_id: str | None = None    # Platform user ID (from JWT sub)
+    app_id: str | None = None     # App/client that issued the token
+    api_key_id: str | None = None # Set when an API key authenticated
+    internal: bool = False        # True when x-internal-key matched
+    realm: str = "consumer"       # "consumer" or "enterprise"
+    org_id: str | None = None     # Platform org ID (enterprise sessions only)
+```
+
+`resolve_principal()` runs on every request and checks in order:
+
+1. `x-internal-key` header matching `API_INTERNAL_KEY` → `Principal(internal=True)`
+2. `Authorization: Bearer <jwt>` with `token_use=access` → extracts `sub`/`realm`/`org_id`
+3. `876_app_secret_*` key in any key header → sets `app_id` + `api_key_id`
+4. Neither → `Principal()` (anonymous)
+
+---
+
+## App-by-App Scenarios
+
+### Scenario A — Consumer using the 876 App (`apps/876`)
+
+**Alice signs up for 876 as an individual.**
+
+1. She visits `/register` and submits her email + password.
+2. `POST /auth/register` runs → WorkOS creates a user → `ensure_from_workos()` creates a `User` row (`role: "user"`) and a `UserProfile` row → an `Account` row with `provider_id: "email"` is created → a `Session` row is inserted → the sealed cookie is set.
+3. Cookie payload: `realm: "consumer"`, `orgId: null`, `accounts: [{ ... }]`
+4. Proxy (`src/proxy.ts`) reads `accountType` from the sealed session snapshot:
+   - Consumer users are routed to `/app/*`
+   - If they hit `/org/*`, they are redirected to `/app`
+5. In `/app/personal-info` she can update `first_name`, `last_name`, `avatar` on her `User`.
+6. In `/app/personal-info` she can also edit her `UserProfile` (bio, timezone, display_name).
+7. In `/app/linked-apps` she sees her `OauthGrant[]` — apps she has authorized via "Sign in with 876".
+8. Later she links her Google account via Settings → a second `Account` row is added (`provider_id: "google"`).
+9. She can now sign in with either her email+password or via Google. Both resolve to the same `User`.
+
+**What Alice looks like in the DB:**
+
+| Table           | Row                                                                   |
+| --------------- | --------------------------------------------------------------------- |
+| `users`         | `id=usr_alice`, `role=user`, `status=active`                          |
+| `user_profiles` | `user_id=usr_alice`, `timezone=America/Kingston`, `display_name=null` |
+| `accounts`      | `provider_id=email, type=credential`                                  |
+| `accounts`      | `provider_id=google, type=oauth`                                      |
+| `sessions`      | `ses_01...`, `expires_at=<now+400d>`                                  |
+| `memberships`   | _(none — pure consumer)_                                              |
+
+---
+
+### Scenario B — Enterprise user via SSO (`apps/876` enterprise routes + WorkOS)
+
+**Bob works at Acme Corp. Acme uses Okta for SSO, configured in WorkOS.**
+
+1. Bob visits `/login` and clicks "Sign in with Acme SSO".
+2. `POST /auth/social-login` returns a WorkOS authorization URL for Acme's Okta connection.
+3. Bob authenticates with Okta. WorkOS redirects to `/callback` with a code.
+4. `POST /auth/callback` exchanges the code → WorkOS returns a session with `organization_id: "org_acme_workos_id"`.
+5. `complete_auth()` runs:
+   - `ensure_from_workos()` creates or finds `User` with `workos_user_id`
+   - Looks up `Organization` by `workos_organization_id = "org_acme_workos_id"` → finds `org_acme`
+   - Upserts a `Membership` (`role: "member"`, `status: "active"`) if none exists
+   - Sets `realm = "enterprise"`, `org_id = "org_acme"`
+6. Cookie payload: `realm: "enterprise"`, `orgId: "org_acme"`, `accounts: [{ ...bob, realm: "enterprise", orgId: "org_acme" }]`
+7. Proxy reads the session snapshot → Bob has `accountType: "enterprise"` → he is routed to `/org/:slug/*`
+8. In `/org/acme-corp/members` Bob sees his colleagues (also `Membership` rows for `org_acme`).
+
+**What Bob looks like in the DB:**
+
+| Table           | Row                                                                 |
+| --------------- | ------------------------------------------------------------------- |
+| `users`         | `id=usr_bob`, `role=user`, `status=active`                          |
+| `user_profiles` | `user_id=usr_bob`                                                   |
+| `accounts`      | `provider_id=OktaSSO (via WorkOS)`                                  |
+| `memberships`   | `org_id=org_acme`, `role=member`, `status=active`                   |
+| `organizations` | `id=org_acme`, `slug=acme-corp`, `workos_organization_id=org_01...` |
+
+---
+
+### Scenario C — Multi-account on one device
+
+**Alice (consumer) is also a member of Acme Corp (enterprise).**
+
+1. She is already logged in as `alice@gmail.com` (consumer realm). Cookie has one entry in `accounts[]`.
+2. She clicks "Add another account" → authenticates via Acme SSO.
+3. `complete_auth()` produces a **new** `Session` row for the enterprise session.
+4. The new account entry is merged into the existing cookie's `accounts[]` array.
+5. Cookie now has two entries:
+
+```json
+{
+  "accounts": [
+    {
+      "id": "usr_alice",
+      "email": "alice@gmail.com",
+      "sid": "ses_01...",
+      "realm": "consumer",
+      "orgId": null
+    },
+    {
+      "id": "usr_alice",
+      "email": "alice@acme.com",
+      "sid": "ses_02...",
+      "realm": "enterprise",
+      "orgId": "org_acme"
+    }
+  ],
+  "sid": "ses_02...", // currently active session
+  "realm": "enterprise",
+  "orgId": "org_acme"
+}
+```
+
+6. She can switch back to her personal account via `POST /auth/sessions/switch` → the active `sid` / `realm` / `orgId` swaps to the consumer entry.
+7. She can sign out just the Acme session via `POST /auth/sessions/{ses_02}/signout` → that entry is removed from `accounts[]` and the `ses_02` DB row is deleted.
+
+> Note: both sessions belong to the **same** `User` row (`usr_alice`). She has
+> two `Session` rows but one `User`. The same person has both a consumer realm
+> session and an enterprise realm session simultaneously.
+
+---
+
+### Scenario D — Console admin view
+
+**Carlos is a platform `admin`. He logs into Console.**
+
+1. Carlos authenticates via Console's `/login` → he gets a session cookie like anyone else.
+2. Console's proxy (`src/proxy.ts`) reads his sealed session snapshot and validates `userId` exists. It does **not** check `role` — that is too coarse for edge runtime.
+3. The RSC layout for Console calls `@876/admin` server-side (using `API_INTERNAL_KEY`) to fetch the full `AdminUser` for Carlos.
+4. `AdminUser.permissions` returns `["console:access", "console:users", "organizations:read", ...]` — derived from `users.role = "admin"` via `permissions_for_role()`.
+5. Permission checks like `hasPermission(user, "console:users")` gate each section of the UI.
+6. Carlos can see `/users`, `/orgs`, `/features`, `/audit-log`, `/apps`.
+7. He **cannot** see `/settings` (needs `console:settings`) or perform `danger_zone` ops.
+
+**If Carlos tries to view the `/settings` page:**
+
+- The RSC layout calls `requireConsolePermission(user, "console:settings")`
+- This returns a redirect to `/access-denied`
+
+**Dave is a `super_admin`:**
+
+- He additionally sees `console:danger_zone` gated features
+- He can perform destructive operations like hard-deleting users or orgs
+
+**Eve is a `staff` member:**
+
+- She can read users, orgs, and memberships (`users:read`, `organizations:read`, etc.)
+- She **cannot** create, update, or delete any resources
+- She can see `/users` and `/orgs` in read-only mode
+- She **cannot** see `/features`, `/apps`, or `/settings`
+
+---
+
+### Scenario E — A developer building a third-party app
+
+**Frank is a consumer user building an OAuth app with "Sign in with 876".**
+
+1. Frank signs in to the 876 app as a consumer.
+2. He goes to `/app/developer` → creates an `App` (OAuth client) with his redirect URI.
+3. 876 generates a `client_id` and `client_secret` for his app (`App` row, `app_kind: "external"`).
+4. His users click "Sign in with 876" → they go through the PKCE / OAuth flow via the `/oauth/*` endpoints.
+5. On authorization, an `OauthGrant` row is created for each user who authorizes his app.
+6. Frank's app calls `/oauth/token` with the code to get an access token.
+7. The access token is a JWT with `sub: usr_..., realm: consumer, app_id: app_...`.
+8. Frank's API verifies the JWT and fetches user data via `GET /users/me`.
+9. The user can revoke Frank's app at any time via `/app/linked-apps` → `POST /{user_id}/oauth-grants/{grant_id}/revoke`.
+
+---
+
+## Complete Field Reference
+
+### `UserResponse` (returned to API clients)
+
+```json
+{
+  "object": "user",
+  "id": "usr_01...",
+  "stripeCustomerId": null,
+  "email": "alice@example.com",
+  "username": "alice",
+  "emailVerified": true,
+  "firstName": "Alice",
+  "lastName": "Smith",
+  "middleName": null,
+  "avatar": null,
+  "status": "active",
+  "createdAt": 1700000000,
+  "updatedAt": 1700000000
+}
+```
+
+`workos_user_id`, `role`, `permissions`, `banned`, and all metadata fields are
+**not** in the basic `UserResponse`. They appear in `AdminUser` (returned by
+`@876/admin` to Console server components).
+
+### `AdminUser` (returned to Console via `@876/admin`)
+
+```json
+{
+  "object": "user",
+  "id": "usr_01...",
+  "email": "alice@example.com",
+  "username": "alice",
+  "firstName": "Alice",
+  "lastName": "Smith",
+  "role": "user",
+  "status": "active",
+  "emailVerified": true,
+  "phoneVerified": false,
+  "banned": false,
+  "bannedReason": null,
+  "permissions": ["..."],
+  "stripeCustomerId": null,
+  "avatar": null,
+  "createdAt": 1700000000,
+  "updatedAt": 1700000000
+}
+```
+
+### `ConsumerProfile` (returned from `GET /users/me/profile`)
+
+```json
+{
+  "object": "profile",
+  "id": "...",
+  "userId": "usr_01...",
+  "displayName": null,
+  "bio": null,
+  "nickname": null,
+  "gender": null,
+  "dateOfBirth": null,
+  "language": null,
+  "timezone": "America/Kingston",
+  "website": null,
+  "location": null,
+  "createdAt": 1700000000,
+  "updatedAt": 1700000000
+}
+```
+
+---
+
+## Data Flow — Who Reads/Writes What
+
+| App / Package             | Reads user data via                                   | Can write                                  |
+| ------------------------- | ----------------------------------------------------- | ------------------------------------------ |
+| `apps/876` (consumer)     | `@876/sdk` (`GET /users/me`, `GET /users/me/profile`) | Own profile, own addresses, own contacts   |
+| `apps/876` (enterprise)   | `@876/sdk` session + org routes                       | Own profile                                |
+| `apps/console`            | `@876/admin` (server components, internal key)        | Admin CRUD on all users, orgs, memberships |
+| `apps/api` route handlers | Direct DB via repositories                            | Source of truth                            |
+| Third-party OAuth apps    | `@876/sdk` (API key tier, limited scope)              | Scoped by `OauthGrant.scopes`              |
+
+---
+
+## Quick Lookup — Which "X" Are You Talking About?
+
+| Situation                                             | Concept                                                               |
+| ----------------------------------------------------- | --------------------------------------------------------------------- |
+| "What is the user's ID?"                              | `User.id` = `usr_01...`                                               |
+| "The user signed in with Google"                      | `Account` row, `provider_id: "google"`                                |
+| "The user is logged into two profiles on this device" | `session.accounts[]` in the cookie                                    |
+| "The user's bio and timezone"                         | `UserProfile`                                                         |
+| "The user's full name"                                | `User.first_name + User.last_name`                                    |
+| "Is this user an org admin?"                          | `Membership.role = "admin"` for that org                              |
+| "Can this user access Console?"                       | `User.role` in `{staff, admin, super_admin}`                          |
+| "The user is an enterprise customer"                  | `Session.realm = "enterprise"`, `Session.org_id` is set               |
+| "List all apps this user authorized"                  | `OauthGrant[]` for `user_id`                                          |
+| "The user's password credential"                      | `Account.provider_type = "credential"` (password hash never returned) |
+| "The user's org"                                      | `Membership` rows → `Organization`                                    |
+
+---
+
+## Related
+
+- [Account Types](/docs/getting-started/account-types) — how `consumer` vs `enterprise` differ at the routing layer
+- [Sessions](/docs/getting-started/sessions) — full cookie structure and multi-account switching
+- [Auth Flows](/docs/getting-started/auth-flows) — end-to-end sign-in sequences with diagrams
+- [Roles](/docs/roles) — platform role and permission reference
+- [Memberships](/docs/memberships) — org membership CRUD and statuses

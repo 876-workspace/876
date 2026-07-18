@@ -1,0 +1,146 @@
+---
+title: Quickstart
+description: Build your first authentication flow with the 876 SDK — sign in, check the result, protect a route, and sign out.
+---
+
+This guide walks through the core authentication lifecycle with the 876 SDK:
+sign a user in, branch on the login result, guard a protected route, and sign
+out. It assumes you have already installed `@876/sdk` and created a client.
+
+## Create the client
+
+The SDK is request-only and holds no session state. In the browser you can rely on the default `credentials: 'include'` so the `HttpOnly` session cookie set by the API is
+stored and sent on later requests.
+
+```ts
+import { create876Client } from '@876/sdk'
+
+export const $876 = create876Client()
+```
+
+<Callout type="info">
+  `baseUrl` is resolved from `NEXT_PUBLIC_876_API_URL` / `NEXT_PUBLIC_API_URL`
+  when configured. Otherwise browser Codespaces previews derive the matching
+  forwarded `4000` URL, local development falls back to `http://localhost:4000`,
+  and production falls back to the deployed 876 API. See
+  [configuration](/docs/getting-started/configuration) for the full order.
+</Callout>
+
+## 1. Sign in
+
+The most common way to authenticate is with an `identifier` (email or username)
+and a `password`. A successful call resolves to a `{ data, error }` envelope.
+
+```ts
+import { $876 } from './client'
+
+async function handleLogin(identifier: string, password: string) {
+  const result = await $876.auth.login({ identifier, password })
+
+  if (result.error) {
+    // Handle the failure (e.g. show a message to the user).
+    console.error('Login failed:', result.error.code, result.error.message)
+    return
+  }
+
+  // result.data is `Session | AuthEvent` — branch on the discriminator below.
+  console.log(result.data.object)
+}
+```
+
+## 2. Check `auth_event` vs `session`
+
+On success, `result.data` is a discriminated union. Inspect the `object` field
+to decide what happens next:
+
+- **`session`** — authentication is complete. The API established a session and
+  set the session cookie. `result.data.user` holds the authenticated user.
+- **`auth_event`** — an extra step is required (currently
+  `email_verification_required`). The event carries the user's `email` and a
+  `pendingAuthenticationToken` you forward to
+  [`verifyEmailCode()`](/docs/auth/verify-email-code).
+
+```ts
+const result = await $876.auth.login({ identifier, password })
+if (result.error) return
+
+if (result.data.object === 'auth_event') {
+  // A step is required — continue email verification.
+  const { email, pendingAuthenticationToken } = result.data
+  window.location.href = `/verify-email?email=${encodeURIComponent(email)}`
+  return
+}
+
+// object === 'session' — sign-in is complete.
+console.log('Signed in as', result.data.user.id)
+window.location.href = '/dashboard'
+```
+
+<Callout type="warn">
+  The SDK does not navigate or persist anything for you. After a `session`
+  result, the cookie is already set by the API; your app owns the redirect and
+  any display-only client state.
+</Callout>
+
+## 3. Protect a route with `getSession`
+
+Once a user is signed in, call [`getSession()`](/docs/auth/get-session) to read
+the active session on protected pages. There are no parameters; the browser
+sends the session cookie automatically when the client was created with
+`credentials: 'include'`.
+
+```ts
+import { $876 } from './client'
+
+async function requireAuth() {
+  const result = await $876.auth.getSession()
+
+  if (result.error || !result.data) {
+    // No active session — send the visitor to sign in.
+    window.location.href = '/login'
+    return
+  }
+
+  // Session is active.
+  console.log('Current user:', result.data.user.email)
+}
+```
+
+The resolved `result.data` is a [`Session`](/docs/reference/types#session) whose
+`user` is a [`User`](/docs/reference/types#user) union — app-owned accounts
+expose `accountType`, while WorkOS boundary users do not.
+
+## 4. Sign out
+
+Ending a session is a single call to [`logout()`](/docs/auth/logout). The API
+invalidates the server-side session; your app clears its own state and
+navigates to a signed-out route.
+
+```ts
+import { $876 } from './client'
+
+async function handleLogout() {
+  const result = await $876.auth.logout()
+
+  if (result.error) {
+    console.error('Logout failed:', result.error.message)
+    return
+  }
+
+  // Clear local display state, then redirect.
+  window.location.href = '/'
+}
+```
+
+## You're done
+
+You have implemented the core authentication lifecycle: sign in, branch on the
+login result, guard a protected route, and sign out.
+
+## Related
+
+- [`login()`](/docs/auth/login) — authenticate with identifier and password
+- [`verifyEmailCode()`](/docs/auth/verify-email-code) — complete a pending auth event
+- [`getSession()`](/docs/auth/get-session) — read the active session
+- [`logout()`](/docs/auth/logout) — end the session
+- [Configuration](/docs/getting-started/configuration) — client options and base URL resolution

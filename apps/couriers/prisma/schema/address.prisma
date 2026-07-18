@@ -1,0 +1,23 @@
+/// A customer-defined delivery destination (e.g. "Home", "Office").
+/// Platform 876 billing/shipping addresses are NOT duplicated here — they live
+/// in the 876 identity API and are resolved via $876 at read time.
+model CustomerAddress {
+  id         String  @id @default(cuid())
+  customerId String  @map("customer_id")
+  label      String?
+  street1    String  @map("street_1")
+  street2    String? @map("street_2")
+  city       String
+  /// Jamaica uses parishes; other countries use state/province.
+  parish     String?
+  country    String  @default("JM")
+  postalCode String? @map("postal_code")
+  isDefault  Boolean @default(false) @map("is_default")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId], name: "customer_addresses_customer_id_idx")
+  @@map("customer_addresses")
+}
