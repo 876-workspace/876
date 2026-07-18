@@ -1,0 +1,14 @@
+.next
+.source
+coverage
+node_modules
+packages/*/coverage
+packages/*/dist
+packages/*/node_modules
+build
+coverage
+node_modules
+out
+.env
+.env.*
+.ona

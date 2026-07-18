@@ -1,0 +1,104 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+.pnpm-store/
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnpm-store
+
+# testing
+coverage
+playwright-report
+test-results
+
+# python
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.py[cod]
+*.egg-info
+
+# next.js
+.next
+.source
+out
+
+# production
+build
+dist
+.turbo
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# ...but commit the non-secret local-dev defaults (localhost URLs + ports)
+!.env.example
+!.env.development
+
+# vercel
+.vercel
+
+# Cloudflare / OpenNext build output
+.open-next
+.wrangler
+cloudflare-env.d.ts
+.dev.vars
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# ai agents
+.codex
+.codex/session-*.md
+.antigravitycli/
+.commandcode/
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Local Netlify folder
+.netlify
+
+# Claude Code workflow scratch worktrees (transient, auto-cleaned)
+.claude/worktrees/
+.claude/sessions/
+# Local implementation tracker — not committed to git
+.claude/tracker/
+session-ses_*.md
+
+# Local SQLite database (dev scratch; canonical DB is Postgres/Neon)
+apps/api/sqlite.db
+
+# Local-only notes/action items (may contain real secrets — never commit)
+*.local.md
+
+# Claude Code auth — token must only live in env/secret store, never in files
+.claude-token
+.claude_token
+claude-token.txt
+
+# OS/process core dumps (root-level file only — never ignore source dirs named "core")
+/core
+
+# Top-level implementation plan (local planning artifact)
+implementation_plan.md
+apps/api/data.db

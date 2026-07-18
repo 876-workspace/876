@@ -1,0 +1,33 @@
+# Railway configuration for @876/widgets-api (dedicated Widgets data service)
+#
+# IMPORTANT - Railway Dashboard Setup:
+#   - Service:          876-widgets-api
+#   - Root Directory:   (leave blank so shared packages are available)
+#   - Config File Path: (leave blank; Railway reads /railway.toml)
+#   - Watch Paths:      managed by build.watchPatterns below
+#
+# The service pins PORT=3005 via a Railway service variable and binds :: so
+# Railway's IPv6-only private network can reach it. Console and Billing must use
+# http://876-widgets-api.railway.internal:3005. If private networking is
+# unavailable, use https://876-widgets-api-production.up.railway.app instead.
+#
+# This file lives at the repository root because new Railpack services can fail
+# before loading a custom nested config path. Other root-built Railway services
+# must keep their existing app-specific Config File Path settings.
+#
+# WIDGETS_DATABASE_URL is private to this service. WIDGETS_SERVICE_KEY is a
+# shared Railway variable also attached to Console and Billing. The pre-deploy
+# check fails before migration if either required variable is absent or invalid.
+
+[build]
+builder = "RAILPACK"
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @876/widgets-api db:generate && pnpm --filter @876/widgets-api build"
+watchPatterns = ["/apps/widgets-api/**", "/packages/core/**", "/scripts/**", "/railway.toml", "/package.json", "/pnpm-lock.yaml", "/pnpm-workspace.yaml"]
+
+[deploy]
+preDeployCommand = "pnpm widgets:env:check api --process && pnpm --filter @876/widgets-api db:deploy"
+startCommand = "pnpm --filter @876/widgets-api start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
