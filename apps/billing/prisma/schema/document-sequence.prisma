@@ -1,0 +1,15 @@
+/// Sequential identifiers make tenant-facing drafts easy to recognize without
+/// exposing database IDs. Numbers are allocated inside the same transaction as
+/// quote and invoice creation.
+model DocumentSequence {
+  tenantId     String       @map("tenant_id")
+  documentType DocumentType @map("document_type")
+  nextNumber   Int          @default(1) @map("next_number")
+  createdAt    Int          @map("created_at")
+  updatedAt    Int          @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, documentType])
+  @@map("billing_document_sequences")
+}

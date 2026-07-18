@@ -1,0 +1,73 @@
+/// Money manually recorded as received from a customer. Provider collection
+/// remains outside this model; allocations only settle tenant-owned invoices.
+model Payment {
+  id                      String        @id
+  tenantId                String        @map("tenant_id")
+  sourceAppId             String?       @map("source_app_id")
+  sourceExternalReference String?       @map("source_external_reference")
+  sourceIdempotencyKey    String?       @map("source_idempotency_key")
+  sourcePayloadHash       String?       @map("source_payload_hash")
+  customerId              String        @map("customer_id")
+  paymentModeId           String        @map("payment_mode_id")
+  depositAccountId        String        @map("deposit_account_id")
+  providerConnectionId    String?       @map("provider_connection_id")
+  number                  String
+  status                  PaymentStatus @default(SUCCEEDED)
+  revision                Int           @default(0)
+  providerPaymentId       String?       @map("provider_payment_id")
+  amount                  BigInt
+  /// Portion of `amount` not yet allocated to invoices — held as customer
+  /// credit (advance / overpayment), refundable or appliable to future invoices.
+  unappliedAmount         BigInt        @default(0) @map("unapplied_amount")
+  bankCharges             BigInt        @default(0) @map("bank_charges")
+  currency                String        @db.Char(3)
+  paymentDate             Int           @map("payment_date")
+  referenceNumber         String?       @map("reference_number") @db.VarChar(120)
+  notes                   String?       @db.Text
+  createdAt               Int           @map("created_at")
+  updatedAt               Int           @map("updated_at")
+
+  tenant             Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer           Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  paymentMode        PaymentMode                @relation(fields: [tenantId, paymentModeId], references: [tenantId, id], onDelete: Restrict)
+  depositAccount     BankAccount                @relation(fields: [tenantId, depositAccountId], references: [tenantId, id], onDelete: Restrict)
+  providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict)
+  invoiceAllocations PaymentAllocation[]
+  refunds            Refund[]
+  bankTransaction    BankTransaction?
+  ledgerEntries      CustomerLedgerEntry[]
+  paymentAttempts    PaymentAttempt[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, number])
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_payments_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_payments_source_idempotency_key")
+  @@unique([providerConnectionId, providerPaymentId], name: "billing_payments_provider_external_key")
+  @@index([tenantId, sourceAppId], name: "billing_payments_source_app_idx")
+  @@index([tenantId, customerId, paymentDate], name: "billing_payments_tenant_customer_date_idx")
+  @@index([tenantId, depositAccountId], name: "billing_payments_tenant_deposit_account_idx")
+  @@map("billing_payments")
+}
+
+/// The portion of one payment applied to one invoice.
+model PaymentAllocation {
+  id                  String        @id
+  tenantId            String        @map("tenant_id")
+  paymentId           String        @map("payment_id")
+  invoiceId           String        @map("invoice_id")
+  amount              BigInt
+  invoiceStatusBefore InvoiceStatus @map("invoice_status_before")
+  invoicePaidAtBefore Int?          @map("invoice_paid_at_before")
+  reversedAt          Int?          @map("reversed_at")
+  createdAt           Int           @map("created_at")
+  updatedAt           Int           @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  payment Payment @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Cascade)
+  invoice Invoice @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict)
+
+  @@index([tenantId, paymentId], name: "billing_payment_allocations_tenant_payment_idx")
+  @@index([tenantId, invoiceId], name: "billing_payment_allocations_tenant_invoice_idx")
+  @@index([tenantId, paymentId, reversedAt], name: "billing_payment_allocations_active_idx")
+  @@map("billing_payment_allocations")
+}

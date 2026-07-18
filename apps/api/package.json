@@ -1,0 +1,15 @@
+{
+  "name": "@876/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 4000 --reload",
+    "build": "[ -x .venv/bin/python ] && .venv/bin/python -m compileall -q . || echo 'skip api build (no venv)'",
+    "start": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-4000}",
+    "typecheck": ".venv/bin/python -m mypy --explicit-package-bases api core db domains providers schemas services utils main.py",
+    "test": ".venv/bin/python -m pytest",
+    "lint": ".venv/bin/python -m ruff check .",
+    "format": ".venv/bin/python -m ruff format .",
+    "format:check": ".venv/bin/python -m ruff format --check ."
+  }
+}

@@ -1,0 +1,80 @@
+/// A workspace. The initial platform workspace represents 876 itself;
+/// future customer workspaces are linked to an opaque core 876 organization ID.
+model Tenant {
+  id                  String       @id
+  organizationId      String?      @unique @map("organization_id")
+  slug                String       @unique
+  name                String
+  countryCode         String       @default("JM") @map("country_code")
+  status              TenantStatus @default(ACTIVE)
+  defaultCurrency     String       @default("JMD") @map("default_currency")
+  defaultLanguage     String       @default("en") @map("default_language")
+  provisioningVersion Int          @default(3) @map("provisioning_version")
+  provisionedAt       Int          @map("provisioned_at")
+  createdAt           Int          @map("created_at")
+  updatedAt           Int          @map("updated_at")
+
+  defaultCurrencyRecord           Currency                         @relation("TenantDefaultCurrency", fields: [defaultCurrency], references: [code], onDelete: Restrict)
+  defaultLanguageRecord           Language                         @relation("TenantDefaultLanguage", fields: [defaultLanguage], references: [code], onDelete: Restrict)
+  currencies                      TenantCurrency[]
+  customers                       Customer[]
+  contacts                        Contact[]
+  addresses                       Address[]
+  items                           Item[]
+  products                        Product[]
+  plans                           Plan[]
+  prices                          Price[]
+  addons                          Addon[]
+  addonAssociations               PlanAddonAssociation[]
+  priceLists                      PriceList[]
+  priceListEntries                PriceListEntry[]
+  quotes                          Quote[]
+  invoices                        Invoice[]
+  estimates                       Estimate[]
+  creditNotes                     CreditNote[]
+  creditNoteAllocations           CreditNoteAllocation[]
+  refunds                         Refund[]
+  subscriptions                   Subscription[]
+  subscriptionPreference          SubscriptionPreference?
+  subscriptionAdvanceBillingRules SubscriptionAdvanceBillingRule[]
+  subscriptionCalendarDays        SubscriptionCalendarDay[]
+  subscriptionCalendarMonths      SubscriptionCalendarMonth[]
+  subscriptionNotifications       SubscriptionNotificationOutbox[]
+  subscriptionAmendments          SubscriptionAmendment[]
+  subscriptionLifecycleSchedules  SubscriptionLifecycleSchedule[]
+  subscriptionCharges             SubscriptionCharge[]
+  subscriptionCustomViews         SubscriptionCustomView[]
+  invoiceSubscriptionLinks        InvoiceSubscription[]
+  vendors                         Vendor[]
+  documentSequences               DocumentSequence[]
+  documentPreferences             DocumentPreference[]
+  taxAuthorities                  TaxAuthority[]
+  taxRates                        TaxRate[]
+  bankAccounts                    BankAccount[]
+  bankTransactions                BankTransaction[]
+  paymentModes                    PaymentMode[]
+  payments                        Payment[]
+  paymentAllocations              PaymentAllocation[]
+  paymentTerms                    PaymentTerm[]
+  invoicePreference               InvoicePreference?
+  lateFeeAssessments              LateFeeAssessment[]
+  salespeople                     Salesperson[]
+  coupons                         Coupon[]
+  promotionCodes                  PromotionCode[]
+  couponCurrencyAmounts           CouponCurrencyAmount[]
+  couponPlanApplicabilities       CouponPlanApplicability[]
+  couponAddonApplicabilities      CouponAddonApplicability[]
+  couponCustomerEligibilities     CouponCustomerEligibility[]
+  couponRedemptions               CouponRedemption[]
+  subscriptionDiscounts           SubscriptionDiscount[]
+  billingRuns                     SubscriptionBillingRun[]
+  paymentProviderConnections      PaymentProviderConnection[]
+  paymentAttempts                 PaymentAttempt[]
+  providerEvents                  PaymentProviderEvent[]
+  ledgerEntries                   CustomerLedgerEntry[]
+  roles                           Role[]
+  members                         Member[]
+  financeConnections              AppFinanceConnection[]
+
+  @@map("billing_tenants")
+}

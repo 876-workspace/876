@@ -1,0 +1,704 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@source './components';
+@source './auth';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* ── 876 brand palette → utilities (bg-876-green, text-876-accent-fg, …) ── */
+  --color-876-black: var(--876-black);
+  --color-876-green: var(--876-green);
+  --color-876-green-deep: var(--876-green-deep);
+  --color-876-gold: var(--876-gold);
+  --color-876-blue: var(--876-blue);
+  --color-876-red: var(--876-red);
+  --color-876-purple: var(--876-purple);
+  --color-876-orange: var(--876-orange);
+  --color-876-canvas: var(--876-canvas);
+  --color-876-surface: var(--876-surface);
+  --color-876-surface-border: var(--876-surface-border);
+  --color-876-accent: var(--876-green);
+  --color-876-accent-fg: var(--876-accent-fg);
+  --color-876-accent-surface: var(--876-accent-surface);
+  --color-876-accent-surface-hover: var(--876-accent-surface-hover);
+
+  /* 876 soft elevation — Apple-style floating surfaces */
+  --shadow-876-sm: 0 1px 2px oklch(0 0 0 / 0.05);
+  --shadow-876-card:
+    0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px oklch(0 0 0 / 0.06);
+  --shadow-876-pop:
+    0 10px 30px oklch(0 0 0 / 0.12), 0 2px 8px oklch(0 0 0 / 0.06);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-geist-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-destructive: var(--destructive);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --876-black: oklch(0.14 0.005 250);
+  --876-blue: oklch(0.55 0.15 255);
+  --876-green: oklch(0.48 0.165 148);
+  --876-green-deep: oklch(0.36 0.135 150);
+  --876-gold: oklch(0.76 0.17 82);
+  --876-orange: oklch(0.65 0.18 55);
+  --876-red: oklch(0.55 0.22 25);
+  --876-purple: oklch(0.52 0.2 300);
+  /* App surfaces — calm cool-gray canvas with white cards (Google/iCloud) */
+  /* [B1] Hybrid: canvas pulled toward white so chrome blends; cards stay white +
+     elevated; divider softened to a hairline. Mirror of docs [A1]. */
+  --876-canvas: oklch(0.99 0.003 255);
+  --876-surface: oklch(1 0 0);
+  --876-surface-border: oklch(0.94 0.003 258);
+  /* [/B1] */
+  /* Functional accent — selected/active states (subtle, like Apple's blue) */
+  /* [B2] Richer light-mode active state: deeper green fg + stronger tint so the
+     sidebar active item reads deliberate, not stale. Mirror of docs [A2]. */
+  --876-accent-fg: var(--876-green-deep);
+  --876-accent-surface: color-mix(in oklab, var(--876-green) 14%, transparent);
+  --876-accent-surface-hover: color-mix(
+    in oklab,
+    var(--876-green) 18%,
+    transparent
+  );
+  /* [/B2] */
+  --palette-primary: var(--876-green);
+  --palette-primary-deep: var(--876-green-deep);
+  --palette-secondary: var(--876-gold);
+  --palette-on-primary: oklch(0.99 0.004 145);
+  --auth-glass-surface-dark: rgb(255 255 255 / 6%);
+  --auth-glass-border-dark: rgb(255 255 255 / 10%);
+  --auth-glass-surface-light: oklch(1 0 0);
+  --auth-glass-border-light: rgb(15 23 42 / 8%);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.23 0.012 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.23 0.012 262);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.23 0.012 262);
+  /* [C3] Brand primary — deep 876 green-charcoal instead of stock shadcn
+     near-black. Reads near-black at a glance but is unmistakably the 876
+     palette up close. */
+  --primary: oklch(0.3 0.055 152);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.965 0.004 255);
+  --secondary-foreground: oklch(0.25 0.012 262);
+  --muted: oklch(0.965 0.004 255);
+  --muted-foreground: oklch(0.55 0.012 262);
+  --accent: oklch(0.965 0.004 255);
+  --accent-foreground: oklch(0.25 0.012 262);
+  --destructive: oklch(0.577 0.245 27.325);
+  --error: oklch(0.58 0.2 27);
+  --success: oklch(0.48 0.165 148);
+  --warning: oklch(0.62 0.13 82);
+  --warning-foreground: oklch(0.18 0.02 82);
+  /* [C1] Info aligned with --876-blue — the old 0.45-lightness blue read dark
+     and dense on light surfaces. */
+  --info: oklch(0.55 0.15 255);
+  --border: oklch(
+    0.94 0.003 260
+  ); /* [B1] hairline divider — mirror of docs [A1] */
+  /* [C2] Interactive-control border — one clear step darker than the hairline
+     so outline buttons/triggers read as controls, not dividers. */
+  --border-strong: oklch(0.87 0.005 258);
+  --input: oklch(0.915 0.004 260);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.23 0.012 262);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.965 0.004 255);
+  --sidebar-accent-foreground: oklch(0.25 0.012 262);
+  --sidebar-border: oklch(
+    0.94 0.003 258
+  ); /* [B1] hairline divider — mirror of docs [A1] */
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+#auth-page {
+  color-scheme: light;
+  /* Pin foreground/background so the cooled :root values don't leak into
+     auth elements that use text-foreground; keep auth on its own scheme. */
+  --foreground: oklch(0.18 0.018 250);
+  --background: var(--auth-canvas);
+  --color-base-100: oklch(1 0 0 / 86%);
+  --color-base-200: oklch(0.967 0.006 247);
+  --color-base-300: oklch(0.88 0.014 247);
+  --color-base-content: oklch(0.18 0.018 250);
+  --color-primary: var(--palette-primary);
+  --color-primary-content: var(--palette-on-primary);
+  --color-secondary: var(--palette-secondary);
+  --color-secondary-content: oklch(0.18 0.018 85);
+  --color-accent: var(--palette-primary);
+  --color-accent-content: var(--palette-on-primary);
+  --color-neutral: oklch(0.22 0.018 250);
+  --color-neutral-content: oklch(0.98 0.004 250);
+  --color-info: oklch(0.56 0.14 220);
+  --color-info-content: oklch(0.99 0.004 220);
+  --color-success: var(--876-green);
+  --color-success-content: oklch(0.99 0.004 145);
+  --color-warning: var(--876-gold);
+  --color-warning-content: oklch(0.19 0.02 85);
+  --color-error: oklch(0.58 0.2 27);
+  --color-error-content: oklch(0.99 0.006 27);
+  --radius-field: 0.75rem;
+  --radius-box: 1.4rem;
+  --auth-action: oklch(0.34 0.006 250);
+  --auth-action-content: oklch(0.985 0 0);
+  /* Clear gray canvas so the white auth card reads as a floating surface. */
+  --auth-canvas: oklch(0.955 0.004 250);
+  --auth-canvas-soft: oklch(0.975 0.004 250);
+  --auth-card-surface: var(--auth-glass-surface-light);
+  --auth-card-border: var(--auth-glass-border-light);
+  --auth-input-surface: rgb(255 255 255 / 72%);
+  --auth-input-border: rgb(15 23 42 / 12%);
+  --auth-muted: oklch(0.46 0.025 250);
+  --auth-shadow:
+    0 1px 2px oklch(0 0 0 / 0.05), 0 20px 50px -16px oklch(0 0 0 / 0.14);
+  --auth-inset-highlight: inset 0 1px 0 rgb(255 255 255 / 80%);
+}
+
+.dark #auth-page:not([data-force-light]) {
+  color-scheme: dark;
+  --color-base-100: oklch(0.19 0.014 250 / 74%);
+  --color-base-200: var(--876-black);
+  --color-base-300: oklch(0.28 0.018 250);
+  --color-base-content: oklch(0.96 0.006 250);
+  --color-primary: var(--palette-primary);
+  --color-primary-content: var(--palette-on-primary);
+  --color-secondary: var(--palette-secondary);
+  --color-secondary-content: oklch(0.16 0.02 82);
+  --color-accent: var(--palette-primary);
+  --color-accent-content: var(--palette-on-primary);
+  --color-neutral: oklch(0.88 0.006 250);
+  --color-neutral-content: oklch(0.14 0.008 250);
+  --color-info: oklch(0.72 0.12 220);
+  --color-info-content: oklch(0.14 0.018 220);
+  --color-success: oklch(0.62 0.17 148);
+  --color-success-content: oklch(0.12 0.02 150);
+  --color-warning: oklch(0.82 0.16 82);
+  --color-warning-content: oklch(0.16 0.02 82);
+  --color-error: oklch(0.68 0.18 25);
+  --color-error-content: oklch(0.14 0.018 25);
+  /* Neutral near-white action (green is reserved for status, never buttons). */
+  --auth-action: oklch(0.93 0.007 250);
+  --auth-action-content: oklch(0.17 0.014 250);
+  --auth-canvas: var(--876-black);
+  --auth-canvas-soft: oklch(0.19 0.018 250);
+  --auth-card-surface: var(--auth-glass-surface-dark);
+  --auth-card-border: var(--auth-glass-border-dark);
+  --auth-input-surface: rgb(255 255 255 / 7%);
+  --auth-input-border: rgb(255 255 255 / 12%);
+  --auth-muted: oklch(0.76 0.018 250);
+  --auth-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 30px rgb(0 0 0 / 35%);
+  --auth-inset-highlight: inset 0 1px 0 rgb(255 255 255 / 14%);
+}
+
+/* ── Auth UI primitives (former daisyUI components) ──────────────────
+   Standalone Tailwind-equivalent component classes that replace the
+   daisyUI `dui-*` primitives. Base layout + the 876 auth theming are
+   defined here so no component library is required. Scoped to
+   `#auth-page` so they compose with the auth theme tokens above. */
+
+#auth-page .auth-fieldset {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.375rem;
+}
+
+#auth-page .auth-fieldset-legend {
+  color: color-mix(in oklab, var(--color-base-content) 86%, transparent);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+#auth-page .auth-card {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--auth-card-surface) 96%, var(--color-base-content))
+      0%,
+    var(--auth-card-surface) 46%,
+    color-mix(in oklab, var(--auth-card-surface) 94%, var(--auth-canvas)) 100%
+  );
+  border-color: color-mix(
+    in oklab,
+    var(--color-base-content) 10%,
+    var(--auth-card-border)
+  );
+}
+
+#auth-page .auth-field,
+#auth-page [data-slot='input-group'] {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-inline: 0.875rem;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: var(--radius-field);
+  min-height: 2.5rem;
+  height: 2.5rem;
+  border-color: var(--auth-input-border);
+  background: var(--auth-input-surface);
+  color: var(--color-base-content);
+  font-size: 0.875rem;
+  box-shadow:
+    var(--auth-inset-highlight),
+    0 1px 2px rgb(15 23 42 / 6%);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+#auth-page .auth-field input {
+  border: 0;
+  background: transparent;
+  outline: none;
+  /* Let the input shrink inside its flex field so a 2-column grid (e.g. first
+     + last name) can't be forced past the card width by the input's intrinsic
+     size, which made the fields overlap. */
+  min-width: 0;
+}
+
+#auth-page input,
+#auth-page .auth-field input {
+  font-size: 0.875rem !important;
+}
+
+#auth-page .auth-field:focus-within,
+#auth-page [data-slot='input-group']:focus-within {
+  border-color: color-mix(in oklab, var(--color-base-content) 26%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--color-base-content) 8%, transparent),
+    0 12px 30px rgb(15 23 42 / 8%),
+    var(--auth-inset-highlight);
+}
+
+#auth-page input::placeholder {
+  color: color-mix(in oklab, var(--color-base-content) 36%, transparent);
+}
+
+/* Mobile is a full-screen sheet (no floating card), so inputs scale up to
+   thumb-sized targets; 16px input text also prevents iOS zoom-on-focus. */
+@media (width < 40rem) {
+  #auth-page .auth-field,
+  #auth-page [data-slot='input-group'] {
+    min-height: 3.25rem;
+    height: 3.25rem;
+    padding-inline: 1rem;
+  }
+
+  #auth-page input,
+  #auth-page .auth-field input {
+    font-size: 1rem !important;
+  }
+}
+
+#auth-page .auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  padding-inline: 1.25rem;
+  border-width: 1px;
+  border-style: solid;
+  border-color: transparent;
+  min-height: 2.5rem;
+  border-radius: 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+#auth-page .auth-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#auth-page .auth-btn-sm {
+  min-height: 2.25rem;
+  padding-inline: 1rem;
+  font-size: 0.8125rem;
+}
+
+#auth-page .auth-btn-lg {
+  min-height: 3.25rem;
+  padding-inline: 1.5rem;
+  font-size: 0.9375rem;
+}
+
+#auth-page .auth-btn-primary {
+  border-color: color-mix(in oklab, var(--auth-action) 84%, black);
+  background: var(--auth-action);
+  color: var(--auth-action-content, var(--color-primary-content));
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.1);
+}
+
+#auth-page .auth-btn-primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--auth-action) 90%, black);
+  box-shadow: 0 2px 6px rgb(15 23 42 / 0.12);
+}
+
+#auth-page .auth-btn-primary:active:not(:disabled) {
+  background: color-mix(in oklab, var(--auth-action) 84%, black);
+}
+
+#auth-page .auth-btn-neutral {
+  border-color: color-mix(
+    in oklab,
+    var(--color-base-content) 7%,
+    var(--auth-card-border)
+  );
+  background: color-mix(
+    in oklab,
+    var(--color-base-content) 5%,
+    var(--auth-card-surface)
+  );
+  color: color-mix(in oklab, var(--color-base-content) 88%, black);
+  font-weight: 650;
+  box-shadow: var(--auth-inset-highlight);
+}
+
+#auth-page .auth-btn-neutral:hover:not(:disabled) {
+  background: color-mix(
+    in oklab,
+    var(--color-base-content) 8%,
+    var(--auth-card-surface)
+  );
+}
+
+#auth-page .auth-btn-neutral:active:not(:disabled) {
+  background: color-mix(
+    in oklab,
+    var(--color-base-content) 11%,
+    var(--auth-card-surface)
+  );
+}
+
+#auth-page .auth-btn-outline {
+  border-color: var(--auth-input-border);
+  background: color-mix(in oklab, var(--auth-card-surface) 74%, transparent);
+  color: var(--color-base-content);
+}
+
+#auth-page .auth-btn-outline:hover:not(:disabled) {
+  border-color: color-mix(
+    in oklab,
+    var(--color-primary) 48%,
+    var(--auth-input-border)
+  );
+  background: color-mix(
+    in oklab,
+    var(--color-primary) 9%,
+    var(--auth-card-surface)
+  );
+  color: var(--color-base-content);
+}
+
+#auth-page .auth-link,
+#auth-page .auth-link-primary {
+  color: color-mix(
+    in oklab,
+    var(--color-primary) 88%,
+    var(--color-base-content)
+  );
+  font-weight: 650;
+  text-decoration-line: underline;
+  text-underline-offset: 0.18em;
+}
+
+#auth-page .auth-footer-link {
+  color: color-mix(in oklab, var(--auth-muted) 86%, var(--color-base-content));
+  text-decoration-line: none;
+}
+
+#auth-page .auth-footer-link:hover {
+  color: var(--color-base-content);
+}
+
+#auth-page .auth-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--auth-card-border);
+  border-radius: 1.1rem;
+  background: var(--auth-card-surface);
+  color: var(--color-base-content);
+  box-shadow: var(--auth-inset-highlight);
+}
+
+#auth-page .auth-alert-info,
+#auth-page .auth-alert-success {
+  border-color: color-mix(
+    in oklab,
+    var(--color-primary) 30%,
+    var(--auth-card-border)
+  );
+  background: color-mix(
+    in oklab,
+    var(--color-primary) 10%,
+    var(--auth-card-surface)
+  );
+}
+
+#auth-page .auth-alert-error {
+  border-color: color-mix(
+    in oklab,
+    var(--color-error) 36%,
+    var(--auth-card-border)
+  );
+  background: color-mix(
+    in oklab,
+    var(--color-error) 10%,
+    var(--auth-card-surface)
+  );
+}
+
+#auth-page .auth-spinner {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  animation: auth-spin 0.6s linear infinite;
+}
+
+#auth-page .auth-spinner-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+#auth-page .auth-spinner-xs {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-width: 1.5px;
+}
+
+@keyframes auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes auth-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes auth-step-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes auth-slot-pop {
+  0% {
+    transform: scale(0.96);
+  }
+  45% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ── Sidebar flag stripe: collapse-to-dots bounce ────────────────────
+   Each stripe color pops into its dot with an overshoot-and-settle
+   bounce when the sidebar collapses to icon mode. Referenced by
+   `animate-[flag-dot-pop_…]` in sidebar-flag-stripe.tsx. */
+@keyframes flag-dot-pop {
+  0% {
+    transform: scale(0.3);
+  }
+  55% {
+    transform: scale(1.4);
+  }
+  78% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ── Mobile: seamless form — no canvas/card contrast ─────────────────
+   Below the sm breakpoint the split-panel layout collapses to a single
+   column. Remove the floating-card chrome so the form blends with the
+   page surface in any theme (light or dark). */
+@media (max-width: 639px) {
+  /* Match canvas to card surface so there is no visible background
+     contrast. Both selectors are included so this beats .dark #auth-page
+     when dark mode is active on non-force-light pages. */
+  #auth-page,
+  .dark #auth-page:not([data-force-light]) {
+    --auth-canvas: var(--auth-card-surface);
+  }
+
+  /* Strip the visible card container — form sits directly on the canvas */
+  #auth-page .auth-card {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    border-radius: 0;
+  }
+}
+
+.dark {
+  --876-blue: oklch(0.62 0.18 255);
+  --876-orange: oklch(0.7 0.2 55);
+  --876-red: oklch(0.62 0.24 25);
+  --876-purple: oklch(0.62 0.2 300);
+  --876-canvas: oklch(0.165 0.004 250);
+  --876-surface: oklch(0.225 0.004 250);
+  --876-surface-border: oklch(1 0 0 / 14%);
+  /* Derive from the palette's green (lightened for contrast on the dark
+     sidebar) so the active-nav colour follows the selected theme instead of
+     being pinned to Obsidian. */
+  --876-accent-fg: color-mix(in oklab, var(--876-green) 62%, white);
+  --876-accent-surface: color-mix(in oklab, var(--876-green) 22%, transparent);
+  --876-accent-surface-hover: color-mix(
+    in oklab,
+    var(--876-green) 28%,
+    transparent
+  );
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.215 0.003 250);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.215 0.003 250);
+  --popover-foreground: oklch(0.985 0 0);
+  /* [C3] Brand primary, dark — soft green-tinted white (mirror of light). */
+  --primary: oklch(0.93 0.015 152);
+  --primary-foreground: oklch(0.22 0.03 152);
+  --secondary: oklch(0.285 0.003 250);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.285 0.003 250);
+  --muted-foreground: oklch(0.74 0 0);
+  --accent: oklch(0.285 0.003 250);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --error: oklch(0.68 0.18 25);
+  --success: oklch(0.62 0.17 148);
+  --warning: oklch(0.75 0.14 82);
+  --warning-foreground: oklch(0.18 0.02 82);
+  --info: oklch(0.68 0.2 258);
+  --border: oklch(1 0 0 / 14%);
+  --border-strong: oklch(1 0 0 / 22%); /* [C2] interactive-control border */
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.215 0.003 250);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: var(--876-green);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.285 0.003 250);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 14%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  /* Suppress browser-native lock/credentials icons on password inputs — we render our own. */
+  input[type='password']::-webkit-contacts-auto-fill-button,
+  input[type='password']::-webkit-credentials-auto-fill-button,
+  input[type='password']::-webkit-textfield-decoration-container {
+    visibility: hidden;
+    display: none;
+  }
+  input[type='password']::-ms-reveal,
+  input[type='password']::-ms-clear {
+    display: none;
+  }
+}

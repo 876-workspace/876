@@ -1,0 +1,25 @@
+/// A narrow finance capability granted to one product app. The connection is
+/// independent of the organization's paid 876 Billing entitlement: embedded
+/// apps can use approved finance APIs without receiving Billing UI access.
+model AppFinanceConnection {
+  id                   String                     @id
+  tenantId             String                     @map("tenant_id")
+  sourceAppId          String                     @map("source_app_id")
+  status               AppFinanceConnectionStatus @default(PROVISIONING)
+  scopes               String[]
+  entitlementReference String?                    @map("entitlement_reference")
+  provisioningVersion  Int                        @default(1) @map("provisioning_version")
+  lifecycleVersion     Int                        @default(1) @map("lifecycle_version")
+  activatedAt          Int?                       @map("activated_at")
+  suspendedAt          Int?                       @map("suspended_at")
+  revokedAt            Int?                       @map("revoked_at")
+  createdAt            Int                        @map("created_at")
+  updatedAt            Int                        @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceAppId], name: "billing_app_finance_connections_tenant_source_app_key")
+  @@index([tenantId, status], name: "billing_app_finance_connections_tenant_status_idx")
+  @@index([sourceAppId, status], name: "billing_app_finance_connections_source_app_status_idx")
+  @@map("billing_app_finance_connections")
+}

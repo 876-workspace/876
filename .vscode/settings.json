@@ -1,0 +1,6 @@
+{
+  "window.autoDetectColorScheme": true,
+  "workbench.colorTheme": "Atom One Dark",
+  "workbench.preferredDarkColorTheme": "Atom One Dark",
+  "git.ignoreLimitWarning": true
+}

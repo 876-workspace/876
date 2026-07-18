@@ -1,0 +1,47 @@
+/// Workspace invoice defaults. Historical invoices snapshot every resolved
+/// value they need; changing preferences never rewrites posted documents.
+model InvoicePreference {
+  tenantId                 String                 @id @map("tenant_id")
+  defaultTaxBehavior       TaxBehavior            @default(EXCLUSIVE) @map("default_tax_behavior")
+  defaultNotes             String?                @map("default_notes")
+  defaultTerms             String?                @map("default_terms")
+  allowEditingSentInvoices Boolean                @default(false) @map("allow_editing_sent_invoices")
+  lateFeesEnabled          Boolean                @default(false) @map("late_fees_enabled")
+  lateFeeCalculationType   LateFeeCalculationType @default(PERCENTAGE) @map("late_fee_calculation_type")
+  lateFeePercent           Decimal?               @map("late_fee_percent") @db.Decimal(7, 4)
+  lateFeeAmount            BigInt?                @map("late_fee_amount")
+  lateFeeGraceDays         Int                    @default(0) @map("late_fee_grace_days")
+  lateFeeGenerateAsDraft   Boolean                @default(true) @map("late_fee_generate_as_draft")
+  createdAt                Int                    @map("created_at")
+  updatedAt                Int                    @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("billing_invoice_preferences")
+}
+
+/// Immutable evidence of one late-fee decision. The assessment records the
+/// policy and balance used even if workspace preferences later change.
+model LateFeeAssessment {
+  id               String                 @id
+  tenantId         String                 @map("tenant_id")
+  sourceInvoiceId  String                 @map("source_invoice_id")
+  lateFeeInvoiceId String                 @unique @map("late_fee_invoice_id")
+  calculationType  LateFeeCalculationType @map("calculation_type")
+  baseAmount       BigInt                 @map("base_amount")
+  percent          Decimal?               @db.Decimal(7, 4)
+  fixedAmount      BigInt?                @map("fixed_amount")
+  assessedAmount   BigInt                 @map("assessed_amount")
+  graceDays        Int                    @map("grace_days")
+  assessedAt       Int                    @map("assessed_at")
+  createdAt        Int                    @map("created_at")
+
+  tenant         Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceInvoice  Invoice @relation("LateFeeSourceInvoice", fields: [sourceInvoiceId], references: [id], onDelete: Restrict)
+  lateFeeInvoice Invoice @relation("LateFeeInvoice", fields: [lateFeeInvoiceId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, sourceInvoiceId], name: "billing_late_fee_assessments_tenant_source_key")
+  @@index([tenantId, assessedAt], name: "billing_late_fee_assessments_tenant_date_idx")
+  @@map("billing_late_fee_assessments")
+}
