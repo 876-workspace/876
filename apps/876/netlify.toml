@@ -1,0 +1,10 @@
+[[plugins]]
+package = "@netlify/plugin-nextjs"
+
+[build]
+base = "apps/876"
+command = "pnpm --filter @876/sdk build && pnpm --filter @876/app build"
+publish = ".next"
+
+[build.environment]
+NODE_VERSION = "20"

@@ -1,0 +1,29 @@
+# Railway configuration for @876/app (Consumer Next.js app)
+#
+# IMPORTANT — Railway Dashboard Setup:
+#   • Root Directory:   (leave blank — must be repo root so shared packages/ are accessible)
+#   • Config File Path: apps/876/railway.toml  (Settings → Config-as-code)
+#   • Watch Paths:      apps/876/**, packages/**   (avoids rebuilding on unrelated app changes)
+#
+# Builder is RAILPACK (Railway's default, successor to the deprecated Nixpacks).
+# Railpack reads `packageManager: pnpm@11.3.0` from the root package.json and
+# provisions that exact pnpm via a current corepack, with a Node version that
+# satisfies pnpm 11's engines (>= 22.13). Do not switch back to Nixpacks: its
+# pinned nixpkgs tops out at Node 22.11 and its corepack fails on pnpm 11
+# (see docs/railway.md → Troubleshooting for the full failure history).
+
+[build]
+builder = "RAILPACK"
+# Install full monorepo, build shared SDK, then build this app only.
+buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @876/sdk build && pnpm --filter @876/app build"
+
+[deploy]
+# PORT is injected by Railway as an env var; the app's `start` script reads it
+# via `${PORT:-3000}` (sh expansion inside the script). Do NOT append
+# `-- --port $PORT` here — Railway start commands are not guaranteed a shell,
+# so `$PORT` can reach the process as a literal string and crash it.
+startCommand = "pnpm --filter @876/app start"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

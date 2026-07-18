@@ -1,0 +1,37 @@
+/// Cash returned to a customer, drawn from an overpayment (a Payment's
+/// unapplied amount) or a CreditNote balance. Recording a refund reduces the
+/// source credit; the money leaves a deposit account. A refund is distinct from
+/// a credit note — the credit note documents the reduction, the refund moves
+/// the cash.
+model Refund {
+  id               String  @id
+  tenantId         String  @map("tenant_id")
+  customerId       String  @map("customer_id")
+  creditNoteId     String? @map("credit_note_id")
+  paymentId        String? @map("payment_id")
+  paymentModeId    String? @map("payment_mode_id")
+  depositAccountId String? @map("deposit_account_id")
+  number           String
+  amount           BigInt
+  currency         String  @db.Char(3)
+  reason           String?
+  notes            String? @db.Text
+  refundedAt       Int     @map("refunded_at")
+  createdAt        Int     @map("created_at")
+  updatedAt        Int     @map("updated_at")
+
+  tenant         Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer       Customer              @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  creditNote     CreditNote?           @relation(fields: [creditNoteId], references: [id], onDelete: SetNull)
+  payment        Payment?              @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  paymentMode    PaymentMode?          @relation(fields: [tenantId, paymentModeId], references: [tenantId, id], onDelete: Restrict)
+  depositAccount BankAccount?          @relation(fields: [tenantId, depositAccountId], references: [tenantId, id], onDelete: Restrict)
+  ledgerEntries  CustomerLedgerEntry[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, number], name: "billing_refunds_tenant_id_number_key")
+  @@index([tenantId, customerId], name: "billing_refunds_tenant_customer_idx")
+  @@index([tenantId, creditNoteId], name: "billing_refunds_tenant_credit_note_idx")
+  @@index([tenantId, paymentId], name: "billing_refunds_tenant_payment_idx")
+  @@map("billing_refunds")
+}

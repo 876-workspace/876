@@ -1,0 +1,109 @@
+/// Provider catalog. Definitions contain presentation and adapter metadata,
+/// never tenant credentials or provider-specific payment state.
+model PaymentProvider {
+  id           String  @id
+  key          String  @unique
+  name         String
+  logoUrl      String? @map("logo_url")
+  adapter      String
+  capabilities Json?
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    Int     @map("created_at")
+  updatedAt    Int     @map("updated_at")
+
+  connections PaymentProviderConnection[]
+
+  @@map("billing_payment_providers")
+}
+
+/// Tenant-owned merchant connection. Secret fields are references to an
+/// external secret store; raw credentials must never be persisted here.
+model PaymentProviderConnection {
+  id                     String                          @id
+  tenantId               String                          @map("tenant_id")
+  providerId             String                          @map("provider_id")
+  name                   String
+  environment            PaymentProviderEnvironment
+  status                 PaymentProviderConnectionStatus @default(PENDING)
+  merchantAccountId      String?                         @map("merchant_account_id")
+  credentialsReference   String?                         @map("credentials_reference")
+  webhookSecretReference String?                         @map("webhook_secret_reference")
+  settings               Json?
+  lastSyncedAt           Int?                            @map("last_synced_at")
+  createdAt              Int                             @map("created_at")
+  updatedAt              Int                             @map("updated_at")
+
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider        PaymentProvider        @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  payments        Payment[]
+  paymentAttempts PaymentAttempt[]
+  events          PaymentProviderEvent[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, providerId, name])
+  @@index([tenantId, status], name: "billing_provider_connections_tenant_status_idx")
+  @@map("billing_payment_provider_connections")
+}
+
+/// Normalized provider charge lifecycle. A successful attempt may create or
+/// link a Payment, while failures never mutate invoice balances.
+model PaymentAttempt {
+  id                   String               @id
+  tenantId             String               @map("tenant_id")
+  connectionId         String?              @map("connection_id")
+  customerId           String               @map("customer_id")
+  invoiceId            String?              @map("invoice_id")
+  subscriptionId       String?              @map("subscription_id")
+  paymentId            String?              @map("payment_id")
+  idempotencyKey       String               @map("idempotency_key")
+  externalReference    String?              @map("external_reference")
+  status               PaymentAttemptStatus @default(PROCESSING)
+  amount               BigInt
+  currency             String               @db.Char(3)
+  failureCode          String?              @map("failure_code")
+  failureMessage       String?              @map("failure_message")
+  providerResponseCode String?              @map("provider_response_code")
+  attemptedAt          Int                  @map("attempted_at")
+  completedAt          Int?                 @map("completed_at")
+  createdAt            Int                  @map("created_at")
+  updatedAt            Int                  @map("updated_at")
+
+  tenant       Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  connection   PaymentProviderConnection? @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Restrict)
+  customer     Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  invoice      Invoice?                   @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict)
+  subscription Subscription?              @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  payment      Payment?                   @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, idempotencyKey])
+  @@unique([connectionId, externalReference])
+  @@index([tenantId, status, attemptedAt], name: "billing_payment_attempts_tenant_status_date_idx")
+  @@map("billing_payment_attempts")
+}
+
+/// Durable provider-event inbox. Adapters verify signatures before inserting;
+/// workers acknowledge, deduplicate, then process events asynchronously.
+model PaymentProviderEvent {
+  id              String              @id
+  tenantId        String              @map("tenant_id")
+  connectionId    String              @map("connection_id")
+  externalEventId String              @map("external_event_id")
+  eventType       String              @map("event_type")
+  status          ProviderEventStatus @default(RECEIVED)
+  payload         Json?
+  errorMessage    String?             @map("error_message")
+  occurredAt      Int?                @map("occurred_at")
+  receivedAt      Int                 @map("received_at")
+  processedAt     Int?                @map("processed_at")
+  createdAt       Int                 @map("created_at")
+  updatedAt       Int                 @map("updated_at")
+
+  tenant     Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  connection PaymentProviderConnection @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Cascade)
+
+  @@unique([tenantId, id])
+  @@unique([connectionId, externalEventId])
+  @@index([tenantId, status, receivedAt], name: "billing_provider_events_tenant_status_date_idx")
+  @@map("billing_payment_provider_events")
+}

@@ -1,0 +1,144 @@
+[
+  {
+    "name": "Antigua and Barbuda",
+    "countryCode": "AG",
+    "areaCode": "+1-268",
+    "flag": "🇦🇬"
+  },
+  {
+    "name": "Bahamas",
+    "countryCode": "BS",
+    "areaCode": "+1-242",
+    "flag": "🇧🇸"
+  },
+  {
+    "name": "Barbados",
+    "countryCode": "BB",
+    "areaCode": "+1-246",
+    "flag": "🇧🇧"
+  },
+  { "name": "Cuba", "countryCode": "CU", "areaCode": "+53", "flag": "🇨🇺" },
+  {
+    "name": "Dominica",
+    "countryCode": "DM",
+    "areaCode": "+1-767",
+    "flag": "🇩🇲"
+  },
+  {
+    "name": "Dominican Republic",
+    "countryCode": "DO",
+    "areaCode": "+1-809",
+    "flag": "🇩🇴"
+  },
+  {
+    "name": "Grenada",
+    "countryCode": "GD",
+    "areaCode": "+1-473",
+    "flag": "🇬🇩"
+  },
+  { "name": "Haiti", "countryCode": "HT", "areaCode": "+509", "flag": "🇭🇹" },
+  {
+    "name": "Jamaica",
+    "countryCode": "JM",
+    "areaCode": "+1-876",
+    "flag": "🇯🇲"
+  },
+  {
+    "name": "Saint Kitts and Nevis",
+    "countryCode": "KN",
+    "areaCode": "+1-869",
+    "flag": "🇰🇳"
+  },
+  {
+    "name": "Saint Lucia",
+    "countryCode": "LC",
+    "areaCode": "+1-758",
+    "flag": "🇱🇨"
+  },
+  {
+    "name": "Saint Vincent and the Grenadines",
+    "countryCode": "VC",
+    "areaCode": "+1-784",
+    "flag": "🇻🇨"
+  },
+  {
+    "name": "Trinidad and Tobago",
+    "countryCode": "TT",
+    "areaCode": "+1-868",
+    "flag": "🇹🇹"
+  },
+  {
+    "name": "Puerto Rico",
+    "countryCode": "PR",
+    "areaCode": "+1-787",
+    "flag": "🇵🇷"
+  },
+  {
+    "name": "Cayman Islands",
+    "countryCode": "KY",
+    "areaCode": "+1-345",
+    "flag": "🇰🇾"
+  },
+  {
+    "name": "Turks and Caicos Islands",
+    "countryCode": "TC",
+    "areaCode": "+1-649",
+    "flag": "🇹🇨"
+  },
+  {
+    "name": "British Virgin Islands",
+    "countryCode": "VG",
+    "areaCode": "+1-284",
+    "flag": "🇻🇬"
+  },
+  {
+    "name": "U.S. Virgin Islands",
+    "countryCode": "VI",
+    "areaCode": "+1-340",
+    "flag": "🇻🇮"
+  },
+  {
+    "name": "Anguilla",
+    "countryCode": "AI",
+    "areaCode": "+1-264",
+    "flag": "🇦🇮"
+  },
+  {
+    "name": "Montserrat",
+    "countryCode": "MS",
+    "areaCode": "+1-664",
+    "flag": "🇲🇸"
+  },
+  {
+    "name": "Bermuda",
+    "countryCode": "BM",
+    "areaCode": "+1-441",
+    "flag": "🇧🇲"
+  },
+  { "name": "Aruba", "countryCode": "AW", "areaCode": "+297", "flag": "🇦🇼" },
+  { "name": "Curaçao", "countryCode": "CW", "areaCode": "+599", "flag": "🇨🇼" },
+  {
+    "name": "Sint Maarten",
+    "countryCode": "SX",
+    "areaCode": "+1-721",
+    "flag": "🇸🇽"
+  },
+  {
+    "name": "United States",
+    "countryCode": "US",
+    "areaCode": "+1",
+    "flag": "🇺🇸"
+  },
+  { "name": "Canada", "countryCode": "CA", "areaCode": "+1", "flag": "🇨🇦" },
+  { "name": "Mexico", "countryCode": "MX", "areaCode": "+52", "flag": "🇲🇽" },
+  {
+    "name": "United Kingdom",
+    "countryCode": "GB",
+    "areaCode": "+44",
+    "flag": "🇬🇧"
+  },
+  { "name": "France", "countryCode": "FR", "areaCode": "+33", "flag": "🇫🇷" },
+  { "name": "Germany", "countryCode": "DE", "areaCode": "+49", "flag": "🇩🇪" },
+  { "name": "Italy", "countryCode": "IT", "areaCode": "+39", "flag": "🇮🇹" },
+  { "name": "Japan", "countryCode": "JP", "areaCode": "+81", "flag": "🇯🇵" }
+]

@@ -1,0 +1,62 @@
+/// A non-binding sales proposal. Quote acceptance can later create an invoice
+/// or subscription, but this release does not send or collect payment.
+model Quote {
+  id             String      @id
+  tenantId       String      @map("tenant_id")
+  customerId     String      @map("customer_id")
+  priceListId    String?     @map("price_list_id")
+  priceListName  String?     @map("price_list_name")
+  number         String
+  status         QuoteStatus @default(DRAFT)
+  currency       String
+  issueAt        Int?        @map("issue_at")
+  expiresAt      Int?        @map("expires_at")
+  acceptedAt     Int?        @map("accepted_at")
+  declinedAt     Int?        @map("declined_at")
+  canceledAt     Int?        @map("canceled_at")
+  subtotalAmount BigInt      @default(0) @map("subtotal_amount")
+  taxAmount      BigInt      @default(0) @map("tax_amount")
+  totalAmount    BigInt      @default(0) @map("total_amount")
+  notes          String?
+  terms          String?
+  metadata       Json?
+  createdAt      Int         @map("created_at")
+  updatedAt      Int         @map("updated_at")
+
+  tenant           Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer         Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  priceList        PriceList?  @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict)
+  lines            QuoteLine[]
+  convertedInvoice Invoice?    @relation("QuoteConvertedInvoice")
+
+  @@unique([tenantId, number], name: "billing_quotes_tenant_id_number_key")
+  @@index([tenantId, status], name: "billing_quotes_tenant_id_status_idx")
+  @@index([customerId], name: "billing_quotes_customer_id_idx")
+  @@index([priceListId], name: "billing_quotes_price_list_id_idx")
+  @@map("billing_quotes")
+}
+
+/// An immutable snapshot of an item/price at the time it was added to a quote.
+model QuoteLine {
+  id             String  @id
+  quoteId        String  @map("quote_id")
+  itemId         String? @map("item_id")
+  priceId        String? @map("price_id")
+  description    String
+  quantity       Int     @default(1)
+  unitAmount     BigInt  @map("unit_amount")
+  taxAmount      BigInt  @default(0) @map("tax_amount")
+  discountAmount BigInt  @default(0) @map("discount_amount")
+  totalAmount    BigInt  @map("total_amount")
+  createdAt      Int     @map("created_at")
+  updatedAt      Int     @map("updated_at")
+
+  quote Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  item  Item?  @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  price Price? @relation(fields: [priceId], references: [id], onDelete: SetNull)
+
+  @@index([quoteId], name: "billing_quote_lines_quote_id_idx")
+  @@index([itemId], name: "billing_quote_lines_item_id_idx")
+  @@index([priceId], name: "billing_quote_lines_price_id_idx")
+  @@map("billing_quote_lines")
+}

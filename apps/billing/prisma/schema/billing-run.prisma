@@ -1,0 +1,31 @@
+/// Idempotency and operational audit record for one subscription service
+/// period. A scheduler may deliver the same due job more than once.
+model SubscriptionBillingRun {
+  id               String           @id
+  tenantId         String           @map("tenant_id")
+  subscriptionId   String           @map("subscription_id")
+  periodStart      Int              @map("period_start")
+  periodEnd        Int              @map("period_end")
+  scheduledFor     Int              @map("scheduled_for")
+  status           BillingRunStatus @default(PROCESSING)
+  attemptCount     Int              @default(1) @map("attempt_count")
+  invoiceId        String?          @map("invoice_id")
+  isAdvanceBilling Boolean          @default(false) @map("is_advance_billing")
+  periodAdvancedAt Int?             @map("period_advanced_at")
+  errorCode        String?          @map("error_code")
+  errorMessage     String?          @map("error_message")
+  startedAt        Int              @map("started_at")
+  completedAt      Int?             @map("completed_at")
+  createdAt        Int              @map("created_at")
+  updatedAt        Int              @map("updated_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, id])
+  @@unique([subscriptionId, periodStart, periodEnd], name: "billing_runs_subscription_period_key")
+  @@index([tenantId, status, scheduledFor], name: "billing_runs_tenant_status_schedule_idx")
+  @@index([invoiceId], name: "billing_subscription_runs_invoice_id_idx")
+  @@map("billing_subscription_runs")
+}

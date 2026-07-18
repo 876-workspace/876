@@ -1,0 +1,22 @@
+/// A party that provides goods or services to the tenant.
+model Vendor {
+  id                String       @id
+  tenantId          String       @map("tenant_id")
+  externalReference String?      @map("external_reference")
+  name              String
+  email             String?
+  phone             String?
+  billingAddress    Json?        @map("billing_address")
+  metadata          Json?
+  defaultCurrency   String?      @map("default_currency")
+  status            VendorStatus @default(ACTIVE)
+  createdAt         Int          @map("created_at")
+  updatedAt         Int          @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, externalReference], name: "billing_vendors_tenant_id_external_reference_key")
+  @@index([tenantId], name: "billing_vendors_tenant_id_idx")
+  @@index([externalReference], name: "billing_vendors_external_reference_idx")
+  @@map("billing_vendors")
+}

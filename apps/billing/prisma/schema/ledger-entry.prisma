@@ -1,0 +1,34 @@
+/// Append-only customer subledger event used for statements, reconciliation,
+/// aging, and a future double-entry general-ledger projection.
+model CustomerLedgerEntry {
+  id             String          @id
+  tenantId       String          @map("tenant_id")
+  customerId     String          @map("customer_id")
+  subscriptionId String?         @map("subscription_id")
+  invoiceId      String?         @map("invoice_id")
+  paymentId      String?         @map("payment_id")
+  creditNoteId   String?         @map("credit_note_id")
+  refundId       String?         @map("refund_id")
+  type           LedgerEntryType
+  direction      LedgerDirection
+  amount         BigInt
+  currency       String          @db.Char(3)
+  description    String?
+  idempotencyKey String          @map("idempotency_key")
+  effectiveAt    Int             @map("effective_at")
+  createdAt      Int             @map("created_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer     Customer      @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  invoice      Invoice?      @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict)
+  payment      Payment?      @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Restrict)
+  creditNote   CreditNote?   @relation(fields: [tenantId, creditNoteId], references: [tenantId, id], onDelete: Restrict)
+  refund       Refund?       @relation(fields: [tenantId, refundId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, customerId, effectiveAt], name: "billing_ledger_tenant_customer_date_idx")
+  @@index([tenantId, type, effectiveAt], name: "billing_ledger_tenant_type_date_idx")
+  @@map("billing_customer_ledger_entries")
+}

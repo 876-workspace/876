@@ -1,0 +1,71 @@
+/// Tenant defaults for subscription creation and renewal. Per-subscription and
+/// per-customer overrides remain nullable so inheritance is explicit.
+model SubscriptionPreference {
+  tenantId                          String                      @id @map("tenant_id")
+  defaultTaxBehavior                TaxBehavior                 @default(EXCLUSIVE) @map("default_tax_behavior")
+  defaultCollectionMethod           CollectionMethod            @default(SEND_INVOICE) @map("default_collection_method")
+  defaultBillingTiming              BillingTiming               @default(IN_ADVANCE) @map("default_billing_timing")
+  defaultProrationBehavior          ProrationBehavior           @default(CREATE_PRORATIONS) @map("default_proration_behavior")
+  defaultInvoiceMode                SubscriptionInvoiceMode     @default(AUTO_FINALIZE) @map("default_invoice_mode")
+  notifyDraftInvoice                Boolean                     @default(false) @map("notify_draft_invoice")
+  consolidatedBillingEnabled        Boolean                     @default(false) @map("consolidated_billing_enabled")
+  calendarMode                      SubscriptionCalendarMode    @default(ANNIVERSARY) @map("calendar_mode")
+  pauseResumeEnabled                Boolean                     @default(true) @map("pause_resume_enabled")
+  pauseUnbilledChargeBehavior       PauseUnbilledChargeBehavior @default(RETAIN) @map("pause_unbilled_charge_behavior")
+  pauseCreditBehavior               PauseCreditBehavior         @default(NONE) @map("pause_credit_behavior")
+  defaultResumeBillingBehavior      ResumeBillingBehavior       @default(START_NEW_PERIOD) @map("default_resume_billing_behavior")
+  defaultRenewalPricingPolicy       RenewalPricingPolicy        @default(RETAIN_EXISTING) @map("default_renewal_pricing_policy")
+  lockTrialAndFutureActivationPrice Boolean                     @default(true) @map("lock_trial_future_activation_price")
+  autoApplyCredits                  Boolean                     @default(true) @map("auto_apply_credits")
+  autoApplyExcessPayments           Boolean                     @default(true) @map("auto_apply_excess_payments")
+  advanceBillingEnabled             Boolean                     @default(false) @map("advance_billing_enabled")
+  advanceBillingMethod              AdvanceBillingMethod        @default(INVOICE) @map("advance_billing_method")
+  automateAdvanceBilling            Boolean                     @default(false) @map("automate_advance_billing")
+  advanceTermsFromPeriodStart       Boolean                     @default(false) @map("advance_terms_from_period_start")
+  notifyAdvanceBillingFailure       Boolean                     @default(true) @map("notify_advance_billing_failure")
+  createdAt                         Int                         @map("created_at")
+  updatedAt                         Int                         @map("updated_at")
+
+  tenant         Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  advanceRules   SubscriptionAdvanceBillingRule[]
+  calendarDays   SubscriptionCalendarDay[]
+  calendarMonths SubscriptionCalendarMonth[]
+
+  @@map("billing_subscription_preferences")
+}
+
+model SubscriptionAdvanceBillingRule {
+  tenantId     String       @map("tenant_id")
+  intervalUnit IntervalUnit @map("interval_unit")
+  daysBefore   Int          @map("days_before")
+  createdAt    Int          @map("created_at")
+  updatedAt    Int          @map("updated_at")
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_advance_rules_tenant_fkey")
+  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_advance_rules_preference_fkey")
+
+  @@id([tenantId, intervalUnit])
+  @@map("billing_subscription_advance_rules")
+}
+
+model SubscriptionCalendarDay {
+  tenantId   String @map("tenant_id")
+  dayOfMonth Int    @map("day_of_month")
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_calendar_days_tenant_fkey")
+  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_calendar_days_preference_fkey")
+
+  @@id([tenantId, dayOfMonth])
+  @@map("billing_subscription_calendar_days")
+}
+
+model SubscriptionCalendarMonth {
+  tenantId String @map("tenant_id")
+  month    Int
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_calendar_months_tenant_fkey")
+  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_calendar_months_preference_fkey")
+
+  @@id([tenantId, month])
+  @@map("billing_subscription_calendar_months")
+}

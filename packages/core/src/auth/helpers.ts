@@ -1,0 +1,1 @@
+export { validateAuthInput } from './validation'

@@ -1,0 +1,17 @@
+/// Application-owned defaults for customer-facing financial documents.
+/// Tenant-authored document settings may override these values without the
+/// next reconciliation replacing them.
+model DocumentPreference {
+  tenantId            String       @map("tenant_id")
+  documentType        DocumentType @map("document_type")
+  customerNote        String?      @map("customer_note")
+  termsAndConditions  String?      @map("terms_and_conditions")
+  provisioningVersion Int          @map("provisioning_version")
+  createdAt           Int          @map("created_at")
+  updatedAt           Int          @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, documentType])
+  @@map("billing_document_preferences")
+}
