@@ -163,6 +163,35 @@ UPDATE_ORG_RESPONSES: dict = {
     **_ADMIN,
 }
 
+RETRIEVE_ORG_PROFILE_SUMMARY = "Retrieve organization profile"
+RETRIEVE_ORG_PROFILE_DESCRIPTION = (
+    "Returns the profile of an organization the caller belongs to. **Session-scoped** — "
+    "requires an active membership in the organization. Used by product apps (e.g. Couriers) "
+    "to prefill the organization settings form."
+)
+RETRIEVE_ORG_PROFILE_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "Organization not found.",
+    },
+    **_MEMBER_SESSION,
+}
+
+UPDATE_ORG_PROFILE_SUMMARY = "Update organization profile"
+UPDATE_ORG_PROFILE_DESCRIPTION = (
+    "Updates the identity profile (name, business identity, address, contact, locale) of an "
+    "organization the caller owns or administers. **Session-scoped** — requires an active "
+    "`owner` or `admin` membership. Privileged fields (slug, status, WorkOS ID, metadata) are "
+    "not editable through this endpoint; use the admin update instead."
+)
+UPDATE_ORG_PROFILE_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "Organization not found.",
+    },
+    **_MEMBER_SESSION,
+}
+
 # --- App access ---
 
 GET_SUBSCRIPTION_SUMMARY = "Get subscription"

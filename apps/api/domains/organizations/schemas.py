@@ -214,11 +214,15 @@ class OrganizationCreate(BaseModel):
     metadata: dict[str, Any] | None = Field(default=None, description="Arbitrary key-value metadata.")
 
 
-class OrganizationUpdate(BaseModel):
-    workos_organization_id: str | None = Field(
-        default=None,
-        description="Unique identifier for the matching WorkOS organization. Set to null to clear it.",
-    )
+class OrgProfileUpdate(BaseModel):
+    """Org profile fields an org owner/admin may edit from within a product app.
+
+    Scoped to identity/profile attributes only. Excludes privileged fields
+    (``slug``, ``status``, ``workos_organization_id``, ``metadata``) which stay
+    admin-only — see :class:`OrganizationUpdate`, which extends this. All fields
+    are nullable; explicitly setting one to ``null`` clears it.
+    """
+
     name: str | None = Field(default=None, description="The organization's display name.")
     short_name: str | None = Field(default=None, description="The organization's short name.")
     doing_business_as: str | None = Field(
@@ -247,8 +251,6 @@ class OrganizationUpdate(BaseModel):
     )
     timezone: str | None = Field(default=None, description="IANA timezone name.", examples=["America/Jamaica"])
     language: str | None = Field(default=None, description="Default language (BCP 47).", examples=["en-JM"])
-    slug: str | None = Field(default=None, description="URL-safe unique identifier for the organization.")
-    status: str | None = Field(default=None, description="The organization's status.")
     logo_url: str | None = Field(
         default=None,
         description="URL of the organization's logo image. Set to null to clear it.",
@@ -265,6 +267,17 @@ class OrganizationUpdate(BaseModel):
     region_id: str | None = Field(default=None, description="Region (parish/state) identifier.")
     country_code: str | None = Field(default=None, description="ISO 3166-1 alpha-2 country code.")
     currency_code: str | None = Field(default=None, description="ISO 4217 currency code.")
+
+
+class OrganizationUpdate(OrgProfileUpdate):
+    """Full admin update surface: profile fields plus privileged fields."""
+
+    workos_organization_id: str | None = Field(
+        default=None,
+        description="Unique identifier for the matching WorkOS organization. Set to null to clear it.",
+    )
+    slug: str | None = Field(default=None, description="URL-safe unique identifier for the organization.")
+    status: str | None = Field(default=None, description="The organization's status.")
     metadata: dict[str, Any] | None = Field(
         default=None,
         description="Arbitrary key-value metadata. Set to null to clear it.",
