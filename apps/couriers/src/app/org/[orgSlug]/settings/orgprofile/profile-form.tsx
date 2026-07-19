@@ -6,7 +6,13 @@ import { BuildingOffice2Icon } from '@876/ui/icons'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
-import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@876/ui/select'
 
 import { request } from '@/lib/client/request'
 
@@ -273,21 +279,22 @@ export function ProfileForm({ orgSlug, canEdit, initial, parishes }: Props) {
           hint="If different from the registered name."
         />
         <FieldRow label="Business type" htmlFor="business_type">
-          <NativeSelect
-            id="business_type"
-            name="business_type"
+          <Select
             value={values.business_type}
+            onValueChange={(value) => setField('business_type', value || '')}
             disabled={disabled}
-            onChange={(event) => setField('business_type', event.target.value)}
-            className="w-full"
           >
-            <NativeSelectOption value="">Select…</NativeSelectOption>
-            {BUSINESS_TYPES.map((option) => (
-              <NativeSelectOption key={option.value} value={option.value}>
-                {option.label}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            <SelectTrigger id="business_type" className="w-full">
+              <SelectValue placeholder="Select business type" />
+            </SelectTrigger>
+            <SelectContent>
+              {BUSINESS_TYPES.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FieldRow>
         <InputRow
           id="industry"
@@ -331,21 +338,22 @@ export function ProfileForm({ orgSlug, canEdit, initial, parishes }: Props) {
               className="w-full"
               onChange={(event) => setField('city', event.target.value)}
             />
-            <NativeSelect
-              id="region_id"
-              name="region_id"
+            <Select
               value={values.region_id}
+              onValueChange={(value) => setField('region_id', value || '')}
               disabled={disabled || parishes.length === 0}
-              onChange={(event) => setField('region_id', event.target.value)}
-              className="w-full"
             >
-              <NativeSelectOption value="">Select parish…</NativeSelectOption>
-              {parishes.map((parish) => (
-                <NativeSelectOption key={parish.value} value={parish.value}>
-                  {parish.label}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+              <SelectTrigger id="region_id" className="w-full">
+                <SelectValue placeholder="Select parish" />
+              </SelectTrigger>
+              <SelectContent>
+                {parishes.map((parish) => (
+                  <SelectItem key={parish.value} value={parish.value}>
+                    {parish.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
               id="country_code"
               name="country_code"
@@ -448,21 +456,22 @@ export function ProfileForm({ orgSlug, canEdit, initial, parishes }: Props) {
           htmlFor="currency_code"
           hint="Default currency for invoices and financial reports."
         >
-          <NativeSelect
-            id="currency_code"
-            name="currency_code"
+          <Select
             value={values.currency_code}
+            onValueChange={(value) => setField('currency_code', value || '')}
             disabled={disabled}
-            onChange={(event) => setField('currency_code', event.target.value)}
-            className="w-full"
           >
-            <NativeSelectOption value="">Select…</NativeSelectOption>
-            {CURRENCIES.map((option) => (
-              <NativeSelectOption key={option.value} value={option.value}>
-                {option.label}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            <SelectTrigger id="currency_code" className="w-full">
+              <SelectValue placeholder="Select currency" />
+            </SelectTrigger>
+            <SelectContent>
+              {CURRENCIES.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FieldRow>
         <InputRow
           id="timezone"
@@ -490,7 +499,11 @@ export function ProfileForm({ orgSlug, canEdit, initial, parishes }: Props) {
 
       {canEdit ? (
         <div className="mt-8 flex items-center gap-3 border-t pt-6">
-          <Button type="submit" disabled={saving}>
+          <Button
+            type="submit"
+            disabled={saving}
+            className="bg-876-blue text-white hover:bg-[color-mix(in_oklab,var(--876-blue)_82%,black)]"
+          >
             {saving ? 'Saving…' : 'Save'}
           </Button>
           <Button
