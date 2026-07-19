@@ -11,6 +11,19 @@ export const mailboxViewSchema = z.object({
 })
 export type MailboxView = z.infer<typeof mailboxViewSchema>
 
+export interface MailboxAllocateParams {
+  tenantId: string
+}
+
+export interface MailboxAllocation {
+  number: string
+}
+
+export interface CustomerMailboxListParams {
+  tenantId: string
+  customerId: string
+}
+
 export const mailboxCreateParamsSchema = z.strictObject({
   customerId: z.string(),
   number: z.string().min(1),

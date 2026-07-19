@@ -162,6 +162,22 @@ export const packageViewSchema = z.object({
 })
 export type PackageView = z.infer<typeof packageViewSchema>
 
+export interface PortalPackage extends PackageView {
+  carrier: { name: string } | null
+  branch: { name: string } | null
+  mailbox: { number: string } | null
+}
+
+export interface CustomerPackageListParams {
+  tenantId: string
+  customerId: string
+}
+
+export interface TenantPackageRetrieveParams {
+  tenantId: string
+  id: string
+}
+
 export const packageCreateParamsSchema = z.strictObject({
   customerId: z.string(),
   branchId: z.string().optional(),
