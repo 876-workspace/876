@@ -1,8 +1,15 @@
-import { NETWORK_OFFLINE_ERROR, sendClientRequest } from '@876/core/client'
+import { sendClientRequest } from '@876/core/client'
 import type { ClientHttpMethod } from '@876/core/client'
 import type { z } from 'zod'
 
 import type { Error, Result } from './types'
+
+/** Returned when the Billing service's `baseUrl` cannot be reached (down, wrong host/port, or not started in this environment) — distinct from the browser being offline. */
+const BILLING_UNREACHABLE_ERROR: Error = {
+  code: 'billing/unreachable',
+  message:
+    'Could not reach the Billing service. It may not be running or reachable at its configured URL.',
+}
 
 export interface Transport {
   baseUrl: string
@@ -42,7 +49,7 @@ export async function sendRequest<T>(
   if (result.networkError)
     return {
       data: null,
-      error: NETWORK_OFFLINE_ERROR,
+      error: BILLING_UNREACHABLE_ERROR,
     }
 
   if (!isResultEnvelope(result.payload)) return invalidResponse()
