@@ -2,6 +2,7 @@ import 'server-only'
 
 import {
   getRequiredWidgetFeatureSlugs,
+  knowledgeBaseWidgetMetadata,
   notepadWidgetMetadata,
 } from '@876/widgets'
 
@@ -9,7 +10,7 @@ import { getConsoleFeatures } from '@/lib/features'
 import { consoleWidgetCatalog } from '@/components/widgets/widget-catalog'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-export async function requireNotepadMember() {
+async function requireWidgetMember(widgetId: 'notepad' | 'knowledge_base') {
   const session = await getAuthSession()
   if (!isSignedSession(session))
     return {
@@ -21,24 +22,29 @@ export async function requireNotepadMember() {
     userId: session.user.id,
     widgets: consoleWidgetCatalog,
   })
-  const required = getRequiredWidgetFeatureSlugs(
-    notepadWidgetMetadata,
-    'console'
-  )
   const enabled = new Set(features.enabledWidgetIds)
-  // Prefer dock evaluation (already AND of platform+app flags via isWidgetEnabled).
-  if (!enabled.has('notepad')) {
-    // Fall back: if evaluate returned empty widget list for other reasons, still
-    // surface a clean forbidden for missing notepad access.
+  if (!enabled.has(widgetId)) {
+    const label = widgetId === 'notepad' ? 'notepad' : 'knowledge base'
     return {
       userId: null as string | null,
       response: Response.json(
-        { error: 'Access to the notepad widget is disabled.' },
+        { error: `Access to the ${label} widget is disabled.` },
         { status: 403 }
       ),
     }
   }
 
-  void required
+  const metadata =
+    widgetId === 'notepad' ? notepadWidgetMetadata : knowledgeBaseWidgetMetadata
+  void getRequiredWidgetFeatureSlugs(metadata, 'console')
+
   return { userId: session.user.id, response: null }
+}
+
+export async function requireNotepadMember() {
+  return requireWidgetMember('notepad')
+}
+
+export async function requireKnowledgeBaseMember() {
+  return requireWidgetMember('knowledge_base')
 }

@@ -27,6 +27,28 @@ export const uploadRouter = {
       url: file.ufsUrl,
       key: file.key,
     })),
+
+  kbImage: f({
+    image: {
+      maxFileSize: '8MB',
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async () => {
+      const { caller, response } =
+        await requireConsolePermission('console:widgets')
+      if (response)
+        throw new UploadThingError({
+          code: 'FORBIDDEN',
+          message: 'Insufficient permissions.',
+        })
+
+      return { userId: caller.id }
+    })
+    .onUploadComplete(({ file }) => ({
+      url: file.ufsUrl,
+      key: file.key,
+    })),
 } satisfies FileRouter
 
 export type UploadRouter = typeof uploadRouter

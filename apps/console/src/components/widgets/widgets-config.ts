@@ -1,4 +1,8 @@
-import { NotepadIcon } from '@876/widgets/react'
+import {
+  KnowledgeBaseIcon,
+  KnowledgeBaseWidgetPanel,
+  NotepadIcon,
+} from '@876/widgets/react'
 import { Terminal, type IconComponent } from '@876/ui/icons'
 import type { ComponentType } from 'react'
 import type { AdminAuditEvent } from '@876/admin'
@@ -23,10 +27,19 @@ export type Widget = {
 
 type WidgetRenderer = Omit<Widget, 'id' | 'label'>
 
+function KnowledgeBasePanel(_props: WidgetPanelProps) {
+  return <KnowledgeBaseWidgetPanel />
+}
+
 const widgetRenderers = {
   notepad: {
     icon: NotepadIcon as IconComponent,
     panel: NotepadWidget,
+  },
+  knowledge_base: {
+    icon: KnowledgeBaseIcon as IconComponent,
+    panel: KnowledgeBasePanel,
+    panelSize: 'lg' as const,
   },
   live_logs: {
     icon: Terminal,
