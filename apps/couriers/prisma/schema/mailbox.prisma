@@ -10,10 +10,10 @@ model Mailbox {
   createdAt  Int     @map("created_at")
   updatedAt  Int     @map("updated_at")
 
-  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "mailboxes_customer_id_fkey")
   packages Package[]
 
-  @@unique([tenantId, number], name: "mailboxes_tenant_id_number_key")
-  @@index([customerId], name: "mailboxes_customer_id_idx")
+  @@unique([tenantId, number], name: "mailboxes_tenant_id_number_key", map: "mailboxes_tenant_id_number_key")
+  @@index([customerId], map: "mailboxes_customer_id_idx")
   @@map("mailboxes")
 }

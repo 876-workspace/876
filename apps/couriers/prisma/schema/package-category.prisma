@@ -13,9 +13,9 @@ model PackageCategory {
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 
-  tenant   Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "package_categories_tenant_id_fkey")
   packages Package[]
 
-  @@unique([tenantId, slug], name: "package_categories_tenant_id_slug_key")
+  @@unique([tenantId, slug], name: "package_categories_tenant_id_slug_key", map: "package_categories_tenant_id_slug_key")
   @@map("package_categories")
 }

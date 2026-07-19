@@ -20,12 +20,12 @@ model Branch {
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 
-  tenant    Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "branches_tenant_id_fkey")
   customers CourierCustomerProfile[]
   packages  Package[]
   staff     StaffMember[]
 
-  @@unique([tenantId, name], name: "branches_tenant_id_name_key")
-  @@index([tenantId], name: "branches_tenant_id_idx")
+  @@unique([tenantId, name], name: "branches_tenant_id_name_key", map: "branches_tenant_id_name_key")
+  @@index([tenantId], map: "branches_tenant_id_idx")
   @@map("branches")
 }

@@ -15,11 +15,11 @@ model CustomerIdType {
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 
-  tenant    Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "customer_id_types_tenant_id_fkey")
   documents CustomerDocument[]
 
-  @@unique([tenantId, slug], name: "customer_id_types_tenant_id_slug_key")
-  @@index([tenantId], name: "customer_id_types_tenant_id_idx")
+  @@unique([tenantId, slug], name: "customer_id_types_tenant_id_slug_key", map: "customer_id_types_tenant_id_slug_key")
+  @@index([tenantId], map: "customer_id_types_tenant_id_idx")
   @@map("customer_id_types")
 }
 
@@ -49,11 +49,12 @@ model CustomerDocument {
   createdAt    Int     @map("created_at")
   updatedAt    Int     @map("updated_at")
 
-  tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  type     CustomerIdType         @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "customer_documents_tenant_id_fkey")
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "customer_documents_customer_id_fkey")
+  type     CustomerIdType         @relation(fields: [typeId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "customer_documents_type_id_fkey")
 
-  @@index([tenantId], name: "customer_documents_tenant_id_idx")
-  @@index([customerId], name: "customer_documents_customer_id_idx")
+  @@index([tenantId], map: "customer_documents_tenant_id_idx")
+  @@index([customerId], map: "customer_documents_customer_id_idx")
+  @@index([typeId], map: "customer_documents_type_id_idx")
   @@map("customer_documents")
 }

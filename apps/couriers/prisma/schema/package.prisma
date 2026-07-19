@@ -77,23 +77,29 @@ model Package {
   createdAt Int @map("created_at")
   updatedAt Int @map("updated_at")
 
-  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer    CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  branch      Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  mailbox     Mailbox?               @relation(fields: [mailboxId], references: [id], onDelete: SetNull)
-  carrier     Carrier?               @relation(fields: [carrierId], references: [id], onDelete: SetNull)
-  seller      Seller?                @relation(fields: [sellerId], references: [id], onDelete: SetNull)
-  category    PackageCategory?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  manifest    Manifest?              @relation(fields: [manifestId], references: [id], onDelete: SetNull)
-  collectedBy Contact?               @relation("PackageCollectedBy", fields: [collectedById], references: [id], onDelete: SetNull)
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "packages_tenant_id_fkey")
+  customer    CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "packages_customer_id_fkey")
+  branch      Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_branch_id_fkey")
+  mailbox     Mailbox?               @relation(fields: [mailboxId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_mailbox_id_fkey")
+  carrier     Carrier?               @relation(fields: [carrierId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_carrier_id_fkey")
+  seller      Seller?                @relation(fields: [sellerId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_seller_id_fkey")
+  category    PackageCategory?       @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_category_id_fkey")
+  manifest    Manifest?              @relation(fields: [manifestId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_manifest_id_fkey")
+  collectedBy Contact?               @relation("PackageCollectedBy", fields: [collectedById], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "packages_collected_by_id_fkey")
   documents   PackageDocument[]
   notes       PackageNote[]
 
-  @@index([tenantId], name: "packages_tenant_id_idx")
-  @@index([customerId], name: "packages_customer_id_idx")
-  @@index([manifestId], name: "packages_manifest_id_idx")
-  @@index([billingInvoiceId], name: "packages_billing_invoice_id_idx")
-  @@index([tenantId, trackingNum], name: "packages_tenant_id_tracking_num_idx")
+  @@index([tenantId], map: "packages_tenant_id_idx")
+  @@index([customerId], map: "packages_customer_id_idx")
+  @@index([manifestId], map: "packages_manifest_id_idx")
+  @@index([billingInvoiceId], map: "packages_billing_invoice_id_idx")
+  @@index([tenantId, trackingNum], map: "packages_tenant_id_tracking_num_idx")
+  @@index([branchId], map: "packages_branch_id_idx")
+  @@index([carrierId], map: "packages_carrier_id_idx")
+  @@index([categoryId], map: "packages_category_id_idx")
+  @@index([collectedById], map: "packages_collected_by_id_idx")
+  @@index([mailboxId], map: "packages_mailbox_id_idx")
+  @@index([sellerId], map: "packages_seller_id_idx")
   @@map("packages")
 }
 
@@ -133,9 +139,9 @@ model PackageDocument {
   createdAt Int                 @map("created_at")
   updatedAt Int                 @map("updated_at")
 
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "package_documents_package_id_fkey")
 
-  @@index([packageId], name: "package_documents_package_id_idx")
+  @@index([packageId], map: "package_documents_package_id_idx")
   @@map("package_documents")
 }
 
@@ -155,8 +161,8 @@ model PackageNote {
   createdAt Int    @map("created_at")
   updatedAt Int    @map("updated_at")
 
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "package_notes_package_id_fkey")
 
-  @@index([packageId], name: "package_notes_package_id_idx")
+  @@index([packageId], map: "package_notes_package_id_idx")
   @@map("package_notes")
 }

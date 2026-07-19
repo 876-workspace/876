@@ -15,10 +15,10 @@ model Warehouse {
   createdAt  Int     @map("created_at")
   updatedAt  Int     @map("updated_at")
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "warehouses_tenant_id_fkey")
   manifests Manifest[]
 
-  @@unique([tenantId, name], name: "warehouses_tenant_id_name_key")
-  @@index([tenantId], name: "warehouses_tenant_id_idx")
+  @@unique([tenantId, name], name: "warehouses_tenant_id_name_key", map: "warehouses_tenant_id_name_key")
+  @@index([tenantId], map: "warehouses_tenant_id_idx")
   @@map("warehouses")
 }

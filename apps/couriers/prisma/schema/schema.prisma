@@ -28,8 +28,9 @@ model Domain {
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "domains_tenant_id_fkey")
 
-  @@index([hostname], name: "domains_hostname_idx")
+  @@index([hostname], map: "domains_hostname_idx")
+  @@index([tenantId], map: "domains_tenant_id_idx")
   @@map("domains")
 }

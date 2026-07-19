@@ -12,9 +12,9 @@ model Contact {
   createdAt  Int     @map("created_at")
   updatedAt  Int     @map("updated_at")
 
-  customer          CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer          CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "contacts_customer_id_fkey")
   collectedPackages Package[]              @relation("PackageCollectedBy")
 
-  @@index([customerId], name: "contacts_customer_id_idx")
+  @@index([customerId], map: "contacts_customer_id_idx")
   @@map("contacts")
 }

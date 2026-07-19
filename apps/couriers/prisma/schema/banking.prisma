@@ -28,13 +28,13 @@ model CashSession {
   createdAt               Int               @map("created_at")
   updatedAt               Int               @map("updated_at")
 
-  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  staffMember StaffMember          @relation(fields: [staffMemberId], references: [id], onDelete: Restrict)
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "cash_sessions_tenant_id_fkey")
+  staffMember StaffMember          @relation(fields: [staffMemberId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "cash_sessions_staff_member_id_fkey")
   payments    CashSessionPayment[]
 
-  @@index([tenantId], name: "cash_sessions_tenant_id_idx")
-  @@index([staffMemberId], name: "cash_sessions_staff_member_id_idx")
-  @@index([billingDepositAccountId], name: "cash_sessions_billing_deposit_account_id_idx")
+  @@index([tenantId], map: "cash_sessions_tenant_id_idx")
+  @@index([staffMemberId], map: "cash_sessions_staff_member_id_idx")
+  @@index([billingDepositAccountId], map: "cash_sessions_billing_deposit_account_id_idx")
   @@map("cash_sessions")
 }
 
@@ -47,9 +47,9 @@ model CashSessionPayment {
   createdAt        Int    @map("created_at")
   updatedAt        Int    @map("updated_at")
 
-  cashSession CashSession @relation(fields: [cashSessionId], references: [id], onDelete: Cascade)
+  cashSession CashSession @relation(fields: [cashSessionId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "cash_session_payments_cash_session_id_fkey")
 
-  @@index([cashSessionId], name: "cash_session_payments_cash_session_id_idx")
+  @@index([cashSessionId], map: "cash_session_payments_cash_session_id_idx")
   @@map("cash_session_payments")
 }
 

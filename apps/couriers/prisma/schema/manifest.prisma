@@ -69,12 +69,13 @@ model Manifest {
   createdAt Int @map("created_at")
   updatedAt Int @map("updated_at")
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "manifests_tenant_id_fkey")
+  warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "manifests_warehouse_id_fkey")
   packages  Package[]
 
-  @@unique([tenantId, manifestNumber], name: "manifests_tenant_id_manifest_number_key")
-  @@index([tenantId], name: "manifests_tenant_id_idx")
+  @@unique([tenantId, manifestNumber], name: "manifests_tenant_id_manifest_number_key", map: "manifests_tenant_id_manifest_number_key")
+  @@index([tenantId], map: "manifests_tenant_id_idx")
+  @@index([warehouseId], map: "manifests_warehouse_id_idx")
   @@map("manifests")
 }
 

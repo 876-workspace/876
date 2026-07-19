@@ -16,8 +16,8 @@ model CustomerAddress {
   createdAt  Int     @map("created_at")
   updatedAt  Int     @map("updated_at")
 
-  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "customer_addresses_customer_id_fkey")
 
-  @@index([customerId], name: "customer_addresses_customer_id_idx")
+  @@index([customerId], map: "customer_addresses_customer_id_idx")
   @@map("customer_addresses")
 }

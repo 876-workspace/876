@@ -9,11 +9,11 @@ model StaffPosition {
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 
-  tenant  Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant  Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "staff_positions_tenant_id_fkey")
   members StaffMember[]
 
-  @@unique([tenantId, name], name: "staff_positions_tenant_id_name_key")
-  @@index([tenantId], name: "staff_positions_tenant_id_idx")
+  @@unique([tenantId, name], name: "staff_positions_tenant_id_name_key", map: "staff_positions_tenant_id_name_key")
+  @@index([tenantId], map: "staff_positions_tenant_id_idx")
   @@map("staff_positions")
 }
 
@@ -30,13 +30,15 @@ model StaffMember {
   createdAt  Int     @map("created_at")
   updatedAt  Int     @map("updated_at")
 
-  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  branch       Branch?        @relation(fields: [branchId], references: [id], onDelete: SetNull)
-  position     StaffPosition? @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  tenant       Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "staff_members_tenant_id_fkey")
+  branch       Branch?        @relation(fields: [branchId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "staff_members_branch_id_fkey")
+  position     StaffPosition? @relation(fields: [positionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "staff_members_position_id_fkey")
   cashSessions CashSession[]
 
-  @@unique([tenantId, userId], name: "staff_members_tenant_id_user_id_key")
-  @@index([tenantId], name: "staff_members_tenant_id_idx")
-  @@index([userId], name: "staff_members_user_id_idx")
+  @@unique([tenantId, userId], name: "staff_members_tenant_id_user_id_key", map: "staff_members_tenant_id_user_id_key")
+  @@index([tenantId], map: "staff_members_tenant_id_idx")
+  @@index([userId], map: "staff_members_user_id_idx")
+  @@index([branchId], map: "staff_members_branch_id_idx")
+  @@index([positionId], map: "staff_members_position_id_idx")
   @@map("staff_members")
 }
