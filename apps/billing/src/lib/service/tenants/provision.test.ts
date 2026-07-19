@@ -32,7 +32,7 @@ const NOW = 1_783_771_200
 type MutationMock = ReturnType<typeof vi.fn>
 
 type Tx = {
-  $queryRaw: ReturnType<typeof vi.fn>
+  $executeRaw: ReturnType<typeof vi.fn>
   tenant: {
     create: MutationMock
     findUnique: ReturnType<typeof vi.fn>
@@ -95,7 +95,7 @@ describe('tenant provisioning', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     tx = {
-      $queryRaw: vi.fn().mockResolvedValue([]),
+      $executeRaw: vi.fn().mockResolvedValue(0),
       tenant: {
         create: echoCreate(),
         findUnique: vi.fn().mockResolvedValue(null),
@@ -287,7 +287,7 @@ describe('tenant provisioning', () => {
       status: 422,
     })
     expect(tx.tenant.create).not.toHaveBeenCalled()
-    expect(tx.$queryRaw).toHaveBeenCalledTimes(1)
+    expect(tx.$executeRaw).toHaveBeenCalledTimes(1)
     expect(tx.taxAuthority.createMany).not.toHaveBeenCalled()
     expect(tx.taxRate.createMany).not.toHaveBeenCalled()
   })

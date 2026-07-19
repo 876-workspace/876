@@ -46,7 +46,9 @@ export async function ensureWorkspace(
   // records. Serialize provisioning for one Core organization so concurrent
   // app activations cannot create duplicate defaults or roll back a newer
   // finance-connection revision.
-  await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`billing-workspace:${input.organizationId}`}, 0))`
+  // $executeRaw (not $queryRaw): pg_advisory_xact_lock returns void, which
+  // Prisma driver adapters cannot deserialize as a query result column.
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`billing-workspace:${input.organizationId}`}, 0))`
 
   const defaults = manifest.defaults
   const countryCode = normalizeCountryCode(
