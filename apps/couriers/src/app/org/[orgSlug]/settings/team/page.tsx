@@ -1,4 +1,4 @@
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 export const metadata = { title: 'Team — Settings' }
 
@@ -17,12 +17,9 @@ export default async function TeamSettingsPage({
         className="mb-4"
       />
 
-      <div className="mb-8">
-        <h1 className="text-xl font-semibold tracking-tight">Team</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Manage staff accounts and access levels for your workspace.
-        </p>
-      </div>
+      <PageHeader className="mb-8">
+        <PageTitle>Team</PageTitle>
+      </PageHeader>
 
       <div className="876-empty-dashed max-w-2xl">Coming soon.</div>
     </Page>

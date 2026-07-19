@@ -50,7 +50,7 @@ export default async function SettingsPage({
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:max-w-5xl lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:max-w-7xl lg:grid-cols-4">
         {SETTINGS_SECTIONS.map((section) => {
           const Icon = section.icon
           return (
