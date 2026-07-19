@@ -245,6 +245,45 @@ async def _seed_platform_apps(engine: object) -> None:
         await session.commit()
 
 
+_JM_PARISH_SEED = """
+INSERT INTO regions (id, country_code, code, name, type, is_enabled) VALUES
+    ('region_jm_01', 'JM', 'JM-01', 'Kingston',       'parish', true),
+    ('region_jm_02', 'JM', 'JM-02', 'St. Andrew',     'parish', true),
+    ('region_jm_03', 'JM', 'JM-03', 'St. Thomas',     'parish', true),
+    ('region_jm_04', 'JM', 'JM-04', 'Portland',       'parish', true),
+    ('region_jm_05', 'JM', 'JM-05', 'St. Mary',       'parish', true),
+    ('region_jm_06', 'JM', 'JM-06', 'St. Ann',        'parish', true),
+    ('region_jm_07', 'JM', 'JM-07', 'Trelawny',       'parish', true),
+    ('region_jm_08', 'JM', 'JM-08', 'St. James',      'parish', true),
+    ('region_jm_09', 'JM', 'JM-09', 'Hanover',        'parish', true),
+    ('region_jm_10', 'JM', 'JM-10', 'Westmoreland',   'parish', true),
+    ('region_jm_11', 'JM', 'JM-11', 'St. Elizabeth',  'parish', true),
+    ('region_jm_12', 'JM', 'JM-12', 'Manchester',     'parish', true),
+    ('region_jm_13', 'JM', 'JM-13', 'Clarendon',      'parish', true),
+    ('region_jm_14', 'JM', 'JM-14', 'St. Catherine',  'parish', true)
+ON CONFLICT (id) DO NOTHING;
+"""
+
+
+async def _seed_geo_regions(engine: object) -> None:
+    """Seed the reference geo data product apps depend on: the Jamaica country
+    row and its 14 parishes (ISO 3166-2:JM), used by ``organizations.region_id``.
+
+    Idempotent — parishes are keyed by stable ids (``region_jm_01``..``_14``)
+    and inserted with ``ON CONFLICT DO NOTHING`` so re-runs are no-ops.
+    """
+    from sqlalchemy import text
+
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.execute(
+            text(
+                "INSERT INTO countries (code, name, is_enabled) "
+                "VALUES ('JM', 'Jamaica', true) ON CONFLICT (code) DO NOTHING"
+            )
+        )
+        await conn.execute(text(_JM_PARISH_SEED))
+
+
 async def _cut_over_billing_v2(engine: object) -> None:
     """One-time flush of the old ``plans``/single-``plan_id`` shape before the
 
@@ -576,6 +615,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             steps = (
                 ("identity_tables", _seed_identity_tables),
                 ("platform_apps", _seed_platform_apps),
+                ("geo_regions", _seed_geo_regions),
                 ("provisioning", _ensure_provisioning_tables),
                 ("onboarding", _ensure_onboarding_tables),
                 ("audit_events", _ensure_audit_events_table),
