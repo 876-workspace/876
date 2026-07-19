@@ -1,5 +1,6 @@
 import { Badge } from '@876/ui/badge'
-import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
+import { Page } from '@876/ui/page'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   Table,
   TableBody,
@@ -9,39 +10,56 @@ import {
   TableRow,
 } from '@876/ui/table'
 
+import {
+  StatusFilterHeading,
+  type StatusFilterOption,
+} from '@/components/status-filter-heading'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFinanceClient } from '@/lib/finance/client'
 
-export default async function ItemsPage({
-  params,
-}: {
+const ITEM_STATUS_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: 'All', headingLabel: 'All Items' },
+  { value: 'active', label: 'Active', headingLabel: 'Active Items' },
+  { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive Items' },
+]
+
+type Props = {
   params: Promise<{ orgSlug: string }>
-}) {
-  const { orgSlug } = await params
+  searchParams: Promise<{ status?: string }>
+}
+
+export default async function ItemsPage({ params, searchParams }: Props) {
+  const [{ orgSlug }, { status }] = await Promise.all([params, searchParams])
+  const selectedStatus =
+    status === 'active' || status === 'inactive' ? status : 'all'
+  const active =
+    selectedStatus === 'all' ? undefined : selectedStatus === 'active'
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
   const finance = await getFinanceClient()
-  const items = await finance.items.list(ctx.orgId)
+  const items = await finance.items.list(ctx.orgId, { active })
 
   return (
     <Page>
-      <PageHeader className="mb-8">
-        <PageTitle>Items</PageTitle>
-        <PageDescription>
-          One shared catalog for Courier charges, invoices, and every connected
-          876 product.
-        </PageDescription>
-      </PageHeader>
+      <ResourceToolbar
+        title="Items"
+        titleFilter={
+          <StatusFilterHeading
+            label="Items"
+            value={selectedStatus}
+            options={ITEM_STATUS_OPTIONS}
+          />
+        }
+        refresh
+      />
 
       {items.error ? (
         <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
           {items.error.message}
         </div>
       ) : items.data.data.length === 0 ? (
-        <div className="876-empty-dashed">
-          No shared catalog items in this finance workspace yet.
-        </div>
+        <div className="876-empty-dashed">No shared catalog items.</div>
       ) : (
         <div className="overflow-hidden rounded-lg border">
           <Table>
@@ -50,6 +68,7 @@ export default async function ItemsPage({
                 <TableHead className="pl-5">Item</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Origin</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="pr-5 text-right">Default price</TableHead>
               </TableRow>
             </TableHeader>
@@ -70,6 +89,11 @@ export default async function ItemsPage({
                   <TableCell className="text-muted-foreground text-sm">
                     {item.source ? 'Connected app' : 'Billing workspace'}
                   </TableCell>
+                  <TableCell>
+                    <Badge variant={item.isActive ? 'secondary' : 'outline'}>
+                      {item.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="pr-5 text-right font-medium tabular-nums">
                     {formatPrice(
                       item.defaultSellingAmount,
@@ -88,6 +112,7 @@ export default async function ItemsPage({
 
 function formatPrice(amount: string | null, currency: string | null): string {
   if (amount === null || currency === null) return '—'
+
   const numeric = Number(amount)
   if (!Number.isSafeInteger(numeric)) return `${currency} ${amount}`
 
@@ -96,5 +121,6 @@ function formatPrice(amount: string | null, currency: string | null): string {
     currency,
   })
   const exponent = formatter.resolvedOptions().maximumFractionDigits ?? 2
+
   return formatter.format(numeric / 10 ** exponent)
 }

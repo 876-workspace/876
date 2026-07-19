@@ -9,6 +9,13 @@ const mocks = vi.hoisted(() => ({
   listProfiles: vi.fn(),
   listCustomers: vi.fn(),
   listItems: vi.fn(),
+  refresh: vi.fn(),
+}))
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/org/island-logistics/customers',
+  useRouter: () => ({ refresh: mocks.refresh }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -30,6 +37,7 @@ const context = {
   tenant: { id: 'tenant_123', name: 'Island Couriers' },
 }
 const params = Promise.resolve({ orgSlug: 'island-logistics' })
+const searchParams = Promise.resolve({})
 
 function listResult<T>(data: T[], hasMore = false) {
   return {
@@ -62,6 +70,7 @@ describe('Couriers finance-backed pages', () => {
             id: 'cus_business',
             name: 'Blue Mountain Trading',
             email: 'ops@bluemountain.test',
+            customerNumber: 'C-1001',
             customerKind: 'BUSINESS',
             status: 'ACTIVE',
           },
@@ -69,6 +78,7 @@ describe('Couriers finance-backed pages', () => {
             id: 'cus_person',
             name: 'Nia Campbell',
             email: null,
+            customerNumber: null,
             customerKind: 'INDIVIDUAL',
             status: 'ARCHIVED',
           },
@@ -80,27 +90,32 @@ describe('Couriers finance-backed pages', () => {
       { id: 'profile_1', billingCustomerId: 'cus_business' },
     ])
 
-    render(await CustomersPage({ params }))
+    render(await CustomersPage({ params, searchParams }))
 
     expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
     expect(screen.getByText('Nia Campbell')).toBeVisible()
     expect(screen.getByText('Enrolled')).toBeVisible()
     expect(screen.getByText('Not enrolled')).toBeVisible()
-    expect(screen.getByText('Showing the first 100 customers.')).toBeVisible()
+    expect(screen.getByText('C-1001')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Next' })).toBeVisible()
+    expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
+      limit: 25,
+      starting_after: undefined,
+      ending_before: undefined,
+      status: undefined,
+    })
   })
 
   it('when the customer service is empty or unavailable, renders an actionable state instead of a blank table', async () => {
     mocks.listCustomers.mockResolvedValueOnce(listResult([]))
-    const { rerender } = render(await CustomersPage({ params }))
-    expect(
-      screen.getByText('No shared customers in this finance workspace yet.')
-    ).toBeVisible()
+    const { rerender } = render(await CustomersPage({ params, searchParams }))
+    expect(screen.getByText('No shared customers.')).toBeVisible()
 
     mocks.listCustomers.mockResolvedValueOnce({
       data: null,
       error: { message: 'Finance customers are temporarily unavailable.' },
     })
-    rerender(await CustomersPage({ params }))
+    rerender(await CustomersPage({ params, searchParams }))
     expect(
       screen.getByText('Finance customers are temporarily unavailable.')
     ).toBeVisible()
@@ -118,6 +133,7 @@ describe('Couriers finance-backed pages', () => {
           source: { app: '876-couriers' },
           defaultSellingAmount: '125000',
           defaultSellingCurrency: 'JMD',
+          isActive: true,
         },
         {
           id: 'item_2',
@@ -128,17 +144,23 @@ describe('Couriers finance-backed pages', () => {
           source: null,
           defaultSellingAmount: null,
           defaultSellingCurrency: null,
+          isActive: false,
         },
       ])
     )
 
-    render(await ItemsPage({ params }))
+    render(await ItemsPage({ params, searchParams }))
 
     expect(screen.getByText('Same-day delivery')).toBeVisible()
     expect(screen.getByText('Connected app')).toBeVisible()
     expect(screen.getByText('Billing workspace')).toBeVisible()
     expect(screen.getByText(/1,250/)).toBeVisible()
     expect(screen.getByText('—')).toBeVisible()
+    expect(screen.getByText('Active')).toBeVisible()
+    expect(screen.getByText('Inactive')).toBeVisible()
+    expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
+      active: undefined,
+    })
   })
 
   it('when the item service fails, exposes the service message', async () => {
@@ -147,7 +169,7 @@ describe('Couriers finance-backed pages', () => {
       error: { message: 'The shared catalog could not be loaded.' },
     })
 
-    render(await ItemsPage({ params }))
+    render(await ItemsPage({ params, searchParams }))
 
     expect(
       screen.getByText('The shared catalog could not be loaded.')
