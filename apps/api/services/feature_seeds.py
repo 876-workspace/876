@@ -48,6 +48,13 @@ PLATFORM_FEATURE_SEEDS: list[FeatureSeed] = [
         "tags": ["widget"],
         "legacy_slugs": ["platform_widgets_notes"],
     },
+    {
+        "slug": "platform_widgets_knowledge_base",
+        "name": "Shared Knowledge Base widget",
+        "description": "Global switch for the platform Knowledge Base widget.",
+        "parent_slug": "platform_widgets",
+        "tags": ["widget"],
+    },
 ]
 
 
@@ -66,6 +73,13 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "parent_slug": "console_widgets",
             "tags": ["widget"],
             "legacy_slugs": ["console_widgets_notes"],
+        },
+        {
+            "slug": "console_widgets_knowledge_base",
+            "name": "Knowledge Base widget",
+            "description": "Controls access to the Console Knowledge Base widget.",
+            "parent_slug": "console_widgets",
+            "tags": ["widget"],
         },
         {
             "slug": "console_widgets_live_logs",
@@ -133,6 +147,13 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "tags": ["widget"],
         },
         {
+            "slug": "couriers_widgets_knowledge_base",
+            "name": "Knowledge Base widget",
+            "description": "Controls access to the shared Knowledge Base widget in Couriers.",
+            "parent_slug": "couriers_widgets",
+            "tags": ["widget"],
+        },
+        {
             "slug": "couriers_theme_switcher",
             "name": "Theme switcher",
             "description": "Light/dark appearance toggle in the account menu.",
@@ -195,6 +216,13 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "parent_slug": "billing_widgets",
             "tags": ["widget"],
             "legacy_slugs": ["billing_widgets_notes"],
+        },
+        {
+            "slug": "billing_widgets_knowledge_base",
+            "name": "Knowledge Base widget",
+            "description": "Controls access to the shared Knowledge Base widget in Billing.",
+            "parent_slug": "billing_widgets",
+            "tags": ["widget"],
         },
         {
             "slug": "billing_sales",
