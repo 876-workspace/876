@@ -20,7 +20,7 @@ export default async function OrgDashboardPage({
   return (
     <Page>
       <PageHeader>
-        <PageTitle>{tenant.name}</PageTitle>
+        <PageTitle>{ctx.orgName ?? tenant.name}</PageTitle>
       </PageHeader>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2">
