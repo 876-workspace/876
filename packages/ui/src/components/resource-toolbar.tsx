@@ -29,9 +29,11 @@ const ACTION_ICONS = {
 
 export type DropdownActionIcon = keyof typeof ACTION_ICONS
 
-type DropdownAction = {
+export type DropdownAction = {
   label: string
   icon?: DropdownActionIcon
+  /** Navigate to this URL when the item is selected. */
+  href?: string
   onClick?: () => void
   /** Render a separator above this item. */
   separator?: boolean
@@ -150,6 +152,9 @@ export function ResourceToolbar({
                     <DropdownMenuItem
                       variant={action.destructive ? 'destructive' : 'default'}
                       onClick={action.onClick}
+                      render={
+                        action.href ? <Link href={action.href} /> : undefined
+                      }
                     >
                       {Icon && <Icon className="size-4" />}
                       {action.label}
