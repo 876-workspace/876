@@ -3,7 +3,9 @@ import 'server-only'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFeatures } from '@/lib/features'
 
-export async function requireNotepadMember() {
+async function requireCouriersWidgetMember(
+  widgetId: 'notepad' | 'knowledge_base'
+) {
   const context = await getManageContext()
   if (!context)
     return {
@@ -11,8 +13,6 @@ export async function requireNotepadMember() {
       response: Response.json({ error: 'Unauthorized.' }, { status: 401 }),
     }
 
-  // Notes are user-owned; any active workspace member may use the widget —
-  // this must stay in sync with the dock gate in the private layout.
   if (context.accessStatus !== 'active')
     return {
       userId: null as string | null,
@@ -26,14 +26,24 @@ export async function requireNotepadMember() {
     userId: context.userId,
     organizationId: context.orgId,
   })
-  if (!features.enabledWidgetIds.includes('notepad'))
+  if (!features.enabledWidgetIds.includes(widgetId)) {
+    const label = widgetId === 'notepad' ? 'notepad' : 'knowledge base'
     return {
       userId: null as string | null,
       response: Response.json(
-        { error: 'Access to the notepad widget is disabled.' },
+        { error: `Access to the ${label} widget is disabled.` },
         { status: 403 }
       ),
     }
+  }
 
   return { userId: context.userId, response: null }
+}
+
+export async function requireNotepadMember() {
+  return requireCouriersWidgetMember('notepad')
+}
+
+export async function requireKnowledgeBaseMember() {
+  return requireCouriersWidgetMember('knowledge_base')
 }

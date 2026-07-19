@@ -68,7 +68,7 @@ describe('getFeatures', () => {
       documents: true,
       payroll: true,
     })
-    expect(result.widgets).toEqual({ notepad: true })
+    expect(result.widgets).toEqual({ notepad: true, knowledge_base: false })
   })
 
   it('requires group masters before enabling child features', async () => {
@@ -112,7 +112,7 @@ describe('getFeatures', () => {
       documents: false,
       payroll: false,
     })
-    expect(result.widgets).toEqual({ notepad: false })
+    expect(result.widgets).toEqual({ notepad: false, knowledge_base: false })
   })
 
   it('keeps the organization switcher disabled when its feature key is absent', async () => {
@@ -154,7 +154,7 @@ describe('getFeatures', () => {
       documents: false,
       payroll: false,
     })
-    expect(result.widgets).toEqual({ notepad: false })
+    expect(result.widgets).toEqual({ notepad: false, knowledge_base: false })
   })
 
   it('fails closed when server evaluation is unavailable', async () => {
@@ -188,6 +188,6 @@ describe('getFeatures', () => {
       documents: false,
       payroll: false,
     })
-    expect(result.widgets).toEqual({ notepad: false })
+    expect(result.widgets).toEqual({ notepad: false, knowledge_base: false })
   })
 })

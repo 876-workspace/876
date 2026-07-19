@@ -27,5 +27,6 @@ export interface BillingFeatures {
   productFeatures: BillingProductFeatures
   widgets: {
     notepad: boolean
+    knowledge_base: boolean
   }
 }

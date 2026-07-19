@@ -1,7 +1,11 @@
 import 'server-only'
 
 import { cache } from 'react'
-import { isWidgetEnabled, notepadWidgetMetadata } from '@876/widgets'
+import {
+  isWidgetEnabled,
+  knowledgeBaseWidgetMetadata,
+  notepadWidgetMetadata,
+} from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
@@ -75,7 +79,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     return {
       uiFeatures: DEFAULT_UI_FEATURES,
       productFeatures: DEFAULT_PRODUCT_FEATURES,
-      widgets: { notepad: false },
+      widgets: { notepad: false, knowledge_base: false },
     }
 
   const enabledSlugs = new Set(
@@ -107,6 +111,11 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     },
     widgets: {
       notepad: isWidgetEnabled(notepadWidgetMetadata, 'billing', enabledSlugs),
+      knowledge_base: isWidgetEnabled(
+        knowledgeBaseWidgetMetadata,
+        'billing',
+        enabledSlugs
+      ),
     },
   }
 })
