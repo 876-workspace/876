@@ -1,87 +1,100 @@
-import { Badge } from '@876/ui/badge'
-import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@876/ui/table'
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { CircleStackIcon } from '@876/ui/icons'
+import { Page } from '@876/ui/page'
 
+import { ResourceToolbar } from '@/components/resource-toolbar'
+import { StatusFilterHeading } from '@/components/status-filter-heading'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFinanceClient } from '@/lib/finance/client'
 
-export default async function ItemsPage({
-  params,
-}: {
+import { ItemsTable } from './items-table'
+
+const ITEM_STATUS_OPTIONS = [
+  { value: 'all', label: 'All', headingLabel: 'All Items' },
+  { value: 'active', label: 'Active', headingLabel: 'Active Items' },
+  { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive Items' },
+]
+
+type Props = {
   params: Promise<{ orgSlug: string }>
-}) {
+  searchParams: Promise<{ status?: string }>
+}
+
+export default async function ItemsPage({ params, searchParams }: Props) {
   const { orgSlug } = await params
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'active' || status === 'inactive' ? status : 'all'
+  const activeFilter =
+    selectedStatus === 'all' ? undefined : selectedStatus === 'active'
+
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
   const finance = await getFinanceClient()
-  const items = await finance.items.list(ctx.orgId)
+  const items = await finance.items.list(ctx.orgId, {
+    active: activeFilter,
+  })
+
+  const rows = items.error
+    ? []
+    : items.data.data.map((item) => ({
+        id: item.id,
+        name: item.name,
+        subtitle: item.sku ?? item.description ?? item.id,
+        type: item.type,
+        origin: item.source ? 'Connected app' : 'Billing workspace',
+        priceLabel: formatPrice(
+          item.defaultSellingAmount,
+          item.defaultSellingCurrency
+        ),
+      }))
+
+  const emptyMessage =
+    selectedStatus === 'all'
+      ? 'No shared catalog items in this finance workspace yet.'
+      : `No ${selectedStatus} items.`
 
   return (
     <Page>
-      <PageHeader className="mb-8">
-        <PageTitle>Items</PageTitle>
-        <PageDescription>
-          One shared catalog for Courier charges, invoices, and every connected
-          876 product.
-        </PageDescription>
-      </PageHeader>
+      <ResourceToolbar
+        title="Items"
+        titleFilter={
+          <StatusFilterHeading
+            label="Items"
+            value={selectedStatus}
+            options={ITEM_STATUS_OPTIONS}
+          />
+        }
+        refresh
+      />
 
       {items.error ? (
-        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-sm">
           {items.error.message}
         </div>
-      ) : items.data.data.length === 0 ? (
-        <div className="876-empty-dashed">
-          No shared catalog items in this finance workspace yet.
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="pl-5">Item</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Origin</TableHead>
-                <TableHead className="pr-5 text-right">Default price</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.data.data.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="pl-5">
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {item.sku ?? item.description ?? item.id}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {item.type === 'SERVICE' ? 'Service' : 'Good'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {item.source ? 'Connected app' : 'Billing workspace'}
-                  </TableCell>
-                  <TableCell className="pr-5 text-right font-medium tabular-nums">
-                    {formatPrice(
-                      item.defaultSellingAmount,
-                      item.defaultSellingCurrency
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      ) : null}
+
+      <ItemsTable
+        items={rows}
+        emptyState={
+          <Empty className="border-0 py-6">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <CircleStackIcon />
+              </EmptyMedia>
+              <EmptyTitle>No items</EmptyTitle>
+              <EmptyDescription>{emptyMessage}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        }
+      />
     </Page>
   )
 }

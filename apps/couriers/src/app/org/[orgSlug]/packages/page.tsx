@@ -1,13 +1,27 @@
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { ClipboardDocumentListIcon } from '@876/ui/icons'
+import { Page } from '@876/ui/page'
+
+import { ResourceToolbar } from '@/components/resource-toolbar'
 
 export default function PackagesPage() {
   return (
     <Page>
-      <PageHeader className="mb-8">
-        <PageTitle>Packages</PageTitle>
-      </PageHeader>
+      <ResourceToolbar title="Packages" refresh />
 
-      <div className="876-empty-dashed">No packages yet.</div>
+      <Empty className="py-14">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <ClipboardDocumentListIcon />
+          </EmptyMedia>
+          <EmptyTitle>No packages</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
     </Page>
   )
 }
