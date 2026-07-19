@@ -41,7 +41,10 @@ export default async function OrgLayout({
   })
 
   const basePath = `/org/${orgSlug}`
-  const tenantName = ctx.tenant?.name ?? ctx.orgName ?? '876 Couriers'
+  // Management shell shows the live identity org name (the source of truth the
+  // org profile edits), so a rename propagates everywhere. `Tenant.name` is the
+  // couriers-local portal brand, not the management display name.
+  const tenantName = ctx.orgName ?? ctx.tenant?.name ?? '876 Couriers'
   const currentOrg = {
     id: ctx.orgId,
     name: ctx.orgName,

@@ -99,6 +99,8 @@ export interface BillingCustomerListParams {
   limit?: number
   starting_after?: string
   ending_before?: string
+  /** Filter by lifecycle status (`ACTIVE` | `ARCHIVED`). */
+  status?: BillingCustomerStatus
   /** Resolve the one shared Billing customer linked to a Core user. */
   user_id?: string
   /** Resolve the one shared Billing customer linked to a Core organization. */

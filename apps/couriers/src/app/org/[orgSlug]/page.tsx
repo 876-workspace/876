@@ -1,4 +1,4 @@
-import { Page, PageHeader, PageTitle, PageDescription } from '@876/ui/page'
+import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
@@ -20,10 +20,7 @@ export default async function OrgDashboardPage({
   return (
     <Page>
       <PageHeader>
-        <PageTitle>{tenant.name}</PageTitle>
-        <PageDescription>
-          Manage your courier platform settings and domains.
-        </PageDescription>
+        <PageTitle>{ctx.orgName ?? tenant.name}</PageTitle>
       </PageHeader>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2">

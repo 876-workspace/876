@@ -1,30 +1,51 @@
-import { Badge } from '@876/ui/badge'
-import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@876/ui/table'
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { UsersIcon } from '@876/ui/icons'
+import { Page } from '@876/ui/page'
 
+import { ResourceToolbar } from '@/components/resource-toolbar'
+import { StatusFilterHeading } from '@/components/status-filter-heading'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFinanceClient } from '@/lib/finance/client'
 import { service } from '@/lib/service'
 
-export default async function CustomersPage({
-  params,
-}: {
+import { CustomersTable } from './customers-table'
+
+const CUSTOMER_STATUS_OPTIONS = [
+  { value: 'all', label: 'All', headingLabel: 'All Customers' },
+  { value: 'active', label: 'Active', headingLabel: 'Active Customers' },
+  { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
+]
+
+type Props = {
   params: Promise<{ orgSlug: string }>
-}) {
+  searchParams: Promise<{ status?: string }>
+}
+
+export default async function CustomersPage({ params, searchParams }: Props) {
   const { orgSlug } = await params
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'active' || status === 'archived' ? status : 'all'
+  const filterStatus =
+    selectedStatus === 'all'
+      ? undefined
+      : (selectedStatus.toUpperCase() as 'ACTIVE' | 'ARCHIVED')
+
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
   const finance = await getFinanceClient()
   const [customers, profiles] = await Promise.all([
-    finance.customers.list(ctx.orgId, { limit: 100 }),
+    finance.customers.list(ctx.orgId, {
+      limit: 100,
+      status: filterStatus,
+    }),
     service.customerProfiles.list(ctx.tenant.id),
   ])
   const enrolledCustomerIds = new Set(
@@ -33,80 +54,57 @@ export default async function CustomersPage({
     )
   )
 
+  const rows = customers.error
+    ? []
+    : customers.data.data.map((customer) => ({
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        customerKind: customer.customerKind,
+        status: customer.status,
+        enrolled: enrolledCustomerIds.has(customer.id),
+      }))
+
+  const emptyMessage =
+    selectedStatus === 'all'
+      ? 'No shared customers in this finance workspace yet.'
+      : `No ${selectedStatus} customers.`
+
   return (
     <Page>
-      <PageHeader className="mb-8">
-        <PageTitle>Customers</PageTitle>
-        <PageDescription>
-          Shared finance customers for {ctx.orgName ?? ctx.tenant.name}. Courier
-          profiles are added only when a customer uses Courier services.
-        </PageDescription>
-      </PageHeader>
+      <ResourceToolbar
+        title="Customers"
+        titleFilter={
+          <StatusFilterHeading
+            label="Customers"
+            value={selectedStatus}
+            options={CUSTOMER_STATUS_OPTIONS}
+          />
+        }
+        refresh
+      />
 
       {customers.error ? (
-        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-sm">
           {customers.error.message}
         </div>
-      ) : customers.data.data.length === 0 ? (
-        <div className="876-empty-dashed">
-          No shared customers in this finance workspace yet.
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="pl-5">Customer</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="pr-5 text-right">
-                  Courier profile
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {customers.data.data.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell className="pl-5">
-                    <div className="font-medium">{customer.name}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {customer.email ?? customer.id}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {customer.customerKind === 'BUSINESS'
-                      ? 'Business'
-                      : 'Individual'}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        customer.status === 'ACTIVE' ? 'secondary' : 'outline'
-                      }
-                    >
-                      {customer.status === 'ACTIVE' ? 'Active' : 'Archived'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="pr-5 text-right">
-                    {enrolledCustomerIds.has(customer.id) ? (
-                      <Badge variant="secondary">Enrolled</Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">
-                        Not enrolled
-                      </span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {customers.data.has_more && (
-            <p className="text-muted-foreground border-t px-5 py-3 text-xs">
-              Showing the first 100 customers.
-            </p>
-          )}
-        </div>
-      )}
+      ) : null}
+
+      <CustomersTable
+        customers={rows}
+        hasMore={!customers.error && customers.data.has_more}
+        emptyState={
+          <Empty className="border-0 py-6">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <UsersIcon />
+              </EmptyMedia>
+              <EmptyTitle>No customers</EmptyTitle>
+              <EmptyDescription>{emptyMessage}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        }
+      />
     </Page>
   )
 }

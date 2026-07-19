@@ -96,4 +96,25 @@ describe('listCustomerPage', () => {
       where: { tenantId: 'blten_1', userId: 'usr_1' },
     })
   })
+
+  it('filters the page and total count by lifecycle status', async () => {
+    customer.findMany.mockResolvedValue([{ id: 'cus_active', status: 'ACTIVE' }])
+    customer.count.mockResolvedValue(1)
+
+    const result = await listCustomerPage('blten_1', {
+      limit: 25,
+      status: 'ACTIVE',
+    })
+
+    expect(result?.customers).toEqual([{ id: 'cus_active', status: 'ACTIVE' }])
+    expect(customer.findMany).toHaveBeenCalledWith({
+      where: { tenantId: 'blten_1', status: 'ACTIVE' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 26,
+    })
+    expect(customer.count).toHaveBeenCalledWith({
+      where: { tenantId: 'blten_1', status: 'ACTIVE' },
+    })
+  })
 })
+

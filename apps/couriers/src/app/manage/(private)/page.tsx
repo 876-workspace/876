@@ -19,7 +19,7 @@ export default async function ManageDashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader>
-        <PageTitle>{tenant.name}</PageTitle>
+        <PageTitle>{ctx.orgName ?? tenant.name}</PageTitle>
         <PageDescription>
           Manage your courier platform settings and domains.
         </PageDescription>

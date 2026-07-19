@@ -31,6 +31,7 @@ from domains.organizations.schemas import (
     OrganizationDeleteResponse,
     OrganizationResponse,
     OrganizationUpdate,
+    OrgProfileUpdate,
     OrgSetupRequest,
     SubscriptionBatchResponse,
     SubscriptionItemResponse,
@@ -214,6 +215,54 @@ async def _require_org_permission(
             message="Forbidden.",
             http_status_code=status.HTTP_403_FORBIDDEN,
         )
+
+
+def _apply_org_profile_fields(
+    update_data: dict[str, Any],
+    body: OrgProfileUpdate,
+    explicitly_set: dict[str, Any],
+) -> None:
+    """Apply the non-privileged org profile fields onto ``update_data``.
+
+    Shared by the admin ``PATCH /{id}`` handler and the session-scoped
+    ``PATCH /{id}/profile`` handler so the two never drift. Does NOT touch
+    ``slug``/``status``/``workos_organization_id``/``metadata`` — those are
+    admin-only and applied by the admin handler itself. ``name`` is stripped;
+    ``country_code``/``currency_code`` are upper-cased when present.
+    """
+    if body.name is not None:
+        update_data["name"] = body.name.strip()
+    for field in (
+        "short_name",
+        "logo_url",
+        "primary_phone",
+        "primary_email",
+        "fax",
+        "website_url",
+        "support_url",
+        "doing_business_as",
+        "industry",
+        "business_type",
+        "registration_number",
+        "trn",
+        "nis_number",
+        "gct_number",
+        "tax_id",
+        "incorporation_date",
+        "primary_contact_user_id",
+        "timezone",
+        "language",
+        "address_line1",
+        "address_line2",
+        "city",
+        "region_id",
+    ):
+        if field in explicitly_set:
+            update_data[field] = getattr(body, field)
+    if "country_code" in explicitly_set:
+        update_data["country_code"] = body.country_code.upper() if body.country_code else None
+    if "currency_code" in explicitly_set:
+        update_data["currency_code"] = body.currency_code.upper() if body.currency_code else None
 
 
 def _serialize_invite(row: Any) -> InviteTokenResponse:
@@ -531,10 +580,9 @@ async def update_organization(
 
     update_data: dict[str, Any] = {}
     explicitly_set = body.model_dump(exclude_unset=True)
-    if body.name is not None:
-        update_data["name"] = body.name.strip()
-    if "short_name" in explicitly_set:
-        update_data["short_name"] = body.short_name  # nullable — allow clearing
+    _apply_org_profile_fields(update_data, body, explicitly_set)
+
+    # Privileged fields — admin-only, not part of the shared profile surface.
     if body.slug is not None:
         normalized_slug = normalize_slug(body.slug)
         existing = await repo.get_by_slug(normalized_slug)
@@ -558,39 +606,8 @@ async def update_organization(
         update_data["workos_organization_id"] = body.workos_organization_id  # nullable — allow clearing
     if body.status is not None:
         update_data["status"] = body.status
-    if "logo_url" in explicitly_set:
-        update_data["logo_url"] = body.logo_url  # nullable — allow clearing
     if "metadata" in explicitly_set:
         update_data["metadata_"] = body.metadata  # nullable — allow clearing
-    # Contact fields — all nullable, allow explicit clearing
-    for field in ("primary_phone", "primary_email", "fax", "website_url", "support_url"):
-        if field in explicitly_set:
-            update_data[field] = getattr(body, field)
-    # Business identity + locale fields — all nullable, allow explicit clearing
-    for field in (
-        "doing_business_as",
-        "industry",
-        "business_type",
-        "registration_number",
-        "trn",
-        "nis_number",
-        "gct_number",
-        "tax_id",
-        "incorporation_date",
-        "primary_contact_user_id",
-        "timezone",
-        "language",
-    ):
-        if field in explicitly_set:
-            update_data[field] = getattr(body, field)
-    # Address fields — all nullable, allow explicit clearing
-    for field in ("address_line1", "address_line2", "city", "region_id"):
-        if field in explicitly_set:
-            update_data[field] = getattr(body, field)
-    if "country_code" in explicitly_set:
-        update_data["country_code"] = body.country_code.upper() if body.country_code else None
-    if "currency_code" in explicitly_set:
-        update_data["currency_code"] = body.currency_code.upper() if body.currency_code else None
 
     update_data["updated_at"] = now_unix_seconds()
 
@@ -605,6 +622,74 @@ async def update_organization(
         "organizations.update",
         organization_id=organization_id,
         changed_fields=sorted(update_data.keys()),
+    )
+    return _serialize_organization(updated_org)
+
+
+@router.get(
+    "/{organization_id}/profile",
+    response_model=OrganizationResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.RETRIEVE_ORG_PROFILE_SUMMARY,
+    description=docs.RETRIEVE_ORG_PROFILE_DESCRIPTION,
+    responses=docs.RETRIEVE_ORG_PROFILE_RESPONSES,
+)
+async def retrieve_organization_profile(
+    organization_id: str,
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> OrganizationResponse:
+    await _require_org_membership(db, organization_id, principal)
+
+    repo = OrganizationRepository(db)
+    org = await repo.get_by_id(organization_id)
+    if not org:
+        raise AppHTTPException(
+            code="organization/not-found",
+            message="No organization exists with the provided identifier.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    return _serialize_organization(org)
+
+
+@router.patch(
+    "/{organization_id}/profile",
+    response_model=OrganizationResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.UPDATE_ORG_PROFILE_SUMMARY,
+    description=docs.UPDATE_ORG_PROFILE_DESCRIPTION,
+    responses=docs.UPDATE_ORG_PROFILE_RESPONSES,
+)
+async def update_organization_profile(
+    organization_id: str,
+    principal: SessionDep,
+    body: OrgProfileUpdate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> OrganizationResponse:
+    await _require_org_membership(db, organization_id, principal, roles=("owner", "admin"))
+
+    repo = OrganizationRepository(db)
+    org = await repo.get_by_id(organization_id)
+    if not org:
+        raise AppHTTPException(
+            code="organization/not-found",
+            message="No organization exists with the provided identifier.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    update_data: dict[str, Any] = {}
+    explicitly_set = body.model_dump(exclude_unset=True)
+    _apply_org_profile_fields(update_data, body, explicitly_set)
+    update_data["updated_at"] = now_unix_seconds()
+
+    updated_org = await repo.update(organization_id, **update_data)
+
+    logger.info(
+        "organizations.update_profile",
+        organization_id=organization_id,
+        user_id=principal.user_id,
+        changed_fields=sorted(key for key in update_data if key != "updated_at"),
     )
     return _serialize_organization(updated_org)
 

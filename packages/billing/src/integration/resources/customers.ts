@@ -35,6 +35,7 @@ export function createIntegrationCustomersResource(
             limit: params.limit,
             starting_after: params.starting_after,
             ending_before: params.ending_before,
+            status: params.status,
             user_id: params.user_id,
             organization_id: params.organization_id,
           },

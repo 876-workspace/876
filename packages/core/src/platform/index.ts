@@ -91,6 +91,78 @@ export type PlatformOrganization = {
   updated_at: number
 }
 
+/**
+ * An organization's full identity profile, as returned by the session-scoped
+ * `GET`/`PATCH /organizations/{id}/profile` endpoints. This is the surface a
+ * product app (e.g. Couriers) reads to prefill, and writes from, its org
+ * settings form. Privileged fields (status, slug, WorkOS id, metadata) are not
+ * writable through this profile surface.
+ */
+export type PlatformOrganizationProfile = {
+  object: 'organization'
+  id: string
+  name: string | null
+  short_name: string | null
+  doing_business_as: string | null
+  slug: string
+  status: string
+  logo_url: string | null
+  industry: string | null
+  business_type: string | null
+  registration_number: string | null
+  trn: string | null
+  nis_number: string | null
+  gct_number: string | null
+  tax_id: string | null
+  incorporation_date: string | null
+  primary_phone: string | null
+  primary_email: string | null
+  fax: string | null
+  website_url: string | null
+  support_url: string | null
+  primary_contact_user_id: string | null
+  timezone: string | null
+  language: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  region_id: string | null
+  country_code: string | null
+  currency_code: string | null
+  created_at: number
+  updated_at: number
+}
+
+/** The editable fields of an org profile. All optional; `null` clears a field. */
+export type PlatformOrgProfileUpdateParams = {
+  name?: string | null
+  short_name?: string | null
+  doing_business_as?: string | null
+  industry?: string | null
+  business_type?: string | null
+  registration_number?: string | null
+  trn?: string | null
+  nis_number?: string | null
+  gct_number?: string | null
+  tax_id?: string | null
+  incorporation_date?: string | null
+  fax?: string | null
+  primary_contact_user_id?: string | null
+  timezone?: string | null
+  language?: string | null
+  logo_url?: string | null
+  primary_phone?: string | null
+  primary_email?: string | null
+  website_url?: string | null
+  support_url?: string | null
+  address_line1?: string | null
+  address_line2?: string | null
+  city?: string | null
+  region_id?: string | null
+  country_code?: string | null
+  currency_code?: string | null
+}
+
 /** An org→app subscription row, narrowed to the fields product apps consume. */
 export type PlatformSubscription = {
   object: 'subscription'
@@ -121,6 +193,16 @@ export type PlatformInviteToken = {
   expires_at: number
   source_app_id: string | null
   created_at: number
+}
+
+/** A region (parish/state/province) row for a country (`/geo/countries/{code}/regions`). */
+export type PlatformRegion = {
+  id: string
+  country_code: string
+  code: string
+  name: string
+  type: string
+  is_enabled: boolean
 }
 
 /** A feature evaluation row (`/features/evaluate`). */
@@ -347,6 +429,16 @@ export function create876PlatformClient(
       },
     },
 
+    geo: {
+      /** Lists the regions (parishes/states) for a country, e.g. `JM`. */
+      listRegions(countryCode: string) {
+        return platformRequest<PlatformRegion[]>(runtime, {
+          method: 'GET',
+          path: `/geo/countries/${encodeURIComponent(countryCode)}/regions`,
+        })
+      },
+    },
+
     features: {
       /** Evaluates the enabled feature flags for a user/org/app scope. */
       evaluate(params: {
@@ -482,6 +574,32 @@ export function create876PlatformClient(
         return platformRequest<PlatformOrganization>(runtime, {
           method: 'GET',
           path: `/organizations/${orgId}`,
+        })
+      },
+
+      /**
+       * Retrieves an organization's full identity profile (session-scoped
+       * endpoint; requires an active membership). Used to prefill a product
+       * app's org settings form.
+       */
+      retrieveProfile(orgId: string) {
+        return platformRequest<PlatformOrganizationProfile>(runtime, {
+          method: 'GET',
+          path: `/organizations/${encodeURIComponent(orgId)}/profile`,
+        })
+      },
+
+      /**
+       * Updates an organization's identity profile (session-scoped endpoint;
+       * requires owner/admin). Only profile fields are writable — status, slug,
+       * WorkOS id, and metadata are rejected by the endpoint. Authorization is
+       * the calling app's responsibility (this client carries the internal key).
+       */
+      updateProfile(orgId: string, body: PlatformOrgProfileUpdateParams) {
+        return platformRequest<PlatformOrganizationProfile>(runtime, {
+          method: 'PATCH',
+          path: `/organizations/${encodeURIComponent(orgId)}/profile`,
+          body: body as Record<string, unknown>,
         })
       },
 
