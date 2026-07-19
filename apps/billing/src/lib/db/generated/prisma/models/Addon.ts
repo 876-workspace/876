@@ -796,6 +796,10 @@ export type AddonOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type StringFieldUpdateOperationsInput = {
+  set?: string
+}
+
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
@@ -820,30 +824,16 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type AddonCreateNestedOneWithoutPlanAssociationsInput = {
-  create?: Prisma.XOR<
-    Prisma.AddonCreateWithoutPlanAssociationsInput,
-    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
-  >
-  connectOrCreate?: Prisma.AddonCreateOrConnectWithoutPlanAssociationsInput
-  connect?: Prisma.AddonWhereUniqueInput
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
 }
 
-export type AddonUpdateOneRequiredWithoutPlanAssociationsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.AddonCreateWithoutPlanAssociationsInput,
-    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
-  >
-  connectOrCreate?: Prisma.AddonCreateOrConnectWithoutPlanAssociationsInput
-  upsert?: Prisma.AddonUpsertWithoutPlanAssociationsInput
-  connect?: Prisma.AddonWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.AddonUpdateToOneWithWhereWithoutPlanAssociationsInput,
-      Prisma.AddonUpdateWithoutPlanAssociationsInput
-    >,
-    Prisma.AddonUncheckedUpdateWithoutPlanAssociationsInput
-  >
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type AddonCreateNestedOneWithoutCouponApplicabilitiesInput = {
@@ -869,6 +859,32 @@ export type AddonUpdateOneRequiredWithoutCouponApplicabilitiesNestedInput = {
       Prisma.AddonUpdateWithoutCouponApplicabilitiesInput
     >,
     Prisma.AddonUncheckedUpdateWithoutCouponApplicabilitiesInput
+  >
+}
+
+export type AddonCreateNestedOneWithoutPlanAssociationsInput = {
+  create?: Prisma.XOR<
+    Prisma.AddonCreateWithoutPlanAssociationsInput,
+    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
+  >
+  connectOrCreate?: Prisma.AddonCreateOrConnectWithoutPlanAssociationsInput
+  connect?: Prisma.AddonWhereUniqueInput
+}
+
+export type AddonUpdateOneRequiredWithoutPlanAssociationsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.AddonCreateWithoutPlanAssociationsInput,
+    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
+  >
+  connectOrCreate?: Prisma.AddonCreateOrConnectWithoutPlanAssociationsInput
+  upsert?: Prisma.AddonUpsertWithoutPlanAssociationsInput
+  connect?: Prisma.AddonWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.AddonUpdateToOneWithWhereWithoutPlanAssociationsInput,
+      Prisma.AddonUpdateWithoutPlanAssociationsInput
+    >,
+    Prisma.AddonUncheckedUpdateWithoutPlanAssociationsInput
   >
 }
 
@@ -1100,144 +1116,6 @@ export type AddonUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.AddonScalarWhereInput | Prisma.AddonScalarWhereInput[]
 }
 
-export type AddonCreateWithoutPlanAssociationsInput = {
-  id: string
-  code: string
-  name: string
-  description?: string | null
-  imageUrl?: string | null
-  type?: $Enums.ItemType
-  priceType?: $Enums.PriceType
-  intervalUnit?: $Enums.IntervalUnit | null
-  intervalCount?: number | null
-  unitName?: string | null
-  taxCode?: string | null
-  isTaxable?: boolean
-  showInCheckout?: boolean
-  allowPortalManagement?: boolean
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutAddonsInput
-  product: Prisma.ProductCreateNestedOneWithoutAddonsInput
-  prices?: Prisma.PriceCreateNestedManyWithoutAddonInput
-  couponApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutAddonInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutAddonInput
-}
-
-export type AddonUncheckedCreateWithoutPlanAssociationsInput = {
-  id: string
-  tenantId: string
-  productId: string
-  code: string
-  name: string
-  description?: string | null
-  imageUrl?: string | null
-  type?: $Enums.ItemType
-  priceType?: $Enums.PriceType
-  intervalUnit?: $Enums.IntervalUnit | null
-  intervalCount?: number | null
-  unitName?: string | null
-  taxCode?: string | null
-  isTaxable?: boolean
-  showInCheckout?: boolean
-  allowPortalManagement?: boolean
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  prices?: Prisma.PriceUncheckedCreateNestedManyWithoutAddonInput
-  couponApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutAddonInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutAddonInput
-}
-
-export type AddonCreateOrConnectWithoutPlanAssociationsInput = {
-  where: Prisma.AddonWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.AddonCreateWithoutPlanAssociationsInput,
-    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
-  >
-}
-
-export type AddonUpsertWithoutPlanAssociationsInput = {
-  update: Prisma.XOR<
-    Prisma.AddonUpdateWithoutPlanAssociationsInput,
-    Prisma.AddonUncheckedUpdateWithoutPlanAssociationsInput
-  >
-  create: Prisma.XOR<
-    Prisma.AddonCreateWithoutPlanAssociationsInput,
-    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
-  >
-  where?: Prisma.AddonWhereInput
-}
-
-export type AddonUpdateToOneWithWhereWithoutPlanAssociationsInput = {
-  where?: Prisma.AddonWhereInput
-  data: Prisma.XOR<
-    Prisma.AddonUpdateWithoutPlanAssociationsInput,
-    Prisma.AddonUncheckedUpdateWithoutPlanAssociationsInput
-  >
-}
-
-export type AddonUpdateWithoutPlanAssociationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.EnumItemTypeFieldUpdateOperationsInput | $Enums.ItemType
-  priceType?: Prisma.EnumPriceTypeFieldUpdateOperationsInput | $Enums.PriceType
-  intervalUnit?:
-    | Prisma.NullableEnumIntervalUnitFieldUpdateOperationsInput
-    | $Enums.IntervalUnit
-    | null
-  intervalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unitName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isTaxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  showInCheckout?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  allowPortalManagement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutAddonsNestedInput
-  product?: Prisma.ProductUpdateOneRequiredWithoutAddonsNestedInput
-  prices?: Prisma.PriceUpdateManyWithoutAddonNestedInput
-  couponApplicabilities?: Prisma.CouponAddonApplicabilityUpdateManyWithoutAddonNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutAddonNestedInput
-}
-
-export type AddonUncheckedUpdateWithoutPlanAssociationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  productId?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  type?: Prisma.EnumItemTypeFieldUpdateOperationsInput | $Enums.ItemType
-  priceType?: Prisma.EnumPriceTypeFieldUpdateOperationsInput | $Enums.PriceType
-  intervalUnit?:
-    | Prisma.NullableEnumIntervalUnitFieldUpdateOperationsInput
-    | $Enums.IntervalUnit
-    | null
-  intervalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  unitName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isTaxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  showInCheckout?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  allowPortalManagement?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  prices?: Prisma.PriceUncheckedUpdateManyWithoutAddonNestedInput
-  couponApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutAddonNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutAddonNestedInput
-}
-
 export type AddonCreateWithoutCouponApplicabilitiesInput = {
   id: string
   code: string
@@ -1373,6 +1251,144 @@ export type AddonUncheckedUpdateWithoutCouponApplicabilitiesInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   prices?: Prisma.PriceUncheckedUpdateManyWithoutAddonNestedInput
   planAssociations?: Prisma.PlanAddonAssociationUncheckedUpdateManyWithoutAddonNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutAddonNestedInput
+}
+
+export type AddonCreateWithoutPlanAssociationsInput = {
+  id: string
+  code: string
+  name: string
+  description?: string | null
+  imageUrl?: string | null
+  type?: $Enums.ItemType
+  priceType?: $Enums.PriceType
+  intervalUnit?: $Enums.IntervalUnit | null
+  intervalCount?: number | null
+  unitName?: string | null
+  taxCode?: string | null
+  isTaxable?: boolean
+  showInCheckout?: boolean
+  allowPortalManagement?: boolean
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutAddonsInput
+  product: Prisma.ProductCreateNestedOneWithoutAddonsInput
+  prices?: Prisma.PriceCreateNestedManyWithoutAddonInput
+  couponApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutAddonInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutAddonInput
+}
+
+export type AddonUncheckedCreateWithoutPlanAssociationsInput = {
+  id: string
+  tenantId: string
+  productId: string
+  code: string
+  name: string
+  description?: string | null
+  imageUrl?: string | null
+  type?: $Enums.ItemType
+  priceType?: $Enums.PriceType
+  intervalUnit?: $Enums.IntervalUnit | null
+  intervalCount?: number | null
+  unitName?: string | null
+  taxCode?: string | null
+  isTaxable?: boolean
+  showInCheckout?: boolean
+  allowPortalManagement?: boolean
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  prices?: Prisma.PriceUncheckedCreateNestedManyWithoutAddonInput
+  couponApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutAddonInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutAddonInput
+}
+
+export type AddonCreateOrConnectWithoutPlanAssociationsInput = {
+  where: Prisma.AddonWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.AddonCreateWithoutPlanAssociationsInput,
+    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
+  >
+}
+
+export type AddonUpsertWithoutPlanAssociationsInput = {
+  update: Prisma.XOR<
+    Prisma.AddonUpdateWithoutPlanAssociationsInput,
+    Prisma.AddonUncheckedUpdateWithoutPlanAssociationsInput
+  >
+  create: Prisma.XOR<
+    Prisma.AddonCreateWithoutPlanAssociationsInput,
+    Prisma.AddonUncheckedCreateWithoutPlanAssociationsInput
+  >
+  where?: Prisma.AddonWhereInput
+}
+
+export type AddonUpdateToOneWithWhereWithoutPlanAssociationsInput = {
+  where?: Prisma.AddonWhereInput
+  data: Prisma.XOR<
+    Prisma.AddonUpdateWithoutPlanAssociationsInput,
+    Prisma.AddonUncheckedUpdateWithoutPlanAssociationsInput
+  >
+}
+
+export type AddonUpdateWithoutPlanAssociationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumItemTypeFieldUpdateOperationsInput | $Enums.ItemType
+  priceType?: Prisma.EnumPriceTypeFieldUpdateOperationsInput | $Enums.PriceType
+  intervalUnit?:
+    | Prisma.NullableEnumIntervalUnitFieldUpdateOperationsInput
+    | $Enums.IntervalUnit
+    | null
+  intervalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isTaxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showInCheckout?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  allowPortalManagement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutAddonsNestedInput
+  product?: Prisma.ProductUpdateOneRequiredWithoutAddonsNestedInput
+  prices?: Prisma.PriceUpdateManyWithoutAddonNestedInput
+  couponApplicabilities?: Prisma.CouponAddonApplicabilityUpdateManyWithoutAddonNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutAddonNestedInput
+}
+
+export type AddonUncheckedUpdateWithoutPlanAssociationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?: Prisma.EnumItemTypeFieldUpdateOperationsInput | $Enums.ItemType
+  priceType?: Prisma.EnumPriceTypeFieldUpdateOperationsInput | $Enums.PriceType
+  intervalUnit?:
+    | Prisma.NullableEnumIntervalUnitFieldUpdateOperationsInput
+    | $Enums.IntervalUnit
+    | null
+  intervalCount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isTaxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  showInCheckout?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  allowPortalManagement?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  prices?: Prisma.PriceUncheckedUpdateManyWithoutAddonNestedInput
+  couponApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutAddonNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutAddonNestedInput
 }
 

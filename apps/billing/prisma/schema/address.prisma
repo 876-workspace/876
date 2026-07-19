@@ -1,0 +1,32 @@
+
+/// A physical address attached to a customer. Modeled on the platform
+/// `addresses` table but cross-DB-safe: `state` (parish/region) and
+/// `countryCode` are opaque strings, never foreign keys into the identity DB.
+/// Latitude/longitude are optional and used only to place the address on a map.
+model Address {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  customerId  String  @map("customer_id")
+  type        String  @default("billing")
+  label       String?
+  attention   String?
+  line1       String?
+  line2       String?
+  city        String?
+  state       String?
+  postalCode  String? @map("postal_code")
+  countryCode String? @map("country_code")
+  latitude    Float?
+  longitude   Float?
+  isDefault   Boolean @default(false) @map("is_default")
+  createdAt   Int     @map("created_at")
+  updatedAt   Int     @map("updated_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_addresses_tenant_id_fkey")
+  customer Customer @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_addresses_customer_fkey")
+
+  @@unique([tenantId, id], map: "billing_addresses_tenant_id_id_key")
+  @@index([tenantId, customerId], map: "billing_addresses_tenant_customer_idx")
+  @@index([customerId], map: "billing_addresses_customer_id_idx")
+  @@map("billing_addresses")
+}

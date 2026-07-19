@@ -1,0 +1,42 @@
+/// Reusable discount definition. Promotion codes and direct gifts reference a
+/// coupon instead of cloning a plan or mutating an immutable price.
+model Coupon {
+  id                          String                   @id
+  tenantId                    String                   @map("tenant_id")
+  productId                   String?                  @map("product_id")
+  name                        String
+  discountType                DiscountType             @map("discount_type")
+  percentOff                  Decimal?                 @map("percent_off") @db.Decimal(7, 4)
+  amountOff                   BigInt?                  @map("amount_off")
+  currency                    String?                  @db.Char(3)
+  duration                    DiscountDuration
+  durationInCycles            Int?                     @map("duration_in_cycles")
+  discountPreference          CouponDiscountPreference @default(INVOICE_LEVEL) @map("discount_preference")
+  appliesToAllPlans           Boolean                  @default(true) @map("applies_to_all_plans")
+  appliesToAllRecurringAddons Boolean                  @default(true) @map("applies_to_all_recurring_addons")
+  appliesToAllOneTimeAddons   Boolean                  @default(true) @map("applies_to_all_one_time_addons")
+  eligibleForAllCustomers     Boolean                  @default(true) @map("eligible_for_all_customers")
+  maxRedemptionsPerCustomer   Int?                     @map("max_redemptions_per_customer")
+  redeemBy                    Int?                     @map("redeem_by")
+  maxRedemptions              Int?                     @map("max_redemptions")
+  timesRedeemed               Int                      @default(0) @map("times_redeemed")
+  isActive                    Boolean                  @default(true) @map("is_active")
+  metadata                    Json?
+  createdAt                   Int                      @map("created_at")
+  updatedAt                   Int                      @map("updated_at")
+
+  tenant                Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupons_tenant_fkey")
+  product               Product?                    @relation(fields: [productId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_coupons_product_fkey")
+  promotionCodes        PromotionCode[]
+  discounts             SubscriptionDiscount[]
+  currencyAmounts       CouponCurrencyAmount[]
+  planApplicabilities   CouponPlanApplicability[]
+  addonApplicabilities  CouponAddonApplicability[]
+  customerEligibilities CouponCustomerEligibility[]
+  redemptions           CouponRedemption[]
+
+  @@unique([tenantId, id], map: "billing_coupons_tenant_id_id_key")
+  @@index([tenantId, isActive], map: "billing_coupons_tenant_active_idx")
+  @@index([productId], map: "billing_coupons_product_id_idx")
+  @@map("billing_coupons")
+}

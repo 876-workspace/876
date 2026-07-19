@@ -19,13 +19,13 @@ model SubscriptionBillingRun {
   createdAt        Int              @map("created_at")
   updatedAt        Int              @map("updated_at")
 
-  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_runs_tenant_fkey")
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_runs_subscription_fkey")
+  invoice      Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_subscription_runs_invoice_fkey")
 
-  @@unique([tenantId, id])
-  @@unique([subscriptionId, periodStart, periodEnd], name: "billing_runs_subscription_period_key")
-  @@index([tenantId, status, scheduledFor], name: "billing_runs_tenant_status_schedule_idx")
-  @@index([invoiceId], name: "billing_subscription_runs_invoice_id_idx")
+  @@unique([tenantId, id], map: "billing_subscription_runs_tenant_id_id_key")
+  @@unique([subscriptionId, periodStart, periodEnd], name: "billing_runs_subscription_period_key", map: "billing_runs_subscription_period_key")
+  @@index([tenantId, status, scheduledFor], map: "billing_runs_tenant_status_schedule_idx")
+  @@index([invoiceId], map: "billing_subscription_runs_invoice_id_idx")
   @@map("billing_subscription_runs")
 }

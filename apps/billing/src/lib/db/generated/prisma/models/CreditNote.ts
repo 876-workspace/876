@@ -713,6 +713,11 @@ export type CreditNoteUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type CreditNoteScalarRelationFilter = {
+  is?: Prisma.CreditNoteWhereInput
+  isNot?: Prisma.CreditNoteWhereInput
+}
+
 export type CreditNoteTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -810,9 +815,9 @@ export type CreditNoteSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type CreditNoteScalarRelationFilter = {
-  is?: Prisma.CreditNoteWhereInput
-  isNot?: Prisma.CreditNoteWhereInput
+export type CreditNoteNullableScalarRelationFilter = {
+  is?: Prisma.CreditNoteWhereInput | null
+  isNot?: Prisma.CreditNoteWhereInput | null
 }
 
 export type CreditNoteListRelationFilter = {
@@ -825,13 +830,30 @@ export type CreditNoteOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type CreditNoteNullableScalarRelationFilter = {
-  is?: Prisma.CreditNoteWhereInput | null
-  isNot?: Prisma.CreditNoteWhereInput | null
+export type CreditNoteCreateNestedOneWithoutAllocationsInput = {
+  create?: Prisma.XOR<
+    Prisma.CreditNoteCreateWithoutAllocationsInput,
+    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+  >
+  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutAllocationsInput
+  connect?: Prisma.CreditNoteWhereUniqueInput
 }
 
-export type EnumCreditNoteStatusFieldUpdateOperationsInput = {
-  set?: $Enums.CreditNoteStatus
+export type CreditNoteUpdateOneRequiredWithoutAllocationsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CreditNoteCreateWithoutAllocationsInput,
+    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+  >
+  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutAllocationsInput
+  upsert?: Prisma.CreditNoteUpsertWithoutAllocationsInput
+  connect?: Prisma.CreditNoteWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CreditNoteUpdateToOneWithWhereWithoutAllocationsInput,
+      Prisma.CreditNoteUpdateWithoutAllocationsInput
+    >,
+    Prisma.CreditNoteUncheckedUpdateWithoutAllocationsInput
+  >
 }
 
 export type CreditNoteCreateNestedOneWithoutLinesInput = {
@@ -860,29 +882,35 @@ export type CreditNoteUpdateOneRequiredWithoutLinesNestedInput = {
   >
 }
 
-export type CreditNoteCreateNestedOneWithoutAllocationsInput = {
+export type EnumCreditNoteStatusFieldUpdateOperationsInput = {
+  set?: $Enums.CreditNoteStatus
+}
+
+export type CreditNoteCreateNestedOneWithoutLedgerEntriesInput = {
   create?: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutAllocationsInput,
-    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
+    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
   >
-  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutAllocationsInput
+  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutLedgerEntriesInput
   connect?: Prisma.CreditNoteWhereUniqueInput
 }
 
-export type CreditNoteUpdateOneRequiredWithoutAllocationsNestedInput = {
+export type CreditNoteUpdateOneWithoutLedgerEntriesNestedInput = {
   create?: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutAllocationsInput,
-    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
+    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
   >
-  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutAllocationsInput
-  upsert?: Prisma.CreditNoteUpsertWithoutAllocationsInput
+  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutLedgerEntriesInput
+  upsert?: Prisma.CreditNoteUpsertWithoutLedgerEntriesInput
+  disconnect?: Prisma.CreditNoteWhereInput | boolean
+  delete?: Prisma.CreditNoteWhereInput | boolean
   connect?: Prisma.CreditNoteWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.CreditNoteUpdateToOneWithWhereWithoutAllocationsInput,
-      Prisma.CreditNoteUpdateWithoutAllocationsInput
+      Prisma.CreditNoteUpdateToOneWithWhereWithoutLedgerEntriesInput,
+      Prisma.CreditNoteUpdateWithoutLedgerEntriesInput
     >,
-    Prisma.CreditNoteUncheckedUpdateWithoutAllocationsInput
+    Prisma.CreditNoteUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
@@ -1098,34 +1126,6 @@ export type CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput = {
     | Prisma.CreditNoteScalarWhereInput[]
 }
 
-export type CreditNoteCreateNestedOneWithoutLedgerEntriesInput = {
-  create?: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
-    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutLedgerEntriesInput
-  connect?: Prisma.CreditNoteWhereUniqueInput
-}
-
-export type CreditNoteUpdateOneWithoutLedgerEntriesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
-    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.CreditNoteCreateOrConnectWithoutLedgerEntriesInput
-  upsert?: Prisma.CreditNoteUpsertWithoutLedgerEntriesInput
-  disconnect?: Prisma.CreditNoteWhereInput | boolean
-  delete?: Prisma.CreditNoteWhereInput | boolean
-  connect?: Prisma.CreditNoteWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CreditNoteUpdateToOneWithWhereWithoutLedgerEntriesInput,
-      Prisma.CreditNoteUpdateWithoutLedgerEntriesInput
-    >,
-    Prisma.CreditNoteUncheckedUpdateWithoutLedgerEntriesInput
-  >
-}
-
 export type CreditNoteCreateNestedOneWithoutRefundsInput = {
   create?: Prisma.XOR<
     Prisma.CreditNoteCreateWithoutRefundsInput,
@@ -1260,6 +1260,138 @@ export type CreditNoteUncheckedUpdateManyWithoutTenantNestedInput = {
     | Prisma.CreditNoteScalarWhereInput[]
 }
 
+export type CreditNoteCreateWithoutAllocationsInput = {
+  id: string
+  number: string
+  status?: $Enums.CreditNoteStatus
+  currency: string
+  reason?: string | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  totalAmount?: bigint | number
+  balanceAmount?: bigint | number
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  issueAt?: number | null
+  voidedAt?: number | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCreditNotesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutCreditNotesInput
+  invoice?: Prisma.InvoiceCreateNestedOneWithoutCreditNotesInput
+  lines?: Prisma.CreditNoteLineCreateNestedManyWithoutCreditNoteInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutCreditNoteInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCreditNoteInput
+}
+
+export type CreditNoteUncheckedCreateWithoutAllocationsInput = {
+  id: string
+  tenantId: string
+  customerId: string
+  invoiceId?: string | null
+  number: string
+  status?: $Enums.CreditNoteStatus
+  currency: string
+  reason?: string | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  totalAmount?: bigint | number
+  balanceAmount?: bigint | number
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  issueAt?: number | null
+  voidedAt?: number | null
+  createdAt: number
+  updatedAt: number
+  lines?: Prisma.CreditNoteLineUncheckedCreateNestedManyWithoutCreditNoteInput
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCreditNoteInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCreditNoteInput
+}
+
+export type CreditNoteCreateOrConnectWithoutAllocationsInput = {
+  where: Prisma.CreditNoteWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CreditNoteCreateWithoutAllocationsInput,
+    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+  >
+}
+
+export type CreditNoteUpsertWithoutAllocationsInput = {
+  update: Prisma.XOR<
+    Prisma.CreditNoteUpdateWithoutAllocationsInput,
+    Prisma.CreditNoteUncheckedUpdateWithoutAllocationsInput
+  >
+  create: Prisma.XOR<
+    Prisma.CreditNoteCreateWithoutAllocationsInput,
+    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+  >
+  where?: Prisma.CreditNoteWhereInput
+}
+
+export type CreditNoteUpdateToOneWithWhereWithoutAllocationsInput = {
+  where?: Prisma.CreditNoteWhereInput
+  data: Prisma.XOR<
+    Prisma.CreditNoteUpdateWithoutAllocationsInput,
+    Prisma.CreditNoteUncheckedUpdateWithoutAllocationsInput
+  >
+}
+
+export type CreditNoteUpdateWithoutAllocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumCreditNoteStatusFieldUpdateOperationsInput
+    | $Enums.CreditNoteStatus
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  balanceAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCreditNotesNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutCreditNotesNestedInput
+  invoice?: Prisma.InvoiceUpdateOneWithoutCreditNotesNestedInput
+  lines?: Prisma.CreditNoteLineUpdateManyWithoutCreditNoteNestedInput
+  refunds?: Prisma.RefundUpdateManyWithoutCreditNoteNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCreditNoteNestedInput
+}
+
+export type CreditNoteUncheckedUpdateWithoutAllocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumCreditNoteStatusFieldUpdateOperationsInput
+    | $Enums.CreditNoteStatus
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  balanceAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  lines?: Prisma.CreditNoteLineUncheckedUpdateManyWithoutCreditNoteNestedInput
+  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCreditNoteNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCreditNoteNestedInput
+}
+
 export type CreditNoteCreateWithoutLinesInput = {
   id: string
   number: string
@@ -1392,7 +1524,7 @@ export type CreditNoteUncheckedUpdateWithoutLinesInput = {
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCreditNoteNestedInput
 }
 
-export type CreditNoteCreateWithoutAllocationsInput = {
+export type CreditNoteCreateWithoutLedgerEntriesInput = {
   id: string
   number: string
   status?: $Enums.CreditNoteStatus
@@ -1413,11 +1545,11 @@ export type CreditNoteCreateWithoutAllocationsInput = {
   customer: Prisma.CustomerCreateNestedOneWithoutCreditNotesInput
   invoice?: Prisma.InvoiceCreateNestedOneWithoutCreditNotesInput
   lines?: Prisma.CreditNoteLineCreateNestedManyWithoutCreditNoteInput
+  allocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutCreditNoteInput
   refunds?: Prisma.RefundCreateNestedManyWithoutCreditNoteInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCreditNoteInput
 }
 
-export type CreditNoteUncheckedCreateWithoutAllocationsInput = {
+export type CreditNoteUncheckedCreateWithoutLedgerEntriesInput = {
   id: string
   tenantId: string
   customerId: string
@@ -1438,39 +1570,39 @@ export type CreditNoteUncheckedCreateWithoutAllocationsInput = {
   createdAt: number
   updatedAt: number
   lines?: Prisma.CreditNoteLineUncheckedCreateNestedManyWithoutCreditNoteInput
+  allocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutCreditNoteInput
   refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCreditNoteInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCreditNoteInput
 }
 
-export type CreditNoteCreateOrConnectWithoutAllocationsInput = {
+export type CreditNoteCreateOrConnectWithoutLedgerEntriesInput = {
   where: Prisma.CreditNoteWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutAllocationsInput,
-    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
+    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
   >
 }
 
-export type CreditNoteUpsertWithoutAllocationsInput = {
+export type CreditNoteUpsertWithoutLedgerEntriesInput = {
   update: Prisma.XOR<
-    Prisma.CreditNoteUpdateWithoutAllocationsInput,
-    Prisma.CreditNoteUncheckedUpdateWithoutAllocationsInput
+    Prisma.CreditNoteUpdateWithoutLedgerEntriesInput,
+    Prisma.CreditNoteUncheckedUpdateWithoutLedgerEntriesInput
   >
   create: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutAllocationsInput,
-    Prisma.CreditNoteUncheckedCreateWithoutAllocationsInput
+    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
+    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
   >
   where?: Prisma.CreditNoteWhereInput
 }
 
-export type CreditNoteUpdateToOneWithWhereWithoutAllocationsInput = {
+export type CreditNoteUpdateToOneWithWhereWithoutLedgerEntriesInput = {
   where?: Prisma.CreditNoteWhereInput
   data: Prisma.XOR<
-    Prisma.CreditNoteUpdateWithoutAllocationsInput,
-    Prisma.CreditNoteUncheckedUpdateWithoutAllocationsInput
+    Prisma.CreditNoteUpdateWithoutLedgerEntriesInput,
+    Prisma.CreditNoteUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
-export type CreditNoteUpdateWithoutAllocationsInput = {
+export type CreditNoteUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   number?: Prisma.StringFieldUpdateOperationsInput | string
   status?:
@@ -1493,11 +1625,11 @@ export type CreditNoteUpdateWithoutAllocationsInput = {
   customer?: Prisma.CustomerUpdateOneRequiredWithoutCreditNotesNestedInput
   invoice?: Prisma.InvoiceUpdateOneWithoutCreditNotesNestedInput
   lines?: Prisma.CreditNoteLineUpdateManyWithoutCreditNoteNestedInput
+  allocations?: Prisma.CreditNoteAllocationUpdateManyWithoutCreditNoteNestedInput
   refunds?: Prisma.RefundUpdateManyWithoutCreditNoteNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCreditNoteNestedInput
 }
 
-export type CreditNoteUncheckedUpdateWithoutAllocationsInput = {
+export type CreditNoteUncheckedUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1520,8 +1652,8 @@ export type CreditNoteUncheckedUpdateWithoutAllocationsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   lines?: Prisma.CreditNoteLineUncheckedUpdateManyWithoutCreditNoteNestedInput
+  allocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutCreditNoteNestedInput
   refunds?: Prisma.RefundUncheckedUpdateManyWithoutCreditNoteNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCreditNoteNestedInput
 }
 
 export type CreditNoteCreateWithoutCustomerInput = {
@@ -1734,138 +1866,6 @@ export type CreditNoteUpdateManyWithWhereWithoutInvoiceInput = {
     Prisma.CreditNoteUpdateManyMutationInput,
     Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceInput
   >
-}
-
-export type CreditNoteCreateWithoutLedgerEntriesInput = {
-  id: string
-  number: string
-  status?: $Enums.CreditNoteStatus
-  currency: string
-  reason?: string | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  totalAmount?: bigint | number
-  balanceAmount?: bigint | number
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  issueAt?: number | null
-  voidedAt?: number | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCreditNotesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutCreditNotesInput
-  invoice?: Prisma.InvoiceCreateNestedOneWithoutCreditNotesInput
-  lines?: Prisma.CreditNoteLineCreateNestedManyWithoutCreditNoteInput
-  allocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutCreditNoteInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutCreditNoteInput
-}
-
-export type CreditNoteUncheckedCreateWithoutLedgerEntriesInput = {
-  id: string
-  tenantId: string
-  customerId: string
-  invoiceId?: string | null
-  number: string
-  status?: $Enums.CreditNoteStatus
-  currency: string
-  reason?: string | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  totalAmount?: bigint | number
-  balanceAmount?: bigint | number
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  issueAt?: number | null
-  voidedAt?: number | null
-  createdAt: number
-  updatedAt: number
-  lines?: Prisma.CreditNoteLineUncheckedCreateNestedManyWithoutCreditNoteInput
-  allocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutCreditNoteInput
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCreditNoteInput
-}
-
-export type CreditNoteCreateOrConnectWithoutLedgerEntriesInput = {
-  where: Prisma.CreditNoteWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
-    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
-  >
-}
-
-export type CreditNoteUpsertWithoutLedgerEntriesInput = {
-  update: Prisma.XOR<
-    Prisma.CreditNoteUpdateWithoutLedgerEntriesInput,
-    Prisma.CreditNoteUncheckedUpdateWithoutLedgerEntriesInput
-  >
-  create: Prisma.XOR<
-    Prisma.CreditNoteCreateWithoutLedgerEntriesInput,
-    Prisma.CreditNoteUncheckedCreateWithoutLedgerEntriesInput
-  >
-  where?: Prisma.CreditNoteWhereInput
-}
-
-export type CreditNoteUpdateToOneWithWhereWithoutLedgerEntriesInput = {
-  where?: Prisma.CreditNoteWhereInput
-  data: Prisma.XOR<
-    Prisma.CreditNoteUpdateWithoutLedgerEntriesInput,
-    Prisma.CreditNoteUncheckedUpdateWithoutLedgerEntriesInput
-  >
-}
-
-export type CreditNoteUpdateWithoutLedgerEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumCreditNoteStatusFieldUpdateOperationsInput
-    | $Enums.CreditNoteStatus
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  balanceAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCreditNotesNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutCreditNotesNestedInput
-  invoice?: Prisma.InvoiceUpdateOneWithoutCreditNotesNestedInput
-  lines?: Prisma.CreditNoteLineUpdateManyWithoutCreditNoteNestedInput
-  allocations?: Prisma.CreditNoteAllocationUpdateManyWithoutCreditNoteNestedInput
-  refunds?: Prisma.RefundUpdateManyWithoutCreditNoteNestedInput
-}
-
-export type CreditNoteUncheckedUpdateWithoutLedgerEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumCreditNoteStatusFieldUpdateOperationsInput
-    | $Enums.CreditNoteStatus
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  balanceAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  lines?: Prisma.CreditNoteLineUncheckedUpdateManyWithoutCreditNoteNestedInput
-  allocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutCreditNoteNestedInput
-  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCreditNoteNestedInput
 }
 
 export type CreditNoteCreateWithoutRefundsInput = {

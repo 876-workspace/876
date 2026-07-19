@@ -26,46 +26,10 @@ model SubscriptionPreference {
   createdAt                         Int                         @map("created_at")
   updatedAt                         Int                         @map("updated_at")
 
-  tenant         Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant         Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_preferences_tenant_fkey")
   advanceRules   SubscriptionAdvanceBillingRule[]
   calendarDays   SubscriptionCalendarDay[]
   calendarMonths SubscriptionCalendarMonth[]
 
   @@map("billing_subscription_preferences")
-}
-
-model SubscriptionAdvanceBillingRule {
-  tenantId     String       @map("tenant_id")
-  intervalUnit IntervalUnit @map("interval_unit")
-  daysBefore   Int          @map("days_before")
-  createdAt    Int          @map("created_at")
-  updatedAt    Int          @map("updated_at")
-
-  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_advance_rules_tenant_fkey")
-  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_advance_rules_preference_fkey")
-
-  @@id([tenantId, intervalUnit])
-  @@map("billing_subscription_advance_rules")
-}
-
-model SubscriptionCalendarDay {
-  tenantId   String @map("tenant_id")
-  dayOfMonth Int    @map("day_of_month")
-
-  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_calendar_days_tenant_fkey")
-  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_calendar_days_preference_fkey")
-
-  @@id([tenantId, dayOfMonth])
-  @@map("billing_subscription_calendar_days")
-}
-
-model SubscriptionCalendarMonth {
-  tenantId String @map("tenant_id")
-  month    Int
-
-  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_calendar_months_tenant_fkey")
-  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_calendar_months_preference_fkey")
-
-  @@id([tenantId, month])
-  @@map("billing_subscription_calendar_months")
 }

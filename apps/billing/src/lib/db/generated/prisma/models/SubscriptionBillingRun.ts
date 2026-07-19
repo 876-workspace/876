@@ -717,6 +717,16 @@ export type SubscriptionBillingRunUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type SubscriptionBillingRunListRelationFilter = {
+  every?: Prisma.SubscriptionBillingRunWhereInput
+  some?: Prisma.SubscriptionBillingRunWhereInput
+  none?: Prisma.SubscriptionBillingRunWhereInput
+}
+
+export type SubscriptionBillingRunOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type SubscriptionBillingRunTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -811,20 +821,6 @@ export type SubscriptionBillingRunSumOrderByAggregateInput = {
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type SubscriptionBillingRunListRelationFilter = {
-  every?: Prisma.SubscriptionBillingRunWhereInput
-  some?: Prisma.SubscriptionBillingRunWhereInput
-  none?: Prisma.SubscriptionBillingRunWhereInput
-}
-
-export type SubscriptionBillingRunOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
-export type EnumBillingRunStatusFieldUpdateOperationsInput = {
-  set?: $Enums.BillingRunStatus
 }
 
 export type SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput = {
@@ -938,6 +934,10 @@ export type SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput =
       | Prisma.SubscriptionBillingRunScalarWhereInput
       | Prisma.SubscriptionBillingRunScalarWhereInput[]
   }
+
+export type EnumBillingRunStatusFieldUpdateOperationsInput = {
+  set?: $Enums.BillingRunStatus
+}
 
 export type SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput = {
   create?:

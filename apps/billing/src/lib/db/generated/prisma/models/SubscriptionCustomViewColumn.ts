@@ -351,16 +351,6 @@ export type SubscriptionCustomViewColumnUncheckedUpdateManyInput = {
   field?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
-export type SubscriptionCustomViewColumnListRelationFilter = {
-  every?: Prisma.SubscriptionCustomViewColumnWhereInput
-  some?: Prisma.SubscriptionCustomViewColumnWhereInput
-  none?: Prisma.SubscriptionCustomViewColumnWhereInput
-}
-
-export type SubscriptionCustomViewColumnOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type SubscriptionCustomViewColumnBilling_subscription_view_columns_position_keyCompoundUniqueInput =
   {
     viewId: string
@@ -394,6 +384,16 @@ export type SubscriptionCustomViewColumnMinOrderByAggregateInput = {
 
 export type SubscriptionCustomViewColumnSumOrderByAggregateInput = {
   position?: Prisma.SortOrder
+}
+
+export type SubscriptionCustomViewColumnListRelationFilter = {
+  every?: Prisma.SubscriptionCustomViewColumnWhereInput
+  some?: Prisma.SubscriptionCustomViewColumnWhereInput
+  none?: Prisma.SubscriptionCustomViewColumnWhereInput
+}
+
+export type SubscriptionCustomViewColumnOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type SubscriptionCustomViewColumnCreateNestedManyWithoutViewInput = {

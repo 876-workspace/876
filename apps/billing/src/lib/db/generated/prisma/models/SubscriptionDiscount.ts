@@ -1281,118 +1281,6 @@ export type EnumDiscountStatusFieldUpdateOperationsInput = {
   set?: $Enums.DiscountStatus
 }
 
-export type SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
-        Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
-      >
-    | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
-    | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
-  connectOrCreate?:
-    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
-    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
-  createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
-  connect?:
-    | Prisma.SubscriptionDiscountWhereUniqueInput
-    | Prisma.SubscriptionDiscountWhereUniqueInput[]
-}
-
-export type SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput =
-  {
-    create?:
-      | Prisma.XOR<
-          Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
-          Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
-        >
-      | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
-      | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
-    connectOrCreate?:
-      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
-      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
-    createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
-    connect?:
-      | Prisma.SubscriptionDiscountWhereUniqueInput
-      | Prisma.SubscriptionDiscountWhereUniqueInput[]
-  }
-
-export type SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
-        Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
-      >
-    | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
-    | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
-  connectOrCreate?:
-    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
-    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
-  upsert?:
-    | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput
-    | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput[]
-  createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
-  set?:
-    | Prisma.SubscriptionDiscountWhereUniqueInput
-    | Prisma.SubscriptionDiscountWhereUniqueInput[]
-  disconnect?:
-    | Prisma.SubscriptionDiscountWhereUniqueInput
-    | Prisma.SubscriptionDiscountWhereUniqueInput[]
-  delete?:
-    | Prisma.SubscriptionDiscountWhereUniqueInput
-    | Prisma.SubscriptionDiscountWhereUniqueInput[]
-  connect?:
-    | Prisma.SubscriptionDiscountWhereUniqueInput
-    | Prisma.SubscriptionDiscountWhereUniqueInput[]
-  update?:
-    | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput
-    | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput[]
-  updateMany?:
-    | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput
-    | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput[]
-  deleteMany?:
-    | Prisma.SubscriptionDiscountScalarWhereInput
-    | Prisma.SubscriptionDiscountScalarWhereInput[]
-}
-
-export type SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput =
-  {
-    create?:
-      | Prisma.XOR<
-          Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
-          Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
-        >
-      | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
-      | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
-    connectOrCreate?:
-      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
-      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
-    upsert?:
-      | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput
-      | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput[]
-    createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
-    set?:
-      | Prisma.SubscriptionDiscountWhereUniqueInput
-      | Prisma.SubscriptionDiscountWhereUniqueInput[]
-    disconnect?:
-      | Prisma.SubscriptionDiscountWhereUniqueInput
-      | Prisma.SubscriptionDiscountWhereUniqueInput[]
-    delete?:
-      | Prisma.SubscriptionDiscountWhereUniqueInput
-      | Prisma.SubscriptionDiscountWhereUniqueInput[]
-    connect?:
-      | Prisma.SubscriptionDiscountWhereUniqueInput
-      | Prisma.SubscriptionDiscountWhereUniqueInput[]
-    update?:
-      | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput
-      | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput[]
-    updateMany?:
-      | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput
-      | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput[]
-    deleteMany?:
-      | Prisma.SubscriptionDiscountScalarWhereInput
-      | Prisma.SubscriptionDiscountScalarWhereInput[]
-  }
-
 export type SubscriptionDiscountCreateNestedManyWithoutSubscriptionItemInput = {
   create?:
     | Prisma.XOR<
@@ -1500,6 +1388,118 @@ export type SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionItemNested
     updateMany?:
       | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionItemInput
       | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionItemInput[]
+    deleteMany?:
+      | Prisma.SubscriptionDiscountScalarWhereInput
+      | Prisma.SubscriptionDiscountScalarWhereInput[]
+  }
+
+export type SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
+        Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
+      >
+    | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
+    | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
+  connectOrCreate?:
+    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
+    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
+  createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
+  connect?:
+    | Prisma.SubscriptionDiscountWhereUniqueInput
+    | Prisma.SubscriptionDiscountWhereUniqueInput[]
+}
+
+export type SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput =
+  {
+    create?:
+      | Prisma.XOR<
+          Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
+          Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
+        >
+      | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
+      | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
+    connectOrCreate?:
+      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
+      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
+    createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
+    connect?:
+      | Prisma.SubscriptionDiscountWhereUniqueInput
+      | Prisma.SubscriptionDiscountWhereUniqueInput[]
+  }
+
+export type SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
+        Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
+      >
+    | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
+    | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
+  connectOrCreate?:
+    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
+    | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
+  upsert?:
+    | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput
+    | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput[]
+  createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
+  set?:
+    | Prisma.SubscriptionDiscountWhereUniqueInput
+    | Prisma.SubscriptionDiscountWhereUniqueInput[]
+  disconnect?:
+    | Prisma.SubscriptionDiscountWhereUniqueInput
+    | Prisma.SubscriptionDiscountWhereUniqueInput[]
+  delete?:
+    | Prisma.SubscriptionDiscountWhereUniqueInput
+    | Prisma.SubscriptionDiscountWhereUniqueInput[]
+  connect?:
+    | Prisma.SubscriptionDiscountWhereUniqueInput
+    | Prisma.SubscriptionDiscountWhereUniqueInput[]
+  update?:
+    | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput
+    | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput[]
+  updateMany?:
+    | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput
+    | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput[]
+  deleteMany?:
+    | Prisma.SubscriptionDiscountScalarWhereInput
+    | Prisma.SubscriptionDiscountScalarWhereInput[]
+}
+
+export type SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput =
+  {
+    create?:
+      | Prisma.XOR<
+          Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
+          Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
+        >
+      | Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput[]
+      | Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput[]
+    connectOrCreate?:
+      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput
+      | Prisma.SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput[]
+    upsert?:
+      | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput
+      | Prisma.SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput[]
+    createMany?: Prisma.SubscriptionDiscountCreateManySubscriptionInputEnvelope
+    set?:
+      | Prisma.SubscriptionDiscountWhereUniqueInput
+      | Prisma.SubscriptionDiscountWhereUniqueInput[]
+    disconnect?:
+      | Prisma.SubscriptionDiscountWhereUniqueInput
+      | Prisma.SubscriptionDiscountWhereUniqueInput[]
+    delete?:
+      | Prisma.SubscriptionDiscountWhereUniqueInput
+      | Prisma.SubscriptionDiscountWhereUniqueInput[]
+    connect?:
+      | Prisma.SubscriptionDiscountWhereUniqueInput
+      | Prisma.SubscriptionDiscountWhereUniqueInput[]
+    update?:
+      | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput
+      | Prisma.SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput[]
+    updateMany?:
+      | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput
+      | Prisma.SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput[]
     deleteMany?:
       | Prisma.SubscriptionDiscountScalarWhereInput
       | Prisma.SubscriptionDiscountScalarWhereInput[]
@@ -1859,97 +1859,6 @@ export type SubscriptionDiscountUpdateManyWithWhereWithoutPromotionCodeInput = {
   >
 }
 
-export type SubscriptionDiscountCreateWithoutSubscriptionInput = {
-  id: string
-  source?: $Enums.SubscriptionDiscountSource
-  scope?: $Enums.SubscriptionDiscountScope
-  status?: $Enums.DiscountStatus
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  remainingCycles?: number | null
-  grantedByUserId?: string | null
-  grantReason?: string | null
-  startsAt: number
-  endsAt?: number | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionDiscountsInput
-  coupon?: Prisma.CouponCreateNestedOneWithoutDiscountsInput
-  promotionCode?: Prisma.PromotionCodeCreateNestedOneWithoutDiscountsInput
-  subscriptionItem?: Prisma.SubscriptionItemCreateNestedOneWithoutDiscountsInput
-}
-
-export type SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput = {
-  id: string
-  tenantId: string
-  couponId?: string | null
-  promotionCodeId?: string | null
-  subscriptionItemId?: string | null
-  source?: $Enums.SubscriptionDiscountSource
-  scope?: $Enums.SubscriptionDiscountScope
-  status?: $Enums.DiscountStatus
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  remainingCycles?: number | null
-  grantedByUserId?: string | null
-  grantReason?: string | null
-  startsAt: number
-  endsAt?: number | null
-  createdAt: number
-  updatedAt: number
-}
-
-export type SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput = {
-  where: Prisma.SubscriptionDiscountWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
-    Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
-  >
-}
-
-export type SubscriptionDiscountCreateManySubscriptionInputEnvelope = {
-  data:
-    | Prisma.SubscriptionDiscountCreateManySubscriptionInput
-    | Prisma.SubscriptionDiscountCreateManySubscriptionInput[]
-  skipDuplicates?: boolean
-}
-
-export type SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput =
-  {
-    where: Prisma.SubscriptionDiscountWhereUniqueInput
-    update: Prisma.XOR<
-      Prisma.SubscriptionDiscountUpdateWithoutSubscriptionInput,
-      Prisma.SubscriptionDiscountUncheckedUpdateWithoutSubscriptionInput
-    >
-    create: Prisma.XOR<
-      Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
-      Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
-    >
-  }
-
-export type SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput =
-  {
-    where: Prisma.SubscriptionDiscountWhereUniqueInput
-    data: Prisma.XOR<
-      Prisma.SubscriptionDiscountUpdateWithoutSubscriptionInput,
-      Prisma.SubscriptionDiscountUncheckedUpdateWithoutSubscriptionInput
-    >
-  }
-
-export type SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput = {
-  where: Prisma.SubscriptionDiscountScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionDiscountUpdateManyMutationInput,
-    Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionInput
-  >
-}
-
 export type SubscriptionDiscountCreateWithoutSubscriptionItemInput = {
   id: string
   source?: $Enums.SubscriptionDiscountSource
@@ -2041,6 +1950,97 @@ export type SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionItemInput 
       Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionItemInput
     >
   }
+
+export type SubscriptionDiscountCreateWithoutSubscriptionInput = {
+  id: string
+  source?: $Enums.SubscriptionDiscountSource
+  scope?: $Enums.SubscriptionDiscountScope
+  status?: $Enums.DiscountStatus
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  remainingCycles?: number | null
+  grantedByUserId?: string | null
+  grantReason?: string | null
+  startsAt: number
+  endsAt?: number | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionDiscountsInput
+  coupon?: Prisma.CouponCreateNestedOneWithoutDiscountsInput
+  promotionCode?: Prisma.PromotionCodeCreateNestedOneWithoutDiscountsInput
+  subscriptionItem?: Prisma.SubscriptionItemCreateNestedOneWithoutDiscountsInput
+}
+
+export type SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput = {
+  id: string
+  tenantId: string
+  couponId?: string | null
+  promotionCodeId?: string | null
+  subscriptionItemId?: string | null
+  source?: $Enums.SubscriptionDiscountSource
+  scope?: $Enums.SubscriptionDiscountScope
+  status?: $Enums.DiscountStatus
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  remainingCycles?: number | null
+  grantedByUserId?: string | null
+  grantReason?: string | null
+  startsAt: number
+  endsAt?: number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type SubscriptionDiscountCreateOrConnectWithoutSubscriptionInput = {
+  where: Prisma.SubscriptionDiscountWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
+    Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
+  >
+}
+
+export type SubscriptionDiscountCreateManySubscriptionInputEnvelope = {
+  data:
+    | Prisma.SubscriptionDiscountCreateManySubscriptionInput
+    | Prisma.SubscriptionDiscountCreateManySubscriptionInput[]
+  skipDuplicates?: boolean
+}
+
+export type SubscriptionDiscountUpsertWithWhereUniqueWithoutSubscriptionInput =
+  {
+    where: Prisma.SubscriptionDiscountWhereUniqueInput
+    update: Prisma.XOR<
+      Prisma.SubscriptionDiscountUpdateWithoutSubscriptionInput,
+      Prisma.SubscriptionDiscountUncheckedUpdateWithoutSubscriptionInput
+    >
+    create: Prisma.XOR<
+      Prisma.SubscriptionDiscountCreateWithoutSubscriptionInput,
+      Prisma.SubscriptionDiscountUncheckedCreateWithoutSubscriptionInput
+    >
+  }
+
+export type SubscriptionDiscountUpdateWithWhereUniqueWithoutSubscriptionInput =
+  {
+    where: Prisma.SubscriptionDiscountWhereUniqueInput
+    data: Prisma.XOR<
+      Prisma.SubscriptionDiscountUpdateWithoutSubscriptionInput,
+      Prisma.SubscriptionDiscountUncheckedUpdateWithoutSubscriptionInput
+    >
+  }
+
+export type SubscriptionDiscountUpdateManyWithWhereWithoutSubscriptionInput = {
+  where: Prisma.SubscriptionDiscountScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionDiscountUpdateManyMutationInput,
+    Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionInput
+  >
+}
 
 export type SubscriptionDiscountCreateWithoutTenantInput = {
   id: string
@@ -2465,179 +2465,6 @@ export type SubscriptionDiscountUncheckedUpdateManyWithoutPromotionCodeInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type SubscriptionDiscountCreateManySubscriptionInput = {
-  id: string
-  tenantId: string
-  couponId?: string | null
-  promotionCodeId?: string | null
-  subscriptionItemId?: string | null
-  source?: $Enums.SubscriptionDiscountSource
-  scope?: $Enums.SubscriptionDiscountScope
-  status?: $Enums.DiscountStatus
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  remainingCycles?: number | null
-  grantedByUserId?: string | null
-  grantReason?: string | null
-  startsAt: number
-  endsAt?: number | null
-  createdAt: number
-  updatedAt: number
-}
-
-export type SubscriptionDiscountUpdateWithoutSubscriptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  source?:
-    | Prisma.EnumSubscriptionDiscountSourceFieldUpdateOperationsInput
-    | $Enums.SubscriptionDiscountSource
-  scope?:
-    | Prisma.EnumSubscriptionDiscountScopeFieldUpdateOperationsInput
-    | $Enums.SubscriptionDiscountScope
-  status?:
-    | Prisma.EnumDiscountStatusFieldUpdateOperationsInput
-    | $Enums.DiscountStatus
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  grantedByUserId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  grantReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  startsAt?: Prisma.IntFieldUpdateOperationsInput | number
-  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionDiscountsNestedInput
-  coupon?: Prisma.CouponUpdateOneWithoutDiscountsNestedInput
-  promotionCode?: Prisma.PromotionCodeUpdateOneWithoutDiscountsNestedInput
-  subscriptionItem?: Prisma.SubscriptionItemUpdateOneWithoutDiscountsNestedInput
-}
-
-export type SubscriptionDiscountUncheckedUpdateWithoutSubscriptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  couponId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  promotionCodeId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subscriptionItemId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  source?:
-    | Prisma.EnumSubscriptionDiscountSourceFieldUpdateOperationsInput
-    | $Enums.SubscriptionDiscountSource
-  scope?:
-    | Prisma.EnumSubscriptionDiscountScopeFieldUpdateOperationsInput
-    | $Enums.SubscriptionDiscountScope
-  status?:
-    | Prisma.EnumDiscountStatusFieldUpdateOperationsInput
-    | $Enums.DiscountStatus
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  grantedByUserId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  grantReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  startsAt?: Prisma.IntFieldUpdateOperationsInput | number
-  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  couponId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  promotionCodeId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subscriptionItemId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  source?:
-    | Prisma.EnumSubscriptionDiscountSourceFieldUpdateOperationsInput
-    | $Enums.SubscriptionDiscountSource
-  scope?:
-    | Prisma.EnumSubscriptionDiscountScopeFieldUpdateOperationsInput
-    | $Enums.SubscriptionDiscountScope
-  status?:
-    | Prisma.EnumDiscountStatusFieldUpdateOperationsInput
-    | $Enums.DiscountStatus
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  grantedByUserId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  grantReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  startsAt?: Prisma.IntFieldUpdateOperationsInput | number
-  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
 export type SubscriptionDiscountCreateManySubscriptionItemInput = {
   id: string
   tenantId: string
@@ -2811,6 +2638,179 @@ export type SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionItemInput 
     createdAt?: Prisma.IntFieldUpdateOperationsInput | number
     updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   }
+
+export type SubscriptionDiscountCreateManySubscriptionInput = {
+  id: string
+  tenantId: string
+  couponId?: string | null
+  promotionCodeId?: string | null
+  subscriptionItemId?: string | null
+  source?: $Enums.SubscriptionDiscountSource
+  scope?: $Enums.SubscriptionDiscountScope
+  status?: $Enums.DiscountStatus
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  remainingCycles?: number | null
+  grantedByUserId?: string | null
+  grantReason?: string | null
+  startsAt: number
+  endsAt?: number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type SubscriptionDiscountUpdateWithoutSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  source?:
+    | Prisma.EnumSubscriptionDiscountSourceFieldUpdateOperationsInput
+    | $Enums.SubscriptionDiscountSource
+  scope?:
+    | Prisma.EnumSubscriptionDiscountScopeFieldUpdateOperationsInput
+    | $Enums.SubscriptionDiscountScope
+  status?:
+    | Prisma.EnumDiscountStatusFieldUpdateOperationsInput
+    | $Enums.DiscountStatus
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  grantedByUserId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  grantReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startsAt?: Prisma.IntFieldUpdateOperationsInput | number
+  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionDiscountsNestedInput
+  coupon?: Prisma.CouponUpdateOneWithoutDiscountsNestedInput
+  promotionCode?: Prisma.PromotionCodeUpdateOneWithoutDiscountsNestedInput
+  subscriptionItem?: Prisma.SubscriptionItemUpdateOneWithoutDiscountsNestedInput
+}
+
+export type SubscriptionDiscountUncheckedUpdateWithoutSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  couponId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotionCodeId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionItemId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  source?:
+    | Prisma.EnumSubscriptionDiscountSourceFieldUpdateOperationsInput
+    | $Enums.SubscriptionDiscountSource
+  scope?:
+    | Prisma.EnumSubscriptionDiscountScopeFieldUpdateOperationsInput
+    | $Enums.SubscriptionDiscountScope
+  status?:
+    | Prisma.EnumDiscountStatusFieldUpdateOperationsInput
+    | $Enums.DiscountStatus
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  grantedByUserId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  grantReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startsAt?: Prisma.IntFieldUpdateOperationsInput | number
+  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  couponId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  promotionCodeId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionItemId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  source?:
+    | Prisma.EnumSubscriptionDiscountSourceFieldUpdateOperationsInput
+    | $Enums.SubscriptionDiscountSource
+  scope?:
+    | Prisma.EnumSubscriptionDiscountScopeFieldUpdateOperationsInput
+    | $Enums.SubscriptionDiscountScope
+  status?:
+    | Prisma.EnumDiscountStatusFieldUpdateOperationsInput
+    | $Enums.DiscountStatus
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  grantedByUserId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  grantReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startsAt?: Prisma.IntFieldUpdateOperationsInput | number
+  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
 
 export type SubscriptionDiscountCreateManyTenantInput = {
   id: string

@@ -625,6 +625,21 @@ export type LateFeeAssessmentUncheckedUpdateManyInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type LateFeeAssessmentListRelationFilter = {
+  every?: Prisma.LateFeeAssessmentWhereInput
+  some?: Prisma.LateFeeAssessmentWhereInput
+  none?: Prisma.LateFeeAssessmentWhereInput
+}
+
+export type LateFeeAssessmentNullableScalarRelationFilter = {
+  is?: Prisma.LateFeeAssessmentWhereInput | null
+  isNot?: Prisma.LateFeeAssessmentWhereInput | null
+}
+
+export type LateFeeAssessmentOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type LateFeeAssessmentTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -699,21 +714,6 @@ export type LateFeeAssessmentSumOrderByAggregateInput = {
   graceDays?: Prisma.SortOrder
   assessedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-}
-
-export type LateFeeAssessmentListRelationFilter = {
-  every?: Prisma.LateFeeAssessmentWhereInput
-  some?: Prisma.LateFeeAssessmentWhereInput
-  none?: Prisma.LateFeeAssessmentWhereInput
-}
-
-export type LateFeeAssessmentNullableScalarRelationFilter = {
-  is?: Prisma.LateFeeAssessmentWhereInput | null
-  isNot?: Prisma.LateFeeAssessmentWhereInput | null
-}
-
-export type LateFeeAssessmentOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput = {

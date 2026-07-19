@@ -390,16 +390,6 @@ export type SubscriptionEventUncheckedUpdateManyInput = {
   occurredAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type SubscriptionEventListRelationFilter = {
-  every?: Prisma.SubscriptionEventWhereInput
-  some?: Prisma.SubscriptionEventWhereInput
-  none?: Prisma.SubscriptionEventWhereInput
-}
-
-export type SubscriptionEventOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type SubscriptionEventCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
@@ -431,6 +421,20 @@ export type SubscriptionEventMinOrderByAggregateInput = {
 
 export type SubscriptionEventSumOrderByAggregateInput = {
   occurredAt?: Prisma.SortOrder
+}
+
+export type SubscriptionEventListRelationFilter = {
+  every?: Prisma.SubscriptionEventWhereInput
+  some?: Prisma.SubscriptionEventWhereInput
+  none?: Prisma.SubscriptionEventWhereInput
+}
+
+export type SubscriptionEventOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type EnumSubscriptionEventTypeFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionEventType
 }
 
 export type SubscriptionEventCreateNestedManyWithoutSubscriptionInput = {
@@ -544,10 +548,6 @@ export type SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput =
       | Prisma.SubscriptionEventScalarWhereInput
       | Prisma.SubscriptionEventScalarWhereInput[]
   }
-
-export type EnumSubscriptionEventTypeFieldUpdateOperationsInput = {
-  set?: $Enums.SubscriptionEventType
-}
 
 export type SubscriptionEventCreateWithoutSubscriptionInput = {
   id: string

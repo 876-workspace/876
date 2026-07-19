@@ -10,12 +10,12 @@ model PaymentMode {
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payment_modes_tenant_id_fkey")
   payments Payment[]
   refunds  Refund[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, name])
-  @@index([tenantId, isActive], name: "billing_payment_modes_tenant_id_is_active_idx")
+  @@unique([tenantId, id], map: "billing_payment_modes_tenant_id_id_key")
+  @@unique([tenantId, name], map: "billing_payment_modes_tenant_id_name_key")
+  @@index([tenantId, isActive], map: "billing_payment_modes_tenant_id_is_active_idx")
   @@map("billing_payment_modes")
 }

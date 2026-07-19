@@ -880,6 +880,34 @@ export type RefundUncheckedUpdateManyWithoutCreditNoteNestedInput = {
   deleteMany?: Prisma.RefundScalarWhereInput | Prisma.RefundScalarWhereInput[]
 }
 
+export type RefundCreateNestedOneWithoutLedgerEntriesInput = {
+  create?: Prisma.XOR<
+    Prisma.RefundCreateWithoutLedgerEntriesInput,
+    Prisma.RefundUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutLedgerEntriesInput
+  connect?: Prisma.RefundWhereUniqueInput
+}
+
+export type RefundUpdateOneWithoutLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.RefundCreateWithoutLedgerEntriesInput,
+    Prisma.RefundUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutLedgerEntriesInput
+  upsert?: Prisma.RefundUpsertWithoutLedgerEntriesInput
+  disconnect?: Prisma.RefundWhereInput | boolean
+  delete?: Prisma.RefundWhereInput | boolean
+  connect?: Prisma.RefundWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.RefundUpdateToOneWithWhereWithoutLedgerEntriesInput,
+      Prisma.RefundUpdateWithoutLedgerEntriesInput
+    >,
+    Prisma.RefundUncheckedUpdateWithoutLedgerEntriesInput
+  >
+}
+
 export type RefundCreateNestedManyWithoutCustomerInput = {
   create?:
     | Prisma.XOR<
@@ -964,34 +992,6 @@ export type RefundUncheckedUpdateManyWithoutCustomerNestedInput = {
     | Prisma.RefundUpdateManyWithWhereWithoutCustomerInput
     | Prisma.RefundUpdateManyWithWhereWithoutCustomerInput[]
   deleteMany?: Prisma.RefundScalarWhereInput | Prisma.RefundScalarWhereInput[]
-}
-
-export type RefundCreateNestedOneWithoutLedgerEntriesInput = {
-  create?: Prisma.XOR<
-    Prisma.RefundCreateWithoutLedgerEntriesInput,
-    Prisma.RefundUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutLedgerEntriesInput
-  connect?: Prisma.RefundWhereUniqueInput
-}
-
-export type RefundUpdateOneWithoutLedgerEntriesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.RefundCreateWithoutLedgerEntriesInput,
-    Prisma.RefundUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.RefundCreateOrConnectWithoutLedgerEntriesInput
-  upsert?: Prisma.RefundUpsertWithoutLedgerEntriesInput
-  disconnect?: Prisma.RefundWhereInput | boolean
-  delete?: Prisma.RefundWhereInput | boolean
-  connect?: Prisma.RefundWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.RefundUpdateToOneWithWhereWithoutLedgerEntriesInput,
-      Prisma.RefundUpdateWithoutLedgerEntriesInput
-    >,
-    Prisma.RefundUncheckedUpdateWithoutLedgerEntriesInput
-  >
 }
 
 export type RefundCreateNestedManyWithoutPaymentModeInput = {
@@ -1430,84 +1430,6 @@ export type RefundUpdateManyWithWhereWithoutCreditNoteInput = {
   >
 }
 
-export type RefundCreateWithoutCustomerInput = {
-  id: string
-  number: string
-  amount: bigint | number
-  currency: string
-  reason?: string | null
-  notes?: string | null
-  refundedAt: number
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutRefundsInput
-  creditNote?: Prisma.CreditNoteCreateNestedOneWithoutRefundsInput
-  payment?: Prisma.PaymentCreateNestedOneWithoutRefundsInput
-  paymentMode?: Prisma.PaymentModeCreateNestedOneWithoutRefundsInput
-  depositAccount?: Prisma.BankAccountCreateNestedOneWithoutRefundsInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutRefundInput
-}
-
-export type RefundUncheckedCreateWithoutCustomerInput = {
-  id: string
-  creditNoteId?: string | null
-  paymentId?: string | null
-  paymentModeId?: string | null
-  depositAccountId?: string | null
-  number: string
-  amount: bigint | number
-  currency: string
-  reason?: string | null
-  notes?: string | null
-  refundedAt: number
-  createdAt: number
-  updatedAt: number
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutRefundInput
-}
-
-export type RefundCreateOrConnectWithoutCustomerInput = {
-  where: Prisma.RefundWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.RefundCreateWithoutCustomerInput,
-    Prisma.RefundUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type RefundCreateManyCustomerInputEnvelope = {
-  data:
-    | Prisma.RefundCreateManyCustomerInput
-    | Prisma.RefundCreateManyCustomerInput[]
-  skipDuplicates?: boolean
-}
-
-export type RefundUpsertWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.RefundWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.RefundUpdateWithoutCustomerInput,
-    Prisma.RefundUncheckedUpdateWithoutCustomerInput
-  >
-  create: Prisma.XOR<
-    Prisma.RefundCreateWithoutCustomerInput,
-    Prisma.RefundUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type RefundUpdateWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.RefundWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.RefundUpdateWithoutCustomerInput,
-    Prisma.RefundUncheckedUpdateWithoutCustomerInput
-  >
-}
-
-export type RefundUpdateManyWithWhereWithoutCustomerInput = {
-  where: Prisma.RefundScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.RefundUpdateManyMutationInput,
-    Prisma.RefundUncheckedUpdateManyWithoutCustomerInput
-  >
-}
-
 export type RefundCreateWithoutLedgerEntriesInput = {
   id: string
   number: string
@@ -1612,6 +1534,84 @@ export type RefundUncheckedUpdateWithoutLedgerEntriesInput = {
   refundedAt?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type RefundCreateWithoutCustomerInput = {
+  id: string
+  number: string
+  amount: bigint | number
+  currency: string
+  reason?: string | null
+  notes?: string | null
+  refundedAt: number
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutRefundsInput
+  creditNote?: Prisma.CreditNoteCreateNestedOneWithoutRefundsInput
+  payment?: Prisma.PaymentCreateNestedOneWithoutRefundsInput
+  paymentMode?: Prisma.PaymentModeCreateNestedOneWithoutRefundsInput
+  depositAccount?: Prisma.BankAccountCreateNestedOneWithoutRefundsInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutRefundInput
+}
+
+export type RefundUncheckedCreateWithoutCustomerInput = {
+  id: string
+  creditNoteId?: string | null
+  paymentId?: string | null
+  paymentModeId?: string | null
+  depositAccountId?: string | null
+  number: string
+  amount: bigint | number
+  currency: string
+  reason?: string | null
+  notes?: string | null
+  refundedAt: number
+  createdAt: number
+  updatedAt: number
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutRefundInput
+}
+
+export type RefundCreateOrConnectWithoutCustomerInput = {
+  where: Prisma.RefundWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.RefundCreateWithoutCustomerInput,
+    Prisma.RefundUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type RefundCreateManyCustomerInputEnvelope = {
+  data:
+    | Prisma.RefundCreateManyCustomerInput
+    | Prisma.RefundCreateManyCustomerInput[]
+  skipDuplicates?: boolean
+}
+
+export type RefundUpsertWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.RefundWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.RefundUpdateWithoutCustomerInput,
+    Prisma.RefundUncheckedUpdateWithoutCustomerInput
+  >
+  create: Prisma.XOR<
+    Prisma.RefundCreateWithoutCustomerInput,
+    Prisma.RefundUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type RefundUpdateWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.RefundWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.RefundUpdateWithoutCustomerInput,
+    Prisma.RefundUncheckedUpdateWithoutCustomerInput
+  >
+}
+
+export type RefundUpdateManyWithWhereWithoutCustomerInput = {
+  where: Prisma.RefundScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.RefundUpdateManyMutationInput,
+    Prisma.RefundUncheckedUpdateManyWithoutCustomerInput
+  >
 }
 
 export type RefundCreateWithoutPaymentModeInput = {

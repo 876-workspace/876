@@ -527,16 +527,6 @@ export type CreditNoteAllocationUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type CreditNoteAllocationListRelationFilter = {
-  every?: Prisma.CreditNoteAllocationWhereInput
-  some?: Prisma.CreditNoteAllocationWhereInput
-  none?: Prisma.CreditNoteAllocationWhereInput
-}
-
-export type CreditNoteAllocationOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type CreditNoteAllocationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
@@ -590,6 +580,20 @@ export type CreditNoteAllocationSumOrderByAggregateInput = {
   reversedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type CreditNoteAllocationListRelationFilter = {
+  every?: Prisma.CreditNoteAllocationWhereInput
+  some?: Prisma.CreditNoteAllocationWhereInput
+  none?: Prisma.CreditNoteAllocationWhereInput
+}
+
+export type CreditNoteAllocationOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type EnumInvoiceStatusFieldUpdateOperationsInput = {
+  set?: $Enums.InvoiceStatus
 }
 
 export type CreditNoteAllocationCreateNestedManyWithoutCreditNoteInput = {
@@ -703,10 +707,6 @@ export type CreditNoteAllocationUncheckedUpdateManyWithoutCreditNoteNestedInput 
       | Prisma.CreditNoteAllocationScalarWhereInput
       | Prisma.CreditNoteAllocationScalarWhereInput[]
   }
-
-export type EnumInvoiceStatusFieldUpdateOperationsInput = {
-  set?: $Enums.InvoiceStatus
-}
 
 export type CreditNoteAllocationCreateNestedManyWithoutInvoiceInput = {
   create?:

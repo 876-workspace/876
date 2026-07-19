@@ -1,0 +1,42 @@
+
+/// An immutable snapshot of an item/price at the time it was added to an invoice.
+model InvoiceLine {
+  id                   String   @id
+  invoiceId            String   @map("invoice_id")
+  itemId               String?  @map("item_id")
+  priceId              String?  @map("price_id")
+  subscriptionItemId   String?  @map("subscription_item_id")
+  subscriptionChargeId String?  @map("subscription_charge_id")
+  taxRateId            String?  @map("tax_rate_id")
+  description          String
+  unit                 String?
+  position             Int      @default(0)
+  quantity             Int      @default(1)
+  unitAmount           BigInt   @map("unit_amount")
+  taxAmount            BigInt   @default(0) @map("tax_amount")
+  taxName              String?  @map("tax_name")
+  taxRate              Decimal? @map("tax_rate") @db.Decimal(7, 4)
+  taxInclusive         Boolean  @default(false) @map("tax_inclusive")
+  discountAmount       BigInt   @default(0) @map("discount_amount")
+  totalAmount          BigInt   @map("total_amount")
+  servicePeriodStart   Int?     @map("service_period_start")
+  servicePeriodEnd     Int?     @map("service_period_end")
+  createdAt            Int      @map("created_at")
+  updatedAt            Int      @map("updated_at")
+
+  invoice            Invoice             @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_invoice_lines_invoice_id_fkey")
+  item               Item?               @relation(fields: [itemId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoice_lines_item_id_fkey")
+  price              Price?              @relation(fields: [priceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoice_lines_price_id_fkey")
+  subscriptionItem   SubscriptionItem?   @relation(fields: [subscriptionItemId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoice_lines_subscription_item_fkey")
+  subscriptionCharge SubscriptionCharge? @relation(fields: [subscriptionChargeId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoice_lines_subscription_charge_fkey")
+  sourceTaxRate      TaxRate?            @relation(fields: [taxRateId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoice_lines_tax_rate_id_fkey")
+
+  @@unique([invoiceId, position], name: "billing_invoice_lines_invoice_position_key", map: "billing_invoice_lines_invoice_id_position_key")
+  @@index([invoiceId], map: "billing_invoice_lines_invoice_id_idx")
+  @@index([itemId], map: "billing_invoice_lines_item_id_idx")
+  @@index([priceId], map: "billing_invoice_lines_price_id_idx")
+  @@index([subscriptionItemId], map: "billing_invoice_lines_subscription_item_id_idx")
+  @@index([subscriptionChargeId], map: "billing_invoice_lines_subscription_charge_id_idx")
+  @@index([taxRateId], map: "billing_invoice_lines_tax_rate_id_idx")
+  @@map("billing_invoice_lines")
+}

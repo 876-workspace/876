@@ -908,6 +908,11 @@ export type CouponUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type CouponScalarRelationFilter = {
+  is?: Prisma.CouponWhereInput
+  isNot?: Prisma.CouponWhereInput
+}
+
 export type CouponTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -1013,16 +1018,6 @@ export type CouponSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type CouponScalarRelationFilter = {
-  is?: Prisma.CouponWhereInput
-  isNot?: Prisma.CouponWhereInput
-}
-
-export type CouponNullableScalarRelationFilter = {
-  is?: Prisma.CouponWhereInput | null
-  isNot?: Prisma.CouponWhereInput | null
-}
-
 export type CouponListRelationFilter = {
   every?: Prisma.CouponWhereInput
   some?: Prisma.CouponWhereInput
@@ -1033,57 +1028,34 @@ export type CouponOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type EnumDiscountTypeFieldUpdateOperationsInput = {
-  set?: $Enums.DiscountType
+export type CouponNullableScalarRelationFilter = {
+  is?: Prisma.CouponWhereInput | null
+  isNot?: Prisma.CouponWhereInput | null
 }
 
-export type NullableDecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
-}
-
-export type NullableBigIntFieldUpdateOperationsInput = {
-  set?: bigint | number | null
-  increment?: bigint | number
-  decrement?: bigint | number
-  multiply?: bigint | number
-  divide?: bigint | number
-}
-
-export type EnumDiscountDurationFieldUpdateOperationsInput = {
-  set?: $Enums.DiscountDuration
-}
-
-export type EnumCouponDiscountPreferenceFieldUpdateOperationsInput = {
-  set?: $Enums.CouponDiscountPreference
-}
-
-export type CouponCreateNestedOneWithoutPromotionCodesInput = {
+export type CouponCreateNestedOneWithoutAddonApplicabilitiesInput = {
   create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutPromotionCodesInput,
-    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
   >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPromotionCodesInput
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutAddonApplicabilitiesInput
   connect?: Prisma.CouponWhereUniqueInput
 }
 
-export type CouponUpdateOneRequiredWithoutPromotionCodesNestedInput = {
+export type CouponUpdateOneRequiredWithoutAddonApplicabilitiesNestedInput = {
   create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutPromotionCodesInput,
-    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
   >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPromotionCodesInput
-  upsert?: Prisma.CouponUpsertWithoutPromotionCodesInput
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutAddonApplicabilitiesInput
+  upsert?: Prisma.CouponUpsertWithoutAddonApplicabilitiesInput
   connect?: Prisma.CouponWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.CouponUpdateToOneWithWhereWithoutPromotionCodesInput,
-      Prisma.CouponUpdateWithoutPromotionCodesInput
+      Prisma.CouponUpdateToOneWithWhereWithoutAddonApplicabilitiesInput,
+      Prisma.CouponUpdateWithoutAddonApplicabilitiesInput
     >,
-    Prisma.CouponUncheckedUpdateWithoutPromotionCodesInput
+    Prisma.CouponUncheckedUpdateWithoutAddonApplicabilitiesInput
   >
 }
 
@@ -1113,58 +1085,6 @@ export type CouponUpdateOneRequiredWithoutCurrencyAmountsNestedInput = {
   >
 }
 
-export type CouponCreateNestedOneWithoutPlanApplicabilitiesInput = {
-  create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
-  >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPlanApplicabilitiesInput
-  connect?: Prisma.CouponWhereUniqueInput
-}
-
-export type CouponUpdateOneRequiredWithoutPlanApplicabilitiesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
-  >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPlanApplicabilitiesInput
-  upsert?: Prisma.CouponUpsertWithoutPlanApplicabilitiesInput
-  connect?: Prisma.CouponWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CouponUpdateToOneWithWhereWithoutPlanApplicabilitiesInput,
-      Prisma.CouponUpdateWithoutPlanApplicabilitiesInput
-    >,
-    Prisma.CouponUncheckedUpdateWithoutPlanApplicabilitiesInput
-  >
-}
-
-export type CouponCreateNestedOneWithoutAddonApplicabilitiesInput = {
-  create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
-  >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutAddonApplicabilitiesInput
-  connect?: Prisma.CouponWhereUniqueInput
-}
-
-export type CouponUpdateOneRequiredWithoutAddonApplicabilitiesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
-  >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutAddonApplicabilitiesInput
-  upsert?: Prisma.CouponUpsertWithoutAddonApplicabilitiesInput
-  connect?: Prisma.CouponWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CouponUpdateToOneWithWhereWithoutAddonApplicabilitiesInput,
-      Prisma.CouponUpdateWithoutAddonApplicabilitiesInput
-    >,
-    Prisma.CouponUncheckedUpdateWithoutAddonApplicabilitiesInput
-  >
-}
-
 export type CouponCreateNestedOneWithoutCustomerEligibilitiesInput = {
   create?: Prisma.XOR<
     Prisma.CouponCreateWithoutCustomerEligibilitiesInput,
@@ -1188,6 +1108,32 @@ export type CouponUpdateOneRequiredWithoutCustomerEligibilitiesNestedInput = {
       Prisma.CouponUpdateWithoutCustomerEligibilitiesInput
     >,
     Prisma.CouponUncheckedUpdateWithoutCustomerEligibilitiesInput
+  >
+}
+
+export type CouponCreateNestedOneWithoutPlanApplicabilitiesInput = {
+  create?: Prisma.XOR<
+    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
+  >
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPlanApplicabilitiesInput
+  connect?: Prisma.CouponWhereUniqueInput
+}
+
+export type CouponUpdateOneRequiredWithoutPlanApplicabilitiesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
+  >
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPlanApplicabilitiesInput
+  upsert?: Prisma.CouponUpsertWithoutPlanApplicabilitiesInput
+  connect?: Prisma.CouponWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CouponUpdateToOneWithWhereWithoutPlanApplicabilitiesInput,
+      Prisma.CouponUpdateWithoutPlanApplicabilitiesInput
+    >,
+    Prisma.CouponUncheckedUpdateWithoutPlanApplicabilitiesInput
   >
 }
 
@@ -1217,32 +1163,24 @@ export type CouponUpdateOneRequiredWithoutRedemptionsNestedInput = {
   >
 }
 
-export type CouponCreateNestedOneWithoutDiscountsInput = {
-  create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutDiscountsInput,
-    Prisma.CouponUncheckedCreateWithoutDiscountsInput
-  >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutDiscountsInput
-  connect?: Prisma.CouponWhereUniqueInput
+export type EnumDiscountTypeFieldUpdateOperationsInput = {
+  set?: $Enums.DiscountType
 }
 
-export type CouponUpdateOneWithoutDiscountsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CouponCreateWithoutDiscountsInput,
-    Prisma.CouponUncheckedCreateWithoutDiscountsInput
-  >
-  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutDiscountsInput
-  upsert?: Prisma.CouponUpsertWithoutDiscountsInput
-  disconnect?: Prisma.CouponWhereInput | boolean
-  delete?: Prisma.CouponWhereInput | boolean
-  connect?: Prisma.CouponWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CouponUpdateToOneWithWhereWithoutDiscountsInput,
-      Prisma.CouponUpdateWithoutDiscountsInput
-    >,
-    Prisma.CouponUncheckedUpdateWithoutDiscountsInput
-  >
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type EnumDiscountDurationFieldUpdateOperationsInput = {
+  set?: $Enums.DiscountDuration
+}
+
+export type EnumCouponDiscountPreferenceFieldUpdateOperationsInput = {
+  set?: $Enums.CouponDiscountPreference
 }
 
 export type CouponCreateNestedManyWithoutProductInput = {
@@ -1331,6 +1269,60 @@ export type CouponUncheckedUpdateManyWithoutProductNestedInput = {
   deleteMany?: Prisma.CouponScalarWhereInput | Prisma.CouponScalarWhereInput[]
 }
 
+export type CouponCreateNestedOneWithoutPromotionCodesInput = {
+  create?: Prisma.XOR<
+    Prisma.CouponCreateWithoutPromotionCodesInput,
+    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+  >
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPromotionCodesInput
+  connect?: Prisma.CouponWhereUniqueInput
+}
+
+export type CouponUpdateOneRequiredWithoutPromotionCodesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CouponCreateWithoutPromotionCodesInput,
+    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+  >
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutPromotionCodesInput
+  upsert?: Prisma.CouponUpsertWithoutPromotionCodesInput
+  connect?: Prisma.CouponWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CouponUpdateToOneWithWhereWithoutPromotionCodesInput,
+      Prisma.CouponUpdateWithoutPromotionCodesInput
+    >,
+    Prisma.CouponUncheckedUpdateWithoutPromotionCodesInput
+  >
+}
+
+export type CouponCreateNestedOneWithoutDiscountsInput = {
+  create?: Prisma.XOR<
+    Prisma.CouponCreateWithoutDiscountsInput,
+    Prisma.CouponUncheckedCreateWithoutDiscountsInput
+  >
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutDiscountsInput
+  connect?: Prisma.CouponWhereUniqueInput
+}
+
+export type CouponUpdateOneWithoutDiscountsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CouponCreateWithoutDiscountsInput,
+    Prisma.CouponUncheckedCreateWithoutDiscountsInput
+  >
+  connectOrCreate?: Prisma.CouponCreateOrConnectWithoutDiscountsInput
+  upsert?: Prisma.CouponUpsertWithoutDiscountsInput
+  disconnect?: Prisma.CouponWhereInput | boolean
+  delete?: Prisma.CouponWhereInput | boolean
+  connect?: Prisma.CouponWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CouponUpdateToOneWithWhereWithoutDiscountsInput,
+      Prisma.CouponUpdateWithoutDiscountsInput
+    >,
+    Prisma.CouponUncheckedUpdateWithoutDiscountsInput
+  >
+}
+
 export type CouponCreateNestedManyWithoutTenantInput = {
   create?:
     | Prisma.XOR<
@@ -1417,7 +1409,7 @@ export type CouponUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.CouponScalarWhereInput | Prisma.CouponScalarWhereInput[]
 }
 
-export type CouponCreateWithoutPromotionCodesInput = {
+export type CouponCreateWithoutAddonApplicabilitiesInput = {
   id: string
   name: string
   discountType: $Enums.DiscountType
@@ -1441,15 +1433,15 @@ export type CouponCreateWithoutPromotionCodesInput = {
   updatedAt: number
   tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
   product?: Prisma.ProductCreateNestedOneWithoutCouponsInput
+  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCouponInput
   discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
   currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
   planApplicabilities?: Prisma.CouponPlanApplicabilityCreateNestedManyWithoutCouponInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutCouponInput
   customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
   redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
 }
 
-export type CouponUncheckedCreateWithoutPromotionCodesInput = {
+export type CouponUncheckedCreateWithoutAddonApplicabilitiesInput = {
   id: string
   tenantId: string
   productId?: string | null
@@ -1473,43 +1465,43 @@ export type CouponUncheckedCreateWithoutPromotionCodesInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt: number
   updatedAt: number
+  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCouponInput
   discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
   currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
   planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedCreateNestedManyWithoutCouponInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutCouponInput
   customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
   redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
 }
 
-export type CouponCreateOrConnectWithoutPromotionCodesInput = {
+export type CouponCreateOrConnectWithoutAddonApplicabilitiesInput = {
   where: Prisma.CouponWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.CouponCreateWithoutPromotionCodesInput,
-    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
   >
 }
 
-export type CouponUpsertWithoutPromotionCodesInput = {
+export type CouponUpsertWithoutAddonApplicabilitiesInput = {
   update: Prisma.XOR<
-    Prisma.CouponUpdateWithoutPromotionCodesInput,
-    Prisma.CouponUncheckedUpdateWithoutPromotionCodesInput
+    Prisma.CouponUpdateWithoutAddonApplicabilitiesInput,
+    Prisma.CouponUncheckedUpdateWithoutAddonApplicabilitiesInput
   >
   create: Prisma.XOR<
-    Prisma.CouponCreateWithoutPromotionCodesInput,
-    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
   >
   where?: Prisma.CouponWhereInput
 }
 
-export type CouponUpdateToOneWithWhereWithoutPromotionCodesInput = {
+export type CouponUpdateToOneWithWhereWithoutAddonApplicabilitiesInput = {
   where?: Prisma.CouponWhereInput
   data: Prisma.XOR<
-    Prisma.CouponUpdateWithoutPromotionCodesInput,
-    Prisma.CouponUncheckedUpdateWithoutPromotionCodesInput
+    Prisma.CouponUpdateWithoutAddonApplicabilitiesInput,
+    Prisma.CouponUncheckedUpdateWithoutAddonApplicabilitiesInput
   >
 }
 
-export type CouponUpdateWithoutPromotionCodesInput = {
+export type CouponUpdateWithoutAddonApplicabilitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   discountType?:
@@ -1555,15 +1547,15 @@ export type CouponUpdateWithoutPromotionCodesInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponsNestedInput
   product?: Prisma.ProductUpdateOneWithoutCouponsNestedInput
+  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCouponNestedInput
   discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutCouponNestedInput
   currencyAmounts?: Prisma.CouponCurrencyAmountUpdateManyWithoutCouponNestedInput
   planApplicabilities?: Prisma.CouponPlanApplicabilityUpdateManyWithoutCouponNestedInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUpdateManyWithoutCouponNestedInput
   customerEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCouponNestedInput
   redemptions?: Prisma.CouponRedemptionUpdateManyWithoutCouponNestedInput
 }
 
-export type CouponUncheckedUpdateWithoutPromotionCodesInput = {
+export type CouponUncheckedUpdateWithoutAddonApplicabilitiesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1609,10 +1601,10 @@ export type CouponUncheckedUpdateWithoutPromotionCodesInput = {
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCouponNestedInput
   discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutCouponNestedInput
   currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedUpdateManyWithoutCouponNestedInput
   planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
   customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
   redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
 }
@@ -1817,406 +1809,6 @@ export type CouponUncheckedUpdateWithoutCurrencyAmountsInput = {
   redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
 }
 
-export type CouponCreateWithoutPlanApplicabilitiesInput = {
-  id: string
-  name: string
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  durationInCycles?: number | null
-  discountPreference?: $Enums.CouponDiscountPreference
-  appliesToAllPlans?: boolean
-  appliesToAllRecurringAddons?: boolean
-  appliesToAllOneTimeAddons?: boolean
-  eligibleForAllCustomers?: boolean
-  maxRedemptionsPerCustomer?: number | null
-  redeemBy?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
-  product?: Prisma.ProductCreateNestedOneWithoutCouponsInput
-  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCouponInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutCouponInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
-  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
-}
-
-export type CouponUncheckedCreateWithoutPlanApplicabilitiesInput = {
-  id: string
-  tenantId: string
-  productId?: string | null
-  name: string
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  durationInCycles?: number | null
-  discountPreference?: $Enums.CouponDiscountPreference
-  appliesToAllPlans?: boolean
-  appliesToAllRecurringAddons?: boolean
-  appliesToAllOneTimeAddons?: boolean
-  eligibleForAllCustomers?: boolean
-  maxRedemptionsPerCustomer?: number | null
-  redeemBy?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCouponInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutCouponInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
-  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
-}
-
-export type CouponCreateOrConnectWithoutPlanApplicabilitiesInput = {
-  where: Prisma.CouponWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
-  >
-}
-
-export type CouponUpsertWithoutPlanApplicabilitiesInput = {
-  update: Prisma.XOR<
-    Prisma.CouponUpdateWithoutPlanApplicabilitiesInput,
-    Prisma.CouponUncheckedUpdateWithoutPlanApplicabilitiesInput
-  >
-  create: Prisma.XOR<
-    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
-  >
-  where?: Prisma.CouponWhereInput
-}
-
-export type CouponUpdateToOneWithWhereWithoutPlanApplicabilitiesInput = {
-  where?: Prisma.CouponWhereInput
-  data: Prisma.XOR<
-    Prisma.CouponUpdateWithoutPlanApplicabilitiesInput,
-    Prisma.CouponUncheckedUpdateWithoutPlanApplicabilitiesInput
-  >
-}
-
-export type CouponUpdateWithoutPlanApplicabilitiesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  durationInCycles?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  discountPreference?:
-    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
-    | $Enums.CouponDiscountPreference
-  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  maxRedemptionsPerCustomer?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponsNestedInput
-  product?: Prisma.ProductUpdateOneWithoutCouponsNestedInput
-  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCouponNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutCouponNestedInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUpdateManyWithoutCouponNestedInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUpdateManyWithoutCouponNestedInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCouponNestedInput
-  redemptions?: Prisma.CouponRedemptionUpdateManyWithoutCouponNestedInput
-}
-
-export type CouponUncheckedUpdateWithoutPlanApplicabilitiesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  durationInCycles?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  discountPreference?:
-    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
-    | $Enums.CouponDiscountPreference
-  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  maxRedemptionsPerCustomer?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCouponNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutCouponNestedInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedUpdateManyWithoutCouponNestedInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
-  redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
-}
-
-export type CouponCreateWithoutAddonApplicabilitiesInput = {
-  id: string
-  name: string
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  durationInCycles?: number | null
-  discountPreference?: $Enums.CouponDiscountPreference
-  appliesToAllPlans?: boolean
-  appliesToAllRecurringAddons?: boolean
-  appliesToAllOneTimeAddons?: boolean
-  eligibleForAllCustomers?: boolean
-  maxRedemptionsPerCustomer?: number | null
-  redeemBy?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
-  product?: Prisma.ProductCreateNestedOneWithoutCouponsInput
-  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCouponInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
-  planApplicabilities?: Prisma.CouponPlanApplicabilityCreateNestedManyWithoutCouponInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
-  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
-}
-
-export type CouponUncheckedCreateWithoutAddonApplicabilitiesInput = {
-  id: string
-  tenantId: string
-  productId?: string | null
-  name: string
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  durationInCycles?: number | null
-  discountPreference?: $Enums.CouponDiscountPreference
-  appliesToAllPlans?: boolean
-  appliesToAllRecurringAddons?: boolean
-  appliesToAllOneTimeAddons?: boolean
-  eligibleForAllCustomers?: boolean
-  maxRedemptionsPerCustomer?: number | null
-  redeemBy?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCouponInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
-  planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedCreateNestedManyWithoutCouponInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
-  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
-}
-
-export type CouponCreateOrConnectWithoutAddonApplicabilitiesInput = {
-  where: Prisma.CouponWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
-  >
-}
-
-export type CouponUpsertWithoutAddonApplicabilitiesInput = {
-  update: Prisma.XOR<
-    Prisma.CouponUpdateWithoutAddonApplicabilitiesInput,
-    Prisma.CouponUncheckedUpdateWithoutAddonApplicabilitiesInput
-  >
-  create: Prisma.XOR<
-    Prisma.CouponCreateWithoutAddonApplicabilitiesInput,
-    Prisma.CouponUncheckedCreateWithoutAddonApplicabilitiesInput
-  >
-  where?: Prisma.CouponWhereInput
-}
-
-export type CouponUpdateToOneWithWhereWithoutAddonApplicabilitiesInput = {
-  where?: Prisma.CouponWhereInput
-  data: Prisma.XOR<
-    Prisma.CouponUpdateWithoutAddonApplicabilitiesInput,
-    Prisma.CouponUncheckedUpdateWithoutAddonApplicabilitiesInput
-  >
-}
-
-export type CouponUpdateWithoutAddonApplicabilitiesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  durationInCycles?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  discountPreference?:
-    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
-    | $Enums.CouponDiscountPreference
-  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  maxRedemptionsPerCustomer?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponsNestedInput
-  product?: Prisma.ProductUpdateOneWithoutCouponsNestedInput
-  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCouponNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutCouponNestedInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUpdateManyWithoutCouponNestedInput
-  planApplicabilities?: Prisma.CouponPlanApplicabilityUpdateManyWithoutCouponNestedInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCouponNestedInput
-  redemptions?: Prisma.CouponRedemptionUpdateManyWithoutCouponNestedInput
-}
-
-export type CouponUncheckedUpdateWithoutAddonApplicabilitiesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  discountType?:
-    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
-    | $Enums.DiscountType
-  percentOff?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
-    | $Enums.DiscountDuration
-  durationInCycles?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  discountPreference?:
-    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
-    | $Enums.CouponDiscountPreference
-  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  maxRedemptionsPerCustomer?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCouponNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutCouponNestedInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedUpdateManyWithoutCouponNestedInput
-  planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
-  redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
-}
-
 export type CouponCreateWithoutCustomerEligibilitiesInput = {
   id: string
   name: string
@@ -2414,6 +2006,206 @@ export type CouponUncheckedUpdateWithoutCustomerEligibilitiesInput = {
   currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedUpdateManyWithoutCouponNestedInput
   planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
   addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
+  redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
+}
+
+export type CouponCreateWithoutPlanApplicabilitiesInput = {
+  id: string
+  name: string
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  durationInCycles?: number | null
+  discountPreference?: $Enums.CouponDiscountPreference
+  appliesToAllPlans?: boolean
+  appliesToAllRecurringAddons?: boolean
+  appliesToAllOneTimeAddons?: boolean
+  eligibleForAllCustomers?: boolean
+  maxRedemptionsPerCustomer?: number | null
+  redeemBy?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
+  product?: Prisma.ProductCreateNestedOneWithoutCouponsInput
+  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCouponInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutCouponInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
+  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
+}
+
+export type CouponUncheckedCreateWithoutPlanApplicabilitiesInput = {
+  id: string
+  tenantId: string
+  productId?: string | null
+  name: string
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  durationInCycles?: number | null
+  discountPreference?: $Enums.CouponDiscountPreference
+  appliesToAllPlans?: boolean
+  appliesToAllRecurringAddons?: boolean
+  appliesToAllOneTimeAddons?: boolean
+  eligibleForAllCustomers?: boolean
+  maxRedemptionsPerCustomer?: number | null
+  redeemBy?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCouponInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutCouponInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
+  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
+}
+
+export type CouponCreateOrConnectWithoutPlanApplicabilitiesInput = {
+  where: Prisma.CouponWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
+  >
+}
+
+export type CouponUpsertWithoutPlanApplicabilitiesInput = {
+  update: Prisma.XOR<
+    Prisma.CouponUpdateWithoutPlanApplicabilitiesInput,
+    Prisma.CouponUncheckedUpdateWithoutPlanApplicabilitiesInput
+  >
+  create: Prisma.XOR<
+    Prisma.CouponCreateWithoutPlanApplicabilitiesInput,
+    Prisma.CouponUncheckedCreateWithoutPlanApplicabilitiesInput
+  >
+  where?: Prisma.CouponWhereInput
+}
+
+export type CouponUpdateToOneWithWhereWithoutPlanApplicabilitiesInput = {
+  where?: Prisma.CouponWhereInput
+  data: Prisma.XOR<
+    Prisma.CouponUpdateWithoutPlanApplicabilitiesInput,
+    Prisma.CouponUncheckedUpdateWithoutPlanApplicabilitiesInput
+  >
+}
+
+export type CouponUpdateWithoutPlanApplicabilitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  durationInCycles?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  discountPreference?:
+    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
+    | $Enums.CouponDiscountPreference
+  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  maxRedemptionsPerCustomer?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponsNestedInput
+  product?: Prisma.ProductUpdateOneWithoutCouponsNestedInput
+  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCouponNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutCouponNestedInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUpdateManyWithoutCouponNestedInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUpdateManyWithoutCouponNestedInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCouponNestedInput
+  redemptions?: Prisma.CouponRedemptionUpdateManyWithoutCouponNestedInput
+}
+
+export type CouponUncheckedUpdateWithoutPlanApplicabilitiesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  durationInCycles?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  discountPreference?:
+    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
+    | $Enums.CouponDiscountPreference
+  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  maxRedemptionsPerCustomer?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCouponNestedInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutCouponNestedInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedUpdateManyWithoutCouponNestedInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
   redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
 }
 
@@ -2617,6 +2409,352 @@ export type CouponUncheckedUpdateWithoutRedemptionsInput = {
   customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
 }
 
+export type CouponCreateWithoutProductInput = {
+  id: string
+  name: string
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  durationInCycles?: number | null
+  discountPreference?: $Enums.CouponDiscountPreference
+  appliesToAllPlans?: boolean
+  appliesToAllRecurringAddons?: boolean
+  appliesToAllOneTimeAddons?: boolean
+  eligibleForAllCustomers?: boolean
+  maxRedemptionsPerCustomer?: number | null
+  redeemBy?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
+  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCouponInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
+  planApplicabilities?: Prisma.CouponPlanApplicabilityCreateNestedManyWithoutCouponInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutCouponInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
+  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
+}
+
+export type CouponUncheckedCreateWithoutProductInput = {
+  id: string
+  tenantId: string
+  name: string
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  durationInCycles?: number | null
+  discountPreference?: $Enums.CouponDiscountPreference
+  appliesToAllPlans?: boolean
+  appliesToAllRecurringAddons?: boolean
+  appliesToAllOneTimeAddons?: boolean
+  eligibleForAllCustomers?: boolean
+  maxRedemptionsPerCustomer?: number | null
+  redeemBy?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCouponInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
+  planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedCreateNestedManyWithoutCouponInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutCouponInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
+  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
+}
+
+export type CouponCreateOrConnectWithoutProductInput = {
+  where: Prisma.CouponWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CouponCreateWithoutProductInput,
+    Prisma.CouponUncheckedCreateWithoutProductInput
+  >
+}
+
+export type CouponCreateManyProductInputEnvelope = {
+  data:
+    | Prisma.CouponCreateManyProductInput
+    | Prisma.CouponCreateManyProductInput[]
+  skipDuplicates?: boolean
+}
+
+export type CouponUpsertWithWhereUniqueWithoutProductInput = {
+  where: Prisma.CouponWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.CouponUpdateWithoutProductInput,
+    Prisma.CouponUncheckedUpdateWithoutProductInput
+  >
+  create: Prisma.XOR<
+    Prisma.CouponCreateWithoutProductInput,
+    Prisma.CouponUncheckedCreateWithoutProductInput
+  >
+}
+
+export type CouponUpdateWithWhereUniqueWithoutProductInput = {
+  where: Prisma.CouponWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.CouponUpdateWithoutProductInput,
+    Prisma.CouponUncheckedUpdateWithoutProductInput
+  >
+}
+
+export type CouponUpdateManyWithWhereWithoutProductInput = {
+  where: Prisma.CouponScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.CouponUpdateManyMutationInput,
+    Prisma.CouponUncheckedUpdateManyWithoutProductInput
+  >
+}
+
+export type CouponScalarWhereInput = {
+  AND?: Prisma.CouponScalarWhereInput | Prisma.CouponScalarWhereInput[]
+  OR?: Prisma.CouponScalarWhereInput[]
+  NOT?: Prisma.CouponScalarWhereInput | Prisma.CouponScalarWhereInput[]
+  id?: Prisma.StringFilter<'Coupon'> | string
+  tenantId?: Prisma.StringFilter<'Coupon'> | string
+  productId?: Prisma.StringNullableFilter<'Coupon'> | string | null
+  name?: Prisma.StringFilter<'Coupon'> | string
+  discountType?: Prisma.EnumDiscountTypeFilter<'Coupon'> | $Enums.DiscountType
+  percentOff?:
+    | Prisma.DecimalNullableFilter<'Coupon'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?: Prisma.BigIntNullableFilter<'Coupon'> | bigint | number | null
+  currency?: Prisma.StringNullableFilter<'Coupon'> | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFilter<'Coupon'>
+    | $Enums.DiscountDuration
+  durationInCycles?: Prisma.IntNullableFilter<'Coupon'> | number | null
+  discountPreference?:
+    | Prisma.EnumCouponDiscountPreferenceFilter<'Coupon'>
+    | $Enums.CouponDiscountPreference
+  appliesToAllPlans?: Prisma.BoolFilter<'Coupon'> | boolean
+  appliesToAllRecurringAddons?: Prisma.BoolFilter<'Coupon'> | boolean
+  appliesToAllOneTimeAddons?: Prisma.BoolFilter<'Coupon'> | boolean
+  eligibleForAllCustomers?: Prisma.BoolFilter<'Coupon'> | boolean
+  maxRedemptionsPerCustomer?: Prisma.IntNullableFilter<'Coupon'> | number | null
+  redeemBy?: Prisma.IntNullableFilter<'Coupon'> | number | null
+  maxRedemptions?: Prisma.IntNullableFilter<'Coupon'> | number | null
+  timesRedeemed?: Prisma.IntFilter<'Coupon'> | number
+  isActive?: Prisma.BoolFilter<'Coupon'> | boolean
+  metadata?: Prisma.JsonNullableFilter<'Coupon'>
+  createdAt?: Prisma.IntFilter<'Coupon'> | number
+  updatedAt?: Prisma.IntFilter<'Coupon'> | number
+}
+
+export type CouponCreateWithoutPromotionCodesInput = {
+  id: string
+  name: string
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  durationInCycles?: number | null
+  discountPreference?: $Enums.CouponDiscountPreference
+  appliesToAllPlans?: boolean
+  appliesToAllRecurringAddons?: boolean
+  appliesToAllOneTimeAddons?: boolean
+  eligibleForAllCustomers?: boolean
+  maxRedemptionsPerCustomer?: number | null
+  redeemBy?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
+  product?: Prisma.ProductCreateNestedOneWithoutCouponsInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
+  planApplicabilities?: Prisma.CouponPlanApplicabilityCreateNestedManyWithoutCouponInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutCouponInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
+  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
+}
+
+export type CouponUncheckedCreateWithoutPromotionCodesInput = {
+  id: string
+  tenantId: string
+  productId?: string | null
+  name: string
+  discountType: $Enums.DiscountType
+  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  amountOff?: bigint | number | null
+  currency?: string | null
+  duration: $Enums.DiscountDuration
+  durationInCycles?: number | null
+  discountPreference?: $Enums.CouponDiscountPreference
+  appliesToAllPlans?: boolean
+  appliesToAllRecurringAddons?: boolean
+  appliesToAllOneTimeAddons?: boolean
+  eligibleForAllCustomers?: boolean
+  maxRedemptionsPerCustomer?: number | null
+  redeemBy?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
+  planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedCreateNestedManyWithoutCouponInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutCouponInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
+  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
+}
+
+export type CouponCreateOrConnectWithoutPromotionCodesInput = {
+  where: Prisma.CouponWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CouponCreateWithoutPromotionCodesInput,
+    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+  >
+}
+
+export type CouponUpsertWithoutPromotionCodesInput = {
+  update: Prisma.XOR<
+    Prisma.CouponUpdateWithoutPromotionCodesInput,
+    Prisma.CouponUncheckedUpdateWithoutPromotionCodesInput
+  >
+  create: Prisma.XOR<
+    Prisma.CouponCreateWithoutPromotionCodesInput,
+    Prisma.CouponUncheckedCreateWithoutPromotionCodesInput
+  >
+  where?: Prisma.CouponWhereInput
+}
+
+export type CouponUpdateToOneWithWhereWithoutPromotionCodesInput = {
+  where?: Prisma.CouponWhereInput
+  data: Prisma.XOR<
+    Prisma.CouponUpdateWithoutPromotionCodesInput,
+    Prisma.CouponUncheckedUpdateWithoutPromotionCodesInput
+  >
+}
+
+export type CouponUpdateWithoutPromotionCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  durationInCycles?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  discountPreference?:
+    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
+    | $Enums.CouponDiscountPreference
+  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  maxRedemptionsPerCustomer?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponsNestedInput
+  product?: Prisma.ProductUpdateOneWithoutCouponsNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutCouponNestedInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUpdateManyWithoutCouponNestedInput
+  planApplicabilities?: Prisma.CouponPlanApplicabilityUpdateManyWithoutCouponNestedInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUpdateManyWithoutCouponNestedInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCouponNestedInput
+  redemptions?: Prisma.CouponRedemptionUpdateManyWithoutCouponNestedInput
+}
+
+export type CouponUncheckedUpdateWithoutPromotionCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  discountType?:
+    | Prisma.EnumDiscountTypeFieldUpdateOperationsInput
+    | $Enums.DiscountType
+  percentOff?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  amountOff?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  duration?:
+    | Prisma.EnumDiscountDurationFieldUpdateOperationsInput
+    | $Enums.DiscountDuration
+  durationInCycles?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  discountPreference?:
+    | Prisma.EnumCouponDiscountPreferenceFieldUpdateOperationsInput
+    | $Enums.CouponDiscountPreference
+  appliesToAllPlans?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllRecurringAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  appliesToAllOneTimeAddons?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eligibleForAllCustomers?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  maxRedemptionsPerCustomer?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  redeemBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutCouponNestedInput
+  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedUpdateManyWithoutCouponNestedInput
+  planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
+  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
+  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
+  redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
+}
+
 export type CouponCreateWithoutDiscountsInput = {
   id: string
   name: string
@@ -2815,152 +2953,6 @@ export type CouponUncheckedUpdateWithoutDiscountsInput = {
   addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedUpdateManyWithoutCouponNestedInput
   customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
   redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCouponNestedInput
-}
-
-export type CouponCreateWithoutProductInput = {
-  id: string
-  name: string
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  durationInCycles?: number | null
-  discountPreference?: $Enums.CouponDiscountPreference
-  appliesToAllPlans?: boolean
-  appliesToAllRecurringAddons?: boolean
-  appliesToAllOneTimeAddons?: boolean
-  eligibleForAllCustomers?: boolean
-  maxRedemptionsPerCustomer?: number | null
-  redeemBy?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCouponsInput
-  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCouponInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutCouponInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountCreateNestedManyWithoutCouponInput
-  planApplicabilities?: Prisma.CouponPlanApplicabilityCreateNestedManyWithoutCouponInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityCreateNestedManyWithoutCouponInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCouponInput
-  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCouponInput
-}
-
-export type CouponUncheckedCreateWithoutProductInput = {
-  id: string
-  tenantId: string
-  name: string
-  discountType: $Enums.DiscountType
-  percentOff?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  amountOff?: bigint | number | null
-  currency?: string | null
-  duration: $Enums.DiscountDuration
-  durationInCycles?: number | null
-  discountPreference?: $Enums.CouponDiscountPreference
-  appliesToAllPlans?: boolean
-  appliesToAllRecurringAddons?: boolean
-  appliesToAllOneTimeAddons?: boolean
-  eligibleForAllCustomers?: boolean
-  maxRedemptionsPerCustomer?: number | null
-  redeemBy?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCouponInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutCouponInput
-  currencyAmounts?: Prisma.CouponCurrencyAmountUncheckedCreateNestedManyWithoutCouponInput
-  planApplicabilities?: Prisma.CouponPlanApplicabilityUncheckedCreateNestedManyWithoutCouponInput
-  addonApplicabilities?: Prisma.CouponAddonApplicabilityUncheckedCreateNestedManyWithoutCouponInput
-  customerEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCouponInput
-  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCouponInput
-}
-
-export type CouponCreateOrConnectWithoutProductInput = {
-  where: Prisma.CouponWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CouponCreateWithoutProductInput,
-    Prisma.CouponUncheckedCreateWithoutProductInput
-  >
-}
-
-export type CouponCreateManyProductInputEnvelope = {
-  data:
-    | Prisma.CouponCreateManyProductInput
-    | Prisma.CouponCreateManyProductInput[]
-  skipDuplicates?: boolean
-}
-
-export type CouponUpsertWithWhereUniqueWithoutProductInput = {
-  where: Prisma.CouponWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.CouponUpdateWithoutProductInput,
-    Prisma.CouponUncheckedUpdateWithoutProductInput
-  >
-  create: Prisma.XOR<
-    Prisma.CouponCreateWithoutProductInput,
-    Prisma.CouponUncheckedCreateWithoutProductInput
-  >
-}
-
-export type CouponUpdateWithWhereUniqueWithoutProductInput = {
-  where: Prisma.CouponWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.CouponUpdateWithoutProductInput,
-    Prisma.CouponUncheckedUpdateWithoutProductInput
-  >
-}
-
-export type CouponUpdateManyWithWhereWithoutProductInput = {
-  where: Prisma.CouponScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.CouponUpdateManyMutationInput,
-    Prisma.CouponUncheckedUpdateManyWithoutProductInput
-  >
-}
-
-export type CouponScalarWhereInput = {
-  AND?: Prisma.CouponScalarWhereInput | Prisma.CouponScalarWhereInput[]
-  OR?: Prisma.CouponScalarWhereInput[]
-  NOT?: Prisma.CouponScalarWhereInput | Prisma.CouponScalarWhereInput[]
-  id?: Prisma.StringFilter<'Coupon'> | string
-  tenantId?: Prisma.StringFilter<'Coupon'> | string
-  productId?: Prisma.StringNullableFilter<'Coupon'> | string | null
-  name?: Prisma.StringFilter<'Coupon'> | string
-  discountType?: Prisma.EnumDiscountTypeFilter<'Coupon'> | $Enums.DiscountType
-  percentOff?:
-    | Prisma.DecimalNullableFilter<'Coupon'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  amountOff?: Prisma.BigIntNullableFilter<'Coupon'> | bigint | number | null
-  currency?: Prisma.StringNullableFilter<'Coupon'> | string | null
-  duration?:
-    | Prisma.EnumDiscountDurationFilter<'Coupon'>
-    | $Enums.DiscountDuration
-  durationInCycles?: Prisma.IntNullableFilter<'Coupon'> | number | null
-  discountPreference?:
-    | Prisma.EnumCouponDiscountPreferenceFilter<'Coupon'>
-    | $Enums.CouponDiscountPreference
-  appliesToAllPlans?: Prisma.BoolFilter<'Coupon'> | boolean
-  appliesToAllRecurringAddons?: Prisma.BoolFilter<'Coupon'> | boolean
-  appliesToAllOneTimeAddons?: Prisma.BoolFilter<'Coupon'> | boolean
-  eligibleForAllCustomers?: Prisma.BoolFilter<'Coupon'> | boolean
-  maxRedemptionsPerCustomer?: Prisma.IntNullableFilter<'Coupon'> | number | null
-  redeemBy?: Prisma.IntNullableFilter<'Coupon'> | number | null
-  maxRedemptions?: Prisma.IntNullableFilter<'Coupon'> | number | null
-  timesRedeemed?: Prisma.IntFilter<'Coupon'> | number
-  isActive?: Prisma.BoolFilter<'Coupon'> | boolean
-  metadata?: Prisma.JsonNullableFilter<'Coupon'>
-  createdAt?: Prisma.IntFilter<'Coupon'> | number
-  updatedAt?: Prisma.IntFilter<'Coupon'> | number
 }
 
 export type CouponCreateWithoutTenantInput = {

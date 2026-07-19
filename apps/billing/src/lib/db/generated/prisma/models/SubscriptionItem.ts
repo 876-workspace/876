@@ -682,34 +682,6 @@ export type SubscriptionItemSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type SubscriptionItemCreateNestedOneWithoutDiscountsInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
-    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionItemCreateOrConnectWithoutDiscountsInput
-  connect?: Prisma.SubscriptionItemWhereUniqueInput
-}
-
-export type SubscriptionItemUpdateOneWithoutDiscountsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
-    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionItemCreateOrConnectWithoutDiscountsInput
-  upsert?: Prisma.SubscriptionItemUpsertWithoutDiscountsInput
-  disconnect?: Prisma.SubscriptionItemWhereInput | boolean
-  delete?: Prisma.SubscriptionItemWhereInput | boolean
-  connect?: Prisma.SubscriptionItemWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionItemUpdateToOneWithWhereWithoutDiscountsInput,
-      Prisma.SubscriptionItemUpdateWithoutDiscountsInput
-    >,
-    Prisma.SubscriptionItemUncheckedUpdateWithoutDiscountsInput
-  >
-}
-
 export type SubscriptionItemCreateNestedOneWithoutInvoiceLinesInput = {
   create?: Prisma.XOR<
     Prisma.SubscriptionItemCreateWithoutInvoiceLinesInput,
@@ -848,6 +820,34 @@ export type SubscriptionItemUncheckedUpdateManyWithoutPriceNestedInput = {
     | Prisma.SubscriptionItemScalarWhereInput[]
 }
 
+export type SubscriptionItemCreateNestedOneWithoutDiscountsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
+    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionItemCreateOrConnectWithoutDiscountsInput
+  connect?: Prisma.SubscriptionItemWhereUniqueInput
+}
+
+export type SubscriptionItemUpdateOneWithoutDiscountsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
+    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionItemCreateOrConnectWithoutDiscountsInput
+  upsert?: Prisma.SubscriptionItemUpsertWithoutDiscountsInput
+  disconnect?: Prisma.SubscriptionItemWhereInput | boolean
+  delete?: Prisma.SubscriptionItemWhereInput | boolean
+  connect?: Prisma.SubscriptionItemWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionItemUpdateToOneWithWhereWithoutDiscountsInput,
+      Prisma.SubscriptionItemUpdateWithoutDiscountsInput
+    >,
+    Prisma.SubscriptionItemUncheckedUpdateWithoutDiscountsInput
+  >
+}
+
 export type SubscriptionItemCreateNestedManyWithoutSubscriptionInput = {
   create?:
     | Prisma.XOR<
@@ -959,114 +959,6 @@ export type SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput =
       | Prisma.SubscriptionItemScalarWhereInput
       | Prisma.SubscriptionItemScalarWhereInput[]
   }
-
-export type SubscriptionItemCreateWithoutDiscountsInput = {
-  id: string
-  quantity?: number
-  unitAmount?: bigint | number | null
-  currency?: string | null
-  description?: string | null
-  position?: number
-  isActive?: boolean
-  startsAt?: number | null
-  endsAt?: number | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  subscription: Prisma.SubscriptionCreateNestedOneWithoutItemsInput
-  price: Prisma.PriceCreateNestedOneWithoutSubscriptionItemsInput
-  invoiceLines?: Prisma.InvoiceLineCreateNestedManyWithoutSubscriptionItemInput
-}
-
-export type SubscriptionItemUncheckedCreateWithoutDiscountsInput = {
-  id: string
-  subscriptionId: string
-  priceId: string
-  quantity?: number
-  unitAmount?: bigint | number | null
-  currency?: string | null
-  description?: string | null
-  position?: number
-  isActive?: boolean
-  startsAt?: number | null
-  endsAt?: number | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  invoiceLines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutSubscriptionItemInput
-}
-
-export type SubscriptionItemCreateOrConnectWithoutDiscountsInput = {
-  where: Prisma.SubscriptionItemWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
-    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
-  >
-}
-
-export type SubscriptionItemUpsertWithoutDiscountsInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionItemUpdateWithoutDiscountsInput,
-    Prisma.SubscriptionItemUncheckedUpdateWithoutDiscountsInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
-    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
-  >
-  where?: Prisma.SubscriptionItemWhereInput
-}
-
-export type SubscriptionItemUpdateToOneWithWhereWithoutDiscountsInput = {
-  where?: Prisma.SubscriptionItemWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionItemUpdateWithoutDiscountsInput,
-    Prisma.SubscriptionItemUncheckedUpdateWithoutDiscountsInput
-  >
-}
-
-export type SubscriptionItemUpdateWithoutDiscountsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  unitAmount?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  position?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  startsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  subscription?: Prisma.SubscriptionUpdateOneRequiredWithoutItemsNestedInput
-  price?: Prisma.PriceUpdateOneRequiredWithoutSubscriptionItemsNestedInput
-  invoiceLines?: Prisma.InvoiceLineUpdateManyWithoutSubscriptionItemNestedInput
-}
-
-export type SubscriptionItemUncheckedUpdateWithoutDiscountsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  subscriptionId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceId?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  unitAmount?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  position?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  startsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  invoiceLines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutSubscriptionItemNestedInput
-}
 
 export type SubscriptionItemCreateWithoutInvoiceLinesInput = {
   id: string
@@ -1281,6 +1173,114 @@ export type SubscriptionItemScalarWhereInput = {
   metadata?: Prisma.JsonNullableFilter<'SubscriptionItem'>
   createdAt?: Prisma.IntFilter<'SubscriptionItem'> | number
   updatedAt?: Prisma.IntFilter<'SubscriptionItem'> | number
+}
+
+export type SubscriptionItemCreateWithoutDiscountsInput = {
+  id: string
+  quantity?: number
+  unitAmount?: bigint | number | null
+  currency?: string | null
+  description?: string | null
+  position?: number
+  isActive?: boolean
+  startsAt?: number | null
+  endsAt?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  subscription: Prisma.SubscriptionCreateNestedOneWithoutItemsInput
+  price: Prisma.PriceCreateNestedOneWithoutSubscriptionItemsInput
+  invoiceLines?: Prisma.InvoiceLineCreateNestedManyWithoutSubscriptionItemInput
+}
+
+export type SubscriptionItemUncheckedCreateWithoutDiscountsInput = {
+  id: string
+  subscriptionId: string
+  priceId: string
+  quantity?: number
+  unitAmount?: bigint | number | null
+  currency?: string | null
+  description?: string | null
+  position?: number
+  isActive?: boolean
+  startsAt?: number | null
+  endsAt?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  invoiceLines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutSubscriptionItemInput
+}
+
+export type SubscriptionItemCreateOrConnectWithoutDiscountsInput = {
+  where: Prisma.SubscriptionItemWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
+    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
+  >
+}
+
+export type SubscriptionItemUpsertWithoutDiscountsInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionItemUpdateWithoutDiscountsInput,
+    Prisma.SubscriptionItemUncheckedUpdateWithoutDiscountsInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionItemCreateWithoutDiscountsInput,
+    Prisma.SubscriptionItemUncheckedCreateWithoutDiscountsInput
+  >
+  where?: Prisma.SubscriptionItemWhereInput
+}
+
+export type SubscriptionItemUpdateToOneWithWhereWithoutDiscountsInput = {
+  where?: Prisma.SubscriptionItemWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionItemUpdateWithoutDiscountsInput,
+    Prisma.SubscriptionItemUncheckedUpdateWithoutDiscountsInput
+  >
+}
+
+export type SubscriptionItemUpdateWithoutDiscountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  unitAmount?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  startsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  subscription?: Prisma.SubscriptionUpdateOneRequiredWithoutItemsNestedInput
+  price?: Prisma.PriceUpdateOneRequiredWithoutSubscriptionItemsNestedInput
+  invoiceLines?: Prisma.InvoiceLineUpdateManyWithoutSubscriptionItemNestedInput
+}
+
+export type SubscriptionItemUncheckedUpdateWithoutDiscountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  subscriptionId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceId?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  unitAmount?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  startsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  invoiceLines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutSubscriptionItemNestedInput
 }
 
 export type SubscriptionItemCreateWithoutSubscriptionInput = {

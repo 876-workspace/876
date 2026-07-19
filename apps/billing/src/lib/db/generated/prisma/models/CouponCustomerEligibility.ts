@@ -386,16 +386,6 @@ export type CouponCustomerEligibilityUncheckedUpdateManyInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type CouponCustomerEligibilityListRelationFilter = {
-  every?: Prisma.CouponCustomerEligibilityWhereInput
-  some?: Prisma.CouponCustomerEligibilityWhereInput
-  none?: Prisma.CouponCustomerEligibilityWhereInput
-}
-
-export type CouponCustomerEligibilityOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type CouponCustomerEligibilityBilling_coupon_customer_eligibility_keyCompoundUniqueInput =
   {
     tenantId: string
@@ -435,117 +425,15 @@ export type CouponCustomerEligibilitySumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
-export type CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
-        Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
-      >
-    | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
-    | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
-  connectOrCreate?:
-    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
-    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
-  createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
-  connect?:
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+export type CouponCustomerEligibilityListRelationFilter = {
+  every?: Prisma.CouponCustomerEligibilityWhereInput
+  some?: Prisma.CouponCustomerEligibilityWhereInput
+  none?: Prisma.CouponCustomerEligibilityWhereInput
 }
 
-export type CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput =
-  {
-    create?:
-      | Prisma.XOR<
-          Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
-          Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
-        >
-      | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
-      | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
-    connectOrCreate?:
-      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
-      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
-    createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
-    connect?:
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-  }
-
-export type CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
-        Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
-      >
-    | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
-    | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
-  connectOrCreate?:
-    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
-    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
-  upsert?:
-    | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput
-    | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput[]
-  createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
-  set?:
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-  disconnect?:
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-  delete?:
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-  connect?:
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput
-    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-  update?:
-    | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput
-    | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput[]
-  updateMany?:
-    | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput
-    | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput[]
-  deleteMany?:
-    | Prisma.CouponCustomerEligibilityScalarWhereInput
-    | Prisma.CouponCustomerEligibilityScalarWhereInput[]
+export type CouponCustomerEligibilityOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
-
-export type CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput =
-  {
-    create?:
-      | Prisma.XOR<
-          Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
-          Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
-        >
-      | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
-      | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
-    connectOrCreate?:
-      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
-      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
-    upsert?:
-      | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput
-      | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput[]
-    createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
-    set?:
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-    disconnect?:
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-    delete?:
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-    connect?:
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput
-      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
-    update?:
-      | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput
-      | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput[]
-    updateMany?:
-      | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput
-      | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput[]
-    deleteMany?:
-      | Prisma.CouponCustomerEligibilityScalarWhereInput
-      | Prisma.CouponCustomerEligibilityScalarWhereInput[]
-  }
 
 export type CouponCustomerEligibilityCreateNestedManyWithoutCouponInput = {
   create?:
@@ -654,6 +542,118 @@ export type CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponNestedInput
     updateMany?:
       | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCouponInput
       | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCouponInput[]
+    deleteMany?:
+      | Prisma.CouponCustomerEligibilityScalarWhereInput
+      | Prisma.CouponCustomerEligibilityScalarWhereInput[]
+  }
+
+export type CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
+        Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
+      >
+    | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
+    | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
+  connectOrCreate?:
+    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
+    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
+  createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
+  connect?:
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+}
+
+export type CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput =
+  {
+    create?:
+      | Prisma.XOR<
+          Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
+          Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
+        >
+      | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
+      | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?:
+      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
+      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
+    createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
+    connect?:
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+  }
+
+export type CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
+        Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
+      >
+    | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
+    | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
+  connectOrCreate?:
+    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
+    | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
+  upsert?:
+    | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput
+    | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput[]
+  createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
+  set?:
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+  disconnect?:
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+  delete?:
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+  connect?:
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput
+    | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+  update?:
+    | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput
+    | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput[]
+  updateMany?:
+    | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput
+    | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput[]
+  deleteMany?:
+    | Prisma.CouponCustomerEligibilityScalarWhereInput
+    | Prisma.CouponCustomerEligibilityScalarWhereInput[]
+}
+
+export type CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput =
+  {
+    create?:
+      | Prisma.XOR<
+          Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput,
+          Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput
+        >
+      | Prisma.CouponCustomerEligibilityCreateWithoutCustomerInput[]
+      | Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCustomerInput[]
+    connectOrCreate?:
+      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput
+      | Prisma.CouponCustomerEligibilityCreateOrConnectWithoutCustomerInput[]
+    upsert?:
+      | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput
+      | Prisma.CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCustomerInput[]
+    createMany?: Prisma.CouponCustomerEligibilityCreateManyCustomerInputEnvelope
+    set?:
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+    disconnect?:
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+    delete?:
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+    connect?:
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput
+      | Prisma.CouponCustomerEligibilityWhereUniqueInput[]
+    update?:
+      | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput
+      | Prisma.CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCustomerInput[]
+    updateMany?:
+      | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput
+      | Prisma.CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput[]
     deleteMany?:
       | Prisma.CouponCustomerEligibilityScalarWhereInput
       | Prisma.CouponCustomerEligibilityScalarWhereInput[]
@@ -771,6 +771,77 @@ export type CouponCustomerEligibilityUncheckedUpdateManyWithoutTenantNestedInput
       | Prisma.CouponCustomerEligibilityScalarWhereInput[]
   }
 
+export type CouponCustomerEligibilityCreateWithoutCouponInput = {
+  id: string
+  createdAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCouponCustomerEligibilitiesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutCouponEligibilitiesInput
+}
+
+export type CouponCustomerEligibilityUncheckedCreateWithoutCouponInput = {
+  id: string
+  customerId: string
+  createdAt: number
+}
+
+export type CouponCustomerEligibilityCreateOrConnectWithoutCouponInput = {
+  where: Prisma.CouponCustomerEligibilityWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CouponCustomerEligibilityCreateWithoutCouponInput,
+    Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCouponInput
+  >
+}
+
+export type CouponCustomerEligibilityCreateManyCouponInputEnvelope = {
+  data:
+    | Prisma.CouponCustomerEligibilityCreateManyCouponInput
+    | Prisma.CouponCustomerEligibilityCreateManyCouponInput[]
+  skipDuplicates?: boolean
+}
+
+export type CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCouponInput = {
+  where: Prisma.CouponCustomerEligibilityWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.CouponCustomerEligibilityUpdateWithoutCouponInput,
+    Prisma.CouponCustomerEligibilityUncheckedUpdateWithoutCouponInput
+  >
+  create: Prisma.XOR<
+    Prisma.CouponCustomerEligibilityCreateWithoutCouponInput,
+    Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCouponInput
+  >
+}
+
+export type CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCouponInput = {
+  where: Prisma.CouponCustomerEligibilityWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.CouponCustomerEligibilityUpdateWithoutCouponInput,
+    Prisma.CouponCustomerEligibilityUncheckedUpdateWithoutCouponInput
+  >
+}
+
+export type CouponCustomerEligibilityUpdateManyWithWhereWithoutCouponInput = {
+  where: Prisma.CouponCustomerEligibilityScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.CouponCustomerEligibilityUpdateManyMutationInput,
+    Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponInput
+  >
+}
+
+export type CouponCustomerEligibilityScalarWhereInput = {
+  AND?:
+    | Prisma.CouponCustomerEligibilityScalarWhereInput
+    | Prisma.CouponCustomerEligibilityScalarWhereInput[]
+  OR?: Prisma.CouponCustomerEligibilityScalarWhereInput[]
+  NOT?:
+    | Prisma.CouponCustomerEligibilityScalarWhereInput
+    | Prisma.CouponCustomerEligibilityScalarWhereInput[]
+  id?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
+  tenantId?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
+  couponId?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
+  customerId?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
+  createdAt?: Prisma.IntFilter<'CouponCustomerEligibility'> | number
+}
+
 export type CouponCustomerEligibilityCreateWithoutCustomerInput = {
   id: string
   createdAt: number
@@ -826,77 +897,6 @@ export type CouponCustomerEligibilityUpdateManyWithWhereWithoutCustomerInput = {
   data: Prisma.XOR<
     Prisma.CouponCustomerEligibilityUpdateManyMutationInput,
     Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerInput
-  >
-}
-
-export type CouponCustomerEligibilityScalarWhereInput = {
-  AND?:
-    | Prisma.CouponCustomerEligibilityScalarWhereInput
-    | Prisma.CouponCustomerEligibilityScalarWhereInput[]
-  OR?: Prisma.CouponCustomerEligibilityScalarWhereInput[]
-  NOT?:
-    | Prisma.CouponCustomerEligibilityScalarWhereInput
-    | Prisma.CouponCustomerEligibilityScalarWhereInput[]
-  id?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
-  tenantId?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
-  couponId?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
-  customerId?: Prisma.StringFilter<'CouponCustomerEligibility'> | string
-  createdAt?: Prisma.IntFilter<'CouponCustomerEligibility'> | number
-}
-
-export type CouponCustomerEligibilityCreateWithoutCouponInput = {
-  id: string
-  createdAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCouponCustomerEligibilitiesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutCouponEligibilitiesInput
-}
-
-export type CouponCustomerEligibilityUncheckedCreateWithoutCouponInput = {
-  id: string
-  customerId: string
-  createdAt: number
-}
-
-export type CouponCustomerEligibilityCreateOrConnectWithoutCouponInput = {
-  where: Prisma.CouponCustomerEligibilityWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CouponCustomerEligibilityCreateWithoutCouponInput,
-    Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCouponInput
-  >
-}
-
-export type CouponCustomerEligibilityCreateManyCouponInputEnvelope = {
-  data:
-    | Prisma.CouponCustomerEligibilityCreateManyCouponInput
-    | Prisma.CouponCustomerEligibilityCreateManyCouponInput[]
-  skipDuplicates?: boolean
-}
-
-export type CouponCustomerEligibilityUpsertWithWhereUniqueWithoutCouponInput = {
-  where: Prisma.CouponCustomerEligibilityWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.CouponCustomerEligibilityUpdateWithoutCouponInput,
-    Prisma.CouponCustomerEligibilityUncheckedUpdateWithoutCouponInput
-  >
-  create: Prisma.XOR<
-    Prisma.CouponCustomerEligibilityCreateWithoutCouponInput,
-    Prisma.CouponCustomerEligibilityUncheckedCreateWithoutCouponInput
-  >
-}
-
-export type CouponCustomerEligibilityUpdateWithWhereUniqueWithoutCouponInput = {
-  where: Prisma.CouponCustomerEligibilityWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.CouponCustomerEligibilityUpdateWithoutCouponInput,
-    Prisma.CouponCustomerEligibilityUncheckedUpdateWithoutCouponInput
-  >
-}
-
-export type CouponCustomerEligibilityUpdateManyWithWhereWithoutCouponInput = {
-  where: Prisma.CouponCustomerEligibilityScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.CouponCustomerEligibilityUpdateManyMutationInput,
-    Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponInput
   >
 }
 
@@ -957,31 +957,6 @@ export type CouponCustomerEligibilityUpdateManyWithWhereWithoutTenantInput = {
   >
 }
 
-export type CouponCustomerEligibilityCreateManyCustomerInput = {
-  id: string
-  couponId: string
-  createdAt: number
-}
-
-export type CouponCustomerEligibilityUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponCustomerEligibilitiesNestedInput
-  coupon?: Prisma.CouponUpdateOneRequiredWithoutCustomerEligibilitiesNestedInput
-}
-
-export type CouponCustomerEligibilityUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  couponId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  couponId?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
 export type CouponCustomerEligibilityCreateManyCouponInput = {
   id: string
   customerId: string
@@ -1004,6 +979,31 @@ export type CouponCustomerEligibilityUncheckedUpdateWithoutCouponInput = {
 export type CouponCustomerEligibilityUncheckedUpdateManyWithoutCouponInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type CouponCustomerEligibilityCreateManyCustomerInput = {
+  id: string
+  couponId: string
+  createdAt: number
+}
+
+export type CouponCustomerEligibilityUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCouponCustomerEligibilitiesNestedInput
+  coupon?: Prisma.CouponUpdateOneRequiredWithoutCustomerEligibilitiesNestedInput
+}
+
+export type CouponCustomerEligibilityUncheckedUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  couponId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  couponId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 

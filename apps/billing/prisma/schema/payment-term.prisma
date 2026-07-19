@@ -12,14 +12,14 @@ model PaymentTerm {
   createdAt Int             @map("created_at")
   updatedAt Int             @map("updated_at")
 
-  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payment_terms_tenant_fkey")
   customers              Customer[]
   invoices               Invoice[]
   subscriptions          Subscription[]
   subscriptionAmendments SubscriptionAmendment[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, name])
-  @@index([tenantId, isActive], name: "billing_payment_terms_tenant_active_idx")
+  @@unique([tenantId, id], map: "billing_payment_terms_tenant_id_id_key")
+  @@unique([tenantId, name], map: "billing_payment_terms_tenant_id_name_key")
+  @@index([tenantId, isActive], map: "billing_payment_terms_tenant_active_idx")
   @@map("billing_payment_terms")
 }

@@ -10,12 +10,12 @@ model Salesperson {
   createdAt         Int     @map("created_at")
   updatedAt         Int     @map("updated_at")
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_salespeople_tenant_fkey")
   customers Customer[]
   invoices  Invoice[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, externalReference])
-  @@index([tenantId, isActive], name: "billing_salespeople_tenant_active_idx")
+  @@unique([tenantId, id], map: "billing_salespeople_tenant_id_id_key")
+  @@unique([tenantId, externalReference], map: "billing_salespeople_tenant_external_reference_key")
+  @@index([tenantId, isActive], map: "billing_salespeople_tenant_active_idx")
   @@map("billing_salespeople")
 }

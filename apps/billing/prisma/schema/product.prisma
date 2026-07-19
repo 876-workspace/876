@@ -16,15 +16,15 @@ model Product {
   createdAt              Int      @map("created_at")
   updatedAt              Int      @map("updated_at")
 
-  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  fallbackPlan Plan?    @relation("ProductFallbackPlan", fields: [fallbackPlanId], references: [id], onDelete: SetNull)
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_products_tenant_id_fkey")
+  fallbackPlan Plan?    @relation("ProductFallbackPlan", fields: [fallbackPlanId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_products_fallback_plan_fkey")
   plans        Plan[]
   addons       Addon[]
   coupons      Coupon[]
 
-  @@unique([tenantId, slug], name: "billing_products_tenant_id_slug_key")
-  @@index([tenantId], name: "billing_products_tenant_id_idx")
-  @@index([sourceAppId], name: "billing_products_source_app_id_idx")
-  @@index([fallbackPlanId], name: "billing_products_fallback_plan_id_idx")
+  @@unique([tenantId, slug], name: "billing_products_tenant_id_slug_key", map: "billing_products_tenant_id_slug_key")
+  @@index([tenantId], map: "billing_products_tenant_id_idx")
+  @@index([sourceAppId], map: "billing_products_source_app_id_idx")
+  @@index([fallbackPlanId], map: "billing_products_fallback_plan_id_idx")
   @@map("billing_products")
 }

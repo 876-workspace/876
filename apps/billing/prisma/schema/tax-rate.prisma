@@ -1,0 +1,27 @@
+
+/// An effective-dated percentage linked to a tenant tax authority. Percentage,
+/// jurisdiction, and inclusion behavior are immutable after creation so older
+/// commercial documents cannot silently change meaning.
+model TaxRate {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  taxAuthorityId String  @map("tax_authority_id")
+  name           String
+  description    String?
+  taxType        String? @map("tax_type")
+  rate           Decimal @db.Decimal(7, 4)
+  inclusive      Boolean @default(false)
+  startsAt       Int?    @map("starts_at")
+  isDefault      Boolean @default(false) @map("is_default")
+  isActive       Boolean @default(true) @map("is_active")
+  createdAt      Int     @map("created_at")
+  updatedAt      Int     @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_tax_rates_tenant_id_fkey")
+  taxAuthority TaxAuthority  @relation(fields: [tenantId, taxAuthorityId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_tax_rates_tenant_id_tax_authority_id_fkey")
+  invoiceLines InvoiceLine[]
+
+  @@index([tenantId, isActive, startsAt], map: "billing_tax_rates_tenant_id_active_starts_at_idx")
+  @@index([taxAuthorityId], map: "billing_tax_rates_tax_authority_id_idx")
+  @@map("billing_tax_rates")
+}

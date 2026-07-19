@@ -1967,31 +1967,57 @@ export type InvoiceSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type InvoiceCreateNestedOneWithoutBillingRunsInput = {
+export type InvoiceCreateNestedOneWithoutCouponRedemptionsInput = {
   create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutBillingRunsInput,
-    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
   >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutBillingRunsInput
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCouponRedemptionsInput
   connect?: Prisma.InvoiceWhereUniqueInput
 }
 
-export type InvoiceUpdateOneWithoutBillingRunsNestedInput = {
+export type InvoiceUpdateOneWithoutCouponRedemptionsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutBillingRunsInput,
-    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
   >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutBillingRunsInput
-  upsert?: Prisma.InvoiceUpsertWithoutBillingRunsInput
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCouponRedemptionsInput
+  upsert?: Prisma.InvoiceUpsertWithoutCouponRedemptionsInput
   disconnect?: Prisma.InvoiceWhereInput | boolean
   delete?: Prisma.InvoiceWhereInput | boolean
   connect?: Prisma.InvoiceWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutBillingRunsInput,
-      Prisma.InvoiceUpdateWithoutBillingRunsInput
+      Prisma.InvoiceUpdateToOneWithWhereWithoutCouponRedemptionsInput,
+      Prisma.InvoiceUpdateWithoutCouponRedemptionsInput
     >,
-    Prisma.InvoiceUncheckedUpdateWithoutBillingRunsInput
+    Prisma.InvoiceUncheckedUpdateWithoutCouponRedemptionsInput
+  >
+}
+
+export type InvoiceCreateNestedOneWithoutCreditNoteAllocationsInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCreditNoteAllocationsInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+}
+
+export type InvoiceUpdateOneRequiredWithoutCreditNoteAllocationsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCreditNoteAllocationsInput
+  upsert?: Prisma.InvoiceUpsertWithoutCreditNoteAllocationsInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.InvoiceUpdateToOneWithWhereWithoutCreditNoteAllocationsInput,
+      Prisma.InvoiceUpdateWithoutCreditNoteAllocationsInput
+    >,
+    Prisma.InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput
   >
 }
 
@@ -2023,29 +2049,31 @@ export type InvoiceUpdateOneWithoutCreditNotesNestedInput = {
   >
 }
 
-export type InvoiceCreateNestedOneWithoutCreditNoteAllocationsInput = {
+export type InvoiceCreateNestedOneWithoutLedgerEntriesInput = {
   create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
   >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCreditNoteAllocationsInput
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLedgerEntriesInput
   connect?: Prisma.InvoiceWhereUniqueInput
 }
 
-export type InvoiceUpdateOneRequiredWithoutCreditNoteAllocationsNestedInput = {
+export type InvoiceUpdateOneWithoutLedgerEntriesNestedInput = {
   create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
   >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCreditNoteAllocationsInput
-  upsert?: Prisma.InvoiceUpsertWithoutCreditNoteAllocationsInput
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLedgerEntriesInput
+  upsert?: Prisma.InvoiceUpsertWithoutLedgerEntriesInput
+  disconnect?: Prisma.InvoiceWhereInput | boolean
+  delete?: Prisma.InvoiceWhereInput | boolean
   connect?: Prisma.InvoiceWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutCreditNoteAllocationsInput,
-      Prisma.InvoiceUpdateWithoutCreditNoteAllocationsInput
+      Prisma.InvoiceUpdateToOneWithWhereWithoutLedgerEntriesInput,
+      Prisma.InvoiceUpdateWithoutLedgerEntriesInput
     >,
-    Prisma.InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
@@ -2135,34 +2163,6 @@ export type InvoiceUncheckedUpdateManyWithoutCustomerNestedInput = {
   deleteMany?: Prisma.InvoiceScalarWhereInput | Prisma.InvoiceScalarWhereInput[]
 }
 
-export type InvoiceCreateNestedOneWithoutCouponRedemptionsInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCouponRedemptionsInput
-  connect?: Prisma.InvoiceWhereUniqueInput
-}
-
-export type InvoiceUpdateOneWithoutCouponRedemptionsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutCouponRedemptionsInput
-  upsert?: Prisma.InvoiceUpsertWithoutCouponRedemptionsInput
-  disconnect?: Prisma.InvoiceWhereInput | boolean
-  delete?: Prisma.InvoiceWhereInput | boolean
-  connect?: Prisma.InvoiceWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutCouponRedemptionsInput,
-      Prisma.InvoiceUpdateWithoutCouponRedemptionsInput
-    >,
-    Prisma.InvoiceUncheckedUpdateWithoutCouponRedemptionsInput
-  >
-}
-
 export type InvoiceCreateNestedOneWithoutEstimateInput = {
   create?: Prisma.XOR<
     Prisma.InvoiceCreateWithoutEstimateInput,
@@ -2219,6 +2219,62 @@ export type InvoiceUncheckedUpdateOneWithoutEstimateNestedInput = {
   >
 }
 
+export type InvoiceCreateNestedOneWithoutLinesInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutLinesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLinesInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLinesInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+}
+
+export type InvoiceUpdateOneRequiredWithoutLinesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutLinesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLinesInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLinesInput
+  upsert?: Prisma.InvoiceUpsertWithoutLinesInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.InvoiceUpdateToOneWithWhereWithoutLinesInput,
+      Prisma.InvoiceUpdateWithoutLinesInput
+    >,
+    Prisma.InvoiceUncheckedUpdateWithoutLinesInput
+  >
+}
+
+export type InvoiceCreateNestedOneWithoutSubscriptionLinksInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
+    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutSubscriptionLinksInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+}
+
+export type InvoiceUpdateOneRequiredWithoutSubscriptionLinksNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
+    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutSubscriptionLinksInput
+  upsert?: Prisma.InvoiceUpsertWithoutSubscriptionLinksInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.InvoiceUpdateToOneWithWhereWithoutSubscriptionLinksInput,
+      Prisma.InvoiceUpdateWithoutSubscriptionLinksInput
+    >,
+    Prisma.InvoiceUncheckedUpdateWithoutSubscriptionLinksInput
+  >
+}
+
+export type EnumInvoiceBillingReasonFieldUpdateOperationsInput = {
+  set?: $Enums.InvoiceBillingReason
+}
+
 export type InvoiceCreateNestedOneWithoutLateFeeAssessmentsInput = {
   create?: Prisma.XOR<
     Prisma.InvoiceCreateWithoutLateFeeAssessmentsInput,
@@ -2271,61 +2327,29 @@ export type InvoiceUpdateOneRequiredWithoutLateFeeAssessmentNestedInput = {
   >
 }
 
-export type EnumInvoiceBillingReasonFieldUpdateOperationsInput = {
-  set?: $Enums.InvoiceBillingReason
-}
-
-export type InvoiceCreateNestedOneWithoutLinesInput = {
+export type InvoiceCreateNestedOneWithoutAllocationsInput = {
   create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLinesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLinesInput
+    Prisma.InvoiceCreateWithoutAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
   >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLinesInput
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutAllocationsInput
   connect?: Prisma.InvoiceWhereUniqueInput
 }
 
-export type InvoiceUpdateOneRequiredWithoutLinesNestedInput = {
+export type InvoiceUpdateOneRequiredWithoutAllocationsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLinesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLinesInput
+    Prisma.InvoiceCreateWithoutAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
   >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLinesInput
-  upsert?: Prisma.InvoiceUpsertWithoutLinesInput
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutAllocationsInput
+  upsert?: Prisma.InvoiceUpsertWithoutAllocationsInput
   connect?: Prisma.InvoiceWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutLinesInput,
-      Prisma.InvoiceUpdateWithoutLinesInput
+      Prisma.InvoiceUpdateToOneWithWhereWithoutAllocationsInput,
+      Prisma.InvoiceUpdateWithoutAllocationsInput
     >,
-    Prisma.InvoiceUncheckedUpdateWithoutLinesInput
-  >
-}
-
-export type InvoiceCreateNestedOneWithoutLedgerEntriesInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLedgerEntriesInput
-  connect?: Prisma.InvoiceWhereUniqueInput
-}
-
-export type InvoiceUpdateOneWithoutLedgerEntriesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutLedgerEntriesInput
-  upsert?: Prisma.InvoiceUpsertWithoutLedgerEntriesInput
-  disconnect?: Prisma.InvoiceWhereInput | boolean
-  delete?: Prisma.InvoiceWhereInput | boolean
-  connect?: Prisma.InvoiceWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutLedgerEntriesInput,
-      Prisma.InvoiceUpdateWithoutLedgerEntriesInput
-    >,
-    Prisma.InvoiceUncheckedUpdateWithoutLedgerEntriesInput
+    Prisma.InvoiceUncheckedUpdateWithoutAllocationsInput
   >
 }
 
@@ -2441,32 +2465,6 @@ export type InvoiceUncheckedUpdateManyWithoutPaymentTermNestedInput = {
     | Prisma.InvoiceUpdateManyWithWhereWithoutPaymentTermInput
     | Prisma.InvoiceUpdateManyWithWhereWithoutPaymentTermInput[]
   deleteMany?: Prisma.InvoiceScalarWhereInput | Prisma.InvoiceScalarWhereInput[]
-}
-
-export type InvoiceCreateNestedOneWithoutAllocationsInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutAllocationsInput
-  connect?: Prisma.InvoiceWhereUniqueInput
-}
-
-export type InvoiceUpdateOneRequiredWithoutAllocationsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutAllocationsInput
-  upsert?: Prisma.InvoiceUpsertWithoutAllocationsInput
-  connect?: Prisma.InvoiceWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutAllocationsInput,
-      Prisma.InvoiceUpdateWithoutAllocationsInput
-    >,
-    Prisma.InvoiceUncheckedUpdateWithoutAllocationsInput
-  >
 }
 
 export type InvoiceCreateNestedManyWithoutPriceListInput = {
@@ -2697,6 +2695,34 @@ export type InvoiceUncheckedUpdateManyWithoutSalespersonNestedInput = {
   deleteMany?: Prisma.InvoiceScalarWhereInput | Prisma.InvoiceScalarWhereInput[]
 }
 
+export type InvoiceCreateNestedOneWithoutBillingRunsInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutBillingRunsInput,
+    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutBillingRunsInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+}
+
+export type InvoiceUpdateOneWithoutBillingRunsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutBillingRunsInput,
+    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+  >
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutBillingRunsInput
+  upsert?: Prisma.InvoiceUpsertWithoutBillingRunsInput
+  disconnect?: Prisma.InvoiceWhereInput | boolean
+  delete?: Prisma.InvoiceWhereInput | boolean
+  connect?: Prisma.InvoiceWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.InvoiceUpdateToOneWithWhereWithoutBillingRunsInput,
+      Prisma.InvoiceUpdateWithoutBillingRunsInput
+    >,
+    Prisma.InvoiceUncheckedUpdateWithoutBillingRunsInput
+  >
+}
+
 export type InvoiceCreateNestedOneWithoutSubscriptionChargesInput = {
   create?: Prisma.XOR<
     Prisma.InvoiceCreateWithoutSubscriptionChargesInput,
@@ -2750,32 +2776,6 @@ export type InvoiceUpdateOneWithoutSubscriptionNotificationsNestedInput = {
       Prisma.InvoiceUpdateWithoutSubscriptionNotificationsInput
     >,
     Prisma.InvoiceUncheckedUpdateWithoutSubscriptionNotificationsInput
-  >
-}
-
-export type InvoiceCreateNestedOneWithoutSubscriptionLinksInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
-    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutSubscriptionLinksInput
-  connect?: Prisma.InvoiceWhereUniqueInput
-}
-
-export type InvoiceUpdateOneRequiredWithoutSubscriptionLinksNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
-    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
-  >
-  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutSubscriptionLinksInput
-  upsert?: Prisma.InvoiceUpsertWithoutSubscriptionLinksInput
-  connect?: Prisma.InvoiceWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.InvoiceUpdateToOneWithWhereWithoutSubscriptionLinksInput,
-      Prisma.InvoiceUpdateWithoutSubscriptionLinksInput
-    >,
-    Prisma.InvoiceUncheckedUpdateWithoutSubscriptionLinksInput
   >
 }
 
@@ -2951,7 +2951,7 @@ export type InvoiceUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.InvoiceScalarWhereInput | Prisma.InvoiceScalarWhereInput[]
 }
 
-export type InvoiceCreateWithoutBillingRunsInput = {
+export type InvoiceCreateWithoutCouponRedemptionsInput = {
   id: string
   sourceAppId?: string | null
   sourceExternalReference?: string | null
@@ -3007,6 +3007,7 @@ export type InvoiceCreateWithoutBillingRunsInput = {
   subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
   lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
   lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
   subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
   subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
@@ -3018,10 +3019,9 @@ export type InvoiceCreateWithoutBillingRunsInput = {
   creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
   ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
   paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
 }
 
-export type InvoiceUncheckedCreateWithoutBillingRunsInput = {
+export type InvoiceUncheckedCreateWithoutCouponRedemptionsInput = {
   id: string
   tenantId: string
   sourceAppId?: string | null
@@ -3079,6 +3079,7 @@ export type InvoiceUncheckedCreateWithoutBillingRunsInput = {
   updatedAt: number
   lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
   lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
   subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
@@ -3088,38 +3089,37 @@ export type InvoiceUncheckedCreateWithoutBillingRunsInput = {
   creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
-export type InvoiceCreateOrConnectWithoutBillingRunsInput = {
+export type InvoiceCreateOrConnectWithoutCouponRedemptionsInput = {
   where: Prisma.InvoiceWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutBillingRunsInput,
-    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
   >
 }
 
-export type InvoiceUpsertWithoutBillingRunsInput = {
+export type InvoiceUpsertWithoutCouponRedemptionsInput = {
   update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutBillingRunsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutBillingRunsInput
+    Prisma.InvoiceUpdateWithoutCouponRedemptionsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutCouponRedemptionsInput
   >
   create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutBillingRunsInput,
-    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
   >
   where?: Prisma.InvoiceWhereInput
 }
 
-export type InvoiceUpdateToOneWithWhereWithoutBillingRunsInput = {
+export type InvoiceUpdateToOneWithWhereWithoutCouponRedemptionsInput = {
   where?: Prisma.InvoiceWhereInput
   data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutBillingRunsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutBillingRunsInput
+    Prisma.InvoiceUpdateWithoutCouponRedemptionsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutCouponRedemptionsInput
   >
 }
 
-export type InvoiceUpdateWithoutBillingRunsInput = {
+export type InvoiceUpdateWithoutCouponRedemptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceExternalReference?:
@@ -3211,6 +3211,7 @@ export type InvoiceUpdateWithoutBillingRunsInput = {
   subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
   lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
   lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
   subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
@@ -3222,10 +3223,9 @@ export type InvoiceUpdateWithoutBillingRunsInput = {
   creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
 }
 
-export type InvoiceUncheckedUpdateWithoutBillingRunsInput = {
+export type InvoiceUncheckedUpdateWithoutCouponRedemptionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3328,12 +3328,401 @@ export type InvoiceUncheckedUpdateWithoutBillingRunsInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
   lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
   lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
   allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
   creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceCreateWithoutCreditNoteAllocationsInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  priceListName?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
+  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
+  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
+  lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerId: string
+  priceListId?: string | null
+  priceListName?: string | null
+  quoteId?: string | null
+  estimateId?: string | null
+  subscriptionId?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
+  lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceCreateOrConnectWithoutCreditNoteAllocationsInput = {
+  where: Prisma.InvoiceWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+  >
+}
+
+export type InvoiceUpsertWithoutCreditNoteAllocationsInput = {
+  update: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutCreditNoteAllocationsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput
+  >
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+  >
+  where?: Prisma.InvoiceWhereInput
+}
+
+export type InvoiceUpdateToOneWithWhereWithoutCreditNoteAllocationsInput = {
+  where?: Prisma.InvoiceWhereInput
+  data: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutCreditNoteAllocationsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput
+  >
+}
+
+export type InvoiceUpdateWithoutCreditNoteAllocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
+  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
+  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
+  lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
+  lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
   creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
@@ -3729,7 +4118,7 @@ export type InvoiceUncheckedUpdateWithoutCreditNotesInput = {
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
-export type InvoiceCreateWithoutCreditNoteAllocationsInput = {
+export type InvoiceCreateWithoutLedgerEntriesInput = {
   id: string
   sourceAppId?: string | null
   sourceExternalReference?: string | null
@@ -3793,13 +4182,13 @@ export type InvoiceCreateWithoutCreditNoteAllocationsInput = {
   salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
   lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
   allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
   creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
   paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
   couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
 }
 
-export type InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput = {
+export type InvoiceUncheckedCreateWithoutLedgerEntriesInput = {
   id: string
   tenantId: string
   sourceAppId?: string | null
@@ -3863,41 +4252,41 @@ export type InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput = {
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
   lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
   allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
   creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
-export type InvoiceCreateOrConnectWithoutCreditNoteAllocationsInput = {
+export type InvoiceCreateOrConnectWithoutLedgerEntriesInput = {
   where: Prisma.InvoiceWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
   >
 }
 
-export type InvoiceUpsertWithoutCreditNoteAllocationsInput = {
+export type InvoiceUpsertWithoutLedgerEntriesInput = {
   update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutCreditNoteAllocationsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceUpdateWithoutLedgerEntriesInput,
+    Prisma.InvoiceUncheckedUpdateWithoutLedgerEntriesInput
   >
   create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCreditNoteAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
   >
   where?: Prisma.InvoiceWhereInput
 }
 
-export type InvoiceUpdateToOneWithWhereWithoutCreditNoteAllocationsInput = {
+export type InvoiceUpdateToOneWithWhereWithoutLedgerEntriesInput = {
   where?: Prisma.InvoiceWhereInput
   data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutCreditNoteAllocationsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput
+    Prisma.InvoiceUpdateWithoutLedgerEntriesInput,
+    Prisma.InvoiceUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
-export type InvoiceUpdateWithoutCreditNoteAllocationsInput = {
+export type InvoiceUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceExternalReference?:
@@ -3997,13 +4386,13 @@ export type InvoiceUpdateWithoutCreditNoteAllocationsInput = {
   salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
   lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
   allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
   creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
 }
 
-export type InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput = {
+export type InvoiceUncheckedUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4112,8 +4501,8 @@ export type InvoiceUncheckedUpdateWithoutCreditNoteAllocationsInput = {
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
   lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
   allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
   creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
 }
@@ -4361,395 +4750,6 @@ export type InvoiceScalarWhereInput = {
   metadata?: Prisma.JsonNullableFilter<'Invoice'>
   createdAt?: Prisma.IntFilter<'Invoice'> | number
   updatedAt?: Prisma.IntFilter<'Invoice'> | number
-}
-
-export type InvoiceCreateWithoutCouponRedemptionsInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  priceListName?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
-  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
-  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
-  lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceUncheckedCreateWithoutCouponRedemptionsInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  customerId: string
-  priceListId?: string | null
-  priceListName?: string | null
-  quoteId?: string | null
-  estimateId?: string | null
-  subscriptionId?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
-  lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceCreateOrConnectWithoutCouponRedemptionsInput = {
-  where: Prisma.InvoiceWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
-  >
-}
-
-export type InvoiceUpsertWithoutCouponRedemptionsInput = {
-  update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutCouponRedemptionsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutCouponRedemptionsInput
-  >
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutCouponRedemptionsInput,
-    Prisma.InvoiceUncheckedCreateWithoutCouponRedemptionsInput
-  >
-  where?: Prisma.InvoiceWhereInput
-}
-
-export type InvoiceUpdateToOneWithWhereWithoutCouponRedemptionsInput = {
-  where?: Prisma.InvoiceWhereInput
-  data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutCouponRedemptionsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutCouponRedemptionsInput
-  >
-}
-
-export type InvoiceUpdateWithoutCouponRedemptionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
-  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
-  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
-  lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoiceUncheckedUpdateWithoutCouponRedemptionsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
-  lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceCreateWithoutEstimateInput = {
@@ -5130,6 +5130,784 @@ export type InvoiceUncheckedUpdateWithoutEstimateInput = {
   lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
   billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
+  lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceCreateWithoutLinesInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  priceListName?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
+  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
+  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceUncheckedCreateWithoutLinesInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerId: string
+  priceListId?: string | null
+  priceListName?: string | null
+  quoteId?: string | null
+  estimateId?: string | null
+  subscriptionId?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceCreateOrConnectWithoutLinesInput = {
+  where: Prisma.InvoiceWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutLinesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLinesInput
+  >
+}
+
+export type InvoiceUpsertWithoutLinesInput = {
+  update: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutLinesInput,
+    Prisma.InvoiceUncheckedUpdateWithoutLinesInput
+  >
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutLinesInput,
+    Prisma.InvoiceUncheckedCreateWithoutLinesInput
+  >
+  where?: Prisma.InvoiceWhereInput
+}
+
+export type InvoiceUpdateToOneWithWhereWithoutLinesInput = {
+  where?: Prisma.InvoiceWhereInput
+  data: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutLinesInput,
+    Prisma.InvoiceUncheckedUpdateWithoutLinesInput
+  >
+}
+
+export type InvoiceUpdateWithoutLinesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
+  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
+  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceUncheckedUpdateWithoutLinesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceCreateWithoutSubscriptionLinksInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  priceListName?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
+  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
+  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
+  lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceUncheckedCreateWithoutSubscriptionLinksInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerId: string
+  priceListId?: string | null
+  priceListName?: string | null
+  quoteId?: string | null
+  estimateId?: string | null
+  subscriptionId?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
+  lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceCreateOrConnectWithoutSubscriptionLinksInput = {
+  where: Prisma.InvoiceWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
+    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
+  >
+}
+
+export type InvoiceUpsertWithoutSubscriptionLinksInput = {
+  update: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutSubscriptionLinksInput,
+    Prisma.InvoiceUncheckedUpdateWithoutSubscriptionLinksInput
+  >
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
+    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
+  >
+  where?: Prisma.InvoiceWhereInput
+}
+
+export type InvoiceUpdateToOneWithWhereWithoutSubscriptionLinksInput = {
+  where?: Prisma.InvoiceWhereInput
+  data: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutSubscriptionLinksInput,
+    Prisma.InvoiceUncheckedUpdateWithoutSubscriptionLinksInput
+  >
+}
+
+export type InvoiceUpdateWithoutSubscriptionLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
+  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
+  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
+  lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceUncheckedUpdateWithoutSubscriptionLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
   lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
@@ -5919,396 +6697,7 @@ export type InvoiceUncheckedUpdateWithoutLateFeeAssessmentInput = {
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
-export type InvoiceCreateWithoutLinesInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  priceListName?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
-  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
-  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
-  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceUncheckedCreateWithoutLinesInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  customerId: string
-  priceListId?: string | null
-  priceListName?: string | null
-  quoteId?: string | null
-  estimateId?: string | null
-  subscriptionId?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceCreateOrConnectWithoutLinesInput = {
-  where: Prisma.InvoiceWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLinesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLinesInput
-  >
-}
-
-export type InvoiceUpsertWithoutLinesInput = {
-  update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutLinesInput,
-    Prisma.InvoiceUncheckedUpdateWithoutLinesInput
-  >
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLinesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLinesInput
-  >
-  where?: Prisma.InvoiceWhereInput
-}
-
-export type InvoiceUpdateToOneWithWhereWithoutLinesInput = {
-  where?: Prisma.InvoiceWhereInput
-  data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutLinesInput,
-    Prisma.InvoiceUncheckedUpdateWithoutLinesInput
-  >
-}
-
-export type InvoiceUpdateWithoutLinesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
-  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
-  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
-  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoiceUncheckedUpdateWithoutLinesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoiceCreateWithoutLedgerEntriesInput = {
+export type InvoiceCreateWithoutAllocationsInput = {
   id: string
   sourceAppId?: string | null
   sourceExternalReference?: string | null
@@ -6371,14 +6760,14 @@ export type InvoiceCreateWithoutLedgerEntriesInput = {
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
   salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
   lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
   creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
   creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
   paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
   couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
 }
 
-export type InvoiceUncheckedCreateWithoutLedgerEntriesInput = {
+export type InvoiceUncheckedCreateWithoutAllocationsInput = {
   id: string
   tenantId: string
   sourceAppId?: string | null
@@ -6441,42 +6830,42 @@ export type InvoiceUncheckedCreateWithoutLedgerEntriesInput = {
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
   lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
   creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
   creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
-export type InvoiceCreateOrConnectWithoutLedgerEntriesInput = {
+export type InvoiceCreateOrConnectWithoutAllocationsInput = {
   where: Prisma.InvoiceWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
+    Prisma.InvoiceCreateWithoutAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
   >
 }
 
-export type InvoiceUpsertWithoutLedgerEntriesInput = {
+export type InvoiceUpsertWithoutAllocationsInput = {
   update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutLedgerEntriesInput,
-    Prisma.InvoiceUncheckedUpdateWithoutLedgerEntriesInput
+    Prisma.InvoiceUpdateWithoutAllocationsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutAllocationsInput
   >
   create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutLedgerEntriesInput,
-    Prisma.InvoiceUncheckedCreateWithoutLedgerEntriesInput
+    Prisma.InvoiceCreateWithoutAllocationsInput,
+    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
   >
   where?: Prisma.InvoiceWhereInput
 }
 
-export type InvoiceUpdateToOneWithWhereWithoutLedgerEntriesInput = {
+export type InvoiceUpdateToOneWithWhereWithoutAllocationsInput = {
   where?: Prisma.InvoiceWhereInput
   data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutLedgerEntriesInput,
-    Prisma.InvoiceUncheckedUpdateWithoutLedgerEntriesInput
+    Prisma.InvoiceUpdateWithoutAllocationsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutAllocationsInput
   >
 }
 
-export type InvoiceUpdateWithoutLedgerEntriesInput = {
+export type InvoiceUpdateWithoutAllocationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceExternalReference?:
@@ -6575,14 +6964,14 @@ export type InvoiceUpdateWithoutLedgerEntriesInput = {
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
   salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
   lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
   creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
   creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
 }
 
-export type InvoiceUncheckedUpdateWithoutLedgerEntriesInput = {
+export type InvoiceUncheckedUpdateWithoutAllocationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6690,9 +7079,9 @@ export type InvoiceUncheckedUpdateWithoutLedgerEntriesInput = {
   subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
   lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
   creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
   creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
 }
@@ -7266,395 +7655,6 @@ export type InvoiceUpdateManyWithWhereWithoutPaymentTermInput = {
     Prisma.InvoiceUpdateManyMutationInput,
     Prisma.InvoiceUncheckedUpdateManyWithoutPaymentTermInput
   >
-}
-
-export type InvoiceCreateWithoutAllocationsInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  priceListName?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
-  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
-  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
-  lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceUncheckedCreateWithoutAllocationsInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  customerId: string
-  priceListId?: string | null
-  priceListName?: string | null
-  quoteId?: string | null
-  estimateId?: string | null
-  subscriptionId?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
-  lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceCreateOrConnectWithoutAllocationsInput = {
-  where: Prisma.InvoiceWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
-  >
-}
-
-export type InvoiceUpsertWithoutAllocationsInput = {
-  update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutAllocationsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutAllocationsInput
-  >
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutAllocationsInput,
-    Prisma.InvoiceUncheckedCreateWithoutAllocationsInput
-  >
-  where?: Prisma.InvoiceWhereInput
-}
-
-export type InvoiceUpdateToOneWithWhereWithoutAllocationsInput = {
-  where?: Prisma.InvoiceWhereInput
-  data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutAllocationsInput,
-    Prisma.InvoiceUncheckedUpdateWithoutAllocationsInput
-  >
-}
-
-export type InvoiceUpdateWithoutAllocationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
-  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
-  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
-  lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoiceUncheckedUpdateWithoutAllocationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
-  lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceCreateWithoutPriceListInput = {
@@ -8408,6 +8408,395 @@ export type InvoiceUpdateManyWithWhereWithoutSalespersonInput = {
     Prisma.InvoiceUpdateManyMutationInput,
     Prisma.InvoiceUncheckedUpdateManyWithoutSalespersonInput
   >
+}
+
+export type InvoiceCreateWithoutBillingRunsInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  priceListName?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
+  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
+  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
+  lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceUncheckedCreateWithoutBillingRunsInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerId: string
+  priceListId?: string | null
+  priceListName?: string | null
+  quoteId?: string | null
+  estimateId?: string | null
+  subscriptionId?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  number: string
+  status?: $Enums.InvoiceStatus
+  billingReason?: $Enums.InvoiceBillingReason
+  currency: string
+  orderNumber?: string | null
+  referenceNumber?: string | null
+  subject?: string | null
+  taxBehavior?: $Enums.TaxBehavior
+  customerName?: string | null
+  customerEmail?: string | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: number | null
+  dueAt?: number | null
+  sentAt?: number | null
+  paidAt?: number | null
+  voidedAt?: number | null
+  finalizedAt?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  subtotalAmount?: bigint | number
+  taxAmount?: bigint | number
+  discountAmount?: bigint | number
+  shippingAmount?: bigint | number
+  adjustmentAmount?: bigint | number
+  totalAmount?: bigint | number
+  amountDue?: bigint | number
+  amountPaid?: bigint | number
+  amountCredited?: bigint | number
+  amountWrittenOff?: bigint | number
+  paymentTermName?: string | null
+  salespersonName?: string | null
+  notes?: string | null
+  terms?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
+  lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
+  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceCreateOrConnectWithoutBillingRunsInput = {
+  where: Prisma.InvoiceWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutBillingRunsInput,
+    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+  >
+}
+
+export type InvoiceUpsertWithoutBillingRunsInput = {
+  update: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutBillingRunsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutBillingRunsInput
+  >
+  create: Prisma.XOR<
+    Prisma.InvoiceCreateWithoutBillingRunsInput,
+    Prisma.InvoiceUncheckedCreateWithoutBillingRunsInput
+  >
+  where?: Prisma.InvoiceWhereInput
+}
+
+export type InvoiceUpdateToOneWithWhereWithoutBillingRunsInput = {
+  where?: Prisma.InvoiceWhereInput
+  data: Prisma.XOR<
+    Prisma.InvoiceUpdateWithoutBillingRunsInput,
+    Prisma.InvoiceUncheckedUpdateWithoutBillingRunsInput
+  >
+}
+
+export type InvoiceUpdateWithoutBillingRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
+  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
+  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
+  lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceUncheckedUpdateWithoutBillingRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
+    | $Enums.InvoiceStatus
+  billingReason?:
+    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
+    | $Enums.InvoiceBillingReason
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  shippingAddressSnapshot?:
+    | Prisma.NullableJsonNullValueInput
+    | runtime.InputJsonValue
+  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  paymentTermName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
+  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
+  subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
+  lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
+  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceCreateWithoutSubscriptionChargesInput = {
@@ -9178,395 +9567,6 @@ export type InvoiceUncheckedUpdateWithoutSubscriptionNotificationsInput = {
   lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
   billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
-  lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoiceCreateWithoutSubscriptionLinksInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  priceListName?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutInvoicesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutInvoicesInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutInvoicesInput
-  quote?: Prisma.QuoteCreateNestedOneWithoutConvertedInvoiceInput
-  estimate?: Prisma.EstimateCreateNestedOneWithoutConvertedInvoiceInput
-  subscription?: Prisma.SubscriptionCreateNestedOneWithoutInvoicesInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutInvoiceInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutInvoicesInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutInvoicesInput
-  lines?: Prisma.InvoiceLineCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceUncheckedCreateWithoutSubscriptionLinksInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  customerId: string
-  priceListId?: string | null
-  priceListName?: string | null
-  quoteId?: string | null
-  estimateId?: string | null
-  subscriptionId?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  number: string
-  status?: $Enums.InvoiceStatus
-  billingReason?: $Enums.InvoiceBillingReason
-  currency: string
-  orderNumber?: string | null
-  referenceNumber?: string | null
-  subject?: string | null
-  taxBehavior?: $Enums.TaxBehavior
-  customerName?: string | null
-  customerEmail?: string | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: number | null
-  dueAt?: number | null
-  sentAt?: number | null
-  paidAt?: number | null
-  voidedAt?: number | null
-  finalizedAt?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  subtotalAmount?: bigint | number
-  taxAmount?: bigint | number
-  discountAmount?: bigint | number
-  shippingAmount?: bigint | number
-  adjustmentAmount?: bigint | number
-  totalAmount?: bigint | number
-  amountDue?: bigint | number
-  amountPaid?: bigint | number
-  amountCredited?: bigint | number
-  amountWrittenOff?: bigint | number
-  paymentTermName?: string | null
-  salespersonName?: string | null
-  notes?: string | null
-  terms?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedCreateNestedManyWithoutSourceInvoiceInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedCreateNestedOneWithoutLateFeeInvoiceInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutInvoiceInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutInvoiceInput
-  lines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutInvoiceInput
-  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUncheckedCreateNestedManyWithoutInvoiceInput
-  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutInvoiceInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutInvoiceInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutInvoiceInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoiceCreateOrConnectWithoutSubscriptionLinksInput = {
-  where: Prisma.InvoiceWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
-    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
-  >
-}
-
-export type InvoiceUpsertWithoutSubscriptionLinksInput = {
-  update: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutSubscriptionLinksInput,
-    Prisma.InvoiceUncheckedUpdateWithoutSubscriptionLinksInput
-  >
-  create: Prisma.XOR<
-    Prisma.InvoiceCreateWithoutSubscriptionLinksInput,
-    Prisma.InvoiceUncheckedCreateWithoutSubscriptionLinksInput
-  >
-  where?: Prisma.InvoiceWhereInput
-}
-
-export type InvoiceUpdateToOneWithWhereWithoutSubscriptionLinksInput = {
-  where?: Prisma.InvoiceWhereInput
-  data: Prisma.XOR<
-    Prisma.InvoiceUpdateWithoutSubscriptionLinksInput,
-    Prisma.InvoiceUncheckedUpdateWithoutSubscriptionLinksInput
-  >
-}
-
-export type InvoiceUpdateWithoutSubscriptionLinksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutInvoicesNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutInvoicesNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutInvoicesNestedInput
-  quote?: Prisma.QuoteUpdateOneWithoutConvertedInvoiceNestedInput
-  estimate?: Prisma.EstimateUpdateOneWithoutConvertedInvoiceNestedInput
-  subscription?: Prisma.SubscriptionUpdateOneWithoutInvoicesNestedInput
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutInvoiceNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutInvoiceNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutInvoicesNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutInvoicesNestedInput
-  lines?: Prisma.InvoiceLineUpdateManyWithoutInvoiceNestedInput
-  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNoteAllocations?: Prisma.CreditNoteAllocationUpdateManyWithoutInvoiceNestedInput
-  creditNotes?: Prisma.CreditNoteUpdateManyWithoutInvoiceNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutInvoiceNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutInvoiceNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoiceUncheckedUpdateWithoutSubscriptionLinksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  quoteId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  estimateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  subscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumInvoiceStatusFieldUpdateOperationsInput
-    | $Enums.InvoiceStatus
-  billingReason?:
-    | Prisma.EnumInvoiceBillingReasonFieldUpdateOperationsInput
-    | $Enums.InvoiceBillingReason
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  subject?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  customerName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerEmail?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  billingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  shippingAddressSnapshot?:
-    | Prisma.NullableJsonNullValueInput
-    | runtime.InputJsonValue
-  issueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  dueAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  sentAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  paidAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  finalizedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  subtotalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  taxAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  discountAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  shippingAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  adjustmentAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  totalAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountDue?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountPaid?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountCredited?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  amountWrittenOff?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  paymentTermName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  lateFeeAssessments?: Prisma.LateFeeAssessmentUncheckedUpdateManyWithoutSourceInvoiceNestedInput
-  lateFeeAssessment?: Prisma.LateFeeAssessmentUncheckedUpdateOneWithoutLateFeeInvoiceNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutInvoiceNestedInput
-  subscriptionNotifications?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutInvoiceNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput
   lines?: Prisma.InvoiceLineUncheckedUpdateManyWithoutInvoiceNestedInput
   allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInvoiceNestedInput

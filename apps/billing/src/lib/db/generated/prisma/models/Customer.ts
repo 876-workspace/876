@@ -58,6 +58,7 @@ export type CustomerMinAggregateOutputType = {
   sourceExternalReference: string | null
   sourceIdempotencyKey: string | null
   sourcePayloadHash: string | null
+  customerNumber: string | null
   name: string | null
   salutation: string | null
   firstName: string | null
@@ -66,6 +67,9 @@ export type CustomerMinAggregateOutputType = {
   email: string | null
   phone: string | null
   workPhone: string | null
+  website: string | null
+  notes: string | null
+  taxRegistrationNumber: string | null
   defaultCurrency: string | null
   language: string | null
   paymentTermId: string | null
@@ -96,6 +100,7 @@ export type CustomerMaxAggregateOutputType = {
   sourceExternalReference: string | null
   sourceIdempotencyKey: string | null
   sourcePayloadHash: string | null
+  customerNumber: string | null
   name: string | null
   salutation: string | null
   firstName: string | null
@@ -104,6 +109,9 @@ export type CustomerMaxAggregateOutputType = {
   email: string | null
   phone: string | null
   workPhone: string | null
+  website: string | null
+  notes: string | null
+  taxRegistrationNumber: string | null
   defaultCurrency: string | null
   language: string | null
   paymentTermId: string | null
@@ -134,6 +142,7 @@ export type CustomerCountAggregateOutputType = {
   sourceExternalReference: number
   sourceIdempotencyKey: number
   sourcePayloadHash: number
+  customerNumber: number
   name: number
   salutation: number
   firstName: number
@@ -142,6 +151,9 @@ export type CustomerCountAggregateOutputType = {
   email: number
   phone: number
   workPhone: number
+  website: number
+  notes: number
+  taxRegistrationNumber: number
   billingAddress: number
   metadata: number
   defaultCurrency: number
@@ -191,6 +203,7 @@ export type CustomerMinAggregateInputType = {
   sourceExternalReference?: true
   sourceIdempotencyKey?: true
   sourcePayloadHash?: true
+  customerNumber?: true
   name?: true
   salutation?: true
   firstName?: true
@@ -199,6 +212,9 @@ export type CustomerMinAggregateInputType = {
   email?: true
   phone?: true
   workPhone?: true
+  website?: true
+  notes?: true
+  taxRegistrationNumber?: true
   defaultCurrency?: true
   language?: true
   paymentTermId?: true
@@ -229,6 +245,7 @@ export type CustomerMaxAggregateInputType = {
   sourceExternalReference?: true
   sourceIdempotencyKey?: true
   sourcePayloadHash?: true
+  customerNumber?: true
   name?: true
   salutation?: true
   firstName?: true
@@ -237,6 +254,9 @@ export type CustomerMaxAggregateInputType = {
   email?: true
   phone?: true
   workPhone?: true
+  website?: true
+  notes?: true
+  taxRegistrationNumber?: true
   defaultCurrency?: true
   language?: true
   paymentTermId?: true
@@ -267,6 +287,7 @@ export type CustomerCountAggregateInputType = {
   sourceExternalReference?: true
   sourceIdempotencyKey?: true
   sourcePayloadHash?: true
+  customerNumber?: true
   name?: true
   salutation?: true
   firstName?: true
@@ -275,6 +296,9 @@ export type CustomerCountAggregateInputType = {
   email?: true
   phone?: true
   workPhone?: true
+  website?: true
+  notes?: true
+  taxRegistrationNumber?: true
   billingAddress?: true
   metadata?: true
   defaultCurrency?: true
@@ -401,6 +425,7 @@ export type CustomerGroupByOutputType = {
   sourceExternalReference: string | null
   sourceIdempotencyKey: string | null
   sourcePayloadHash: string | null
+  customerNumber: string | null
   name: string
   salutation: string | null
   firstName: string | null
@@ -409,6 +434,9 @@ export type CustomerGroupByOutputType = {
   email: string | null
   phone: string | null
   workPhone: string | null
+  website: string | null
+  notes: string | null
+  taxRegistrationNumber: string | null
   billingAddress: runtime.JsonValue | null
   metadata: runtime.JsonValue | null
   defaultCurrency: string | null
@@ -465,6 +493,7 @@ export type CustomerWhereInput = {
     | null
   sourceIdempotencyKey?: Prisma.StringNullableFilter<'Customer'> | string | null
   sourcePayloadHash?: Prisma.StringNullableFilter<'Customer'> | string | null
+  customerNumber?: Prisma.StringNullableFilter<'Customer'> | string | null
   name?: Prisma.StringFilter<'Customer'> | string
   salutation?: Prisma.StringNullableFilter<'Customer'> | string | null
   firstName?: Prisma.StringNullableFilter<'Customer'> | string | null
@@ -473,6 +502,12 @@ export type CustomerWhereInput = {
   email?: Prisma.StringNullableFilter<'Customer'> | string | null
   phone?: Prisma.StringNullableFilter<'Customer'> | string | null
   workPhone?: Prisma.StringNullableFilter<'Customer'> | string | null
+  website?: Prisma.StringNullableFilter<'Customer'> | string | null
+  notes?: Prisma.StringNullableFilter<'Customer'> | string | null
+  taxRegistrationNumber?:
+    | Prisma.StringNullableFilter<'Customer'>
+    | string
+    | null
   billingAddress?: Prisma.JsonNullableFilter<'Customer'>
   metadata?: Prisma.JsonNullableFilter<'Customer'>
   defaultCurrency?: Prisma.StringNullableFilter<'Customer'> | string | null
@@ -546,6 +581,7 @@ export type CustomerOrderByWithRelationInput = {
   sourceExternalReference?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceIdempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   sourcePayloadHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   salutation?: Prisma.SortOrderInput | Prisma.SortOrder
   firstName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -554,6 +590,9 @@ export type CustomerOrderByWithRelationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   workPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  taxRegistrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   billingAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultCurrency?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -601,6 +640,7 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<
     billing_customers_tenant_id_organization_id_key?: Prisma.CustomerBilling_customers_tenant_id_organization_id_keyCompoundUniqueInput
     billing_customers_tenant_id_user_id_key?: Prisma.CustomerBilling_customers_tenant_id_user_id_keyCompoundUniqueInput
     billing_customers_tenant_id_external_reference_key?: Prisma.CustomerBilling_customers_tenant_id_external_reference_keyCompoundUniqueInput
+    tenantId_customerNumber?: Prisma.CustomerTenantIdCustomerNumberCompoundUniqueInput
     billing_customers_source_external_key?: Prisma.CustomerBilling_customers_source_external_keyCompoundUniqueInput
     billing_customers_source_idempotency_key?: Prisma.CustomerBilling_customers_source_idempotency_keyCompoundUniqueInput
     AND?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
@@ -626,6 +666,7 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<
       | string
       | null
     sourcePayloadHash?: Prisma.StringNullableFilter<'Customer'> | string | null
+    customerNumber?: Prisma.StringNullableFilter<'Customer'> | string | null
     name?: Prisma.StringFilter<'Customer'> | string
     salutation?: Prisma.StringNullableFilter<'Customer'> | string | null
     firstName?: Prisma.StringNullableFilter<'Customer'> | string | null
@@ -634,6 +675,12 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<
     email?: Prisma.StringNullableFilter<'Customer'> | string | null
     phone?: Prisma.StringNullableFilter<'Customer'> | string | null
     workPhone?: Prisma.StringNullableFilter<'Customer'> | string | null
+    website?: Prisma.StringNullableFilter<'Customer'> | string | null
+    notes?: Prisma.StringNullableFilter<'Customer'> | string | null
+    taxRegistrationNumber?:
+      | Prisma.StringNullableFilter<'Customer'>
+      | string
+      | null
     billingAddress?: Prisma.JsonNullableFilter<'Customer'>
     metadata?: Prisma.JsonNullableFilter<'Customer'>
     defaultCurrency?: Prisma.StringNullableFilter<'Customer'> | string | null
@@ -699,6 +746,7 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<
   | 'billing_customers_tenant_id_organization_id_key'
   | 'billing_customers_tenant_id_user_id_key'
   | 'billing_customers_tenant_id_external_reference_key'
+  | 'tenantId_customerNumber'
   | 'billing_customers_source_external_key'
   | 'billing_customers_source_idempotency_key'
 >
@@ -715,6 +763,7 @@ export type CustomerOrderByWithAggregationInput = {
   sourceExternalReference?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceIdempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   sourcePayloadHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   salutation?: Prisma.SortOrderInput | Prisma.SortOrder
   firstName?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -723,6 +772,9 @@ export type CustomerOrderByWithAggregationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   workPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  taxRegistrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   billingAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultCurrency?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -789,6 +841,10 @@ export type CustomerScalarWhereWithAggregatesInput = {
     | Prisma.StringNullableWithAggregatesFilter<'Customer'>
     | string
     | null
+  customerNumber?:
+    | Prisma.StringNullableWithAggregatesFilter<'Customer'>
+    | string
+    | null
   name?: Prisma.StringWithAggregatesFilter<'Customer'> | string
   salutation?:
     | Prisma.StringNullableWithAggregatesFilter<'Customer'>
@@ -809,6 +865,15 @@ export type CustomerScalarWhereWithAggregatesInput = {
   email?: Prisma.StringNullableWithAggregatesFilter<'Customer'> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<'Customer'> | string | null
   workPhone?:
+    | Prisma.StringNullableWithAggregatesFilter<'Customer'>
+    | string
+    | null
+  website?:
+    | Prisma.StringNullableWithAggregatesFilter<'Customer'>
+    | string
+    | null
+  notes?: Prisma.StringNullableWithAggregatesFilter<'Customer'> | string | null
+  taxRegistrationNumber?:
     | Prisma.StringNullableWithAggregatesFilter<'Customer'>
     | string
     | null
@@ -881,6 +946,7 @@ export type CustomerCreateInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -889,6 +955,9 @@ export type CustomerCreateInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -937,6 +1006,7 @@ export type CustomerUncheckedCreateInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -945,6 +1015,9 @@ export type CustomerUncheckedCreateInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -1010,6 +1083,10 @@ export type CustomerUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1018,6 +1095,12 @@ export type CustomerUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -1099,6 +1182,10 @@ export type CustomerUncheckedUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1107,6 +1194,12 @@ export type CustomerUncheckedUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -1174,6 +1267,7 @@ export type CustomerCreateManyInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -1182,6 +1276,9 @@ export type CustomerCreateManyInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -1232,6 +1329,10 @@ export type CustomerUpdateManyMutationInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1240,6 +1341,12 @@ export type CustomerUpdateManyMutationInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -1301,6 +1408,10 @@ export type CustomerUncheckedUpdateManyInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1309,6 +1420,12 @@ export type CustomerUncheckedUpdateManyInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -1377,6 +1494,11 @@ export type CustomerBilling_customers_tenant_id_external_reference_keyCompoundUn
     externalReference: string
   }
 
+export type CustomerTenantIdCustomerNumberCompoundUniqueInput = {
+  tenantId: string
+  customerNumber: string
+}
+
 export type CustomerBilling_customers_source_external_keyCompoundUniqueInput = {
   tenantId: string
   sourceAppId: string
@@ -1402,6 +1524,7 @@ export type CustomerCountOrderByAggregateInput = {
   sourceExternalReference?: Prisma.SortOrder
   sourceIdempotencyKey?: Prisma.SortOrder
   sourcePayloadHash?: Prisma.SortOrder
+  customerNumber?: Prisma.SortOrder
   name?: Prisma.SortOrder
   salutation?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
@@ -1410,6 +1533,9 @@ export type CustomerCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   workPhone?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  taxRegistrationNumber?: Prisma.SortOrder
   billingAddress?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   defaultCurrency?: Prisma.SortOrder
@@ -1450,6 +1576,7 @@ export type CustomerMaxOrderByAggregateInput = {
   sourceExternalReference?: Prisma.SortOrder
   sourceIdempotencyKey?: Prisma.SortOrder
   sourcePayloadHash?: Prisma.SortOrder
+  customerNumber?: Prisma.SortOrder
   name?: Prisma.SortOrder
   salutation?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
@@ -1458,6 +1585,9 @@ export type CustomerMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   workPhone?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  taxRegistrationNumber?: Prisma.SortOrder
   defaultCurrency?: Prisma.SortOrder
   language?: Prisma.SortOrder
   paymentTermId?: Prisma.SortOrder
@@ -1488,6 +1618,7 @@ export type CustomerMinOrderByAggregateInput = {
   sourceExternalReference?: Prisma.SortOrder
   sourceIdempotencyKey?: Prisma.SortOrder
   sourcePayloadHash?: Prisma.SortOrder
+  customerNumber?: Prisma.SortOrder
   name?: Prisma.SortOrder
   salutation?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
@@ -1496,6 +1627,9 @@ export type CustomerMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   workPhone?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  taxRegistrationNumber?: Prisma.SortOrder
   defaultCurrency?: Prisma.SortOrder
   language?: Prisma.SortOrder
   paymentTermId?: Prisma.SortOrder
@@ -1522,11 +1656,6 @@ export type CustomerSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type CustomerNullableScalarRelationFilter = {
-  is?: Prisma.CustomerWhereInput | null
-  isNot?: Prisma.CustomerWhereInput | null
-}
-
 export type CustomerListRelationFilter = {
   every?: Prisma.CustomerWhereInput
   some?: Prisma.CustomerWhereInput
@@ -1537,76 +1666,9 @@ export type CustomerOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type CustomerCreateNestedOneWithoutCreditNotesInput = {
-  create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutCreditNotesInput,
-    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
-  >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutCreditNotesInput
-  connect?: Prisma.CustomerWhereUniqueInput
-}
-
-export type CustomerUpdateOneRequiredWithoutCreditNotesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutCreditNotesInput,
-    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
-  >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutCreditNotesInput
-  upsert?: Prisma.CustomerUpsertWithoutCreditNotesInput
-  connect?: Prisma.CustomerWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CustomerUpdateToOneWithWhereWithoutCreditNotesInput,
-      Prisma.CustomerUpdateWithoutCreditNotesInput
-    >,
-    Prisma.CustomerUncheckedUpdateWithoutCreditNotesInput
-  >
-}
-
-export type EnumCustomerTypeFieldUpdateOperationsInput = {
-  set?: $Enums.CustomerType
-}
-
-export type EnumCustomerKindFieldUpdateOperationsInput = {
-  set?: $Enums.CustomerKind
-}
-
-export type NullableBoolFieldUpdateOperationsInput = {
-  set?: boolean | null
-}
-
-export type NullableEnumTaxBehaviorFieldUpdateOperationsInput = {
-  set?: $Enums.TaxBehavior | null
-}
-
-export type EnumCustomerStatusFieldUpdateOperationsInput = {
-  set?: $Enums.CustomerStatus
-}
-
-export type CustomerCreateNestedOneWithoutContactsInput = {
-  create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutContactsInput,
-    Prisma.CustomerUncheckedCreateWithoutContactsInput
-  >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutContactsInput
-  connect?: Prisma.CustomerWhereUniqueInput
-}
-
-export type CustomerUpdateOneRequiredWithoutContactsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutContactsInput,
-    Prisma.CustomerUncheckedCreateWithoutContactsInput
-  >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutContactsInput
-  upsert?: Prisma.CustomerUpsertWithoutContactsInput
-  connect?: Prisma.CustomerWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CustomerUpdateToOneWithWhereWithoutContactsInput,
-      Prisma.CustomerUpdateWithoutContactsInput
-    >,
-    Prisma.CustomerUncheckedUpdateWithoutContactsInput
-  >
+export type CustomerNullableScalarRelationFilter = {
+  is?: Prisma.CustomerWhereInput | null
+  isNot?: Prisma.CustomerWhereInput | null
 }
 
 export type CustomerCreateNestedOneWithoutAddressesInput = {
@@ -1635,31 +1697,29 @@ export type CustomerUpdateOneRequiredWithoutAddressesNestedInput = {
   >
 }
 
-export type CustomerCreateNestedOneWithoutPromotionCodesInput = {
+export type CustomerCreateNestedOneWithoutContactsInput = {
   create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutPromotionCodesInput,
-    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CustomerCreateWithoutContactsInput,
+    Prisma.CustomerUncheckedCreateWithoutContactsInput
   >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutPromotionCodesInput
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutContactsInput
   connect?: Prisma.CustomerWhereUniqueInput
 }
 
-export type CustomerUpdateOneWithoutPromotionCodesNestedInput = {
+export type CustomerUpdateOneRequiredWithoutContactsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutPromotionCodesInput,
-    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CustomerCreateWithoutContactsInput,
+    Prisma.CustomerUncheckedCreateWithoutContactsInput
   >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutPromotionCodesInput
-  upsert?: Prisma.CustomerUpsertWithoutPromotionCodesInput
-  disconnect?: Prisma.CustomerWhereInput | boolean
-  delete?: Prisma.CustomerWhereInput | boolean
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutContactsInput
+  upsert?: Prisma.CustomerUpsertWithoutContactsInput
   connect?: Prisma.CustomerWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.CustomerUpdateToOneWithWhereWithoutPromotionCodesInput,
-      Prisma.CustomerUpdateWithoutPromotionCodesInput
+      Prisma.CustomerUpdateToOneWithWhereWithoutContactsInput,
+      Prisma.CustomerUpdateWithoutContactsInput
     >,
-    Prisma.CustomerUncheckedUpdateWithoutPromotionCodesInput
+    Prisma.CustomerUncheckedUpdateWithoutContactsInput
   >
 }
 
@@ -1713,6 +1773,78 @@ export type CustomerUpdateOneRequiredWithoutCouponRedemptionsNestedInput = {
     >,
     Prisma.CustomerUncheckedUpdateWithoutCouponRedemptionsInput
   >
+}
+
+export type CustomerCreateNestedOneWithoutCreditNotesInput = {
+  create?: Prisma.XOR<
+    Prisma.CustomerCreateWithoutCreditNotesInput,
+    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
+  >
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutCreditNotesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+}
+
+export type CustomerUpdateOneRequiredWithoutCreditNotesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CustomerCreateWithoutCreditNotesInput,
+    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
+  >
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutCreditNotesInput
+  upsert?: Prisma.CustomerUpsertWithoutCreditNotesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CustomerUpdateToOneWithWhereWithoutCreditNotesInput,
+      Prisma.CustomerUpdateWithoutCreditNotesInput
+    >,
+    Prisma.CustomerUncheckedUpdateWithoutCreditNotesInput
+  >
+}
+
+export type CustomerCreateNestedOneWithoutLedgerEntriesInput = {
+  create?: Prisma.XOR<
+    Prisma.CustomerCreateWithoutLedgerEntriesInput,
+    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutLedgerEntriesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+}
+
+export type CustomerUpdateOneRequiredWithoutLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CustomerCreateWithoutLedgerEntriesInput,
+    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutLedgerEntriesInput
+  upsert?: Prisma.CustomerUpsertWithoutLedgerEntriesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CustomerUpdateToOneWithWhereWithoutLedgerEntriesInput,
+      Prisma.CustomerUpdateWithoutLedgerEntriesInput
+    >,
+    Prisma.CustomerUncheckedUpdateWithoutLedgerEntriesInput
+  >
+}
+
+export type EnumCustomerTypeFieldUpdateOperationsInput = {
+  set?: $Enums.CustomerType
+}
+
+export type EnumCustomerKindFieldUpdateOperationsInput = {
+  set?: $Enums.CustomerKind
+}
+
+export type NullableBoolFieldUpdateOperationsInput = {
+  set?: boolean | null
+}
+
+export type NullableEnumTaxBehaviorFieldUpdateOperationsInput = {
+  set?: $Enums.TaxBehavior | null
+}
+
+export type EnumCustomerStatusFieldUpdateOperationsInput = {
+  set?: $Enums.CustomerStatus
 }
 
 export type CustomerCreateNestedOneWithoutEstimatesInput = {
@@ -1859,32 +1991,6 @@ export type CustomerUncheckedUpdateManyWithoutLanguageRecordNestedInput = {
   deleteMany?:
     | Prisma.CustomerScalarWhereInput
     | Prisma.CustomerScalarWhereInput[]
-}
-
-export type CustomerCreateNestedOneWithoutLedgerEntriesInput = {
-  create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutLedgerEntriesInput,
-    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutLedgerEntriesInput
-  connect?: Prisma.CustomerWhereUniqueInput
-}
-
-export type CustomerUpdateOneRequiredWithoutLedgerEntriesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.CustomerCreateWithoutLedgerEntriesInput,
-    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutLedgerEntriesInput
-  upsert?: Prisma.CustomerUpsertWithoutLedgerEntriesInput
-  connect?: Prisma.CustomerWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.CustomerUpdateToOneWithWhereWithoutLedgerEntriesInput,
-      Prisma.CustomerUpdateWithoutLedgerEntriesInput
-    >,
-    Prisma.CustomerUncheckedUpdateWithoutLedgerEntriesInput
-  >
 }
 
 export type CustomerCreateNestedOneWithoutPaymentAttemptsInput = {
@@ -2125,6 +2231,34 @@ export type CustomerUncheckedUpdateManyWithoutPriceListNestedInput = {
   deleteMany?:
     | Prisma.CustomerScalarWhereInput
     | Prisma.CustomerScalarWhereInput[]
+}
+
+export type CustomerCreateNestedOneWithoutPromotionCodesInput = {
+  create?: Prisma.XOR<
+    Prisma.CustomerCreateWithoutPromotionCodesInput,
+    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+  >
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutPromotionCodesInput
+  connect?: Prisma.CustomerWhereUniqueInput
+}
+
+export type CustomerUpdateOneWithoutPromotionCodesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.CustomerCreateWithoutPromotionCodesInput,
+    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+  >
+  connectOrCreate?: Prisma.CustomerCreateOrConnectWithoutPromotionCodesInput
+  upsert?: Prisma.CustomerUpsertWithoutPromotionCodesInput
+  disconnect?: Prisma.CustomerWhereInput | boolean
+  delete?: Prisma.CustomerWhereInput | boolean
+  connect?: Prisma.CustomerWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.CustomerUpdateToOneWithWhereWithoutPromotionCodesInput,
+      Prisma.CustomerUpdateWithoutPromotionCodesInput
+    >,
+    Prisma.CustomerUncheckedUpdateWithoutPromotionCodesInput
+  >
 }
 
 export type CustomerCreateNestedOneWithoutQuotesInput = {
@@ -2419,638 +2553,6 @@ export type CustomerUncheckedUpdateManyWithoutTenantNestedInput = {
     | Prisma.CustomerScalarWhereInput[]
 }
 
-export type CustomerCreateWithoutCreditNotesInput = {
-  id: string
-  customerType?: $Enums.CustomerType
-  customerKind?: $Enums.CustomerKind
-  organizationId?: string | null
-  userId?: string | null
-  externalReference?: string | null
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  name: string
-  salutation?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  workPhone?: string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?: string | null
-  consolidatedBillingOverride?: boolean | null
-  taxBehaviorOverride?: $Enums.TaxBehavior | null
-  lateFeeExempt?: boolean
-  invoiceNotes?: string | null
-  invoiceTerms?: string | null
-  outstandingReceivable?: bigint | number
-  unusedCredits?: bigint | number
-  coreSyncedAt?: number | null
-  status?: $Enums.CustomerStatus
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
-  languageRecord?: Prisma.LanguageCreateNestedOneWithoutCustomersInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
-  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
-  addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
-  quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
-  estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
-  payments?: Prisma.PaymentCreateNestedManyWithoutCustomerInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
-  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCustomerInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCustomerInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
-}
-
-export type CustomerUncheckedCreateWithoutCreditNotesInput = {
-  id: string
-  tenantId: string
-  customerType?: $Enums.CustomerType
-  customerKind?: $Enums.CustomerKind
-  organizationId?: string | null
-  userId?: string | null
-  externalReference?: string | null
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  name: string
-  salutation?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  workPhone?: string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?: string | null
-  language?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  priceListId?: string | null
-  consolidatedBillingOverride?: boolean | null
-  taxBehaviorOverride?: $Enums.TaxBehavior | null
-  lateFeeExempt?: boolean
-  invoiceNotes?: string | null
-  invoiceTerms?: string | null
-  outstandingReceivable?: bigint | number
-  unusedCredits?: bigint | number
-  coreSyncedAt?: number | null
-  status?: $Enums.CustomerStatus
-  createdAt: number
-  updatedAt: number
-  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
-  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
-  quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
-  estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
-  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutCustomerInput
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
-  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCustomerInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
-}
-
-export type CustomerCreateOrConnectWithoutCreditNotesInput = {
-  where: Prisma.CustomerWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutCreditNotesInput,
-    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
-  >
-}
-
-export type CustomerUpsertWithoutCreditNotesInput = {
-  update: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutCreditNotesInput,
-    Prisma.CustomerUncheckedUpdateWithoutCreditNotesInput
-  >
-  create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutCreditNotesInput,
-    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
-  >
-  where?: Prisma.CustomerWhereInput
-}
-
-export type CustomerUpdateToOneWithWhereWithoutCreditNotesInput = {
-  where?: Prisma.CustomerWhereInput
-  data: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutCreditNotesInput,
-    Prisma.CustomerUncheckedUpdateWithoutCreditNotesInput
-  >
-}
-
-export type CustomerUpdateWithoutCreditNotesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerType?:
-    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
-    | $Enums.CustomerType
-  customerKind?:
-    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
-    | $Enums.CustomerKind
-  organizationId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  consolidatedBillingOverride?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  taxBehaviorOverride?:
-    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-    | null
-  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outstandingReceivable?:
-    | Prisma.BigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
-  languageRecord?: Prisma.LanguageUpdateOneWithoutCustomersNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
-  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
-  addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
-  quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
-  estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
-  payments?: Prisma.PaymentUpdateManyWithoutCustomerNestedInput
-  refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
-  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCustomerNestedInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCustomerNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
-}
-
-export type CustomerUncheckedUpdateWithoutCreditNotesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerType?:
-    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
-    | $Enums.CustomerType
-  customerKind?:
-    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
-    | $Enums.CustomerKind
-  organizationId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  consolidatedBillingOverride?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  taxBehaviorOverride?:
-    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-    | null
-  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outstandingReceivable?:
-    | Prisma.BigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
-  addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
-  quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
-  estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
-  payments?: Prisma.PaymentUncheckedUpdateManyWithoutCustomerNestedInput
-  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
-  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCustomerNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
-}
-
-export type CustomerCreateWithoutContactsInput = {
-  id: string
-  customerType?: $Enums.CustomerType
-  customerKind?: $Enums.CustomerKind
-  organizationId?: string | null
-  userId?: string | null
-  externalReference?: string | null
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  name: string
-  salutation?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  workPhone?: string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?: string | null
-  consolidatedBillingOverride?: boolean | null
-  taxBehaviorOverride?: $Enums.TaxBehavior | null
-  lateFeeExempt?: boolean
-  invoiceNotes?: string | null
-  invoiceTerms?: string | null
-  outstandingReceivable?: bigint | number
-  unusedCredits?: bigint | number
-  coreSyncedAt?: number | null
-  status?: $Enums.CustomerStatus
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
-  languageRecord?: Prisma.LanguageCreateNestedOneWithoutCustomersInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
-  addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
-  quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
-  estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
-  payments?: Prisma.PaymentCreateNestedManyWithoutCustomerInput
-  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutCustomerInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
-  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCustomerInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCustomerInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
-}
-
-export type CustomerUncheckedCreateWithoutContactsInput = {
-  id: string
-  tenantId: string
-  customerType?: $Enums.CustomerType
-  customerKind?: $Enums.CustomerKind
-  organizationId?: string | null
-  userId?: string | null
-  externalReference?: string | null
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  name: string
-  salutation?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  workPhone?: string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?: string | null
-  language?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  priceListId?: string | null
-  consolidatedBillingOverride?: boolean | null
-  taxBehaviorOverride?: $Enums.TaxBehavior | null
-  lateFeeExempt?: boolean
-  invoiceNotes?: string | null
-  invoiceTerms?: string | null
-  outstandingReceivable?: bigint | number
-  unusedCredits?: bigint | number
-  coreSyncedAt?: number | null
-  status?: $Enums.CustomerStatus
-  createdAt: number
-  updatedAt: number
-  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
-  quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
-  estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
-  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutCustomerInput
-  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutCustomerInput
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
-  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCustomerInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
-}
-
-export type CustomerCreateOrConnectWithoutContactsInput = {
-  where: Prisma.CustomerWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutContactsInput,
-    Prisma.CustomerUncheckedCreateWithoutContactsInput
-  >
-}
-
-export type CustomerUpsertWithoutContactsInput = {
-  update: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutContactsInput,
-    Prisma.CustomerUncheckedUpdateWithoutContactsInput
-  >
-  create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutContactsInput,
-    Prisma.CustomerUncheckedCreateWithoutContactsInput
-  >
-  where?: Prisma.CustomerWhereInput
-}
-
-export type CustomerUpdateToOneWithWhereWithoutContactsInput = {
-  where?: Prisma.CustomerWhereInput
-  data: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutContactsInput,
-    Prisma.CustomerUncheckedUpdateWithoutContactsInput
-  >
-}
-
-export type CustomerUpdateWithoutContactsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerType?:
-    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
-    | $Enums.CustomerType
-  customerKind?:
-    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
-    | $Enums.CustomerKind
-  organizationId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  consolidatedBillingOverride?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  taxBehaviorOverride?:
-    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-    | null
-  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outstandingReceivable?:
-    | Prisma.BigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
-  languageRecord?: Prisma.LanguageUpdateOneWithoutCustomersNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
-  addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
-  quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
-  estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
-  payments?: Prisma.PaymentUpdateManyWithoutCustomerNestedInput
-  creditNotes?: Prisma.CreditNoteUpdateManyWithoutCustomerNestedInput
-  refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
-  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCustomerNestedInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCustomerNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
-}
-
-export type CustomerUncheckedUpdateWithoutContactsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerType?:
-    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
-    | $Enums.CustomerType
-  customerKind?:
-    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
-    | $Enums.CustomerKind
-  organizationId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  consolidatedBillingOverride?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  taxBehaviorOverride?:
-    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-    | null
-  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outstandingReceivable?:
-    | Prisma.BigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
-  quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
-  estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
-  payments?: Prisma.PaymentUncheckedUpdateManyWithoutCustomerNestedInput
-  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutCustomerNestedInput
-  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
-  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCustomerNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
-}
-
 export type CustomerCreateWithoutAddressesInput = {
   id: string
   customerType?: $Enums.CustomerType
@@ -3062,6 +2564,7 @@ export type CustomerCreateWithoutAddressesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -3070,6 +2573,9 @@ export type CustomerCreateWithoutAddressesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -3117,6 +2623,7 @@ export type CustomerUncheckedCreateWithoutAddressesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -3125,6 +2632,9 @@ export type CustomerUncheckedCreateWithoutAddressesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -3217,6 +2727,10 @@ export type CustomerUpdateWithoutAddressesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3225,6 +2739,12 @@ export type CustomerUpdateWithoutAddressesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -3305,6 +2825,10 @@ export type CustomerUncheckedUpdateWithoutAddressesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3313,6 +2837,12 @@ export type CustomerUncheckedUpdateWithoutAddressesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -3367,7 +2897,7 @@ export type CustomerUncheckedUpdateWithoutAddressesInput = {
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
-export type CustomerCreateWithoutPromotionCodesInput = {
+export type CustomerCreateWithoutContactsInput = {
   id: string
   customerType?: $Enums.CustomerType
   customerKind?: $Enums.CustomerKind
@@ -3378,6 +2908,7 @@ export type CustomerCreateWithoutPromotionCodesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -3386,6 +2917,9 @@ export type CustomerCreateWithoutPromotionCodesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -3405,7 +2939,6 @@ export type CustomerCreateWithoutPromotionCodesInput = {
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
   salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
   priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
-  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
   addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
   quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
   estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
@@ -3415,13 +2948,14 @@ export type CustomerCreateWithoutPromotionCodesInput = {
   refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
   subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
+  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCustomerInput
   couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
   couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
   ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCustomerInput
   paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
 }
 
-export type CustomerUncheckedCreateWithoutPromotionCodesInput = {
+export type CustomerUncheckedCreateWithoutContactsInput = {
   id: string
   tenantId: string
   customerType?: $Enums.CustomerType
@@ -3433,6 +2967,7 @@ export type CustomerUncheckedCreateWithoutPromotionCodesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -3441,6 +2976,9 @@ export type CustomerUncheckedCreateWithoutPromotionCodesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -3459,7 +2997,6 @@ export type CustomerUncheckedCreateWithoutPromotionCodesInput = {
   status?: $Enums.CustomerStatus
   createdAt: number
   updatedAt: number
-  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
   addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
   quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
   estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
@@ -3469,41 +3006,42 @@ export type CustomerUncheckedCreateWithoutPromotionCodesInput = {
   refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
+  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput
   couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCustomerInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
 }
 
-export type CustomerCreateOrConnectWithoutPromotionCodesInput = {
+export type CustomerCreateOrConnectWithoutContactsInput = {
   where: Prisma.CustomerWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutPromotionCodesInput,
-    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CustomerCreateWithoutContactsInput,
+    Prisma.CustomerUncheckedCreateWithoutContactsInput
   >
 }
 
-export type CustomerUpsertWithoutPromotionCodesInput = {
+export type CustomerUpsertWithoutContactsInput = {
   update: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutPromotionCodesInput,
-    Prisma.CustomerUncheckedUpdateWithoutPromotionCodesInput
+    Prisma.CustomerUpdateWithoutContactsInput,
+    Prisma.CustomerUncheckedUpdateWithoutContactsInput
   >
   create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutPromotionCodesInput,
-    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+    Prisma.CustomerCreateWithoutContactsInput,
+    Prisma.CustomerUncheckedCreateWithoutContactsInput
   >
   where?: Prisma.CustomerWhereInput
 }
 
-export type CustomerUpdateToOneWithWhereWithoutPromotionCodesInput = {
+export type CustomerUpdateToOneWithWhereWithoutContactsInput = {
   where?: Prisma.CustomerWhereInput
   data: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutPromotionCodesInput,
-    Prisma.CustomerUncheckedUpdateWithoutPromotionCodesInput
+    Prisma.CustomerUpdateWithoutContactsInput,
+    Prisma.CustomerUncheckedUpdateWithoutContactsInput
   >
 }
 
-export type CustomerUpdateWithoutPromotionCodesInput = {
+export type CustomerUpdateWithoutContactsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   customerType?:
     | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
@@ -3533,6 +3071,10 @@ export type CustomerUpdateWithoutPromotionCodesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3541,6 +3083,12 @@ export type CustomerUpdateWithoutPromotionCodesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -3574,7 +3122,6 @@ export type CustomerUpdateWithoutPromotionCodesInput = {
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
   salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
   priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
-  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
   addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
   quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
   estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
@@ -3584,13 +3131,14 @@ export type CustomerUpdateWithoutPromotionCodesInput = {
   refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
+  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCustomerNestedInput
   couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCustomerNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
 }
 
-export type CustomerUncheckedUpdateWithoutPromotionCodesInput = {
+export type CustomerUncheckedUpdateWithoutContactsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   customerType?:
@@ -3621,6 +3169,10 @@ export type CustomerUncheckedUpdateWithoutPromotionCodesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3629,6 +3181,12 @@ export type CustomerUncheckedUpdateWithoutPromotionCodesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -3667,7 +3225,6 @@ export type CustomerUncheckedUpdateWithoutPromotionCodesInput = {
     | $Enums.CustomerStatus
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
   addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
   quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
   estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
@@ -3677,6 +3234,7 @@ export type CustomerUncheckedUpdateWithoutPromotionCodesInput = {
   refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
   subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
+  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput
   couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCustomerNestedInput
@@ -3694,6 +3252,7 @@ export type CustomerCreateWithoutCouponEligibilitiesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -3702,6 +3261,9 @@ export type CustomerCreateWithoutCouponEligibilitiesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -3749,6 +3311,7 @@ export type CustomerUncheckedCreateWithoutCouponEligibilitiesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -3757,6 +3320,9 @@ export type CustomerUncheckedCreateWithoutCouponEligibilitiesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -3849,6 +3415,10 @@ export type CustomerUpdateWithoutCouponEligibilitiesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3857,6 +3427,12 @@ export type CustomerUpdateWithoutCouponEligibilitiesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -3937,6 +3513,10 @@ export type CustomerUncheckedUpdateWithoutCouponEligibilitiesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3945,6 +3525,12 @@ export type CustomerUncheckedUpdateWithoutCouponEligibilitiesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4010,6 +3596,7 @@ export type CustomerCreateWithoutCouponRedemptionsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4018,6 +3605,9 @@ export type CustomerCreateWithoutCouponRedemptionsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -4065,6 +3655,7 @@ export type CustomerUncheckedCreateWithoutCouponRedemptionsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4073,6 +3664,9 @@ export type CustomerUncheckedCreateWithoutCouponRedemptionsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -4165,6 +3759,10 @@ export type CustomerUpdateWithoutCouponRedemptionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4173,6 +3771,12 @@ export type CustomerUpdateWithoutCouponRedemptionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4253,6 +3857,10 @@ export type CustomerUncheckedUpdateWithoutCouponRedemptionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4261,6 +3869,12 @@ export type CustomerUncheckedUpdateWithoutCouponRedemptionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4315,6 +3929,694 @@ export type CustomerUncheckedUpdateWithoutCouponRedemptionsInput = {
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
+export type CustomerCreateWithoutCreditNotesInput = {
+  id: string
+  customerType?: $Enums.CustomerType
+  customerKind?: $Enums.CustomerKind
+  organizationId?: string | null
+  userId?: string | null
+  externalReference?: string | null
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerNumber?: string | null
+  name: string
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?: string | null
+  consolidatedBillingOverride?: boolean | null
+  taxBehaviorOverride?: $Enums.TaxBehavior | null
+  lateFeeExempt?: boolean
+  invoiceNotes?: string | null
+  invoiceTerms?: string | null
+  outstandingReceivable?: bigint | number
+  unusedCredits?: bigint | number
+  coreSyncedAt?: number | null
+  status?: $Enums.CustomerStatus
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
+  languageRecord?: Prisma.LanguageCreateNestedOneWithoutCustomersInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
+  quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
+  estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutCustomerInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
+  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCustomerInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCustomerInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerUncheckedCreateWithoutCreditNotesInput = {
+  id: string
+  tenantId: string
+  customerType?: $Enums.CustomerType
+  customerKind?: $Enums.CustomerKind
+  organizationId?: string | null
+  userId?: string | null
+  externalReference?: string | null
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerNumber?: string | null
+  name: string
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?: string | null
+  language?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  priceListId?: string | null
+  consolidatedBillingOverride?: boolean | null
+  taxBehaviorOverride?: $Enums.TaxBehavior | null
+  lateFeeExempt?: boolean
+  invoiceNotes?: string | null
+  invoiceTerms?: string | null
+  outstandingReceivable?: bigint | number
+  unusedCredits?: bigint | number
+  coreSyncedAt?: number | null
+  status?: $Enums.CustomerStatus
+  createdAt: number
+  updatedAt: number
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
+  quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
+  estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutCustomerInput
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
+  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCustomerInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerCreateOrConnectWithoutCreditNotesInput = {
+  where: Prisma.CustomerWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CustomerCreateWithoutCreditNotesInput,
+    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
+  >
+}
+
+export type CustomerUpsertWithoutCreditNotesInput = {
+  update: Prisma.XOR<
+    Prisma.CustomerUpdateWithoutCreditNotesInput,
+    Prisma.CustomerUncheckedUpdateWithoutCreditNotesInput
+  >
+  create: Prisma.XOR<
+    Prisma.CustomerCreateWithoutCreditNotesInput,
+    Prisma.CustomerUncheckedCreateWithoutCreditNotesInput
+  >
+  where?: Prisma.CustomerWhereInput
+}
+
+export type CustomerUpdateToOneWithWhereWithoutCreditNotesInput = {
+  where?: Prisma.CustomerWhereInput
+  data: Prisma.XOR<
+    Prisma.CustomerUpdateWithoutCreditNotesInput,
+    Prisma.CustomerUncheckedUpdateWithoutCreditNotesInput
+  >
+}
+
+export type CustomerUpdateWithoutCreditNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerType?:
+    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
+    | $Enums.CustomerType
+  customerKind?:
+    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
+    | $Enums.CustomerKind
+  organizationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  consolidatedBillingOverride?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  taxBehaviorOverride?:
+    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+    | null
+  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outstandingReceivable?:
+    | Prisma.BigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
+  languageRecord?: Prisma.LanguageUpdateOneWithoutCustomersNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
+  quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
+  estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutCustomerNestedInput
+  refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
+  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCustomerNestedInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCustomerNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerUncheckedUpdateWithoutCreditNotesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerType?:
+    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
+    | $Enums.CustomerType
+  customerKind?:
+    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
+    | $Enums.CustomerKind
+  organizationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consolidatedBillingOverride?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  taxBehaviorOverride?:
+    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+    | null
+  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outstandingReceivable?:
+    | Prisma.BigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
+  quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
+  estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutCustomerNestedInput
+  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
+  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCustomerNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerCreateWithoutLedgerEntriesInput = {
+  id: string
+  customerType?: $Enums.CustomerType
+  customerKind?: $Enums.CustomerKind
+  organizationId?: string | null
+  userId?: string | null
+  externalReference?: string | null
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerNumber?: string | null
+  name: string
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?: string | null
+  consolidatedBillingOverride?: boolean | null
+  taxBehaviorOverride?: $Enums.TaxBehavior | null
+  lateFeeExempt?: boolean
+  invoiceNotes?: string | null
+  invoiceTerms?: string | null
+  outstandingReceivable?: bigint | number
+  unusedCredits?: bigint | number
+  coreSyncedAt?: number | null
+  status?: $Enums.CustomerStatus
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
+  languageRecord?: Prisma.LanguageCreateNestedOneWithoutCustomersInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
+  quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
+  estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutCustomerInput
+  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutCustomerInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
+  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCustomerInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerUncheckedCreateWithoutLedgerEntriesInput = {
+  id: string
+  tenantId: string
+  customerType?: $Enums.CustomerType
+  customerKind?: $Enums.CustomerKind
+  organizationId?: string | null
+  userId?: string | null
+  externalReference?: string | null
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerNumber?: string | null
+  name: string
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?: string | null
+  language?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  priceListId?: string | null
+  consolidatedBillingOverride?: boolean | null
+  taxBehaviorOverride?: $Enums.TaxBehavior | null
+  lateFeeExempt?: boolean
+  invoiceNotes?: string | null
+  invoiceTerms?: string | null
+  outstandingReceivable?: bigint | number
+  unusedCredits?: bigint | number
+  coreSyncedAt?: number | null
+  status?: $Enums.CustomerStatus
+  createdAt: number
+  updatedAt: number
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
+  quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
+  estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutCustomerInput
+  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutCustomerInput
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
+  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerCreateOrConnectWithoutLedgerEntriesInput = {
+  where: Prisma.CustomerWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CustomerCreateWithoutLedgerEntriesInput,
+    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
+  >
+}
+
+export type CustomerUpsertWithoutLedgerEntriesInput = {
+  update: Prisma.XOR<
+    Prisma.CustomerUpdateWithoutLedgerEntriesInput,
+    Prisma.CustomerUncheckedUpdateWithoutLedgerEntriesInput
+  >
+  create: Prisma.XOR<
+    Prisma.CustomerCreateWithoutLedgerEntriesInput,
+    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
+  >
+  where?: Prisma.CustomerWhereInput
+}
+
+export type CustomerUpdateToOneWithWhereWithoutLedgerEntriesInput = {
+  where?: Prisma.CustomerWhereInput
+  data: Prisma.XOR<
+    Prisma.CustomerUpdateWithoutLedgerEntriesInput,
+    Prisma.CustomerUncheckedUpdateWithoutLedgerEntriesInput
+  >
+}
+
+export type CustomerUpdateWithoutLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerType?:
+    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
+    | $Enums.CustomerType
+  customerKind?:
+    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
+    | $Enums.CustomerKind
+  organizationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  consolidatedBillingOverride?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  taxBehaviorOverride?:
+    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+    | null
+  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outstandingReceivable?:
+    | Prisma.BigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
+  languageRecord?: Prisma.LanguageUpdateOneWithoutCustomersNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
+  quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
+  estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutCustomerNestedInput
+  creditNotes?: Prisma.CreditNoteUpdateManyWithoutCustomerNestedInput
+  refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
+  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCustomerNestedInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerUncheckedUpdateWithoutLedgerEntriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerType?:
+    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
+    | $Enums.CustomerType
+  customerKind?:
+    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
+    | $Enums.CustomerKind
+  organizationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consolidatedBillingOverride?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  taxBehaviorOverride?:
+    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+    | null
+  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outstandingReceivable?:
+    | Prisma.BigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
+  quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
+  estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutCustomerNestedInput
+  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutCustomerNestedInput
+  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
+  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
 export type CustomerCreateWithoutEstimatesInput = {
   id: string
   customerType?: $Enums.CustomerType
@@ -4326,6 +4628,7 @@ export type CustomerCreateWithoutEstimatesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4334,6 +4637,9 @@ export type CustomerCreateWithoutEstimatesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -4381,6 +4687,7 @@ export type CustomerUncheckedCreateWithoutEstimatesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4389,6 +4696,9 @@ export type CustomerUncheckedCreateWithoutEstimatesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -4481,6 +4791,10 @@ export type CustomerUpdateWithoutEstimatesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4489,6 +4803,12 @@ export type CustomerUpdateWithoutEstimatesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4569,6 +4889,10 @@ export type CustomerUncheckedUpdateWithoutEstimatesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4577,6 +4901,12 @@ export type CustomerUncheckedUpdateWithoutEstimatesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4642,6 +4972,7 @@ export type CustomerCreateWithoutInvoicesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4650,6 +4981,9 @@ export type CustomerCreateWithoutInvoicesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -4697,6 +5031,7 @@ export type CustomerUncheckedCreateWithoutInvoicesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4705,6 +5040,9 @@ export type CustomerUncheckedCreateWithoutInvoicesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -4797,6 +5135,10 @@ export type CustomerUpdateWithoutInvoicesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4805,6 +5147,12 @@ export type CustomerUpdateWithoutInvoicesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4885,6 +5233,10 @@ export type CustomerUncheckedUpdateWithoutInvoicesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4893,6 +5245,12 @@ export type CustomerUncheckedUpdateWithoutInvoicesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -4958,6 +5316,7 @@ export type CustomerCreateWithoutLanguageRecordInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -4966,6 +5325,9 @@ export type CustomerCreateWithoutLanguageRecordInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5013,6 +5375,7 @@ export type CustomerUncheckedCreateWithoutLanguageRecordInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -5021,6 +5384,9 @@ export type CustomerUncheckedCreateWithoutLanguageRecordInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5116,6 +5482,7 @@ export type CustomerScalarWhereInput = {
     | null
   sourceIdempotencyKey?: Prisma.StringNullableFilter<'Customer'> | string | null
   sourcePayloadHash?: Prisma.StringNullableFilter<'Customer'> | string | null
+  customerNumber?: Prisma.StringNullableFilter<'Customer'> | string | null
   name?: Prisma.StringFilter<'Customer'> | string
   salutation?: Prisma.StringNullableFilter<'Customer'> | string | null
   firstName?: Prisma.StringNullableFilter<'Customer'> | string | null
@@ -5124,6 +5491,12 @@ export type CustomerScalarWhereInput = {
   email?: Prisma.StringNullableFilter<'Customer'> | string | null
   phone?: Prisma.StringNullableFilter<'Customer'> | string | null
   workPhone?: Prisma.StringNullableFilter<'Customer'> | string | null
+  website?: Prisma.StringNullableFilter<'Customer'> | string | null
+  notes?: Prisma.StringNullableFilter<'Customer'> | string | null
+  taxRegistrationNumber?:
+    | Prisma.StringNullableFilter<'Customer'>
+    | string
+    | null
   billingAddress?: Prisma.JsonNullableFilter<'Customer'>
   metadata?: Prisma.JsonNullableFilter<'Customer'>
   defaultCurrency?: Prisma.StringNullableFilter<'Customer'> | string | null
@@ -5150,322 +5523,6 @@ export type CustomerScalarWhereInput = {
   updatedAt?: Prisma.IntFilter<'Customer'> | number
 }
 
-export type CustomerCreateWithoutLedgerEntriesInput = {
-  id: string
-  customerType?: $Enums.CustomerType
-  customerKind?: $Enums.CustomerKind
-  organizationId?: string | null
-  userId?: string | null
-  externalReference?: string | null
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  name: string
-  salutation?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  workPhone?: string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?: string | null
-  consolidatedBillingOverride?: boolean | null
-  taxBehaviorOverride?: $Enums.TaxBehavior | null
-  lateFeeExempt?: boolean
-  invoiceNotes?: string | null
-  invoiceTerms?: string | null
-  outstandingReceivable?: bigint | number
-  unusedCredits?: bigint | number
-  coreSyncedAt?: number | null
-  status?: $Enums.CustomerStatus
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
-  languageRecord?: Prisma.LanguageCreateNestedOneWithoutCustomersInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
-  salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
-  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
-  addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
-  quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
-  estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
-  payments?: Prisma.PaymentCreateNestedManyWithoutCustomerInput
-  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutCustomerInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
-  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
-  promotionCodes?: Prisma.PromotionCodeCreateNestedManyWithoutCustomerInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
-}
-
-export type CustomerUncheckedCreateWithoutLedgerEntriesInput = {
-  id: string
-  tenantId: string
-  customerType?: $Enums.CustomerType
-  customerKind?: $Enums.CustomerKind
-  organizationId?: string | null
-  userId?: string | null
-  externalReference?: string | null
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  name: string
-  salutation?: string | null
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  workPhone?: string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?: string | null
-  language?: string | null
-  paymentTermId?: string | null
-  salespersonId?: string | null
-  priceListId?: string | null
-  consolidatedBillingOverride?: boolean | null
-  taxBehaviorOverride?: $Enums.TaxBehavior | null
-  lateFeeExempt?: boolean
-  invoiceNotes?: string | null
-  invoiceTerms?: string | null
-  outstandingReceivable?: bigint | number
-  unusedCredits?: bigint | number
-  coreSyncedAt?: number | null
-  status?: $Enums.CustomerStatus
-  createdAt: number
-  updatedAt: number
-  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
-  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
-  quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
-  estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
-  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutCustomerInput
-  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutCustomerInput
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
-  promotionCodes?: Prisma.PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
-}
-
-export type CustomerCreateOrConnectWithoutLedgerEntriesInput = {
-  where: Prisma.CustomerWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutLedgerEntriesInput,
-    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
-  >
-}
-
-export type CustomerUpsertWithoutLedgerEntriesInput = {
-  update: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutLedgerEntriesInput,
-    Prisma.CustomerUncheckedUpdateWithoutLedgerEntriesInput
-  >
-  create: Prisma.XOR<
-    Prisma.CustomerCreateWithoutLedgerEntriesInput,
-    Prisma.CustomerUncheckedCreateWithoutLedgerEntriesInput
-  >
-  where?: Prisma.CustomerWhereInput
-}
-
-export type CustomerUpdateToOneWithWhereWithoutLedgerEntriesInput = {
-  where?: Prisma.CustomerWhereInput
-  data: Prisma.XOR<
-    Prisma.CustomerUpdateWithoutLedgerEntriesInput,
-    Prisma.CustomerUncheckedUpdateWithoutLedgerEntriesInput
-  >
-}
-
-export type CustomerUpdateWithoutLedgerEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  customerType?:
-    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
-    | $Enums.CustomerType
-  customerKind?:
-    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
-    | $Enums.CustomerKind
-  organizationId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  consolidatedBillingOverride?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  taxBehaviorOverride?:
-    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-    | null
-  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outstandingReceivable?:
-    | Prisma.BigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
-  languageRecord?: Prisma.LanguageUpdateOneWithoutCustomersNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
-  salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
-  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
-  addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
-  quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
-  estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
-  payments?: Prisma.PaymentUpdateManyWithoutCustomerNestedInput
-  creditNotes?: Prisma.CreditNoteUpdateManyWithoutCustomerNestedInput
-  refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
-  promotionCodes?: Prisma.PromotionCodeUpdateManyWithoutCustomerNestedInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
-}
-
-export type CustomerUncheckedUpdateWithoutLedgerEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerType?:
-    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
-    | $Enums.CustomerType
-  customerKind?:
-    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
-    | $Enums.CustomerKind
-  organizationId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  defaultCurrency?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  salespersonId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  consolidatedBillingOverride?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  taxBehaviorOverride?:
-    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-    | null
-  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  outstandingReceivable?:
-    | Prisma.BigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
-  addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
-  quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
-  estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
-  payments?: Prisma.PaymentUncheckedUpdateManyWithoutCustomerNestedInput
-  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutCustomerNestedInput
-  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
-  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
-  promotionCodes?: Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput
-  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
-}
-
 export type CustomerCreateWithoutPaymentAttemptsInput = {
   id: string
   customerType?: $Enums.CustomerType
@@ -5477,6 +5534,7 @@ export type CustomerCreateWithoutPaymentAttemptsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -5485,6 +5543,9 @@ export type CustomerCreateWithoutPaymentAttemptsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5532,6 +5593,7 @@ export type CustomerUncheckedCreateWithoutPaymentAttemptsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -5540,6 +5602,9 @@ export type CustomerUncheckedCreateWithoutPaymentAttemptsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5632,6 +5697,10 @@ export type CustomerUpdateWithoutPaymentAttemptsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5640,6 +5709,12 @@ export type CustomerUpdateWithoutPaymentAttemptsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -5720,6 +5795,10 @@ export type CustomerUncheckedUpdateWithoutPaymentAttemptsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -5728,6 +5807,12 @@ export type CustomerUncheckedUpdateWithoutPaymentAttemptsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -5793,6 +5878,7 @@ export type CustomerCreateWithoutPaymentTermInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -5801,6 +5887,9 @@ export type CustomerCreateWithoutPaymentTermInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5847,6 +5936,7 @@ export type CustomerUncheckedCreateWithoutPaymentTermInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -5855,6 +5945,9 @@ export type CustomerUncheckedCreateWithoutPaymentTermInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5943,6 +6036,7 @@ export type CustomerCreateWithoutPaymentsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -5951,6 +6045,9 @@ export type CustomerCreateWithoutPaymentsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -5998,6 +6095,7 @@ export type CustomerUncheckedCreateWithoutPaymentsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6006,6 +6104,9 @@ export type CustomerUncheckedCreateWithoutPaymentsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6098,6 +6199,10 @@ export type CustomerUpdateWithoutPaymentsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6106,6 +6211,12 @@ export type CustomerUpdateWithoutPaymentsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -6186,6 +6297,10 @@ export type CustomerUncheckedUpdateWithoutPaymentsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6194,6 +6309,12 @@ export type CustomerUncheckedUpdateWithoutPaymentsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -6259,6 +6380,7 @@ export type CustomerCreateWithoutPriceListInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6267,6 +6389,9 @@ export type CustomerCreateWithoutPriceListInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6313,6 +6438,7 @@ export type CustomerUncheckedCreateWithoutPriceListInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6321,6 +6447,9 @@ export type CustomerUncheckedCreateWithoutPriceListInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6398,6 +6527,350 @@ export type CustomerUpdateManyWithWhereWithoutPriceListInput = {
   >
 }
 
+export type CustomerCreateWithoutPromotionCodesInput = {
+  id: string
+  customerType?: $Enums.CustomerType
+  customerKind?: $Enums.CustomerKind
+  organizationId?: string | null
+  userId?: string | null
+  externalReference?: string | null
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerNumber?: string | null
+  name: string
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?: string | null
+  consolidatedBillingOverride?: boolean | null
+  taxBehaviorOverride?: $Enums.TaxBehavior | null
+  lateFeeExempt?: boolean
+  invoiceNotes?: string | null
+  invoiceTerms?: string | null
+  outstandingReceivable?: bigint | number
+  unusedCredits?: bigint | number
+  coreSyncedAt?: number | null
+  status?: $Enums.CustomerStatus
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
+  languageRecord?: Prisma.LanguageCreateNestedOneWithoutCustomersInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
+  salesperson?: Prisma.SalespersonCreateNestedOneWithoutCustomersInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutCustomersInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutCustomerInput
+  quotes?: Prisma.QuoteCreateNestedManyWithoutCustomerInput
+  estimates?: Prisma.EstimateCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutCustomerInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutCustomerInput
+  creditNotes?: Prisma.CreditNoteCreateNestedManyWithoutCustomerInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutCustomerInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutCustomerInput
+  subscriptionCharges?: Prisma.SubscriptionChargeCreateNestedManyWithoutCustomerInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityCreateNestedManyWithoutCustomerInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutCustomerInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutCustomerInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerUncheckedCreateWithoutPromotionCodesInput = {
+  id: string
+  tenantId: string
+  customerType?: $Enums.CustomerType
+  customerKind?: $Enums.CustomerKind
+  organizationId?: string | null
+  userId?: string | null
+  externalReference?: string | null
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerNumber?: string | null
+  name: string
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?: string | null
+  language?: string | null
+  paymentTermId?: string | null
+  salespersonId?: string | null
+  priceListId?: string | null
+  consolidatedBillingOverride?: boolean | null
+  taxBehaviorOverride?: $Enums.TaxBehavior | null
+  lateFeeExempt?: boolean
+  invoiceNotes?: string | null
+  invoiceTerms?: string | null
+  outstandingReceivable?: bigint | number
+  unusedCredits?: bigint | number
+  coreSyncedAt?: number | null
+  status?: $Enums.CustomerStatus
+  createdAt: number
+  updatedAt: number
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutCustomerInput
+  quotes?: Prisma.QuoteUncheckedCreateNestedManyWithoutCustomerInput
+  estimates?: Prisma.EstimateUncheckedCreateNestedManyWithoutCustomerInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutCustomerInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutCustomerInput
+  creditNotes?: Prisma.CreditNoteUncheckedCreateNestedManyWithoutCustomerInput
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutCustomerInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutCustomerInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutCustomerInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedCreateNestedManyWithoutCustomerInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutCustomerInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutCustomerInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CustomerCreateOrConnectWithoutPromotionCodesInput = {
+  where: Prisma.CustomerWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CustomerCreateWithoutPromotionCodesInput,
+    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+  >
+}
+
+export type CustomerUpsertWithoutPromotionCodesInput = {
+  update: Prisma.XOR<
+    Prisma.CustomerUpdateWithoutPromotionCodesInput,
+    Prisma.CustomerUncheckedUpdateWithoutPromotionCodesInput
+  >
+  create: Prisma.XOR<
+    Prisma.CustomerCreateWithoutPromotionCodesInput,
+    Prisma.CustomerUncheckedCreateWithoutPromotionCodesInput
+  >
+  where?: Prisma.CustomerWhereInput
+}
+
+export type CustomerUpdateToOneWithWhereWithoutPromotionCodesInput = {
+  where?: Prisma.CustomerWhereInput
+  data: Prisma.XOR<
+    Prisma.CustomerUpdateWithoutPromotionCodesInput,
+    Prisma.CustomerUncheckedUpdateWithoutPromotionCodesInput
+  >
+}
+
+export type CustomerUpdateWithoutPromotionCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerType?:
+    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
+    | $Enums.CustomerType
+  customerKind?:
+    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
+    | $Enums.CustomerKind
+  organizationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  consolidatedBillingOverride?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  taxBehaviorOverride?:
+    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+    | null
+  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outstandingReceivable?:
+    | Prisma.BigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
+  languageRecord?: Prisma.LanguageUpdateOneWithoutCustomersNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
+  salesperson?: Prisma.SalespersonUpdateOneWithoutCustomersNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutCustomersNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutCustomerNestedInput
+  quotes?: Prisma.QuoteUpdateManyWithoutCustomerNestedInput
+  estimates?: Prisma.EstimateUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutCustomerNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutCustomerNestedInput
+  creditNotes?: Prisma.CreditNoteUpdateManyWithoutCustomerNestedInput
+  refunds?: Prisma.RefundUpdateManyWithoutCustomerNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutCustomerNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUpdateManyWithoutCustomerNestedInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUpdateManyWithoutCustomerNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutCustomerNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutCustomerNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutCustomerNestedInput
+}
+
+export type CustomerUncheckedUpdateWithoutPromotionCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerType?:
+    | Prisma.EnumCustomerTypeFieldUpdateOperationsInput
+    | $Enums.CustomerType
+  customerKind?:
+    | Prisma.EnumCustomerKindFieldUpdateOperationsInput
+    | $Enums.CustomerKind
+  organizationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  companyName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  defaultCurrency?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  salespersonId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consolidatedBillingOverride?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  taxBehaviorOverride?:
+    | Prisma.NullableEnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+    | null
+  lateFeeExempt?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  invoiceNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceTerms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  outstandingReceivable?:
+    | Prisma.BigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+  unusedCredits?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  coreSyncedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutCustomerNestedInput
+  quotes?: Prisma.QuoteUncheckedUpdateManyWithoutCustomerNestedInput
+  estimates?: Prisma.EstimateUncheckedUpdateManyWithoutCustomerNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutCustomerNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutCustomerNestedInput
+  creditNotes?: Prisma.CreditNoteUncheckedUpdateManyWithoutCustomerNestedInput
+  refunds?: Prisma.RefundUncheckedUpdateManyWithoutCustomerNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput
+  subscriptionCharges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput
+  couponEligibilities?: Prisma.CouponCustomerEligibilityUncheckedUpdateManyWithoutCustomerNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutCustomerNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutCustomerNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
 export type CustomerCreateWithoutQuotesInput = {
   id: string
   customerType?: $Enums.CustomerType
@@ -6409,6 +6882,7 @@ export type CustomerCreateWithoutQuotesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6417,6 +6891,9 @@ export type CustomerCreateWithoutQuotesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6464,6 +6941,7 @@ export type CustomerUncheckedCreateWithoutQuotesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6472,6 +6950,9 @@ export type CustomerUncheckedCreateWithoutQuotesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6564,6 +7045,10 @@ export type CustomerUpdateWithoutQuotesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6572,6 +7057,12 @@ export type CustomerUpdateWithoutQuotesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -6652,6 +7143,10 @@ export type CustomerUncheckedUpdateWithoutQuotesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6660,6 +7155,12 @@ export type CustomerUncheckedUpdateWithoutQuotesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -6725,6 +7226,7 @@ export type CustomerCreateWithoutRefundsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6733,6 +7235,9 @@ export type CustomerCreateWithoutRefundsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6780,6 +7285,7 @@ export type CustomerUncheckedCreateWithoutRefundsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -6788,6 +7294,9 @@ export type CustomerUncheckedCreateWithoutRefundsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -6880,6 +7389,10 @@ export type CustomerUpdateWithoutRefundsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6888,6 +7401,12 @@ export type CustomerUpdateWithoutRefundsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -6968,6 +7487,10 @@ export type CustomerUncheckedUpdateWithoutRefundsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -6976,6 +7499,12 @@ export type CustomerUncheckedUpdateWithoutRefundsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -7041,6 +7570,7 @@ export type CustomerCreateWithoutSalespersonInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7049,6 +7579,9 @@ export type CustomerCreateWithoutSalespersonInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7095,6 +7628,7 @@ export type CustomerUncheckedCreateWithoutSalespersonInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7103,6 +7637,9 @@ export type CustomerUncheckedCreateWithoutSalespersonInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7191,6 +7728,7 @@ export type CustomerCreateWithoutSubscriptionChargesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7199,6 +7737,9 @@ export type CustomerCreateWithoutSubscriptionChargesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7246,6 +7787,7 @@ export type CustomerUncheckedCreateWithoutSubscriptionChargesInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7254,6 +7796,9 @@ export type CustomerUncheckedCreateWithoutSubscriptionChargesInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7346,6 +7891,10 @@ export type CustomerUpdateWithoutSubscriptionChargesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -7354,6 +7903,12 @@ export type CustomerUpdateWithoutSubscriptionChargesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -7434,6 +7989,10 @@ export type CustomerUncheckedUpdateWithoutSubscriptionChargesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -7442,6 +8001,12 @@ export type CustomerUncheckedUpdateWithoutSubscriptionChargesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -7507,6 +8072,7 @@ export type CustomerCreateWithoutSubscriptionsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7515,6 +8081,9 @@ export type CustomerCreateWithoutSubscriptionsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7562,6 +8131,7 @@ export type CustomerUncheckedCreateWithoutSubscriptionsInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7570,6 +8140,9 @@ export type CustomerUncheckedCreateWithoutSubscriptionsInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7662,6 +8235,10 @@ export type CustomerUpdateWithoutSubscriptionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -7670,6 +8247,12 @@ export type CustomerUpdateWithoutSubscriptionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -7750,6 +8333,10 @@ export type CustomerUncheckedUpdateWithoutSubscriptionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -7758,6 +8345,12 @@ export type CustomerUncheckedUpdateWithoutSubscriptionsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -7823,6 +8416,7 @@ export type CustomerCreateWithoutTenantInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7831,6 +8425,9 @@ export type CustomerCreateWithoutTenantInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7877,6 +8474,7 @@ export type CustomerUncheckedCreateWithoutTenantInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7885,6 +8483,9 @@ export type CustomerUncheckedCreateWithoutTenantInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -7975,6 +8576,7 @@ export type CustomerCreateManyLanguageRecordInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -7983,6 +8585,9 @@ export type CustomerCreateManyLanguageRecordInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -8032,6 +8637,10 @@ export type CustomerUpdateWithoutLanguageRecordInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8040,6 +8649,12 @@ export type CustomerUpdateWithoutLanguageRecordInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8120,6 +8735,10 @@ export type CustomerUncheckedUpdateWithoutLanguageRecordInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8128,6 +8747,12 @@ export type CustomerUncheckedUpdateWithoutLanguageRecordInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8213,6 +8838,10 @@ export type CustomerUncheckedUpdateManyWithoutLanguageRecordInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8221,6 +8850,12 @@ export type CustomerUncheckedUpdateManyWithoutLanguageRecordInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8271,6 +8906,7 @@ export type CustomerCreateManyPaymentTermInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -8279,6 +8915,9 @@ export type CustomerCreateManyPaymentTermInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -8328,6 +8967,10 @@ export type CustomerUpdateWithoutPaymentTermInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8336,6 +8979,12 @@ export type CustomerUpdateWithoutPaymentTermInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8415,6 +9064,10 @@ export type CustomerUncheckedUpdateWithoutPaymentTermInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8423,6 +9076,12 @@ export type CustomerUncheckedUpdateWithoutPaymentTermInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8504,6 +9163,10 @@ export type CustomerUncheckedUpdateManyWithoutPaymentTermInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8512,6 +9175,12 @@ export type CustomerUncheckedUpdateManyWithoutPaymentTermInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8559,6 +9228,7 @@ export type CustomerCreateManyPriceListInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -8567,6 +9237,9 @@ export type CustomerCreateManyPriceListInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -8616,6 +9289,10 @@ export type CustomerUpdateWithoutPriceListInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8624,6 +9301,12 @@ export type CustomerUpdateWithoutPriceListInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8703,6 +9386,10 @@ export type CustomerUncheckedUpdateWithoutPriceListInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8711,6 +9398,12 @@ export type CustomerUncheckedUpdateWithoutPriceListInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8795,6 +9488,10 @@ export type CustomerUncheckedUpdateManyWithoutPriceListInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8803,6 +9500,12 @@ export type CustomerUncheckedUpdateManyWithoutPriceListInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8853,6 +9556,7 @@ export type CustomerCreateManySalespersonInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -8861,6 +9565,9 @@ export type CustomerCreateManySalespersonInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -8910,6 +9617,10 @@ export type CustomerUpdateWithoutSalespersonInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -8918,6 +9629,12 @@ export type CustomerUpdateWithoutSalespersonInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -8997,6 +9714,10 @@ export type CustomerUncheckedUpdateWithoutSalespersonInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -9005,6 +9726,12 @@ export type CustomerUncheckedUpdateWithoutSalespersonInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -9086,6 +9813,10 @@ export type CustomerUncheckedUpdateManyWithoutSalespersonInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -9094,6 +9825,12 @@ export type CustomerUncheckedUpdateManyWithoutSalespersonInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -9141,6 +9878,7 @@ export type CustomerCreateManyTenantInput = {
   sourceExternalReference?: string | null
   sourceIdempotencyKey?: string | null
   sourcePayloadHash?: string | null
+  customerNumber?: string | null
   name: string
   salutation?: string | null
   firstName?: string | null
@@ -9149,6 +9887,9 @@ export type CustomerCreateManyTenantInput = {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?: string | null
@@ -9199,6 +9940,10 @@ export type CustomerUpdateWithoutTenantInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -9207,6 +9952,12 @@ export type CustomerUpdateWithoutTenantInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -9286,6 +10037,10 @@ export type CustomerUncheckedUpdateWithoutTenantInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -9294,6 +10049,12 @@ export type CustomerUncheckedUpdateWithoutTenantInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -9379,6 +10140,10 @@ export type CustomerUncheckedUpdateManyWithoutTenantInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  customerNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   salutation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -9387,6 +10152,12 @@ export type CustomerUncheckedUpdateManyWithoutTenantInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   workPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRegistrationNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   billingAddress?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   defaultCurrency?:
@@ -9655,6 +10426,7 @@ export type CustomerSelect<
     sourceExternalReference?: boolean
     sourceIdempotencyKey?: boolean
     sourcePayloadHash?: boolean
+    customerNumber?: boolean
     name?: boolean
     salutation?: boolean
     firstName?: boolean
@@ -9663,6 +10435,9 @@ export type CustomerSelect<
     email?: boolean
     phone?: boolean
     workPhone?: boolean
+    website?: boolean
+    notes?: boolean
+    taxRegistrationNumber?: boolean
     billingAddress?: boolean
     metadata?: boolean
     defaultCurrency?: boolean
@@ -9726,6 +10501,7 @@ export type CustomerSelectCreateManyAndReturn<
     sourceExternalReference?: boolean
     sourceIdempotencyKey?: boolean
     sourcePayloadHash?: boolean
+    customerNumber?: boolean
     name?: boolean
     salutation?: boolean
     firstName?: boolean
@@ -9734,6 +10510,9 @@ export type CustomerSelectCreateManyAndReturn<
     email?: boolean
     phone?: boolean
     workPhone?: boolean
+    website?: boolean
+    notes?: boolean
+    taxRegistrationNumber?: boolean
     billingAddress?: boolean
     metadata?: boolean
     defaultCurrency?: boolean
@@ -9777,6 +10556,7 @@ export type CustomerSelectUpdateManyAndReturn<
     sourceExternalReference?: boolean
     sourceIdempotencyKey?: boolean
     sourcePayloadHash?: boolean
+    customerNumber?: boolean
     name?: boolean
     salutation?: boolean
     firstName?: boolean
@@ -9785,6 +10565,9 @@ export type CustomerSelectUpdateManyAndReturn<
     email?: boolean
     phone?: boolean
     workPhone?: boolean
+    website?: boolean
+    notes?: boolean
+    taxRegistrationNumber?: boolean
     billingAddress?: boolean
     metadata?: boolean
     defaultCurrency?: boolean
@@ -9824,6 +10607,7 @@ export type CustomerSelectScalar = {
   sourceExternalReference?: boolean
   sourceIdempotencyKey?: boolean
   sourcePayloadHash?: boolean
+  customerNumber?: boolean
   name?: boolean
   salutation?: boolean
   firstName?: boolean
@@ -9832,6 +10616,9 @@ export type CustomerSelectScalar = {
   email?: boolean
   phone?: boolean
   workPhone?: boolean
+  website?: boolean
+  notes?: boolean
+  taxRegistrationNumber?: boolean
   billingAddress?: boolean
   metadata?: boolean
   defaultCurrency?: boolean
@@ -9867,6 +10654,7 @@ export type CustomerOmit<
   | 'sourceExternalReference'
   | 'sourceIdempotencyKey'
   | 'sourcePayloadHash'
+  | 'customerNumber'
   | 'name'
   | 'salutation'
   | 'firstName'
@@ -9875,6 +10663,9 @@ export type CustomerOmit<
   | 'email'
   | 'phone'
   | 'workPhone'
+  | 'website'
+  | 'notes'
+  | 'taxRegistrationNumber'
   | 'billingAddress'
   | 'metadata'
   | 'defaultCurrency'
@@ -9986,6 +10777,7 @@ export type $CustomerPayload<
       sourceExternalReference: string | null
       sourceIdempotencyKey: string | null
       sourcePayloadHash: string | null
+      customerNumber: string | null
       /**
        * Display name — the canonical label shown across the UI.
        */
@@ -10000,6 +10792,9 @@ export type $CustomerPayload<
        */
       phone: string | null
       workPhone: string | null
+      website: string | null
+      notes: string | null
+      taxRegistrationNumber: string | null
       /**
        * Legacy freeform billing address JSON. Retained for back-compat; new writes
        * go to the `billing_addresses` table via the `addresses` relation.
@@ -10871,6 +11666,7 @@ export interface CustomerFieldRefs {
   readonly sourceExternalReference: Prisma.FieldRef<'Customer', 'String'>
   readonly sourceIdempotencyKey: Prisma.FieldRef<'Customer', 'String'>
   readonly sourcePayloadHash: Prisma.FieldRef<'Customer', 'String'>
+  readonly customerNumber: Prisma.FieldRef<'Customer', 'String'>
   readonly name: Prisma.FieldRef<'Customer', 'String'>
   readonly salutation: Prisma.FieldRef<'Customer', 'String'>
   readonly firstName: Prisma.FieldRef<'Customer', 'String'>
@@ -10879,6 +11675,9 @@ export interface CustomerFieldRefs {
   readonly email: Prisma.FieldRef<'Customer', 'String'>
   readonly phone: Prisma.FieldRef<'Customer', 'String'>
   readonly workPhone: Prisma.FieldRef<'Customer', 'String'>
+  readonly website: Prisma.FieldRef<'Customer', 'String'>
+  readonly notes: Prisma.FieldRef<'Customer', 'String'>
+  readonly taxRegistrationNumber: Prisma.FieldRef<'Customer', 'String'>
   readonly billingAddress: Prisma.FieldRef<'Customer', 'Json'>
   readonly metadata: Prisma.FieldRef<'Customer', 'Json'>
   readonly defaultCurrency: Prisma.FieldRef<'Customer', 'String'>

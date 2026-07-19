@@ -415,16 +415,6 @@ export type PriceListEntryTierUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type PriceListEntryTierListRelationFilter = {
-  every?: Prisma.PriceListEntryTierWhereInput
-  some?: Prisma.PriceListEntryTierWhereInput
-  none?: Prisma.PriceListEntryTierWhereInput
-}
-
-export type PriceListEntryTierOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type PriceListEntryTierBilling_price_list_entry_tiers_from_keyCompoundUniqueInput =
   {
     priceListEntryId: string
@@ -475,6 +465,16 @@ export type PriceListEntryTierSumOrderByAggregateInput = {
   unitAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type PriceListEntryTierListRelationFilter = {
+  every?: Prisma.PriceListEntryTierWhereInput
+  some?: Prisma.PriceListEntryTierWhereInput
+  none?: Prisma.PriceListEntryTierWhereInput
+}
+
+export type PriceListEntryTierOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type PriceListEntryTierCreateNestedManyWithoutEntryInput = {

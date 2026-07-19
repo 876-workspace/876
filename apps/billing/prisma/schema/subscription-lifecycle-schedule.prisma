@@ -1,0 +1,30 @@
+
+model SubscriptionLifecycleSchedule {
+  id                    String                       @id
+  tenantId              String                       @map("tenant_id")
+  subscriptionId        String                       @map("subscription_id")
+  action                SubscriptionLifecycleAction
+  effectiveAt           Int                          @map("effective_at")
+  status                SubscriptionScheduleStatus   @default(SCHEDULED)
+  resumeAt              Int?                         @map("resume_at")
+  pauseUnbilledBehavior PauseUnbilledChargeBehavior? @map("pause_unbilled_behavior")
+  pauseCreditBehavior   PauseCreditBehavior?         @map("pause_credit_behavior")
+  resumeBillingBehavior ResumeBillingBehavior?       @map("resume_billing_behavior")
+  reasonCode            String?                      @map("reason_code")
+  reason                String?
+  feedback              String?
+  requestedByUserId     String?                      @map("requested_by_user_id")
+  appliedAt             Int?                         @map("applied_at")
+  canceledAt            Int?                         @map("canceled_at")
+  failureMessage        String?                      @map("failure_message")
+  createdAt             Int                          @map("created_at")
+  updatedAt             Int                          @map("updated_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_lifecycle_schedules_tenant_fkey")
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_lifecycle_schedules_subscription_fkey")
+
+  @@unique([tenantId, id], map: "billing_subscription_lifecycle_schedules_tenant_id_id_key")
+  @@index([subscriptionId, status, effectiveAt], map: "billing_subscription_schedules_subscription_idx")
+  @@index([tenantId, status, effectiveAt], map: "billing_subscription_schedules_tenant_idx")
+  @@map("billing_subscription_lifecycle_schedules")
+}

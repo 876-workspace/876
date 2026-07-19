@@ -15,6 +15,7 @@ model Customer {
   sourceExternalReference     String?        @map("source_external_reference")
   sourceIdempotencyKey        String?        @map("source_idempotency_key")
   sourcePayloadHash           String?        @map("source_payload_hash")
+  customerNumber              String?        @map("customer_number")
   /// Display name — the canonical label shown across the UI.
   name                        String
   salutation                  String?
@@ -25,6 +26,9 @@ model Customer {
   /// Primary/mobile phone.
   phone                       String?
   workPhone                   String?        @map("work_phone")
+  website                     String?
+  notes                       String?
+  taxRegistrationNumber       String?        @map("tax_registration_number")
   /// Legacy freeform billing address JSON. Retained for back-compat; new writes
   /// go to the `billing_addresses` table via the `addresses` relation.
   billingAddress              Json?          @map("billing_address")
@@ -51,11 +55,11 @@ model Customer {
   createdAt                   Int            @map("created_at")
   updatedAt                   Int            @map("updated_at")
 
-  tenant              Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  languageRecord      Language?                   @relation("CustomerLanguage", fields: [language], references: [code], onDelete: SetNull)
-  paymentTerm         PaymentTerm?                @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict)
-  salesperson         Salesperson?                @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict)
-  priceList           PriceList?                  @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict)
+  tenant              Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_customers_tenant_id_fkey")
+  languageRecord      Language?                   @relation("CustomerLanguage", fields: [language], references: [code], onDelete: SetNull, onUpdate: Cascade, map: "billing_customers_language_fkey")
+  paymentTerm         PaymentTerm?                @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_customers_payment_term_fkey")
+  salesperson         Salesperson?                @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_customers_salesperson_fkey")
+  priceList           PriceList?                  @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_customers_price_list_fkey")
   contacts            Contact[]
   addresses           Address[]
   quotes              Quote[]
@@ -72,75 +76,19 @@ model Customer {
   ledgerEntries       CustomerLedgerEntry[]
   paymentAttempts     PaymentAttempt[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, organizationId], name: "billing_customers_tenant_id_organization_id_key")
-  @@unique([tenantId, userId], name: "billing_customers_tenant_id_user_id_key")
-  @@unique([tenantId, externalReference], name: "billing_customers_tenant_id_external_reference_key")
-  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_customers_source_external_key")
-  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_customers_source_idempotency_key")
-  @@index([tenantId], name: "billing_customers_tenant_id_idx")
-  @@index([tenantId, sourceAppId], name: "billing_customers_source_app_idx")
-  @@index([priceListId], name: "billing_customers_price_list_id_idx")
-  @@index([externalReference], name: "billing_customers_external_reference_idx")
+  @@unique([tenantId, id], map: "billing_customers_tenant_id_id_key")
+  @@unique([tenantId, organizationId], name: "billing_customers_tenant_id_organization_id_key", map: "billing_customers_tenant_id_organization_id_key")
+  @@unique([tenantId, userId], name: "billing_customers_tenant_id_user_id_key", map: "billing_customers_tenant_id_user_id_key")
+  @@unique([tenantId, externalReference], name: "billing_customers_tenant_id_external_reference_key", map: "billing_customers_tenant_id_external_reference_key")
+  @@unique([tenantId, customerNumber], map: "billing_customers_tenant_id_customer_number_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_customers_source_external_key", map: "billing_customers_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_customers_source_idempotency_key", map: "billing_customers_source_idempotency_key")
+  @@index([tenantId], map: "billing_customers_tenant_id_idx")
+  @@index([language], map: "billing_customers_language_idx")
+  @@index([tenantId, sourceAppId], map: "billing_customers_source_app_idx")
+  @@index([priceListId], map: "billing_customers_price_list_id_idx")
+  @@index([externalReference], map: "billing_customers_external_reference_idx")
+  @@index([paymentTermId], map: "billing_customers_payment_term_id_idx")
+  @@index([salespersonId], map: "billing_customers_salesperson_id_idx")
   @@map("billing_customers")
-}
-
-/// A contact person attached to a customer. For an external customer these are
-/// hand-entered people; for a core 876 organization the owner is seeded as the
-/// default primary contact (members are never bulk-imported). `userId` is an
-/// optional opaque 876 user reference — no cross-DB foreign key.
-model Contact {
-  id           String  @id
-  tenantId     String  @map("tenant_id")
-  customerId   String  @map("customer_id")
-  userId       String? @map("user_id")
-  salutation   String?
-  firstName    String? @map("first_name")
-  lastName     String? @map("last_name")
-  email        String?
-  workPhone    String? @map("work_phone")
-  mobilePhone  String? @map("mobile_phone")
-  isPrimary    Boolean @default(false) @map("is_primary")
-  /// Unix seconds of the last snapshot refresh for a core-linked contact.
-  coreSyncedAt Int?    @map("core_synced_at")
-  createdAt    Int     @map("created_at")
-  updatedAt    Int     @map("updated_at")
-
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer Customer @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Cascade)
-
-  @@unique([tenantId, id])
-  @@index([tenantId, customerId], name: "billing_contacts_tenant_customer_idx")
-  @@map("billing_contacts")
-}
-
-/// A physical address attached to a customer. Modeled on the platform
-/// `addresses` table but cross-DB-safe: `state` (parish/region) and
-/// `countryCode` are opaque strings, never foreign keys into the identity DB.
-/// Latitude/longitude are optional and used only to place the address on a map.
-model Address {
-  id          String  @id
-  tenantId    String  @map("tenant_id")
-  customerId  String  @map("customer_id")
-  type        String  @default("billing")
-  label       String?
-  attention   String?
-  line1       String?
-  line2       String?
-  city        String?
-  state       String?
-  postalCode  String? @map("postal_code")
-  countryCode String? @map("country_code")
-  latitude    Float?
-  longitude   Float?
-  isDefault   Boolean @default(false) @map("is_default")
-  createdAt   Int     @map("created_at")
-  updatedAt   Int     @map("updated_at")
-
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer Customer @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Cascade)
-
-  @@unique([tenantId, id])
-  @@index([tenantId, customerId], name: "billing_addresses_tenant_customer_idx")
-  @@map("billing_addresses")
 }

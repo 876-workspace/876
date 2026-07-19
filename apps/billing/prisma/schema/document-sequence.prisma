@@ -8,7 +8,7 @@ model DocumentSequence {
   createdAt    Int          @map("created_at")
   updatedAt    Int          @map("updated_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_document_sequences_tenant_id_fkey")
 
   @@id([tenantId, documentType])
   @@map("billing_document_sequences")

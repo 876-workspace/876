@@ -905,6 +905,14 @@ export type CustomerLedgerEntryUncheckedUpdateManyWithoutCreditNoteNestedInput =
       | Prisma.CustomerLedgerEntryScalarWhereInput[]
   }
 
+export type EnumLedgerEntryTypeFieldUpdateOperationsInput = {
+  set?: $Enums.LedgerEntryType
+}
+
+export type EnumLedgerDirectionFieldUpdateOperationsInput = {
+  set?: $Enums.LedgerDirection
+}
+
 export type CustomerLedgerEntryCreateNestedManyWithoutCustomerInput = {
   create?:
     | Prisma.XOR<
@@ -1123,14 +1131,6 @@ export type CustomerLedgerEntryUncheckedUpdateManyWithoutInvoiceNestedInput = {
   deleteMany?:
     | Prisma.CustomerLedgerEntryScalarWhereInput
     | Prisma.CustomerLedgerEntryScalarWhereInput[]
-}
-
-export type EnumLedgerEntryTypeFieldUpdateOperationsInput = {
-  set?: $Enums.LedgerEntryType
-}
-
-export type EnumLedgerDirectionFieldUpdateOperationsInput = {
-  set?: $Enums.LedgerDirection
 }
 
 export type CustomerLedgerEntryCreateNestedManyWithoutPaymentInput = {

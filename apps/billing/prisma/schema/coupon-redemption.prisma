@@ -1,0 +1,29 @@
+
+/// Append-only redemption evidence used for limits, reporting, and audits.
+model CouponRedemption {
+  id              String  @id
+  tenantId        String  @map("tenant_id")
+  couponId        String  @map("coupon_id")
+  promotionCodeId String? @map("promotion_code_id")
+  customerId      String  @map("customer_id")
+  subscriptionId  String? @map("subscription_id")
+  invoiceId       String? @map("invoice_id")
+  discountAmount  BigInt? @map("discount_amount")
+  currency        String? @db.Char(3)
+  redeemedAt      Int     @map("redeemed_at")
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_redemptions_tenant_fkey")
+  coupon        Coupon         @relation(fields: [tenantId, couponId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_coupon_redemptions_coupon_fkey")
+  promotionCode PromotionCode? @relation(fields: [tenantId, promotionCodeId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_coupon_redemptions_code_fkey")
+  customer      Customer       @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_coupon_redemptions_customer_fkey")
+  subscription  Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_coupon_redemptions_subscription_fkey")
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_coupon_redemptions_invoice_fkey")
+
+  @@index([tenantId, couponId, customerId], map: "billing_coupon_redemptions_coupon_customer_idx")
+  @@index([promotionCodeId], map: "billing_coupon_redemptions_promotion_code_idx")
+  @@index([subscriptionId], map: "billing_coupon_redemptions_subscription_idx")
+  @@index([invoiceId], map: "billing_coupon_redemptions_invoice_idx")
+  @@index([couponId], map: "billing_coupon_redemptions_coupon_id_idx")
+  @@index([customerId], map: "billing_coupon_redemptions_customer_id_idx")
+  @@map("billing_coupon_redemptions")
+}

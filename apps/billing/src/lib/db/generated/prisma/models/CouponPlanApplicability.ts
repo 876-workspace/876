@@ -373,16 +373,6 @@ export type CouponPlanApplicabilityUncheckedUpdateManyInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type CouponPlanApplicabilityListRelationFilter = {
-  every?: Prisma.CouponPlanApplicabilityWhereInput
-  some?: Prisma.CouponPlanApplicabilityWhereInput
-  none?: Prisma.CouponPlanApplicabilityWhereInput
-}
-
-export type CouponPlanApplicabilityOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type CouponPlanApplicabilityBilling_coupon_plan_applicability_keyCompoundUniqueInput =
   {
     tenantId: string
@@ -420,6 +410,16 @@ export type CouponPlanApplicabilityMinOrderByAggregateInput = {
 
 export type CouponPlanApplicabilitySumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
+}
+
+export type CouponPlanApplicabilityListRelationFilter = {
+  every?: Prisma.CouponPlanApplicabilityWhereInput
+  some?: Prisma.CouponPlanApplicabilityWhereInput
+  none?: Prisma.CouponPlanApplicabilityWhereInput
+}
+
+export type CouponPlanApplicabilityOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type CouponPlanApplicabilityCreateNestedManyWithoutCouponInput = {

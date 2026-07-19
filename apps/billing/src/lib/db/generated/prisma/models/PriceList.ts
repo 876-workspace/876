@@ -643,6 +643,11 @@ export type PriceListNullableScalarRelationFilter = {
   isNot?: Prisma.PriceListWhereInput | null
 }
 
+export type PriceListScalarRelationFilter = {
+  is?: Prisma.PriceListWhereInput
+  isNot?: Prisma.PriceListWhereInput
+}
+
 export type PriceListTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -713,11 +718,6 @@ export type PriceListSumOrderByAggregateInput = {
   roundingPrecision?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type PriceListScalarRelationFilter = {
-  is?: Prisma.PriceListWhereInput
-  isNot?: Prisma.PriceListWhereInput
 }
 
 export type PriceListListRelationFilter = {
@@ -814,18 +814,6 @@ export type PriceListUpdateOneWithoutInvoicesNestedInput = {
   >
 }
 
-export type EnumPriceListModeFieldUpdateOperationsInput = {
-  set?: $Enums.PriceListMode
-}
-
-export type NullableEnumPriceListDirectionFieldUpdateOperationsInput = {
-  set?: $Enums.PriceListDirection | null
-}
-
-export type EnumPriceListRoundingFieldUpdateOperationsInput = {
-  set?: $Enums.PriceListRounding
-}
-
 export type PriceListCreateNestedOneWithoutEntriesInput = {
   create?: Prisma.XOR<
     Prisma.PriceListCreateWithoutEntriesInput,
@@ -850,6 +838,18 @@ export type PriceListUpdateOneRequiredWithoutEntriesNestedInput = {
     >,
     Prisma.PriceListUncheckedUpdateWithoutEntriesInput
   >
+}
+
+export type EnumPriceListModeFieldUpdateOperationsInput = {
+  set?: $Enums.PriceListMode
+}
+
+export type NullableEnumPriceListDirectionFieldUpdateOperationsInput = {
+  set?: $Enums.PriceListDirection | null
+}
+
+export type EnumPriceListRoundingFieldUpdateOperationsInput = {
+  set?: $Enums.PriceListRounding
 }
 
 export type PriceListCreateNestedOneWithoutQuotesInput = {

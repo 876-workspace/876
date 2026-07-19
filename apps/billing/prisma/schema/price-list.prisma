@@ -15,7 +15,7 @@ model PriceList {
   createdAt         Int                 @map("created_at")
   updatedAt         Int                 @map("updated_at")
 
-  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_price_lists_tenant_fkey")
   entries       PriceListEntry[]
   customers     Customer[]
   quotes        Quote[]
@@ -23,44 +23,8 @@ model PriceList {
   invoices      Invoice[]
   subscriptions Subscription[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, name], name: "billing_price_lists_tenant_name_key")
-  @@index([tenantId, isActive], name: "billing_price_lists_tenant_active_idx")
+  @@unique([tenantId, id], map: "billing_price_lists_tenant_id_id_key")
+  @@unique([tenantId, name], name: "billing_price_lists_tenant_name_key", map: "billing_price_lists_tenant_name_key")
+  @@index([tenantId, isActive], map: "billing_price_lists_tenant_active_idx")
   @@map("billing_price_lists")
-}
-
-model PriceListEntry {
-  id          String  @id
-  tenantId    String  @map("tenant_id")
-  priceListId String  @map("price_list_id")
-  priceId     String  @map("price_id")
-  unitAmount  BigInt? @map("unit_amount")
-  createdAt   Int     @map("created_at")
-  updatedAt   Int     @map("updated_at")
-
-  tenant    Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  priceList PriceList            @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Cascade)
-  price     Price                @relation(fields: [priceId], references: [id], onDelete: Restrict)
-  tiers     PriceListEntryTier[]
-
-  @@unique([tenantId, priceListId, priceId], name: "billing_price_list_entries_price_key")
-  @@index([priceListId], name: "billing_price_list_entries_list_idx")
-  @@index([priceId], name: "billing_price_list_entries_price_idx")
-  @@map("billing_price_list_entries")
-}
-
-model PriceListEntryTier {
-  id               String @id
-  priceListEntryId String @map("price_list_entry_id")
-  fromUnit         Int    @map("from_unit")
-  toUnit           Int?   @map("to_unit")
-  unitAmount       BigInt @map("unit_amount")
-  createdAt        Int    @map("created_at")
-  updatedAt        Int    @map("updated_at")
-
-  entry PriceListEntry @relation(fields: [priceListEntryId], references: [id], onDelete: Cascade)
-
-  @@unique([priceListEntryId, fromUnit], name: "billing_price_list_entry_tiers_from_key")
-  @@index([priceListEntryId], name: "billing_price_list_entry_tiers_entry_idx")
-  @@map("billing_price_list_entry_tiers")
 }

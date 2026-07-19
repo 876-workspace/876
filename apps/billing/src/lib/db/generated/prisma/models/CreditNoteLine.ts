@@ -532,16 +532,6 @@ export type CreditNoteLineUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type CreditNoteLineListRelationFilter = {
-  every?: Prisma.CreditNoteLineWhereInput
-  some?: Prisma.CreditNoteLineWhereInput
-  none?: Prisma.CreditNoteLineWhereInput
-}
-
-export type CreditNoteLineOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type CreditNoteLineCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   creditNoteId?: Prisma.SortOrder
@@ -605,6 +595,16 @@ export type CreditNoteLineSumOrderByAggregateInput = {
   totalAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type CreditNoteLineListRelationFilter = {
+  every?: Prisma.CreditNoteLineWhereInput
+  some?: Prisma.CreditNoteLineWhereInput
+  none?: Prisma.CreditNoteLineWhereInput
+}
+
+export type CreditNoteLineOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type CreditNoteLineCreateNestedManyWithoutCreditNoteInput = {

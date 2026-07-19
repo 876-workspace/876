@@ -1,0 +1,16 @@
+
+model PriceListEntryTier {
+  id               String @id
+  priceListEntryId String @map("price_list_entry_id")
+  fromUnit         Int    @map("from_unit")
+  toUnit           Int?   @map("to_unit")
+  unitAmount       BigInt @map("unit_amount")
+  createdAt        Int    @map("created_at")
+  updatedAt        Int    @map("updated_at")
+
+  entry PriceListEntry @relation(fields: [priceListEntryId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_price_list_entry_tiers_entry_fkey")
+
+  @@unique([priceListEntryId, fromUnit], name: "billing_price_list_entry_tiers_from_key", map: "billing_price_list_entry_tiers_from_key")
+  @@index([priceListEntryId], map: "billing_price_list_entry_tiers_entry_idx")
+  @@map("billing_price_list_entry_tiers")
+}

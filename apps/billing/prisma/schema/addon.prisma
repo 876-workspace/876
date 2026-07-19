@@ -22,38 +22,15 @@ model Addon {
   createdAt             Int           @map("created_at")
   updatedAt             Int           @map("updated_at")
 
-  tenant                Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  product               Product                    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  tenant                Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_addons_tenant_fkey")
+  product               Product                    @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_addons_product_fkey")
   prices                Price[]
   planAssociations      PlanAddonAssociation[]
   couponApplicabilities CouponAddonApplicability[]
   subscriptionCharges   SubscriptionCharge[]
 
-  @@unique([tenantId, code], name: "billing_addons_tenant_code_key")
-  @@index([tenantId, isActive], name: "billing_addons_tenant_active_idx")
-  @@index([productId], name: "billing_addons_product_idx")
+  @@unique([tenantId, code], name: "billing_addons_tenant_code_key", map: "billing_addons_tenant_code_key")
+  @@index([tenantId, isActive], map: "billing_addons_tenant_active_idx")
+  @@index([productId], map: "billing_addons_product_idx")
   @@map("billing_addons")
-}
-
-/// Availability and automation rules between a plan and an add-on.
-model PlanAddonAssociation {
-  id              String                    @id
-  tenantId        String                    @map("tenant_id")
-  planId          String                    @map("plan_id")
-  addonId         String                    @map("addon_id")
-  associationType AddonAssociationType      @default(OPTIONAL) @map("association_type")
-  events          AddonAssociationEvent[]   @default([SUBSCRIPTION_ACTIVATION])
-  frequency       AddonAssociationFrequency @default(EVERY_OCCURRENCE)
-  isActive        Boolean                   @default(true) @map("is_active")
-  createdAt       Int                       @map("created_at")
-  updatedAt       Int                       @map("updated_at")
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
-  addon  Addon  @relation(fields: [addonId], references: [id], onDelete: Cascade)
-
-  @@unique([tenantId, planId, addonId], name: "billing_plan_addon_associations_key")
-  @@index([planId, isActive], name: "billing_plan_addon_associations_plan_idx")
-  @@index([addonId, isActive], name: "billing_plan_addon_associations_addon_idx")
-  @@map("billing_plan_addon_associations")
 }

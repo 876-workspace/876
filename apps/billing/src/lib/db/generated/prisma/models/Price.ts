@@ -1275,10 +1275,6 @@ export type PriceUpdateOneRequiredWithoutPriceListEntriesNestedInput = {
   >
 }
 
-export type EnumPricingModelFieldUpdateOperationsInput = {
-  set?: $Enums.PricingModel
-}
-
 export type PriceCreateNestedOneWithoutTiersInput = {
   create?: Prisma.XOR<
     Prisma.PriceCreateWithoutTiersInput,
@@ -1303,6 +1299,10 @@ export type PriceUpdateOneRequiredWithoutTiersNestedInput = {
     >,
     Prisma.PriceUncheckedUpdateWithoutTiersInput
   >
+}
+
+export type EnumPricingModelFieldUpdateOperationsInput = {
+  set?: $Enums.PricingModel
 }
 
 export type PriceCreateNestedOneWithoutQuoteLinesInput = {

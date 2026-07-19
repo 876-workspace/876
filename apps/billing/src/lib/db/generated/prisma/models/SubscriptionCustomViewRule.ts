@@ -410,16 +410,6 @@ export type SubscriptionCustomViewRuleUncheckedUpdateManyInput = {
   value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
-export type SubscriptionCustomViewRuleListRelationFilter = {
-  every?: Prisma.SubscriptionCustomViewRuleWhereInput
-  some?: Prisma.SubscriptionCustomViewRuleWhereInput
-  none?: Prisma.SubscriptionCustomViewRuleWhereInput
-}
-
-export type SubscriptionCustomViewRuleOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type SubscriptionCustomViewRuleBilling_subscription_view_rules_position_keyCompoundUniqueInput =
   {
     viewId: string
@@ -459,6 +449,20 @@ export type SubscriptionCustomViewRuleMinOrderByAggregateInput = {
 
 export type SubscriptionCustomViewRuleSumOrderByAggregateInput = {
   position?: Prisma.SortOrder
+}
+
+export type SubscriptionCustomViewRuleListRelationFilter = {
+  every?: Prisma.SubscriptionCustomViewRuleWhereInput
+  some?: Prisma.SubscriptionCustomViewRuleWhereInput
+  none?: Prisma.SubscriptionCustomViewRuleWhereInput
+}
+
+export type SubscriptionCustomViewRuleOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type EnumCustomViewRuleOperatorFieldUpdateOperationsInput = {
+  set?: $Enums.CustomViewRuleOperator
 }
 
 export type SubscriptionCustomViewRuleCreateNestedManyWithoutViewInput = {
@@ -572,10 +576,6 @@ export type SubscriptionCustomViewRuleUncheckedUpdateManyWithoutViewNestedInput 
       | Prisma.SubscriptionCustomViewRuleScalarWhereInput
       | Prisma.SubscriptionCustomViewRuleScalarWhereInput[]
   }
-
-export type EnumCustomViewRuleOperatorFieldUpdateOperationsInput = {
-  set?: $Enums.CustomViewRuleOperator
-}
 
 export type SubscriptionCustomViewRuleCreateWithoutViewInput = {
   id: string

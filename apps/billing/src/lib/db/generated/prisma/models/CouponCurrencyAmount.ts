@@ -411,16 +411,6 @@ export type CouponCurrencyAmountUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type CouponCurrencyAmountListRelationFilter = {
-  every?: Prisma.CouponCurrencyAmountWhereInput
-  some?: Prisma.CouponCurrencyAmountWhereInput
-  none?: Prisma.CouponCurrencyAmountWhereInput
-}
-
-export type CouponCurrencyAmountOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type CouponCurrencyAmountBilling_coupon_currency_amounts_coupon_currency_keyCompoundUniqueInput =
   {
     tenantId: string
@@ -468,6 +458,16 @@ export type CouponCurrencyAmountSumOrderByAggregateInput = {
   amountOff?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type CouponCurrencyAmountListRelationFilter = {
+  every?: Prisma.CouponCurrencyAmountWhereInput
+  some?: Prisma.CouponCurrencyAmountWhereInput
+  none?: Prisma.CouponCurrencyAmountWhereInput
+}
+
+export type CouponCurrencyAmountOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type CouponCurrencyAmountCreateNestedManyWithoutCouponInput = {

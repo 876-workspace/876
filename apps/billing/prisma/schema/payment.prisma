@@ -27,47 +27,27 @@ model Payment {
   createdAt               Int           @map("created_at")
   updatedAt               Int           @map("updated_at")
 
-  tenant             Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer           Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
-  paymentMode        PaymentMode                @relation(fields: [tenantId, paymentModeId], references: [tenantId, id], onDelete: Restrict)
-  depositAccount     BankAccount                @relation(fields: [tenantId, depositAccountId], references: [tenantId, id], onDelete: Restrict)
-  providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict)
+  tenant             Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payments_tenant_id_fkey")
+  customer           Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_customer_fkey")
+  paymentMode        PaymentMode                @relation(fields: [tenantId, paymentModeId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_mode_fkey")
+  depositAccount     BankAccount                @relation(fields: [tenantId, depositAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_deposit_account_fkey")
+  providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_provider_connection_fkey")
   invoiceAllocations PaymentAllocation[]
   refunds            Refund[]
   bankTransaction    BankTransaction?
   ledgerEntries      CustomerLedgerEntry[]
   paymentAttempts    PaymentAttempt[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, number])
-  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_payments_source_external_key")
-  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_payments_source_idempotency_key")
-  @@unique([providerConnectionId, providerPaymentId], name: "billing_payments_provider_external_key")
-  @@index([tenantId, sourceAppId], name: "billing_payments_source_app_idx")
-  @@index([tenantId, customerId, paymentDate], name: "billing_payments_tenant_customer_date_idx")
-  @@index([tenantId, depositAccountId], name: "billing_payments_tenant_deposit_account_idx")
+  @@unique([tenantId, id], map: "billing_payments_tenant_id_id_key")
+  @@unique([tenantId, number], map: "billing_payments_tenant_id_number_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_payments_source_external_key", map: "billing_payments_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_payments_source_idempotency_key", map: "billing_payments_source_idempotency_key")
+  @@unique([providerConnectionId, providerPaymentId], name: "billing_payments_provider_external_key", map: "billing_payments_provider_external_key")
+  @@index([tenantId, sourceAppId], map: "billing_payments_source_app_idx")
+  @@index([tenantId, customerId, paymentDate], map: "billing_payments_tenant_customer_date_idx")
+  @@index([tenantId, depositAccountId], map: "billing_payments_tenant_deposit_account_idx")
+  @@index([customerId], map: "billing_payments_customer_id_idx")
+  @@index([depositAccountId], map: "billing_payments_deposit_account_id_idx")
+  @@index([paymentModeId], map: "billing_payments_payment_mode_id_idx")
   @@map("billing_payments")
-}
-
-/// The portion of one payment applied to one invoice.
-model PaymentAllocation {
-  id                  String        @id
-  tenantId            String        @map("tenant_id")
-  paymentId           String        @map("payment_id")
-  invoiceId           String        @map("invoice_id")
-  amount              BigInt
-  invoiceStatusBefore InvoiceStatus @map("invoice_status_before")
-  invoicePaidAtBefore Int?          @map("invoice_paid_at_before")
-  reversedAt          Int?          @map("reversed_at")
-  createdAt           Int           @map("created_at")
-  updatedAt           Int           @map("updated_at")
-
-  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  payment Payment @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Cascade)
-  invoice Invoice @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict)
-
-  @@index([tenantId, paymentId], name: "billing_payment_allocations_tenant_payment_idx")
-  @@index([tenantId, invoiceId], name: "billing_payment_allocations_tenant_invoice_idx")
-  @@index([tenantId, paymentId, reversedAt], name: "billing_payment_allocations_active_idx")
-  @@map("billing_payment_allocations")
 }

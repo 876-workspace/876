@@ -528,16 +528,6 @@ export type EstimateLineUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type EstimateLineListRelationFilter = {
-  every?: Prisma.EstimateLineWhereInput
-  some?: Prisma.EstimateLineWhereInput
-  none?: Prisma.EstimateLineWhereInput
-}
-
-export type EstimateLineOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type EstimateLineCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   estimateId?: Prisma.SortOrder
@@ -601,6 +591,16 @@ export type EstimateLineSumOrderByAggregateInput = {
   totalAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type EstimateLineListRelationFilter = {
+  every?: Prisma.EstimateLineWhereInput
+  some?: Prisma.EstimateLineWhereInput
+  none?: Prisma.EstimateLineWhereInput
+}
+
+export type EstimateLineOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type EstimateLineCreateNestedManyWithoutEstimateInput = {

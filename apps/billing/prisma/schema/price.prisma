@@ -24,10 +24,10 @@ model Price {
   createdAt              Int           @map("created_at")
   updatedAt              Int           @map("updated_at")
 
-  tenant                     Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  item                       Item?                       @relation(fields: [itemId], references: [id], onDelete: Restrict)
-  plan                       Plan?                       @relation(fields: [planId], references: [id], onDelete: Restrict)
-  addon                      Addon?                      @relation(fields: [addonId], references: [id], onDelete: Restrict)
+  tenant                     Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_prices_tenant_id_fkey")
+  item                       Item?                       @relation(fields: [itemId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_prices_item_id_fkey")
+  plan                       Plan?                       @relation(fields: [planId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_prices_plan_id_fkey")
+  addon                      Addon?                      @relation(fields: [addonId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_prices_addon_fkey")
   tiers                      PriceTier[]
   subscriptionItems          SubscriptionItem[]
   subscriptionAmendmentItems SubscriptionAmendmentItem[]
@@ -38,30 +38,10 @@ model Price {
   creditNoteLines            CreditNoteLine[]
   priceListEntries           PriceListEntry[]
 
-  @@unique([tenantId, entitlementReferenceId], name: "billing_prices_tenant_entitlement_reference_key")
-  @@index([tenantId], name: "billing_prices_tenant_id_idx")
-  @@index([itemId], name: "billing_prices_item_id_idx")
-  @@index([planId], name: "billing_prices_plan_id_idx")
-  @@index([addonId], name: "billing_prices_addon_id_idx")
+  @@unique([tenantId, entitlementReferenceId], name: "billing_prices_tenant_entitlement_reference_key", map: "billing_prices_tenant_id_entitlement_reference_id_key")
+  @@index([tenantId], map: "billing_prices_tenant_id_idx")
+  @@index([itemId], map: "billing_prices_item_id_idx")
+  @@index([planId], map: "billing_prices_plan_id_idx")
+  @@index([addonId], map: "billing_prices_addon_id_idx")
   @@map("billing_prices")
-}
-
-/// Quantity tiers used by volume and graduated/tiered prices. No provider
-/// calculation is performed in this foundation; the structure is preserved for
-/// a future calculation engine or provider adapter.
-model PriceTier {
-  id         String  @id
-  priceId    String  @map("price_id")
-  fromUnit   Int     @default(1) @map("from_unit")
-  toUnit     Int?    @map("to_unit")
-  unitAmount BigInt? @map("unit_amount")
-  flatAmount BigInt? @map("flat_amount")
-  createdAt  Int     @map("created_at")
-  updatedAt  Int     @map("updated_at")
-
-  price Price @relation(fields: [priceId], references: [id], onDelete: Cascade)
-
-  @@unique([priceId, fromUnit], name: "billing_price_tiers_price_id_from_unit_key")
-  @@index([priceId], name: "billing_price_tiers_price_id_idx")
-  @@map("billing_price_tiers")
 }

@@ -1743,9 +1743,9 @@ export type SubscriptionUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type SubscriptionScalarRelationFilter = {
-  is?: Prisma.SubscriptionWhereInput
-  isNot?: Prisma.SubscriptionWhereInput
+export type SubscriptionNullableScalarRelationFilter = {
+  is?: Prisma.SubscriptionWhereInput | null
+  isNot?: Prisma.SubscriptionWhereInput | null
 }
 
 export type SubscriptionListRelationFilter = {
@@ -1758,9 +1758,9 @@ export type SubscriptionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type SubscriptionNullableScalarRelationFilter = {
-  is?: Prisma.SubscriptionWhereInput | null
-  isNot?: Prisma.SubscriptionWhereInput | null
+export type SubscriptionScalarRelationFilter = {
+  is?: Prisma.SubscriptionWhereInput
+  isNot?: Prisma.SubscriptionWhereInput
 }
 
 export type SubscriptionBilling_subscriptions_tenant_external_reference_keyCompoundUniqueInput =
@@ -1961,29 +1961,59 @@ export type SubscriptionSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type SubscriptionCreateNestedOneWithoutBillingRunsInput = {
+export type SubscriptionCreateNestedOneWithoutCouponRedemptionsInput = {
   create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutBillingRunsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
+    Prisma.SubscriptionCreateWithoutCouponRedemptionsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutCouponRedemptionsInput
   >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBillingRunsInput
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCouponRedemptionsInput
   connect?: Prisma.SubscriptionWhereUniqueInput
 }
 
-export type SubscriptionUpdateOneRequiredWithoutBillingRunsNestedInput = {
+export type SubscriptionUpdateOneWithoutCouponRedemptionsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutBillingRunsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
+    Prisma.SubscriptionCreateWithoutCouponRedemptionsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutCouponRedemptionsInput
   >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBillingRunsInput
-  upsert?: Prisma.SubscriptionUpsertWithoutBillingRunsInput
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCouponRedemptionsInput
+  upsert?: Prisma.SubscriptionUpsertWithoutCouponRedemptionsInput
+  disconnect?: Prisma.SubscriptionWhereInput | boolean
+  delete?: Prisma.SubscriptionWhereInput | boolean
   connect?: Prisma.SubscriptionWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutBillingRunsInput,
-      Prisma.SubscriptionUpdateWithoutBillingRunsInput
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutCouponRedemptionsInput,
+      Prisma.SubscriptionUpdateWithoutCouponRedemptionsInput
     >,
-    Prisma.SubscriptionUncheckedUpdateWithoutBillingRunsInput
+    Prisma.SubscriptionUncheckedUpdateWithoutCouponRedemptionsInput
+  >
+}
+
+export type SubscriptionCreateNestedOneWithoutLedgerEntriesInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLedgerEntriesInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneWithoutLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLedgerEntriesInput
+  upsert?: Prisma.SubscriptionUpsertWithoutLedgerEntriesInput
+  disconnect?: Prisma.SubscriptionWhereInput | boolean
+  delete?: Prisma.SubscriptionWhereInput | boolean
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutLedgerEntriesInput,
+      Prisma.SubscriptionUpdateWithoutLedgerEntriesInput
+    >,
+    Prisma.SubscriptionUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
@@ -2097,57 +2127,29 @@ export type SubscriptionUncheckedUpdateManyWithoutCustomerNestedInput = {
     | Prisma.SubscriptionScalarWhereInput[]
 }
 
-export type SubscriptionCreateNestedOneWithoutCouponRedemptionsInput = {
+export type SubscriptionCreateNestedOneWithoutInvoiceLinksInput = {
   create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutCouponRedemptionsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutCouponRedemptionsInput
+    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
+    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
   >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCouponRedemptionsInput
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutInvoiceLinksInput
   connect?: Prisma.SubscriptionWhereUniqueInput
 }
 
-export type SubscriptionUpdateOneWithoutCouponRedemptionsNestedInput = {
+export type SubscriptionUpdateOneRequiredWithoutInvoiceLinksNestedInput = {
   create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutCouponRedemptionsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutCouponRedemptionsInput
+    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
+    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
   >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCouponRedemptionsInput
-  upsert?: Prisma.SubscriptionUpsertWithoutCouponRedemptionsInput
-  disconnect?: Prisma.SubscriptionWhereInput | boolean
-  delete?: Prisma.SubscriptionWhereInput | boolean
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutInvoiceLinksInput
+  upsert?: Prisma.SubscriptionUpsertWithoutInvoiceLinksInput
   connect?: Prisma.SubscriptionWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutCouponRedemptionsInput,
-      Prisma.SubscriptionUpdateWithoutCouponRedemptionsInput
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutInvoiceLinksInput,
+      Prisma.SubscriptionUpdateWithoutInvoiceLinksInput
     >,
-    Prisma.SubscriptionUncheckedUpdateWithoutCouponRedemptionsInput
-  >
-}
-
-export type SubscriptionCreateNestedOneWithoutDiscountsInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutDiscountsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutDiscountsInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-}
-
-export type SubscriptionUpdateOneRequiredWithoutDiscountsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutDiscountsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutDiscountsInput
-  upsert?: Prisma.SubscriptionUpsertWithoutDiscountsInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutDiscountsInput,
-      Prisma.SubscriptionUpdateWithoutDiscountsInput
-    >,
-    Prisma.SubscriptionUncheckedUpdateWithoutDiscountsInput
+    Prisma.SubscriptionUncheckedUpdateWithoutInvoiceLinksInput
   >
 }
 
@@ -2176,34 +2178,6 @@ export type SubscriptionUpdateOneWithoutInvoicesNestedInput = {
       Prisma.SubscriptionUpdateWithoutInvoicesInput
     >,
     Prisma.SubscriptionUncheckedUpdateWithoutInvoicesInput
-  >
-}
-
-export type SubscriptionCreateNestedOneWithoutLedgerEntriesInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLedgerEntriesInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-}
-
-export type SubscriptionUpdateOneWithoutLedgerEntriesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLedgerEntriesInput
-  upsert?: Prisma.SubscriptionUpsertWithoutLedgerEntriesInput
-  disconnect?: Prisma.SubscriptionWhereInput | boolean
-  delete?: Prisma.SubscriptionWhereInput | boolean
-  connect?: Prisma.SubscriptionWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutLedgerEntriesInput,
-      Prisma.SubscriptionUpdateWithoutLedgerEntriesInput
-    >,
-    Prisma.SubscriptionUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
@@ -2481,32 +2455,31 @@ export type SubscriptionUpdateOneRequiredWithoutAmendmentsNestedInput = {
   >
 }
 
-export type SubscriptionCreateNestedOneWithoutLifecycleSchedulesInput = {
+export type SubscriptionCreateNestedOneWithoutBillingRunsInput = {
   create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+    Prisma.SubscriptionCreateWithoutBillingRunsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
   >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLifecycleSchedulesInput
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBillingRunsInput
   connect?: Prisma.SubscriptionWhereUniqueInput
 }
 
-export type SubscriptionUpdateOneRequiredWithoutLifecycleSchedulesNestedInput =
-  {
-    create?: Prisma.XOR<
-      Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
-      Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
-    >
-    connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLifecycleSchedulesInput
-    upsert?: Prisma.SubscriptionUpsertWithoutLifecycleSchedulesInput
-    connect?: Prisma.SubscriptionWhereUniqueInput
-    update?: Prisma.XOR<
-      Prisma.XOR<
-        Prisma.SubscriptionUpdateToOneWithWhereWithoutLifecycleSchedulesInput,
-        Prisma.SubscriptionUpdateWithoutLifecycleSchedulesInput
-      >,
-      Prisma.SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput
-    >
-  }
+export type SubscriptionUpdateOneRequiredWithoutBillingRunsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutBillingRunsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBillingRunsInput
+  upsert?: Prisma.SubscriptionUpsertWithoutBillingRunsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutBillingRunsInput,
+      Prisma.SubscriptionUpdateWithoutBillingRunsInput
+    >,
+    Prisma.SubscriptionUncheckedUpdateWithoutBillingRunsInput
+  >
+}
 
 export type SubscriptionCreateNestedOneWithoutChargesInput = {
   create?: Prisma.XOR<
@@ -2534,6 +2507,111 @@ export type SubscriptionUpdateOneRequiredWithoutChargesNestedInput = {
   >
 }
 
+export type SubscriptionCreateNestedOneWithoutDiscountsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutDiscountsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutDiscountsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneRequiredWithoutDiscountsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutDiscountsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutDiscountsInput
+  upsert?: Prisma.SubscriptionUpsertWithoutDiscountsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutDiscountsInput,
+      Prisma.SubscriptionUpdateWithoutDiscountsInput
+    >,
+    Prisma.SubscriptionUncheckedUpdateWithoutDiscountsInput
+  >
+}
+
+export type SubscriptionCreateNestedOneWithoutEventsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutEventsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutEventsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneRequiredWithoutEventsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutEventsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutEventsInput
+  upsert?: Prisma.SubscriptionUpsertWithoutEventsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutEventsInput,
+      Prisma.SubscriptionUpdateWithoutEventsInput
+    >,
+    Prisma.SubscriptionUncheckedUpdateWithoutEventsInput
+  >
+}
+
+export type SubscriptionCreateNestedOneWithoutItemsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutItemsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutItemsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneRequiredWithoutItemsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutItemsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutItemsInput
+  upsert?: Prisma.SubscriptionUpsertWithoutItemsInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionUpdateToOneWithWhereWithoutItemsInput,
+      Prisma.SubscriptionUpdateWithoutItemsInput
+    >,
+    Prisma.SubscriptionUncheckedUpdateWithoutItemsInput
+  >
+}
+
+export type SubscriptionCreateNestedOneWithoutLifecycleSchedulesInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLifecycleSchedulesInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneRequiredWithoutLifecycleSchedulesNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
+      Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+    >
+    connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutLifecycleSchedulesInput
+    upsert?: Prisma.SubscriptionUpsertWithoutLifecycleSchedulesInput
+    connect?: Prisma.SubscriptionWhereUniqueInput
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.SubscriptionUpdateToOneWithWhereWithoutLifecycleSchedulesInput,
+        Prisma.SubscriptionUpdateWithoutLifecycleSchedulesInput
+      >,
+      Prisma.SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput
+    >
+  }
+
 export type SubscriptionCreateNestedOneWithoutNotificationOutboxInput = {
   create?: Prisma.XOR<
     Prisma.SubscriptionCreateWithoutNotificationOutboxInput,
@@ -2559,32 +2637,6 @@ export type SubscriptionUpdateOneWithoutNotificationOutboxNestedInput = {
       Prisma.SubscriptionUpdateWithoutNotificationOutboxInput
     >,
     Prisma.SubscriptionUncheckedUpdateWithoutNotificationOutboxInput
-  >
-}
-
-export type SubscriptionCreateNestedOneWithoutInvoiceLinksInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
-    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutInvoiceLinksInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-}
-
-export type SubscriptionUpdateOneRequiredWithoutInvoiceLinksNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
-    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutInvoiceLinksInput
-  upsert?: Prisma.SubscriptionUpsertWithoutInvoiceLinksInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutInvoiceLinksInput,
-      Prisma.SubscriptionUpdateWithoutInvoiceLinksInput
-    >,
-    Prisma.SubscriptionUncheckedUpdateWithoutInvoiceLinksInput
   >
 }
 
@@ -2677,58 +2729,6 @@ export type SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
       Prisma.SubscriptionUncheckedUpdateWithoutReplacesSubscriptionInput
     >
   }
-
-export type SubscriptionCreateNestedOneWithoutItemsInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutItemsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutItemsInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-}
-
-export type SubscriptionUpdateOneRequiredWithoutItemsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutItemsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutItemsInput
-  upsert?: Prisma.SubscriptionUpsertWithoutItemsInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutItemsInput,
-      Prisma.SubscriptionUpdateWithoutItemsInput
-    >,
-    Prisma.SubscriptionUncheckedUpdateWithoutItemsInput
-  >
-}
-
-export type SubscriptionCreateNestedOneWithoutEventsInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutEventsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutEventsInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-}
-
-export type SubscriptionUpdateOneRequiredWithoutEventsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutEventsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutEventsInput
-  upsert?: Prisma.SubscriptionUpsertWithoutEventsInput
-  connect?: Prisma.SubscriptionWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionUpdateToOneWithWhereWithoutEventsInput,
-      Prisma.SubscriptionUpdateWithoutEventsInput
-    >,
-    Prisma.SubscriptionUncheckedUpdateWithoutEventsInput
-  >
-}
 
 export type SubscriptionCreateNestedManyWithoutTenantInput = {
   create?:
@@ -2838,668 +2838,6 @@ export type SubscriptionUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?:
     | Prisma.SubscriptionScalarWhereInput
     | Prisma.SubscriptionScalarWhereInput[]
-}
-
-export type SubscriptionCreateWithoutBillingRunsInput = {
-  id: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
-  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
-  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionUncheckedCreateWithoutBillingRunsInput = {
-  id: string
-  tenantId: string
-  customerId: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  replacesSubscriptionId?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  paymentTermId?: string | null
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListId?: string | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionCreateOrConnectWithoutBillingRunsInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutBillingRunsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
-  >
-}
-
-export type SubscriptionUpsertWithoutBillingRunsInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutBillingRunsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutBillingRunsInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutBillingRunsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
-  >
-  where?: Prisma.SubscriptionWhereInput
-}
-
-export type SubscriptionUpdateToOneWithWhereWithoutBillingRunsInput = {
-  where?: Prisma.SubscriptionWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutBillingRunsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutBillingRunsInput
-  >
-}
-
-export type SubscriptionUpdateWithoutBillingRunsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
-  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
-  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionUncheckedUpdateWithoutBillingRunsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  replacesSubscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionCreateWithoutCustomerInput = {
-  id: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
-  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
-  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionUncheckedCreateWithoutCustomerInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  replacesSubscriptionId?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  paymentTermId?: string | null
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListId?: string | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionCreateOrConnectWithoutCustomerInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutCustomerInput,
-    Prisma.SubscriptionUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type SubscriptionCreateManyCustomerInputEnvelope = {
-  data:
-    | Prisma.SubscriptionCreateManyCustomerInput
-    | Prisma.SubscriptionCreateManyCustomerInput[]
-  skipDuplicates?: boolean
-}
-
-export type SubscriptionUpsertWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutCustomerInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutCustomerInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutCustomerInput,
-    Prisma.SubscriptionUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type SubscriptionUpdateWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutCustomerInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutCustomerInput
-  >
-}
-
-export type SubscriptionUpdateManyWithWhereWithoutCustomerInput = {
-  where: Prisma.SubscriptionScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateManyMutationInput,
-    Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerInput
-  >
-}
-
-export type SubscriptionScalarWhereInput = {
-  AND?:
-    | Prisma.SubscriptionScalarWhereInput
-    | Prisma.SubscriptionScalarWhereInput[]
-  OR?: Prisma.SubscriptionScalarWhereInput[]
-  NOT?:
-    | Prisma.SubscriptionScalarWhereInput
-    | Prisma.SubscriptionScalarWhereInput[]
-  id?: Prisma.StringFilter<'Subscription'> | string
-  tenantId?: Prisma.StringFilter<'Subscription'> | string
-  customerId?: Prisma.StringFilter<'Subscription'> | string
-  sourceAppId?: Prisma.StringNullableFilter<'Subscription'> | string | null
-  externalReference?:
-    | Prisma.StringNullableFilter<'Subscription'>
-    | string
-    | null
-  replacesSubscriptionId?:
-    | Prisma.StringNullableFilter<'Subscription'>
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFilter<'Subscription'>
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  currentPeriodStart?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  currentPeriodEnd?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  servicePeriodStart?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  servicePeriodEnd?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  billingCycleAnchor?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  nextBillingAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  lastBilledAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  billedCycleCount?: Prisma.IntFilter<'Subscription'> | number
-  completedRegularCycles?: Prisma.IntFilter<'Subscription'> | number
-  hasInitialStubPeriod?: Prisma.BoolFilter<'Subscription'> | boolean
-  trialEndsAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFilter<'Subscription'>
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFilter<'Subscription'>
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFilter<'Subscription'>
-    | $Enums.ProrationBehavior
-  paymentTermId?: Prisma.StringNullableFilter<'Subscription'> | string | null
-  autoApplyCredits?: Prisma.BoolFilter<'Subscription'> | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFilter<'Subscription'>
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.EnumSubscriptionInvoiceModeNullableFilter<'Subscription'>
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFilter<'Subscription'>
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.DecimalNullableFilter<'Subscription'>
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFilter<'Subscription'> | boolean
-  remainingCycles?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  expiresAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  priceListId?: Prisma.StringNullableFilter<'Subscription'> | string | null
-  priceListName?: Prisma.StringNullableFilter<'Subscription'> | string | null
-  advanceBillingEnabled?:
-    | Prisma.BoolNullableFilter<'Subscription'>
-    | boolean
-    | null
-  advanceBillingDays?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.IntNullableFilter<'Subscription'>
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFilter<'Subscription'> | boolean
-  canceledAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  pausedAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  endedAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  deletedAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
-  entitlementReferenceId?:
-    | Prisma.StringNullableFilter<'Subscription'>
-    | string
-    | null
-  metadata?: Prisma.JsonNullableFilter<'Subscription'>
-  createdAt?: Prisma.IntFilter<'Subscription'> | number
-  updatedAt?: Prisma.IntFilter<'Subscription'> | number
 }
 
 export type SubscriptionCreateWithoutCouponRedemptionsInput = {
@@ -3898,7 +3236,7 @@ export type SubscriptionUncheckedUpdateWithoutCouponRedemptionsInput = {
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
-export type SubscriptionCreateWithoutDiscountsInput = {
+export type SubscriptionCreateWithoutLedgerEntriesInput = {
   id: string
   sourceAppId?: string | null
   externalReference?: string | null
@@ -3954,17 +3292,17 @@ export type SubscriptionCreateWithoutDiscountsInput = {
   invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
   items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
   events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
   amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
   lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
   charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
   billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
   paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
   couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionUncheckedCreateWithoutDiscountsInput = {
+export type SubscriptionUncheckedCreateWithoutLedgerEntriesInput = {
   id: string
   tenantId: string
   customerId: string
@@ -4020,45 +3358,45 @@ export type SubscriptionUncheckedCreateWithoutDiscountsInput = {
   invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
   items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
   events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
   amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
   lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
   charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
   billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionCreateOrConnectWithoutDiscountsInput = {
+export type SubscriptionCreateOrConnectWithoutLedgerEntriesInput = {
   where: Prisma.SubscriptionWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutDiscountsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
+    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
   >
 }
 
-export type SubscriptionUpsertWithoutDiscountsInput = {
+export type SubscriptionUpsertWithoutLedgerEntriesInput = {
   update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutDiscountsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutDiscountsInput
+    Prisma.SubscriptionUpdateWithoutLedgerEntriesInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutLedgerEntriesInput
   >
   create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutDiscountsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
+    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
   >
   where?: Prisma.SubscriptionWhereInput
 }
 
-export type SubscriptionUpdateToOneWithWhereWithoutDiscountsInput = {
+export type SubscriptionUpdateToOneWithWhereWithoutLedgerEntriesInput = {
   where?: Prisma.SubscriptionWhereInput
   data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutDiscountsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutDiscountsInput
+    Prisma.SubscriptionUpdateWithoutLedgerEntriesInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutLedgerEntriesInput
   >
 }
 
-export type SubscriptionUpdateWithoutDiscountsInput = {
+export type SubscriptionUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalReference?:
@@ -4163,17 +3501,17 @@ export type SubscriptionUpdateWithoutDiscountsInput = {
   invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
   items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
   events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
   amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
   lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
   charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
   billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
 }
 
-export type SubscriptionUncheckedUpdateWithoutDiscountsInput = {
+export type SubscriptionUncheckedUpdateWithoutLedgerEntriesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4284,6 +3622,668 @@ export type SubscriptionUncheckedUpdateWithoutDiscountsInput = {
   invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
   items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
   events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionCreateWithoutCustomerInput = {
+  id: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
+  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
+  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutCustomerInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  replacesSubscriptionId?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  paymentTermId?: string | null
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListId?: string | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutCustomerInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutCustomerInput,
+    Prisma.SubscriptionUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type SubscriptionCreateManyCustomerInputEnvelope = {
+  data:
+    | Prisma.SubscriptionCreateManyCustomerInput
+    | Prisma.SubscriptionCreateManyCustomerInput[]
+  skipDuplicates?: boolean
+}
+
+export type SubscriptionUpsertWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutCustomerInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutCustomerInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutCustomerInput,
+    Prisma.SubscriptionUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type SubscriptionUpdateWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutCustomerInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutCustomerInput
+  >
+}
+
+export type SubscriptionUpdateManyWithWhereWithoutCustomerInput = {
+  where: Prisma.SubscriptionScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateManyMutationInput,
+    Prisma.SubscriptionUncheckedUpdateManyWithoutCustomerInput
+  >
+}
+
+export type SubscriptionScalarWhereInput = {
+  AND?:
+    | Prisma.SubscriptionScalarWhereInput
+    | Prisma.SubscriptionScalarWhereInput[]
+  OR?: Prisma.SubscriptionScalarWhereInput[]
+  NOT?:
+    | Prisma.SubscriptionScalarWhereInput
+    | Prisma.SubscriptionScalarWhereInput[]
+  id?: Prisma.StringFilter<'Subscription'> | string
+  tenantId?: Prisma.StringFilter<'Subscription'> | string
+  customerId?: Prisma.StringFilter<'Subscription'> | string
+  sourceAppId?: Prisma.StringNullableFilter<'Subscription'> | string | null
+  externalReference?:
+    | Prisma.StringNullableFilter<'Subscription'>
+    | string
+    | null
+  replacesSubscriptionId?:
+    | Prisma.StringNullableFilter<'Subscription'>
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFilter<'Subscription'>
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  currentPeriodStart?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  currentPeriodEnd?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  servicePeriodStart?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  servicePeriodEnd?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  billingCycleAnchor?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  nextBillingAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  lastBilledAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  billedCycleCount?: Prisma.IntFilter<'Subscription'> | number
+  completedRegularCycles?: Prisma.IntFilter<'Subscription'> | number
+  hasInitialStubPeriod?: Prisma.BoolFilter<'Subscription'> | boolean
+  trialEndsAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFilter<'Subscription'>
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFilter<'Subscription'>
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFilter<'Subscription'>
+    | $Enums.ProrationBehavior
+  paymentTermId?: Prisma.StringNullableFilter<'Subscription'> | string | null
+  autoApplyCredits?: Prisma.BoolFilter<'Subscription'> | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFilter<'Subscription'>
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.EnumSubscriptionInvoiceModeNullableFilter<'Subscription'>
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFilter<'Subscription'>
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.DecimalNullableFilter<'Subscription'>
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFilter<'Subscription'> | boolean
+  remainingCycles?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  expiresAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  priceListId?: Prisma.StringNullableFilter<'Subscription'> | string | null
+  priceListName?: Prisma.StringNullableFilter<'Subscription'> | string | null
+  advanceBillingEnabled?:
+    | Prisma.BoolNullableFilter<'Subscription'>
+    | boolean
+    | null
+  advanceBillingDays?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.IntNullableFilter<'Subscription'>
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFilter<'Subscription'> | boolean
+  canceledAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  pausedAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  endedAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  deletedAt?: Prisma.IntNullableFilter<'Subscription'> | number | null
+  entitlementReferenceId?:
+    | Prisma.StringNullableFilter<'Subscription'>
+    | string
+    | null
+  metadata?: Prisma.JsonNullableFilter<'Subscription'>
+  createdAt?: Prisma.IntFilter<'Subscription'> | number
+  updatedAt?: Prisma.IntFilter<'Subscription'> | number
+}
+
+export type SubscriptionCreateWithoutInvoiceLinksInput = {
+  id: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
+  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
+  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutInvoiceLinksInput = {
+  id: string
+  tenantId: string
+  customerId: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  replacesSubscriptionId?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  paymentTermId?: string | null
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListId?: string | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutInvoiceLinksInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
+    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
+  >
+}
+
+export type SubscriptionUpsertWithoutInvoiceLinksInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutInvoiceLinksInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutInvoiceLinksInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
+    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
+  >
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutInvoiceLinksInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutInvoiceLinksInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutInvoiceLinksInput
+  >
+}
+
+export type SubscriptionUpdateWithoutInvoiceLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
+  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
+  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutInvoiceLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  replacesSubscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
   amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
   lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
   charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
@@ -4686,402 +4686,6 @@ export type SubscriptionUncheckedUpdateWithoutInvoicesInput = {
   billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionCreateWithoutLedgerEntriesInput = {
-  id: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
-  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
-  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionUncheckedCreateWithoutLedgerEntriesInput = {
-  id: string
-  tenantId: string
-  customerId: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  replacesSubscriptionId?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  paymentTermId?: string | null
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListId?: string | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionCreateOrConnectWithoutLedgerEntriesInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
-  >
-}
-
-export type SubscriptionUpsertWithoutLedgerEntriesInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutLedgerEntriesInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutLedgerEntriesInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLedgerEntriesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLedgerEntriesInput
-  >
-  where?: Prisma.SubscriptionWhereInput
-}
-
-export type SubscriptionUpdateToOneWithWhereWithoutLedgerEntriesInput = {
-  where?: Prisma.SubscriptionWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutLedgerEntriesInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutLedgerEntriesInput
-  >
-}
-
-export type SubscriptionUpdateWithoutLedgerEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
-  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
-  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionUncheckedUpdateWithoutLedgerEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  replacesSubscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
@@ -6226,7 +5830,7 @@ export type SubscriptionUncheckedUpdateWithoutAmendmentsInput = {
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
-export type SubscriptionCreateWithoutLifecycleSchedulesInput = {
+export type SubscriptionCreateWithoutBillingRunsInput = {
   id: string
   sourceAppId?: string | null
   externalReference?: string | null
@@ -6284,15 +5888,15 @@ export type SubscriptionCreateWithoutLifecycleSchedulesInput = {
   events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
   discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
   amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
   charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
   paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
   ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
   couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput = {
+export type SubscriptionUncheckedCreateWithoutBillingRunsInput = {
   id: string
   tenantId: string
   customerId: string
@@ -6350,43 +5954,43 @@ export type SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput = {
   events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
   discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
   amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
   charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionCreateOrConnectWithoutLifecycleSchedulesInput = {
+export type SubscriptionCreateOrConnectWithoutBillingRunsInput = {
   where: Prisma.SubscriptionWhereUniqueInput
   create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+    Prisma.SubscriptionCreateWithoutBillingRunsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
   >
 }
 
-export type SubscriptionUpsertWithoutLifecycleSchedulesInput = {
+export type SubscriptionUpsertWithoutBillingRunsInput = {
   update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutLifecycleSchedulesInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput
+    Prisma.SubscriptionUpdateWithoutBillingRunsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutBillingRunsInput
   >
   create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
-    Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+    Prisma.SubscriptionCreateWithoutBillingRunsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutBillingRunsInput
   >
   where?: Prisma.SubscriptionWhereInput
 }
 
-export type SubscriptionUpdateToOneWithWhereWithoutLifecycleSchedulesInput = {
+export type SubscriptionUpdateToOneWithWhereWithoutBillingRunsInput = {
   where?: Prisma.SubscriptionWhereInput
   data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutLifecycleSchedulesInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput
+    Prisma.SubscriptionUpdateWithoutBillingRunsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutBillingRunsInput
   >
 }
 
-export type SubscriptionUpdateWithoutLifecycleSchedulesInput = {
+export type SubscriptionUpdateWithoutBillingRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalReference?:
@@ -6493,15 +6097,15 @@ export type SubscriptionUpdateWithoutLifecycleSchedulesInput = {
   events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
   discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
   amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
   charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
 }
 
-export type SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput = {
+export type SubscriptionUncheckedUpdateWithoutBillingRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -6614,8 +6218,8 @@ export type SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput = {
   events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
   discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
   amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
   charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
@@ -7018,6 +6622,1590 @@ export type SubscriptionUncheckedUpdateWithoutChargesInput = {
   notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
+export type SubscriptionCreateWithoutDiscountsInput = {
+  id: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
+  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
+  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutDiscountsInput = {
+  id: string
+  tenantId: string
+  customerId: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  replacesSubscriptionId?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  paymentTermId?: string | null
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListId?: string | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutDiscountsInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutDiscountsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
+  >
+}
+
+export type SubscriptionUpsertWithoutDiscountsInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutDiscountsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutDiscountsInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutDiscountsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutDiscountsInput
+  >
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutDiscountsInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutDiscountsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutDiscountsInput
+  >
+}
+
+export type SubscriptionUpdateWithoutDiscountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
+  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
+  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutDiscountsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  replacesSubscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionCreateWithoutEventsInput = {
+  id: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
+  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
+  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutEventsInput = {
+  id: string
+  tenantId: string
+  customerId: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  replacesSubscriptionId?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  paymentTermId?: string | null
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListId?: string | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutEventsInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutEventsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
+  >
+}
+
+export type SubscriptionUpsertWithoutEventsInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutEventsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutEventsInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutEventsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
+  >
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutEventsInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutEventsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutEventsInput
+  >
+}
+
+export type SubscriptionUpdateWithoutEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
+  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
+  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  replacesSubscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionCreateWithoutItemsInput = {
+  id: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
+  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
+  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutItemsInput = {
+  id: string
+  tenantId: string
+  customerId: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  replacesSubscriptionId?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  paymentTermId?: string | null
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListId?: string | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutItemsInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutItemsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
+  >
+}
+
+export type SubscriptionUpsertWithoutItemsInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutItemsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutItemsInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutItemsInput,
+    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
+  >
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutItemsInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutItemsInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutItemsInput
+  >
+}
+
+export type SubscriptionUpdateWithoutItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
+  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
+  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  replacesSubscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionCreateWithoutLifecycleSchedulesInput = {
+  id: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
+  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
+  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
+  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
+  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput = {
+  id: string
+  tenantId: string
+  customerId: string
+  sourceAppId?: string | null
+  externalReference?: string | null
+  replacesSubscriptionId?: string | null
+  status?: $Enums.SubscriptionStatus
+  startAt?: number | null
+  currentPeriodStart?: number | null
+  currentPeriodEnd?: number | null
+  servicePeriodStart?: number | null
+  servicePeriodEnd?: number | null
+  billingCycleAnchor?: number | null
+  nextBillingAt?: number | null
+  lastBilledAt?: number | null
+  billedCycleCount?: number
+  completedRegularCycles?: number
+  hasInitialStubPeriod?: boolean
+  trialEndsAt?: number | null
+  collectionMethod?: $Enums.CollectionMethod
+  billingTiming?: $Enums.BillingTiming
+  prorationBehavior?: $Enums.ProrationBehavior
+  paymentTermId?: string | null
+  autoApplyCredits?: boolean
+  taxBehavior?: $Enums.TaxBehavior
+  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
+  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: boolean
+  remainingCycles?: number | null
+  expiresAt?: number | null
+  priceListId?: string | null
+  priceListName?: string | null
+  advanceBillingEnabled?: boolean | null
+  advanceBillingDays?: number | null
+  nextAdvanceInvoiceAt?: number | null
+  cancelAtPeriodEnd?: boolean
+  canceledAt?: number | null
+  pausedAt?: number | null
+  endedAt?: number | null
+  deletedAt?: number | null
+  entitlementReferenceId?: string | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt: number
+  updatedAt: number
+  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
+  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
+  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutLifecycleSchedulesInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+  >
+}
+
+export type SubscriptionUpsertWithoutLifecycleSchedulesInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutLifecycleSchedulesInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCreateWithoutLifecycleSchedulesInput,
+    Prisma.SubscriptionUncheckedCreateWithoutLifecycleSchedulesInput
+  >
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutLifecycleSchedulesInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionUpdateWithoutLifecycleSchedulesInput,
+    Prisma.SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput
+  >
+}
+
+export type SubscriptionUpdateWithoutLifecycleSchedulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
+  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
+  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
+  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
+  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutLifecycleSchedulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  replacesSubscriptionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
+    | $Enums.SubscriptionStatus
+  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  currentPeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  currentPeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodStart?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  servicePeriodEnd?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  billingCycleAnchor?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
+  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
+  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectionMethod?:
+    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
+    | $Enums.CollectionMethod
+  billingTiming?:
+    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
+    | $Enums.BillingTiming
+  prorationBehavior?:
+    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
+    | $Enums.ProrationBehavior
+  paymentTermId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  taxBehavior?:
+    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
+    | $Enums.TaxBehavior
+  invoiceModeOverride?:
+    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
+    | $Enums.SubscriptionInvoiceMode
+    | null
+  renewalPricingPolicy?:
+    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
+    | $Enums.RenewalPricingPolicy
+  renewalAdjustmentPercent?:
+    | Prisma.NullableDecimalFieldUpdateOperationsInput
+    | runtime.Decimal
+    | runtime.DecimalJsLike
+    | number
+    | string
+    | null
+  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceListName?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  advanceBillingEnabled?:
+    | Prisma.NullableBoolFieldUpdateOperationsInput
+    | boolean
+    | null
+  advanceBillingDays?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  nextAdvanceInvoiceAt?:
+    | Prisma.NullableIntFieldUpdateOperationsInput
+    | number
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  entitlementReferenceId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
+  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
+  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
+  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
+  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
+  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
+  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
 export type SubscriptionCreateWithoutNotificationOutboxInput = {
   id: string
   sourceAppId?: string | null
@@ -7412,402 +8600,6 @@ export type SubscriptionUncheckedUpdateWithoutNotificationOutboxInput = {
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
   ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
   couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionCreateWithoutInvoiceLinksInput = {
-  id: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
-  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
-  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionUncheckedCreateWithoutInvoiceLinksInput = {
-  id: string
-  tenantId: string
-  customerId: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  replacesSubscriptionId?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  paymentTermId?: string | null
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListId?: string | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionCreateOrConnectWithoutInvoiceLinksInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
-    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
-  >
-}
-
-export type SubscriptionUpsertWithoutInvoiceLinksInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutInvoiceLinksInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutInvoiceLinksInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutInvoiceLinksInput,
-    Prisma.SubscriptionUncheckedCreateWithoutInvoiceLinksInput
-  >
-  where?: Prisma.SubscriptionWhereInput
-}
-
-export type SubscriptionUpdateToOneWithWhereWithoutInvoiceLinksInput = {
-  where?: Prisma.SubscriptionWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutInvoiceLinksInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutInvoiceLinksInput
-  >
-}
-
-export type SubscriptionUpdateWithoutInvoiceLinksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
-  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
-  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionUncheckedUpdateWithoutInvoiceLinksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  replacesSubscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionCreateWithoutReplacementSubscriptionInput = {
@@ -8589,798 +9381,6 @@ export type SubscriptionUncheckedUpdateWithoutReplacesSubscriptionInput = {
   invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
   items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
   events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionCreateWithoutItemsInput = {
-  id: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
-  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
-  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionUncheckedCreateWithoutItemsInput = {
-  id: string
-  tenantId: string
-  customerId: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  replacesSubscriptionId?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  paymentTermId?: string | null
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListId?: string | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  events?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionCreateOrConnectWithoutItemsInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutItemsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
-  >
-}
-
-export type SubscriptionUpsertWithoutItemsInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutItemsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutItemsInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutItemsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutItemsInput
-  >
-  where?: Prisma.SubscriptionWhereInput
-}
-
-export type SubscriptionUpdateToOneWithWhereWithoutItemsInput = {
-  where?: Prisma.SubscriptionWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutItemsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutItemsInput
-  >
-}
-
-export type SubscriptionUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
-  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
-  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  replacesSubscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  events?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUncheckedUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionCreateWithoutEventsInput = {
-  id: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionsInput
-  replacesSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacementSubscriptionInput
-  replacementSubscription?: Prisma.SubscriptionCreateNestedOneWithoutReplacesSubscriptionInput
-  paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutSubscriptionsInput
-  priceList?: Prisma.PriceListCreateNestedOneWithoutSubscriptionsInput
-  invoices?: Prisma.InvoiceCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionUncheckedCreateWithoutEventsInput = {
-  id: string
-  tenantId: string
-  customerId: string
-  sourceAppId?: string | null
-  externalReference?: string | null
-  replacesSubscriptionId?: string | null
-  status?: $Enums.SubscriptionStatus
-  startAt?: number | null
-  currentPeriodStart?: number | null
-  currentPeriodEnd?: number | null
-  servicePeriodStart?: number | null
-  servicePeriodEnd?: number | null
-  billingCycleAnchor?: number | null
-  nextBillingAt?: number | null
-  lastBilledAt?: number | null
-  billedCycleCount?: number
-  completedRegularCycles?: number
-  hasInitialStubPeriod?: boolean
-  trialEndsAt?: number | null
-  collectionMethod?: $Enums.CollectionMethod
-  billingTiming?: $Enums.BillingTiming
-  prorationBehavior?: $Enums.ProrationBehavior
-  paymentTermId?: string | null
-  autoApplyCredits?: boolean
-  taxBehavior?: $Enums.TaxBehavior
-  invoiceModeOverride?: $Enums.SubscriptionInvoiceMode | null
-  renewalPricingPolicy?: $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: boolean
-  remainingCycles?: number | null
-  expiresAt?: number | null
-  priceListId?: string | null
-  priceListName?: string | null
-  advanceBillingEnabled?: boolean | null
-  advanceBillingDays?: number | null
-  nextAdvanceInvoiceAt?: number | null
-  cancelAtPeriodEnd?: boolean
-  canceledAt?: number | null
-  pausedAt?: number | null
-  endedAt?: number | null
-  deletedAt?: number | null
-  entitlementReferenceId?: string | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt: number
-  updatedAt: number
-  replacementSubscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutReplacesSubscriptionInput
-  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutSubscriptionInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  items?: Prisma.SubscriptionItemUncheckedCreateNestedManyWithoutSubscriptionInput
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutSubscriptionInput
-  amendments?: Prisma.SubscriptionAmendmentUncheckedCreateNestedManyWithoutSubscriptionInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedCreateNestedManyWithoutSubscriptionInput
-  charges?: Prisma.SubscriptionChargeUncheckedCreateNestedManyWithoutSubscriptionInput
-  billingRuns?: Prisma.SubscriptionBillingRunUncheckedCreateNestedManyWithoutSubscriptionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutSubscriptionInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutSubscriptionInput
-  couponRedemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutSubscriptionInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUncheckedCreateNestedManyWithoutSubscriptionInput
-}
-
-export type SubscriptionCreateOrConnectWithoutEventsInput = {
-  where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutEventsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
-  >
-}
-
-export type SubscriptionUpsertWithoutEventsInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutEventsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutEventsInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCreateWithoutEventsInput,
-    Prisma.SubscriptionUncheckedCreateWithoutEventsInput
-  >
-  where?: Prisma.SubscriptionWhereInput
-}
-
-export type SubscriptionUpdateToOneWithWhereWithoutEventsInput = {
-  where?: Prisma.SubscriptionWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionUpdateWithoutEventsInput,
-    Prisma.SubscriptionUncheckedUpdateWithoutEventsInput
-  >
-}
-
-export type SubscriptionUpdateWithoutEventsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutSubscriptionsNestedInput
-  replacesSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacementSubscriptionNestedInput
-  replacementSubscription?: Prisma.SubscriptionUpdateOneWithoutReplacesSubscriptionNestedInput
-  paymentTerm?: Prisma.PaymentTermUpdateOneWithoutSubscriptionsNestedInput
-  priceList?: Prisma.PriceListUpdateOneWithoutSubscriptionsNestedInput
-  invoices?: Prisma.InvoiceUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUpdateManyWithoutSubscriptionNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutSubscriptionNestedInput
-  amendments?: Prisma.SubscriptionAmendmentUpdateManyWithoutSubscriptionNestedInput
-  lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUpdateManyWithoutSubscriptionNestedInput
-  charges?: Prisma.SubscriptionChargeUpdateManyWithoutSubscriptionNestedInput
-  billingRuns?: Prisma.SubscriptionBillingRunUpdateManyWithoutSubscriptionNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutSubscriptionNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutSubscriptionNestedInput
-  couponRedemptions?: Prisma.CouponRedemptionUpdateManyWithoutSubscriptionNestedInput
-  notificationOutbox?: Prisma.SubscriptionNotificationOutboxUpdateManyWithoutSubscriptionNestedInput
-}
-
-export type SubscriptionUncheckedUpdateWithoutEventsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  externalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  replacesSubscriptionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  status?:
-    | Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput
-    | $Enums.SubscriptionStatus
-  startAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  currentPeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  currentPeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodStart?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  servicePeriodEnd?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  billingCycleAnchor?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextBillingAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  lastBilledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  billedCycleCount?: Prisma.IntFieldUpdateOperationsInput | number
-  completedRegularCycles?: Prisma.IntFieldUpdateOperationsInput | number
-  hasInitialStubPeriod?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  trialEndsAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  collectionMethod?:
-    | Prisma.EnumCollectionMethodFieldUpdateOperationsInput
-    | $Enums.CollectionMethod
-  billingTiming?:
-    | Prisma.EnumBillingTimingFieldUpdateOperationsInput
-    | $Enums.BillingTiming
-  prorationBehavior?:
-    | Prisma.EnumProrationBehaviorFieldUpdateOperationsInput
-    | $Enums.ProrationBehavior
-  paymentTermId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  autoApplyCredits?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxBehavior?:
-    | Prisma.EnumTaxBehaviorFieldUpdateOperationsInput
-    | $Enums.TaxBehavior
-  invoiceModeOverride?:
-    | Prisma.NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput
-    | $Enums.SubscriptionInvoiceMode
-    | null
-  renewalPricingPolicy?:
-    | Prisma.EnumRenewalPricingPolicyFieldUpdateOperationsInput
-    | $Enums.RenewalPricingPolicy
-  renewalAdjustmentPercent?:
-    | Prisma.NullableDecimalFieldUpdateOperationsInput
-    | runtime.Decimal
-    | runtime.DecimalJsLike
-    | number
-    | string
-    | null
-  lockActivationPrices?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  remainingCycles?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  priceListId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  priceListName?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  advanceBillingEnabled?:
-    | Prisma.NullableBoolFieldUpdateOperationsInput
-    | boolean
-    | null
-  advanceBillingDays?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  nextAdvanceInvoiceAt?:
-    | Prisma.NullableIntFieldUpdateOperationsInput
-    | number
-    | null
-  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  canceledAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  pausedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  endedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  entitlementReferenceId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  replacementSubscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutReplacesSubscriptionNestedInput
-  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
-  invoiceLinks?: Prisma.InvoiceSubscriptionUncheckedUpdateManyWithoutSubscriptionNestedInput
-  items?: Prisma.SubscriptionItemUncheckedUpdateManyWithoutSubscriptionNestedInput
   discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutSubscriptionNestedInput
   amendments?: Prisma.SubscriptionAmendmentUncheckedUpdateManyWithoutSubscriptionNestedInput
   lifecycleSchedules?: Prisma.SubscriptionLifecycleScheduleUncheckedUpdateManyWithoutSubscriptionNestedInput

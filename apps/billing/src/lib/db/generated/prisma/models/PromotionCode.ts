@@ -512,6 +512,11 @@ export type PromotionCodeUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type PromotionCodeNullableScalarRelationFilter = {
+  is?: Prisma.PromotionCodeWhereInput | null
+  isNot?: Prisma.PromotionCodeWhereInput | null
+}
+
 export type PromotionCodeListRelationFilter = {
   every?: Prisma.PromotionCodeWhereInput
   some?: Prisma.PromotionCodeWhereInput
@@ -590,119 +595,32 @@ export type PromotionCodeSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type PromotionCodeNullableScalarRelationFilter = {
-  is?: Prisma.PromotionCodeWhereInput | null
-  isNot?: Prisma.PromotionCodeWhereInput | null
+export type PromotionCodeCreateNestedOneWithoutRedemptionsInput = {
+  create?: Prisma.XOR<
+    Prisma.PromotionCodeCreateWithoutRedemptionsInput,
+    Prisma.PromotionCodeUncheckedCreateWithoutRedemptionsInput
+  >
+  connectOrCreate?: Prisma.PromotionCodeCreateOrConnectWithoutRedemptionsInput
+  connect?: Prisma.PromotionCodeWhereUniqueInput
 }
 
-export type PromotionCodeCreateNestedManyWithoutCustomerInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PromotionCodeCreateWithoutCustomerInput,
-        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
-      >
-    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
-    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
-  connectOrCreate?:
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
-  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
-  connect?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-}
-
-export type PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PromotionCodeCreateWithoutCustomerInput,
-        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
-      >
-    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
-    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
-  connectOrCreate?:
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
-  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
-  connect?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-}
-
-export type PromotionCodeUpdateManyWithoutCustomerNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PromotionCodeCreateWithoutCustomerInput,
-        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
-      >
-    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
-    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
-  connectOrCreate?:
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
-  upsert?:
-    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput
-    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput[]
-  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
-  set?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  disconnect?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  delete?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  connect?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  update?:
-    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput
-    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput[]
-  updateMany?:
-    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput
-    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput[]
-  deleteMany?:
-    | Prisma.PromotionCodeScalarWhereInput
-    | Prisma.PromotionCodeScalarWhereInput[]
-}
-
-export type PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput = {
-  create?:
-    | Prisma.XOR<
-        Prisma.PromotionCodeCreateWithoutCustomerInput,
-        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
-      >
-    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
-    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
-  connectOrCreate?:
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
-    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
-  upsert?:
-    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput
-    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput[]
-  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
-  set?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  disconnect?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  delete?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  connect?:
-    | Prisma.PromotionCodeWhereUniqueInput
-    | Prisma.PromotionCodeWhereUniqueInput[]
-  update?:
-    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput
-    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput[]
-  updateMany?:
-    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput
-    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput[]
-  deleteMany?:
-    | Prisma.PromotionCodeScalarWhereInput
-    | Prisma.PromotionCodeScalarWhereInput[]
+export type PromotionCodeUpdateOneWithoutRedemptionsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PromotionCodeCreateWithoutRedemptionsInput,
+    Prisma.PromotionCodeUncheckedCreateWithoutRedemptionsInput
+  >
+  connectOrCreate?: Prisma.PromotionCodeCreateOrConnectWithoutRedemptionsInput
+  upsert?: Prisma.PromotionCodeUpsertWithoutRedemptionsInput
+  disconnect?: Prisma.PromotionCodeWhereInput | boolean
+  delete?: Prisma.PromotionCodeWhereInput | boolean
+  connect?: Prisma.PromotionCodeWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PromotionCodeUpdateToOneWithWhereWithoutRedemptionsInput,
+      Prisma.PromotionCodeUpdateWithoutRedemptionsInput
+    >,
+    Prisma.PromotionCodeUncheckedUpdateWithoutRedemptionsInput
+  >
 }
 
 export type PromotionCodeCreateNestedManyWithoutCouponInput = {
@@ -815,32 +733,114 @@ export type PromotionCodeUncheckedUpdateManyWithoutCouponNestedInput = {
     | Prisma.PromotionCodeScalarWhereInput[]
 }
 
-export type PromotionCodeCreateNestedOneWithoutRedemptionsInput = {
-  create?: Prisma.XOR<
-    Prisma.PromotionCodeCreateWithoutRedemptionsInput,
-    Prisma.PromotionCodeUncheckedCreateWithoutRedemptionsInput
-  >
-  connectOrCreate?: Prisma.PromotionCodeCreateOrConnectWithoutRedemptionsInput
-  connect?: Prisma.PromotionCodeWhereUniqueInput
+export type PromotionCodeCreateNestedManyWithoutCustomerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PromotionCodeCreateWithoutCustomerInput,
+        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
+      >
+    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
+    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
+  connectOrCreate?:
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
+  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
+  connect?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
 }
 
-export type PromotionCodeUpdateOneWithoutRedemptionsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.PromotionCodeCreateWithoutRedemptionsInput,
-    Prisma.PromotionCodeUncheckedCreateWithoutRedemptionsInput
-  >
-  connectOrCreate?: Prisma.PromotionCodeCreateOrConnectWithoutRedemptionsInput
-  upsert?: Prisma.PromotionCodeUpsertWithoutRedemptionsInput
-  disconnect?: Prisma.PromotionCodeWhereInput | boolean
-  delete?: Prisma.PromotionCodeWhereInput | boolean
-  connect?: Prisma.PromotionCodeWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.PromotionCodeUpdateToOneWithWhereWithoutRedemptionsInput,
-      Prisma.PromotionCodeUpdateWithoutRedemptionsInput
-    >,
-    Prisma.PromotionCodeUncheckedUpdateWithoutRedemptionsInput
-  >
+export type PromotionCodeUncheckedCreateNestedManyWithoutCustomerInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PromotionCodeCreateWithoutCustomerInput,
+        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
+      >
+    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
+    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
+  connectOrCreate?:
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
+  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
+  connect?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+}
+
+export type PromotionCodeUpdateManyWithoutCustomerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PromotionCodeCreateWithoutCustomerInput,
+        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
+      >
+    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
+    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
+  connectOrCreate?:
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
+  upsert?:
+    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput
+    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput[]
+  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
+  set?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  disconnect?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  delete?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  connect?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  update?:
+    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput
+    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput[]
+  updateMany?:
+    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput
+    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput[]
+  deleteMany?:
+    | Prisma.PromotionCodeScalarWhereInput
+    | Prisma.PromotionCodeScalarWhereInput[]
+}
+
+export type PromotionCodeUncheckedUpdateManyWithoutCustomerNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.PromotionCodeCreateWithoutCustomerInput,
+        Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
+      >
+    | Prisma.PromotionCodeCreateWithoutCustomerInput[]
+    | Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput[]
+  connectOrCreate?:
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput
+    | Prisma.PromotionCodeCreateOrConnectWithoutCustomerInput[]
+  upsert?:
+    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput
+    | Prisma.PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput[]
+  createMany?: Prisma.PromotionCodeCreateManyCustomerInputEnvelope
+  set?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  disconnect?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  delete?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  connect?:
+    | Prisma.PromotionCodeWhereUniqueInput
+    | Prisma.PromotionCodeWhereUniqueInput[]
+  update?:
+    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput
+    | Prisma.PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput[]
+  updateMany?:
+    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput
+    | Prisma.PromotionCodeUpdateManyWithWhereWithoutCustomerInput[]
+  deleteMany?:
+    | Prisma.PromotionCodeScalarWhereInput
+    | Prisma.PromotionCodeScalarWhereInput[]
 }
 
 export type PromotionCodeCreateNestedOneWithoutDiscountsInput = {
@@ -981,171 +981,6 @@ export type PromotionCodeUncheckedUpdateManyWithoutTenantNestedInput = {
     | Prisma.PromotionCodeScalarWhereInput[]
 }
 
-export type PromotionCodeCreateWithoutCustomerInput = {
-  id: string
-  code: string
-  expiresAt?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPromotionCodesInput
-  coupon: Prisma.CouponCreateNestedOneWithoutPromotionCodesInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutPromotionCodeInput
-  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutPromotionCodeInput
-}
-
-export type PromotionCodeUncheckedCreateWithoutCustomerInput = {
-  id: string
-  couponId: string
-  code: string
-  expiresAt?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  createdAt: number
-  updatedAt: number
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutPromotionCodeInput
-  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutPromotionCodeInput
-}
-
-export type PromotionCodeCreateOrConnectWithoutCustomerInput = {
-  where: Prisma.PromotionCodeWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PromotionCodeCreateWithoutCustomerInput,
-    Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type PromotionCodeCreateManyCustomerInputEnvelope = {
-  data:
-    | Prisma.PromotionCodeCreateManyCustomerInput
-    | Prisma.PromotionCodeCreateManyCustomerInput[]
-  skipDuplicates?: boolean
-}
-
-export type PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.PromotionCodeWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.PromotionCodeUpdateWithoutCustomerInput,
-    Prisma.PromotionCodeUncheckedUpdateWithoutCustomerInput
-  >
-  create: Prisma.XOR<
-    Prisma.PromotionCodeCreateWithoutCustomerInput,
-    Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.PromotionCodeWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.PromotionCodeUpdateWithoutCustomerInput,
-    Prisma.PromotionCodeUncheckedUpdateWithoutCustomerInput
-  >
-}
-
-export type PromotionCodeUpdateManyWithWhereWithoutCustomerInput = {
-  where: Prisma.PromotionCodeScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.PromotionCodeUpdateManyMutationInput,
-    Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerInput
-  >
-}
-
-export type PromotionCodeScalarWhereInput = {
-  AND?:
-    | Prisma.PromotionCodeScalarWhereInput
-    | Prisma.PromotionCodeScalarWhereInput[]
-  OR?: Prisma.PromotionCodeScalarWhereInput[]
-  NOT?:
-    | Prisma.PromotionCodeScalarWhereInput
-    | Prisma.PromotionCodeScalarWhereInput[]
-  id?: Prisma.StringFilter<'PromotionCode'> | string
-  tenantId?: Prisma.StringFilter<'PromotionCode'> | string
-  couponId?: Prisma.StringFilter<'PromotionCode'> | string
-  code?: Prisma.StringFilter<'PromotionCode'> | string
-  customerId?: Prisma.StringNullableFilter<'PromotionCode'> | string | null
-  expiresAt?: Prisma.IntNullableFilter<'PromotionCode'> | number | null
-  maxRedemptions?: Prisma.IntNullableFilter<'PromotionCode'> | number | null
-  timesRedeemed?: Prisma.IntFilter<'PromotionCode'> | number
-  isActive?: Prisma.BoolFilter<'PromotionCode'> | boolean
-  createdAt?: Prisma.IntFilter<'PromotionCode'> | number
-  updatedAt?: Prisma.IntFilter<'PromotionCode'> | number
-}
-
-export type PromotionCodeCreateWithoutCouponInput = {
-  id: string
-  code: string
-  expiresAt?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPromotionCodesInput
-  customer?: Prisma.CustomerCreateNestedOneWithoutPromotionCodesInput
-  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutPromotionCodeInput
-  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutPromotionCodeInput
-}
-
-export type PromotionCodeUncheckedCreateWithoutCouponInput = {
-  id: string
-  code: string
-  customerId?: string | null
-  expiresAt?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  createdAt: number
-  updatedAt: number
-  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutPromotionCodeInput
-  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutPromotionCodeInput
-}
-
-export type PromotionCodeCreateOrConnectWithoutCouponInput = {
-  where: Prisma.PromotionCodeWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PromotionCodeCreateWithoutCouponInput,
-    Prisma.PromotionCodeUncheckedCreateWithoutCouponInput
-  >
-}
-
-export type PromotionCodeCreateManyCouponInputEnvelope = {
-  data:
-    | Prisma.PromotionCodeCreateManyCouponInput
-    | Prisma.PromotionCodeCreateManyCouponInput[]
-  skipDuplicates?: boolean
-}
-
-export type PromotionCodeUpsertWithWhereUniqueWithoutCouponInput = {
-  where: Prisma.PromotionCodeWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.PromotionCodeUpdateWithoutCouponInput,
-    Prisma.PromotionCodeUncheckedUpdateWithoutCouponInput
-  >
-  create: Prisma.XOR<
-    Prisma.PromotionCodeCreateWithoutCouponInput,
-    Prisma.PromotionCodeUncheckedCreateWithoutCouponInput
-  >
-}
-
-export type PromotionCodeUpdateWithWhereUniqueWithoutCouponInput = {
-  where: Prisma.PromotionCodeWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.PromotionCodeUpdateWithoutCouponInput,
-    Prisma.PromotionCodeUncheckedUpdateWithoutCouponInput
-  >
-}
-
-export type PromotionCodeUpdateManyWithWhereWithoutCouponInput = {
-  where: Prisma.PromotionCodeScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.PromotionCodeUpdateManyMutationInput,
-    Prisma.PromotionCodeUncheckedUpdateManyWithoutCouponInput
-  >
-}
-
 export type PromotionCodeCreateWithoutRedemptionsInput = {
   id: string
   code: string
@@ -1232,6 +1067,171 @@ export type PromotionCodeUncheckedUpdateWithoutRedemptionsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutPromotionCodeNestedInput
+}
+
+export type PromotionCodeCreateWithoutCouponInput = {
+  id: string
+  code: string
+  expiresAt?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPromotionCodesInput
+  customer?: Prisma.CustomerCreateNestedOneWithoutPromotionCodesInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutPromotionCodeInput
+  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutPromotionCodeInput
+}
+
+export type PromotionCodeUncheckedCreateWithoutCouponInput = {
+  id: string
+  code: string
+  customerId?: string | null
+  expiresAt?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  createdAt: number
+  updatedAt: number
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutPromotionCodeInput
+  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutPromotionCodeInput
+}
+
+export type PromotionCodeCreateOrConnectWithoutCouponInput = {
+  where: Prisma.PromotionCodeWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PromotionCodeCreateWithoutCouponInput,
+    Prisma.PromotionCodeUncheckedCreateWithoutCouponInput
+  >
+}
+
+export type PromotionCodeCreateManyCouponInputEnvelope = {
+  data:
+    | Prisma.PromotionCodeCreateManyCouponInput
+    | Prisma.PromotionCodeCreateManyCouponInput[]
+  skipDuplicates?: boolean
+}
+
+export type PromotionCodeUpsertWithWhereUniqueWithoutCouponInput = {
+  where: Prisma.PromotionCodeWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.PromotionCodeUpdateWithoutCouponInput,
+    Prisma.PromotionCodeUncheckedUpdateWithoutCouponInput
+  >
+  create: Prisma.XOR<
+    Prisma.PromotionCodeCreateWithoutCouponInput,
+    Prisma.PromotionCodeUncheckedCreateWithoutCouponInput
+  >
+}
+
+export type PromotionCodeUpdateWithWhereUniqueWithoutCouponInput = {
+  where: Prisma.PromotionCodeWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.PromotionCodeUpdateWithoutCouponInput,
+    Prisma.PromotionCodeUncheckedUpdateWithoutCouponInput
+  >
+}
+
+export type PromotionCodeUpdateManyWithWhereWithoutCouponInput = {
+  where: Prisma.PromotionCodeScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.PromotionCodeUpdateManyMutationInput,
+    Prisma.PromotionCodeUncheckedUpdateManyWithoutCouponInput
+  >
+}
+
+export type PromotionCodeScalarWhereInput = {
+  AND?:
+    | Prisma.PromotionCodeScalarWhereInput
+    | Prisma.PromotionCodeScalarWhereInput[]
+  OR?: Prisma.PromotionCodeScalarWhereInput[]
+  NOT?:
+    | Prisma.PromotionCodeScalarWhereInput
+    | Prisma.PromotionCodeScalarWhereInput[]
+  id?: Prisma.StringFilter<'PromotionCode'> | string
+  tenantId?: Prisma.StringFilter<'PromotionCode'> | string
+  couponId?: Prisma.StringFilter<'PromotionCode'> | string
+  code?: Prisma.StringFilter<'PromotionCode'> | string
+  customerId?: Prisma.StringNullableFilter<'PromotionCode'> | string | null
+  expiresAt?: Prisma.IntNullableFilter<'PromotionCode'> | number | null
+  maxRedemptions?: Prisma.IntNullableFilter<'PromotionCode'> | number | null
+  timesRedeemed?: Prisma.IntFilter<'PromotionCode'> | number
+  isActive?: Prisma.BoolFilter<'PromotionCode'> | boolean
+  createdAt?: Prisma.IntFilter<'PromotionCode'> | number
+  updatedAt?: Prisma.IntFilter<'PromotionCode'> | number
+}
+
+export type PromotionCodeCreateWithoutCustomerInput = {
+  id: string
+  code: string
+  expiresAt?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPromotionCodesInput
+  coupon: Prisma.CouponCreateNestedOneWithoutPromotionCodesInput
+  discounts?: Prisma.SubscriptionDiscountCreateNestedManyWithoutPromotionCodeInput
+  redemptions?: Prisma.CouponRedemptionCreateNestedManyWithoutPromotionCodeInput
+}
+
+export type PromotionCodeUncheckedCreateWithoutCustomerInput = {
+  id: string
+  couponId: string
+  code: string
+  expiresAt?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  createdAt: number
+  updatedAt: number
+  discounts?: Prisma.SubscriptionDiscountUncheckedCreateNestedManyWithoutPromotionCodeInput
+  redemptions?: Prisma.CouponRedemptionUncheckedCreateNestedManyWithoutPromotionCodeInput
+}
+
+export type PromotionCodeCreateOrConnectWithoutCustomerInput = {
+  where: Prisma.PromotionCodeWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PromotionCodeCreateWithoutCustomerInput,
+    Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type PromotionCodeCreateManyCustomerInputEnvelope = {
+  data:
+    | Prisma.PromotionCodeCreateManyCustomerInput
+    | Prisma.PromotionCodeCreateManyCustomerInput[]
+  skipDuplicates?: boolean
+}
+
+export type PromotionCodeUpsertWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.PromotionCodeWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.PromotionCodeUpdateWithoutCustomerInput,
+    Prisma.PromotionCodeUncheckedUpdateWithoutCustomerInput
+  >
+  create: Prisma.XOR<
+    Prisma.PromotionCodeCreateWithoutCustomerInput,
+    Prisma.PromotionCodeUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type PromotionCodeUpdateWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.PromotionCodeWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.PromotionCodeUpdateWithoutCustomerInput,
+    Prisma.PromotionCodeUncheckedUpdateWithoutCustomerInput
+  >
+}
+
+export type PromotionCodeUpdateManyWithWhereWithoutCustomerInput = {
+  where: Prisma.PromotionCodeScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.PromotionCodeUpdateManyMutationInput,
+    Prisma.PromotionCodeUncheckedUpdateManyWithoutCustomerInput
+  >
 }
 
 export type PromotionCodeCreateWithoutDiscountsInput = {
@@ -1395,59 +1395,6 @@ export type PromotionCodeUpdateManyWithWhereWithoutTenantInput = {
   >
 }
 
-export type PromotionCodeCreateManyCustomerInput = {
-  id: string
-  couponId: string
-  code: string
-  expiresAt?: number | null
-  maxRedemptions?: number | null
-  timesRedeemed?: number
-  isActive?: boolean
-  createdAt: number
-  updatedAt: number
-}
-
-export type PromotionCodeUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutPromotionCodesNestedInput
-  coupon?: Prisma.CouponUpdateOneRequiredWithoutPromotionCodesNestedInput
-  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutPromotionCodeNestedInput
-  redemptions?: Prisma.CouponRedemptionUpdateManyWithoutPromotionCodeNestedInput
-}
-
-export type PromotionCodeUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  couponId?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutPromotionCodeNestedInput
-  redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutPromotionCodeNestedInput
-}
-
-export type PromotionCodeUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  couponId?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
 export type PromotionCodeCreateManyCouponInput = {
   id: string
   code: string
@@ -1493,6 +1440,59 @@ export type PromotionCodeUncheckedUpdateManyWithoutCouponInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type PromotionCodeCreateManyCustomerInput = {
+  id: string
+  couponId: string
+  code: string
+  expiresAt?: number | null
+  maxRedemptions?: number | null
+  timesRedeemed?: number
+  isActive?: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export type PromotionCodeUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPromotionCodesNestedInput
+  coupon?: Prisma.CouponUpdateOneRequiredWithoutPromotionCodesNestedInput
+  discounts?: Prisma.SubscriptionDiscountUpdateManyWithoutPromotionCodeNestedInput
+  redemptions?: Prisma.CouponRedemptionUpdateManyWithoutPromotionCodeNestedInput
+}
+
+export type PromotionCodeUncheckedUpdateWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  couponId?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  discounts?: Prisma.SubscriptionDiscountUncheckedUpdateManyWithoutPromotionCodeNestedInput
+  redemptions?: Prisma.CouponRedemptionUncheckedUpdateManyWithoutPromotionCodeNestedInput
+}
+
+export type PromotionCodeUncheckedUpdateManyWithoutCustomerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  couponId?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   maxRedemptions?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   timesRedeemed?: Prisma.IntFieldUpdateOperationsInput | number

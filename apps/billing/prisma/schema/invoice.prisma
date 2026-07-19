@@ -53,20 +53,20 @@ model Invoice {
   createdAt               Int                  @map("created_at")
   updatedAt               Int                  @map("updated_at")
 
-  tenant                    Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer                  Customer                         @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  priceList                 PriceList?                       @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict)
-  quote                     Quote?                           @relation("QuoteConvertedInvoice", fields: [quoteId], references: [id], onDelete: SetNull)
-  estimate                  Estimate?                        @relation("EstimateConvertedInvoice", fields: [estimateId], references: [id], onDelete: SetNull)
-  subscription              Subscription?                    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  tenant                    Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_invoices_tenant_id_fkey")
+  customer                  Customer                         @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_customer_id_fkey")
+  priceList                 PriceList?                       @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_price_list_fkey")
+  quote                     Quote?                           @relation("QuoteConvertedInvoice", fields: [quoteId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_quote_id_fkey")
+  estimate                  Estimate?                        @relation("EstimateConvertedInvoice", fields: [estimateId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_estimate_fkey")
+  subscription              Subscription?                    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_subscription_id_fkey")
   lateFeeAssessments        LateFeeAssessment[]              @relation("LateFeeSourceInvoice")
   lateFeeAssessment         LateFeeAssessment?               @relation("LateFeeInvoice")
   billingRuns               SubscriptionBillingRun[]
   subscriptionLinks         InvoiceSubscription[]
   subscriptionNotifications SubscriptionNotificationOutbox[]
   subscriptionCharges       SubscriptionCharge[]
-  paymentTerm               PaymentTerm?                     @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict)
-  salesperson               Salesperson?                     @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict)
+  paymentTerm               PaymentTerm?                     @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_payment_term_fkey")
+  salesperson               Salesperson?                     @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_salesperson_fkey")
   lines                     InvoiceLine[]
   allocations               PaymentAllocation[]
   creditNoteAllocations     CreditNoteAllocation[]
@@ -75,60 +75,20 @@ model Invoice {
   paymentAttempts           PaymentAttempt[]
   couponRedemptions         CouponRedemption[]
 
-  @@unique([tenantId, id])
-  @@unique([tenantId, number], name: "billing_invoices_tenant_id_number_key")
-  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_invoices_source_external_key")
-  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_invoices_source_idempotency_key")
-  @@index([tenantId, status], name: "billing_invoices_tenant_id_status_idx")
-  @@index([tenantId, sourceAppId], name: "billing_invoices_source_app_idx")
-  @@index([customerId], name: "billing_invoices_customer_id_idx")
-  @@index([priceListId], name: "billing_invoices_price_list_id_idx")
-  @@index([subscriptionId], name: "billing_invoices_subscription_id_idx")
-  @@index([tenantId, dueAt], name: "billing_invoices_tenant_due_at_idx")
-  @@index([tenantId, billingReason], name: "billing_invoices_tenant_billing_reason_idx")
-  @@index([tenantId, orderNumber], name: "billing_invoices_order_number_idx")
-  @@index([tenantId, referenceNumber], name: "billing_invoices_reference_number_idx")
+  @@unique([tenantId, id], map: "billing_invoices_tenant_id_id_key")
+  @@unique([tenantId, number], name: "billing_invoices_tenant_id_number_key", map: "billing_invoices_tenant_id_number_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_invoices_source_external_key", map: "billing_invoices_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_invoices_source_idempotency_key", map: "billing_invoices_source_idempotency_key")
+  @@index([tenantId, status], map: "billing_invoices_tenant_id_status_idx")
+  @@index([tenantId, sourceAppId], map: "billing_invoices_source_app_idx")
+  @@index([customerId], map: "billing_invoices_customer_id_idx")
+  @@index([priceListId], map: "billing_invoices_price_list_id_idx")
+  @@index([subscriptionId], map: "billing_invoices_subscription_id_idx")
+  @@index([tenantId, dueAt], map: "billing_invoices_tenant_due_at_idx")
+  @@index([tenantId, billingReason], map: "billing_invoices_tenant_billing_reason_idx")
+  @@index([tenantId, orderNumber], map: "billing_invoices_order_number_idx")
+  @@index([tenantId, referenceNumber], map: "billing_invoices_reference_number_idx")
+  @@index([paymentTermId], map: "billing_invoices_payment_term_id_idx")
+  @@index([salespersonId], map: "billing_invoices_salesperson_id_idx")
   @@map("billing_invoices")
-}
-
-/// An immutable snapshot of an item/price at the time it was added to an invoice.
-model InvoiceLine {
-  id                   String   @id
-  invoiceId            String   @map("invoice_id")
-  itemId               String?  @map("item_id")
-  priceId              String?  @map("price_id")
-  subscriptionItemId   String?  @map("subscription_item_id")
-  subscriptionChargeId String?  @map("subscription_charge_id")
-  taxRateId            String?  @map("tax_rate_id")
-  description          String
-  unit                 String?
-  position             Int      @default(0)
-  quantity             Int      @default(1)
-  unitAmount           BigInt   @map("unit_amount")
-  taxAmount            BigInt   @default(0) @map("tax_amount")
-  taxName              String?  @map("tax_name")
-  taxRate              Decimal? @map("tax_rate") @db.Decimal(7, 4)
-  taxInclusive         Boolean  @default(false) @map("tax_inclusive")
-  discountAmount       BigInt   @default(0) @map("discount_amount")
-  totalAmount          BigInt   @map("total_amount")
-  servicePeriodStart   Int?     @map("service_period_start")
-  servicePeriodEnd     Int?     @map("service_period_end")
-  createdAt            Int      @map("created_at")
-  updatedAt            Int      @map("updated_at")
-
-  invoice            Invoice             @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  item               Item?               @relation(fields: [itemId], references: [id], onDelete: SetNull)
-  price              Price?              @relation(fields: [priceId], references: [id], onDelete: SetNull)
-  subscriptionItem   SubscriptionItem?   @relation(fields: [subscriptionItemId], references: [id], onDelete: SetNull)
-  subscriptionCharge SubscriptionCharge? @relation(fields: [subscriptionChargeId], references: [id], onDelete: SetNull)
-  sourceTaxRate      TaxRate?            @relation(fields: [taxRateId], references: [id], onDelete: SetNull)
-
-  @@unique([invoiceId, position], name: "billing_invoice_lines_invoice_position_key")
-  @@index([invoiceId], name: "billing_invoice_lines_invoice_id_idx")
-  @@index([itemId], name: "billing_invoice_lines_item_id_idx")
-  @@index([priceId], name: "billing_invoice_lines_price_id_idx")
-  @@index([subscriptionItemId], name: "billing_invoice_lines_subscription_item_id_idx")
-  @@index([subscriptionChargeId], name: "billing_invoice_lines_subscription_charge_id_idx")
-  @@index([taxRateId], name: "billing_invoice_lines_tax_rate_id_idx")
-  @@map("billing_invoice_lines")
 }

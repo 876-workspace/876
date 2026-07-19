@@ -29,17 +29,17 @@ model Plan {
   createdAt              Int          @map("created_at")
   updatedAt              Int          @map("updated_at")
 
-  tenant                Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  product               Product                   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  tenant                Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_plans_tenant_id_fkey")
+  product               Product                   @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_plans_product_id_fkey")
   prices                Price[]
   addonAssociations     PlanAddonAssociation[]
   couponApplicabilities CouponPlanApplicability[]
   fallbackForProducts   Product[]                 @relation("ProductFallbackPlan")
 
-  @@unique([tenantId, code], name: "billing_plans_tenant_id_code_key")
-  @@unique([tenantId, entitlementReferenceId, intervalUnit, intervalCount], name: "billing_plans_tenant_entitlement_cadence_key")
-  @@index([tenantId], name: "billing_plans_tenant_id_idx")
-  @@index([productId], name: "billing_plans_product_id_idx")
-  @@index([entitlementReferenceId], name: "billing_plans_entitlement_reference_id_idx")
+  @@unique([tenantId, code], name: "billing_plans_tenant_id_code_key", map: "billing_plans_tenant_id_code_key")
+  @@unique([tenantId, entitlementReferenceId, intervalUnit, intervalCount], name: "billing_plans_tenant_entitlement_cadence_key", map: "billing_plans_tenant_id_entitlement_reference_id_interval_u_key")
+  @@index([tenantId], map: "billing_plans_tenant_id_idx")
+  @@index([productId], map: "billing_plans_product_id_idx")
+  @@index([entitlementReferenceId], map: "billing_plans_entitlement_reference_id_idx")
   @@map("billing_plans")
 }

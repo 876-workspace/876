@@ -545,16 +545,6 @@ export type ContactUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type ContactListRelationFilter = {
-  every?: Prisma.ContactWhereInput
-  some?: Prisma.ContactWhereInput
-  none?: Prisma.ContactWhereInput
-}
-
-export type ContactOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type ContactTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -621,6 +611,16 @@ export type ContactSumOrderByAggregateInput = {
   coreSyncedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type ContactListRelationFilter = {
+  every?: Prisma.ContactWhereInput
+  some?: Prisma.ContactWhereInput
+  none?: Prisma.ContactWhereInput
+}
+
+export type ContactOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type ContactCreateNestedManyWithoutCustomerInput = {

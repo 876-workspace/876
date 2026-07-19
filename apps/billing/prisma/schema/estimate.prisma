@@ -22,40 +22,15 @@ model Estimate {
   createdAt      Int            @map("created_at")
   updatedAt      Int            @map("updated_at")
 
-  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  priceList        PriceList?     @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict)
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_estimates_tenant_id_fkey")
+  customer         Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_estimates_customer_id_fkey")
+  priceList        PriceList?     @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_estimates_price_list_fkey")
   lines            EstimateLine[]
   convertedInvoice Invoice?       @relation("EstimateConvertedInvoice")
 
-  @@unique([tenantId, number], name: "billing_estimates_tenant_id_number_key")
-  @@index([tenantId, status], name: "billing_estimates_tenant_id_status_idx")
-  @@index([customerId], name: "billing_estimates_customer_id_idx")
-  @@index([priceListId], name: "billing_estimates_price_list_id_idx")
+  @@unique([tenantId, number], name: "billing_estimates_tenant_id_number_key", map: "billing_estimates_tenant_id_number_key")
+  @@index([tenantId, status], map: "billing_estimates_tenant_id_status_idx")
+  @@index([customerId], map: "billing_estimates_customer_id_idx")
+  @@index([priceListId], map: "billing_estimates_price_list_id_idx")
   @@map("billing_estimates")
-}
-
-/// An immutable snapshot of an item/price at the time it was added to an estimate.
-model EstimateLine {
-  id             String  @id
-  estimateId     String  @map("estimate_id")
-  itemId         String? @map("item_id")
-  priceId        String? @map("price_id")
-  description    String
-  quantity       Int     @default(1)
-  unitAmount     BigInt  @map("unit_amount")
-  taxAmount      BigInt  @default(0) @map("tax_amount")
-  discountAmount BigInt  @default(0) @map("discount_amount")
-  totalAmount    BigInt  @map("total_amount")
-  createdAt      Int     @map("created_at")
-  updatedAt      Int     @map("updated_at")
-
-  estimate Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
-  item     Item?    @relation(fields: [itemId], references: [id], onDelete: SetNull)
-  price    Price?   @relation(fields: [priceId], references: [id], onDelete: SetNull)
-
-  @@index([estimateId], name: "billing_estimate_lines_estimate_id_idx")
-  @@index([itemId], name: "billing_estimate_lines_item_id_idx")
-  @@index([priceId], name: "billing_estimate_lines_price_id_idx")
-  @@map("billing_estimate_lines")
 }

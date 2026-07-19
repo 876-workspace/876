@@ -1,0 +1,14 @@
+
+/// Durable completed-result receipt for product-app customer imports. Dry-run
+/// previews never create receipts because they perform no writes.
+model CustomerImportReceipt {
+  tenantId       String @map("tenant_id")
+  sourceAppId    String @map("source_app_id")
+  idempotencyKey String @map("idempotency_key")
+  payloadHash    String @map("payload_hash")
+  result         Json
+  createdAt      Int    @map("created_at")
+
+  @@id([tenantId, sourceAppId, idempotencyKey])
+  @@map("billing_customer_import_receipts")
+}

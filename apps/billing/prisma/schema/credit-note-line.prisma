@@ -1,0 +1,25 @@
+
+/// An immutable snapshot of an item/price at the time it was added to a credit note.
+model CreditNoteLine {
+  id             String  @id
+  creditNoteId   String  @map("credit_note_id")
+  itemId         String? @map("item_id")
+  priceId        String? @map("price_id")
+  description    String
+  quantity       Int     @default(1)
+  unitAmount     BigInt  @map("unit_amount")
+  taxAmount      BigInt  @default(0) @map("tax_amount")
+  discountAmount BigInt  @default(0) @map("discount_amount")
+  totalAmount    BigInt  @map("total_amount")
+  createdAt      Int     @map("created_at")
+  updatedAt      Int     @map("updated_at")
+
+  creditNote CreditNote @relation(fields: [creditNoteId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_credit_note_lines_credit_note_fkey")
+  item       Item?      @relation(fields: [itemId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_credit_note_lines_item_fkey")
+  price      Price?     @relation(fields: [priceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_credit_note_lines_price_fkey")
+
+  @@index([creditNoteId], map: "billing_credit_note_lines_credit_note_id_idx")
+  @@index([itemId], map: "billing_credit_note_lines_item_id_idx")
+  @@index([priceId], map: "billing_credit_note_lines_price_id_idx")
+  @@map("billing_credit_note_lines")
+}

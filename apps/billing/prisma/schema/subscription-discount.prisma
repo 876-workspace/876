@@ -1,0 +1,39 @@
+
+/// Immutable redemption snapshot attached to a subscription. Direct gifts may
+/// omit a promotion code while retaining their coupon and grant metadata.
+model SubscriptionDiscount {
+  id                 String                     @id
+  tenantId           String                     @map("tenant_id")
+  subscriptionId     String                     @map("subscription_id")
+  couponId           String?                    @map("coupon_id")
+  promotionCodeId    String?                    @map("promotion_code_id")
+  subscriptionItemId String?                    @map("subscription_item_id")
+  source             SubscriptionDiscountSource @default(COUPON)
+  scope              SubscriptionDiscountScope  @default(TRANSACTION)
+  status             DiscountStatus             @default(ACTIVE)
+  discountType       DiscountType               @map("discount_type")
+  percentOff         Decimal?                   @map("percent_off") @db.Decimal(7, 4)
+  amountOff          BigInt?                    @map("amount_off")
+  currency           String?                    @db.Char(3)
+  duration           DiscountDuration
+  remainingCycles    Int?                       @map("remaining_cycles")
+  grantedByUserId    String?                    @map("granted_by_user_id")
+  grantReason        String?                    @map("grant_reason")
+  startsAt           Int                        @map("starts_at")
+  endsAt             Int?                       @map("ends_at")
+  createdAt          Int                        @map("created_at")
+  updatedAt          Int                        @map("updated_at")
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_discounts_tenant_fkey")
+  subscription     Subscription      @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_discounts_subscription_fkey")
+  coupon           Coupon?           @relation(fields: [tenantId, couponId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_discounts_coupon_fkey")
+  promotionCode    PromotionCode?    @relation(fields: [tenantId, promotionCodeId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_discounts_promotion_fkey")
+  subscriptionItem SubscriptionItem? @relation(fields: [subscriptionItemId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_discounts_subscription_item_fkey")
+
+  @@unique([tenantId, id], map: "billing_subscription_discounts_tenant_id_id_key")
+  @@index([subscriptionId, status], map: "billing_subscription_discounts_subscription_status_idx")
+  @@index([subscriptionItemId], map: "billing_subscription_discounts_subscription_item_idx")
+  @@index([couponId], map: "billing_subscription_discounts_coupon_id_idx")
+  @@index([promotionCodeId], map: "billing_subscription_discounts_promotion_code_id_idx")
+  @@map("billing_subscription_discounts")
+}

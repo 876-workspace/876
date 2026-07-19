@@ -403,16 +403,6 @@ export type SubscriptionAdvanceBillingRuleUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type SubscriptionAdvanceBillingRuleListRelationFilter = {
-  every?: Prisma.SubscriptionAdvanceBillingRuleWhereInput
-  some?: Prisma.SubscriptionAdvanceBillingRuleWhereInput
-  none?: Prisma.SubscriptionAdvanceBillingRuleWhereInput
-}
-
-export type SubscriptionAdvanceBillingRuleOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type SubscriptionAdvanceBillingRuleTenantIdIntervalUnitCompoundUniqueInput =
   {
     tenantId: string
@@ -453,6 +443,16 @@ export type SubscriptionAdvanceBillingRuleSumOrderByAggregateInput = {
   daysBefore?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type SubscriptionAdvanceBillingRuleListRelationFilter = {
+  every?: Prisma.SubscriptionAdvanceBillingRuleWhereInput
+  some?: Prisma.SubscriptionAdvanceBillingRuleWhereInput
+  none?: Prisma.SubscriptionAdvanceBillingRuleWhereInput
+}
+
+export type SubscriptionAdvanceBillingRuleOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type SubscriptionAdvanceBillingRuleCreateNestedManyWithoutPreferenceInput =

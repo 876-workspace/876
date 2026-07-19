@@ -1132,6 +1132,11 @@ export type SubscriptionAmendmentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type SubscriptionAmendmentScalarRelationFilter = {
+  is?: Prisma.SubscriptionAmendmentWhereInput
+  isNot?: Prisma.SubscriptionAmendmentWhereInput
+}
+
 export type SubscriptionAmendmentTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -1241,11 +1246,6 @@ export type SubscriptionAmendmentSumOrderByAggregateInput = {
   canceledAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type SubscriptionAmendmentScalarRelationFilter = {
-  is?: Prisma.SubscriptionAmendmentWhereInput
-  isNot?: Prisma.SubscriptionAmendmentWhereInput
 }
 
 export type SubscriptionAmendmentCreateNestedManyWithoutPaymentTermInput = {
@@ -1360,6 +1360,32 @@ export type SubscriptionAmendmentUncheckedUpdateManyWithoutPaymentTermNestedInpu
       | Prisma.SubscriptionAmendmentScalarWhereInput[]
   }
 
+export type SubscriptionAmendmentCreateNestedOneWithoutItemsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionAmendmentCreateWithoutItemsInput,
+    Prisma.SubscriptionAmendmentUncheckedCreateWithoutItemsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionAmendmentCreateOrConnectWithoutItemsInput
+  connect?: Prisma.SubscriptionAmendmentWhereUniqueInput
+}
+
+export type SubscriptionAmendmentUpdateOneRequiredWithoutItemsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionAmendmentCreateWithoutItemsInput,
+    Prisma.SubscriptionAmendmentUncheckedCreateWithoutItemsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionAmendmentCreateOrConnectWithoutItemsInput
+  upsert?: Prisma.SubscriptionAmendmentUpsertWithoutItemsInput
+  connect?: Prisma.SubscriptionAmendmentWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionAmendmentUpdateToOneWithWhereWithoutItemsInput,
+      Prisma.SubscriptionAmendmentUpdateWithoutItemsInput
+    >,
+    Prisma.SubscriptionAmendmentUncheckedUpdateWithoutItemsInput
+  >
+}
+
 export type EnumSubscriptionChangeTimingFieldUpdateOperationsInput = {
   set?: $Enums.SubscriptionChangeTiming
 }
@@ -1390,32 +1416,6 @@ export type NullableEnumSubscriptionInvoiceModeFieldUpdateOperationsInput = {
 
 export type NullableEnumRenewalPricingPolicyFieldUpdateOperationsInput = {
   set?: $Enums.RenewalPricingPolicy | null
-}
-
-export type SubscriptionAmendmentCreateNestedOneWithoutItemsInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionAmendmentCreateWithoutItemsInput,
-    Prisma.SubscriptionAmendmentUncheckedCreateWithoutItemsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionAmendmentCreateOrConnectWithoutItemsInput
-  connect?: Prisma.SubscriptionAmendmentWhereUniqueInput
-}
-
-export type SubscriptionAmendmentUpdateOneRequiredWithoutItemsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionAmendmentCreateWithoutItemsInput,
-    Prisma.SubscriptionAmendmentUncheckedCreateWithoutItemsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionAmendmentCreateOrConnectWithoutItemsInput
-  upsert?: Prisma.SubscriptionAmendmentUpsertWithoutItemsInput
-  connect?: Prisma.SubscriptionAmendmentWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionAmendmentUpdateToOneWithWhereWithoutItemsInput,
-      Prisma.SubscriptionAmendmentUpdateWithoutItemsInput
-    >,
-    Prisma.SubscriptionAmendmentUncheckedUpdateWithoutItemsInput
-  >
 }
 
 export type SubscriptionAmendmentCreateNestedManyWithoutSubscriptionInput = {

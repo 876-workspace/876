@@ -1,0 +1,24 @@
+
+/// Join evidence allows a consolidated invoice to cover multiple agreements
+/// without overloading Invoice.subscriptionId.
+model InvoiceSubscription {
+  tenantId           String @map("tenant_id")
+  invoiceId          String @map("invoice_id")
+  subscriptionId     String @map("subscription_id")
+  servicePeriodStart Int?   @map("service_period_start")
+  servicePeriodEnd   Int?   @map("service_period_end")
+  subtotalAmount     BigInt @default(0) @map("subtotal_amount")
+  discountAmount     BigInt @default(0) @map("discount_amount")
+  taxAmount          BigInt @default(0) @map("tax_amount")
+  totalAmount        BigInt @default(0) @map("total_amount")
+  createdAt          Int    @map("created_at")
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_invoice_subscriptions_tenant_fkey")
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_invoice_subscriptions_invoice_fkey")
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoice_subscriptions_subscription_fkey")
+
+  @@id([invoiceId, subscriptionId])
+  @@index([tenantId, subscriptionId], map: "billing_invoice_subscriptions_tenant_subscription_idx")
+  @@index([subscriptionId], map: "billing_invoice_subscriptions_subscription_id_idx")
+  @@map("billing_invoice_subscriptions")
+}

@@ -24,17 +24,17 @@ model Item {
   createdAt               Int      @map("created_at")
   updatedAt               Int      @map("updated_at")
 
-  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_items_tenant_id_fkey")
   prices          Price[]
   quoteLines      QuoteLine[]
   estimateLines   EstimateLine[]
   invoiceLines    InvoiceLine[]
   creditNoteLines CreditNoteLine[]
 
-  @@unique([tenantId, sku], name: "billing_items_tenant_id_sku_key")
-  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_items_source_external_key")
-  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_items_source_idempotency_key")
-  @@index([tenantId], name: "billing_items_tenant_id_idx")
-  @@index([tenantId, sourceAppId], name: "billing_items_source_app_idx")
+  @@unique([tenantId, sku], name: "billing_items_tenant_id_sku_key", map: "billing_items_tenant_id_sku_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_items_source_external_key", map: "billing_items_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_items_source_idempotency_key", map: "billing_items_source_idempotency_key")
+  @@index([tenantId], map: "billing_items_tenant_id_idx")
+  @@index([tenantId, sourceAppId], map: "billing_items_source_app_idx")
   @@map("billing_items")
 }

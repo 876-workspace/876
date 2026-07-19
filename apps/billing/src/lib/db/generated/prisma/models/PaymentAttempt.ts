@@ -1098,6 +1098,10 @@ export type PaymentAttemptUncheckedUpdateManyWithoutInvoiceNestedInput = {
     | Prisma.PaymentAttemptScalarWhereInput[]
 }
 
+export type EnumPaymentAttemptStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentAttemptStatus
+}
+
 export type PaymentAttemptCreateNestedManyWithoutConnectionInput = {
   create?:
     | Prisma.XOR<
@@ -1206,10 +1210,6 @@ export type PaymentAttemptUncheckedUpdateManyWithoutConnectionNestedInput = {
   deleteMany?:
     | Prisma.PaymentAttemptScalarWhereInput
     | Prisma.PaymentAttemptScalarWhereInput[]
-}
-
-export type EnumPaymentAttemptStatusFieldUpdateOperationsInput = {
-  set?: $Enums.PaymentAttemptStatus
 }
 
 export type PaymentAttemptCreateNestedManyWithoutPaymentInput = {

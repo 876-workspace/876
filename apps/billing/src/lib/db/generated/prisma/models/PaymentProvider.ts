@@ -421,6 +421,11 @@ export type PaymentProviderUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type PaymentProviderScalarRelationFilter = {
+  is?: Prisma.PaymentProviderWhereInput
+  isNot?: Prisma.PaymentProviderWhereInput
+}
+
 export type PaymentProviderCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   key?: Prisma.SortOrder
@@ -463,11 +468,6 @@ export type PaymentProviderMinOrderByAggregateInput = {
 export type PaymentProviderSumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type PaymentProviderScalarRelationFilter = {
-  is?: Prisma.PaymentProviderWhereInput
-  isNot?: Prisma.PaymentProviderWhereInput
 }
 
 export type PaymentProviderCreateNestedOneWithoutConnectionsInput = {

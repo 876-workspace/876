@@ -17,28 +17,26 @@ export { Prisma }
 export * as $Enums from './enums.ts'
 export * from './enums.ts'
 /**
- * Model Role
- * A tenant-scoped collection of permissions. System roles establish
- * safe defaults; organizations may add custom roles without affecting others.
- */
-export type Role = Prisma.RoleModel
-/**
- * Model Member
- * An access grant for an opaque core 876 user ID. Identity and core
- * organization membership remain in the platform API, never this datastore.
- */
-export type Member = Prisma.MemberModel
-/**
  * Model Addon
  * A modular product enhancement. Monetary terms live on immutable prices so
  * catalog changes never rewrite an existing subscription agreement.
  */
 export type Addon = Prisma.AddonModel
 /**
- * Model PlanAddonAssociation
- * Availability and automation rules between a plan and an add-on.
+ * Model Address
+ * A physical address attached to a customer. Modeled on the platform
+ * `addresses` table but cross-DB-safe: `state` (parish/region) and
+ * `countryCode` are opaque strings, never foreign keys into the identity DB.
+ * Latitude/longitude are optional and used only to place the address on a map.
  */
-export type PlanAddonAssociation = Prisma.PlanAddonAssociationModel
+export type Address = Prisma.AddressModel
+/**
+ * Model AppFinanceConnection
+ * A narrow finance capability granted to one product app. The connection is
+ * independent of the organization's paid 876 Billing entitlement: embedded
+ * apps can use approved finance APIs without receiving Billing UI access.
+ */
+export type AppFinanceConnection = Prisma.AppFinanceConnectionModel
 /**
  * Model BankAccount
  * A tenant-owned financial account used to track manual money movement.
@@ -53,11 +51,57 @@ export type BankAccount = Prisma.BankAccountModel
  */
 export type BankTransaction = Prisma.BankTransactionModel
 /**
- * Model SubscriptionBillingRun
- * Idempotency and operational audit record for one subscription service
- * period. A scheduler may deliver the same due job more than once.
+ * Model Contact
+ * A contact person attached to a customer. For an external customer these are
+ * hand-entered people; for a core 876 organization the owner is seeded as the
+ * default primary contact (members are never bulk-imported). `userId` is an
+ * optional opaque 876 user reference — no cross-DB foreign key.
  */
-export type SubscriptionBillingRun = Prisma.SubscriptionBillingRunModel
+export type Contact = Prisma.ContactModel
+/**
+ * Model CouponAddonApplicability
+ *
+ */
+export type CouponAddonApplicability = Prisma.CouponAddonApplicabilityModel
+/**
+ * Model CouponCurrencyAmount
+ * Currency-specific fixed discount values. The original amount/currency pair
+ * on Coupon remains the base-currency fallback for existing integrations.
+ */
+export type CouponCurrencyAmount = Prisma.CouponCurrencyAmountModel
+/**
+ * Model CouponCustomerEligibility
+ *
+ */
+export type CouponCustomerEligibility = Prisma.CouponCustomerEligibilityModel
+/**
+ * Model CouponPlanApplicability
+ *
+ */
+export type CouponPlanApplicability = Prisma.CouponPlanApplicabilityModel
+/**
+ * Model CouponRedemption
+ * Append-only redemption evidence used for limits, reporting, and audits.
+ */
+export type CouponRedemption = Prisma.CouponRedemptionModel
+/**
+ * Model Coupon
+ * Reusable discount definition. Promotion codes and direct gifts reference a
+ * coupon instead of cloning a plan or mutating an immutable price.
+ */
+export type Coupon = Prisma.CouponModel
+/**
+ * Model CreditNoteAllocation
+ * The portion of one credit note applied to one invoice, reducing that
+ * invoice's balance. Mirrors PaymentAllocation and captures the invoice's
+ * prior state so an application can be reversed.
+ */
+export type CreditNoteAllocation = Prisma.CreditNoteAllocationModel
+/**
+ * Model CreditNoteLine
+ * An immutable snapshot of an item/price at the time it was added to a credit note.
+ */
+export type CreditNoteLine = Prisma.CreditNoteLineModel
 /**
  * Model CreditNote
  * A credit note (credit memo): reduces a customer's receivable / recognized
@@ -67,29 +111,23 @@ export type SubscriptionBillingRun = Prisma.SubscriptionBillingRunModel
  */
 export type CreditNote = Prisma.CreditNoteModel
 /**
- * Model CreditNoteLine
- * An immutable snapshot of an item/price at the time it was added to a credit note.
- */
-export type CreditNoteLine = Prisma.CreditNoteLineModel
-/**
- * Model CreditNoteAllocation
- * The portion of one credit note applied to one invoice, reducing that
- * invoice's balance. Mirrors PaymentAllocation and captures the invoice's
- * prior state so an application can be reversed.
- */
-export type CreditNoteAllocation = Prisma.CreditNoteAllocationModel
-/**
  * Model Currency
  * A supported ISO-4217-like currency definition. Billing stores all monetary
  * amounts in a currency's smallest unit and never converts across currencies.
  */
 export type Currency = Prisma.CurrencyModel
 /**
- * Model TenantCurrency
- * A currency that a tenant has explicitly enabled. A tenant may transact in
- * several currencies, but exactly one is designated as the default.
+ * Model CustomerImportReceipt
+ * Durable completed-result receipt for product-app customer imports. Dry-run
+ * previews never create receipts because they perform no writes.
  */
-export type TenantCurrency = Prisma.TenantCurrencyModel
+export type CustomerImportReceipt = Prisma.CustomerImportReceiptModel
+/**
+ * Model CustomerLedgerEntry
+ * Append-only customer subledger event used for statements, reconciliation,
+ * aging, and a future double-entry general-ledger projection.
+ */
+export type CustomerLedgerEntry = Prisma.CustomerLedgerEntryModel
 /**
  * Model Customer
  * A party billed by a tenant. Core user and organization identifiers
@@ -99,65 +137,6 @@ export type TenantCurrency = Prisma.TenantCurrencyModel
  * view and refreshed opportunistically (see `coreSyncedAt`).
  */
 export type Customer = Prisma.CustomerModel
-/**
- * Model Contact
- * A contact person attached to a customer. For an external customer these are
- * hand-entered people; for a core 876 organization the owner is seeded as the
- * default primary contact (members are never bulk-imported). `userId` is an
- * optional opaque 876 user reference — no cross-DB foreign key.
- */
-export type Contact = Prisma.ContactModel
-/**
- * Model Address
- * A physical address attached to a customer. Modeled on the platform
- * `addresses` table but cross-DB-safe: `state` (parish/region) and
- * `countryCode` are opaque strings, never foreign keys into the identity DB.
- * Latitude/longitude are optional and used only to place the address on a map.
- */
-export type Address = Prisma.AddressModel
-/**
- * Model Coupon
- * Reusable discount definition. Promotion codes and direct gifts reference a
- * coupon instead of cloning a plan or mutating an immutable price.
- */
-export type Coupon = Prisma.CouponModel
-/**
- * Model PromotionCode
- * Customer-facing redemption code separated from the discount definition.
- */
-export type PromotionCode = Prisma.PromotionCodeModel
-/**
- * Model CouponCurrencyAmount
- * Currency-specific fixed discount values. The original amount/currency pair
- * on Coupon remains the base-currency fallback for existing integrations.
- */
-export type CouponCurrencyAmount = Prisma.CouponCurrencyAmountModel
-/**
- * Model CouponPlanApplicability
- *
- */
-export type CouponPlanApplicability = Prisma.CouponPlanApplicabilityModel
-/**
- * Model CouponAddonApplicability
- *
- */
-export type CouponAddonApplicability = Prisma.CouponAddonApplicabilityModel
-/**
- * Model CouponCustomerEligibility
- *
- */
-export type CouponCustomerEligibility = Prisma.CouponCustomerEligibilityModel
-/**
- * Model CouponRedemption
- * Append-only redemption evidence used for limits, reporting, and audits.
- */
-export type CouponRedemption = Prisma.CouponRedemptionModel
-/**
- * Model SubscriptionDiscount
- * Immutable redemption snapshot attached to a subscription. Direct gifts may
- * omit a promotion code while retaining their coupon and grant metadata.
- */
-export type SubscriptionDiscount = Prisma.SubscriptionDiscountModel
 /**
  * Model DocumentPreference
  * Application-owned defaults for customer-facing financial documents.
@@ -173,22 +152,15 @@ export type DocumentPreference = Prisma.DocumentPreferenceModel
  */
 export type DocumentSequence = Prisma.DocumentSequenceModel
 /**
- * Model Estimate
- * A non-binding sales estimate. Similar to a quote.
- */
-export type Estimate = Prisma.EstimateModel
-/**
  * Model EstimateLine
  * An immutable snapshot of an item/price at the time it was added to an estimate.
  */
 export type EstimateLine = Prisma.EstimateLineModel
 /**
- * Model AppFinanceConnection
- * A narrow finance capability granted to one product app. The connection is
- * independent of the organization's paid 876 Billing entitlement: embedded
- * apps can use approved finance APIs without receiving Billing UI access.
+ * Model Estimate
+ * A non-binding sales estimate. Similar to a quote.
  */
-export type AppFinanceConnection = Prisma.AppFinanceConnectionModel
+export type Estimate = Prisma.EstimateModel
 /**
  * Model FinanceProvisioningInbox
  * Durable receipt for one Core finance provisioning event. Receipts are not
@@ -197,28 +169,28 @@ export type AppFinanceConnection = Prisma.AppFinanceConnectionModel
  */
 export type FinanceProvisioningInbox = Prisma.FinanceProvisioningInboxModel
 /**
+ * Model InvoiceLine
+ * An immutable snapshot of an item/price at the time it was added to an invoice.
+ */
+export type InvoiceLine = Prisma.InvoiceLineModel
+/**
  * Model InvoicePreference
  * Workspace invoice defaults. Historical invoices snapshot every resolved
  * value they need; changing preferences never rewrites posted documents.
  */
 export type InvoicePreference = Prisma.InvoicePreferenceModel
 /**
- * Model LateFeeAssessment
- * Immutable evidence of one late-fee decision. The assessment records the
- * policy and balance used even if workspace preferences later change.
+ * Model InvoiceSubscription
+ * Join evidence allows a consolidated invoice to cover multiple agreements
+ * without overloading Invoice.subscriptionId.
  */
-export type LateFeeAssessment = Prisma.LateFeeAssessmentModel
+export type InvoiceSubscription = Prisma.InvoiceSubscriptionModel
 /**
  * Model Invoice
  * A commercial invoice document. It deliberately does not equal a payment,
  * accounting journal entry, or provider-hosted payment page.
  */
 export type Invoice = Prisma.InvoiceModel
-/**
- * Model InvoiceLine
- * An immutable snapshot of an item/price at the time it was added to an invoice.
- */
-export type InvoiceLine = Prisma.InvoiceLineModel
 /**
  * Model Item
  * A tenant-owned sellable item used on quotes and invoices. It can represent a
@@ -233,29 +205,22 @@ export type Item = Prisma.ItemModel
  */
 export type Language = Prisma.LanguageModel
 /**
- * Model CustomerLedgerEntry
- * Append-only customer subledger event used for statements, reconciliation,
- * aging, and a future double-entry general-ledger projection.
+ * Model LateFeeAssessment
+ * Immutable evidence of one late-fee decision. The assessment records the
+ * policy and balance used even if workspace preferences later change.
  */
-export type CustomerLedgerEntry = Prisma.CustomerLedgerEntryModel
+export type LateFeeAssessment = Prisma.LateFeeAssessmentModel
 /**
- * Model PaymentMode
- * A tenant-configurable way to receive money. System modes provide useful
- * defaults while custom modes preserve each tenant's operational vocabulary.
+ * Model Member
+ * An access grant for an opaque core 876 user ID. Identity and core
+ * organization membership remain in the platform API, never this datastore.
  */
-export type PaymentMode = Prisma.PaymentModeModel
+export type Member = Prisma.MemberModel
 /**
- * Model PaymentProvider
- * Provider catalog. Definitions contain presentation and adapter metadata,
- * never tenant credentials or provider-specific payment state.
+ * Model PaymentAllocation
+ * The portion of one payment applied to one invoice.
  */
-export type PaymentProvider = Prisma.PaymentProviderModel
-/**
- * Model PaymentProviderConnection
- * Tenant-owned merchant connection. Secret fields are references to an
- * external secret store; raw credentials must never be persisted here.
- */
-export type PaymentProviderConnection = Prisma.PaymentProviderConnectionModel
+export type PaymentAllocation = Prisma.PaymentAllocationModel
 /**
  * Model PaymentAttempt
  * Normalized provider charge lifecycle. A successful attempt may create or
@@ -263,11 +228,29 @@ export type PaymentProviderConnection = Prisma.PaymentProviderConnectionModel
  */
 export type PaymentAttempt = Prisma.PaymentAttemptModel
 /**
+ * Model PaymentMode
+ * A tenant-configurable way to receive money. System modes provide useful
+ * defaults while custom modes preserve each tenant's operational vocabulary.
+ */
+export type PaymentMode = Prisma.PaymentModeModel
+/**
+ * Model PaymentProviderConnection
+ * Tenant-owned merchant connection. Secret fields are references to an
+ * external secret store; raw credentials must never be persisted here.
+ */
+export type PaymentProviderConnection = Prisma.PaymentProviderConnectionModel
+/**
  * Model PaymentProviderEvent
  * Durable provider-event inbox. Adapters verify signatures before inserting;
  * workers acknowledge, deduplicate, then process events asynchronously.
  */
 export type PaymentProviderEvent = Prisma.PaymentProviderEventModel
+/**
+ * Model PaymentProvider
+ * Provider catalog. Definitions contain presentation and adapter metadata,
+ * never tenant credentials or provider-specific payment state.
+ */
+export type PaymentProvider = Prisma.PaymentProviderModel
 /**
  * Model PaymentTerm
  * Tenant-configurable rules used to derive invoice due dates. The resolved due
@@ -281,10 +264,10 @@ export type PaymentTerm = Prisma.PaymentTermModel
  */
 export type Payment = Prisma.PaymentModel
 /**
- * Model PaymentAllocation
- * The portion of one payment applied to one invoice.
+ * Model PlanAddonAssociation
+ * Availability and automation rules between a plan and an add-on.
  */
-export type PaymentAllocation = Prisma.PaymentAllocationModel
+export type PlanAddonAssociation = Prisma.PlanAddonAssociationModel
 /**
  * Model Plan
  * A subscription plan defines its cadence, trial, setup-fee, and commercial
@@ -296,21 +279,28 @@ export type PaymentAllocation = Prisma.PaymentAllocationModel
  */
 export type Plan = Prisma.PlanModel
 /**
- * Model PriceList
- * A reusable pricing policy assignable to customers and transactions.
- * Documents snapshot its name and resolved monetary amounts.
+ * Model PriceListEntryTier
+ *
  */
-export type PriceList = Prisma.PriceListModel
+export type PriceListEntryTier = Prisma.PriceListEntryTierModel
 /**
  * Model PriceListEntry
  *
  */
 export type PriceListEntry = Prisma.PriceListEntryModel
 /**
- * Model PriceListEntryTier
- *
+ * Model PriceList
+ * A reusable pricing policy assignable to customers and transactions.
+ * Documents snapshot its name and resolved monetary amounts.
  */
-export type PriceListEntryTier = Prisma.PriceListEntryTierModel
+export type PriceList = Prisma.PriceListModel
+/**
+ * Model PriceTier
+ * Quantity tiers used by volume and graduated/tiered prices. No provider
+ * calculation is performed in this foundation; the structure is preserved for
+ * a future calculation engine or provider adapter.
+ */
+export type PriceTier = Prisma.PriceTierModel
 /**
  * Model Price
  * An immutable monetary offer attached to either an item or a plan. New prices
@@ -320,29 +310,27 @@ export type PriceListEntryTier = Prisma.PriceListEntryTierModel
  */
 export type Price = Prisma.PriceModel
 /**
- * Model PriceTier
- * Quantity tiers used by volume and graduated/tiered prices. No provider
- * calculation is performed in this foundation; the structure is preserved for
- * a future calculation engine or provider adapter.
- */
-export type PriceTier = Prisma.PriceTierModel
-/**
  * Model Product
  * A subscription product groups related plans, add-ons, and later reporting
  * dimensions. `sourceAppId` is an optional opaque link to an 876 application.
  */
 export type Product = Prisma.ProductModel
 /**
- * Model Quote
- * A non-binding sales proposal. Quote acceptance can later create an invoice
- * or subscription, but this release does not send or collect payment.
+ * Model PromotionCode
+ * Customer-facing redemption code separated from the discount definition.
  */
-export type Quote = Prisma.QuoteModel
+export type PromotionCode = Prisma.PromotionCodeModel
 /**
  * Model QuoteLine
  * An immutable snapshot of an item/price at the time it was added to a quote.
  */
 export type QuoteLine = Prisma.QuoteLineModel
+/**
+ * Model Quote
+ * A non-binding sales proposal. Quote acceptance can later create an invoice
+ * or subscription, but this release does not send or collect payment.
+ */
+export type Quote = Prisma.QuoteModel
 /**
  * Model Refund
  * Cash returned to a customer, drawn from an overpayment (a Payment's
@@ -353,11 +341,28 @@ export type QuoteLine = Prisma.QuoteLineModel
  */
 export type Refund = Prisma.RefundModel
 /**
+ * Model Role
+ * A tenant-scoped collection of permissions. System roles establish
+ * safe defaults; organizations may add custom roles without affecting others.
+ */
+export type Role = Prisma.RoleModel
+/**
  * Model Salesperson
  * Optional commercial owner used for attribution and future commission
  * reporting. It does not grant Billing permissions.
  */
 export type Salesperson = Prisma.SalespersonModel
+/**
+ * Model SubscriptionAdvanceBillingRule
+ *
+ */
+export type SubscriptionAdvanceBillingRule =
+  Prisma.SubscriptionAdvanceBillingRuleModel
+/**
+ * Model SubscriptionAmendmentItem
+ *
+ */
+export type SubscriptionAmendmentItem = Prisma.SubscriptionAmendmentItemModel
 /**
  * Model SubscriptionAmendment
  * A requested subscription composition or commercial-term change. Desired
@@ -365,62 +370,11 @@ export type Salesperson = Prisma.SalespersonModel
  */
 export type SubscriptionAmendment = Prisma.SubscriptionAmendmentModel
 /**
- * Model SubscriptionAmendmentItem
- *
+ * Model SubscriptionBillingRun
+ * Idempotency and operational audit record for one subscription service
+ * period. A scheduler may deliver the same due job more than once.
  */
-export type SubscriptionAmendmentItem = Prisma.SubscriptionAmendmentItemModel
-/**
- * Model SubscriptionLifecycleSchedule
- *
- */
-export type SubscriptionLifecycleSchedule =
-  Prisma.SubscriptionLifecycleScheduleModel
-/**
- * Model SubscriptionCharge
- *
- */
-export type SubscriptionCharge = Prisma.SubscriptionChargeModel
-/**
- * Model SubscriptionNotificationOutbox
- * Durable staff-notification outbox. Delivery adapters claim these rows and
- * record attempts without coupling invoice transactions to email providers.
- */
-export type SubscriptionNotificationOutbox =
-  Prisma.SubscriptionNotificationOutboxModel
-/**
- * Model InvoiceSubscription
- * Join evidence allows a consolidated invoice to cover multiple agreements
- * without overloading Invoice.subscriptionId.
- */
-export type InvoiceSubscription = Prisma.InvoiceSubscriptionModel
-/**
- * Model SubscriptionCustomView
- *
- */
-export type SubscriptionCustomView = Prisma.SubscriptionCustomViewModel
-/**
- * Model SubscriptionCustomViewRule
- *
- */
-export type SubscriptionCustomViewRule = Prisma.SubscriptionCustomViewRuleModel
-/**
- * Model SubscriptionCustomViewColumn
- *
- */
-export type SubscriptionCustomViewColumn =
-  Prisma.SubscriptionCustomViewColumnModel
-/**
- * Model SubscriptionPreference
- * Tenant defaults for subscription creation and renewal. Per-subscription and
- * per-customer overrides remain nullable so inheritance is explicit.
- */
-export type SubscriptionPreference = Prisma.SubscriptionPreferenceModel
-/**
- * Model SubscriptionAdvanceBillingRule
- *
- */
-export type SubscriptionAdvanceBillingRule =
-  Prisma.SubscriptionAdvanceBillingRuleModel
+export type SubscriptionBillingRun = Prisma.SubscriptionBillingRunModel
 /**
  * Model SubscriptionCalendarDay
  *
@@ -432,22 +386,68 @@ export type SubscriptionCalendarDay = Prisma.SubscriptionCalendarDayModel
  */
 export type SubscriptionCalendarMonth = Prisma.SubscriptionCalendarMonthModel
 /**
- * Model Subscription
- * A commercial agreement between a Billing tenant and customer. It is not an
- * invoice and does not represent a collected payment.
- */
-export type Subscription = Prisma.SubscriptionModel
-/**
- * Model SubscriptionItem
+ * Model SubscriptionCharge
  *
  */
-export type SubscriptionItem = Prisma.SubscriptionItemModel
+export type SubscriptionCharge = Prisma.SubscriptionChargeModel
+/**
+ * Model SubscriptionCustomViewColumn
+ *
+ */
+export type SubscriptionCustomViewColumn =
+  Prisma.SubscriptionCustomViewColumnModel
+/**
+ * Model SubscriptionCustomViewRule
+ *
+ */
+export type SubscriptionCustomViewRule = Prisma.SubscriptionCustomViewRuleModel
+/**
+ * Model SubscriptionCustomView
+ *
+ */
+export type SubscriptionCustomView = Prisma.SubscriptionCustomViewModel
+/**
+ * Model SubscriptionDiscount
+ * Immutable redemption snapshot attached to a subscription. Direct gifts may
+ * omit a promotion code while retaining their coupon and grant metadata.
+ */
+export type SubscriptionDiscount = Prisma.SubscriptionDiscountModel
 /**
  * Model SubscriptionEvent
  * Immutable lifecycle history. It provides the audit trail for subscription
  * metrics now and future entitlement/payment integrations later.
  */
 export type SubscriptionEvent = Prisma.SubscriptionEventModel
+/**
+ * Model SubscriptionItem
+ *
+ */
+export type SubscriptionItem = Prisma.SubscriptionItemModel
+/**
+ * Model SubscriptionLifecycleSchedule
+ *
+ */
+export type SubscriptionLifecycleSchedule =
+  Prisma.SubscriptionLifecycleScheduleModel
+/**
+ * Model SubscriptionNotificationOutbox
+ * Durable staff-notification outbox. Delivery adapters claim these rows and
+ * record attempts without coupling invoice transactions to email providers.
+ */
+export type SubscriptionNotificationOutbox =
+  Prisma.SubscriptionNotificationOutboxModel
+/**
+ * Model SubscriptionPreference
+ * Tenant defaults for subscription creation and renewal. Per-subscription and
+ * per-customer overrides remain nullable so inheritance is explicit.
+ */
+export type SubscriptionPreference = Prisma.SubscriptionPreferenceModel
+/**
+ * Model Subscription
+ * A commercial agreement between a Billing tenant and customer. It is not an
+ * invoice and does not represent a collected payment.
+ */
+export type Subscription = Prisma.SubscriptionModel
 /**
  * Model TaxAuthority
  * A tenant-owned government or regulatory body responsible for a tax.
@@ -461,6 +461,12 @@ export type TaxAuthority = Prisma.TaxAuthorityModel
  * commercial documents cannot silently change meaning.
  */
 export type TaxRate = Prisma.TaxRateModel
+/**
+ * Model TenantCurrency
+ * A currency that a tenant has explicitly enabled. A tenant may transact in
+ * several currencies, but exactly one is designated as the default.
+ */
+export type TenantCurrency = Prisma.TenantCurrencyModel
 /**
  * Model Tenant
  * A workspace. The initial platform workspace represents 876 itself;

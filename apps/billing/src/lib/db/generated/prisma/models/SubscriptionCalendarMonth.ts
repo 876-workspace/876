@@ -318,16 +318,6 @@ export type SubscriptionCalendarMonthUncheckedUpdateManyInput = {
   month?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type SubscriptionCalendarMonthListRelationFilter = {
-  every?: Prisma.SubscriptionCalendarMonthWhereInput
-  some?: Prisma.SubscriptionCalendarMonthWhereInput
-  none?: Prisma.SubscriptionCalendarMonthWhereInput
-}
-
-export type SubscriptionCalendarMonthOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type SubscriptionCalendarMonthTenantIdMonthCompoundUniqueInput = {
   tenantId: string
   month: number
@@ -354,6 +344,16 @@ export type SubscriptionCalendarMonthMinOrderByAggregateInput = {
 
 export type SubscriptionCalendarMonthSumOrderByAggregateInput = {
   month?: Prisma.SortOrder
+}
+
+export type SubscriptionCalendarMonthListRelationFilter = {
+  every?: Prisma.SubscriptionCalendarMonthWhereInput
+  some?: Prisma.SubscriptionCalendarMonthWhereInput
+  none?: Prisma.SubscriptionCalendarMonthWhereInput
+}
+
+export type SubscriptionCalendarMonthOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type SubscriptionCalendarMonthCreateNestedManyWithoutPreferenceInput = {

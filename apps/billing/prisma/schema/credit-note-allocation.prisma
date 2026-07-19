@@ -1,0 +1,27 @@
+
+/// The portion of one credit note applied to one invoice, reducing that
+/// invoice's balance. Mirrors PaymentAllocation and captures the invoice's
+/// prior state so an application can be reversed.
+model CreditNoteAllocation {
+  id                  String        @id
+  tenantId            String        @map("tenant_id")
+  creditNoteId        String        @map("credit_note_id")
+  invoiceId           String        @map("invoice_id")
+  amount              BigInt
+  invoiceStatusBefore InvoiceStatus @map("invoice_status_before")
+  invoicePaidAtBefore Int?          @map("invoice_paid_at_before")
+  reversedAt          Int?          @map("reversed_at")
+  createdAt           Int           @map("created_at")
+  updatedAt           Int           @map("updated_at")
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_credit_note_allocations_tenant_id_fkey")
+  creditNote CreditNote @relation(fields: [tenantId, creditNoteId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_credit_note_allocations_credit_note_fkey")
+  invoice    Invoice    @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_credit_note_allocations_invoice_fkey")
+
+  @@index([tenantId, creditNoteId], map: "billing_credit_note_allocations_tenant_credit_note_idx")
+  @@index([tenantId, invoiceId], map: "billing_credit_note_allocations_tenant_invoice_idx")
+  @@index([tenantId, creditNoteId, reversedAt], map: "billing_credit_note_allocations_active_idx")
+  @@index([creditNoteId], map: "billing_credit_note_allocations_credit_note_id_idx")
+  @@index([invoiceId], map: "billing_credit_note_allocations_invoice_id_idx")
+  @@map("billing_credit_note_allocations")
+}

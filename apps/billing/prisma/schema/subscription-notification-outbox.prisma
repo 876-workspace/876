@@ -1,0 +1,29 @@
+
+/// Durable staff-notification outbox. Delivery adapters claim these rows and
+/// record attempts without coupling invoice transactions to email providers.
+model SubscriptionNotificationOutbox {
+  id             String                         @id
+  tenantId       String                         @map("tenant_id")
+  subscriptionId String?                        @map("subscription_id")
+  invoiceId      String?                        @map("invoice_id")
+  type           SubscriptionNotificationType
+  status         SubscriptionNotificationStatus @default(PENDING)
+  dedupeKey      String                         @map("dedupe_key")
+  payload        Json?
+  attemptCount   Int                            @default(0) @map("attempt_count")
+  lastAttemptAt  Int?                           @map("last_attempt_at")
+  deliveredAt    Int?                           @map("delivered_at")
+  failureMessage String?                        @map("failure_message")
+  createdAt      Int                            @map("created_at")
+  updatedAt      Int                            @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_notification_outbox_tenant_fkey")
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_subscription_notification_outbox_subscription_fkey")
+  invoice      Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_subscription_notification_outbox_invoice_fkey")
+
+  @@unique([tenantId, dedupeKey], name: "billing_subscription_notifications_dedupe_key", map: "billing_subscription_notifications_dedupe_key")
+  @@index([tenantId, status, createdAt], map: "billing_subscription_notifications_delivery_idx")
+  @@index([subscriptionId, createdAt], map: "billing_subscription_notifications_subscription_idx")
+  @@index([invoiceId], map: "billing_subscription_notification_outbox_invoice_id_idx")
+  @@map("billing_subscription_notification_outbox")
+}

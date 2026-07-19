@@ -600,16 +600,6 @@ export type AddressUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type AddressListRelationFilter = {
-  every?: Prisma.AddressWhereInput
-  some?: Prisma.AddressWhereInput
-  none?: Prisma.AddressWhereInput
-}
-
-export type AddressOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type AddressTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -687,6 +677,24 @@ export type AddressSumOrderByAggregateInput = {
   longitude?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type AddressListRelationFilter = {
+  every?: Prisma.AddressWhereInput
+  some?: Prisma.AddressWhereInput
+  none?: Prisma.AddressWhereInput
+}
+
+export type AddressOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type AddressCreateNestedManyWithoutCustomerInput = {
@@ -773,14 +781,6 @@ export type AddressUncheckedUpdateManyWithoutCustomerNestedInput = {
     | Prisma.AddressUpdateManyWithWhereWithoutCustomerInput
     | Prisma.AddressUpdateManyWithWhereWithoutCustomerInput[]
   deleteMany?: Prisma.AddressScalarWhereInput | Prisma.AddressScalarWhereInput[]
-}
-
-export type NullableFloatFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
 }
 
 export type AddressCreateNestedManyWithoutTenantInput = {

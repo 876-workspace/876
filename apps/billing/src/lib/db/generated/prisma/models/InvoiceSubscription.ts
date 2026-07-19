@@ -551,16 +551,6 @@ export type InvoiceSubscriptionUncheckedUpdateManyInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type InvoiceSubscriptionListRelationFilter = {
-  every?: Prisma.InvoiceSubscriptionWhereInput
-  some?: Prisma.InvoiceSubscriptionWhereInput
-  none?: Prisma.InvoiceSubscriptionWhereInput
-}
-
-export type InvoiceSubscriptionOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type InvoiceSubscriptionInvoiceIdSubscriptionIdCompoundUniqueInput = {
   invoiceId: string
   subscriptionId: string
@@ -623,6 +613,16 @@ export type InvoiceSubscriptionSumOrderByAggregateInput = {
   taxAmount?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type InvoiceSubscriptionListRelationFilter = {
+  every?: Prisma.InvoiceSubscriptionWhereInput
+  some?: Prisma.InvoiceSubscriptionWhereInput
+  none?: Prisma.InvoiceSubscriptionWhereInput
+}
+
+export type InvoiceSubscriptionOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type InvoiceSubscriptionCreateNestedManyWithoutInvoiceInput = {

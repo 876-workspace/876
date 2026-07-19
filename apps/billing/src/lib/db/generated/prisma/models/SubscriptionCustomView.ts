@@ -527,6 +527,11 @@ export type SubscriptionCustomViewUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type SubscriptionCustomViewScalarRelationFilter = {
+  is?: Prisma.SubscriptionCustomViewWhereInput
+  isNot?: Prisma.SubscriptionCustomViewWhereInput
+}
+
 export type SubscriptionCustomViewTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -588,11 +593,6 @@ export type SubscriptionCustomViewSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type SubscriptionCustomViewScalarRelationFilter = {
-  is?: Prisma.SubscriptionCustomViewWhereInput
-  isNot?: Prisma.SubscriptionCustomViewWhereInput
-}
-
 export type SubscriptionCustomViewListRelationFilter = {
   every?: Prisma.SubscriptionCustomViewWhereInput
   some?: Prisma.SubscriptionCustomViewWhereInput
@@ -603,8 +603,30 @@ export type SubscriptionCustomViewOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type EnumCustomViewVisibilityFieldUpdateOperationsInput = {
-  set?: $Enums.CustomViewVisibility
+export type SubscriptionCustomViewCreateNestedOneWithoutColumnsInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCustomViewCreateWithoutColumnsInput,
+    Prisma.SubscriptionCustomViewUncheckedCreateWithoutColumnsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCustomViewCreateOrConnectWithoutColumnsInput
+  connect?: Prisma.SubscriptionCustomViewWhereUniqueInput
+}
+
+export type SubscriptionCustomViewUpdateOneRequiredWithoutColumnsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionCustomViewCreateWithoutColumnsInput,
+    Prisma.SubscriptionCustomViewUncheckedCreateWithoutColumnsInput
+  >
+  connectOrCreate?: Prisma.SubscriptionCustomViewCreateOrConnectWithoutColumnsInput
+  upsert?: Prisma.SubscriptionCustomViewUpsertWithoutColumnsInput
+  connect?: Prisma.SubscriptionCustomViewWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionCustomViewUpdateToOneWithWhereWithoutColumnsInput,
+      Prisma.SubscriptionCustomViewUpdateWithoutColumnsInput
+    >,
+    Prisma.SubscriptionCustomViewUncheckedUpdateWithoutColumnsInput
+  >
 }
 
 export type SubscriptionCustomViewCreateNestedOneWithoutRulesInput = {
@@ -633,30 +655,8 @@ export type SubscriptionCustomViewUpdateOneRequiredWithoutRulesNestedInput = {
   >
 }
 
-export type SubscriptionCustomViewCreateNestedOneWithoutColumnsInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCustomViewCreateWithoutColumnsInput,
-    Prisma.SubscriptionCustomViewUncheckedCreateWithoutColumnsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCustomViewCreateOrConnectWithoutColumnsInput
-  connect?: Prisma.SubscriptionCustomViewWhereUniqueInput
-}
-
-export type SubscriptionCustomViewUpdateOneRequiredWithoutColumnsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionCustomViewCreateWithoutColumnsInput,
-    Prisma.SubscriptionCustomViewUncheckedCreateWithoutColumnsInput
-  >
-  connectOrCreate?: Prisma.SubscriptionCustomViewCreateOrConnectWithoutColumnsInput
-  upsert?: Prisma.SubscriptionCustomViewUpsertWithoutColumnsInput
-  connect?: Prisma.SubscriptionCustomViewWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionCustomViewUpdateToOneWithWhereWithoutColumnsInput,
-      Prisma.SubscriptionCustomViewUpdateWithoutColumnsInput
-    >,
-    Prisma.SubscriptionCustomViewUncheckedUpdateWithoutColumnsInput
-  >
+export type EnumCustomViewVisibilityFieldUpdateOperationsInput = {
+  set?: $Enums.CustomViewVisibility
 }
 
 export type SubscriptionCustomViewCreateNestedManyWithoutTenantInput = {
@@ -771,100 +771,6 @@ export type SubscriptionCustomViewUncheckedUpdateManyWithoutTenantNestedInput =
       | Prisma.SubscriptionCustomViewScalarWhereInput[]
   }
 
-export type SubscriptionCustomViewCreateWithoutRulesInput = {
-  id: string
-  name: string
-  ownerUserId?: string | null
-  visibility?: $Enums.CustomViewVisibility
-  isFavorite?: boolean
-  sortField?: string | null
-  sortDirection?: string | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionCustomViewsInput
-  columns?: Prisma.SubscriptionCustomViewColumnCreateNestedManyWithoutViewInput
-}
-
-export type SubscriptionCustomViewUncheckedCreateWithoutRulesInput = {
-  id: string
-  tenantId: string
-  name: string
-  ownerUserId?: string | null
-  visibility?: $Enums.CustomViewVisibility
-  isFavorite?: boolean
-  sortField?: string | null
-  sortDirection?: string | null
-  createdAt: number
-  updatedAt: number
-  columns?: Prisma.SubscriptionCustomViewColumnUncheckedCreateNestedManyWithoutViewInput
-}
-
-export type SubscriptionCustomViewCreateOrConnectWithoutRulesInput = {
-  where: Prisma.SubscriptionCustomViewWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionCustomViewCreateWithoutRulesInput,
-    Prisma.SubscriptionCustomViewUncheckedCreateWithoutRulesInput
-  >
-}
-
-export type SubscriptionCustomViewUpsertWithoutRulesInput = {
-  update: Prisma.XOR<
-    Prisma.SubscriptionCustomViewUpdateWithoutRulesInput,
-    Prisma.SubscriptionCustomViewUncheckedUpdateWithoutRulesInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionCustomViewCreateWithoutRulesInput,
-    Prisma.SubscriptionCustomViewUncheckedCreateWithoutRulesInput
-  >
-  where?: Prisma.SubscriptionCustomViewWhereInput
-}
-
-export type SubscriptionCustomViewUpdateToOneWithWhereWithoutRulesInput = {
-  where?: Prisma.SubscriptionCustomViewWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionCustomViewUpdateWithoutRulesInput,
-    Prisma.SubscriptionCustomViewUncheckedUpdateWithoutRulesInput
-  >
-}
-
-export type SubscriptionCustomViewUpdateWithoutRulesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  visibility?:
-    | Prisma.EnumCustomViewVisibilityFieldUpdateOperationsInput
-    | $Enums.CustomViewVisibility
-  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  sortField?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sortDirection?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionCustomViewsNestedInput
-  columns?: Prisma.SubscriptionCustomViewColumnUpdateManyWithoutViewNestedInput
-}
-
-export type SubscriptionCustomViewUncheckedUpdateWithoutRulesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  visibility?:
-    | Prisma.EnumCustomViewVisibilityFieldUpdateOperationsInput
-    | $Enums.CustomViewVisibility
-  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  sortField?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sortDirection?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  columns?: Prisma.SubscriptionCustomViewColumnUncheckedUpdateManyWithoutViewNestedInput
-}
-
 export type SubscriptionCustomViewCreateWithoutColumnsInput = {
   id: string
   name: string
@@ -957,6 +863,100 @@ export type SubscriptionCustomViewUncheckedUpdateWithoutColumnsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   rules?: Prisma.SubscriptionCustomViewRuleUncheckedUpdateManyWithoutViewNestedInput
+}
+
+export type SubscriptionCustomViewCreateWithoutRulesInput = {
+  id: string
+  name: string
+  ownerUserId?: string | null
+  visibility?: $Enums.CustomViewVisibility
+  isFavorite?: boolean
+  sortField?: string | null
+  sortDirection?: string | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionCustomViewsInput
+  columns?: Prisma.SubscriptionCustomViewColumnCreateNestedManyWithoutViewInput
+}
+
+export type SubscriptionCustomViewUncheckedCreateWithoutRulesInput = {
+  id: string
+  tenantId: string
+  name: string
+  ownerUserId?: string | null
+  visibility?: $Enums.CustomViewVisibility
+  isFavorite?: boolean
+  sortField?: string | null
+  sortDirection?: string | null
+  createdAt: number
+  updatedAt: number
+  columns?: Prisma.SubscriptionCustomViewColumnUncheckedCreateNestedManyWithoutViewInput
+}
+
+export type SubscriptionCustomViewCreateOrConnectWithoutRulesInput = {
+  where: Prisma.SubscriptionCustomViewWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionCustomViewCreateWithoutRulesInput,
+    Prisma.SubscriptionCustomViewUncheckedCreateWithoutRulesInput
+  >
+}
+
+export type SubscriptionCustomViewUpsertWithoutRulesInput = {
+  update: Prisma.XOR<
+    Prisma.SubscriptionCustomViewUpdateWithoutRulesInput,
+    Prisma.SubscriptionCustomViewUncheckedUpdateWithoutRulesInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionCustomViewCreateWithoutRulesInput,
+    Prisma.SubscriptionCustomViewUncheckedCreateWithoutRulesInput
+  >
+  where?: Prisma.SubscriptionCustomViewWhereInput
+}
+
+export type SubscriptionCustomViewUpdateToOneWithWhereWithoutRulesInput = {
+  where?: Prisma.SubscriptionCustomViewWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionCustomViewUpdateWithoutRulesInput,
+    Prisma.SubscriptionCustomViewUncheckedUpdateWithoutRulesInput
+  >
+}
+
+export type SubscriptionCustomViewUpdateWithoutRulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibility?:
+    | Prisma.EnumCustomViewVisibilityFieldUpdateOperationsInput
+    | $Enums.CustomViewVisibility
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortField?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortDirection?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutSubscriptionCustomViewsNestedInput
+  columns?: Prisma.SubscriptionCustomViewColumnUpdateManyWithoutViewNestedInput
+}
+
+export type SubscriptionCustomViewUncheckedUpdateWithoutRulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibility?:
+    | Prisma.EnumCustomViewVisibilityFieldUpdateOperationsInput
+    | $Enums.CustomViewVisibility
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sortField?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sortDirection?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  columns?: Prisma.SubscriptionCustomViewColumnUncheckedUpdateManyWithoutViewNestedInput
 }
 
 export type SubscriptionCustomViewCreateWithoutTenantInput = {

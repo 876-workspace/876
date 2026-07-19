@@ -47,12 +47,12 @@ model Subscription {
   createdAt                Int                      @map("created_at")
   updatedAt                Int                      @map("updated_at")
 
-  tenant                  Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customer                Customer                         @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  replacesSubscription    Subscription?                    @relation("SubscriptionReactivation", fields: [replacesSubscriptionId], references: [id], onDelete: Restrict)
+  tenant                  Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscriptions_tenant_id_fkey")
+  customer                Customer                         @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscriptions_customer_id_fkey")
+  replacesSubscription    Subscription?                    @relation("SubscriptionReactivation", fields: [replacesSubscriptionId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscriptions_replaces_subscription_fkey")
   replacementSubscription Subscription?                    @relation("SubscriptionReactivation")
-  paymentTerm             PaymentTerm?                     @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict)
-  priceList               PriceList?                       @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict)
+  paymentTerm             PaymentTerm?                     @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscriptions_payment_term_fkey")
+  priceList               PriceList?                       @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscriptions_price_list_fkey")
   invoices                Invoice[]
   invoiceLinks            InvoiceSubscription[]
   items                   SubscriptionItem[]
@@ -67,56 +67,15 @@ model Subscription {
   couponRedemptions       CouponRedemption[]
   notificationOutbox      SubscriptionNotificationOutbox[]
 
-  @@unique([tenantId, externalReference], name: "billing_subscriptions_tenant_external_reference_key")
-  @@index([tenantId], name: "billing_subscriptions_tenant_id_idx")
-  @@index([customerId], name: "billing_subscriptions_customer_id_idx")
-  @@index([status], name: "billing_subscriptions_status_idx")
-  @@index([sourceAppId], name: "billing_subscriptions_source_app_id_idx")
-  @@index([tenantId, nextBillingAt], name: "billing_subscriptions_tenant_next_billing_idx")
-  @@index([tenantId, nextAdvanceInvoiceAt], name: "billing_subscriptions_tenant_next_advance_invoice_idx")
-  @@index([priceListId], name: "billing_subscriptions_price_list_id_idx")
-  @@index([tenantId, deletedAt], name: "billing_subscriptions_tenant_deleted_at_idx")
+  @@unique([tenantId, externalReference], name: "billing_subscriptions_tenant_external_reference_key", map: "billing_subscriptions_tenant_id_external_reference_key")
+  @@index([tenantId], map: "billing_subscriptions_tenant_id_idx")
+  @@index([customerId], map: "billing_subscriptions_customer_id_idx")
+  @@index([status], map: "billing_subscriptions_status_idx")
+  @@index([sourceAppId], map: "billing_subscriptions_source_app_id_idx")
+  @@index([tenantId, nextBillingAt], map: "billing_subscriptions_tenant_next_billing_idx")
+  @@index([tenantId, nextAdvanceInvoiceAt], map: "billing_subscriptions_tenant_next_advance_invoice_idx")
+  @@index([priceListId], map: "billing_subscriptions_price_list_id_idx")
+  @@index([tenantId, deletedAt], map: "billing_subscriptions_tenant_deleted_at_idx")
+  @@index([paymentTermId], map: "billing_subscriptions_payment_term_id_idx")
   @@map("billing_subscriptions")
-}
-
-model SubscriptionItem {
-  id             String  @id
-  subscriptionId String  @map("subscription_id")
-  priceId        String  @map("price_id")
-  quantity       Int     @default(1)
-  unitAmount     BigInt? @map("unit_amount")
-  currency       String?
-  description    String?
-  position       Int     @default(0)
-  isActive       Boolean @default(true) @map("is_active")
-  startsAt       Int?    @map("starts_at")
-  endsAt         Int?    @map("ends_at")
-  metadata       Json?
-  createdAt      Int     @map("created_at")
-  updatedAt      Int     @map("updated_at")
-
-  subscription Subscription           @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  price        Price                  @relation(fields: [priceId], references: [id], onDelete: Restrict)
-  invoiceLines InvoiceLine[]
-  discounts    SubscriptionDiscount[]
-
-  @@index([subscriptionId, isActive, position], name: "billing_subscription_items_active_position_idx")
-  @@index([priceId], name: "billing_subscription_items_price_id_idx")
-  @@map("billing_subscription_items")
-}
-
-/// Immutable lifecycle history. It provides the audit trail for subscription
-/// metrics now and future entitlement/payment integrations later.
-model SubscriptionEvent {
-  id             String                @id
-  subscriptionId String                @map("subscription_id")
-  type           SubscriptionEventType
-  actorUserId    String?               @map("actor_user_id")
-  details        Json?
-  occurredAt     Int                   @map("occurred_at")
-
-  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-
-  @@index([subscriptionId, occurredAt], name: "billing_subscription_events_subscription_id_occurred_at_idx")
-  @@map("billing_subscription_events")
 }

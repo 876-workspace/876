@@ -1149,6 +1149,34 @@ export type SubscriptionChargeUncheckedUpdateManyWithoutCustomerNestedInput = {
     | Prisma.SubscriptionChargeScalarWhereInput[]
 }
 
+export type SubscriptionChargeCreateNestedOneWithoutInvoiceLinesInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionChargeCreateWithoutInvoiceLinesInput,
+    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceLinesInput
+  >
+  connectOrCreate?: Prisma.SubscriptionChargeCreateOrConnectWithoutInvoiceLinesInput
+  connect?: Prisma.SubscriptionChargeWhereUniqueInput
+}
+
+export type SubscriptionChargeUpdateOneWithoutInvoiceLinesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.SubscriptionChargeCreateWithoutInvoiceLinesInput,
+    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceLinesInput
+  >
+  connectOrCreate?: Prisma.SubscriptionChargeCreateOrConnectWithoutInvoiceLinesInput
+  upsert?: Prisma.SubscriptionChargeUpsertWithoutInvoiceLinesInput
+  disconnect?: Prisma.SubscriptionChargeWhereInput | boolean
+  delete?: Prisma.SubscriptionChargeWhereInput | boolean
+  connect?: Prisma.SubscriptionChargeWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.SubscriptionChargeUpdateToOneWithWhereWithoutInvoiceLinesInput,
+      Prisma.SubscriptionChargeUpdateWithoutInvoiceLinesInput
+    >,
+    Prisma.SubscriptionChargeUncheckedUpdateWithoutInvoiceLinesInput
+  >
+}
+
 export type SubscriptionChargeCreateNestedManyWithoutInvoiceInput = {
   create?:
     | Prisma.XOR<
@@ -1257,34 +1285,6 @@ export type SubscriptionChargeUncheckedUpdateManyWithoutInvoiceNestedInput = {
   deleteMany?:
     | Prisma.SubscriptionChargeScalarWhereInput
     | Prisma.SubscriptionChargeScalarWhereInput[]
-}
-
-export type SubscriptionChargeCreateNestedOneWithoutInvoiceLinesInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionChargeCreateWithoutInvoiceLinesInput,
-    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceLinesInput
-  >
-  connectOrCreate?: Prisma.SubscriptionChargeCreateOrConnectWithoutInvoiceLinesInput
-  connect?: Prisma.SubscriptionChargeWhereUniqueInput
-}
-
-export type SubscriptionChargeUpdateOneWithoutInvoiceLinesNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.SubscriptionChargeCreateWithoutInvoiceLinesInput,
-    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceLinesInput
-  >
-  connectOrCreate?: Prisma.SubscriptionChargeCreateOrConnectWithoutInvoiceLinesInput
-  upsert?: Prisma.SubscriptionChargeUpsertWithoutInvoiceLinesInput
-  disconnect?: Prisma.SubscriptionChargeWhereInput | boolean
-  delete?: Prisma.SubscriptionChargeWhereInput | boolean
-  connect?: Prisma.SubscriptionChargeWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.SubscriptionChargeUpdateToOneWithWhereWithoutInvoiceLinesInput,
-      Prisma.SubscriptionChargeUpdateWithoutInvoiceLinesInput
-    >,
-    Prisma.SubscriptionChargeUncheckedUpdateWithoutInvoiceLinesInput
-  >
 }
 
 export type SubscriptionChargeCreateNestedManyWithoutPriceInput = {
@@ -1849,97 +1849,6 @@ export type SubscriptionChargeUpdateManyWithWhereWithoutCustomerInput = {
   >
 }
 
-export type SubscriptionChargeCreateWithoutInvoiceInput = {
-  id: string
-  status?: $Enums.SubscriptionChargeStatus
-  invoiceBehavior?: $Enums.SubscriptionChargeInvoiceBehavior
-  description: string
-  quantity?: number
-  unitAmount: bigint | number
-  currency: string
-  taxBehavior?: $Enums.TaxBehavior
-  isTaxable?: boolean
-  serviceAt?: number | null
-  createdByUserId?: string | null
-  invoicedAt?: number | null
-  voidedAt?: number | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionChargesInput
-  subscription: Prisma.SubscriptionCreateNestedOneWithoutChargesInput
-  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionChargesInput
-  addon?: Prisma.AddonCreateNestedOneWithoutSubscriptionChargesInput
-  price?: Prisma.PriceCreateNestedOneWithoutSubscriptionChargesInput
-  invoiceLines?: Prisma.InvoiceLineCreateNestedManyWithoutSubscriptionChargeInput
-}
-
-export type SubscriptionChargeUncheckedCreateWithoutInvoiceInput = {
-  id: string
-  tenantId: string
-  subscriptionId: string
-  customerId: string
-  addonId?: string | null
-  priceId?: string | null
-  status?: $Enums.SubscriptionChargeStatus
-  invoiceBehavior?: $Enums.SubscriptionChargeInvoiceBehavior
-  description: string
-  quantity?: number
-  unitAmount: bigint | number
-  currency: string
-  taxBehavior?: $Enums.TaxBehavior
-  isTaxable?: boolean
-  serviceAt?: number | null
-  createdByUserId?: string | null
-  invoicedAt?: number | null
-  voidedAt?: number | null
-  createdAt: number
-  updatedAt: number
-  invoiceLines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutSubscriptionChargeInput
-}
-
-export type SubscriptionChargeCreateOrConnectWithoutInvoiceInput = {
-  where: Prisma.SubscriptionChargeWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.SubscriptionChargeCreateWithoutInvoiceInput,
-    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceInput
-  >
-}
-
-export type SubscriptionChargeCreateManyInvoiceInputEnvelope = {
-  data:
-    | Prisma.SubscriptionChargeCreateManyInvoiceInput
-    | Prisma.SubscriptionChargeCreateManyInvoiceInput[]
-  skipDuplicates?: boolean
-}
-
-export type SubscriptionChargeUpsertWithWhereUniqueWithoutInvoiceInput = {
-  where: Prisma.SubscriptionChargeWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.SubscriptionChargeUpdateWithoutInvoiceInput,
-    Prisma.SubscriptionChargeUncheckedUpdateWithoutInvoiceInput
-  >
-  create: Prisma.XOR<
-    Prisma.SubscriptionChargeCreateWithoutInvoiceInput,
-    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceInput
-  >
-}
-
-export type SubscriptionChargeUpdateWithWhereUniqueWithoutInvoiceInput = {
-  where: Prisma.SubscriptionChargeWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionChargeUpdateWithoutInvoiceInput,
-    Prisma.SubscriptionChargeUncheckedUpdateWithoutInvoiceInput
-  >
-}
-
-export type SubscriptionChargeUpdateManyWithWhereWithoutInvoiceInput = {
-  where: Prisma.SubscriptionChargeScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.SubscriptionChargeUpdateManyMutationInput,
-    Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceInput
-  >
-}
-
 export type SubscriptionChargeCreateWithoutInvoiceLinesInput = {
   id: string
   status?: $Enums.SubscriptionChargeStatus
@@ -2080,6 +1989,97 @@ export type SubscriptionChargeUncheckedUpdateWithoutInvoiceLinesInput = {
   voidedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type SubscriptionChargeCreateWithoutInvoiceInput = {
+  id: string
+  status?: $Enums.SubscriptionChargeStatus
+  invoiceBehavior?: $Enums.SubscriptionChargeInvoiceBehavior
+  description: string
+  quantity?: number
+  unitAmount: bigint | number
+  currency: string
+  taxBehavior?: $Enums.TaxBehavior
+  isTaxable?: boolean
+  serviceAt?: number | null
+  createdByUserId?: string | null
+  invoicedAt?: number | null
+  voidedAt?: number | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutSubscriptionChargesInput
+  subscription: Prisma.SubscriptionCreateNestedOneWithoutChargesInput
+  customer: Prisma.CustomerCreateNestedOneWithoutSubscriptionChargesInput
+  addon?: Prisma.AddonCreateNestedOneWithoutSubscriptionChargesInput
+  price?: Prisma.PriceCreateNestedOneWithoutSubscriptionChargesInput
+  invoiceLines?: Prisma.InvoiceLineCreateNestedManyWithoutSubscriptionChargeInput
+}
+
+export type SubscriptionChargeUncheckedCreateWithoutInvoiceInput = {
+  id: string
+  tenantId: string
+  subscriptionId: string
+  customerId: string
+  addonId?: string | null
+  priceId?: string | null
+  status?: $Enums.SubscriptionChargeStatus
+  invoiceBehavior?: $Enums.SubscriptionChargeInvoiceBehavior
+  description: string
+  quantity?: number
+  unitAmount: bigint | number
+  currency: string
+  taxBehavior?: $Enums.TaxBehavior
+  isTaxable?: boolean
+  serviceAt?: number | null
+  createdByUserId?: string | null
+  invoicedAt?: number | null
+  voidedAt?: number | null
+  createdAt: number
+  updatedAt: number
+  invoiceLines?: Prisma.InvoiceLineUncheckedCreateNestedManyWithoutSubscriptionChargeInput
+}
+
+export type SubscriptionChargeCreateOrConnectWithoutInvoiceInput = {
+  where: Prisma.SubscriptionChargeWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.SubscriptionChargeCreateWithoutInvoiceInput,
+    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceInput
+  >
+}
+
+export type SubscriptionChargeCreateManyInvoiceInputEnvelope = {
+  data:
+    | Prisma.SubscriptionChargeCreateManyInvoiceInput
+    | Prisma.SubscriptionChargeCreateManyInvoiceInput[]
+  skipDuplicates?: boolean
+}
+
+export type SubscriptionChargeUpsertWithWhereUniqueWithoutInvoiceInput = {
+  where: Prisma.SubscriptionChargeWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.SubscriptionChargeUpdateWithoutInvoiceInput,
+    Prisma.SubscriptionChargeUncheckedUpdateWithoutInvoiceInput
+  >
+  create: Prisma.XOR<
+    Prisma.SubscriptionChargeCreateWithoutInvoiceInput,
+    Prisma.SubscriptionChargeUncheckedCreateWithoutInvoiceInput
+  >
+}
+
+export type SubscriptionChargeUpdateWithWhereUniqueWithoutInvoiceInput = {
+  where: Prisma.SubscriptionChargeWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionChargeUpdateWithoutInvoiceInput,
+    Prisma.SubscriptionChargeUncheckedUpdateWithoutInvoiceInput
+  >
+}
+
+export type SubscriptionChargeUpdateManyWithWhereWithoutInvoiceInput = {
+  where: Prisma.SubscriptionChargeScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.SubscriptionChargeUpdateManyMutationInput,
+    Prisma.SubscriptionChargeUncheckedUpdateManyWithoutInvoiceInput
+  >
 }
 
 export type SubscriptionChargeCreateWithoutPriceInput = {

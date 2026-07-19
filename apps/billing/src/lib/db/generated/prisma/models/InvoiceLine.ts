@@ -866,16 +866,6 @@ export type InvoiceLineUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type InvoiceLineListRelationFilter = {
-  every?: Prisma.InvoiceLineWhereInput
-  some?: Prisma.InvoiceLineWhereInput
-  none?: Prisma.InvoiceLineWhereInput
-}
-
-export type InvoiceLineOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type InvoiceLineBilling_invoice_lines_invoice_position_keyCompoundUniqueInput =
   {
     invoiceId: string
@@ -983,6 +973,16 @@ export type InvoiceLineSumOrderByAggregateInput = {
   servicePeriodEnd?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type InvoiceLineListRelationFilter = {
+  every?: Prisma.InvoiceLineWhereInput
+  some?: Prisma.InvoiceLineWhereInput
+  none?: Prisma.InvoiceLineWhereInput
+}
+
+export type InvoiceLineOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type InvoiceLineCreateNestedManyWithoutInvoiceInput = {

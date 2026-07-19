@@ -759,6 +759,11 @@ export type EstimateOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type EstimateScalarRelationFilter = {
+  is?: Prisma.EstimateWhereInput
+  isNot?: Prisma.EstimateWhereInput
+}
+
 export type EstimateBilling_estimates_tenant_id_number_keyCompoundUniqueInput =
   {
     tenantId: string
@@ -861,11 +866,6 @@ export type EstimateSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type EstimateScalarRelationFilter = {
-  is?: Prisma.EstimateWhereInput
-  isNot?: Prisma.EstimateWhereInput
-}
-
 export type EstimateNullableScalarRelationFilter = {
   is?: Prisma.EstimateWhereInput | null
   isNot?: Prisma.EstimateWhereInput | null
@@ -965,10 +965,6 @@ export type EstimateUncheckedUpdateManyWithoutCustomerNestedInput = {
     | Prisma.EstimateScalarWhereInput[]
 }
 
-export type EnumEstimateStatusFieldUpdateOperationsInput = {
-  set?: $Enums.EstimateStatus
-}
-
 export type EstimateCreateNestedOneWithoutLinesInput = {
   create?: Prisma.XOR<
     Prisma.EstimateCreateWithoutLinesInput,
@@ -993,6 +989,10 @@ export type EstimateUpdateOneRequiredWithoutLinesNestedInput = {
     >,
     Prisma.EstimateUncheckedUpdateWithoutLinesInput
   >
+}
+
+export type EnumEstimateStatusFieldUpdateOperationsInput = {
+  set?: $Enums.EstimateStatus
 }
 
 export type EstimateCreateNestedOneWithoutConvertedInvoiceInput = {

@@ -657,14 +657,9 @@ export type PaymentProviderConnectionUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type PaymentProviderConnectionListRelationFilter = {
-  every?: Prisma.PaymentProviderConnectionWhereInput
-  some?: Prisma.PaymentProviderConnectionWhereInput
-  none?: Prisma.PaymentProviderConnectionWhereInput
-}
-
-export type PaymentProviderConnectionOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
+export type PaymentProviderConnectionNullableScalarRelationFilter = {
+  is?: Prisma.PaymentProviderConnectionWhereInput | null
+  isNot?: Prisma.PaymentProviderConnectionWhereInput | null
 }
 
 export type PaymentProviderConnectionTenantIdIdCompoundUniqueInput = {
@@ -737,15 +732,85 @@ export type PaymentProviderConnectionSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type PaymentProviderConnectionNullableScalarRelationFilter = {
-  is?: Prisma.PaymentProviderConnectionWhereInput | null
-  isNot?: Prisma.PaymentProviderConnectionWhereInput | null
-}
-
 export type PaymentProviderConnectionScalarRelationFilter = {
   is?: Prisma.PaymentProviderConnectionWhereInput
   isNot?: Prisma.PaymentProviderConnectionWhereInput
 }
+
+export type PaymentProviderConnectionListRelationFilter = {
+  every?: Prisma.PaymentProviderConnectionWhereInput
+  some?: Prisma.PaymentProviderConnectionWhereInput
+  none?: Prisma.PaymentProviderConnectionWhereInput
+}
+
+export type PaymentProviderConnectionOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type PaymentProviderConnectionCreateNestedOneWithoutPaymentAttemptsInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.PaymentProviderConnectionCreateWithoutPaymentAttemptsInput,
+      Prisma.PaymentProviderConnectionUncheckedCreateWithoutPaymentAttemptsInput
+    >
+    connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutPaymentAttemptsInput
+    connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
+  }
+
+export type PaymentProviderConnectionUpdateOneWithoutPaymentAttemptsNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.PaymentProviderConnectionCreateWithoutPaymentAttemptsInput,
+      Prisma.PaymentProviderConnectionUncheckedCreateWithoutPaymentAttemptsInput
+    >
+    connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutPaymentAttemptsInput
+    upsert?: Prisma.PaymentProviderConnectionUpsertWithoutPaymentAttemptsInput
+    disconnect?: Prisma.PaymentProviderConnectionWhereInput | boolean
+    delete?: Prisma.PaymentProviderConnectionWhereInput | boolean
+    connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.PaymentProviderConnectionUpdateToOneWithWhereWithoutPaymentAttemptsInput,
+        Prisma.PaymentProviderConnectionUpdateWithoutPaymentAttemptsInput
+      >,
+      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutPaymentAttemptsInput
+    >
+  }
+
+export type EnumPaymentProviderEnvironmentFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentProviderEnvironment
+}
+
+export type EnumPaymentProviderConnectionStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentProviderConnectionStatus
+}
+
+export type PaymentProviderConnectionCreateNestedOneWithoutEventsInput = {
+  create?: Prisma.XOR<
+    Prisma.PaymentProviderConnectionCreateWithoutEventsInput,
+    Prisma.PaymentProviderConnectionUncheckedCreateWithoutEventsInput
+  >
+  connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutEventsInput
+  connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
+}
+
+export type PaymentProviderConnectionUpdateOneRequiredWithoutEventsNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.PaymentProviderConnectionCreateWithoutEventsInput,
+      Prisma.PaymentProviderConnectionUncheckedCreateWithoutEventsInput
+    >
+    connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutEventsInput
+    upsert?: Prisma.PaymentProviderConnectionUpsertWithoutEventsInput
+    connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.PaymentProviderConnectionUpdateToOneWithWhereWithoutEventsInput,
+        Prisma.PaymentProviderConnectionUpdateWithoutEventsInput
+      >,
+      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutEventsInput
+    >
+  }
 
 export type PaymentProviderConnectionCreateNestedManyWithoutProviderInput = {
   create?:
@@ -857,71 +922,6 @@ export type PaymentProviderConnectionUncheckedUpdateManyWithoutProviderNestedInp
     deleteMany?:
       | Prisma.PaymentProviderConnectionScalarWhereInput
       | Prisma.PaymentProviderConnectionScalarWhereInput[]
-  }
-
-export type EnumPaymentProviderEnvironmentFieldUpdateOperationsInput = {
-  set?: $Enums.PaymentProviderEnvironment
-}
-
-export type EnumPaymentProviderConnectionStatusFieldUpdateOperationsInput = {
-  set?: $Enums.PaymentProviderConnectionStatus
-}
-
-export type PaymentProviderConnectionCreateNestedOneWithoutPaymentAttemptsInput =
-  {
-    create?: Prisma.XOR<
-      Prisma.PaymentProviderConnectionCreateWithoutPaymentAttemptsInput,
-      Prisma.PaymentProviderConnectionUncheckedCreateWithoutPaymentAttemptsInput
-    >
-    connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutPaymentAttemptsInput
-    connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
-  }
-
-export type PaymentProviderConnectionUpdateOneWithoutPaymentAttemptsNestedInput =
-  {
-    create?: Prisma.XOR<
-      Prisma.PaymentProviderConnectionCreateWithoutPaymentAttemptsInput,
-      Prisma.PaymentProviderConnectionUncheckedCreateWithoutPaymentAttemptsInput
-    >
-    connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutPaymentAttemptsInput
-    upsert?: Prisma.PaymentProviderConnectionUpsertWithoutPaymentAttemptsInput
-    disconnect?: Prisma.PaymentProviderConnectionWhereInput | boolean
-    delete?: Prisma.PaymentProviderConnectionWhereInput | boolean
-    connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
-    update?: Prisma.XOR<
-      Prisma.XOR<
-        Prisma.PaymentProviderConnectionUpdateToOneWithWhereWithoutPaymentAttemptsInput,
-        Prisma.PaymentProviderConnectionUpdateWithoutPaymentAttemptsInput
-      >,
-      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutPaymentAttemptsInput
-    >
-  }
-
-export type PaymentProviderConnectionCreateNestedOneWithoutEventsInput = {
-  create?: Prisma.XOR<
-    Prisma.PaymentProviderConnectionCreateWithoutEventsInput,
-    Prisma.PaymentProviderConnectionUncheckedCreateWithoutEventsInput
-  >
-  connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutEventsInput
-  connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
-}
-
-export type PaymentProviderConnectionUpdateOneRequiredWithoutEventsNestedInput =
-  {
-    create?: Prisma.XOR<
-      Prisma.PaymentProviderConnectionCreateWithoutEventsInput,
-      Prisma.PaymentProviderConnectionUncheckedCreateWithoutEventsInput
-    >
-    connectOrCreate?: Prisma.PaymentProviderConnectionCreateOrConnectWithoutEventsInput
-    upsert?: Prisma.PaymentProviderConnectionUpsertWithoutEventsInput
-    connect?: Prisma.PaymentProviderConnectionWhereUniqueInput
-    update?: Prisma.XOR<
-      Prisma.XOR<
-        Prisma.PaymentProviderConnectionUpdateToOneWithWhereWithoutEventsInput,
-        Prisma.PaymentProviderConnectionUpdateWithoutEventsInput
-      >,
-      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutEventsInput
-    >
   }
 
 export type PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput = {
@@ -1063,126 +1063,6 @@ export type PaymentProviderConnectionUncheckedUpdateManyWithoutTenantNestedInput
       | Prisma.PaymentProviderConnectionScalarWhereInput
       | Prisma.PaymentProviderConnectionScalarWhereInput[]
   }
-
-export type PaymentProviderConnectionCreateWithoutProviderInput = {
-  id: string
-  name: string
-  environment: $Enums.PaymentProviderEnvironment
-  status?: $Enums.PaymentProviderConnectionStatus
-  merchantAccountId?: string | null
-  credentialsReference?: string | null
-  webhookSecretReference?: string | null
-  settings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastSyncedAt?: number | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPaymentProviderConnectionsInput
-  payments?: Prisma.PaymentCreateNestedManyWithoutProviderConnectionInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutConnectionInput
-  events?: Prisma.PaymentProviderEventCreateNestedManyWithoutConnectionInput
-}
-
-export type PaymentProviderConnectionUncheckedCreateWithoutProviderInput = {
-  id: string
-  tenantId: string
-  name: string
-  environment: $Enums.PaymentProviderEnvironment
-  status?: $Enums.PaymentProviderConnectionStatus
-  merchantAccountId?: string | null
-  credentialsReference?: string | null
-  webhookSecretReference?: string | null
-  settings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  lastSyncedAt?: number | null
-  createdAt: number
-  updatedAt: number
-  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutProviderConnectionInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutConnectionInput
-  events?: Prisma.PaymentProviderEventUncheckedCreateNestedManyWithoutConnectionInput
-}
-
-export type PaymentProviderConnectionCreateOrConnectWithoutProviderInput = {
-  where: Prisma.PaymentProviderConnectionWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PaymentProviderConnectionCreateWithoutProviderInput,
-    Prisma.PaymentProviderConnectionUncheckedCreateWithoutProviderInput
-  >
-}
-
-export type PaymentProviderConnectionCreateManyProviderInputEnvelope = {
-  data:
-    | Prisma.PaymentProviderConnectionCreateManyProviderInput
-    | Prisma.PaymentProviderConnectionCreateManyProviderInput[]
-  skipDuplicates?: boolean
-}
-
-export type PaymentProviderConnectionUpsertWithWhereUniqueWithoutProviderInput =
-  {
-    where: Prisma.PaymentProviderConnectionWhereUniqueInput
-    update: Prisma.XOR<
-      Prisma.PaymentProviderConnectionUpdateWithoutProviderInput,
-      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutProviderInput
-    >
-    create: Prisma.XOR<
-      Prisma.PaymentProviderConnectionCreateWithoutProviderInput,
-      Prisma.PaymentProviderConnectionUncheckedCreateWithoutProviderInput
-    >
-  }
-
-export type PaymentProviderConnectionUpdateWithWhereUniqueWithoutProviderInput =
-  {
-    where: Prisma.PaymentProviderConnectionWhereUniqueInput
-    data: Prisma.XOR<
-      Prisma.PaymentProviderConnectionUpdateWithoutProviderInput,
-      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutProviderInput
-    >
-  }
-
-export type PaymentProviderConnectionUpdateManyWithWhereWithoutProviderInput = {
-  where: Prisma.PaymentProviderConnectionScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.PaymentProviderConnectionUpdateManyMutationInput,
-    Prisma.PaymentProviderConnectionUncheckedUpdateManyWithoutProviderInput
-  >
-}
-
-export type PaymentProviderConnectionScalarWhereInput = {
-  AND?:
-    | Prisma.PaymentProviderConnectionScalarWhereInput
-    | Prisma.PaymentProviderConnectionScalarWhereInput[]
-  OR?: Prisma.PaymentProviderConnectionScalarWhereInput[]
-  NOT?:
-    | Prisma.PaymentProviderConnectionScalarWhereInput
-    | Prisma.PaymentProviderConnectionScalarWhereInput[]
-  id?: Prisma.StringFilter<'PaymentProviderConnection'> | string
-  tenantId?: Prisma.StringFilter<'PaymentProviderConnection'> | string
-  providerId?: Prisma.StringFilter<'PaymentProviderConnection'> | string
-  name?: Prisma.StringFilter<'PaymentProviderConnection'> | string
-  environment?:
-    | Prisma.EnumPaymentProviderEnvironmentFilter<'PaymentProviderConnection'>
-    | $Enums.PaymentProviderEnvironment
-  status?:
-    | Prisma.EnumPaymentProviderConnectionStatusFilter<'PaymentProviderConnection'>
-    | $Enums.PaymentProviderConnectionStatus
-  merchantAccountId?:
-    | Prisma.StringNullableFilter<'PaymentProviderConnection'>
-    | string
-    | null
-  credentialsReference?:
-    | Prisma.StringNullableFilter<'PaymentProviderConnection'>
-    | string
-    | null
-  webhookSecretReference?:
-    | Prisma.StringNullableFilter<'PaymentProviderConnection'>
-    | string
-    | null
-  settings?: Prisma.JsonNullableFilter<'PaymentProviderConnection'>
-  lastSyncedAt?:
-    | Prisma.IntNullableFilter<'PaymentProviderConnection'>
-    | number
-    | null
-  createdAt?: Prisma.IntFilter<'PaymentProviderConnection'> | number
-  updatedAt?: Prisma.IntFilter<'PaymentProviderConnection'> | number
-}
 
 export type PaymentProviderConnectionCreateWithoutPaymentAttemptsInput = {
   id: string
@@ -1438,6 +1318,126 @@ export type PaymentProviderConnectionUncheckedUpdateWithoutEventsInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutProviderConnectionNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutConnectionNestedInput
+}
+
+export type PaymentProviderConnectionCreateWithoutProviderInput = {
+  id: string
+  name: string
+  environment: $Enums.PaymentProviderEnvironment
+  status?: $Enums.PaymentProviderConnectionStatus
+  merchantAccountId?: string | null
+  credentialsReference?: string | null
+  webhookSecretReference?: string | null
+  settings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: number | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPaymentProviderConnectionsInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutProviderConnectionInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutConnectionInput
+  events?: Prisma.PaymentProviderEventCreateNestedManyWithoutConnectionInput
+}
+
+export type PaymentProviderConnectionUncheckedCreateWithoutProviderInput = {
+  id: string
+  tenantId: string
+  name: string
+  environment: $Enums.PaymentProviderEnvironment
+  status?: $Enums.PaymentProviderConnectionStatus
+  merchantAccountId?: string | null
+  credentialsReference?: string | null
+  webhookSecretReference?: string | null
+  settings?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  lastSyncedAt?: number | null
+  createdAt: number
+  updatedAt: number
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutProviderConnectionInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutConnectionInput
+  events?: Prisma.PaymentProviderEventUncheckedCreateNestedManyWithoutConnectionInput
+}
+
+export type PaymentProviderConnectionCreateOrConnectWithoutProviderInput = {
+  where: Prisma.PaymentProviderConnectionWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PaymentProviderConnectionCreateWithoutProviderInput,
+    Prisma.PaymentProviderConnectionUncheckedCreateWithoutProviderInput
+  >
+}
+
+export type PaymentProviderConnectionCreateManyProviderInputEnvelope = {
+  data:
+    | Prisma.PaymentProviderConnectionCreateManyProviderInput
+    | Prisma.PaymentProviderConnectionCreateManyProviderInput[]
+  skipDuplicates?: boolean
+}
+
+export type PaymentProviderConnectionUpsertWithWhereUniqueWithoutProviderInput =
+  {
+    where: Prisma.PaymentProviderConnectionWhereUniqueInput
+    update: Prisma.XOR<
+      Prisma.PaymentProviderConnectionUpdateWithoutProviderInput,
+      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutProviderInput
+    >
+    create: Prisma.XOR<
+      Prisma.PaymentProviderConnectionCreateWithoutProviderInput,
+      Prisma.PaymentProviderConnectionUncheckedCreateWithoutProviderInput
+    >
+  }
+
+export type PaymentProviderConnectionUpdateWithWhereUniqueWithoutProviderInput =
+  {
+    where: Prisma.PaymentProviderConnectionWhereUniqueInput
+    data: Prisma.XOR<
+      Prisma.PaymentProviderConnectionUpdateWithoutProviderInput,
+      Prisma.PaymentProviderConnectionUncheckedUpdateWithoutProviderInput
+    >
+  }
+
+export type PaymentProviderConnectionUpdateManyWithWhereWithoutProviderInput = {
+  where: Prisma.PaymentProviderConnectionScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.PaymentProviderConnectionUpdateManyMutationInput,
+    Prisma.PaymentProviderConnectionUncheckedUpdateManyWithoutProviderInput
+  >
+}
+
+export type PaymentProviderConnectionScalarWhereInput = {
+  AND?:
+    | Prisma.PaymentProviderConnectionScalarWhereInput
+    | Prisma.PaymentProviderConnectionScalarWhereInput[]
+  OR?: Prisma.PaymentProviderConnectionScalarWhereInput[]
+  NOT?:
+    | Prisma.PaymentProviderConnectionScalarWhereInput
+    | Prisma.PaymentProviderConnectionScalarWhereInput[]
+  id?: Prisma.StringFilter<'PaymentProviderConnection'> | string
+  tenantId?: Prisma.StringFilter<'PaymentProviderConnection'> | string
+  providerId?: Prisma.StringFilter<'PaymentProviderConnection'> | string
+  name?: Prisma.StringFilter<'PaymentProviderConnection'> | string
+  environment?:
+    | Prisma.EnumPaymentProviderEnvironmentFilter<'PaymentProviderConnection'>
+    | $Enums.PaymentProviderEnvironment
+  status?:
+    | Prisma.EnumPaymentProviderConnectionStatusFilter<'PaymentProviderConnection'>
+    | $Enums.PaymentProviderConnectionStatus
+  merchantAccountId?:
+    | Prisma.StringNullableFilter<'PaymentProviderConnection'>
+    | string
+    | null
+  credentialsReference?:
+    | Prisma.StringNullableFilter<'PaymentProviderConnection'>
+    | string
+    | null
+  webhookSecretReference?:
+    | Prisma.StringNullableFilter<'PaymentProviderConnection'>
+    | string
+    | null
+  settings?: Prisma.JsonNullableFilter<'PaymentProviderConnection'>
+  lastSyncedAt?:
+    | Prisma.IntNullableFilter<'PaymentProviderConnection'>
+    | number
+    | null
+  createdAt?: Prisma.IntFilter<'PaymentProviderConnection'> | number
+  updatedAt?: Prisma.IntFilter<'PaymentProviderConnection'> | number
 }
 
 export type PaymentProviderConnectionCreateWithoutPaymentsInput = {

@@ -1,0 +1,22 @@
+
+model SubscriptionCustomView {
+  id            String               @id
+  tenantId      String               @map("tenant_id")
+  name          String
+  ownerUserId   String?              @map("owner_user_id")
+  visibility    CustomViewVisibility @default(PRIVATE)
+  isFavorite    Boolean              @default(false) @map("is_favorite")
+  sortField     String?              @map("sort_field")
+  sortDirection String?              @map("sort_direction")
+  createdAt     Int                  @map("created_at")
+  updatedAt     Int                  @map("updated_at")
+
+  tenant  Tenant                         @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_custom_views_tenant_fkey")
+  rules   SubscriptionCustomViewRule[]
+  columns SubscriptionCustomViewColumn[]
+
+  @@unique([tenantId, id], map: "billing_subscription_custom_views_tenant_id_id_key")
+  @@unique([tenantId, ownerUserId, name], name: "billing_subscription_views_owner_name_key", map: "billing_subscription_views_owner_name_key")
+  @@index([tenantId, visibility, isFavorite], map: "billing_subscription_views_visibility_idx")
+  @@map("billing_subscription_custom_views")
+}

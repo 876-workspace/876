@@ -1,0 +1,12 @@
+
+model SubscriptionCustomViewColumn {
+  id       String @id
+  viewId   String @map("view_id")
+  position Int    @default(0)
+  field    String
+
+  view SubscriptionCustomView @relation(fields: [viewId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_custom_view_columns_view_fkey")
+
+  @@unique([viewId, position], name: "billing_subscription_view_columns_position_key", map: "billing_subscription_view_columns_position_key")
+  @@map("billing_subscription_custom_view_columns")
+}

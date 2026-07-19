@@ -745,6 +745,11 @@ export type QuoteNullableScalarRelationFilter = {
   isNot?: Prisma.QuoteWhereInput | null
 }
 
+export type QuoteScalarRelationFilter = {
+  is?: Prisma.QuoteWhereInput
+  isNot?: Prisma.QuoteWhereInput
+}
+
 export type QuoteBilling_quotes_tenant_id_number_keyCompoundUniqueInput = {
   tenantId: string
   number: string
@@ -844,11 +849,6 @@ export type QuoteSumOrderByAggregateInput = {
   totalAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-}
-
-export type QuoteScalarRelationFilter = {
-  is?: Prisma.QuoteWhereInput
-  isNot?: Prisma.QuoteWhereInput
 }
 
 export type QuoteCreateNestedManyWithoutCustomerInput = {
@@ -1051,10 +1051,6 @@ export type QuoteUncheckedUpdateManyWithoutPriceListNestedInput = {
   deleteMany?: Prisma.QuoteScalarWhereInput | Prisma.QuoteScalarWhereInput[]
 }
 
-export type EnumQuoteStatusFieldUpdateOperationsInput = {
-  set?: $Enums.QuoteStatus
-}
-
 export type QuoteCreateNestedOneWithoutLinesInput = {
   create?: Prisma.XOR<
     Prisma.QuoteCreateWithoutLinesInput,
@@ -1079,6 +1075,10 @@ export type QuoteUpdateOneRequiredWithoutLinesNestedInput = {
     >,
     Prisma.QuoteUncheckedUpdateWithoutLinesInput
   >
+}
+
+export type EnumQuoteStatusFieldUpdateOperationsInput = {
+  set?: $Enums.QuoteStatus
 }
 
 export type QuoteCreateNestedManyWithoutTenantInput = {

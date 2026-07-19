@@ -392,16 +392,6 @@ export type MemberUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type MemberListRelationFilter = {
-  every?: Prisma.MemberWhereInput
-  some?: Prisma.MemberWhereInput
-  none?: Prisma.MemberWhereInput
-}
-
-export type MemberOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
-}
-
 export type MemberTenantIdUserIdCompoundUniqueInput = {
   tenantId: string
   userId: string
@@ -445,6 +435,20 @@ export type MemberMinOrderByAggregateInput = {
 export type MemberSumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type MemberListRelationFilter = {
+  every?: Prisma.MemberWhereInput
+  some?: Prisma.MemberWhereInput
+  none?: Prisma.MemberWhereInput
+}
+
+export type MemberOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type EnumMemberStatusFieldUpdateOperationsInput = {
+  set?: $Enums.MemberStatus
 }
 
 export type MemberCreateNestedManyWithoutRoleInput = {
@@ -531,10 +535,6 @@ export type MemberUncheckedUpdateManyWithoutRoleNestedInput = {
     | Prisma.MemberUpdateManyWithWhereWithoutRoleInput
     | Prisma.MemberUpdateManyWithWhereWithoutRoleInput[]
   deleteMany?: Prisma.MemberScalarWhereInput | Prisma.MemberScalarWhereInput[]
-}
-
-export type EnumMemberStatusFieldUpdateOperationsInput = {
-  set?: $Enums.MemberStatus
 }
 
 export type MemberCreateNestedManyWithoutTenantInput = {

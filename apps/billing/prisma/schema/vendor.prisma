@@ -13,10 +13,10 @@ model Vendor {
   createdAt         Int          @map("created_at")
   updatedAt         Int          @map("updated_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_vendors_tenant_id_fkey")
 
-  @@unique([tenantId, externalReference], name: "billing_vendors_tenant_id_external_reference_key")
-  @@index([tenantId], name: "billing_vendors_tenant_id_idx")
-  @@index([externalReference], name: "billing_vendors_external_reference_idx")
+  @@unique([tenantId, externalReference], name: "billing_vendors_tenant_id_external_reference_key", map: "billing_vendors_tenant_id_external_reference_key")
+  @@index([tenantId], map: "billing_vendors_tenant_id_idx")
+  @@index([externalReference], map: "billing_vendors_external_reference_idx")
   @@map("billing_vendors")
 }

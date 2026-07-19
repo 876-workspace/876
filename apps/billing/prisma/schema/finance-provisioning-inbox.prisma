@@ -16,7 +16,7 @@ model FinanceProvisioningInbox {
   processedAt         Int     @map("processed_at")
   createdAt           Int     @map("created_at")
 
-  @@index([aggregateId, lifecycleVersion], name: "billing_finance_inbox_aggregate_version_idx")
-  @@index([organizationId, sourceAppId], name: "billing_finance_inbox_org_app_idx")
+  @@index([aggregateId, lifecycleVersion], map: "billing_finance_inbox_aggregate_version_idx")
+  @@index([organizationId, sourceAppId], map: "billing_finance_inbox_org_app_idx")
   @@map("billing_finance_provisioning_inbox")
 }

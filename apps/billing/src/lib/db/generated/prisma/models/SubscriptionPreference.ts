@@ -950,6 +950,11 @@ export type SubscriptionPreferenceUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type SubscriptionPreferenceScalarRelationFilter = {
+  is?: Prisma.SubscriptionPreferenceWhereInput
+  isNot?: Prisma.SubscriptionPreferenceWhereInput
+}
+
 export type SubscriptionPreferenceCountOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   defaultTaxBehavior?: Prisma.SortOrder
@@ -1041,50 +1046,9 @@ export type SubscriptionPreferenceSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type SubscriptionPreferenceScalarRelationFilter = {
-  is?: Prisma.SubscriptionPreferenceWhereInput
-  isNot?: Prisma.SubscriptionPreferenceWhereInput
-}
-
 export type SubscriptionPreferenceNullableScalarRelationFilter = {
   is?: Prisma.SubscriptionPreferenceWhereInput | null
   isNot?: Prisma.SubscriptionPreferenceWhereInput | null
-}
-
-export type EnumCollectionMethodFieldUpdateOperationsInput = {
-  set?: $Enums.CollectionMethod
-}
-
-export type EnumBillingTimingFieldUpdateOperationsInput = {
-  set?: $Enums.BillingTiming
-}
-
-export type EnumSubscriptionInvoiceModeFieldUpdateOperationsInput = {
-  set?: $Enums.SubscriptionInvoiceMode
-}
-
-export type EnumSubscriptionCalendarModeFieldUpdateOperationsInput = {
-  set?: $Enums.SubscriptionCalendarMode
-}
-
-export type EnumPauseUnbilledChargeBehaviorFieldUpdateOperationsInput = {
-  set?: $Enums.PauseUnbilledChargeBehavior
-}
-
-export type EnumPauseCreditBehaviorFieldUpdateOperationsInput = {
-  set?: $Enums.PauseCreditBehavior
-}
-
-export type EnumResumeBillingBehaviorFieldUpdateOperationsInput = {
-  set?: $Enums.ResumeBillingBehavior
-}
-
-export type EnumRenewalPricingPolicyFieldUpdateOperationsInput = {
-  set?: $Enums.RenewalPricingPolicy
-}
-
-export type EnumAdvanceBillingMethodFieldUpdateOperationsInput = {
-  set?: $Enums.AdvanceBillingMethod
 }
 
 export type SubscriptionPreferenceCreateNestedOneWithoutAdvanceRulesInput = {
@@ -1167,6 +1131,42 @@ export type SubscriptionPreferenceUpdateOneRequiredWithoutCalendarMonthsNestedIn
       Prisma.SubscriptionPreferenceUncheckedUpdateWithoutCalendarMonthsInput
     >
   }
+
+export type EnumCollectionMethodFieldUpdateOperationsInput = {
+  set?: $Enums.CollectionMethod
+}
+
+export type EnumBillingTimingFieldUpdateOperationsInput = {
+  set?: $Enums.BillingTiming
+}
+
+export type EnumSubscriptionInvoiceModeFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionInvoiceMode
+}
+
+export type EnumSubscriptionCalendarModeFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionCalendarMode
+}
+
+export type EnumPauseUnbilledChargeBehaviorFieldUpdateOperationsInput = {
+  set?: $Enums.PauseUnbilledChargeBehavior
+}
+
+export type EnumPauseCreditBehaviorFieldUpdateOperationsInput = {
+  set?: $Enums.PauseCreditBehavior
+}
+
+export type EnumResumeBillingBehaviorFieldUpdateOperationsInput = {
+  set?: $Enums.ResumeBillingBehavior
+}
+
+export type EnumRenewalPricingPolicyFieldUpdateOperationsInput = {
+  set?: $Enums.RenewalPricingPolicy
+}
+
+export type EnumAdvanceBillingMethodFieldUpdateOperationsInput = {
+  set?: $Enums.AdvanceBillingMethod
+}
 
 export type SubscriptionPreferenceCreateNestedOneWithoutTenantInput = {
   create?: Prisma.XOR<

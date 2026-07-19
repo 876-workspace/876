@@ -1,0 +1,26 @@
+
+model SubscriptionItem {
+  id             String  @id
+  subscriptionId String  @map("subscription_id")
+  priceId        String  @map("price_id")
+  quantity       Int     @default(1)
+  unitAmount     BigInt? @map("unit_amount")
+  currency       String?
+  description    String?
+  position       Int     @default(0)
+  isActive       Boolean @default(true) @map("is_active")
+  startsAt       Int?    @map("starts_at")
+  endsAt         Int?    @map("ends_at")
+  metadata       Json?
+  createdAt      Int     @map("created_at")
+  updatedAt      Int     @map("updated_at")
+
+  subscription Subscription           @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_items_subscription_id_fkey")
+  price        Price                  @relation(fields: [priceId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_items_price_id_fkey")
+  invoiceLines InvoiceLine[]
+  discounts    SubscriptionDiscount[]
+
+  @@index([subscriptionId, isActive, position], map: "billing_subscription_items_active_position_idx")
+  @@index([priceId], map: "billing_subscription_items_price_id_idx")
+  @@map("billing_subscription_items")
+}

@@ -1,0 +1,40 @@
+/// A requested subscription composition or commercial-term change. Desired
+/// items are normalized below so scheduled changes remain queryable.
+model SubscriptionAmendment {
+  id                       String                             @id
+  tenantId                 String                             @map("tenant_id")
+  subscriptionId           String                             @map("subscription_id")
+  timing                   SubscriptionChangeTiming           @default(IMMEDIATE)
+  effectiveAt              Int                                @map("effective_at")
+  status                   SubscriptionAmendmentStatus        @default(PENDING)
+  prorationBehavior        ProrationBehavior                  @default(CREATE_PRORATIONS) @map("proration_behavior")
+  paymentFailureBehavior   SubscriptionPaymentFailureBehavior @default(PREVENT_CHANGE) @map("payment_failure_behavior")
+  collectionMethod         CollectionMethod?                  @map("collection_method")
+  billingTiming            BillingTiming?                     @map("billing_timing")
+  paymentTermId            String?                            @map("payment_term_id")
+  taxBehavior              TaxBehavior?                       @map("tax_behavior")
+  invoiceModeOverride      SubscriptionInvoiceMode?           @map("invoice_mode_override")
+  renewalPricingPolicy     RenewalPricingPolicy?              @map("renewal_pricing_policy")
+  renewalAdjustmentPercent Decimal?                           @map("renewal_adjustment_percent") @db.Decimal(7, 4)
+  billingCycleAnchor       Int?                               @map("billing_cycle_anchor")
+  remainingCycles          Int?                               @map("remaining_cycles")
+  requestedByUserId        String?                            @map("requested_by_user_id")
+  reason                   String?
+  appliedAt                Int?                               @map("applied_at")
+  canceledAt               Int?                               @map("canceled_at")
+  failureCode              String?                            @map("failure_code")
+  failureMessage           String?                            @map("failure_message")
+  createdAt                Int                                @map("created_at")
+  updatedAt                Int                                @map("updated_at")
+
+  tenant       Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_amendments_tenant_fkey")
+  subscription Subscription                @relation(fields: [subscriptionId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_amendments_subscription_fkey")
+  paymentTerm  PaymentTerm?                @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_amendments_payment_term_fkey")
+  items        SubscriptionAmendmentItem[]
+
+  @@unique([tenantId, id], map: "billing_subscription_amendments_tenant_id_id_key")
+  @@index([subscriptionId, status, effectiveAt], map: "billing_subscription_amendments_schedule_idx")
+  @@index([tenantId, status, effectiveAt], map: "billing_subscription_amendments_tenant_schedule_idx")
+  @@index([paymentTermId], map: "billing_subscription_amendments_payment_term_id_idx")
+  @@map("billing_subscription_amendments")
+}

@@ -14,8 +14,8 @@ model Tenant {
   createdAt           Int          @map("created_at")
   updatedAt           Int          @map("updated_at")
 
-  defaultCurrencyRecord           Currency                         @relation("TenantDefaultCurrency", fields: [defaultCurrency], references: [code], onDelete: Restrict)
-  defaultLanguageRecord           Language                         @relation("TenantDefaultLanguage", fields: [defaultLanguage], references: [code], onDelete: Restrict)
+  defaultCurrencyRecord           Currency                         @relation("TenantDefaultCurrency", fields: [defaultCurrency], references: [code], onDelete: Restrict, onUpdate: Cascade, map: "billing_tenants_default_currency_fkey")
+  defaultLanguageRecord           Language                         @relation("TenantDefaultLanguage", fields: [defaultLanguage], references: [code], onDelete: Restrict, onUpdate: Cascade, map: "billing_tenants_default_language_fkey")
   currencies                      TenantCurrency[]
   customers                       Customer[]
   contacts                        Contact[]
@@ -76,5 +76,7 @@ model Tenant {
   members                         Member[]
   financeConnections              AppFinanceConnection[]
 
+  @@index([defaultCurrency], map: "billing_tenants_default_currency_idx")
+  @@index([defaultLanguage], map: "billing_tenants_default_language_idx")
   @@map("billing_tenants")
 }

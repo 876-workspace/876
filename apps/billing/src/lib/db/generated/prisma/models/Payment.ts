@@ -913,6 +913,11 @@ export type PaymentNullableScalarRelationFilter = {
   isNot?: Prisma.PaymentWhereInput | null
 }
 
+export type PaymentScalarRelationFilter = {
+  is?: Prisma.PaymentWhereInput
+  isNot?: Prisma.PaymentWhereInput
+}
+
 export type PaymentTenantIdIdCompoundUniqueInput = {
   tenantId: string
   id: string
@@ -1039,11 +1044,6 @@ export type PaymentSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type PaymentScalarRelationFilter = {
-  is?: Prisma.PaymentWhereInput
-  isNot?: Prisma.PaymentWhereInput
-}
-
 export type PaymentCreateNestedManyWithoutDepositAccountInput = {
   create?:
     | Prisma.XOR<
@@ -1158,6 +1158,34 @@ export type PaymentUpdateOneWithoutBankTransactionNestedInput = {
   >
 }
 
+export type PaymentCreateNestedOneWithoutLedgerEntriesInput = {
+  create?: Prisma.XOR<
+    Prisma.PaymentCreateWithoutLedgerEntriesInput,
+    Prisma.PaymentUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutLedgerEntriesInput
+  connect?: Prisma.PaymentWhereUniqueInput
+}
+
+export type PaymentUpdateOneWithoutLedgerEntriesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PaymentCreateWithoutLedgerEntriesInput,
+    Prisma.PaymentUncheckedCreateWithoutLedgerEntriesInput
+  >
+  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutLedgerEntriesInput
+  upsert?: Prisma.PaymentUpsertWithoutLedgerEntriesInput
+  disconnect?: Prisma.PaymentWhereInput | boolean
+  delete?: Prisma.PaymentWhereInput | boolean
+  connect?: Prisma.PaymentWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PaymentUpdateToOneWithWhereWithoutLedgerEntriesInput,
+      Prisma.PaymentUpdateWithoutLedgerEntriesInput
+    >,
+    Prisma.PaymentUncheckedUpdateWithoutLedgerEntriesInput
+  >
+}
+
 export type PaymentCreateNestedManyWithoutCustomerInput = {
   create?:
     | Prisma.XOR<
@@ -1244,31 +1272,57 @@ export type PaymentUncheckedUpdateManyWithoutCustomerNestedInput = {
   deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[]
 }
 
-export type PaymentCreateNestedOneWithoutLedgerEntriesInput = {
+export type PaymentCreateNestedOneWithoutInvoiceAllocationsInput = {
   create?: Prisma.XOR<
-    Prisma.PaymentCreateWithoutLedgerEntriesInput,
-    Prisma.PaymentUncheckedCreateWithoutLedgerEntriesInput
+    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
+    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
   >
-  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutLedgerEntriesInput
+  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutInvoiceAllocationsInput
   connect?: Prisma.PaymentWhereUniqueInput
 }
 
-export type PaymentUpdateOneWithoutLedgerEntriesNestedInput = {
+export type PaymentUpdateOneRequiredWithoutInvoiceAllocationsNestedInput = {
   create?: Prisma.XOR<
-    Prisma.PaymentCreateWithoutLedgerEntriesInput,
-    Prisma.PaymentUncheckedCreateWithoutLedgerEntriesInput
+    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
+    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
   >
-  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutLedgerEntriesInput
-  upsert?: Prisma.PaymentUpsertWithoutLedgerEntriesInput
+  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutInvoiceAllocationsInput
+  upsert?: Prisma.PaymentUpsertWithoutInvoiceAllocationsInput
+  connect?: Prisma.PaymentWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PaymentUpdateToOneWithWhereWithoutInvoiceAllocationsInput,
+      Prisma.PaymentUpdateWithoutInvoiceAllocationsInput
+    >,
+    Prisma.PaymentUncheckedUpdateWithoutInvoiceAllocationsInput
+  >
+}
+
+export type PaymentCreateNestedOneWithoutPaymentAttemptsInput = {
+  create?: Prisma.XOR<
+    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
+    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
+  >
+  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutPaymentAttemptsInput
+  connect?: Prisma.PaymentWhereUniqueInput
+}
+
+export type PaymentUpdateOneWithoutPaymentAttemptsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
+    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
+  >
+  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutPaymentAttemptsInput
+  upsert?: Prisma.PaymentUpsertWithoutPaymentAttemptsInput
   disconnect?: Prisma.PaymentWhereInput | boolean
   delete?: Prisma.PaymentWhereInput | boolean
   connect?: Prisma.PaymentWhereUniqueInput
   update?: Prisma.XOR<
     Prisma.XOR<
-      Prisma.PaymentUpdateToOneWithWhereWithoutLedgerEntriesInput,
-      Prisma.PaymentUpdateWithoutLedgerEntriesInput
+      Prisma.PaymentUpdateToOneWithWhereWithoutPaymentAttemptsInput,
+      Prisma.PaymentUpdateWithoutPaymentAttemptsInput
     >,
-    Prisma.PaymentUncheckedUpdateWithoutLedgerEntriesInput
+    Prisma.PaymentUncheckedUpdateWithoutPaymentAttemptsInput
   >
 }
 
@@ -1444,62 +1498,8 @@ export type PaymentUncheckedUpdateManyWithoutProviderConnectionNestedInput = {
   deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[]
 }
 
-export type PaymentCreateNestedOneWithoutPaymentAttemptsInput = {
-  create?: Prisma.XOR<
-    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
-    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
-  >
-  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutPaymentAttemptsInput
-  connect?: Prisma.PaymentWhereUniqueInput
-}
-
-export type PaymentUpdateOneWithoutPaymentAttemptsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
-    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
-  >
-  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutPaymentAttemptsInput
-  upsert?: Prisma.PaymentUpsertWithoutPaymentAttemptsInput
-  disconnect?: Prisma.PaymentWhereInput | boolean
-  delete?: Prisma.PaymentWhereInput | boolean
-  connect?: Prisma.PaymentWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.PaymentUpdateToOneWithWhereWithoutPaymentAttemptsInput,
-      Prisma.PaymentUpdateWithoutPaymentAttemptsInput
-    >,
-    Prisma.PaymentUncheckedUpdateWithoutPaymentAttemptsInput
-  >
-}
-
 export type EnumPaymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.PaymentStatus
-}
-
-export type PaymentCreateNestedOneWithoutInvoiceAllocationsInput = {
-  create?: Prisma.XOR<
-    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
-    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
-  >
-  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutInvoiceAllocationsInput
-  connect?: Prisma.PaymentWhereUniqueInput
-}
-
-export type PaymentUpdateOneRequiredWithoutInvoiceAllocationsNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
-    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
-  >
-  connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutInvoiceAllocationsInput
-  upsert?: Prisma.PaymentUpsertWithoutInvoiceAllocationsInput
-  connect?: Prisma.PaymentWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.PaymentUpdateToOneWithWhereWithoutInvoiceAllocationsInput,
-      Prisma.PaymentUpdateWithoutInvoiceAllocationsInput
-    >,
-    Prisma.PaymentUncheckedUpdateWithoutInvoiceAllocationsInput
-  >
 }
 
 export type PaymentCreateNestedOneWithoutRefundsInput = {
@@ -1935,108 +1935,6 @@ export type PaymentUncheckedUpdateWithoutBankTransactionInput = {
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutPaymentNestedInput
 }
 
-export type PaymentCreateWithoutCustomerInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  number: string
-  status?: $Enums.PaymentStatus
-  revision?: number
-  providerPaymentId?: string | null
-  amount: bigint | number
-  unappliedAmount?: bigint | number
-  bankCharges?: bigint | number
-  currency: string
-  paymentDate: number
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPaymentsInput
-  paymentMode: Prisma.PaymentModeCreateNestedOneWithoutPaymentsInput
-  depositAccount: Prisma.BankAccountCreateNestedOneWithoutPaymentsInput
-  providerConnection?: Prisma.PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput
-  invoiceAllocations?: Prisma.PaymentAllocationCreateNestedManyWithoutPaymentInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutPaymentInput
-  bankTransaction?: Prisma.BankTransactionCreateNestedOneWithoutPaymentInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutPaymentInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutPaymentInput
-}
-
-export type PaymentUncheckedCreateWithoutCustomerInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  paymentModeId: string
-  depositAccountId: string
-  providerConnectionId?: string | null
-  number: string
-  status?: $Enums.PaymentStatus
-  revision?: number
-  providerPaymentId?: string | null
-  amount: bigint | number
-  unappliedAmount?: bigint | number
-  bankCharges?: bigint | number
-  currency: string
-  paymentDate: number
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: number
-  updatedAt: number
-  invoiceAllocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutPaymentInput
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutPaymentInput
-  bankTransaction?: Prisma.BankTransactionUncheckedCreateNestedOneWithoutPaymentInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutPaymentInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutPaymentInput
-}
-
-export type PaymentCreateOrConnectWithoutCustomerInput = {
-  where: Prisma.PaymentWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutCustomerInput,
-    Prisma.PaymentUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type PaymentCreateManyCustomerInputEnvelope = {
-  data:
-    | Prisma.PaymentCreateManyCustomerInput
-    | Prisma.PaymentCreateManyCustomerInput[]
-  skipDuplicates?: boolean
-}
-
-export type PaymentUpsertWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.PaymentWhereUniqueInput
-  update: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutCustomerInput,
-    Prisma.PaymentUncheckedUpdateWithoutCustomerInput
-  >
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutCustomerInput,
-    Prisma.PaymentUncheckedCreateWithoutCustomerInput
-  >
-}
-
-export type PaymentUpdateWithWhereUniqueWithoutCustomerInput = {
-  where: Prisma.PaymentWhereUniqueInput
-  data: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutCustomerInput,
-    Prisma.PaymentUncheckedUpdateWithoutCustomerInput
-  >
-}
-
-export type PaymentUpdateManyWithWhereWithoutCustomerInput = {
-  where: Prisma.PaymentScalarWhereInput
-  data: Prisma.XOR<
-    Prisma.PaymentUpdateManyMutationInput,
-    Prisma.PaymentUncheckedUpdateManyWithoutCustomerInput
-  >
-}
-
 export type PaymentCreateWithoutLedgerEntriesInput = {
   id: string
   sourceAppId?: string | null
@@ -2220,6 +2118,478 @@ export type PaymentUncheckedUpdateWithoutLedgerEntriesInput = {
   refunds?: Prisma.RefundUncheckedUpdateManyWithoutPaymentNestedInput
   bankTransaction?: Prisma.BankTransactionUncheckedUpdateOneWithoutPaymentNestedInput
   paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutPaymentNestedInput
+}
+
+export type PaymentCreateWithoutCustomerInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  number: string
+  status?: $Enums.PaymentStatus
+  revision?: number
+  providerPaymentId?: string | null
+  amount: bigint | number
+  unappliedAmount?: bigint | number
+  bankCharges?: bigint | number
+  currency: string
+  paymentDate: number
+  referenceNumber?: string | null
+  notes?: string | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPaymentsInput
+  paymentMode: Prisma.PaymentModeCreateNestedOneWithoutPaymentsInput
+  depositAccount: Prisma.BankAccountCreateNestedOneWithoutPaymentsInput
+  providerConnection?: Prisma.PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput
+  invoiceAllocations?: Prisma.PaymentAllocationCreateNestedManyWithoutPaymentInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutPaymentInput
+  bankTransaction?: Prisma.BankTransactionCreateNestedOneWithoutPaymentInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutPaymentInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutPaymentInput
+}
+
+export type PaymentUncheckedCreateWithoutCustomerInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  paymentModeId: string
+  depositAccountId: string
+  providerConnectionId?: string | null
+  number: string
+  status?: $Enums.PaymentStatus
+  revision?: number
+  providerPaymentId?: string | null
+  amount: bigint | number
+  unappliedAmount?: bigint | number
+  bankCharges?: bigint | number
+  currency: string
+  paymentDate: number
+  referenceNumber?: string | null
+  notes?: string | null
+  createdAt: number
+  updatedAt: number
+  invoiceAllocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutPaymentInput
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutPaymentInput
+  bankTransaction?: Prisma.BankTransactionUncheckedCreateNestedOneWithoutPaymentInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutPaymentInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutPaymentInput
+}
+
+export type PaymentCreateOrConnectWithoutCustomerInput = {
+  where: Prisma.PaymentWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutCustomerInput,
+    Prisma.PaymentUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type PaymentCreateManyCustomerInputEnvelope = {
+  data:
+    | Prisma.PaymentCreateManyCustomerInput
+    | Prisma.PaymentCreateManyCustomerInput[]
+  skipDuplicates?: boolean
+}
+
+export type PaymentUpsertWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.PaymentWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutCustomerInput,
+    Prisma.PaymentUncheckedUpdateWithoutCustomerInput
+  >
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutCustomerInput,
+    Prisma.PaymentUncheckedCreateWithoutCustomerInput
+  >
+}
+
+export type PaymentUpdateWithWhereUniqueWithoutCustomerInput = {
+  where: Prisma.PaymentWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutCustomerInput,
+    Prisma.PaymentUncheckedUpdateWithoutCustomerInput
+  >
+}
+
+export type PaymentUpdateManyWithWhereWithoutCustomerInput = {
+  where: Prisma.PaymentScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.PaymentUpdateManyMutationInput,
+    Prisma.PaymentUncheckedUpdateManyWithoutCustomerInput
+  >
+}
+
+export type PaymentCreateWithoutInvoiceAllocationsInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  number: string
+  status?: $Enums.PaymentStatus
+  revision?: number
+  providerPaymentId?: string | null
+  amount: bigint | number
+  unappliedAmount?: bigint | number
+  bankCharges?: bigint | number
+  currency: string
+  paymentDate: number
+  referenceNumber?: string | null
+  notes?: string | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPaymentsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutPaymentsInput
+  paymentMode: Prisma.PaymentModeCreateNestedOneWithoutPaymentsInput
+  depositAccount: Prisma.BankAccountCreateNestedOneWithoutPaymentsInput
+  providerConnection?: Prisma.PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutPaymentInput
+  bankTransaction?: Prisma.BankTransactionCreateNestedOneWithoutPaymentInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutPaymentInput
+  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutPaymentInput
+}
+
+export type PaymentUncheckedCreateWithoutInvoiceAllocationsInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerId: string
+  paymentModeId: string
+  depositAccountId: string
+  providerConnectionId?: string | null
+  number: string
+  status?: $Enums.PaymentStatus
+  revision?: number
+  providerPaymentId?: string | null
+  amount: bigint | number
+  unappliedAmount?: bigint | number
+  bankCharges?: bigint | number
+  currency: string
+  paymentDate: number
+  referenceNumber?: string | null
+  notes?: string | null
+  createdAt: number
+  updatedAt: number
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutPaymentInput
+  bankTransaction?: Prisma.BankTransactionUncheckedCreateNestedOneWithoutPaymentInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutPaymentInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutPaymentInput
+}
+
+export type PaymentCreateOrConnectWithoutInvoiceAllocationsInput = {
+  where: Prisma.PaymentWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
+    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
+  >
+}
+
+export type PaymentUpsertWithoutInvoiceAllocationsInput = {
+  update: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutInvoiceAllocationsInput,
+    Prisma.PaymentUncheckedUpdateWithoutInvoiceAllocationsInput
+  >
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
+    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
+  >
+  where?: Prisma.PaymentWhereInput
+}
+
+export type PaymentUpdateToOneWithWhereWithoutInvoiceAllocationsInput = {
+  where?: Prisma.PaymentWhereInput
+  data: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutInvoiceAllocationsInput,
+    Prisma.PaymentUncheckedUpdateWithoutInvoiceAllocationsInput
+  >
+}
+
+export type PaymentUpdateWithoutInvoiceAllocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
+    | $Enums.PaymentStatus
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  providerPaymentId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPaymentsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutPaymentsNestedInput
+  paymentMode?: Prisma.PaymentModeUpdateOneRequiredWithoutPaymentsNestedInput
+  depositAccount?: Prisma.BankAccountUpdateOneRequiredWithoutPaymentsNestedInput
+  providerConnection?: Prisma.PaymentProviderConnectionUpdateOneWithoutPaymentsNestedInput
+  refunds?: Prisma.RefundUpdateManyWithoutPaymentNestedInput
+  bankTransaction?: Prisma.BankTransactionUpdateOneWithoutPaymentNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutPaymentNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutPaymentNestedInput
+}
+
+export type PaymentUncheckedUpdateWithoutInvoiceAllocationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentModeId?: Prisma.StringFieldUpdateOperationsInput | string
+  depositAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  providerConnectionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
+    | $Enums.PaymentStatus
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  providerPaymentId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  refunds?: Prisma.RefundUncheckedUpdateManyWithoutPaymentNestedInput
+  bankTransaction?: Prisma.BankTransactionUncheckedUpdateOneWithoutPaymentNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutPaymentNestedInput
+  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutPaymentNestedInput
+}
+
+export type PaymentCreateWithoutPaymentAttemptsInput = {
+  id: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  number: string
+  status?: $Enums.PaymentStatus
+  revision?: number
+  providerPaymentId?: string | null
+  amount: bigint | number
+  unappliedAmount?: bigint | number
+  bankCharges?: bigint | number
+  currency: string
+  paymentDate: number
+  referenceNumber?: string | null
+  notes?: string | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPaymentsInput
+  customer: Prisma.CustomerCreateNestedOneWithoutPaymentsInput
+  paymentMode: Prisma.PaymentModeCreateNestedOneWithoutPaymentsInput
+  depositAccount: Prisma.BankAccountCreateNestedOneWithoutPaymentsInput
+  providerConnection?: Prisma.PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput
+  invoiceAllocations?: Prisma.PaymentAllocationCreateNestedManyWithoutPaymentInput
+  refunds?: Prisma.RefundCreateNestedManyWithoutPaymentInput
+  bankTransaction?: Prisma.BankTransactionCreateNestedOneWithoutPaymentInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutPaymentInput
+}
+
+export type PaymentUncheckedCreateWithoutPaymentAttemptsInput = {
+  id: string
+  tenantId: string
+  sourceAppId?: string | null
+  sourceExternalReference?: string | null
+  sourceIdempotencyKey?: string | null
+  sourcePayloadHash?: string | null
+  customerId: string
+  paymentModeId: string
+  depositAccountId: string
+  providerConnectionId?: string | null
+  number: string
+  status?: $Enums.PaymentStatus
+  revision?: number
+  providerPaymentId?: string | null
+  amount: bigint | number
+  unappliedAmount?: bigint | number
+  bankCharges?: bigint | number
+  currency: string
+  paymentDate: number
+  referenceNumber?: string | null
+  notes?: string | null
+  createdAt: number
+  updatedAt: number
+  invoiceAllocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutPaymentInput
+  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutPaymentInput
+  bankTransaction?: Prisma.BankTransactionUncheckedCreateNestedOneWithoutPaymentInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutPaymentInput
+}
+
+export type PaymentCreateOrConnectWithoutPaymentAttemptsInput = {
+  where: Prisma.PaymentWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
+    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
+  >
+}
+
+export type PaymentUpsertWithoutPaymentAttemptsInput = {
+  update: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutPaymentAttemptsInput,
+    Prisma.PaymentUncheckedUpdateWithoutPaymentAttemptsInput
+  >
+  create: Prisma.XOR<
+    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
+    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
+  >
+  where?: Prisma.PaymentWhereInput
+}
+
+export type PaymentUpdateToOneWithWhereWithoutPaymentAttemptsInput = {
+  where?: Prisma.PaymentWhereInput
+  data: Prisma.XOR<
+    Prisma.PaymentUpdateWithoutPaymentAttemptsInput,
+    Prisma.PaymentUncheckedUpdateWithoutPaymentAttemptsInput
+  >
+}
+
+export type PaymentUpdateWithoutPaymentAttemptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
+    | $Enums.PaymentStatus
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  providerPaymentId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPaymentsNestedInput
+  customer?: Prisma.CustomerUpdateOneRequiredWithoutPaymentsNestedInput
+  paymentMode?: Prisma.PaymentModeUpdateOneRequiredWithoutPaymentsNestedInput
+  depositAccount?: Prisma.BankAccountUpdateOneRequiredWithoutPaymentsNestedInput
+  providerConnection?: Prisma.PaymentProviderConnectionUpdateOneWithoutPaymentsNestedInput
+  invoiceAllocations?: Prisma.PaymentAllocationUpdateManyWithoutPaymentNestedInput
+  refunds?: Prisma.RefundUpdateManyWithoutPaymentNestedInput
+  bankTransaction?: Prisma.BankTransactionUpdateOneWithoutPaymentNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutPaymentNestedInput
+}
+
+export type PaymentUncheckedUpdateWithoutPaymentAttemptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceExternalReference?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourceIdempotencyKey?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  sourcePayloadHash?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentModeId?: Prisma.StringFieldUpdateOperationsInput | string
+  depositAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  providerConnectionId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  number?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
+    | $Enums.PaymentStatus
+  revision?: Prisma.IntFieldUpdateOperationsInput | number
+  providerPaymentId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
+  referenceNumber?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  invoiceAllocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutPaymentNestedInput
+  refunds?: Prisma.RefundUncheckedUpdateManyWithoutPaymentNestedInput
+  bankTransaction?: Prisma.BankTransactionUncheckedUpdateOneWithoutPaymentNestedInput
+  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutPaymentNestedInput
 }
 
 export type PaymentCreateWithoutPaymentModeInput = {
@@ -2424,376 +2794,6 @@ export type PaymentUpdateManyWithWhereWithoutProviderConnectionInput = {
     Prisma.PaymentUpdateManyMutationInput,
     Prisma.PaymentUncheckedUpdateManyWithoutProviderConnectionInput
   >
-}
-
-export type PaymentCreateWithoutPaymentAttemptsInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  number: string
-  status?: $Enums.PaymentStatus
-  revision?: number
-  providerPaymentId?: string | null
-  amount: bigint | number
-  unappliedAmount?: bigint | number
-  bankCharges?: bigint | number
-  currency: string
-  paymentDate: number
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPaymentsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutPaymentsInput
-  paymentMode: Prisma.PaymentModeCreateNestedOneWithoutPaymentsInput
-  depositAccount: Prisma.BankAccountCreateNestedOneWithoutPaymentsInput
-  providerConnection?: Prisma.PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput
-  invoiceAllocations?: Prisma.PaymentAllocationCreateNestedManyWithoutPaymentInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutPaymentInput
-  bankTransaction?: Prisma.BankTransactionCreateNestedOneWithoutPaymentInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutPaymentInput
-}
-
-export type PaymentUncheckedCreateWithoutPaymentAttemptsInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  customerId: string
-  paymentModeId: string
-  depositAccountId: string
-  providerConnectionId?: string | null
-  number: string
-  status?: $Enums.PaymentStatus
-  revision?: number
-  providerPaymentId?: string | null
-  amount: bigint | number
-  unappliedAmount?: bigint | number
-  bankCharges?: bigint | number
-  currency: string
-  paymentDate: number
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: number
-  updatedAt: number
-  invoiceAllocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutPaymentInput
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutPaymentInput
-  bankTransaction?: Prisma.BankTransactionUncheckedCreateNestedOneWithoutPaymentInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutPaymentInput
-}
-
-export type PaymentCreateOrConnectWithoutPaymentAttemptsInput = {
-  where: Prisma.PaymentWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
-    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
-  >
-}
-
-export type PaymentUpsertWithoutPaymentAttemptsInput = {
-  update: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutPaymentAttemptsInput,
-    Prisma.PaymentUncheckedUpdateWithoutPaymentAttemptsInput
-  >
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutPaymentAttemptsInput,
-    Prisma.PaymentUncheckedCreateWithoutPaymentAttemptsInput
-  >
-  where?: Prisma.PaymentWhereInput
-}
-
-export type PaymentUpdateToOneWithWhereWithoutPaymentAttemptsInput = {
-  where?: Prisma.PaymentWhereInput
-  data: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutPaymentAttemptsInput,
-    Prisma.PaymentUncheckedUpdateWithoutPaymentAttemptsInput
-  >
-}
-
-export type PaymentUpdateWithoutPaymentAttemptsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
-    | $Enums.PaymentStatus
-  revision?: Prisma.IntFieldUpdateOperationsInput | number
-  providerPaymentId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutPaymentsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutPaymentsNestedInput
-  paymentMode?: Prisma.PaymentModeUpdateOneRequiredWithoutPaymentsNestedInput
-  depositAccount?: Prisma.BankAccountUpdateOneRequiredWithoutPaymentsNestedInput
-  providerConnection?: Prisma.PaymentProviderConnectionUpdateOneWithoutPaymentsNestedInput
-  invoiceAllocations?: Prisma.PaymentAllocationUpdateManyWithoutPaymentNestedInput
-  refunds?: Prisma.RefundUpdateManyWithoutPaymentNestedInput
-  bankTransaction?: Prisma.BankTransactionUpdateOneWithoutPaymentNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutPaymentNestedInput
-}
-
-export type PaymentUncheckedUpdateWithoutPaymentAttemptsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentModeId?: Prisma.StringFieldUpdateOperationsInput | string
-  depositAccountId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
-    | $Enums.PaymentStatus
-  revision?: Prisma.IntFieldUpdateOperationsInput | number
-  providerPaymentId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  invoiceAllocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutPaymentNestedInput
-  refunds?: Prisma.RefundUncheckedUpdateManyWithoutPaymentNestedInput
-  bankTransaction?: Prisma.BankTransactionUncheckedUpdateOneWithoutPaymentNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutPaymentNestedInput
-}
-
-export type PaymentCreateWithoutInvoiceAllocationsInput = {
-  id: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  number: string
-  status?: $Enums.PaymentStatus
-  revision?: number
-  providerPaymentId?: string | null
-  amount: bigint | number
-  unappliedAmount?: bigint | number
-  bankCharges?: bigint | number
-  currency: string
-  paymentDate: number
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPaymentsInput
-  customer: Prisma.CustomerCreateNestedOneWithoutPaymentsInput
-  paymentMode: Prisma.PaymentModeCreateNestedOneWithoutPaymentsInput
-  depositAccount: Prisma.BankAccountCreateNestedOneWithoutPaymentsInput
-  providerConnection?: Prisma.PaymentProviderConnectionCreateNestedOneWithoutPaymentsInput
-  refunds?: Prisma.RefundCreateNestedManyWithoutPaymentInput
-  bankTransaction?: Prisma.BankTransactionCreateNestedOneWithoutPaymentInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryCreateNestedManyWithoutPaymentInput
-  paymentAttempts?: Prisma.PaymentAttemptCreateNestedManyWithoutPaymentInput
-}
-
-export type PaymentUncheckedCreateWithoutInvoiceAllocationsInput = {
-  id: string
-  tenantId: string
-  sourceAppId?: string | null
-  sourceExternalReference?: string | null
-  sourceIdempotencyKey?: string | null
-  sourcePayloadHash?: string | null
-  customerId: string
-  paymentModeId: string
-  depositAccountId: string
-  providerConnectionId?: string | null
-  number: string
-  status?: $Enums.PaymentStatus
-  revision?: number
-  providerPaymentId?: string | null
-  amount: bigint | number
-  unappliedAmount?: bigint | number
-  bankCharges?: bigint | number
-  currency: string
-  paymentDate: number
-  referenceNumber?: string | null
-  notes?: string | null
-  createdAt: number
-  updatedAt: number
-  refunds?: Prisma.RefundUncheckedCreateNestedManyWithoutPaymentInput
-  bankTransaction?: Prisma.BankTransactionUncheckedCreateNestedOneWithoutPaymentInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedCreateNestedManyWithoutPaymentInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedCreateNestedManyWithoutPaymentInput
-}
-
-export type PaymentCreateOrConnectWithoutInvoiceAllocationsInput = {
-  where: Prisma.PaymentWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
-    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
-  >
-}
-
-export type PaymentUpsertWithoutInvoiceAllocationsInput = {
-  update: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutInvoiceAllocationsInput,
-    Prisma.PaymentUncheckedUpdateWithoutInvoiceAllocationsInput
-  >
-  create: Prisma.XOR<
-    Prisma.PaymentCreateWithoutInvoiceAllocationsInput,
-    Prisma.PaymentUncheckedCreateWithoutInvoiceAllocationsInput
-  >
-  where?: Prisma.PaymentWhereInput
-}
-
-export type PaymentUpdateToOneWithWhereWithoutInvoiceAllocationsInput = {
-  where?: Prisma.PaymentWhereInput
-  data: Prisma.XOR<
-    Prisma.PaymentUpdateWithoutInvoiceAllocationsInput,
-    Prisma.PaymentUncheckedUpdateWithoutInvoiceAllocationsInput
-  >
-}
-
-export type PaymentUpdateWithoutInvoiceAllocationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
-    | $Enums.PaymentStatus
-  revision?: Prisma.IntFieldUpdateOperationsInput | number
-  providerPaymentId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutPaymentsNestedInput
-  customer?: Prisma.CustomerUpdateOneRequiredWithoutPaymentsNestedInput
-  paymentMode?: Prisma.PaymentModeUpdateOneRequiredWithoutPaymentsNestedInput
-  depositAccount?: Prisma.BankAccountUpdateOneRequiredWithoutPaymentsNestedInput
-  providerConnection?: Prisma.PaymentProviderConnectionUpdateOneWithoutPaymentsNestedInput
-  refunds?: Prisma.RefundUpdateManyWithoutPaymentNestedInput
-  bankTransaction?: Prisma.BankTransactionUpdateOneWithoutPaymentNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUpdateManyWithoutPaymentNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUpdateManyWithoutPaymentNestedInput
-}
-
-export type PaymentUncheckedUpdateWithoutInvoiceAllocationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  sourceAppId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  sourceExternalReference?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourceIdempotencyKey?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  sourcePayloadHash?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentModeId?: Prisma.StringFieldUpdateOperationsInput | string
-  depositAccountId?: Prisma.StringFieldUpdateOperationsInput | string
-  providerConnectionId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  number?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumPaymentStatusFieldUpdateOperationsInput
-    | $Enums.PaymentStatus
-  revision?: Prisma.IntFieldUpdateOperationsInput | number
-  providerPaymentId?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  amount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  unappliedAmount?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  bankCharges?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  currency?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentDate?: Prisma.IntFieldUpdateOperationsInput | number
-  referenceNumber?:
-    | Prisma.NullableStringFieldUpdateOperationsInput
-    | string
-    | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  refunds?: Prisma.RefundUncheckedUpdateManyWithoutPaymentNestedInput
-  bankTransaction?: Prisma.BankTransactionUncheckedUpdateOneWithoutPaymentNestedInput
-  ledgerEntries?: Prisma.CustomerLedgerEntryUncheckedUpdateManyWithoutPaymentNestedInput
-  paymentAttempts?: Prisma.PaymentAttemptUncheckedUpdateManyWithoutPaymentNestedInput
 }
 
 export type PaymentCreateWithoutRefundsInput = {

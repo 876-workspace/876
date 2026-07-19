@@ -433,14 +433,9 @@ export type PriceListEntryUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type PriceListEntryListRelationFilter = {
-  every?: Prisma.PriceListEntryWhereInput
-  some?: Prisma.PriceListEntryWhereInput
-  none?: Prisma.PriceListEntryWhereInput
-}
-
-export type PriceListEntryOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
+export type PriceListEntryScalarRelationFilter = {
+  is?: Prisma.PriceListEntryWhereInput
+  isNot?: Prisma.PriceListEntryWhereInput
 }
 
 export type PriceListEntryBilling_price_list_entries_price_keyCompoundUniqueInput =
@@ -492,9 +487,40 @@ export type PriceListEntrySumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type PriceListEntryScalarRelationFilter = {
-  is?: Prisma.PriceListEntryWhereInput
-  isNot?: Prisma.PriceListEntryWhereInput
+export type PriceListEntryListRelationFilter = {
+  every?: Prisma.PriceListEntryWhereInput
+  some?: Prisma.PriceListEntryWhereInput
+  none?: Prisma.PriceListEntryWhereInput
+}
+
+export type PriceListEntryOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
+export type PriceListEntryCreateNestedOneWithoutTiersInput = {
+  create?: Prisma.XOR<
+    Prisma.PriceListEntryCreateWithoutTiersInput,
+    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
+  >
+  connectOrCreate?: Prisma.PriceListEntryCreateOrConnectWithoutTiersInput
+  connect?: Prisma.PriceListEntryWhereUniqueInput
+}
+
+export type PriceListEntryUpdateOneRequiredWithoutTiersNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.PriceListEntryCreateWithoutTiersInput,
+    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
+  >
+  connectOrCreate?: Prisma.PriceListEntryCreateOrConnectWithoutTiersInput
+  upsert?: Prisma.PriceListEntryUpsertWithoutTiersInput
+  connect?: Prisma.PriceListEntryWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.PriceListEntryUpdateToOneWithWhereWithoutTiersInput,
+      Prisma.PriceListEntryUpdateWithoutTiersInput
+    >,
+    Prisma.PriceListEntryUncheckedUpdateWithoutTiersInput
+  >
 }
 
 export type PriceListEntryCreateNestedManyWithoutPriceListInput = {
@@ -605,32 +631,6 @@ export type PriceListEntryUncheckedUpdateManyWithoutPriceListNestedInput = {
   deleteMany?:
     | Prisma.PriceListEntryScalarWhereInput
     | Prisma.PriceListEntryScalarWhereInput[]
-}
-
-export type PriceListEntryCreateNestedOneWithoutTiersInput = {
-  create?: Prisma.XOR<
-    Prisma.PriceListEntryCreateWithoutTiersInput,
-    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
-  >
-  connectOrCreate?: Prisma.PriceListEntryCreateOrConnectWithoutTiersInput
-  connect?: Prisma.PriceListEntryWhereUniqueInput
-}
-
-export type PriceListEntryUpdateOneRequiredWithoutTiersNestedInput = {
-  create?: Prisma.XOR<
-    Prisma.PriceListEntryCreateWithoutTiersInput,
-    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
-  >
-  connectOrCreate?: Prisma.PriceListEntryCreateOrConnectWithoutTiersInput
-  upsert?: Prisma.PriceListEntryUpsertWithoutTiersInput
-  connect?: Prisma.PriceListEntryWhereUniqueInput
-  update?: Prisma.XOR<
-    Prisma.XOR<
-      Prisma.PriceListEntryUpdateToOneWithWhereWithoutTiersInput,
-      Prisma.PriceListEntryUpdateWithoutTiersInput
-    >,
-    Prisma.PriceListEntryUncheckedUpdateWithoutTiersInput
-  >
 }
 
 export type PriceListEntryCreateNestedManyWithoutPriceInput = {
@@ -853,6 +853,82 @@ export type PriceListEntryUncheckedUpdateManyWithoutTenantNestedInput = {
     | Prisma.PriceListEntryScalarWhereInput[]
 }
 
+export type PriceListEntryCreateWithoutTiersInput = {
+  id: string
+  unitAmount?: bigint | number | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPriceListEntriesInput
+  priceList: Prisma.PriceListCreateNestedOneWithoutEntriesInput
+  price: Prisma.PriceCreateNestedOneWithoutPriceListEntriesInput
+}
+
+export type PriceListEntryUncheckedCreateWithoutTiersInput = {
+  id: string
+  tenantId: string
+  priceListId: string
+  priceId: string
+  unitAmount?: bigint | number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type PriceListEntryCreateOrConnectWithoutTiersInput = {
+  where: Prisma.PriceListEntryWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.PriceListEntryCreateWithoutTiersInput,
+    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
+  >
+}
+
+export type PriceListEntryUpsertWithoutTiersInput = {
+  update: Prisma.XOR<
+    Prisma.PriceListEntryUpdateWithoutTiersInput,
+    Prisma.PriceListEntryUncheckedUpdateWithoutTiersInput
+  >
+  create: Prisma.XOR<
+    Prisma.PriceListEntryCreateWithoutTiersInput,
+    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
+  >
+  where?: Prisma.PriceListEntryWhereInput
+}
+
+export type PriceListEntryUpdateToOneWithWhereWithoutTiersInput = {
+  where?: Prisma.PriceListEntryWhereInput
+  data: Prisma.XOR<
+    Prisma.PriceListEntryUpdateWithoutTiersInput,
+    Prisma.PriceListEntryUncheckedUpdateWithoutTiersInput
+  >
+}
+
+export type PriceListEntryUpdateWithoutTiersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  unitAmount?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPriceListEntriesNestedInput
+  priceList?: Prisma.PriceListUpdateOneRequiredWithoutEntriesNestedInput
+  price?: Prisma.PriceUpdateOneRequiredWithoutPriceListEntriesNestedInput
+}
+
+export type PriceListEntryUncheckedUpdateWithoutTiersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceListId?: Prisma.StringFieldUpdateOperationsInput | string
+  priceId?: Prisma.StringFieldUpdateOperationsInput | string
+  unitAmount?:
+    | Prisma.NullableBigIntFieldUpdateOperationsInput
+    | bigint
+    | number
+    | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
 export type PriceListEntryCreateWithoutPriceListInput = {
   id: string
   unitAmount?: bigint | number | null
@@ -934,82 +1010,6 @@ export type PriceListEntryScalarWhereInput = {
     | null
   createdAt?: Prisma.IntFilter<'PriceListEntry'> | number
   updatedAt?: Prisma.IntFilter<'PriceListEntry'> | number
-}
-
-export type PriceListEntryCreateWithoutTiersInput = {
-  id: string
-  unitAmount?: bigint | number | null
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutPriceListEntriesInput
-  priceList: Prisma.PriceListCreateNestedOneWithoutEntriesInput
-  price: Prisma.PriceCreateNestedOneWithoutPriceListEntriesInput
-}
-
-export type PriceListEntryUncheckedCreateWithoutTiersInput = {
-  id: string
-  tenantId: string
-  priceListId: string
-  priceId: string
-  unitAmount?: bigint | number | null
-  createdAt: number
-  updatedAt: number
-}
-
-export type PriceListEntryCreateOrConnectWithoutTiersInput = {
-  where: Prisma.PriceListEntryWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.PriceListEntryCreateWithoutTiersInput,
-    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
-  >
-}
-
-export type PriceListEntryUpsertWithoutTiersInput = {
-  update: Prisma.XOR<
-    Prisma.PriceListEntryUpdateWithoutTiersInput,
-    Prisma.PriceListEntryUncheckedUpdateWithoutTiersInput
-  >
-  create: Prisma.XOR<
-    Prisma.PriceListEntryCreateWithoutTiersInput,
-    Prisma.PriceListEntryUncheckedCreateWithoutTiersInput
-  >
-  where?: Prisma.PriceListEntryWhereInput
-}
-
-export type PriceListEntryUpdateToOneWithWhereWithoutTiersInput = {
-  where?: Prisma.PriceListEntryWhereInput
-  data: Prisma.XOR<
-    Prisma.PriceListEntryUpdateWithoutTiersInput,
-    Prisma.PriceListEntryUncheckedUpdateWithoutTiersInput
-  >
-}
-
-export type PriceListEntryUpdateWithoutTiersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  unitAmount?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutPriceListEntriesNestedInput
-  priceList?: Prisma.PriceListUpdateOneRequiredWithoutEntriesNestedInput
-  price?: Prisma.PriceUpdateOneRequiredWithoutPriceListEntriesNestedInput
-}
-
-export type PriceListEntryUncheckedUpdateWithoutTiersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceListId?: Prisma.StringFieldUpdateOperationsInput | string
-  priceId?: Prisma.StringFieldUpdateOperationsInput | string
-  unitAmount?:
-    | Prisma.NullableBigIntFieldUpdateOperationsInput
-    | bigint
-    | number
-    | null
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type PriceListEntryCreateWithoutPriceInput = {
