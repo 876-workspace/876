@@ -28,7 +28,7 @@ export type WidgetDistribution = 'shared' | 'host'
 export type WidgetDataOwner = 'widgets' | 'external'
 
 export type WidgetVisual =
-  | { kind: 'icon'; icon: 'notepad' | 'terminal' }
+  | { kind: 'icon'; icon: 'notepad' | 'terminal' | 'knowledge_base' }
   | { kind: 'image'; src: string; alt: string }
 
 export interface WidgetFeatureKeys {
@@ -115,7 +115,51 @@ export const notepadWidgetMetadata = {
   },
 } as const satisfies WidgetMetadata
 
-export const widgetCatalog = [notepadWidgetMetadata] as const
+export const knowledgeBaseWidgetMetadata = {
+  object: 'widget',
+  id: 'knowledge_base',
+  name: 'Knowledge base',
+  description:
+    'In-app help articles with categories, search, and bookmarks. Content is filtered by app; shared ecosystem topics can appear on multiple hosts. Read-only in the dock; authored in Console.',
+  version: '1.0.0',
+  visual: { kind: 'icon', icon: 'knowledge_base' },
+  distribution: 'shared',
+  dataOwner: 'widgets',
+  ownership: 'workspace',
+  defaultPanel: { width: 440, height: 640 },
+  supportedHosts: ['console', 'billing', 'couriers', 'enterprise', '876'],
+  implementedHosts: ['console', 'billing', 'couriers'],
+  features: {
+    platform: {
+      parent: 'platform_widgets',
+      widget: 'platform_widgets_knowledge_base',
+    },
+    apps: {
+      console: {
+        parent: 'console_widgets',
+        widget: 'console_widgets_knowledge_base',
+      },
+      billing: {
+        parent: 'billing_widgets',
+        widget: 'billing_widgets_knowledge_base',
+      },
+      couriers: {
+        parent: 'couriers_widgets',
+        widget: 'couriers_widgets_knowledge_base',
+      },
+    },
+  },
+  administration: {
+    canListContent: true,
+    canEditContent: true,
+    canDeleteContent: true,
+  },
+} as const satisfies WidgetMetadata
+
+export const widgetCatalog = [
+  notepadWidgetMetadata,
+  knowledgeBaseWidgetMetadata,
+] as const
 
 export function getWidgetAppFeatureKeys(
   widget: WidgetMetadata,

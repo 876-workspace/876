@@ -6,6 +6,7 @@ export {
   getWidgetPlatformFeatureKeys,
   isWidgetEnabled,
   isWidgetsDataOwner,
+  knowledgeBaseWidgetMetadata,
   notepadWidgetMetadata,
   WIDGET_HOST_APP_SLUGS,
   widgetCatalog,
@@ -24,3 +25,16 @@ export type {
   NoteList,
   NotepadNote,
 } from './types/notes'
+export type {
+  DeletedKbArticle,
+  DeletedKbCategory,
+  KbArticle,
+  KbArticleAudience,
+  KbArticleList,
+  KbArticleStatus,
+  KbBookmark,
+  KbBookmarkList,
+  KbCategory,
+  KbCategoryList,
+  KnowledgeWidgetHost,
+} from './types/knowledge'

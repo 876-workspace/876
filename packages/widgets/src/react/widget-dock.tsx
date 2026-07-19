@@ -1,7 +1,13 @@
 'use client'
 
 import type { ComponentType } from 'react'
-import { notepadWidgetMetadata, type WidgetMetadata } from '../catalog'
+import {
+  knowledgeBaseWidgetMetadata,
+  notepadWidgetMetadata,
+  type WidgetMetadata,
+} from '../catalog'
+import { KnowledgeBaseWidgetPanel } from './knowledge-widget'
+import { KnowledgeBaseIcon } from './knowledge-icon'
 import { NotepadWidgetPanel } from './notepad-widget'
 import { NotepadIcon } from './notepad-icon'
 import { WidgetPopout } from './widget-popout'
@@ -17,6 +23,11 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
     metadata: notepadWidgetMetadata,
     icon: NotepadIcon,
     panel: NotepadWidgetPanel,
+  },
+  {
+    metadata: knowledgeBaseWidgetMetadata,
+    icon: KnowledgeBaseIcon,
+    panel: KnowledgeBaseWidgetPanel,
   },
 ]
 
