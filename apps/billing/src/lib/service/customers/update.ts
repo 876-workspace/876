@@ -1,41 +1,42 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma } from '@/lib/db'
+import { prisma, type PrismaTransaction } from '@/lib/db'
 import type { CustomerUpdateParams } from '@/types/customer'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency } from '../shared'
+import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
 
 /** Updates a billing customer's details. */
 export async function update(
   tenantId: string,
   customerId: string,
-  params: CustomerUpdateParams
+  params: CustomerUpdateParams,
+  database: PrismaTransaction = prisma
 ): ServiceResult<{ id: string }> {
   if (Object.keys(params).length === 0) return err('Nothing to update.', 422)
 
   if (typeof params.currency === 'string') {
-    if (!(await hasEnabledCurrency(tenantId, params.currency))) {
+    if (!(await hasEnabledCurrency(tenantId, params.currency, database))) {
       return err('Enable the customer currency before using it.', 422)
     }
   }
 
   const [paymentTerm, salesperson, priceList] = await Promise.all([
     params.paymentTermId
-      ? prisma.paymentTerm.findFirst({
+      ? database.paymentTerm.findFirst({
           where: { id: params.paymentTermId, tenantId, isActive: true },
           select: { id: true },
         })
       : null,
     params.salespersonId
-      ? prisma.salesperson.findFirst({
+      ? database.salesperson.findFirst({
           where: { id: params.salespersonId, tenantId, isActive: true },
           select: { id: true },
         })
       : null,
     params.priceListId
-      ? prisma.priceList.findFirst({
+      ? database.priceList.findFirst({
           where: { id: params.priceListId, tenantId, isActive: true },
           select: { id: true },
         })
@@ -61,6 +62,12 @@ export async function update(
   if (params.email !== undefined) data.email = params.email
   if (params.phone !== undefined) data.phone = params.phone
   if (params.workPhone !== undefined) data.workPhone = params.workPhone
+  if (params.customerNumber !== undefined)
+    data.customerNumber = params.customerNumber
+  if (params.website !== undefined) data.website = params.website
+  if (params.notes !== undefined) data.notes = params.notes
+  if (params.taxRegistrationNumber !== undefined)
+    data.taxRegistrationNumber = params.taxRegistrationNumber
   if (params.currency !== undefined) data.defaultCurrency = params.currency
   if (params.language !== undefined) data.language = params.language
   if (params.status !== undefined) data.status = params.status
@@ -77,7 +84,7 @@ export async function update(
   if (params.invoiceTerms !== undefined) data.invoiceTerms = params.invoiceTerms
 
   try {
-    const result = await prisma.customer.updateMany({
+    const result = await database.customer.updateMany({
       where: { id: customerId, tenantId },
       data,
     })
@@ -86,6 +93,12 @@ export async function update(
 
     return ok({ id: customerId })
   } catch (error) {
+    if (isUniqueConstraintError(error))
+      return err(
+        'A customer with this customer number already exists in this workspace.',
+        409
+      )
+
     console.error('[billing.service.customers.update]', error)
     return err('Failed to update the customer.', 500)
   }

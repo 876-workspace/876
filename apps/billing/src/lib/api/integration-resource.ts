@@ -27,6 +27,7 @@ type CustomerRow = {
   organizationId: string | null
   userId: string | null
   externalReference: string | null
+  customerNumber: string | null
   name: string
   salutation: string | null
   firstName: string | null
@@ -35,6 +36,9 @@ type CustomerRow = {
   email: string | null
   phone: string | null
   workPhone: string | null
+  website: string | null
+  notes: string | null
+  taxRegistrationNumber: string | null
   billingAddress: unknown
   metadata: unknown
   defaultCurrency: string | null
@@ -50,6 +54,33 @@ type CustomerRow = {
     quotes: number
     subscriptions: number
   }
+  contacts?: Array<{
+    id: string
+    salutation: string | null
+    firstName: string | null
+    lastName: string | null
+    email: string | null
+    workPhone: string | null
+    mobilePhone: string | null
+    isPrimary: boolean
+    createdAt: number
+    updatedAt: number
+  }>
+  addresses?: Array<{
+    id: string
+    type: string
+    label: string | null
+    attention: string | null
+    line1: string | null
+    line2: string | null
+    city: string | null
+    state: string | null
+    postalCode: string | null
+    countryCode: string | null
+    isDefault: boolean
+    createdAt: number
+    updatedAt: number
+  }>
 }
 
 /** Public integration projection of a Billing workspace linked to a core org. */
@@ -78,6 +109,7 @@ export function BillingCustomerResource(customer: CustomerRow) {
     organizationId: customer.organizationId,
     userId: customer.userId,
     externalReference: customer.externalReference,
+    customerNumber: customer.customerNumber,
     name: customer.name,
     salutation: customer.salutation,
     firstName: customer.firstName,
@@ -86,6 +118,9 @@ export function BillingCustomerResource(customer: CustomerRow) {
     email: customer.email,
     phone: customer.phone,
     workPhone: customer.workPhone,
+    website: customer.website,
+    notes: customer.notes,
+    taxRegistrationNumber: customer.taxRegistrationNumber,
     billingAddress: customer.billingAddress,
     metadata: customer.metadata,
     defaultCurrency: customer.defaultCurrency,
@@ -103,6 +138,45 @@ export function BillingCustomerResource(customer: CustomerRow) {
             quotes: customer._count.quotes,
             subscriptions: customer._count.subscriptions,
           },
+        }
+      : {}),
+    ...(customer.contacts
+      ? {
+          contacts: customer.contacts.map((contact) =>
+            Resource('customer_contact', {
+              id: contact.id,
+              salutation: contact.salutation,
+              firstName: contact.firstName,
+              lastName: contact.lastName,
+              email: contact.email,
+              workPhone: contact.workPhone,
+              mobilePhone: contact.mobilePhone,
+              isPrimary: contact.isPrimary,
+              createdAt: contact.createdAt,
+              updatedAt: contact.updatedAt,
+            })
+          ),
+        }
+      : {}),
+    ...(customer.addresses
+      ? {
+          addresses: customer.addresses.map((address) =>
+            Resource('customer_address', {
+              id: address.id,
+              type: address.type,
+              label: address.label,
+              attention: address.attention,
+              line1: address.line1,
+              line2: address.line2,
+              city: address.city,
+              state: address.state,
+              postalCode: address.postalCode,
+              countryCode: address.countryCode,
+              isDefault: address.isDefault,
+              createdAt: address.createdAt,
+              updatedAt: address.updatedAt,
+            })
+          ),
         }
       : {}),
   })

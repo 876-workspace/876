@@ -1,6 +1,6 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma } from '@/lib/db'
+import { prisma, type PrismaTransaction } from '@/lib/db'
 import { generateId } from '@/lib/id'
 import type { CustomerCreateParams } from '@/types/customer'
 import type { ServiceResult } from '@/types/api'
@@ -18,17 +18,18 @@ import {
 export async function create(
   tenantId: string,
   params: CustomerCreateParams,
-  attribution?: IntegrationAttribution
+  attribution?: IntegrationAttribution,
+  database: PrismaTransaction = prisma
 ): ServiceResult<AttributedCreateResult> {
   const replay = attribution
     ? resolveIdempotencyReplay(
-        await findByIdempotencyKey(tenantId, attribution),
+        await findByIdempotencyKey(database, tenantId, attribution),
         attribution
       )
     : null
   if (replay) return replay
 
-  const tenant = await prisma.tenant.findUnique({
+  const tenant = await database.tenant.findUnique({
     where: { id: tenantId },
     select: { defaultCurrency: true, defaultLanguage: true },
   })
@@ -38,24 +39,24 @@ export async function create(
   const currency = params.currency ?? tenant.defaultCurrency
   const language = params.language ?? tenant.defaultLanguage
 
-  if (!(await hasEnabledCurrency(tenantId, currency)))
+  if (!(await hasEnabledCurrency(tenantId, currency, database)))
     return err('Enable the customer currency before using it.', 422)
 
   const [paymentTerm, salesperson, priceList] = await Promise.all([
     params.paymentTermId
-      ? prisma.paymentTerm.findFirst({
+      ? database.paymentTerm.findFirst({
           where: { id: params.paymentTermId, tenantId, isActive: true },
           select: { id: true },
         })
       : null,
     params.salespersonId
-      ? prisma.salesperson.findFirst({
+      ? database.salesperson.findFirst({
           where: { id: params.salespersonId, tenantId, isActive: true },
           select: { id: true },
         })
       : null,
     params.priceListId
-      ? prisma.priceList.findFirst({
+      ? database.priceList.findFirst({
           where: { id: params.priceListId, tenantId, isActive: true },
           select: { id: true },
         })
@@ -70,7 +71,7 @@ export async function create(
 
   try {
     const now = nowUnixSeconds()
-    const customer = await prisma.customer.create({
+    const customer = await database.customer.create({
       data: {
         id: generateId('Customer'),
         tenantId,
@@ -80,6 +81,7 @@ export async function create(
         userId: params.userId ?? null,
         externalReference: params.externalReference ?? null,
         ...attributionData(attribution),
+        customerNumber: params.customerNumber ?? null,
         name: params.name,
         salutation: params.salutation ?? null,
         firstName: params.firstName ?? null,
@@ -88,6 +90,9 @@ export async function create(
         email: params.email ?? null,
         phone: params.phone ?? null,
         workPhone: params.workPhone ?? null,
+        website: params.website ?? null,
+        notes: params.notes ?? null,
+        taxRegistrationNumber: params.taxRegistrationNumber ?? null,
         defaultCurrency: currency,
         language,
         paymentTermId: paymentTerm?.id ?? null,
@@ -108,14 +113,14 @@ export async function create(
   } catch (error) {
     if (isUniqueConstraintError(error) && attribution) {
       const replayAfterConflict = resolveIdempotencyReplay(
-        await findByIdempotencyKey(tenantId, attribution),
+        await findByIdempotencyKey(database, tenantId, attribution),
         attribution
       )
       if (replayAfterConflict) return replayAfterConflict
 
       if (
         attribution.sourceExternalReference &&
-        (await prisma.customer.findFirst({
+        (await database.customer.findFirst({
           where: {
             tenantId,
             sourceAppId: attribution.sourceAppId,
@@ -130,6 +135,12 @@ export async function create(
         )
     }
 
+    if (isUniqueConstraintError(error) && params.customerNumber)
+      return err(
+        'A customer with this customer number already exists in this workspace.',
+        409
+      )
+
     if (isUniqueConstraintError(error))
       return err(
         'This core reference or external reference is already a customer.',
@@ -142,10 +153,11 @@ export async function create(
 }
 
 function findByIdempotencyKey(
+  database: PrismaTransaction,
   tenantId: string,
   attribution: IntegrationAttribution
 ) {
-  return prisma.customer.findFirst({
+  return database.customer.findFirst({
     where: {
       tenantId,
       sourceAppId: attribution.sourceAppId,

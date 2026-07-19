@@ -96,4 +96,64 @@ describe('listCustomerPage', () => {
       where: { tenantId: 'blten_1', userId: 'usr_1' },
     })
   })
+
+  it('applies status to cursor validation, page rows, and total count', async () => {
+    customer.findFirst.mockResolvedValue({ id: 'cus_2', createdAt: 20 })
+    customer.findMany.mockResolvedValue([{ id: 'cus_1', createdAt: 10 }])
+    customer.count.mockResolvedValue(2)
+
+    const result = await listCustomerPage('blten_1', {
+      limit: 25,
+      startingAfter: 'cus_2',
+      status: 'ARCHIVED',
+    })
+
+    expect(result).toEqual({
+      customers: [{ id: 'cus_1', createdAt: 10 }],
+      hasMore: false,
+      totalCount: 2,
+    })
+    expect(customer.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 'cus_2',
+        tenantId: 'blten_1',
+        status: 'ARCHIVED',
+      },
+      select: { id: true, createdAt: true },
+    })
+    expect(customer.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'blten_1',
+        status: 'ARCHIVED',
+        OR: [{ createdAt: { lt: 20 } }, { createdAt: 20, id: { lt: 'cus_2' } }],
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 26,
+    })
+    expect(customer.count).toHaveBeenCalledWith({
+      where: { tenantId: 'blten_1', status: 'ARCHIVED' },
+    })
+  })
+
+  it('rejects a cursor outside the requested status before page queries', async () => {
+    customer.findFirst.mockResolvedValue(null)
+
+    const result = await listCustomerPage('blten_1', {
+      limit: 25,
+      startingAfter: 'cus_active',
+      status: 'ARCHIVED',
+    })
+
+    expect(result).toBeNull()
+    expect(customer.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 'cus_active',
+        tenantId: 'blten_1',
+        status: 'ARCHIVED',
+      },
+      select: { id: true, createdAt: true },
+    })
+    expect(customer.findMany).not.toHaveBeenCalled()
+    expect(customer.count).not.toHaveBeenCalled()
+  })
 })

@@ -1,11 +1,14 @@
-import { prisma } from '@/lib/db'
+import { prisma, type PrismaTransaction } from '@/lib/db'
+
+type CurrencyDatabase = Pick<PrismaTransaction, 'tenantCurrency'>
 
 /** Checks whether a tenant has enabled a supported transaction currency. */
 export async function hasEnabledCurrency(
   tenantId: string,
-  currency: string
+  currency: string,
+  database: CurrencyDatabase = prisma
 ): Promise<boolean> {
-  const tenantCurrency = await prisma.tenantCurrency.findFirst({
+  const tenantCurrency = await database.tenantCurrency.findFirst({
     where: {
       tenantId,
       currencyCode: currency,

@@ -6,6 +6,12 @@ export function retrieve(tenantId: string, customerId: string) {
     where: { id: customerId, tenantId },
     include: {
       priceList: true,
+      contacts: {
+        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+      },
+      addresses: {
+        orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+      },
       _count: { select: { invoices: true, quotes: true, subscriptions: true } },
     },
   })

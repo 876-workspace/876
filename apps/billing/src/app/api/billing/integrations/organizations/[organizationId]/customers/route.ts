@@ -33,12 +33,18 @@ export const GET = integrationRoute<Context>(async (request, context) => {
   const userId = url.searchParams.get('user_id')?.trim() || undefined
   const coreOrganizationId =
     url.searchParams.get('organization_id')?.trim() || undefined
+  const statusValue = url.searchParams.get('status')?.trim().toLowerCase()
+  const status =
+    statusValue === 'active' || statusValue === 'archived'
+      ? (statusValue.toUpperCase() as 'ACTIVE' | 'ARCHIVED')
+      : undefined
   if (
     !Number.isInteger(limit) ||
     limit < 1 ||
     limit > 100 ||
     (startingAfter && endingBefore) ||
-    (userId && coreOrganizationId)
+    (userId && coreOrganizationId) ||
+    (statusValue !== undefined && status === undefined)
   )
     return apiError('Enter valid customer pagination parameters.', {
       status: 400,
@@ -50,6 +56,7 @@ export const GET = integrationRoute<Context>(async (request, context) => {
     endingBefore,
     userId,
     organizationId: coreOrganizationId,
+    status,
   })
   if (!page)
     return apiError('The customer pagination cursor is invalid.', {

@@ -68,6 +68,7 @@ export type CustomerPageOptions = {
   endingBefore?: string
   userId?: string
   organizationId?: string
+  status?: 'ACTIVE' | 'ARCHIVED'
 }
 
 /** Cursor-paginates customers in a deterministic newest-first order. */
@@ -81,10 +82,16 @@ export async function listCustomerPage(
       ? { organizationId: options.organizationId }
       : {}),
   }
+  const statusFilter = options.status ? { status: options.status } : {}
   const cursorId = options.startingAfter ?? options.endingBefore
   const cursor = cursorId
     ? await prisma.customer.findFirst({
-        where: { id: cursorId, tenantId, ...identityFilter },
+        where: {
+          id: cursorId,
+          tenantId,
+          ...identityFilter,
+          ...statusFilter,
+        },
         select: { id: true, createdAt: true },
       })
     : null
@@ -109,13 +116,20 @@ export async function listCustomerPage(
 
   const [rows, totalCount] = await Promise.all([
     prisma.customer.findMany({
-      where: { tenantId, ...identityFilter, ...boundary },
+      where: {
+        tenantId,
+        ...identityFilter,
+        ...statusFilter,
+        ...boundary,
+      },
       orderBy: isBackward
         ? [{ createdAt: 'asc' }, { id: 'asc' }]
         : [{ createdAt: 'desc' }, { id: 'desc' }],
       take: options.limit + 1,
     }),
-    prisma.customer.count({ where: { tenantId, ...identityFilter } }),
+    prisma.customer.count({
+      where: { tenantId, ...identityFilter, ...statusFilter },
+    }),
   ])
   const hasMore = rows.length > options.limit
   const page = rows.slice(0, options.limit)

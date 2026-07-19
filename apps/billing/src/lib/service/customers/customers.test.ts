@@ -82,7 +82,11 @@ describe('customer mutations', () => {
 
     expect(result).toEqual({ data: { id: 'cus_123' }, error: null })
     // Currency and language inherit the workspace defaults when unspecified.
-    expect(mocks.hasEnabledCurrency).toHaveBeenCalledWith('ten_123', 'JMD')
+    expect(mocks.hasEnabledCurrency).toHaveBeenCalledWith(
+      'ten_123',
+      'JMD',
+      mocks.prismaRef.current
+    )
     expect(mocks.generateId).toHaveBeenCalledTimes(1)
     expect(mocks.generateId).toHaveBeenCalledWith('Customer')
     expect(customer.create).toHaveBeenCalledTimes(1)
@@ -95,6 +99,7 @@ describe('customer mutations', () => {
         organizationId: null,
         userId: null,
         externalReference: null,
+        customerNumber: null,
         name: 'Efesto Technologies',
         salutation: null,
         firstName: null,
@@ -103,6 +108,9 @@ describe('customer mutations', () => {
         email: null,
         phone: null,
         workPhone: null,
+        website: null,
+        notes: null,
+        taxRegistrationNumber: null,
         defaultCurrency: 'JMD',
         language: 'en',
         paymentTermId: null,
@@ -142,6 +150,32 @@ describe('customer mutations', () => {
     })
     expect(customer.create).toHaveBeenCalledWith({
       data: expect.objectContaining(attribution),
+    })
+  })
+
+  it('persists the commercial customer enrichment fields', async () => {
+    const customer = (
+      mocks.prismaRef.current as unknown as {
+        customer: { create: ReturnType<typeof vi.fn> }
+      }
+    ).customer
+    const params = createParams({
+      customerNumber: 'C-876',
+      website: 'efesto.test',
+      notes: 'Preferred commercial customer.',
+      taxRegistrationNumber: 'TRN-876',
+    })
+
+    const result = await create('ten_123', params)
+
+    expect(result).toEqual({ data: { id: 'cus_123' }, error: null })
+    expect(customer.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        customerNumber: 'C-876',
+        website: 'efesto.test',
+        notes: 'Preferred commercial customer.',
+        taxRegistrationNumber: 'TRN-876',
+      }),
     })
   })
 
@@ -189,7 +223,11 @@ describe('customer mutations', () => {
 
     expect(result.error).toBeNull()
     expect(mocks.hasEnabledCurrency).toHaveBeenCalledTimes(1)
-    expect(mocks.hasEnabledCurrency).toHaveBeenCalledWith('ten_123', 'JMD')
+    expect(mocks.hasEnabledCurrency).toHaveBeenCalledWith(
+      'ten_123',
+      'JMD',
+      mocks.prismaRef.current
+    )
     expect(customer.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         organizationId: 'org_123',
@@ -233,6 +271,28 @@ describe('customer mutations', () => {
     expect(result).toEqual({
       data: null,
       error: 'This core reference or external reference is already a customer.',
+      status: 409,
+    })
+    expect(console.error).not.toHaveBeenCalled()
+  })
+
+  it('maps a duplicate customer number to conflict', async () => {
+    const customer = (
+      mocks.prismaRef.current as unknown as {
+        customer: { create: ReturnType<typeof vi.fn> }
+      }
+    ).customer
+    customer.create.mockRejectedValue({ code: 'P2002' })
+
+    const result = await create(
+      'ten_123',
+      createParams({ customerNumber: 'C-876' })
+    )
+
+    expect(result).toEqual({
+      data: null,
+      error:
+        'A customer with this customer number already exists in this workspace.',
       status: 409,
     })
     expect(console.error).not.toHaveBeenCalled()
@@ -306,6 +366,10 @@ describe('customer mutations', () => {
       name: 'Efesto Group',
       email: null,
       phone: '+18765550124',
+      customerNumber: 'C-877',
+      website: 'group.efesto.test',
+      notes: null,
+      taxRegistrationNumber: 'TRN-877',
       currency: null,
       status: 'ARCHIVED' as const,
     }
@@ -322,10 +386,35 @@ describe('customer mutations', () => {
         name: 'Efesto Group',
         email: null,
         phone: '+18765550124',
+        customerNumber: 'C-877',
+        website: 'group.efesto.test',
+        notes: null,
+        taxRegistrationNumber: 'TRN-877',
         defaultCurrency: null,
         status: 'ARCHIVED',
       },
     })
+  })
+
+  it('maps a duplicate customer number update to conflict', async () => {
+    const customer = (
+      mocks.prismaRef.current as unknown as {
+        customer: { updateMany: ReturnType<typeof vi.fn> }
+      }
+    ).customer
+    customer.updateMany.mockRejectedValue({ code: 'P2002' })
+
+    const result = await update('ten_123', 'cus_123', {
+      customerNumber: 'C-876',
+    })
+
+    expect(result).toEqual({
+      data: null,
+      error:
+        'A customer with this customer number already exists in this workspace.',
+      status: 409,
+    })
+    expect(console.error).not.toHaveBeenCalled()
   })
 
   it('returns 404 when no customer matches an update', async () => {

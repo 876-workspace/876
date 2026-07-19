@@ -145,6 +145,12 @@ const cases: QueryCase[] = [
       where: { id: 'cus_123', tenantId: 'ten_123' },
       include: {
         priceList: true,
+        contacts: {
+          orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        },
+        addresses: {
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+        },
         _count: {
           select: { invoices: true, quotes: true, subscriptions: true },
         },

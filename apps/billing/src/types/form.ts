@@ -4,6 +4,7 @@ export type FormFieldType =
   | 'money'
   | 'number'
   | 'select'
+  | 'textarea'
   | 'text'
 
 export interface FormOption {
