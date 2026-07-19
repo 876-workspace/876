@@ -11,6 +11,7 @@ const customer = {
   organizationId: null,
   userId: null,
   externalReference: 'external_1',
+  customerNumber: null,
   name: 'Acme',
   salutation: null,
   firstName: null,
@@ -19,6 +20,9 @@ const customer = {
   email: 'billing@acme.test',
   phone: null,
   workPhone: null,
+  website: null,
+  notes: null,
+  taxRegistrationNumber: null,
   billingAddress: null,
   metadata: null,
   defaultCurrency: 'JMD',
@@ -56,11 +60,12 @@ describe('create876BillingIntegrationClient', () => {
       limit: 25,
       starting_after: 'cus_previous',
       user_id: 'usr_1',
+      status: 'archived',
     })
 
     expect(result.data?.data).toEqual([customer])
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://billing.example.test/api/v1/integrations/organizations/org_1/customers?limit=25&starting_after=cus_previous&user_id=usr_1',
+      'https://billing.example.test/api/v1/integrations/organizations/org_1/customers?limit=25&starting_after=cus_previous&user_id=usr_1&status=archived',
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({
@@ -188,6 +193,151 @@ describe('create876BillingIntegrationClient', () => {
 
     expect(result.error?.code).toBe('billing/invalid-response')
     expect(result.data).toBeNull()
+  })
+
+  it('accepts strict customer details with optional contacts and addresses', async () => {
+    const detailedCustomer = {
+      ...customer,
+      contacts: [
+        {
+          object: 'customer_contact' as const,
+          id: 'con_1',
+          salutation: 'Ms',
+          firstName: 'Nia',
+          lastName: 'Brown',
+          email: 'nia@acme.test',
+          workPhone: null,
+          mobilePhone: '+18765550123',
+          isPrimary: true,
+          createdAt: 2,
+          updatedAt: 3,
+        },
+      ],
+      addresses: [
+        {
+          object: 'customer_address' as const,
+          id: 'addr_1',
+          type: 'billing',
+          label: 'Head office',
+          attention: null,
+          line1: '10 Ocean Road',
+          line2: null,
+          city: 'Kingston',
+          state: 'Kingston',
+          postalCode: null,
+          countryCode: 'JM',
+          isDefault: true,
+          createdAt: 2,
+          updatedAt: 3,
+        },
+      ],
+    }
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ data: detailedCustomer, error: null }))
+    const client = create876BillingIntegrationClient({
+      baseUrl: 'https://billing.example.test',
+      internalKey: 'service-secret',
+      fetch: fetchMock,
+    })
+
+    const result = await client.customers.retrieve('org_1', 'cus_1')
+
+    expect(result).toEqual({ data: detailedCustomer, error: null })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('imports customers and parses the strict import result', async () => {
+    const importResult = {
+      object: 'customer_import' as const,
+      dryRun: false,
+      duplicateStrategy: 'update' as const,
+      summary: { created: 1, updated: 1, skipped: 0, failed: 0 },
+      results: [
+        {
+          rowNumber: 2,
+          action: 'created' as const,
+          customerId: 'cus_2',
+          error: null,
+        },
+        {
+          rowNumber: 3,
+          action: 'updated' as const,
+          customerId: 'cus_3',
+          error: null,
+        },
+      ],
+    }
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ data: importResult, error: null }))
+    const client = create876BillingIntegrationClient({
+      baseUrl: 'https://billing.example.test',
+      apiKey: '876_app_secret_couriers',
+      fetch: fetchMock,
+    })
+    const params = {
+      duplicateStrategy: 'update' as const,
+      rows: [
+        { rowNumber: 2, name: 'New Customer', customerNumber: 'C-2' },
+        { rowNumber: 3, name: 'Existing Customer', website: 'existing.test' },
+      ],
+    }
+
+    const result = await client.customers.import('org_1', params, {
+      idempotencyKey: 'customer-import-1',
+    })
+
+    expect(result).toEqual({ data: importResult, error: null })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://billing.example.test/api/v1/integrations/organizations/org_1/customers/import',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers: expect.objectContaining({
+          'Idempotency-Key': 'customer-import-1',
+        }),
+      })
+    )
+  })
+
+  it('does not send an idempotency key for a dry-run import without options', async () => {
+    const importResult = {
+      object: 'customer_import' as const,
+      dryRun: true,
+      duplicateStrategy: 'skip' as const,
+      summary: { created: 1, updated: 0, skipped: 0, failed: 0 },
+      results: [
+        {
+          rowNumber: 2,
+          action: 'created' as const,
+          customerId: null,
+          error: null,
+        },
+      ],
+    }
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ data: importResult, error: null }))
+    const client = create876BillingIntegrationClient({
+      baseUrl: 'https://billing.example.test',
+      apiKey: '876_app_secret_couriers',
+      fetch: fetchMock,
+    })
+    const params = {
+      dryRun: true,
+      duplicateStrategy: 'skip' as const,
+      rows: [{ rowNumber: 2, name: 'Preview Customer' }],
+    }
+
+    const result = await client.customers.import('org_1', params)
+
+    expect(result).toEqual({ data: importResult, error: null })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).not.toHaveProperty(
+      'Idempotency-Key'
+    )
   })
 
   it('sends idempotency keys for every source-attributed create resource', async () => {

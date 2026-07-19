@@ -43,6 +43,37 @@ export type BillingCustomerType = 'EXTERNAL' | 'CORE_USER' | 'CORE_ORGANIZATION'
 export type BillingCustomerKind = 'INDIVIDUAL' | 'BUSINESS'
 export type BillingCustomerStatus = 'ACTIVE' | 'ARCHIVED'
 
+export interface BillingCustomerContact {
+  object: 'customer_contact'
+  id: string
+  salutation: string | null
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  workPhone: string | null
+  mobilePhone: string | null
+  isPrimary: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export interface BillingCustomerAddress {
+  object: 'customer_address'
+  id: string
+  type: string
+  label: string | null
+  attention: string | null
+  line1: string | null
+  line2: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  countryCode: string | null
+  isDefault: boolean
+  createdAt: number
+  updatedAt: number
+}
+
 export interface BillingCustomer {
   object: 'customer'
   id: string
@@ -52,6 +83,7 @@ export interface BillingCustomer {
   organizationId: string | null
   userId: string | null
   externalReference: string | null
+  customerNumber: string | null
   name: string
   salutation: string | null
   firstName: string | null
@@ -60,6 +92,9 @@ export interface BillingCustomer {
   email: string | null
   phone: string | null
   workPhone: string | null
+  website: string | null
+  notes: string | null
+  taxRegistrationNumber: string | null
   billingAddress: unknown | null
   metadata: unknown | null
   defaultCurrency: string | null
@@ -75,6 +110,8 @@ export interface BillingCustomer {
     quotes: number
     subscriptions: number
   }
+  contacts?: BillingCustomerContact[]
+  addresses?: BillingCustomerAddress[]
 }
 
 export interface BillingCustomerCreateParams {
@@ -87,6 +124,10 @@ export interface BillingCustomerCreateParams {
   email?: string | null
   phone?: string | null
   workPhone?: string | null
+  customerNumber?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
   currency?: string | null
   language?: string | null
   customerType?: BillingCustomerType
@@ -103,6 +144,7 @@ export interface BillingCustomerListParams {
   user_id?: string
   /** Resolve the one shared Billing customer linked to a Core organization. */
   organization_id?: string
+  status?: 'active' | 'archived'
 }
 
 export type BillingCustomerUpdateParams = Partial<
@@ -117,10 +159,82 @@ export type BillingCustomerUpdateParams = Partial<
     | 'email'
     | 'phone'
     | 'workPhone'
+    | 'customerNumber'
+    | 'website'
+    | 'notes'
+    | 'taxRegistrationNumber'
     | 'language'
     | 'status'
   > & { currency: string | null }
 >
+
+export interface BillingCustomerImportAddressParams {
+  label?: string | null
+  attention?: string | null
+  line1?: string | null
+  line2?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  countryCode?: string | null
+}
+
+export interface BillingCustomerImportContactParams {
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+  workPhone?: string | null
+  mobilePhone?: string | null
+}
+
+export interface BillingCustomerImportRowParams {
+  rowNumber: number
+  name: string
+  customerKind?: BillingCustomerKind
+  salutation?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  workPhone?: string | null
+  currency?: string | null
+  language?: string | null
+  customerNumber?: string | null
+  website?: string | null
+  notes?: string | null
+  taxRegistrationNumber?: string | null
+  billingAddress?: BillingCustomerImportAddressParams
+  shippingAddress?: BillingCustomerImportAddressParams
+  contact?: BillingCustomerImportContactParams
+}
+
+export interface BillingCustomerImportParams {
+  dryRun?: boolean
+  duplicateStrategy: 'skip' | 'update'
+  rows: BillingCustomerImportRowParams[]
+}
+
+export interface BillingCustomerImportRowResult {
+  rowNumber: number
+  action: 'created' | 'updated' | 'skipped' | 'failed'
+  customerId: string | null
+  error: { code: string; message: string } | null
+}
+
+export interface BillingCustomerImportResult {
+  object: 'customer_import'
+  dryRun: boolean
+  duplicateStrategy: 'skip' | 'update'
+  summary: {
+    created: number
+    updated: number
+    skipped: number
+    failed: number
+  }
+  results: BillingCustomerImportRowResult[]
+}
 
 export interface DeletedBillingCustomer {
   object: 'customer'

@@ -1,5 +1,6 @@
 import {
   BillingCustomerListSchema,
+  BillingCustomerImportResultSchema,
   BillingCustomerSchema,
   DeletedBillingCustomerSchema,
 } from '../schemas'
@@ -8,6 +9,8 @@ import type { IntegrationRuntime } from '../runtime'
 import type {
   BillingCustomer,
   BillingCustomerCreateParams,
+  BillingCustomerImportParams,
+  BillingCustomerImportResult,
   BillingCustomerList,
   BillingCustomerListParams,
   BillingCustomerUpdateParams,
@@ -37,6 +40,7 @@ export function createIntegrationCustomersResource(
             ending_before: params.ending_before,
             user_id: params.user_id,
             organization_id: params.organization_id,
+            status: params.status,
           },
         },
         BillingCustomerListSchema
@@ -70,6 +74,33 @@ export function createIntegrationCustomersResource(
           headers: { 'Idempotency-Key': options.idempotencyKey },
         },
         BillingCustomerSchema
+      )
+    },
+
+    /**
+     * Imports up to 500 external Billing customers.
+     *
+     * Dry-run previews do not require an idempotency key. Supply `options` for
+     * mutating product-app imports so retries replay the stored result.
+     */
+    import(
+      organizationId: string,
+      params: BillingCustomerImportParams,
+      options?: IntegrationCreateOptions
+    ) {
+      return IntegrationRequest<BillingCustomerImportResult>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${collectionPath(organizationId)}/import`,
+          body: params,
+          ...(options
+            ? {
+                headers: { 'Idempotency-Key': options.idempotencyKey },
+              }
+            : {}),
+        },
+        BillingCustomerImportResultSchema
       )
     },
 

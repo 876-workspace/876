@@ -2,6 +2,9 @@ import { z } from 'zod'
 
 import type {
   BillingCustomer,
+  BillingCustomerAddress,
+  BillingCustomerContact,
+  BillingCustomerImportResult,
   BillingCustomerList,
   BillingInvoice,
   BillingInvoiceList,
@@ -32,6 +35,37 @@ const sourceSchema = z
   })
   .nullable()
 
+const billingCustomerContactSchema = z.strictObject({
+  object: z.literal('customer_contact'),
+  id: z.string().min(1),
+  salutation: z.string().nullable(),
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable(),
+  email: z.string().nullable(),
+  workPhone: z.string().nullable(),
+  mobilePhone: z.string().nullable(),
+  isPrimary: z.boolean(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+}) satisfies z.ZodType<BillingCustomerContact>
+
+const billingCustomerAddressSchema = z.strictObject({
+  object: z.literal('customer_address'),
+  id: z.string().min(1),
+  type: z.string(),
+  label: z.string().nullable(),
+  attention: z.string().nullable(),
+  line1: z.string().nullable(),
+  line2: z.string().nullable(),
+  city: z.string().nullable(),
+  state: z.string().nullable(),
+  postalCode: z.string().nullable(),
+  countryCode: z.string().nullable(),
+  isDefault: z.boolean(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+}) satisfies z.ZodType<BillingCustomerAddress>
+
 export const BillingOrganizationSchema = z.strictObject({
   object: z.literal('billing_organization'),
   id: z.string().min(1),
@@ -55,6 +89,7 @@ export const BillingCustomerSchema = z.strictObject({
   organizationId: z.string().nullable(),
   userId: z.string().nullable(),
   externalReference: z.string().nullable(),
+  customerNumber: z.string().nullable(),
   name: z.string(),
   salutation: z.string().nullable(),
   firstName: z.string().nullable(),
@@ -63,6 +98,9 @@ export const BillingCustomerSchema = z.strictObject({
   email: z.string().nullable(),
   phone: z.string().nullable(),
   workPhone: z.string().nullable(),
+  website: z.string().nullable(),
+  notes: z.string().nullable(),
+  taxRegistrationNumber: z.string().nullable(),
   billingAddress: z.unknown().nullable(),
   metadata: z.unknown().nullable(),
   defaultCurrency: z.string().nullable(),
@@ -80,6 +118,8 @@ export const BillingCustomerSchema = z.strictObject({
       subscriptions: z.number().int(),
     })
     .optional(),
+  contacts: z.array(billingCustomerContactSchema).optional(),
+  addresses: z.array(billingCustomerAddressSchema).optional(),
 }) satisfies z.ZodType<BillingCustomer>
 
 export const BillingCustomerListSchema = z.strictObject({
@@ -95,6 +135,28 @@ export const DeletedBillingCustomerSchema = z.strictObject({
   id: z.string().min(1),
   deleted: z.literal(true),
 }) satisfies z.ZodType<DeletedBillingCustomer>
+
+export const BillingCustomerImportResultSchema = z.strictObject({
+  object: z.literal('customer_import'),
+  dryRun: z.boolean(),
+  duplicateStrategy: z.enum(['skip', 'update']),
+  summary: z.strictObject({
+    created: z.number().int().nonnegative(),
+    updated: z.number().int().nonnegative(),
+    skipped: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+  }),
+  results: z.array(
+    z.strictObject({
+      rowNumber: z.number().int().min(1),
+      action: z.enum(['created', 'updated', 'skipped', 'failed']),
+      customerId: z.string().nullable(),
+      error: z
+        .strictObject({ code: z.string().min(1), message: z.string().min(1) })
+        .nullable(),
+    })
+  ),
+}) satisfies z.ZodType<BillingCustomerImportResult>
 
 export const BillingItemSchema = z.strictObject({
   object: z.literal('item'),
