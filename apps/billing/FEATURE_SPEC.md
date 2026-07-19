@@ -274,24 +274,26 @@ immutable price terms must still match the original price.
 | `POST /api/v1/admin/customers/ensure`     | `x-internal-key (BILLING_INTERNAL_KEY)` | Reconcile customer; keyed on `organizationId`                  |
 | `POST /api/v1/admin/subscriptions/ensure` | `x-internal-key (BILLING_INTERNAL_KEY)` | Reconcile subscription and items; keyed on `externalReference` |
 
-Each entity owns its own type and Prisma file:
+Domain types stay grouped by feature:
 
 ```text
-src/types/customer.ts              prisma/schema/customer.prisma
-src/types/currency.ts              prisma/schema/currency.prisma
-src/types/tax.ts                   prisma/schema/tax.prisma
-src/types/access.ts                prisma/schema/access.prisma
-src/types/item.ts                  prisma/schema/item.prisma
-src/types/product.ts               prisma/schema/product.prisma
-src/types/plan.ts                  prisma/schema/plan.prisma
-src/types/price.ts                 prisma/schema/price.prisma
-src/types/quote.ts                 prisma/schema/quote.prisma
-src/types/invoice.ts               prisma/schema/invoice.prisma
-src/types/subscription.ts          prisma/schema/subscription.prisma
+src/types/customer.ts
+src/types/currency.ts
+src/types/tax.ts
+src/types/access.ts
+src/types/item.ts
+src/types/product.ts
+src/types/plan.ts
+src/types/price.ts
+src/types/quote.ts
+src/types/invoice.ts
+src/types/subscription.ts
 ```
 
-Shared Prisma enums live in `prisma/schema/enums.prisma`; shared primitives
-live in focused files such as `src/types/common.ts` and `currency.ts`.
+Each Prisma model lives in its own kebab-case file under `prisma/schema/` (for
+example, `Member` lives in `member.prisma`). Shared Prisma enums live in
+`prisma/schema/enums.prisma`; shared primitives live in focused files such as
+`src/types/common.ts` and `currency.ts`.
 
 ## Sidebar
 
