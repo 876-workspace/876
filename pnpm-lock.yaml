@@ -617,6 +617,9 @@ importers:
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      papaparse:
+        specifier: 5.5.4
+        version: 5.5.4
       pg:
         specifier: 8.13.1
         version: 8.13.1
@@ -645,6 +648,9 @@ importers:
       '@types/node':
         specifier: 25.6.2
         version: 25.6.2
+      '@types/papaparse':
+        specifier: 5.5.2
+        version: 5.5.2
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
@@ -8282,6 +8288,12 @@ packages:
     resolution:
       {
         integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==,
+      }
+
+  '@types/papaparse@5.5.2':
+    resolution:
+      {
+        integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==,
       }
 
   '@types/pg@8.11.10':
@@ -16145,6 +16157,12 @@ packages:
     resolution:
       {
         integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==,
+      }
+
+  papaparse@5.5.4:
+    resolution:
+      {
+        integrity: sha512-SwzWD9gl/ElwYLCI0nUja1mFJzjq2D8ziShfNBa7zCHzkOozeOGDwHWQ+tvCzEZcewecWZ5U7kUopDnG+DFYEQ==,
       }
 
   parallel-transform@1.2.0:
@@ -24989,6 +25007,10 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
+  '@types/papaparse@5.5.2':
+    dependencies:
+      '@types/node': 25.6.2
+
   '@types/pg@8.11.10':
     dependencies:
       '@types/node': 25.6.2
@@ -30427,6 +30449,8 @@ snapshots:
       semver: 7.8.5
 
   package-manager-detector@1.6.0: {}
+
+  papaparse@5.5.4: {}
 
   parallel-transform@1.2.0:
     dependencies:
