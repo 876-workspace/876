@@ -13,12 +13,17 @@
     "clean": "rm -rf .next .turbo",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "convex:dev": "convex dev",
+    "convex:deploy": "convex deploy",
+    "convex:codegen": "convex codegen",
+    "convex:wipe-legacy": "convex run cleanup:wipeAllLegacyTables"
   },
   "dependencies": {
     "@876/core": "workspace:*",
     "@prisma/adapter-pg": "7.7.0",
     "@prisma/client": "7.7.0",
+    "convex": "1.42.3",
     "next": "16.2.6",
     "pg": "8.13.1",
     "server-only": "0.0.1",

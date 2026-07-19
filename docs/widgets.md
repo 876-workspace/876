@@ -7,13 +7,21 @@ Widgets are host-mounted user tools. A **shared widget** has
 A **host-exclusive widget** has `distribution: 'host'` and exists in exactly
 one app, such as Console Live Logs.
 
-**Widget-native state** lives in the **Widgets bounded context**: Postgres
-(Neon) owned exclusively by `apps/widgets-api`. Hosts never receive
-`WIDGETS_DATABASE_URL`.
+**Widget-native state** is split by product:
+
+| Storage                                                      | Owns                                            |
+| ------------------------------------------------------------ | ----------------------------------------------- |
+| **Widgets Postgres** (Neon, Prisma in `apps/widgets-api`)    | Notepad and other account/workspace widget rows |
+| **Convex** (KB-only schema under `apps/widgets-api/convex/`) | Knowledge Base categories, articles, bookmarks  |
+
+Hosts never receive `WIDGETS_DATABASE_URL` or Convex deploy keys. Convex schema
+**must not** reintroduce Notepad/notes tables — those were migrated to Postgres.
+If a deployment still has legacy tables, wipe and delete them (see
+`apps/widgets-api/convex/README.md`).
 
 **External-domain information** displayed inside a widget stays in its source
-domain (core audit, Billing, Couriers, identity). The Widgets database must not
-become a dump of every field a panel renders.
+domain (core audit, Billing, Couriers, identity). Neither Widgets Postgres nor
+Convex should become a dump of every field a panel renders.
 
 ### Distribution vs data ownership
 
@@ -26,15 +34,17 @@ These decisions are independent:
 
 Examples:
 
-| Widget                                   | distribution | dataOwner             |
-| ---------------------------------------- | ------------ | --------------------- |
-| Notepad                                  | shared       | widgets               |
-| Console Live Logs                        | host         | external (core audit) |
-| Future host checklist with its own items | host         | widgets               |
-| Couriers delivery tracker                | host         | external (couriers)   |
+| Widget                                   | distribution | dataOwner             | Storage     |
+| ---------------------------------------- | ------------ | --------------------- | ----------- |
+| Notepad                                  | shared       | widgets               | Postgres    |
+| Knowledge Base                           | shared       | widgets               | Convex (KB) |
+| Console Live Logs                        | host         | external (core audit) | Core API    |
+| Future host checklist with its own items | host         | widgets               | Postgres    |
+| Couriers delivery tracker                | host         | external (couriers)   | Couriers    |
 
-Host-only **widget-native** content still uses Widgets Postgres. Host-only
-**views over another domain** do not.
+Host-only **widget-native** content still uses Widgets Postgres (or Convex only
+when the product is Knowledge Base). Host-only **views over another domain**
+do not store domain rows in either store.
 
 ## Runtime
 
@@ -45,7 +55,8 @@ Browser
   → @876/widgets/server client
        WIDGETS_API_URL + WIDGETS_SERVICE_KEY
   → apps/widgets-api
-       Prisma → Widgets Postgres
+       ├─ Prisma → Widgets Postgres (Notepad, …)
+       └─ ConvexHttpClient → Convex (Knowledge Base only)
 ```
 
 `packages/widgets` owns catalog metadata, typed contracts, server/browser
@@ -116,8 +127,20 @@ shapes across layers.
 7. Seed feature flags.
 8. Do **not** put external-domain tables into Widgets Postgres.
 
-## Migration from Convex
+## Migration from Convex (Notepad)
 
 Notepad previously used Convex. Cutover uses a maintenance window: freeze
 writes, export notes, import with `legacy_convex_id` and ms→seconds conversion,
 deploy, re-enable. See `plans/widgets-convex-to-postgres.md`.
+
+After cutover, **remove leftover Notepad/notes tables from the Convex
+deployment** so only Knowledge Base tables remain:
+
+```bash
+cd apps/widgets-api
+npx convex run cleanup:wipeAllLegacyTables
+# Then Dashboard → Data → ⋮ → Delete table for each empty legacy table
+npx convex deploy   # push KB-only schema
+```
+
+Do not re-add Notepad tables to `convex/schema.ts`.
