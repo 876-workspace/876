@@ -97,11 +97,11 @@ export function SettingsBrowser({ orgSlug }: { orgSlug: string }) {
           No settings match &ldquo;{query.trim()}&rdquo;.
         </p>
       ) : (
-        <div className="grid gap-x-16 gap-y-12 sm:grid-cols-2 lg:max-w-5xl lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:max-w-5xl lg:grid-cols-3">
           {groups.map((group) => {
             const Icon = group.icon
             return (
-              <section key={group.title}>
+              <section key={group.title} className="876-card p-5">
                 <div className="mb-4 flex items-center gap-2.5">
                   <Icon className="text-muted-foreground size-5" />
                   <h2 className="text-[15px] font-medium">{group.title}</h2>
