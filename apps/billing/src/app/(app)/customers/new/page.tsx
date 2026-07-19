@@ -50,6 +50,18 @@ export default async function NewCustomerPage() {
           },
           { name: 'phone', label: 'Phone', type: 'text' },
           {
+            name: 'customerNumber',
+            label: 'Customer number',
+            type: 'text',
+          },
+          { name: 'website', label: 'Website', type: 'text' },
+          {
+            name: 'taxRegistrationNumber',
+            label: 'Tax registration number',
+            type: 'text',
+          },
+          { name: 'notes', label: 'Notes', type: 'textarea' },
+          {
             name: 'currency',
             label: 'Default currency',
             type: 'select',

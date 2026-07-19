@@ -51,10 +51,12 @@ const fields: FormField[] = [
     type: 'text',
     emptyAsNull: true,
   },
+  { name: 'notes', label: 'Notes', type: 'textarea' },
 ]
 
 describe('Billing create form', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     mocks.request.mockResolvedValue({ data: { id: 'item_123' }, error: null })
   })
 
@@ -75,6 +77,7 @@ describe('Billing create form', () => {
     await user.selectOptions(screen.getByLabelText('Currency'), 'JMD')
     await user.click(screen.getByRole('checkbox', { name: 'Active' }))
     await user.type(screen.getByLabelText('Reference type'), 'shipment')
+    await user.type(screen.getByLabelText('Notes'), '  Leave at reception.  ')
     await user.click(
       screen.getByRole('button', { name: 'Create Catalog item' })
     )
@@ -89,6 +92,7 @@ describe('Billing create form', () => {
           currency: 'JMD',
           active: true,
           description: null,
+          notes: 'Leave at reception.',
         }),
       })
     )

@@ -50,6 +50,7 @@ export default async function CustomersPage({ searchParams }: Props) {
   const rows = customers.map((customer) => ({
     id: customer.id,
     name: customer.name,
+    customerNumber: customer.customerNumber,
     companyName: customer.companyName,
     phone: customer.phone ?? customer.workPhone,
     receivables: Number(customer.outstandingReceivable),

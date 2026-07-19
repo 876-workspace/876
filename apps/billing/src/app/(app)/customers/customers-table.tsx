@@ -32,6 +32,17 @@ export function CustomersTable({ customers, emptyState }: Props) {
       ),
     },
     {
+      accessorKey: 'customerNumber',
+      header: 'Number',
+      cell: ({ row }) => (
+        <span
+          className={row.original.customerNumber ? '' : 'text-muted-foreground'}
+        >
+          {row.original.customerNumber ?? '—'}
+        </span>
+      ),
+    },
+    {
       accessorKey: 'companyName',
       header: 'Company',
       cell: ({ row }) => (

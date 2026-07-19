@@ -111,6 +111,18 @@ export default async function CustomerDetailPage({ params }: Props) {
               />
               <Fact label="Currency" value={currency} />
               <Fact label="Reference" value={reference} mono />
+              <Fact
+                label="Customer number"
+                value={customer.customerNumber || '—'}
+                mono
+              />
+              <Fact label="Website" value={customer.website || '—'} />
+              <Fact
+                label="Tax registration number"
+                value={customer.taxRegistrationNumber || '—'}
+                mono
+              />
+              <Fact label="Notes" value={customer.notes || '—'} />
               <Fact label="Added" value={formatDate(customer.createdAt)} />
             </FactGrid>
           </DetailAccordionCard>

@@ -8,6 +8,7 @@ import {} from '@876/ui/dialog'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { Textarea } from '@876/ui/textarea'
 
 import { request } from '@/lib/client/request'
 import type { FormField } from '@/types/form'
@@ -151,6 +152,14 @@ function FormField({
             </NativeSelectOption>
           ))}
         </NativeSelect>
+      ) : field.type === 'textarea' ? (
+        <Textarea
+          id={id}
+          value={typeof value === 'string' ? value : ''}
+          onChange={(event) => onChange(event.target.value)}
+          required={field.required}
+          rows={3}
+        />
       ) : (
         <Input
           id={id}
