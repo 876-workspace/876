@@ -30,6 +30,13 @@ export const GET = integrationRoute<Context>(async (request, context) => {
   const limit = Number(limitValue)
   const startingAfter = url.searchParams.get('starting_after') ?? undefined
   const endingBefore = url.searchParams.get('ending_before') ?? undefined
+  const statusParam = url.searchParams.get('status')?.trim() || undefined
+  const status =
+    statusParam === 'ACTIVE' || statusParam === 'ARCHIVED'
+      ? statusParam
+      : undefined
+  if (statusParam && !status)
+    return apiError('Enter a valid customer status filter.', { status: 400 })
   const userId = url.searchParams.get('user_id')?.trim() || undefined
   const coreOrganizationId =
     url.searchParams.get('organization_id')?.trim() || undefined
@@ -48,6 +55,7 @@ export const GET = integrationRoute<Context>(async (request, context) => {
     limit,
     startingAfter,
     endingBefore,
+    status,
     userId,
     organizationId: coreOrganizationId,
   })

@@ -66,6 +66,7 @@ export type CustomerPageOptions = {
   limit: number
   startingAfter?: string
   endingBefore?: string
+  status?: 'ACTIVE' | 'ARCHIVED'
   userId?: string
   organizationId?: string
 }
@@ -76,6 +77,7 @@ export async function listCustomerPage(
   options: CustomerPageOptions
 ) {
   const identityFilter = {
+    ...(options.status ? { status: options.status } : {}),
     ...(options.userId ? { userId: options.userId } : {}),
     ...(options.organizationId
       ? { organizationId: options.organizationId }

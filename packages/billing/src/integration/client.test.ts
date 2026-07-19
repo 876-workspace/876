@@ -55,12 +55,13 @@ describe('create876BillingIntegrationClient', () => {
     const result = await client.customers.list('org_1', {
       limit: 25,
       starting_after: 'cus_previous',
+      status: 'ACTIVE',
       user_id: 'usr_1',
     })
 
     expect(result.data?.data).toEqual([customer])
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://billing.example.test/api/v1/integrations/organizations/org_1/customers?limit=25&starting_after=cus_previous&user_id=usr_1',
+      'https://billing.example.test/api/v1/integrations/organizations/org_1/customers?limit=25&starting_after=cus_previous&status=ACTIVE&user_id=usr_1',
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({
