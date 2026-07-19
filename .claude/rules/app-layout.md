@@ -78,8 +78,8 @@ very top of the container, above the page heading, using the shared
 <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
 ```
 
-- `apps/console/src/components/page-breadcrumb.tsx`
-- `apps/couriers/src/components/page-breadcrumb.tsx`
+`PageBreadcrumb` lives in the shared page primitives at
+`packages/ui/src/components/page.tsx` and is imported from `@876/ui/page`.
 
 Do not remove this to save vertical space — it was removed once in Console
 and restored; keep it even on small viewports. Every settings sub-route

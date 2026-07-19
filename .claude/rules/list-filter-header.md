@@ -22,12 +22,16 @@ instead so every list page filters the same way.
 `StatusFilterHeading`:
 
 ```tsx
-type StatusFilterOption = { value: string; label: string }
+type StatusFilterOption = {
+  value: string
+  label: string
+  headingLabel?: string
+}
 
 type Props = {
   label: string // fallback label (e.g. the page title, "Apps")
   value: string // current status, resolved server-side from the URL
-  options: StatusFilterOption[] // plain {value,label}[] — no icons/functions
+  options: StatusFilterOption[] // plain serializable option data — no icons/functions
   paramKey?: string // URL query param name, defaults to 'status'
 }
 ```
@@ -130,7 +134,7 @@ export default async function WidgetsPage({ searchParams }: Props) {
 ## RSC → client serialization constraint
 
 `StatusFilterHeading` is a client component. Its `options` prop must stay
-plain, serializable `{ value, label }[]` data built in the server
+plain, serializable `{ value, label, headingLabel? }[]` data built in the server
 component — never pass icon components or functions across the boundary.
 The component imports its own `ChevronDown`/`CheckIcon` from `@876/ui/icons`
 internally; it does not accept them as props.
