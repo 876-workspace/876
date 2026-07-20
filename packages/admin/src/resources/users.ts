@@ -15,6 +15,7 @@ import type {
   AdminDeletedConsumerProfile,
   AdminDeletedUser,
   AdminDeletedUserFeature,
+  AdminDeletedUserIdentification,
   AdminListResponse,
   AdminOAuthGrant,
   AdminUserApp,
@@ -27,6 +28,12 @@ import type {
   AdminUserFeature,
   AdminUserFeatureGrantParams,
   AdminUserFeatureUpdateParams,
+  AdminUserIdentification,
+  AdminUserIdentificationCreateParams,
+  AdminUserIdentificationDisclosure,
+  AdminUserIdentificationDiscloseParams,
+  AdminUserIdentificationUpdateParams,
+  AdminUserIdentificationVerifyParams,
   AdminUserUpdateParams,
 } from '../types'
 
@@ -446,6 +453,101 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         method: 'POST',
         path: `/users/${userId}/sessions/revoke`,
       })
+    },
+
+    /**
+     * `$876.users.identifications.*` — sensitive verified identifiers on a
+     * user account (Jamaican TRN, passport, driver's license). Per
+     * `.claude/rules/customer-architecture.md`, these are identity data owned
+     * by the core API. `list`/`create`/`update`/`delete` only ever return the
+     * masked value; the full value is returned solely by `disclose()`, which
+     * requires the requesting app to be entitlement-allowlisted for the type
+     * AND the requesting organization to hold an active subscription to that
+     * app, and always writes an audit event.
+     */
+    identifications: {
+      /** Returns a user's identification records (masked values only). */
+      list(userId: string) {
+        return adminRequest<AdminListResponse<AdminUserIdentification>>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/users/${userId}/identifications`,
+          }
+        )
+      },
+
+      /**
+       * Adds a verified identifier to a user's account. The value is
+       * normalized and validated server-side; only the masked value is
+       * returned.
+       */
+      create(userId: string, params: AdminUserIdentificationCreateParams) {
+        return adminRequest<AdminUserIdentification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/identifications`,
+          body: params,
+        })
+      },
+
+      /**
+       * Replaces the value of an existing identification and resets its
+       * verification state.
+       */
+      update(
+        userId: string,
+        type: string,
+        params: AdminUserIdentificationUpdateParams
+      ) {
+        return adminRequest<AdminUserIdentification>(runtime, {
+          method: 'PATCH',
+          path: `/users/${userId}/identifications/${type}`,
+          body: params,
+        })
+      },
+
+      /** Deletes an identification record. Follows the platform deletion policy. */
+      delete(userId: string, type: string) {
+        return adminRequest<AdminDeletedUserIdentification>(runtime, {
+          method: 'DELETE',
+          path: `/users/${userId}/identifications/${type}`,
+        })
+      },
+
+      /**
+       * Returns the full, unmasked identification value. Entitlement-gated:
+       * the requesting app must be allowlisted for this identification type
+       * AND the requesting organization must hold an active subscription to
+       * that app. Always writes an audit event — never the value itself.
+       */
+      disclose(
+        userId: string,
+        type: string,
+        params: AdminUserIdentificationDiscloseParams
+      ) {
+        return adminRequest<AdminUserIdentificationDisclosure>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/identifications/${type}/disclose`,
+          body: {
+            organization_id: params.organizationId,
+            app_slug: params.appSlug,
+            reason: params.reason,
+          },
+        })
+      },
+
+      /** Marks an identification as verified, recording the verifying actor. */
+      verify(
+        userId: string,
+        type: string,
+        params: AdminUserIdentificationVerifyParams
+      ) {
+        return adminRequest<AdminUserIdentification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/identifications/${type}/verify`,
+          body: { verified_by: params.verifiedBy },
+        })
+      },
     },
   }
 }
