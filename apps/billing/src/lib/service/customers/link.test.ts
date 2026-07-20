@@ -58,7 +58,11 @@ describe('service.customers.link', () => {
         select: { id: true, customerType: true },
       })
       expect(prismaMock.customer.findFirst).toHaveBeenNthCalledWith(2, {
-        where: { tenantId: 'ten_123', userId: 'usr_456', id: { not: 'cus_123' } },
+        where: {
+          tenantId: 'ten_123',
+          userId: 'usr_456',
+          id: { not: 'cus_123' },
+        },
         select: { id: true },
       })
       expect(prismaMock.customer.update).toHaveBeenCalledTimes(1)

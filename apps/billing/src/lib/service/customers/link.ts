@@ -57,10 +57,7 @@ export async function link(
     return ok({ id: customerId })
   } catch (error) {
     if (isUniqueConstraintError(error))
-      return err(
-        'This 876 account is already linked to another customer.',
-        409
-      )
+      return err('This 876 account is already linked to another customer.', 409)
 
     console.error('[billing.service.customers.link]', error)
     return err('Failed to link the customer.', 500)

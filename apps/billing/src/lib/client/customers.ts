@@ -2,6 +2,7 @@ import type {
   CustomerCreated,
   CustomerCreateInput,
   CustomerDeleted,
+  CustomerLinkInput,
   CustomerResource,
   CustomerUpdated,
   CustomerUpdateInput,
@@ -50,10 +51,29 @@ const importCustomers = (rows: CustomerImportRawRow[]) =>
     body: JSON.stringify({ rows }),
   })
 
+const link = (customerId: string, params: CustomerLinkInput) =>
+  request<CustomerUpdated>(
+    `/api/v1/customers/${encodeURIComponent(customerId)}/link`,
+    {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }
+  )
+
+const unlink = (customerId: string) =>
+  request<CustomerUpdated>(
+    `/api/v1/customers/${encodeURIComponent(customerId)}/unlink`,
+    {
+      method: 'POST',
+    }
+  )
+
 export const customers = {
   create,
   retrieve,
   update,
   delete: deleteCustomer,
   import: importCustomers,
+  link,
+  unlink,
 }
