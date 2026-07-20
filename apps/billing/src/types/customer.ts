@@ -114,6 +114,13 @@ export interface CustomerUpdated {
   id: string
 }
 
+export const CustomerLinkSchema = z.strictObject({
+  userId: IdSchema,
+})
+
+export type CustomerLinkParams = z.infer<typeof CustomerLinkSchema>
+export type CustomerLinkInput = z.input<typeof CustomerLinkSchema>
+
 export interface CustomerDeleted {
   object: 'customer'
   id: string
