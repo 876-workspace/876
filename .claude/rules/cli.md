@@ -7,13 +7,6 @@ non-interactively. See `.claude/rules/implementation-tracker.md` for tracking
 multi-file delegated work, and the root `CLAUDE.md` "Sub-Agent Rules" section
 for the foreground-only rule (never background a sub-agent).
 
-**Optional advisor:** for **complex** design/architecture/product work only, and
-only when the primary agent (Grok) **opts in** (or the user runs `/advisor`), a
-read-only **gpt-5.6-sol high** pass is available (`/advisor` skill; rule in
-`.claude/rules/advisor.md` / `.grok/rules/advisor.md`). Not a gate for routine
-work. Sol **advises only**; Grok keeps the **final decision** and implements.
-Advisor does not implement or commit.
-
 ## Routing table
 
 | Task class                                                                                                                            | Model / tool                                                                                                       | Execution mode                                                                                       |
@@ -21,7 +14,6 @@ Advisor does not implement or commit.
 | Code exploration / research (find files, trace a symbol, map a subsystem before implementing)                                         | **Sonnet, high reasoning**                                                                                         | Sub-agent (`Agent` tool, `model: sonnet`), detailed brief (below)                                    |
 | Advanced/critical implementation (cross-cutting, architecturally sensitive, hard bugs)                                                | **Opus, high reasoning**                                                                                           | Sub-agent (`Agent` tool, `model: opus`)                                                              |
 | General updates (routine feature work, moderate scope, not exploration or high-stakes design)                                         | **Opus, medium reasoning**                                                                                         | Sub-agent (`Agent` tool, `model: opus`)                                                              |
-| Optional design advice on complex work (product, UX, architecture trade-offs) — only if Grok opts in or user asks                     | **Codex `gpt-5.6-sol`, high reasoning** (read-only)                                                                | Foreground `codex exec` via `/advisor` skill — see `advisor.md`                                      |
 | Design decisions / highest-stakes or security-sensitive code (auth, key handling, provisioning, anything that must simply be _right_) | **Fable, high reasoning**                                                                                          | **Direct execution by the primary agent — never a sub-agent.** See "Fable is never delegated" below. |
 | Docs-only work (`.md`/`.mdx`, OpenAPI `docs.py` prose, README, rule files)                                                            | **`agy`, Sonnet 4.6 Thinking** (existing) **or** `opencode`/Command Code with **DeepSeek V4**                      | Foreground CLI                                                                                       |
 | Trivial / mechanical / mass-simple edits (rename a function and fix every call site, bulk find-replace, boilerplate scaffolding)      | **`opencode`** (or Command Code) with **DeepSeek V4** — orchestrate multiple in parallel for independent file sets | Foreground CLI                                                                                       |

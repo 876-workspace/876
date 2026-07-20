@@ -192,7 +192,7 @@ does the API's job in the wrong layer. If a resource's `list()` (or
 `search()`) does not yet accept a `status` param, that is a gap to close in
 `apps/api` (repository filter + router query param) and the admin/SDK client
 method — not a reason to fake the filter in Next.js. See
-`.claude/rules/api-backend.md` and `.claude/rules/sdk-conventions.md`.
+`.grok/rules/api-backend.md` and `.grok/rules/sdk-conventions.md`.
 
 ### Interaction with search (`q`)
 
@@ -355,7 +355,7 @@ text is what this rule constrains).
 
 ## 12. Applying this to a new app
 
-When scaffolding a new sidebar-style app (see `.claude/rules/new-app-guide.md`
+When scaffolding a new sidebar-style app (see `.grok/rules/new-app-guide.md`
 for the integration side), copy the shell/sidebar/toolbar/breadcrumb/status-
 filter components from Console or Couriers rather than rebuilding them. If a
 page type doesn't have a precedent yet, look for the closest existing page

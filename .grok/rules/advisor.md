@@ -1,4 +1,8 @@
-# Advisor Rule — optional gpt-5.6-sol for complex work
+# Advisor Rule — optional gpt-5.6-sol for complex work (Grok only)
+
+**Grok-only.** This file lives under `.grok/rules/` and is intentionally
+absent from `.claude/rules/` and `.agents/rules/`. Do not mirror it into those
+trees.
 
 Sol is an **optional** second opinion. It is **not** mandatory before every
 implementation set.

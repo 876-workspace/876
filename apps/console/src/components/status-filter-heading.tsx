@@ -36,7 +36,7 @@ type Props = {
  *
  * Pass as `ResourceToolbar`'s `titleFilter` prop in place of a plain string
  * `title` on Console list pages filtered by a lifecycle status. See
- * `.claude/rules/list-filter-header.md`.
+ * `.claude/rules/app-layout.md` (§5 list status filter).
  */
 export function StatusFilterHeading({
   label,
