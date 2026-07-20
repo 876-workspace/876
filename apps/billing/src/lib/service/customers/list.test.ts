@@ -98,7 +98,9 @@ describe('listCustomerPage', () => {
   })
 
   it('filters the page and total count by lifecycle status', async () => {
-    customer.findMany.mockResolvedValue([{ id: 'cus_active', status: 'ACTIVE' }])
+    customer.findMany.mockResolvedValue([
+      { id: 'cus_active', status: 'ACTIVE' },
+    ])
     customer.count.mockResolvedValue(1)
 
     const result = await listCustomerPage('blten_1', {
@@ -117,4 +119,3 @@ describe('listCustomerPage', () => {
     })
   })
 })
-
