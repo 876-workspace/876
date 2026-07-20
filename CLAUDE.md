@@ -82,10 +82,10 @@ python -m ruff check .
 
 Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) and are mirrored into:
 
-| Mirror            | Audience                                      | Notes                                                                 |
-| ----------------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `.agents/rules/`  | Codex, `agy`, Gemini, other non-Claude agents | Full mirror (includes `cli.md`). Relative links use `.agents/rules/`. |
-| `.grok/rules/`    | Grok                                          | Same shared rules **except `cli.md`** (never present). Grok-only extras: `00-grok.md`, `agents.md`, `advisor.md` (and `.grok/skills/advisor/`). Relative links use `.grok/rules/`. |
+| Mirror           | Audience                                      | Notes                                                                                                                                                                              |
+| ---------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.agents/rules/` | Codex, `agy`, Gemini, other non-Claude agents | Full mirror (includes `cli.md`). Relative links use `.agents/rules/`.                                                                                                              |
+| `.grok/rules/`   | Grok                                          | Same shared rules **except `cli.md`** (never present). Grok-only extras: `00-grok.md`, `agents.md`, `advisor.md` (and `.grok/skills/advisor/`). Relative links use `.grok/rules/`. |
 
 **When you edit a shared rule, update all three trees** (or run a sync pass) — do not let them drift. Do **not** copy `cli.md` into `.grok/rules/` (Grok must never read that file). Do **not** copy `advisor.md` into `.claude/rules/` or `.agents/rules/` — advisor is Grok-only. See `.claude/rules/implementation-tracker.md` for tracking multi-file work.
 
