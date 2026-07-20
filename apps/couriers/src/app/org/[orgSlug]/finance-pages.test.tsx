@@ -86,9 +86,7 @@ describe('Couriers finance-backed pages', () => {
       { id: 'profile_1', billingCustomerId: 'cus_business' },
     ])
 
-    render(
-      await CustomersPage({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersPage({ params, searchParams: emptySearchParams }))
 
     expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
     expect(screen.getByText('Nia Campbell')).toBeVisible()
@@ -135,9 +133,7 @@ describe('Couriers finance-backed pages', () => {
       data: null,
       error: { message: 'Finance customers are temporarily unavailable.' },
     })
-    rerender(
-      await CustomersPage({ params, searchParams: emptySearchParams })
-    )
+    rerender(await CustomersPage({ params, searchParams: emptySearchParams }))
     expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
     expect(
       screen.getByText('Finance customers are temporarily unavailable.')

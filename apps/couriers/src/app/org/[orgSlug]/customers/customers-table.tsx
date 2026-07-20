@@ -71,11 +71,7 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
 export function CustomersTable({ customers, emptyState, hasMore }: Props) {
   return (
     <div className="876-card overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={customers}
-        emptyState={emptyState}
-      />
+      <DataTable columns={columns} data={customers} emptyState={emptyState} />
       {hasMore ? (
         <p className="text-muted-foreground border-t px-5 py-3 text-xs">
           Showing the first 100 customers.
