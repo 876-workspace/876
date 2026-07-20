@@ -43,6 +43,8 @@ export default async function CustomersPage({ searchParams }: Props) {
   const context = await getWorkspaceContext()
   if (!context) return null
 
+  const canWrite = context.permissions.includes('customers:write')
+
   const customers = await service.customers.list(
     context.tenant.id,
     filterStatus
@@ -68,18 +70,15 @@ export default async function CustomersPage({ searchParams }: Props) {
             options={CUSTOMER_STATUS_OPTIONS}
           />
         }
-        primaryLabel={
-          context.permissions.includes('customers:write')
-            ? 'New Customer'
-            : undefined
-        }
-        primaryHref={
-          context.permissions.includes('customers:write')
-            ? '/customers/new'
-            : undefined
-        }
+        primaryLabel={canWrite ? 'New Customer' : undefined}
+        primaryHref={canWrite ? '/customers/new' : undefined}
         primaryVariant="info"
         refresh
+        dropdownActions={
+          canWrite
+            ? [{ label: 'Import', icon: 'import', href: '/customers/import' }]
+            : []
+        }
       />
 
       <CustomersTable
