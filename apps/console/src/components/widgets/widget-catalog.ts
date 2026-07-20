@@ -21,6 +21,11 @@ export const liveLogsWidgetMetadata = {
   dataOwner: 'external',
   ownership: 'workspace',
   defaultPanel: { width: 720, height: 520 },
+  sizePolicy: {
+    default: 'xl',
+    allowed: ['xl'],
+    accent: '#06B6D4',
+  },
   supportedHosts: ['console'],
   implementedHosts: ['console'],
   features: {

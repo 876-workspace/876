@@ -2,10 +2,10 @@
 
 import { createElement } from 'react'
 import type { AdminAuditEvent } from '@876/admin'
+import type { WidgetSizePolicy } from '@876/widgets'
 
 import { PopoutBar } from './popout-bar'
 import { widgets } from './widgets-config'
-import type { PopoutSize } from './popout-bar'
 
 const NAVBAR_HEIGHT = 56 // px — matches the shell's `h-14` header
 
@@ -24,25 +24,29 @@ export function WidgetBar({
   const enabledWidgets = widgets.filter((widget) =>
     enabledWidgetIdSet.has(widget.id)
   )
-  const sizeByItem: Partial<Record<string, PopoutSize>> = Object.fromEntries(
-    enabledWidgets
-      .filter((widget) => widget.panelSize)
-      .map((widget) => [widget.id, widget.panelSize])
-  )
+  const sizePolicyByItem: Partial<Record<string, WidgetSizePolicy>> =
+    Object.fromEntries(
+      enabledWidgets.map((widget) => [widget.id, widget.sizePolicy])
+    )
 
   return (
-    <PopoutBar.Root side="right" navbarHeight={NAVBAR_HEIGHT}>
+    <PopoutBar.Root
+      side="right"
+      navbarHeight={NAVBAR_HEIGHT}
+      host="console"
+      sizePolicyByItem={sizePolicyByItem}
+    >
       {/* Panel first so Root lays out [panel | rail] on the right edge. */}
-      <PopoutBar.Panel size="md" sizeByItem={sizeByItem}>
+      <PopoutBar.Panel size="md">
         {enabledWidgets.map((widget) => (
           <PopoutBar.Content
             key={widget.id}
             id={widget.id}
             title={widget.label}
             icon={createElement(widget.icon, {
-              className: 'block size-[1.125rem] shrink-0',
-              width: 18,
-              height: 18,
+              className: 'block size-6 shrink-0',
+              width: 24,
+              height: 24,
             })}
           >
             {createElement(widget.panel, { auditEvents })}
@@ -56,10 +60,11 @@ export function WidgetBar({
             key={widget.id}
             id={widget.id}
             label={widget.label}
+            accent={widget.sizePolicy.accent}
             icon={createElement(widget.icon, {
-              className: 'block size-[1.125rem] shrink-0',
-              width: 18,
-              height: 18,
+              className: 'block size-6 shrink-0',
+              width: 24,
+              height: 24,
             })}
           />
         ))}

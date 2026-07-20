@@ -10,20 +10,52 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { WidgetPopout } from './widget-popout'
+import type { WidgetSizePolicy } from '../types/widget-size'
+import { RAIL_WIDTH_PX, PANEL_GUTTER_PX } from '../types/widget-size'
 
 let layoutWidth = 1_200
 
-function PanelFixture({ size = 'md' }: { size?: 'md' | 'xl' }) {
+const notepadPolicy = {
+  default: 'md',
+  allowed: ['sm', 'md', 'lg', 'xl', 'fill'],
+  remember: false,
+  accent: '#F59E0B',
+} as const satisfies WidgetSizePolicy
+
+const lockedXlPolicy = {
+  default: 'xl',
+  allowed: ['xl'],
+  accent: '#06B6D4',
+} as const satisfies WidgetSizePolicy
+
+function PanelFixture({
+  size = 'md',
+  sizePolicyByItem,
+  defaultOpen = 'draft',
+}: {
+  size?: 'md' | 'xl'
+  sizePolicyByItem?: Partial<Record<string, WidgetSizePolicy>>
+  defaultOpen?: string | null
+}) {
   return (
     <div>
-      <WidgetPopout.Root defaultOpen="draft">
+      <WidgetPopout.Root
+        defaultOpen={defaultOpen}
+        defaultSize={size}
+        host="test"
+        sizePolicyByItem={sizePolicyByItem}
+      >
         <WidgetPopout.Panel size={size}>
           <WidgetPopout.Content id="draft" title="Draft widget">
             <input aria-label="Draft value" defaultValue="Initial draft" />
           </WidgetPopout.Content>
+          <WidgetPopout.Content id="logs" title="Live logs">
+            <div>Logs body</div>
+          </WidgetPopout.Content>
         </WidgetPopout.Panel>
         <WidgetPopout.Rail>
           <WidgetPopout.Trigger id="draft" label="Draft" icon="D" />
+          <WidgetPopout.Trigger id="logs" label="Logs" icon="L" />
         </WidgetPopout.Rail>
       </WidgetPopout.Root>
     </div>
@@ -57,6 +89,10 @@ describe('Widget popout panel', () => {
         toJSON: () => ({}),
       })
     )
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: layoutWidth,
+    })
   })
 
   afterEach(() => {
@@ -100,6 +136,10 @@ describe('Widget popout panel', () => {
 
   it('disables docking when the main column would be narrower than 600px', async () => {
     layoutWidth = 1_000
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: layoutWidth,
+    })
     render(<PanelFixture />)
 
     const dockButton = await screen.findByRole('button', {
@@ -130,6 +170,10 @@ describe('Widget popout panel', () => {
     })
 
     layoutWidth = 1_000
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: layoutWidth,
+    })
     fireEvent(window, new Event('resize'))
 
     await waitFor(() => {
@@ -148,8 +192,8 @@ describe('Widget popout panel', () => {
       '[data-slot="widget-panel"]'
     ) as HTMLElement
     expect(panel.style.width).toBe('720px')
-    // rail 52 + gutter 24 * 2 = 100
-    expect(panel.style.maxWidth).toBe('calc(100vw - 100px)')
+    const maxPad = RAIL_WIDTH_PX + PANEL_GUTTER_PX * 2
+    expect(panel.style.maxWidth).toBe(`calc(100vw - ${maxPad}px)`)
     expect(panel.getAttribute('data-can-dock')).toBe('false')
   })
 
@@ -159,8 +203,8 @@ describe('Widget popout panel', () => {
     const panel = document.querySelector(
       '[data-slot="widget-panel"]'
     ) as HTMLElement
-    // rail 52 + gutter 24
-    expect(panel.style.right).toBe('76px')
+    // rail + gutter
+    expect(panel.style.right).toBe(`${RAIL_WIDTH_PX + PANEL_GUTTER_PX}px`)
     expect(panel.style.top).toBe('74px') // default navbar 64 + inset 10
     expect(panel.style.bottom).toBe('10px')
   })
@@ -187,11 +231,76 @@ describe('Widget popout panel', () => {
     })
   })
 
-  it('does not render a left active rail pip on the trigger', () => {
-    render(<PanelFixture />)
+  it('renders an active rail edge pill on the selected trigger', () => {
+    render(<PanelFixture sizePolicyByItem={{ draft: notepadPolicy }} />)
 
     const trigger = screen.getByRole('button', { name: 'Draft' })
-    expect(trigger.querySelector('.absolute.left-\\[3px\\]')).toBeNull()
-    expect(trigger.querySelector('[class*="w-[3px]"]')).toBeNull()
+    const pill = trigger.querySelector('[aria-hidden="true"]')
+    expect(pill).not.toBeNull()
+    expect(pill?.className).toContain('absolute')
+  })
+
+  it('shows a size palette for multi-size widgets and applies size changes', async () => {
+    render(<PanelFixture sizePolicyByItem={{ draft: notepadPolicy }} />)
+
+    const large = await screen.findByRole('radio', {
+      name: /Large — 520px/,
+    })
+    fireEvent.click(large)
+
+    await waitFor(() => {
+      const panel = document.querySelector(
+        '[data-slot="widget-panel"]'
+      ) as HTMLElement
+      expect(panel.getAttribute('data-size')).toBe('lg')
+      expect(panel.style.width).toBe('520px')
+    })
+  })
+
+  it('hides the size control when the widget is locked to one size', async () => {
+    render(
+      <PanelFixture
+        defaultOpen="logs"
+        size="xl"
+        sizePolicyByItem={{ logs: lockedXlPolicy }}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Logs body')).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('radiogroup', { name: 'Widget size' })).toBeNull()
+  })
+
+  it('resolves docked fill width as available minus rail and min main column', async () => {
+    layoutWidth = 1_400
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: layoutWidth,
+    })
+    render(<PanelFixture sizePolicyByItem={{ draft: notepadPolicy }} />)
+
+    const fill = await screen.findByRole('radio', {
+      name: /Fill — workspace/,
+    })
+    fireEvent.click(fill)
+
+    const dockButton = await screen.findByRole('button', {
+      name: 'Dock panel to layout',
+    })
+    await waitFor(() =>
+      expect((dockButton as HTMLButtonElement).disabled).toBe(false)
+    )
+    fireEvent.click(dockButton)
+
+    await waitFor(() => {
+      const panel = document.querySelector(
+        '[data-slot="widget-panel"]'
+      ) as HTMLElement
+      expect(panel.getAttribute('data-presentation')).toBe('docked')
+      // 1400 - 60 - 600 = 740
+      expect(panel.style.width).toBe('740px')
+      expect(panel.getAttribute('data-size')).toBe('fill')
+    })
   })
 })

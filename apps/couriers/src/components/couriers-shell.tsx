@@ -113,6 +113,7 @@ export async function CouriersShell({
             <SharedWidgetDock
               enabledWidgetIds={enabledWidgetIds}
               navbarHeight={64}
+              host="couriers"
             />
           ) : null}
         </AppShellBody>

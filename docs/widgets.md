@@ -83,6 +83,48 @@ committed `.env.example` files contain the complete variable templates.
 | Console  | `console_widgets`, `console_widgets_notepad`   |
 | Billing  | `billing_widgets`, `billing_widgets_notepad`   |
 
+## Panel sizes
+
+Widgets declare a **size policy** on catalog metadata (or host config for
+host-only widgets):
+
+```ts
+type WidgetSize = 'sm' | 'md' | 'lg' | 'xl' | 'fill'
+
+type WidgetSizePolicy = {
+  default: WidgetSize
+  allowed: readonly WidgetSize[]
+  remember?: boolean // localStorage per host+widget
+  accent?: string // rail active chrome color
+}
+```
+
+| Token  | Width                                                                            |
+| ------ | -------------------------------------------------------------------------------- |
+| `sm`   | 320px                                                                            |
+| `md`   | 384px                                                                            |
+| `lg`   | 520px                                                                            |
+| `xl`   | 720px                                                                            |
+| `fill` | Dynamic — docked: grows until the main column hits 600px; popout: capped (960px) |
+
+- **One allowed size** → locked widget; no size control in the panel header.
+- **Several allowed sizes** → playful size palette in the header.
+- **Fill** → “expand toward the sidebar” workspace mode.
+
+Examples today:
+
+| Widget    | Policy                                         |
+| --------- | ---------------------------------------------- |
+| Notepad   | `sm`–`xl` + `fill`, default `md`, amber accent |
+| Live Logs | locked `xl`, cyan accent                       |
+
+Preferences are stored client-side only
+(`876:widgets:size:v1:{host}:{widgetId}`). The rail is ~60px with larger
+icons and per-widget accent active states.
+
+Hosts pass `sizePolicyByItem` into `WidgetPopout.Root` (Console `WidgetBar`,
+shared `SharedWidgetDock`).
+
 ## Console management
 
 Widget flags remain PostHog-backed features, listed from Console Widgets pages.

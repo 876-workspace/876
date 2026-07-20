@@ -90,7 +90,7 @@ export async function Shell({
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
           {features.widgets.notepad ? (
-            <SharedWidgetDock enabledWidgetIds={['notepad']} />
+            <SharedWidgetDock enabledWidgetIds={['notepad']} host="billing" />
           ) : null}
         </AppShellBody>
       </AppShellContent>

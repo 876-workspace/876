@@ -1,7 +1,12 @@
 'use client'
 
 import type { ComponentType } from 'react'
-import { notepadWidgetMetadata, type WidgetMetadata } from '../catalog'
+import {
+  notepadWidgetMetadata,
+  type WidgetHost,
+  type WidgetMetadata,
+  type WidgetSizePolicy,
+} from '../catalog'
 import { NotepadWidgetPanel } from './notepad-widget'
 import { NotepadIcon } from './notepad-icon'
 import { WidgetPopout } from './widget-popout'
@@ -20,12 +25,24 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
   },
 ]
 
+function policyMapFor(
+  renderers: readonly SharedWidgetRenderer[]
+): Partial<Record<string, WidgetSizePolicy>> {
+  return Object.fromEntries(
+    renderers.flatMap(({ metadata }) =>
+      metadata.sizePolicy ? [[metadata.id, metadata.sizePolicy] as const] : []
+    )
+  )
+}
+
 export function SharedWidgetDock({
   enabledWidgetIds,
   navbarHeight = 56,
+  host = 'console',
 }: {
   enabledWidgetIds: readonly string[]
   navbarHeight?: number
+  host?: WidgetHost
 }) {
   const enabled = new Set(enabledWidgetIds)
   const renderers = sharedWidgetRenderers.filter(({ metadata }) =>
@@ -33,15 +50,22 @@ export function SharedWidgetDock({
   )
   if (renderers.length === 0) return null
 
+  const sizePolicyByItem = policyMapFor(renderers)
+
   return (
-    <WidgetPopout.Root side="right" navbarHeight={navbarHeight}>
+    <WidgetPopout.Root
+      side="right"
+      navbarHeight={navbarHeight}
+      host={host}
+      sizePolicyByItem={sizePolicyByItem}
+    >
       <WidgetPopout.Panel size="md">
         {renderers.map(({ metadata, icon: Icon, panel: Panel }) => (
           <WidgetPopout.Content
             key={metadata.id}
             id={metadata.id}
             title={metadata.name}
-            icon={<Icon />}
+            icon={<Icon className="size-6" />}
           >
             <Panel />
           </WidgetPopout.Content>
@@ -53,7 +77,7 @@ export function SharedWidgetDock({
             key={metadata.id}
             id={metadata.id}
             label={metadata.name}
-            icon={<Icon />}
+            icon={<Icon className="size-6" />}
           />
         ))}
       </WidgetPopout.Rail>

@@ -19,17 +19,17 @@ describe('WidgetBar', () => {
     }))
   })
 
-  it('renders a visible, explicitly sized icon in the Notepad trigger', () => {
+  it('renders a visible, larger icon in the Notepad trigger', () => {
     render(<WidgetBar auditEvents={[]} enabledWidgetIds={['notepad']} />)
 
     const trigger = screen.getByRole('button', { name: 'Notepad' })
     const icon = trigger.querySelector('svg')
 
     expect(icon).not.toBeNull()
-    expect(icon?.getAttribute('width')).toBe('18')
-    expect(icon?.getAttribute('height')).toBe('18')
+    expect(icon?.getAttribute('width')).toBe('24')
+    expect(icon?.getAttribute('height')).toBe('24')
     expect(icon?.classList.contains('block')).toBe(true)
-    expect(icon?.classList.contains('size-[1.125rem]')).toBe(true)
+    expect(icon?.classList.contains('size-6')).toBe(true)
     expect(icon?.classList.contains('shrink-0')).toBe(true)
   })
 })

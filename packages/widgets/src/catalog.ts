@@ -1,3 +1,13 @@
+import type { WidgetSizePolicy } from './types/widget-size'
+
+export type { WidgetSize, WidgetSizePolicy } from './types/widget-size'
+export {
+  WIDGET_WIDTHS,
+  RAIL_WIDTH_PX,
+  resolveWidgetWidth,
+  normalizeSizePolicy,
+} from './types/widget-size'
+
 export type WidgetHost =
   | 'console'
   | 'billing'
@@ -47,6 +57,11 @@ interface WidgetMetadataBase {
   /** Independent of distribution: where authoritative content lives. */
   dataOwner: WidgetDataOwner
   defaultPanel: { width: number; height: number }
+  /**
+   * Allowed panel sizes and default. Hosts pass this into WidgetPopout.
+   * Locked widgets use a single-entry `allowed` list.
+   */
+  sizePolicy?: WidgetSizePolicy
   supportedHosts: readonly WidgetHost[]
   implementedHosts: readonly WidgetHost[]
   administration: {
@@ -86,6 +101,13 @@ export const notepadWidgetMetadata = {
   dataOwner: 'widgets',
   ownership: 'account',
   defaultPanel: { width: 384, height: 520 },
+  sizePolicy: {
+    default: 'md',
+    allowed: ['sm', 'md', 'lg', 'xl', 'fill'],
+    remember: true,
+    // Amber — matches Notepad sticky / icon palette
+    accent: '#F59E0B',
+  },
   supportedHosts: ['console', 'billing', 'couriers', 'enterprise', '876'],
   implementedHosts: ['console', 'billing', 'couriers'],
   features: {

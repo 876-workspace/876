@@ -121,14 +121,24 @@ export function NotepadNotesView({
           <NotepadNoResults onClear={() => setSearch('')} />
         ) : null}
         {showGrid ? (
-          <div className="grid min-w-0 grid-cols-2 gap-3">
-            {filteredEntries.map((entry) => (
-              <NoteCard
-                key={entry.id}
-                entry={entry}
-                onOpen={() => onOpen(entry.id)}
-              />
-            ))}
+          <div className="@container min-w-0">
+            <div
+              className={cn(
+                // sm→1 · md→2 · lg→3 · xl/fill→4 as the panel grows
+                'grid min-w-0 grid-cols-1 gap-3',
+                '@[360px]:grid-cols-2',
+                '@[520px]:grid-cols-3',
+                '@[720px]:grid-cols-4'
+              )}
+            >
+              {filteredEntries.map((entry) => (
+                <NoteCard
+                  key={entry.id}
+                  entry={entry}
+                  onOpen={() => onOpen(entry.id)}
+                />
+              ))}
+            </div>
           </div>
         ) : null}
         {showLoadMore ? (
@@ -204,18 +214,20 @@ function NotepadLoadingState() {
     <div
       role="status"
       aria-label="Loading notes"
-      className="grid grid-cols-2 gap-3"
+      className="@container min-w-0"
     >
-      {[0, 1, 2, 3].map((item) => (
-        <div
-          key={item}
-          className="border-border bg-card/80 dark:bg-card/60 min-h-36 rounded-xl border p-3"
-        >
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="mt-3 h-3 w-full" />
-          <Skeleton className="mt-2 h-3 w-5/6" />
-        </div>
-      ))}
+      <div className="grid grid-cols-1 gap-3 @[360px]:grid-cols-2 @[520px]:grid-cols-3">
+        {[0, 1, 2, 3].map((item) => (
+          <div
+            key={item}
+            className="border-border bg-card/80 dark:bg-card/60 min-h-36 rounded-xl border p-3"
+          >
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="mt-3 h-3 w-full" />
+            <Skeleton className="mt-2 h-3 w-5/6" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

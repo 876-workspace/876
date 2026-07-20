@@ -18,6 +18,17 @@ export type {
   WidgetMetadata,
   WidgetVisual,
 } from './catalog'
+export type { WidgetSize, WidgetSizePolicy } from './types/widget-size'
+export {
+  WIDGET_WIDTHS,
+  RAIL_WIDTH_PX,
+  resolveWidgetWidth,
+  normalizeSizePolicy,
+  canDockAtWidth,
+  isWidgetSize,
+  WIDGET_SIZES,
+  WIDGET_SIZE_LABELS,
+} from './types/widget-size'
 export type {
   DeletedNote,
   NoteColor,
