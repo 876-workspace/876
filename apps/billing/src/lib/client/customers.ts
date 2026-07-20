@@ -6,6 +6,10 @@ import type {
   CustomerUpdated,
   CustomerUpdateInput,
 } from '@/types/customer'
+import type {
+  CustomerImportRawRow,
+  CustomerImportResult,
+} from '@/types/customer-import'
 
 import { request } from './request'
 
@@ -40,9 +44,16 @@ const deleteCustomer = (customerId: string) =>
     }
   )
 
+const importCustomers = (rows: CustomerImportRawRow[]) =>
+  request<CustomerImportResult>('/api/v1/customers/import', {
+    method: 'POST',
+    body: JSON.stringify({ rows }),
+  })
+
 export const customers = {
   create,
   retrieve,
   update,
   delete: deleteCustomer,
+  import: importCustomers,
 }
