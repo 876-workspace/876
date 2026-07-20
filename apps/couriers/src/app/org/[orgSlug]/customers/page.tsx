@@ -81,7 +81,20 @@ export default async function CustomersPage({ params, searchParams }: Props) {
             options={CUSTOMER_STATUS_OPTIONS}
           />
         }
+        primaryLabel="Add"
+        primaryHref={`/org/${orgSlug}/customers/new`}
+        primaryVariant="info"
         refresh
+        dropdownActions={[
+          { label: 'Import', icon: 'import' },
+          { label: 'Export', icon: 'export' },
+          {
+            label: 'Delete customers',
+            icon: 'delete',
+            destructive: true,
+            separator: true,
+          },
+        ]}
       />
 
       {customers.error ? (

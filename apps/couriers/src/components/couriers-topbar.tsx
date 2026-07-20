@@ -73,11 +73,13 @@ export function CouriersUserMenu({
 
 function getSearchItems(basePath: string): TopbarSearchItem[] {
   const navigationItems = couriersNav.flatMap((group) =>
-    group.items.map((item) => ({
-      group: 'Navigation',
-      title: item.title,
-      href: basePath + item.href,
-    }))
+    group.items
+      .filter((item) => item.href !== '#')
+      .map((item) => ({
+        group: 'Navigation',
+        title: item.title,
+        href: basePath + item.href,
+      }))
   )
   const childItems = couriersNav.flatMap((group) =>
     group.items.flatMap((item) =>

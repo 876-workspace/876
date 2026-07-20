@@ -72,7 +72,20 @@ export default async function ItemsPage({ params, searchParams }: Props) {
             options={ITEM_STATUS_OPTIONS}
           />
         }
+        primaryLabel="Add"
+        primaryHref={`/org/${orgSlug}/items/new`}
+        primaryVariant="info"
         refresh
+        dropdownActions={[
+          { label: 'Import', icon: 'import' },
+          { label: 'Export', icon: 'export' },
+          {
+            label: 'Delete items',
+            icon: 'delete',
+            destructive: true,
+            separator: true,
+          },
+        ]}
       />
 
       {items.error ? (

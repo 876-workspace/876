@@ -18,6 +18,10 @@
   --sidebar-primary: var(--couriers-primary);
   --sidebar-primary-foreground: var(--couriers-primary-fg);
   --sidebar-ring: var(--couriers-primary);
+  /* Soften Tailwind's blue-700/800 to the 876 brand blue — makes the
+     "info" variant Add buttons match the shell accent (same as Console/Billing). */
+  --color-blue-700: var(--876-blue);
+  --color-blue-800: color-mix(in oklab, var(--876-blue) 82%, black);
   /* Nav active pill — couriers blue, scoped to nav only. */
   --876-nav-active-bg: color-mix(
     in oklab,

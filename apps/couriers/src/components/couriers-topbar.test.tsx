@@ -150,18 +150,23 @@ describe('Couriers topbar wrappers', () => {
       },
       {
         group: 'Navigation',
-        title: 'Customers',
-        href: '/org/island-logistics/customers',
-      },
-      {
-        group: 'Navigation',
         title: 'Items',
         href: '/org/island-logistics/items',
       },
       {
         group: 'Navigation',
+        title: 'Customers',
+        href: '/org/island-logistics/customers',
+      },
+      {
+        group: 'Navigation',
         title: 'Packages',
         href: '/org/island-logistics/packages',
+      },
+      {
+        group: 'Navigation',
+        title: 'Reports',
+        href: '/org/island-logistics/reports',
       },
       {
         group: 'Packages',
@@ -170,18 +175,28 @@ describe('Couriers topbar wrappers', () => {
       },
       {
         group: 'Packages',
-        title: 'Deliveries',
-        href: '/org/island-logistics/packages/deliveries',
-      },
-      {
-        group: 'Packages',
         title: 'Warehouse',
         href: '/org/island-logistics/packages/warehouse',
       },
       {
         group: 'Packages',
-        title: 'Manifest',
+        title: 'Manifests',
         href: '/org/island-logistics/packages/manifest',
+      },
+      {
+        group: 'Packages',
+        title: 'Deliveries',
+        href: '/org/island-logistics/packages/deliveries',
+      },
+      {
+        group: 'Billing',
+        title: 'Invoices',
+        href: '/org/island-logistics/invoices',
+      },
+      {
+        group: 'Billing',
+        title: 'Payments',
+        href: '/org/island-logistics/payments',
       },
       {
         group: 'Settings',
