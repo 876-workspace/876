@@ -7,6 +7,7 @@ import { create } from './create'
 import { account } from './account'
 import { deleteCustomer } from './delete'
 import { ensure } from './ensure'
+import { importCustomers } from './import'
 import {
   listCustomerPage,
   listCustomers,
@@ -23,6 +24,7 @@ export const customers = {
   create,
   delete: deleteCustomer,
   ensure,
+  import: importCustomers,
   list: listCustomers,
   listDocumentRecipients,
   listPage: listCustomerPage,
