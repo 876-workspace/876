@@ -482,3 +482,96 @@ class UserSessionRevokeResponse(BaseModel):
     )
     user_id: str = Field(description="ID of the user whose sessions were revoked.")
     sessions_revoked: int = Field(description="Number of active sessions that were deleted.")
+
+
+# ---------------------------------------------------------------------------
+# Identifications (sensitive verified identifiers, entitlement-gated)
+# ---------------------------------------------------------------------------
+
+
+class UserIdentificationResponse(BaseModel):
+    object: Literal["user_identification"] = Field(
+        default="user_identification",
+        description="String representing the object's type. Always 'user_identification'.",
+    )
+    id: str = Field(description="Unique identifier for the identification record.")
+    user_id: str = Field(description="ID of the user this identification belongs to.")
+    type: str = Field(
+        description="Identification type key.",
+        examples=["trn", "passport", "drivers_license"],
+    )
+    label: str = Field(description="Human-readable label for the identification type.")
+    country_code: str | None = Field(
+        default=None,
+        description="ISO 3166-1 alpha-2 country code the identification is issued under, if applicable.",
+    )
+    value_masked: str = Field(
+        description="The identification value with all but the last 3 characters masked with '•'."
+    )
+    verified: bool = Field(description="Whether this identification has been verified.")
+    verified_at: int | None = Field(
+        default=None,
+        description="Unix timestamp when this identification was verified. Null when unverified.",
+    )
+    created_at: int = Field(description="Time at which the identification was created.")
+    updated_at: int = Field(description="Time at which the identification was last updated.")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserIdentificationCreate(BaseModel):
+    type: str = Field(
+        description="Identification type key. Must be a known type from the core registry.",
+        examples=["trn", "passport", "drivers_license"],
+    )
+    value: str = Field(description="Raw identification value. Normalized and validated server-side.")
+    country_code: str | None = Field(
+        default=None,
+        description="ISO 3166-1 alpha-2 country code override. Defaults to the type's registered country.",
+    )
+
+
+class UserIdentificationUpdate(BaseModel):
+    value: str = Field(
+        description="Replacement raw identification value. Normalized and validated server-side. "
+        "Resets verification state."
+    )
+    country_code: str | None = Field(
+        default=None,
+        description="ISO 3166-1 alpha-2 country code override. Omit to keep the current value.",
+    )
+
+
+class UserIdentificationDeleteResponse(BaseModel):
+    object: Literal["user_identification"] = "user_identification"
+    id: str
+    deleted: bool = True
+
+
+class UserIdentificationDiscloseRequest(BaseModel):
+    organization_id: str = Field(description="ID of the requesting organization.")
+    app_slug: str = Field(description="Slug of the requesting app.", examples=["876-couriers"])
+    reason: str | None = Field(
+        default=None,
+        description="Optional reason recorded on the audit event for this disclosure.",
+    )
+
+
+class UserIdentificationDisclosureResponse(BaseModel):
+    object: Literal["user_identification_disclosure"] = Field(
+        default="user_identification_disclosure",
+        description="String representing the object's type. Always 'user_identification_disclosure'.",
+    )
+    type: str = Field(description="Identification type key.")
+    value: str = Field(
+        description="The full, unmasked identification value. Only ever returned by this endpoint."
+    )
+    country_code: str | None = Field(
+        default=None, description="ISO 3166-1 alpha-2 country code, if applicable."
+    )
+    verified: bool = Field(description="Whether this identification has been verified.")
+    disclosed_at: int = Field(description="Unix timestamp when this disclosure was made and audit-logged.")
+
+
+class UserIdentificationVerifyRequest(BaseModel):
+    verified_by: str = Field(description="Opaque actor id recorded as the verifier.")

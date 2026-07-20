@@ -8,19 +8,28 @@ from sqlalchemy.orm import joinedload
 from core.config import get_settings
 from core.errors import AppHTTPException
 from core.id import generate_id, generate_platform_owner_user_id
+from core.identifications import (
+    IDENTIFICATION_TYPES,
+    is_valid_identification_value,
+    mask_identification_value,
+    normalize_identification_value,
+)
 from core.logging import get_logger
 from core.responses import ListObject
 from core.security import AdminDep, SessionDep
 from core.timestamps import now_unix_seconds
 from db.models import Feature, Membership, OauthGrant, User, UserFeature, UserProfile
 from db.repositories.addresses import AddressRepository
+from db.repositories.audit_events import AuditEventRepository
 from db.repositories.memberships import MembershipRepository
 from db.repositories.reserved_usernames import ReservedUsernameRepository
 from db.repositories.sessions import SessionRepository
+from db.repositories.subscriptions import SubscriptionRepository
 from db.repositories.user_accounts import UserAccountRepository
 from db.repositories.user_app_enrollments import UserAppEnrollmentRepository
 from db.repositories.user_contacts import UserContactRepository
 from db.repositories.user_features import UserFeatureRepository
+from db.repositories.user_identifications import UserIdentificationRepository
 from db.repositories.users import UserRepository
 from db.session import get_db
 from domains.addresses.schemas import AddressDeleteResponse, AddressResponse
@@ -50,6 +59,13 @@ from domains.users.schemas import (
     UserCreate,
     UserDeleteResponse,
     UserEnsureRequest,
+    UserIdentificationCreate,
+    UserIdentificationDeleteResponse,
+    UserIdentificationDiscloseRequest,
+    UserIdentificationDisclosureResponse,
+    UserIdentificationResponse,
+    UserIdentificationUpdate,
+    UserIdentificationVerifyRequest,
     UsernameAvailabilityResponse,
     UserOAuthGrantRevokeResponse,
     UserResponse,
@@ -209,6 +225,22 @@ def _serialize_consumer_contact(row: Any) -> ConsumerContactResponse:
         contact_user=_serialize_contact_user(row.contact_user),
         nickname=row.nickname,
         notes=row.notes,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
+def _serialize_user_identification(row: Any) -> UserIdentificationResponse:
+    config = IDENTIFICATION_TYPES.get(row.type)
+    return UserIdentificationResponse(
+        id=row.id,
+        user_id=row.user_id,
+        type=row.type,
+        label=config.label if config else row.type,
+        country_code=row.country_code,
+        value_masked=mask_identification_value(row.value),
+        verified=row.verified,
+        verified_at=row.verified_at,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -1978,3 +2010,295 @@ async def revoke_user_sessions(
     revoked = await SessionRepository(db).delete_all_for_user(user_id)
     logger.info("users.revoke_sessions", user_id=user_id, sessions_revoked=revoked)
     return UserSessionRevokeResponse(user_id=user_id, sessions_revoked=revoked)
+
+
+# ---------------------------------------------------------------------------
+# Identifications (sensitive verified identifiers, entitlement-gated)
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/{user_id}/identifications",
+    response_model=ListObject[UserIdentificationResponse],
+    status_code=status.HTTP_200_OK,
+    summary=docs.LIST_USER_IDENTIFICATIONS_SUMMARY,
+    description=docs.LIST_USER_IDENTIFICATIONS_DESCRIPTION,
+    responses=docs.LIST_USER_IDENTIFICATIONS_RESPONSES,
+)
+async def list_user_identifications(
+    user_id: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ListObject[UserIdentificationResponse]:
+    await _require_user(db, user_id)
+    rows = await UserIdentificationRepository(db).list_by_user(user_id)
+    return ListObject[UserIdentificationResponse](
+        data=[_serialize_user_identification(row) for row in rows],
+        has_more=False,
+        url=f"/users/{user_id}/identifications",
+        total_count=len(rows),
+    )
+
+
+@router.post(
+    "/{user_id}/identifications",
+    response_model=UserIdentificationResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary=docs.CREATE_USER_IDENTIFICATION_SUMMARY,
+    description=docs.CREATE_USER_IDENTIFICATION_DESCRIPTION,
+    responses=docs.CREATE_USER_IDENTIFICATION_RESPONSES,
+)
+async def create_user_identification(
+    user_id: str,
+    body: UserIdentificationCreate,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserIdentificationResponse:
+    await _require_user(db, user_id)
+
+    config = IDENTIFICATION_TYPES.get(body.type)
+    if config is None:
+        raise AppHTTPException(
+            code="identification/unknown-type",
+            message="Unknown identification type.",
+            http_status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        )
+
+    normalized_value = normalize_identification_value(body.type, body.value)
+    if not is_valid_identification_value(body.type, normalized_value):
+        raise AppHTTPException(
+            code="identification/invalid-value",
+            message="The provided value is not valid for this identification type.",
+            http_status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        )
+
+    repo = UserIdentificationRepository(db)
+    existing = await repo.get_by_type(user_id, body.type)
+    if existing:
+        raise AppHTTPException(
+            code="identification/already-exists",
+            message="An identification of this type already exists for this user.",
+            http_status_code=status.HTTP_409_CONFLICT,
+        )
+
+    now = now_unix_seconds()
+    row = await repo.create(
+        id=generate_id("userIdentification"),
+        user_id=user_id,
+        type=body.type,
+        value=normalized_value,
+        country_code=body.country_code if body.country_code is not None else config.country_code,
+        verified=False,
+        verified_at=None,
+        verified_by=None,
+        created_at=now,
+        updated_at=now,
+    )
+    logger.info("users.identifications.create", user_id=user_id, type=body.type)
+    return _serialize_user_identification(row)
+
+
+@router.patch(
+    "/{user_id}/identifications/{type}",
+    response_model=UserIdentificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.UPDATE_USER_IDENTIFICATION_SUMMARY,
+    description=docs.UPDATE_USER_IDENTIFICATION_DESCRIPTION,
+    responses=docs.UPDATE_USER_IDENTIFICATION_RESPONSES,
+)
+async def update_user_identification(
+    user_id: str,
+    type: str,
+    body: UserIdentificationUpdate,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserIdentificationResponse:
+    repo = UserIdentificationRepository(db)
+    existing = await repo.get_by_type(user_id, type)
+    if not existing:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    normalized_value = normalize_identification_value(type, body.value)
+    if not is_valid_identification_value(type, normalized_value):
+        raise AppHTTPException(
+            code="identification/invalid-value",
+            message="The provided value is not valid for this identification type.",
+            http_status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        )
+
+    now = now_unix_seconds()
+    updated = await repo.update_value(
+        existing.id,
+        value=normalized_value,
+        country_code=body.country_code if body.country_code is not None else existing.country_code,
+        verified=False,
+        verified_at=None,
+        verified_by=None,
+        updated_at=now,
+    )
+    if not updated:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+    logger.info("users.identifications.update", user_id=user_id, type=type)
+    return _serialize_user_identification(updated)
+
+
+@router.delete(
+    "/{user_id}/identifications/{type}",
+    response_model=UserIdentificationDeleteResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.DELETE_USER_IDENTIFICATION_SUMMARY,
+    description=docs.DELETE_USER_IDENTIFICATION_DESCRIPTION,
+    responses=docs.DELETE_USER_IDENTIFICATION_RESPONSES,
+)
+async def delete_user_identification(
+    user_id: str,
+    type: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    deleted_by: str | None = None,
+    reason: str | None = None,
+) -> UserIdentificationDeleteResponse:
+    repo = UserIdentificationRepository(db)
+    existing = await repo.get_by_type(user_id, type)
+    if not existing:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    deleted = await repo.delete(existing.id, deleted_by=deleted_by, reason=reason)
+    if not deleted:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+    logger.info("users.identifications.delete", user_id=user_id, type=type)
+    return UserIdentificationDeleteResponse(id=existing.id)
+
+
+@router.post(
+    "/{user_id}/identifications/{type}/disclose",
+    response_model=UserIdentificationDisclosureResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.DISCLOSE_USER_IDENTIFICATION_SUMMARY,
+    description=docs.DISCLOSE_USER_IDENTIFICATION_DESCRIPTION,
+    responses=docs.DISCLOSE_USER_IDENTIFICATION_RESPONSES,
+)
+async def disclose_user_identification(
+    user_id: str,
+    type: str,
+    body: UserIdentificationDiscloseRequest,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserIdentificationDisclosureResponse:
+    identification = await UserIdentificationRepository(db).get_by_type(user_id, type)
+    if not identification:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    config = IDENTIFICATION_TYPES.get(type)
+    if config is None or body.app_slug not in config.disclosure_app_slugs:
+        raise AppHTTPException(
+            code="identification/app-not-entitled",
+            message="This app is not entitled to view this identification type.",
+            http_status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    subscription = await SubscriptionRepository(db).get_by_app_slug(
+        org_id=body.organization_id, app_slug=body.app_slug
+    )
+    if not subscription or subscription.status != "active":
+        raise AppHTTPException(
+            code="identification/subscription-required",
+            message="The requesting organization does not have an active subscription to this app.",
+            http_status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    now = now_unix_seconds()
+    await AuditEventRepository(db).create(
+        id=generate_id("auditEvent"),
+        event="user_identification.disclosed",
+        source="server",
+        app_name=subscription.app.name,
+        app_id=subscription.app.id,
+        user_id=user_id,
+        path=f"/users/{user_id}/identifications/{type}/disclose",
+        search=None,
+        referrer=None,
+        title=None,
+        request_id=None,
+        session_id=None,
+        distinct_id=None,
+        properties={
+            "organization_id": body.organization_id,
+            "app_slug": body.app_slug,
+            "identification_type": type,
+            "reason": body.reason,
+        },
+        created_at=now,
+    )
+    # Never log the raw value — only the fact of disclosure and its context.
+    logger.info(
+        "users.identifications.disclose",
+        user_id=user_id,
+        type=type,
+        organization_id=body.organization_id,
+        app_slug=body.app_slug,
+    )
+
+    return UserIdentificationDisclosureResponse(
+        type=type,
+        value=identification.value,
+        country_code=identification.country_code,
+        verified=identification.verified,
+        disclosed_at=now,
+    )
+
+
+@router.post(
+    "/{user_id}/identifications/{type}/verify",
+    response_model=UserIdentificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.VERIFY_USER_IDENTIFICATION_SUMMARY,
+    description=docs.VERIFY_USER_IDENTIFICATION_DESCRIPTION,
+    responses=docs.VERIFY_USER_IDENTIFICATION_RESPONSES,
+)
+async def verify_user_identification(
+    user_id: str,
+    type: str,
+    body: UserIdentificationVerifyRequest,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserIdentificationResponse:
+    repo = UserIdentificationRepository(db)
+    existing = await repo.get_by_type(user_id, type)
+    if not existing:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    now = now_unix_seconds()
+    updated = await repo.set_verified(existing.id, verified_by=body.verified_by, verified_at=now, updated_at=now)
+    if not updated:
+        raise AppHTTPException(
+            code="identification/not-found",
+            message="No identification of this type exists for this user.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+    logger.info("users.identifications.verify", user_id=user_id, type=type, verified_by=body.verified_by)
+    return _serialize_user_identification(updated)

@@ -73,6 +73,7 @@ ENTITY_PREFIXES = {
     "user": "user",
     "userAppEnrollment": "uae",
     "userFeature": "ufe",
+    "userIdentification": "uident",
     "userProfile": "upr",
     "userSocialProfile": "usp",
 }

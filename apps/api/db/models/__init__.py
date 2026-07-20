@@ -82,6 +82,7 @@ from db.models.users import (
     ReservedUsername,
     User,
     UserEmail,
+    UserIdentification,
     UserMobileNumber,
     UserProfile,
 )
@@ -157,6 +158,7 @@ __all__ = [
     "UserContact",
     "UserEmail",
     "UserFeature",
+    "UserIdentification",
     "UserMobileNumber",
     "UserProfile",
     "UserSocialProfile",
