@@ -166,7 +166,7 @@ Full identity model, API route reference, and package guides live in the `@876/d
 | ---------------- | ----------------------------------------------- | --------------------------------------------------------------- |
 | Docs source      | `apps/docs/content/docs/`                       | Identity model, API route reference, package guides             |
 | OpenAPI snapshot | `apps/docs/openapi.json`                        | Committed; regenerate with `pnpm sync:openapi`                  |
-| Agent rules      | `.claude/rules/` (mirrored in `.agents/rules/`) | Code style, data fetching, API backend, git, performance, types |
+| Agent rules      | `.claude/rules/` (mirrored in `.agents/rules/` and `.grok/rules/`; Grok omits `cli.md`) | Code style, data fetching, API backend, git, performance, types |
 
 ---
 

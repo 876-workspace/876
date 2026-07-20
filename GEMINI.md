@@ -125,7 +125,7 @@ python -m ruff check .
 
 ## Rules Directory
 
-Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) and are mirrored byte-for-byte into `.agents/rules/` (relative links inside each file point at its own directory) so other agent harnesses — Codex, `agy`, etc., which read `AGENTS.md` — see the same guidance.
+Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) and are mirrored into `.agents/rules/` (full mirror, including `cli.md`) and `.grok/rules/` (same shared rules **except `cli.md`**, which Grok must never read). Relative links inside each mirror point at that mirror’s own directory.
 
 ## Required Context
 

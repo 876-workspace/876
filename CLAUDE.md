@@ -80,18 +80,25 @@ python -m ruff check .
 
 ## Rules Directory
 
-Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) and are mirrored byte-for-byte into `.agents/rules/` (relative links inside each file point at its own directory) so other agent harnesses — Codex, `agy`, etc., which read `AGENTS.md` — see the same guidance. **When you edit a rule, edit both copies** (or run a sync pass) — do not let them drift. See `.claude/rules/implementation-tracker.md` for tracking multi-file work.
+Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) and are mirrored into:
+
+| Mirror            | Audience                                      | Notes                                                                 |
+| ----------------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| `.agents/rules/`  | Codex, `agy`, Gemini, other non-Claude agents | Full mirror (includes `cli.md`). Relative links use `.agents/rules/`. |
+| `.grok/rules/`    | Grok                                          | Same shared rules **except `cli.md`** (never present). Grok-only extras: `00-grok.md`, `agents.md`, `advisor.md` (and `.grok/skills/advisor/`). Relative links use `.grok/rules/`. |
+
+**When you edit a shared rule, update all three trees** (or run a sync pass) — do not let them drift. Do **not** copy `cli.md` into `.grok/rules/` (Grok must never read that file). Do **not** copy `advisor.md` into `.claude/rules/` or `.agents/rules/` — advisor is Grok-only. See `.claude/rules/implementation-tracker.md` for tracking multi-file work.
 
 `.claude/rules/performance.md` is a short index; it links out to eight category files (`performance-waterfalls.md`, `performance-bundle-size.md`, `performance-server-side.md`, `performance-client-fetching.md`, `performance-rerender.md`, `performance-rendering.md`, `performance-js.md`, `performance-advanced.md`). Open only the categories relevant to the change, not the whole set.
 
-See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/`opencode`/Command Code — it defines which model/tool handles which task class (exploration, implementation, design-critical, trivial/docs) and how to invoke each CLI non-interactively.
+See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/`opencode`/Command Code — it defines which model/tool handles which task class (exploration, implementation, design-critical, trivial/docs) and how to invoke each CLI non-interactively. (**Claude Code and non-Grok harnesses only** — Grok must not open `cli.md`.)
 
 ## Required Context
 
 - Read `apps/docs/content/docs/index.mdx` at session start when working on documentation.
 - Read `.claude/rules/performance.md` (index — open only the relevant category file(s)), `.claude/rules/types.md`, `.claude/rules/code-style.md`, and `.claude/rules/data-fetching.md` before editing app code.
 - Read `.claude/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
-- Read `.claude/rules/app-layout.md` and `.claude/rules/toolbar.md` before scaffolding or editing any page in Console, Enterprise, Couriers, or a new sidebar-style app (page containers, list/detail/settings patterns, forms-vs-dialogs, back-links, button labels/colors). These do not apply to `@876/app` (consumer), which has its own layout.
+- Read `.claude/rules/app-layout.md` before scaffolding or editing any page in Console, Enterprise, Couriers, Billing, or a new sidebar-style app (page containers, toolbars, list status filters, list/detail/settings patterns, forms-vs-dialogs, back-links, button labels/colors). These do not apply to `@876/app` (consumer), which has its own layout.
 - Read `.claude/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.claude/rules/api-access.md` before writing any data-fetching code in `apps/876` or `apps/console`.
 - Read `.claude/rules/sdk-conventions.md` before adding or changing any client/data-access method in `@876/sdk`, `@876/admin`, or app data-fetching code (covers the `$876.<resource>.<verb>()` surface, client tiers, and the auth-tier gating rule).
