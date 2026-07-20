@@ -8,7 +8,6 @@ import { createOAuthGrantsResource } from './resources/oauth-grants.ts'
 import { createOrgsResource } from './resources/orgs.ts'
 import { createUsersResource } from './resources/users.ts'
 import { createProductsResource } from './resources/products.ts'
-import { createBillingResource } from './resources/billing.ts'
 import type { ClientOptions } from './types/api.ts'
 import { auth876ClientOptionsSchema } from './types/api.ts'
 
@@ -97,7 +96,6 @@ export function create876Client(options: ClientOptions = {}) {
     orgs: createOrgsResource(runtime),
     users: createUsersResource(runtime),
     products: createProductsResource(runtime),
-    billing: createBillingResource(runtime),
   }
 }
 

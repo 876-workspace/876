@@ -167,7 +167,7 @@ importers:
         version: 9.39.4(jiti@2.7.0)
       eslint-config-next:
         specifier: 16.2.6
-        version: 16.2.6(@typescript-eslint/parser@8.64.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+        version: 16.2.6(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       jsdom:
         specifier: 29.1.1
         version: 29.1.1
@@ -363,6 +363,9 @@ importers:
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      papaparse:
+        specifier: 5.5.4
+        version: 5.5.4
       pg:
         specifier: 8.13.1
         version: 8.13.1
@@ -372,6 +375,9 @@ importers:
       react-dom:
         specifier: 19.2.6
         version: 19.2.6(react@19.2.6)
+      read-excel-file:
+        specifier: 9.3.3
+        version: 9.3.3
       server-only:
         specifier: 0.0.1
         version: 0.0.1
@@ -397,6 +403,9 @@ importers:
       '@types/node':
         specifier: 25.6.2
         version: 25.6.2
+      '@types/papaparse':
+        specifier: 5.5.2
+        version: 5.5.2
       '@types/pg':
         specifier: 8.11.10
         version: 8.11.10
@@ -438,7 +447,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.5
-        version: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
 
   apps/console:
     dependencies:
@@ -947,6 +956,12 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../core
+      papaparse:
+        specifier: 5.5.4
+        version: 5.5.4
+      read-excel-file:
+        specifier: 9.3.3
+        version: 9.3.3
       server-only:
         specifier: 0.0.1
         version: 0.0.1
@@ -957,12 +972,15 @@ importers:
       '@types/node':
         specifier: 25.6.2
         version: 25.6.2
+      '@types/papaparse':
+        specifier: 5.5.2
+        version: 5.5.2
       typescript:
         specifier: 5.9.3
         version: 5.9.3
       vitest:
         specifier: 4.1.5
-        version: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))
 
   packages/core:
     dependencies:
@@ -8287,6 +8305,12 @@ packages:
         integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==,
       }
 
+  '@types/papaparse@5.5.2':
+    resolution:
+      {
+        integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==,
+      }
+
   '@types/pg@8.11.10':
     resolution:
       {
@@ -15584,6 +15608,12 @@ packages:
       }
     hasBin: true
 
+  node-int64@0.4.0:
+    resolution:
+      {
+        integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==,
+      }
+
   node-mock-http@1.0.4:
     resolution:
       {
@@ -16148,6 +16178,12 @@ packages:
     resolution:
       {
         integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==,
+      }
+
+  papaparse@5.5.4:
+    resolution:
+      {
+        integrity: sha512-SwzWD9gl/ElwYLCI0nUja1mFJzjq2D8ziShfNBa7zCHzkOozeOGDwHWQ+tvCzEZcewecWZ5U7kUopDnG+DFYEQ==,
       }
 
   parallel-transform@1.2.0:
@@ -17147,6 +17183,13 @@ packages:
       }
     engines: { node: '>=0.10.0' }
 
+  read-excel-file@9.3.3:
+    resolution:
+      {
+        integrity: sha512-Eogrq3sqre8IP28bSil9+0yUfZB67o//h5w3R0zdOznkhNAmRJGHz7z38oH8NC5AWO78YG1TXVHGyJZZ2PzZUw==,
+      }
+    engines: { node: '>=18' }
+
   read-package-up@11.0.0:
     resolution:
       {
@@ -17707,6 +17750,13 @@ packages:
         integrity: sha512-6R3J5M4AcbtLUdZmRv2SygeVaM7IhrLXu9BmnOGmmACak8fiUtOsYNWUS4uK7upbmHIBbLBeFeI//477BKLBzA==,
       }
     engines: { node: '>=11.0.0' }
+
+  saxen@11.1.0:
+    resolution:
+      {
+        integrity: sha512-GOxBOAmiWVAytOHBuMlgFMZ4MAk+2Ny5QJpzM9I4IozfPLXq3FsDdIHNviTQGZGIx7G2mBkA+uySiJlYmSU1Gg==,
+      }
+    engines: { node: '>= 20.12' }
 
   saxes@6.0.0:
     resolution:
@@ -19256,6 +19306,13 @@ packages:
         integrity: sha512-4luGP9LMYszMRZwsvyUd9MrxgEGZdZuZgpVQHEEX0lCYFESasVRvZd0EYpCkOIbJKHMuv0LskpXc/8Un+MJzEQ==,
       }
     hasBin: true
+
+  unzipper-esm@0.13.2:
+    resolution:
+      {
+        integrity: sha512-lt8GtgDYV8YcAFZNQuLyR2QvHI8C/TstpgsdjUn9ZxiWLJgn+e5uW6DsO3e/HUJVuWD57ZLLFMZ9xk26tePuHQ==,
+      }
+    engines: { node: '>=8.0.0' }
 
   update-browserslist-db@1.2.3:
     resolution:
@@ -24992,6 +25049,10 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
+  '@types/papaparse@5.5.2':
+    dependencies:
+      '@types/node': 25.6.2
+
   '@types/pg@8.11.10':
     dependencies:
       '@types/node': 25.6.2
@@ -25347,7 +25408,7 @@ snapshots:
       '@vitest/mocker': 4.1.5(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
       playwright: 1.61.1
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -25377,7 +25438,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
       ws: 8.21.1
     transitivePeerDependencies:
       - bufferutil
@@ -25415,9 +25476,9 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
     optionalDependencies:
-      '@vitest/browser': 4.1.5(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))(vitest@4.1.5)
+      '@vitest/browser': 4.1.5(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))(vitest@4.1.5)
 
   '@vitest/expect@4.1.5':
     dependencies:
@@ -27159,6 +27220,26 @@ snapshots:
       - eslint-plugin-import-x
       - supports-color
 
+  eslint-config-next@16.2.6(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3):
+    dependencies:
+      '@next/eslint-plugin-next': 16.2.6
+      eslint: 9.39.4(jiti@2.7.0)
+      eslint-import-resolver-node: 0.3.10
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-react: 7.37.5(eslint@9.39.4(jiti@2.7.0))
+      eslint-plugin-react-hooks: 7.1.1(eslint@9.39.4(jiti@2.7.0))
+      globals: 16.4.0
+      typescript-eslint: 8.64.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+    optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@typescript-eslint/parser'
+      - eslint-import-resolver-webpack
+      - eslint-plugin-import-x
+      - supports-color
+
   eslint-import-resolver-node@0.3.10:
     dependencies:
       debug: 3.2.7
@@ -27217,6 +27298,33 @@ snapshots:
       tsconfig-paths: 3.15.0
     optionalDependencies:
       '@typescript-eslint/parser': 8.64.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
+      - supports-color
+
+  eslint-plugin-import@2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0)):
+    dependencies:
+      '@rtsao/scc': 1.1.0
+      array-includes: 3.1.9
+      array.prototype.findlastindex: 1.2.6
+      array.prototype.flat: 1.3.3
+      array.prototype.flatmap: 1.3.3
+      debug: 3.2.7
+      doctrine: 2.1.0
+      eslint: 9.39.4(jiti@2.7.0)
+      eslint-import-resolver-node: 0.3.10
+      eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.64.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
+      hasown: 2.0.4
+      is-core-module: 2.16.2
+      is-glob: 4.0.3
+      minimatch: 3.1.5
+      object.fromentries: 2.0.8
+      object.groupby: 1.0.3
+      object.values: 1.2.1
+      semver: 6.3.1
+      string.prototype.trimend: 1.0.10
+      tsconfig-paths: 3.15.0
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -30095,6 +30203,8 @@ snapshots:
 
   node-gyp-build@4.8.4: {}
 
+  node-int64@0.4.0: {}
+
   node-mock-http@1.0.4: {}
 
   node-releases@2.0.51: {}
@@ -30433,6 +30543,8 @@ snapshots:
       semver: 7.8.5
 
   package-manager-detector@1.6.0: {}
+
+  papaparse@5.5.4: {}
 
   parallel-transform@1.2.0:
     dependencies:
@@ -31050,6 +31162,12 @@ snapshots:
 
   react@19.2.6: {}
 
+  read-excel-file@9.3.3:
+    dependencies:
+      fflate: 0.8.3
+      saxen: 11.1.0
+      unzipper-esm: 0.13.2
+
   read-package-up@11.0.0:
     dependencies:
       find-up-simple: 1.0.1
@@ -31555,6 +31673,8 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   sax@1.6.0: {}
+
+  saxen@11.1.0: {}
 
   saxes@6.0.0:
     dependencies:
@@ -32552,6 +32672,11 @@ snapshots:
       consola: 3.4.2
       pathe: 1.1.2
 
+  unzipper-esm@0.13.2:
+    dependencies:
+      graceful-fs: 4.2.11
+      node-int64: 0.4.0
+
   update-browserslist-db@1.2.3(browserslist@4.28.2):
     dependencies:
       browserslist: 4.28.2
@@ -32785,6 +32910,37 @@ snapshots:
       '@opentelemetry/api': 1.9.1
       '@types/node': 25.6.2
       '@vitest/browser-playwright': 4.1.5(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(playwright@1.61.1)(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))(vitest@4.1.5)
+      '@vitest/coverage-v8': 4.1.5(@vitest/browser@4.1.5)(vitest@4.1.5)
+      jsdom: 29.1.1
+    transitivePeerDependencies:
+      - msw
+
+  vitest@4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0)):
+    dependencies:
+      '@vitest/expect': 4.1.5
+      '@vitest/mocker': 4.1.5(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))
+      '@vitest/pretty-format': 4.1.5
+      '@vitest/runner': 4.1.5
+      '@vitest/snapshot': 4.1.5
+      '@vitest/spy': 4.1.5
+      '@vitest/utils': 4.1.5
+      es-module-lexer: 2.3.1
+      expect-type: 1.4.0
+      magic-string: 0.30.21
+      obug: 2.1.4
+      pathe: 2.0.3
+      picomatch: 4.0.5
+      std-env: 4.2.0
+      tinybench: 2.9.0
+      tinyexec: 1.2.4
+      tinyglobby: 0.2.17
+      tinyrainbow: 3.1.0
+      vite: 8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
+      '@types/node': 25.6.2
+      '@vitest/browser-playwright': 4.1.5(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(playwright@1.61.1)(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.49.0)(tsx@4.20.3)(yaml@2.9.0))(vitest@4.1.5)
       '@vitest/coverage-v8': 4.1.5(@vitest/browser@4.1.5)(vitest@4.1.5)
       jsdom: 29.1.1
     transitivePeerDependencies:

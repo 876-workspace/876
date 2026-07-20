@@ -129,6 +129,63 @@ export type AdminAccount = {
   updated_at: number
 }
 
+/**
+ * A sensitive verified identifier on a user account (Jamaican TRN, passport,
+ * driver's license). Identity data per `.claude/rules/customer-architecture.md`
+ * — the value is always masked here; the full value is only ever returned by
+ * `disclose()`.
+ */
+export type AdminUserIdentification = {
+  object: 'user_identification'
+  id: string
+  user_id: string
+  type: string
+  label: string
+  country_code: string | null
+  value_masked: string
+  verified: boolean
+  verified_at: number | null
+  created_at: number
+  updated_at: number
+}
+
+export type AdminUserIdentificationCreateParams = {
+  type: string
+  value: string
+  country_code?: string | null
+}
+
+export type AdminUserIdentificationUpdateParams = {
+  value: string
+  country_code?: string | null
+}
+
+export type AdminDeletedUserIdentification = {
+  object: 'user_identification'
+  id: string
+  deleted: true
+}
+
+export type AdminUserIdentificationDiscloseParams = {
+  organizationId: string
+  appSlug: string
+  reason?: string | null
+}
+
+/** The full, unmasked value. Only ever returned by `disclose()`. */
+export type AdminUserIdentificationDisclosure = {
+  object: 'user_identification_disclosure'
+  type: string
+  value: string
+  country_code: string | null
+  verified: boolean
+  disclosed_at: number
+}
+
+export type AdminUserIdentificationVerifyParams = {
+  verifiedBy: string
+}
+
 export type AdminConsumerContactCreateParams = {
   contactUserId: string
   nickname?: string | null

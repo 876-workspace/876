@@ -21,12 +21,12 @@ sub-agent routing guidance.
 
 ## What Grok uses instead
 
-| Need                         | Where                                                        |
-| ---------------------------- | ------------------------------------------------------------ |
-| Project overview / commands  | Root `AGENTS.md` and this directory’s `agents.md`            |
-| Coding, API, layout, git, …  | Matching `*.md` files in `.grok/rules/` (not under `.claude`) |
-| Sub-agent / CLI routing      | Use Grok’s built-in tools (`spawn_subagent`, etc.) directly — do not load Claude’s CLI routing table |
-| Optional design advisor      | `.grok/rules/advisor.md` + `/advisor` skill — **Grok only** (not in Claude/agents trees) |
+| Need                        | Where                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Project overview / commands | Root `AGENTS.md` and this directory’s `agents.md`                                                    |
+| Coding, API, layout, git, … | Matching `*.md` files in `.grok/rules/` (not under `.claude`)                                        |
+| Sub-agent / CLI routing     | Use Grok’s built-in tools (`spawn_subagent`, etc.) directly — do not load Claude’s CLI routing table |
+| Optional design advisor     | `.grok/rules/advisor.md` + `/advisor` skill — **Grok only** (not in Claude/agents trees)             |
 
 ## Rule sync (maintainers)
 

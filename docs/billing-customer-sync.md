@@ -5,6 +5,10 @@ customer on the platform Billing tenant. Companion to the Console catalog
 mirror ([catalog sync](billing-catalog-sync.md)) and finance connection outbox
 ([tenant provisioning](tenant-provisioning.md)).
 
+Layering and terminology (Account vs Customer vs profile, EXTERNAL / CORE_USER
+/ CORE_ORGANIZATION, import + link):
+[ADR-009 customer account architecture](architecture/009-customer-account-architecture.md).
+
 Implementation plan: [console-billing-integration](plans/console-billing-integration.md).
 
 ---

@@ -13,13 +13,13 @@ everything else is a **separate bounded context that references identity by ID**
 There are exactly three buckets. Every table, feature, and service is in one of
 them — decide which before writing code.
 
-| Bucket                       | Owner                               | Examples                                                                                                                                         | Reached via                                     |
-| ---------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| **Core identity / platform** | `@876/api` (FastAPI) + its Postgres | users, orgs, memberships, org-roles, features, auth, oauth, geo, legal organization profiles, entitlement plans, `subscriptions`, `audit_events` | `$876` (`@876/sdk` / `@876/admin`)              |
-| **App-local operational**    | the app itself, its own datastore   | Console users (access grants), Console roles, staff notes, Console settings (`import { service } from '@/lib/service'`)                          | imported directly, server-only, inside that app |
-| **Shared platform services** | each its own bounded context + DB   | Billing finance workspaces, future ticketing/disputes, commerce/orders, messaging                                                                | product SDK `<resource>.<verb>()`, auth-tiered  |
+| Bucket                       | Owner                               | Examples                                                                                                                                                                                                                                                                     | Reached via                                     |
+| ---------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **Core identity / platform** | `@876/api` (FastAPI) + its Postgres | users, orgs, memberships, org-roles, features, auth, oauth, geo, addresses, legal organization profiles, `audit_events`, org contacts/locations, `user_identifications` (sensitive PII), directory reference data, entitlement plans, `subscriptions` (org→app entitlements) | `$876` (`@876/sdk` / `@876/admin`)              |
+| **App-local operational**    | the app itself, its own datastore   | Console users (access grants), Console roles, staff notes, Console settings (`import { service } from '@/lib/service'`)                                                                                                                                                      | imported directly, server-only, inside that app |
+| **Shared platform services** | each its own bounded context + DB   | Billing finance workspaces, the org-customer registry, future ticketing/disputes, commerce/orders, messaging                                                                                                                                                                 | product SDK `<resource>.<verb>()`, auth-tiered  |
 
-**Concrete instance: org → platform-app provisioning.** `subscriptions` is the entitlement table controlling which orgs can access which 876 platform apps. It lives in the core identity API — not any single app's datastore — because it is cross-cutting: Couriers reads it to gate dashboard access, Console reads and writes it to provision/block orgs, and future apps follow the same pattern. Product access is independent of any app-local tenant row.
+**Concrete instance: org → platform-app provisioning.** `subscriptions` (the `Subscription` model — the table was renamed from `organization_app_access` by migration) is the entitlement table controlling which orgs can access which 876 platform apps. It lives in the core identity API — not any single app's datastore — because it is cross-cutting: the couriers app reads it to gate dashboard access, Console reads and writes it to provision/block orgs, and future apps follow the same pattern. The pattern: API owns the table + `AdminDep` endpoints under `domains/organizations/`; apps gate via `$876.orgs.subscriptions.retrieveBySlug` (Console/admin tier) or `platform.orgs.subscriptions.retrieveBySlug` (product-app platform client) in their `ManageContext`; new-org sign-up auto-provisions in `auth/complete` when `source=register` is set; Console provides provision/block controls via its own route handlers. Product access is independent of any app-local tenant row.
 
 **Concrete instance: embedded finance.** A finance-dependent app declares that
 dependency and its narrow scopes in its provisioning profile. Billing may then
@@ -45,10 +45,13 @@ retain fallback customer, catalog, invoice, payment, account, or ledger tables.
    app's datastore (it isn't local to one app).
 
 > Watch for the trap: "only Console touches it today" does **not** make
-> something Console-local. `vendors`, `org_customers`, and `org_locations` are only
-> surfaced in Console today but are **org-owned business data** — they stay in core
-> until an org-facing service owns them. Admin-console-internal means _no other
-> surface could ever own it_, like the Console user roster (access grants).
+> something Console-local. `org_locations` and `org_contacts` started
+> Console-surfaced but are **org-owned business data** — they live in core (and
+> now also have `SessionDep` routes + `@876/sdk` methods). Admin-console-internal
+> means _no other surface could ever own it_, like the Console user roster
+> (access grants). Note: org-owned **customers** are the deliberate exception —
+> they live in the org-customer registry (the Billing app), not core; see
+> `customer-architecture.md` for the layering and the extraction criteria.
 
 ## The cross-service contract: reference by ID, resolve through the client
 
@@ -57,9 +60,10 @@ the opaque 876 identifiers it needs (`user_…`, `org_…`, `app_…`) as plain
 columns — no FK, no join across databases — and resolves the human details
 (name, email, org slug, avatar) at read time through `$876`.
 
-- Precedent already in the codebase: `org_customers.customer_id` is a
-  polymorphic ID with **no** FK constraint. Every cross-service reference follows
-  that shape.
+- Precedent already in the codebase: `billing_customers.user_id` /
+  `billing_customers.organization_id` (Billing app) and couriers'
+  `CourierCustomerProfile.userId` / `Tenant.orgId` are opaque 876 IDs with
+  **no** FK constraint. Every cross-service reference follows that shape.
 - Console's in-app Prisma datastore is the first instance: the `team` resource (Console members, keyed by the opaque 876 user ID) holds
   a core 876 user ID; Console authorizes off its own access grants and role catalog, then
   calls `$876` to read or mutate the actual identity record.
@@ -140,10 +144,8 @@ When ticketing is built, it slots into all four without rework.
       server-side behind a route handler that authorizes first.
 - [ ] If a new shared service: exposed through `$876.<resource>.<verb>()`,
       auth-tiered, with per-tier serializers — not bespoke wrappers.
-- [ ] If gating an app to specific orgs: use the Core `subscriptions` /
-      entitlement pattern (not `OrgFeature`); gate in the app's private layout
-      through the canonical platform client and provision through the app's
-      authenticated onboarding flow.
+- [ ] If gating an app to specific orgs: use the `subscriptions` provisioning pattern (not `OrgFeature`); gate in the app's `ManageContext` / private layout via `$876.orgs.subscriptions.retrieveBySlug` (admin) / `platform.orgs.subscriptions.retrieveBySlug` (platform client); auto-provision through the app's authenticated onboarding flow (`auth/complete` with `source=` param).
 - [ ] If the app needs money operations: declare an embedded finance dependency,
       grant only required scopes, and keep paid Billing access as a separate Core
       entitlement.
+- [ ] If touching customer, customer-profile, or sensitive-identifier data: follow `customer-architecture.md` (three-layer model, registry linkage, entitlement-gated disclosure).

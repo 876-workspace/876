@@ -4,11 +4,14 @@ from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
+    CheckConstraint,
     ForeignKey,
+    Index,
     String,
     Text,
     UniqueConstraint,
 )
+from sqlalchemy import text as sa_text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.models.base import Base
@@ -75,6 +78,9 @@ class User(Base):
     )
     social_profiles: Mapped[list["UserSocialProfile"]] = relationship("UserSocialProfile", back_populates="user")
     sso_identities: Mapped[list["SsoIdentity"]] = relationship("SsoIdentity", back_populates="user")
+    identifications: Mapped[list["UserIdentification"]] = relationship(
+        "UserIdentification", back_populates="user"
+    )
 
 
 class UserProfile(Base):
@@ -172,6 +178,56 @@ class UserMobileNumber(Base):
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="mobile_numbers")
+
+
+class UserIdentification(Base):
+    """A sensitive verified identifier on a user account (Jamaican TRN,
+    passport, driver's license — see `core/identifications.py` for the type
+    registry). Identity data per `.claude/rules/customer-architecture.md`:
+    stored once on the account, never duplicated into an app datastore.
+
+    `value` is the normalized raw value. Every read path outside the
+    dedicated disclosure endpoint must serialize the masked form only
+    (`core.identifications.mask_identification_value`) — never this column
+    directly.
+    """
+
+    __tablename__ = "user_identifications"
+    __table_args__ = (
+        # Partial (not table-wide) unique index scoped to non-deleted rows, so
+        # a soft-deleted identification does not block re-adding the same
+        # type later (precedent: `provisioning_manifest_revisions`'s
+        # `uq_provisioning_manifest_revisions_draft`/`_published` indexes).
+        Index(
+            "uq_user_identifications_user_type_active",
+            "user_id",
+            "type",
+            unique=True,
+            postgresql_where=sa_text("deleted_at IS NULL"),
+        ),
+        CheckConstraint(
+            "type IN ('trn', 'passport', 'drivers_license')",
+            name="user_identifications_type_check",
+        ),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    type: Mapped[str] = mapped_column(String, nullable=False)
+    value: Mapped[str] = mapped_column(String, nullable=False)
+    country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    verified: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+    verified_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    verified_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    deleted_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    deleted_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    deletion_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
+    user: Mapped["User"] = relationship("User", back_populates="identifications")
 
 
 class ReservedUsername(Base):

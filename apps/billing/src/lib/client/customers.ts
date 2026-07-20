@@ -2,10 +2,15 @@ import type {
   CustomerCreated,
   CustomerCreateInput,
   CustomerDeleted,
+  CustomerLinkInput,
   CustomerResource,
   CustomerUpdated,
   CustomerUpdateInput,
 } from '@/types/customer'
+import type {
+  CustomerImportRawRow,
+  CustomerImportResult,
+} from '@/types/customer-import'
 
 import { request } from './request'
 
@@ -40,9 +45,35 @@ const deleteCustomer = (customerId: string) =>
     }
   )
 
+const importCustomers = (rows: CustomerImportRawRow[]) =>
+  request<CustomerImportResult>('/api/v1/customers/import', {
+    method: 'POST',
+    body: JSON.stringify({ rows }),
+  })
+
+const link = (customerId: string, params: CustomerLinkInput) =>
+  request<CustomerUpdated>(
+    `/api/v1/customers/${encodeURIComponent(customerId)}/link`,
+    {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }
+  )
+
+const unlink = (customerId: string) =>
+  request<CustomerUpdated>(
+    `/api/v1/customers/${encodeURIComponent(customerId)}/unlink`,
+    {
+      method: 'POST',
+    }
+  )
+
 export const customers = {
   create,
   retrieve,
   update,
   delete: deleteCustomer,
+  import: importCustomers,
+  link,
+  unlink,
 }

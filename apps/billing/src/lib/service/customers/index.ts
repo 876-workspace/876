@@ -7,6 +7,8 @@ import { create } from './create'
 import { account } from './account'
 import { deleteCustomer } from './delete'
 import { ensure } from './ensure'
+import { importCustomers } from './import'
+import { link } from './link'
 import {
   listCustomerPage,
   listCustomers,
@@ -15,6 +17,7 @@ import {
 } from './list'
 import { retrieve } from './retrieve'
 import { recordOpeningBalance } from './opening-balance'
+import { unlink } from './unlink'
 import { update } from './update'
 
 export const customers = {
@@ -23,6 +26,8 @@ export const customers = {
   create,
   delete: deleteCustomer,
   ensure,
+  import: importCustomers,
+  link,
   list: listCustomers,
   listDocumentRecipients,
   listPage: listCustomerPage,
@@ -32,5 +37,6 @@ export const customers = {
   resolveOrgOwner,
   syncOrgOwnerContact,
   retrieve,
+  unlink,
   update,
 }

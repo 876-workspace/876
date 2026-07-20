@@ -449,3 +449,112 @@ REVOKE_USER_SESSIONS_RESPONSES: dict = {
         "description": "No user found with this ID.",
     },
 }
+
+# ---------------------------------------------------------------------------
+# Identifications (sensitive verified identifiers, entitlement-gated)
+# ---------------------------------------------------------------------------
+
+LIST_USER_IDENTIFICATIONS_SUMMARY = "List user identifications"
+LIST_USER_IDENTIFICATIONS_DESCRIPTION = """
+Returns a user's identification records (TRN, passport, driver's license).
+Values are always masked here — the full value is only ever returned by the
+dedicated `/disclose` endpoint. **Admin only**.
+"""
+LIST_USER_IDENTIFICATIONS_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "No user found with this ID.",
+    },
+}
+
+CREATE_USER_IDENTIFICATION_SUMMARY = "Create user identification"
+CREATE_USER_IDENTIFICATION_DESCRIPTION = """
+Adds a verified identifier to a user's account. The value is normalized
+(whitespace/dashes stripped; TRN keeps digits only, other types uppercase)
+and validated against the type's pattern before storage. Returns the masked
+value only. **Admin only**.
+"""
+CREATE_USER_IDENTIFICATION_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "No user found with this ID.",
+    },
+    status.HTTP_409_CONFLICT: {
+        "model": ErrorEnvelope,
+        "description": "An identification of this type already exists for this user.",
+    },
+    status.HTTP_422_UNPROCESSABLE_CONTENT: {
+        "model": ErrorEnvelope,
+        "description": "Unknown identification type, or the value does not match the type's pattern.",
+    },
+}
+
+UPDATE_USER_IDENTIFICATION_SUMMARY = "Update user identification"
+UPDATE_USER_IDENTIFICATION_DESCRIPTION = """
+Replaces the value of an existing identification and resets its verification
+state (`verified` back to `false`, `verified_at`/`verified_by` cleared).
+**Admin only**.
+"""
+UPDATE_USER_IDENTIFICATION_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "No identification of this type exists for this user.",
+    },
+    status.HTTP_422_UNPROCESSABLE_CONTENT: {
+        "model": ErrorEnvelope,
+        "description": "Unknown identification type, or the value does not match the type's pattern.",
+    },
+}
+
+DELETE_USER_IDENTIFICATION_SUMMARY = "Delete user identification"
+DELETE_USER_IDENTIFICATION_DESCRIPTION = """
+Deletes an identification record. Follows the platform deletion policy
+(`DELETION_MODE`) — soft-deleted in production, hard-deleted in development.
+Returns a deletion tombstone. **Admin only**.
+"""
+DELETE_USER_IDENTIFICATION_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "No identification of this type exists for this user.",
+    },
+}
+
+DISCLOSE_USER_IDENTIFICATION_SUMMARY = "Disclose user identification"
+DISCLOSE_USER_IDENTIFICATION_DESCRIPTION = """
+Returns the full, unmasked identification value. `POST` (not `GET`) because
+this has an audit side effect. Enforcement, in order:
+
+1. The identification exists.
+2. `app_slug` is declared as needing this identification type in the core
+   entitlement allowlist (`core/identifications.py`).
+3. The requesting organization holds an **active** subscription to that app.
+4. An audit event is written (organization id, app slug, identification
+   type, user id, reason — never the value).
+
+**Admin only**.
+"""
+DISCLOSE_USER_IDENTIFICATION_RESPONSES: dict = {
+    status.HTTP_403_FORBIDDEN: {
+        "model": ErrorEnvelope,
+        "description": (
+            "The app is not entitled to this identification type, or the organization does not "
+            "have an active subscription to the app."
+        ),
+    },
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "No identification of this type exists for this user.",
+    },
+}
+
+VERIFY_USER_IDENTIFICATION_SUMMARY = "Verify user identification"
+VERIFY_USER_IDENTIFICATION_DESCRIPTION = """
+Marks an identification as verified, recording the verifying actor and the
+verification timestamp. **Admin only**.
+"""
+VERIFY_USER_IDENTIFICATION_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "No identification of this type exists for this user.",
+    },
+}

@@ -33,6 +33,8 @@ type DropdownAction = {
   label: string
   icon?: DropdownActionIcon
   onClick?: () => void
+  /** Navigate to this URL when clicked (serializable — usable from server components). */
+  href?: string
   /** Render a separator above this item. */
   separator?: boolean
   /** Render in destructive/red style. */
@@ -150,6 +152,9 @@ export function ResourceToolbar({
                     <DropdownMenuItem
                       variant={action.destructive ? 'destructive' : 'default'}
                       onClick={action.onClick}
+                      render={
+                        action.href ? <Link href={action.href} /> : undefined
+                      }
                     >
                       {Icon && <Icon className="size-4" />}
                       {action.label}

@@ -474,6 +474,18 @@ async def _ensure_billing_customer_outbox_table(engine: object) -> None:
         )
 
 
+async def _ensure_user_identifications_table(engine: object) -> None:
+    """Create the user_identifications table (sensitive verified identifiers)."""
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[Base.metadata.tables["user_identifications"]],
+                checkfirst=True,
+            )
+        )
+
+
 async def _ensure_subscription_items_table(engine: object) -> None:
     """Create the subscription_items table (line items on a subscription)."""
     async with engine.begin() as conn:  # type: ignore[attr-defined]
@@ -638,6 +650,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 ("platform_plan_modules", seed_platform_plan_modules),
                 ("billing_plan_assignments", backfill_billing_plan_assignments),
                 ("org_access_backfill", _backfill_org_access),
+                ("user_identifications", _ensure_user_identifications_table),
             )
             logger.info("db.seed.started")
             for step_name, step_fn in steps:

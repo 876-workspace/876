@@ -173,14 +173,3 @@ export type {
   ProductResult,
   ProductListResult,
 } from './types/products.ts'
-export type {
-  SubscriptionItem,
-  Subscription,
-  SubscriptionList,
-  BillingAccount,
-  BillingAccountList,
-  SubscriptionResult,
-  SubscriptionListResult,
-  BillingAccountResult,
-  BillingAccountListResult,
-} from './types/billing.ts'
