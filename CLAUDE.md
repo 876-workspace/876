@@ -103,6 +103,7 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 - Read `.claude/rules/api-access.md` before writing any data-fetching code in `apps/876` or `apps/console`.
 - Read `.claude/rules/sdk-conventions.md` before adding or changing any client/data-access method in `@876/sdk`, `@876/admin`, or app data-fetching code (covers the `$876.<resource>.<verb>()` surface, client tiers, and the auth-tier gating rule).
 - Read `.claude/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).
+- Read `.claude/rules/customer-architecture.md` before modeling, storing, importing, linking, or disclosing customer, customer-profile, account-linkage, or sensitive-identifier (TRN/passport) data in any app (fixed terminology + the identity/relationship/app-profile layering).
 - Read `.claude/rules/git.md` before committing, branching, or opening a PR (Conventional Commits, atomic-commit granularity, no AI commit attribution, branch from `main`).
 - For Next.js routing/rendering/config/metadata/proxy changes, read the matching local guide in `node_modules/next/dist/docs/` first.
 
