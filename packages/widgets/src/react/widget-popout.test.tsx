@@ -141,28 +141,48 @@ describe('Widget popout panel', () => {
     })
   })
 
-  it('clamps an xl floating panel to the viewport minus rail and gutter', () => {
+  it('clamps an xl floating panel to the viewport minus rail and gutters', () => {
     render(<PanelFixture size="xl" />)
 
     const panel = document.querySelector(
       '[data-slot="widget-panel"]'
     ) as HTMLElement
     expect(panel.style.width).toBe('720px')
-    // rail 52 + gutter 24 * 2 = 100
-    expect(panel.style.maxWidth).toBe('calc(100vw - 100px)')
+    // edge 8*2 + rail 48 + gap 8 = 72
+    expect(panel.style.maxWidth).toBe('calc(100vw - 72px)')
     expect(panel.getAttribute('data-can-dock')).toBe('false')
   })
 
-  it('offsets the floating panel from the rail and trims vertical height', () => {
+  it('renders the icon rail as an in-flow rounded card, not an overlay', () => {
+    render(<PanelFixture />)
+
+    const rail = document.querySelector(
+      '[data-slot="widget-rail"]'
+    ) as HTMLElement
+    // Never fixed/absolute — it reserves real layout space so it can't
+    // overlay the main body. Only the panel is allowed to do that.
+    expect(rail.className).not.toContain('fixed')
+    expect(rail.className).not.toContain('absolute')
+    expect(rail.className).toContain('rounded-2xl')
+    expect(rail.className).toContain('ring-1')
+    expect(rail.className).toContain('mr-2')
+    expect(rail.style.marginTop).toBe('20px')
+    expect(rail.style.marginBottom).toBe('20px')
+  })
+
+  it('offsets the floating panel beside the in-flow rail', () => {
     render(<PanelFixture />)
 
     const panel = document.querySelector(
       '[data-slot="widget-panel"]'
     ) as HTMLElement
-    // rail 52 + gutter 24
-    expect(panel.style.right).toBe('76px')
-    expect(panel.style.top).toBe('74px') // default navbar 64 + inset 10
-    expect(panel.style.bottom).toBe('10px')
+    // edge 8 + rail 48 + gap 8 = 64
+    expect(panel.style.right).toBe('64px')
+    expect(panel.style.top).toBe('84px')
+    expect(panel.style.bottom).toBe('20px')
+    expect(panel.getAttribute('data-presentation')).toBe('popout')
+    expect(panel.className).toContain('fixed')
+    expect(panel.className).toContain('rounded-2xl')
   })
 
   it('uses a minus icon for dock and a panel icon for pop out', async () => {
