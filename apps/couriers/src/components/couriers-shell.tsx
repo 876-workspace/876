@@ -109,9 +109,10 @@ export async function CouriersShell({
 
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
-          {enabledWidgetIds.length > 0 ? (
+          {enabledWidgetIds.length > 0 || uiFeatures.chat ? (
             <SharedWidgetDock
               enabledWidgetIds={enabledWidgetIds}
+              chatEnabled={uiFeatures.chat}
               navbarHeight={64}
             />
           ) : null}

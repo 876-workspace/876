@@ -5,6 +5,7 @@ export interface CouriersFeatures {
     globalAdd: boolean
     appSwitcher: boolean
     orgSwitcher: boolean
+    chat: boolean
   }
   enabledWidgetIds: string[]
 }
