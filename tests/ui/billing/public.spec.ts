@@ -17,8 +17,10 @@ test.describe('Billing public boundary', () => {
   }) => {
     await page.goto('/no-access')
 
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-    await expect(page.getByText('to access 876 Billing')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Sign in to 876 Billing' })
+    ).toBeVisible()
+    await expect(page.getByText('with your 876 account')).toBeVisible()
     await expectNoAccessibilityViolations(page)
     if (browserName === 'chromium')
       await expect(page).toHaveScreenshot('billing-sign-in.png', {
