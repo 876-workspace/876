@@ -144,13 +144,14 @@ Closes #[issue number]
 **Before I commit:**
 
 1. Run `git status` to identify **all** changes: modified, added, deleted, and **untracked** files.
-2. **Run `pnpm format` and `pnpm lint`.** These commands must be run once before starting the commit process to ensure all changed files follow project standards. Re-run them if files are modified during the commit/fixing process.
-3. Run test suite when appropriate for the change. Do not run `pnpm build` unless the user asks for a build, the change affects build behavior, or debugging requires it.
-4. If the change introduces a new subsystem, workflow, public API, or durable operational behavior, add or update the matching project documentation in the same logical change set or in a clearly paired documentation commit.
-5. **Group files into logical commits.** Stage and commit files one group at a time using `git add <path>` per group, then `git commit` with a message specific to those files. Use `git add -A` only when all current changes form a single coherent unit. Documentation/config rule changes must be separate commits from application code.
-6. After each commit, run `git status` again to verify the commit landed and identify remaining unstaged files.
-7. Review the staged diff with `git diff --cached` before each commit.
-8. Write a meaningful commit message scoped to the files in that commit — never a generic catch-all covering unrelated changes.
+2. **Always keep formatting changes.** Never discard, stash away, or leave uncommitted formatting-only diffs — including churn in generated files (e.g. a regenerated Prisma client). Commit them in their own `style(<scope>): ...` commit, separate from functional changes.
+3. **Run `pnpm format` and `pnpm lint`.** These commands must be run once before starting the commit process to ensure all changed files follow project standards. Re-run them if files are modified during the commit/fixing process.
+4. Run test suite when appropriate for the change. Do not run `pnpm build` unless the user asks for a build, the change affects build behavior, or debugging requires it.
+5. If the change introduces a new subsystem, workflow, public API, or durable operational behavior, add or update the matching project documentation in the same logical change set or in a clearly paired documentation commit.
+6. **Group files into logical commits.** Stage and commit files one group at a time using `git add <path>` per group, then `git commit` with a message specific to those files. Use `git add -A` only when all current changes form a single coherent unit. Documentation/config rule changes must be separate commits from application code.
+7. After each commit, run `git status` again to verify the commit landed and identify remaining unstaged files.
+8. Review the staged diff with `git diff --cached` before each commit.
+9. Write a meaningful commit message scoped to the files in that commit — never a generic catch-all covering unrelated changes.
 
 **Before pushing:**
 
