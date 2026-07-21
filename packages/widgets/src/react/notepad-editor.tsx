@@ -370,9 +370,7 @@ export function NotepadEditor({
           aria-live="polite"
           className={cn(
             'min-w-0 flex-1 truncate text-xs',
-            dirty
-              ? 'text-amber-800 dark:text-amber-200'
-              : 'text-muted-foreground'
+            dirty ? 'text-foreground/80' : 'text-muted-foreground'
           )}
         >
           {saving
@@ -393,7 +391,7 @@ export function NotepadEditor({
           onClick={() => setPinned((value) => !value)}
           className={cn(
             pinned
-              ? 'text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200'
+              ? 'text-primary hover:text-primary/80'
               : 'text-muted-foreground'
           )}
         >
