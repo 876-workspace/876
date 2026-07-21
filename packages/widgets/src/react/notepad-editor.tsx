@@ -97,7 +97,6 @@ export function NotepadEditor({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-  const titleRef = useRef<HTMLInputElement>(null)
   const bodyEditorRef = useRef<NotepadBodyEditorHandle>(null)
   const noteIdRef = useRef(noteId)
   const draftRef = useRef<NoteDraft>({ title, body, color, pinned })
@@ -301,11 +300,6 @@ export function NotepadEditor({
     return () => window.clearTimeout(timer)
   }, [title, body, color, pinned, dirty, saving, deleting, isDraft, saveEntry])
 
-  // Auto-focus the title field when creating a new note.
-  useEffect(() => {
-    if (isDraft) titleRef.current?.focus()
-  }, [isDraft])
-
   async function returnToNotes() {
     // saveEntry flushes first and no-ops for empty local drafts, so this
     // never creates an empty server note and never loses a pending keystroke.
@@ -464,8 +458,6 @@ export function NotepadEditor({
         style={colorVars}
       >
         <input
-          ref={titleRef}
-          autoFocus
           aria-label="Note title"
           value={title}
           maxLength={160}
@@ -481,6 +473,7 @@ export function NotepadEditor({
         <NotepadBodyEditor
           ref={bodyEditorRef}
           initialBody={entry.body}
+          autoFocus={isDraft}
           disabled={deleting}
           onChange={setBody}
         />

@@ -17,12 +17,13 @@ export const NotepadBodyEditor = forwardRef<
   NotepadBodyEditorHandle,
   {
     initialBody: string
+    autoFocus?: boolean
     disabled?: boolean
     onChange: (serializedBody: string) => void
     className?: string
   }
 >(function NotepadBodyEditor(
-  { initialBody, disabled = false, onChange, className },
+  { initialBody, autoFocus = false, disabled = false, onChange, className },
   ref
 ) {
   const holderRef = useRef<HTMLDivElement>(null)
@@ -82,7 +83,7 @@ export const NotepadBodyEditor = forwardRef<
       editor = new EditorJSCtor({
         holder: holderRef.current,
         data: parseNoteBody(initialBody),
-        autofocus: false,
+        autofocus: autoFocus,
         placeholder: 'Write something…',
         minHeight: 140,
         readOnly: disabledRef.current,
@@ -153,7 +154,8 @@ export const NotepadBodyEditor = forwardRef<
           }
         })
     }
-    // initialBody is intentionally fixed for this mount; parent remounts per note id.
+    // Initial values are intentionally fixed for this mount; the parent remounts
+    // the editor for each note-editing session.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

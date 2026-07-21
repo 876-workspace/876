@@ -29,9 +29,13 @@ vi.mock('./notepad-body-editor', () => ({
     {
       initialBody: string
       onChange: (value: string) => void
+      autoFocus?: boolean
       disabled?: boolean
     }
-  >(function MockNotepadBodyEditor({ initialBody, onChange, disabled }, ref) {
+  >(function MockNotepadBodyEditor(
+    { initialBody, onChange, autoFocus, disabled },
+    ref
+  ) {
     const bodyRef = useRef(initialBody)
     useImperativeHandle(ref, () => ({
       flush: async () => bodyRef.current,
@@ -40,6 +44,7 @@ vi.mock('./notepad-body-editor', () => ({
     return (
       <textarea
         aria-label="Note body"
+        autoFocus={autoFocus}
         defaultValue={initialBody}
         disabled={disabled}
         onChange={(event) => {
@@ -126,6 +131,7 @@ describe('NotepadEditor', () => {
       ).toBeInTheDocument()
       expect(screen.getByLabelText('Note title')).toHaveValue('Sprint planning')
       expect(screen.getByLabelText('Note body')).toHaveValue(entry.body)
+      expect(screen.getByLabelText('Note body')).not.toHaveFocus()
       expect(screen.getByRole('status')).toHaveTextContent('Saved')
       expect(
         screen.queryByRole('button', { name: 'Save now' })
@@ -144,6 +150,8 @@ describe('NotepadEditor', () => {
       const title = screen.getByLabelText('Note title')
       expect(title).toHaveValue('')
       expect(title).toHaveAttribute('placeholder', 'Untitled note')
+      expect(title).not.toHaveFocus()
+      expect(screen.getByLabelText('Note body')).toHaveFocus()
       expect(screen.getByRole('status')).toHaveTextContent('Draft')
     })
 
