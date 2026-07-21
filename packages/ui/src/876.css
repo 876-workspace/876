@@ -274,9 +274,9 @@
   box-shadow: 1px 0 0 oklch(0 0 0 / 25%);
 }
 
-/* ── Widget dock (in-flow right column) ──────────────────────────────────
-   Sits as a layout sibling of AppShellContent. Rail is a full-height strip;
-   panel expands beside the main body without fixed overlays. */
+/* ── Widget dock ─────────────────────────────────────────────────────────
+   Default (popout): floating rounded rail + panel cards over the body.
+   Docked: in-flow full-height rail strip + panel column beside main. */
 :where(:not(.dark)) [class~='876-widget-rail'] {
   border-color: var(--border-strong);
 }

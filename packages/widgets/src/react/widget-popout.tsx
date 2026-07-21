@@ -46,7 +46,7 @@ const SIZE_MAP: Record<WidgetPopoutSize, number> = {
 const RAIL_WIDTH_PX = 48
 const RAIL_WIDTH_REM = '3rem'
 /** Inset from the viewport edge for the floating icon rail. */
-const FLOAT_EDGE_GUTTER_PX = 8
+const FLOAT_EDGE_GUTTER_PX = 16
 /** Gap between the floating panel and the floating icon rail. */
 const PANEL_TO_RAIL_GUTTER_PX = 8
 /**
@@ -62,11 +62,15 @@ const MIN_MAIN_COLUMN_WIDTH_PX = 600
  * through the rail or panel.
  */
 const FLOATING_CARD_CHROME = [
-  'rounded-2xl border border-876-surface-border bg-876-surface dark:bg-sidebar',
+  // Same elevated surface step in both themes — `dark:bg-sidebar` sat too
+  // close to the dark canvas, visually collapsing the card gaps/padding.
+  'rounded-2xl border border-876-surface-border bg-876-surface',
   'shadow-[0_16px_48px_rgba(0,0,0,0.14),0_2px_12px_rgba(0,0,0,0.06)]',
   'dark:shadow-[0_12px_40px_rgba(0,0,0,0.45),0_2px_10px_rgba(0,0,0,0.25)]',
   'ring-1 ring-black/5 dark:ring-white/10',
 ] as const
+
+export const widgetFloatingCardClass = cn(...FLOATING_CARD_CHROME)
 
 type BeforeDeactivateHandler = () => boolean | void | Promise<boolean | void>
 
@@ -314,37 +318,62 @@ function Root({
   )
 }
 
+/**
+ * Shared chrome for each rail section card (primary + secondary).
+ * In-flow floating cards — reserve real column space, never overlay the body.
+ */
+const RAIL_SECTION_CLASS = cn(
+  '876-widget-rail flex min-h-0 flex-col items-center gap-1',
+  'overflow-y-auto overscroll-contain p-1',
+  '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+  ...FLOATING_CARD_CHROME
+)
+
+/**
+ * Icon rail: floating card(s) — primary (top) for widget triggers, and
+ * optionally the 876 Chat card below (35%) when `chat` is provided.
+ */
 const Rail = memo(function Rail({
   className,
+  chat,
   children,
 }: {
   className?: string
+  /** 876 Chat rail card (bottom, 35%). When absent the widgets card fills the rail. */
+  chat?: ReactNode
+  /** Top card content — widget icon triggers. */
   children: ReactNode
 }) {
   const { side } = useWidgetPopout()
 
   return (
-    <nav
+    <div
       data-slot="widget-rail"
-      aria-label="Widgets"
       className={cn(
-        // Floating rounded card, but laid out in-flow so it reserves real
-        // column space and never overlays the body — only the panel does.
-        '876-widget-rail flex shrink-0 flex-col items-center gap-1',
-        'overflow-y-auto overscroll-contain p-1',
-        '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
-        ...FLOATING_CARD_CHROME,
-        side === 'right' ? 'mr-2' : 'ml-2',
+        'flex shrink-0 flex-col gap-2',
+        // Match FLOAT_EDGE_GUTTER_PX so the rail sits off the screen edge.
+        side === 'right' ? 'mr-4' : 'ml-4',
         className
       )}
       style={{
         width: RAIL_WIDTH_REM,
         marginTop: FLOAT_VERTICAL_INSET_PX,
         marginBottom: FLOAT_VERTICAL_INSET_PX,
+        height: `calc(100% - ${FLOAT_VERTICAL_INSET_PX * 2}px)`,
       }}
     >
-      {children}
-    </nav>
+      <nav
+        data-slot="widget-rail-primary"
+        aria-label="Widgets"
+        className={cn(
+          RAIL_SECTION_CLASS,
+          chat ? 'flex-[65] basis-0' : 'flex-1'
+        )}
+      >
+        {children}
+      </nav>
+      {chat}
+    </div>
   )
 })
 
