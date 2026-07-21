@@ -65,8 +65,9 @@ const FLOATING_CARD_CHROME = [
   // Same elevated surface step in both themes — `dark:bg-sidebar` sat too
   // close to the dark canvas, visually collapsing the card gaps/padding.
   'rounded-2xl border border-876-surface-border bg-876-surface',
+  // Drop shadow is light-mode only — dark mode relies on border/ring separation.
   'shadow-[0_16px_48px_rgba(0,0,0,0.14),0_2px_12px_rgba(0,0,0,0.06)]',
-  'dark:shadow-[0_12px_40px_rgba(0,0,0,0.45),0_2px_10px_rgba(0,0,0,0.25)]',
+  'dark:shadow-none',
   'ring-1 ring-black/5 dark:ring-white/10',
 ] as const
 
@@ -353,7 +354,7 @@ const Rail = memo(function Rail({
         'flex shrink-0 flex-col gap-2',
         // Match FLOAT_EDGE_GUTTER_PX so the rail sits off the screen edge;
         // the content-side margin keeps the main scrollbar off the rail.
-        side === 'right' ? 'mr-4 ml-3' : 'ml-4 mr-3',
+        side === 'right' ? 'mr-4 ml-3' : 'mr-3 ml-4',
         className
       )}
       style={{
@@ -546,8 +547,9 @@ function Panel({
               isMobile
                 ? [
                     'border-876-surface-border bg-876-surface bottom-0 border',
+                    // Drop shadow is light-mode only — dark mode relies on border.
                     'rounded-t-2xl shadow-[0_-8px_40px_rgba(0,0,0,0.12)]',
-                    'dark:shadow-[0_-6px_28px_rgba(0,0,0,0.35)]',
+                    'dark:shadow-none',
                   ]
                 : FLOATING_CARD_CHROME,
             ],
