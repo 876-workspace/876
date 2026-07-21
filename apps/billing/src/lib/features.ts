@@ -16,6 +16,7 @@ const BILLING_THEME_SWITCHER_SLUG = 'billing_theme_switcher'
 const BILLING_GLOBAL_ADD_SLUG = 'billing_global_add'
 const BILLING_APP_SWITCHER_SLUG = 'billing_app_switcher'
 const BILLING_ORG_SWITCHER_SLUG = 'billing_org_switcher'
+const BILLING_CHAT_SLUG = 'billing_chat'
 const BILLING_SALES_SLUG = 'billing_sales'
 const BILLING_SALES_QUOTES_SLUG = 'billing_sales_quotes'
 const BILLING_SALES_ESTIMATES_SLUG = 'billing_sales_estimates'
@@ -33,6 +34,7 @@ const DEFAULT_UI_FEATURES: BillingUiFeatures = {
   globalAdd: false,
   appSwitcher: false,
   orgSwitcher: false,
+  chat: false,
 }
 
 const DEFAULT_PRODUCT_FEATURES: BillingProductFeatures = {
@@ -91,6 +93,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       globalAdd: enabledSlugs.has(BILLING_GLOBAL_ADD_SLUG),
       appSwitcher: enabledSlugs.has(BILLING_APP_SWITCHER_SLUG),
       orgSwitcher: enabledSlugs.has(BILLING_ORG_SWITCHER_SLUG),
+      chat: enabledSlugs.has(BILLING_CHAT_SLUG),
     },
     productFeatures: {
       sales,

@@ -89,8 +89,11 @@ export async function Shell({
         {/* Navbar spans full content width; dock sits under it beside main. */}
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
-          {features.widgets.notepad ? (
-            <SharedWidgetDock enabledWidgetIds={['notepad']} />
+          {features.widgets.notepad || features.uiFeatures.chat ? (
+            <SharedWidgetDock
+              enabledWidgetIds={features.widgets.notepad ? ['notepad'] : []}
+              chatEnabled={features.uiFeatures.chat}
+            />
           ) : null}
         </AppShellBody>
       </AppShellContent>
