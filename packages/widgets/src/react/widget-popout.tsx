@@ -351,8 +351,9 @@ const Rail = memo(function Rail({
       data-slot="widget-rail"
       className={cn(
         'flex shrink-0 flex-col gap-2',
-        // Match FLOAT_EDGE_GUTTER_PX so the rail sits off the screen edge.
-        side === 'right' ? 'mr-4' : 'ml-4',
+        // Match FLOAT_EDGE_GUTTER_PX so the rail sits off the screen edge;
+        // the content-side margin keeps the main scrollbar off the rail.
+        side === 'right' ? 'mr-4 ml-3' : 'ml-4 mr-3',
         className
       )}
       style={{
