@@ -139,6 +139,12 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "tags": ["widget"],
         },
         {
+            "slug": "couriers_chat",
+            "name": "876 Chat",
+            "description": "Master switch for the 876 Chat rail in Couriers.",
+            "default_enabled": True,
+        },
+        {
             "slug": "couriers_theme_switcher",
             "name": "Theme switcher",
             "description": "Light/dark appearance toggle in the account menu.",
@@ -201,6 +207,12 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "parent_slug": "billing_widgets",
             "tags": ["widget"],
             "legacy_slugs": ["billing_widgets_notes"],
+        },
+        {
+            "slug": "billing_chat",
+            "name": "876 Chat",
+            "description": "Master switch for the 876 Chat rail in Billing.",
+            "default_enabled": True,
         },
         {
             "slug": "billing_sales",
