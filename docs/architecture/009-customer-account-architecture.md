@@ -1,13 +1,13 @@
 # Software Specification: Unified Account, Customer & Identification Architecture
 
-| Field            | Value                                                                 |
-| ---------------- | --------------------------------------------------------------------- |
-| **Document ID**  | ADR-009 / SPEC-CUSTOMER-ARCH                                          |
-| **Status**       | Accepted — implemented on `feature/platform-customer-architecture`    |
-| **Audience**     | Platform engineers, product app authors, security review, agents      |
-| **Primary code** | `apps/api`, `apps/billing`, `packages/admin`, `packages/core/platform`, product apps (e.g. Couriers) |
-| **Agent short form** | `.claude/rules/customer-architecture.md` (mirrored to `.agents/` and `.grok/`) |
-| **Related**      | [ADR-001](001-finance-workspaces-and-billing-entitlements.md), [billing-customer-sync](../billing-customer-sync.md), [platform-services](../../.claude/rules/platform-services.md), [sdk-conventions](../../.claude/rules/sdk-conventions.md) |
+| Field                | Value                                                                                                                                                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Document ID**      | ADR-009 / SPEC-CUSTOMER-ARCH                                                                                                                                                                                                                  |
+| **Status**           | Accepted — implemented on `feature/platform-customer-architecture`                                                                                                                                                                            |
+| **Audience**         | Platform engineers, product app authors, security review, agents                                                                                                                                                                              |
+| **Primary code**     | `apps/api`, `apps/billing`, `packages/admin`, `packages/core/platform`, product apps (e.g. Couriers)                                                                                                                                          |
+| **Agent short form** | `.claude/rules/customer-architecture.md` (mirrored to `.agents/` and `.grok/`)                                                                                                                                                                |
+| **Related**          | [ADR-001](001-finance-workspaces-and-billing-entitlements.md), [billing-customer-sync](../billing-customer-sync.md), [platform-services](../../.claude/rules/platform-services.md), [sdk-conventions](../../.claude/rules/sdk-conventions.md) |
 
 ---
 
@@ -31,35 +31,35 @@ Industry practice supports this split: commercial platforms treat a **Customer**
 
 ### 2.1 Symptoms before this work
 
-| Problem | Effect |
-| ------- | ------ |
-| Terminology drift (“user” / “customer” / “profile” / “account”) | Wrong tables, wrong APIs, wrong agent edits |
-| No fixed placement for “customer” | Couriers profiles, Billing customers, and Core users each partially modeled “the same person” |
-| TRN-like data on app profiles | Multi-copy PII; Billing-only orgs could theoretically access courier-domain IDs; no central audit |
-| Imports without a claim path | CSV parties stuck as forever-orphaned rows or incorrectly auto-accounted |
-| Auth-tier leak | `@876/sdk` exposed a Billing resource that called `AdminDep` endpoints |
+| Problem                                                         | Effect                                                                                            |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Terminology drift (“user” / “customer” / “profile” / “account”) | Wrong tables, wrong APIs, wrong agent edits                                                       |
+| No fixed placement for “customer”                               | Couriers profiles, Billing customers, and Core users each partially modeled “the same person”     |
+| TRN-like data on app profiles                                   | Multi-copy PII; Billing-only orgs could theoretically access courier-domain IDs; no central audit |
+| Imports without a claim path                                    | CSV parties stuck as forever-orphaned rows or incorrectly auto-accounted                          |
+| Auth-tier leak                                                  | `@876/sdk` exposed a Billing resource that called `AdminDep` endpoints                            |
 
 ### 2.2 Goals
 
-| ID | Goal |
-| -- | ---- |
-| G1 | One vocabulary for humans, UI, APIs, and agent rules |
-| G2 | Identity (who you are) never mixed with relationship (who you buy from) or app ops (mailbox, KYC docs) |
-| G3 | Sensitive identifiers stored once; list/UI never shows full value; disclose is gated + audited |
-| G4 | Import never creates accounts; link is the only EXTERNAL → CORE_USER path |
-| G5 | Cross-service references are opaque IDs only (no cross-DB FKs) |
-| G6 | Auth-tier gating: privileged surfaces never land on `@876/sdk` |
+| ID  | Goal                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------ |
+| G1  | One vocabulary for humans, UI, APIs, and agent rules                                                   |
+| G2  | Identity (who you are) never mixed with relationship (who you buy from) or app ops (mailbox, KYC docs) |
+| G3  | Sensitive identifiers stored once; list/UI never shows full value; disclose is gated + audited         |
+| G4  | Import never creates accounts; link is the only EXTERNAL → CORE_USER path                              |
+| G5  | Cross-service references are opaque IDs only (no cross-DB FKs)                                         |
+| G6  | Auth-tier gating: privileged surfaces never land on `@876/sdk`                                         |
 
 ### 2.3 Non-goals (this release)
 
-| ID | Non-goal |
-| -- | -------- |
-| N1 | Couriers TRN column drop / full portal cutover (follow-up) |
-| N2 | Couriers import UI + nullable profile `userId` (follow-up) |
-| N3 | Billing/Console link-unlink UI chrome (API + service ship first) |
-| N4 | Consumer `/users/me/identifications` self-service |
-| N5 | Extracting the registry out of Billing into a standalone CRM service |
-| N6 | Field-level KMS encryption of `user_identifications.value` (revisit trigger) |
+| ID  | Non-goal                                                                     |
+| --- | ---------------------------------------------------------------------------- |
+| N1  | Couriers TRN column drop / full portal cutover (follow-up)                   |
+| N2  | Couriers import UI + nullable profile `userId` (follow-up)                   |
+| N3  | Billing/Console link-unlink UI chrome (API + service ship first)             |
+| N4  | Consumer `/users/me/identifications` self-service                            |
+| N5  | Extracting the registry out of Billing into a standalone CRM service         |
+| N6  | Field-level KMS encryption of `user_identifications.value` (revisit trigger) |
 
 ---
 
@@ -67,14 +67,14 @@ Industry practice supports this split: commercial platforms treat a **Customer**
 
 ### 3.1 Fixed terminology
 
-| Term | Meaning | Lives in | Never call it |
-| ---- | ------- | -------- | ------------- |
-| **Account** | 876 login identity (consumer or enterprise member). One account unlocks every 876 surface. | Core `users` | “customer”, “profile” |
-| **Organization (org)** | Enterprise workspace owned by enterprise accounts. | Core `organizations` | “tenant” (tenant = app-local mirror of an org) |
-| **Customer** | An org’s business relationship with a party. Needs **no** account; may later link to one. | Registry (Layer 2) | “user”, “account” |
-| **Contact** | Person attached to a customer (billing contact, pick-up contact). Optional opaque `userId`. | Registry / app DBs | — |
-| **Customer profile** | App-local operational record (mailbox, branch, event attendee). | Owning app DB (Layer 3) | “customer” (it *references* one) |
-| **Identification** | Sensitive verified ID on an **account** (TRN, passport, driver’s license). | Core `user_identifications` | — |
+| Term                   | Meaning                                                                                     | Lives in                    | Never call it                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------- |
+| **Account**            | 876 login identity (consumer or enterprise member). One account unlocks every 876 surface.  | Core `users`                | “customer”, “profile”                          |
+| **Organization (org)** | Enterprise workspace owned by enterprise accounts.                                          | Core `organizations`        | “tenant” (tenant = app-local mirror of an org) |
+| **Customer**           | An org’s business relationship with a party. Needs **no** account; may later link to one.   | Registry (Layer 2)          | “user”, “account”                              |
+| **Contact**            | Person attached to a customer (billing contact, pick-up contact). Optional opaque `userId`. | Registry / app DBs          | —                                              |
+| **Customer profile**   | App-local operational record (mailbox, branch, event attendee).                             | Owning app DB (Layer 3)     | “customer” (it _references_ one)               |
+| **Identification**     | Sensitive verified ID on an **account** (TRN, passport, driver’s license).                  | Core `user_identifications` | —                                              |
 
 **Directional rules**
 
@@ -127,13 +127,13 @@ User (L1) 0..1──0..1 CourierCustomerProfile (L3)           via opaque userId
 
 The 876 design is intentional inference from common SaaS patterns — not a claim that any vendor uses our schema.
 
-| Pattern | Industry signal | 876 choice |
-| ------- | --------------- | ---------- |
-| Customer ≠ login | Stripe Customer is a commercial party for invoicing/payments, not an IdP principal. | Layer 2 `Customer` independent of Layer 1 `User` |
-| Mask sensitive columns by default | Dynamic data masking / tag-based masking (e.g. Snowflake column policies) return redacted values unless the session/role is entitled. | `value_masked` on all normal reads; raw only on `disclose` |
-| Audit PII access | Cloud logging products treat passport / tax / driver’s license as protectable PII and support access history. | `audit_events` row on every disclosure; **never** log the raw value |
-| Tenant isolation beyond auth | 2026 multi-tenant guidance: auth proves identity; isolation must hold at DB/app boundaries. | Tenant-scoped registry mutations; app must verify relationship before disclose |
-| Idempotent cross-app writes | Outbox + idempotency keys for at-least-once delivery between services. | `sourceIdempotencyKey` / Core `billing_customer_outbox` |
+| Pattern                           | Industry signal                                                                                                                       | 876 choice                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Customer ≠ login                  | Stripe Customer is a commercial party for invoicing/payments, not an IdP principal.                                                   | Layer 2 `Customer` independent of Layer 1 `User`                               |
+| Mask sensitive columns by default | Dynamic data masking / tag-based masking (e.g. Snowflake column policies) return redacted values unless the session/role is entitled. | `value_masked` on all normal reads; raw only on `disclose`                     |
+| Audit PII access                  | Cloud logging products treat passport / tax / driver’s license as protectable PII and support access history.                         | `audit_events` row on every disclosure; **never** log the raw value            |
+| Tenant isolation beyond auth      | 2026 multi-tenant guidance: auth proves identity; isolation must hold at DB/app boundaries.                                           | Tenant-scoped registry mutations; app must verify relationship before disclose |
+| Idempotent cross-app writes       | Outbox + idempotency keys for at-least-once delivery between services.                                                                | `sourceIdempotencyKey` / Core `billing_customer_outbox`                        |
 
 ---
 
@@ -170,11 +170,11 @@ IDENTIFICATION_TYPES: dict[str, IdentificationTypeConfig] = {
 }
 ```
 
-| Helper | Behavior |
-| ------ | -------- |
-| `normalize_identification_value(type, raw)` | Strip whitespace/dashes; TRN → digits only; others → uppercase |
-| `is_valid_identification_value(type, normalized)` | `re.fullmatch` against type pattern; unknown type → `False` |
-| `mask_identification_value(value)` | All but last 3 chars → `•`; length ≤ 3 → fully masked |
+| Helper                                            | Behavior                                                       |
+| ------------------------------------------------- | -------------------------------------------------------------- |
+| `normalize_identification_value(type, raw)`       | Strip whitespace/dashes; TRN → digits only; others → uppercase |
+| `is_valid_identification_value(type, normalized)` | `re.fullmatch` against type pattern; unknown type → `False`    |
+| `mask_identification_value(value)`                | All but last 3 chars → `•`; length ≤ 3 → fully masked          |
 
 ```python
 def mask_identification_value(value: str) -> str:
@@ -227,12 +227,12 @@ class UserIdentification(Base):
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 ```
 
-| Design choice | Why |
-| ------------- | --- |
-| Partial unique on `(user_id, type)` where not deleted | Soft-delete does not block re-adding the same type |
-| Check constraint on `type` | DB rejects unknown types even if API registry drifts |
-| Soft-delete columns | Aligns with `.claude/rules/deletions.md` (`DELETION_MODE`) |
-| `value` never in serializers except disclose | Defense in depth against accidental leaks |
+| Design choice                                         | Why                                                        |
+| ----------------------------------------------------- | ---------------------------------------------------------- |
+| Partial unique on `(user_id, type)` where not deleted | Soft-delete does not block re-adding the same type         |
+| Check constraint on `type`                            | DB rejects unknown types even if API registry drifts       |
+| Soft-delete columns                                   | Aligns with `.claude/rules/deletions.md` (`DELETION_MODE`) |
+| `value` never in serializers except disclose          | Defense in depth against accidental leaks                  |
 
 **Repository:** `apps/api/db/repositories/user_identifications.py` — `get_by_type`, `list_by_user`, `create`, `update_value`, `set_verified`, soft/hard delete.
 
@@ -259,14 +259,14 @@ def _serialize_user_identification(row: Any) -> UserIdentificationResponse:
 
 All routes under `apps/api/domains/users/router.py`. Auth: internal service key (`AdminDep`).
 
-| Method | Path | Response object | Notes |
-| ------ | ---- | --------------- | ----- |
-| `GET` | `/users/{user_id}/identifications` | `list` of `user_identification` | Masked |
-| `POST` | `/users/{user_id}/identifications` | `user_identification` | Normalize + validate; unique type |
-| `PATCH` | `/users/{user_id}/identifications/{type}` | `user_identification` | Replaces value; **resets verification** |
-| `DELETE` | `/users/{user_id}/identifications/{type}` | tombstone | Soft/hard per policy |
-| `POST` | `/users/{user_id}/identifications/{type}/disclose` | `user_identification_disclosure` | Full value |
-| `POST` | `/users/{user_id}/identifications/{type}/verify` | `user_identification` | Sets verified + actor |
+| Method   | Path                                               | Response object                  | Notes                                   |
+| -------- | -------------------------------------------------- | -------------------------------- | --------------------------------------- |
+| `GET`    | `/users/{user_id}/identifications`                 | `list` of `user_identification`  | Masked                                  |
+| `POST`   | `/users/{user_id}/identifications`                 | `user_identification`            | Normalize + validate; unique type       |
+| `PATCH`  | `/users/{user_id}/identifications/{type}`          | `user_identification`            | Replaces value; **resets verification** |
+| `DELETE` | `/users/{user_id}/identifications/{type}`          | tombstone                        | Soft/hard per policy                    |
+| `POST`   | `/users/{user_id}/identifications/{type}/disclose` | `user_identification_disclosure` | Full value                              |
+| `POST`   | `/users/{user_id}/identifications/{type}/verify`   | `user_identification`            | Sets verified + actor                   |
 
 #### Example — create (request / response)
 
@@ -345,14 +345,14 @@ Content-Type: application/json
 
 #### Error codes
 
-| Code | HTTP | When |
-| ---- | ---- | ---- |
-| `identification/unknown-type` | 4xx | Type not in registry |
-| `identification/invalid-value` | 4xx | Fails normalize + pattern |
-| `identification/already-exists` | 4xx | Active row of that type exists |
-| `identification/not-found` | 404 | No active row |
-| `identification/app-not-entitled` | 403 | `app_slug` not in type allowlist |
-| `identification/subscription-required` | 403 | Org lacks **active** subscription to that app |
+| Code                                   | HTTP | When                                          |
+| -------------------------------------- | ---- | --------------------------------------------- |
+| `identification/unknown-type`          | 4xx  | Type not in registry                          |
+| `identification/invalid-value`         | 4xx  | Fails normalize + pattern                     |
+| `identification/already-exists`        | 4xx  | Active row of that type exists                |
+| `identification/not-found`             | 404  | No active row                                 |
+| `identification/app-not-entitled`      | 403  | `app_slug` not in type allowlist              |
+| `identification/subscription-required` | 403  | Org lacks **active** subscription to that app |
 
 ### 5.6 Disclosure algorithm (normative)
 
@@ -419,11 +419,11 @@ async def disclose_user_identification(...):
 
 ### 5.7 Client surface (auth-tier)
 
-| Client package | Call shape | Credential | Who |
-| -------------- | ---------- | ---------- | --- |
-| `@876/admin` | `$876.users.identifications.*` | `x-internal-key` | Console / privileged servers |
-| `@876/core` platform | `platform.users.identifications.*` | platform/service key | Product apps (server-only) |
-| `@876/sdk` | **not present** | — | Browser / consumer must never call |
+| Client package       | Call shape                         | Credential           | Who                                |
+| -------------------- | ---------------------------------- | -------------------- | ---------------------------------- |
+| `@876/admin`         | `$876.users.identifications.*`     | `x-internal-key`     | Console / privileged servers       |
+| `@876/core` platform | `platform.users.identifications.*` | platform/service key | Product apps (server-only)         |
+| `@876/sdk`           | **not present**                    | —                    | Browser / consumer must never call |
 
 #### Admin client usage (Console / internal)
 
@@ -547,15 +547,15 @@ model Customer {
 }
 ```
 
-| `customerType` | Meaning |
-| -------------- | ------- |
-| `EXTERNAL` | Party with no 876 account link (hand-entered or imported) |
-| `CORE_USER` | Linked to opaque `userId` |
-| `CORE_ORGANIZATION` | Linked to opaque `organizationId` (provisioning-owned) |
+| `customerType`      | Meaning                                                   |
+| ------------------- | --------------------------------------------------------- |
+| `EXTERNAL`          | Party with no 876 account link (hand-entered or imported) |
+| `CORE_USER`         | Linked to opaque `userId`                                 |
+| `CORE_ORGANIZATION` | Linked to opaque `organizationId` (provisioning-owned)    |
 
-| `customerKind` | Orthogonal to type |
-| -------------- | ------------------ |
-| `INDIVIDUAL` / `BUSINESS` | Display/tax presentation; independent of EXTERNAL vs CORE_* |
+| `customerKind`            | Orthogonal to type                                            |
+| ------------------------- | ------------------------------------------------------------- |
+| `INDIVIDUAL` / `BUSINESS` | Display/tax presentation; independent of EXTERNAL vs CORE\_\* |
 
 **Snapshots:** For CORE-linked rows, `name` / `email` / etc. are cached; live values come from Layer 1. `coreSyncedAt` tracks last refresh. For EXTERNAL rows, those fields are the data of record.
 
@@ -603,7 +603,11 @@ export async function ensureSharedCoreUserCustomer(
   if (!created.error) return created
 
   // Race: another request created the row first
-  const raceWinner = await findCoreUserCustomer(finance, organizationId, user.id)
+  const raceWinner = await findCoreUserCustomer(
+    finance,
+    organizationId,
+    user.id
+  )
   return raceWinner.data ? raceWinner : created
 }
 ```
@@ -666,9 +670,12 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   const parsed = CustomerImportRequestSchema.safeParse(body)
   if (!parsed.success)
-    return apiError(parsed.error.issues[0]?.message ?? 'Enter valid import rows.', {
-      status: 422,
-    })
+    return apiError(
+      parsed.error.issues[0]?.message ?? 'Enter valid import rows.',
+      {
+        status: 422,
+      }
+    )
 
   const result = await service.customers.import(
     access.context.tenant.id,
@@ -683,8 +690,8 @@ export async function POST(request: Request) {
 
 **Import invariants**
 
-- Never creates accounts  
-- Never links accounts  
+- Never creates accounts
+- Never links accounts
 - Never writes Layer 1 (`user_identifications` or users)
 
 ### 6.5 Link / unlink (claim primitive)
@@ -718,7 +725,10 @@ export async function link(
   if (customer.customerType === 'CORE_USER')
     return err('This customer is already linked to an 876 account.', 422)
   if (customer.customerType === 'CORE_ORGANIZATION')
-    return err('Organization customers cannot be linked to an 876 account.', 422)
+    return err(
+      'Organization customers cannot be linked to an 876 account.',
+      422
+    )
 
   const conflict = await prisma.customer.findFirst({
     where: { tenantId, userId, id: { not: customerId } },
@@ -774,13 +784,13 @@ export async function POST(request: Request, context: Context) {
 }
 ```
 
-| Condition | Status |
-| --------- | ------ |
-| Success | 200 + customer resource |
-| Missing customer | 404 |
-| Wrong type (already linked / org) | 422 |
-| `userId` already used in tenant | 409 |
-| Unique constraint race | 409 |
+| Condition                         | Status                  |
+| --------------------------------- | ----------------------- |
+| Success                           | 200 + customer resource |
+| Missing customer                  | 404                     |
+| Wrong type (already linked / org) | 422                     |
+| `userId` already used in tenant   | 409                     |
+| Unique constraint race            | 409                     |
 
 **Ownership verification is the caller’s job.** Acceptable proofs: verified email match after login, authenticated claim flow, explicit staff action. **Forbidden:** linking solely because two strings of email text match.
 
@@ -788,7 +798,7 @@ export async function POST(request: Request, context: Context) {
 
 Graduate to a standalone directory/CRM service when either:
 
-- ≥ 2 non-billing apps need registry **writes** with non-billing semantics, or  
+- ≥ 2 non-billing apps need registry **writes** with non-billing semantics, or
 - a cross-org consumer view (“all orgs I’m a customer of”) becomes a product surface.
 
 Because apps only hold opaque `billingCustomerId` behind ensure-style APIs, extraction swaps the service behind the contract without rewriting every product schema.
@@ -799,12 +809,12 @@ Because apps only hold opaque `billingCustomerId` behind ensure-style APIs, extr
 
 ### 7.1 Rules
 
-| Rule | Detail |
-| ---- | ------ |
-| Opaque IDs only | `userId`, `billingCustomerId` — no FKs to Core or Billing DBs |
-| Uniqueness | Per app: e.g. `(tenantId, userId)`, `(tenantId, billingCustomerId)` |
+| Rule                         | Detail                                                                |
+| ---------------------------- | --------------------------------------------------------------------- |
+| Opaque IDs only              | `userId`, `billingCustomerId` — no FKs to Core or Billing DBs         |
+| Uniqueness                   | Per app: e.g. `(tenantId, userId)`, `(tenantId, billingCustomerId)`   |
 | Domain attributes stay local | Mailbox number, home branch, commercial flag — never promote to L1/L2 |
-| No shadow PII | Do not store TRN/passport/license on profiles |
+| No shadow PII                | Do not store TRN/passport/license on profiles                         |
 
 ### 7.2 Reference flow — Couriers portal enrollment
 
@@ -924,17 +934,17 @@ disclose(app_slug: '876-couriers') without active couriers subscription
 
 ## 9. Security & compliance notes
 
-| Control | Implementation |
-| ------- | -------------- |
+| Control                | Implementation                                                      |
+| ---------------------- | ------------------------------------------------------------------- |
 | Least privilege (keys) | Publishable/app keys never call `AdminDep`; service key server-only |
-| Mask by default | Serializers use `value_masked` only |
-| Entitlement gate | App allowlist **and** active org→app subscription |
-| Relationship gate | App must verify enrollment before calling disclose |
-| Audit | `user_identification.disclosed` without raw value |
-| Log hygiene | Structured logs omit `value` |
-| Soft delete | Tombstones; partial unique allows re-create |
-| Tenant isolation | All registry mutations filter `tenantId` |
-| Auth-tier surface | No identifications / admin billing on `@876/sdk` |
+| Mask by default        | Serializers use `value_masked` only                                 |
+| Entitlement gate       | App allowlist **and** active org→app subscription                   |
+| Relationship gate      | App must verify enrollment before calling disclose                  |
+| Audit                  | `user_identification.disclosed` without raw value                   |
+| Log hygiene            | Structured logs omit `value`                                        |
+| Soft delete            | Tombstones; partial unique allows re-create                         |
+| Tenant isolation       | All registry mutations filter `tenantId`                            |
+| Auth-tier surface      | No identifications / admin billing on `@876/sdk`                    |
 
 Adding a new identification type checklist:
 
@@ -948,13 +958,13 @@ Adding a new identification type checklist:
 
 ## 10. Testing requirements
 
-| Suite | Path | Covers |
-| ----- | ---- | ------ |
-| API | `apps/api/tests/api/test_user_identifications.py` | Mask on list/create/update; disclose happy path; 403 allowlist; 403 missing/inactive subscription; short-circuit (no subscription query if allowlist fails); audit event shape; verify |
-| Billing import | `apps/billing/src/lib/service/customers/import.test.ts` | Validation, dedup, partial outcomes, EXTERNAL-only |
-| Billing link | `apps/billing/src/lib/service/customers/link.test.ts` | Type guards, conflict 409, race unique constraint |
-| Admin client | `packages/admin/src/resources/users.test.ts` | Paths and bodies for list/create/update/delete/disclose/verify |
-| Couriers enroll | `apps/couriers/src/lib/portal/enroll.test.ts` | Ensure customer + profile; no finance call when profile exists |
+| Suite           | Path                                                    | Covers                                                                                                                                                                                 |
+| --------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API             | `apps/api/tests/api/test_user_identifications.py`       | Mask on list/create/update; disclose happy path; 403 allowlist; 403 missing/inactive subscription; short-circuit (no subscription query if allowlist fails); audit event shape; verify |
+| Billing import  | `apps/billing/src/lib/service/customers/import.test.ts` | Validation, dedup, partial outcomes, EXTERNAL-only                                                                                                                                     |
+| Billing link    | `apps/billing/src/lib/service/customers/link.test.ts`   | Type guards, conflict 409, race unique constraint                                                                                                                                      |
+| Admin client    | `packages/admin/src/resources/users.test.ts`            | Paths and bodies for list/create/update/delete/disclose/verify                                                                                                                         |
+| Couriers enroll | `apps/couriers/src/lib/portal/enroll.test.ts`           | Ensure customer + profile; no finance call when profile exists                                                                                                                         |
 
 Representative API assertion (masking):
 
@@ -979,16 +989,16 @@ async def test_disclose_user_identification_rejects_non_allowlisted_app(...):
 
 ## 11. What shipped (implementation inventory)
 
-| Area | Deliverable |
-| ---- | ----------- |
-| Rules | `customer-architecture.md` in `.claude` / `.agents` / `.grok`; CLAUDE.md registration |
-| Platform-services de-drift | Remove phantom `org_customers`; `subscriptions` naming; client method accuracy |
-| SDK | Removed AdminDep-backed billing resource from `@876/sdk` |
-| Billing import | Service, route, client, wizard UI, tests |
-| Link/unlink | Service, routes, client methods, tests |
-| Identifications | Core registry, model, repo, routes, schemas, tests |
-| Clients | `$876.users.identifications.*` (admin); `platform.users.identifications.*`; platform client resource-factory split |
-| OpenAPI | Regenerated identification endpoints |
+| Area                       | Deliverable                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Rules                      | `customer-architecture.md` in `.claude` / `.agents` / `.grok`; CLAUDE.md registration                              |
+| Platform-services de-drift | Remove phantom `org_customers`; `subscriptions` naming; client method accuracy                                     |
+| SDK                        | Removed AdminDep-backed billing resource from `@876/sdk`                                                           |
+| Billing import             | Service, route, client, wizard UI, tests                                                                           |
+| Link/unlink                | Service, routes, client methods, tests                                                                             |
+| Identifications            | Core registry, model, repo, routes, schemas, tests                                                                 |
+| Clients                    | `$876.users.identifications.*` (admin); `platform.users.identifications.*`; platform client resource-factory split |
+| OpenAPI                    | Regenerated identification endpoints                                                                               |
 
 ### Key paths
 
@@ -1021,15 +1031,15 @@ apps/couriers/src/lib/portal/enroll.ts
 
 ## 12. Alternatives considered
 
-| Alternative | Decision | Why |
-| ----------- | -------- | --- |
-| Core `org_customers` table | Rejected | Customers are commercial relationships, not identity; would bloat Core and fight three-bucket placement |
-| Store TRN on customer/profile | Rejected | Multi-copy PII; no central entitlement/audit; wrong ownership |
-| Auto-create accounts on import | Rejected | Many parties never need login; accounts only via auth |
-| Full ID values for “trusted” list callers | Rejected | Accidental log/UI leaks; mask + dedicated disclose is safer |
-| Identifications on `@876/sdk` | Rejected | `AdminDep` endpoints; auth-tier gating |
-| Couriers import + claim UI in same PR | Deferred | Needs nullable profile `userId`; Billing primitives ship first |
-| Immediate registry extraction from Billing | Deferred | Extraction criteria not yet met; opaque IDs keep future move cheap |
+| Alternative                                | Decision | Why                                                                                                     |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------- |
+| Core `org_customers` table                 | Rejected | Customers are commercial relationships, not identity; would bloat Core and fight three-bucket placement |
+| Store TRN on customer/profile              | Rejected | Multi-copy PII; no central entitlement/audit; wrong ownership                                           |
+| Auto-create accounts on import             | Rejected | Many parties never need login; accounts only via auth                                                   |
+| Full ID values for “trusted” list callers  | Rejected | Accidental log/UI leaks; mask + dedicated disclose is safer                                             |
+| Identifications on `@876/sdk`              | Rejected | `AdminDep` endpoints; auth-tier gating                                                                  |
+| Couriers import + claim UI in same PR      | Deferred | Needs nullable profile `userId`; Billing primitives ship first                                          |
+| Immediate registry extraction from Billing | Deferred | Extraction criteria not yet met; opaque IDs keep future move cheap                                      |
 
 ---
 
@@ -1037,28 +1047,28 @@ apps/couriers/src/lib/portal/enroll.ts
 
 ### Positive
 
-- Shared vocabulary across products and agents  
-- Single home for government IDs with mask-default + audited disclose  
-- EXTERNAL customers first-class; claim path race-safe  
-- Import reference implementation for future app migrations  
-- Couriers enrollment is the Layer 2+3 reference path  
-- Honest auth-tier surface again  
+- Shared vocabulary across products and agents
+- Single home for government IDs with mask-default + audited disclose
+- EXTERNAL customers first-class; claim path race-safe
+- Import reference implementation for future app migrations
+- Couriers enrollment is the Layer 2+3 reference path
+- Honest auth-tier surface again
 
 ### Costs
 
-- Apps must implement relationship checks before disclose  
-- Products depend on Billing integration for registry until extraction  
-- Deprecated couriers TRN column until cutover  
-- Link/unlink API-ready without full staff UI yet  
+- Apps must implement relationship checks before disclose
+- Products depend on Billing integration for registry until extraction
+- Deprecated couriers TRN column until cutover
+- Link/unlink API-ready without full staff UI yet
 
 ### Hard invariants (do not break)
 
-1. Import → `EXTERNAL` only; never creates accounts or Layer 1 rows.  
-2. Link only after ownership verification; never email-equality alone.  
-3. List/retrieve/update/verify responses never include raw identification values.  
-4. Disclose requires allowlisted app **and** active org→app subscription **and** audit event.  
-5. No cross-DB foreign keys between Core, Billing, and product databases.  
-6. No identification (or other `AdminDep`) methods on `@876/sdk`.  
+1. Import → `EXTERNAL` only; never creates accounts or Layer 1 rows.
+2. Link only after ownership verification; never email-equality alone.
+3. List/retrieve/update/verify responses never include raw identification values.
+4. Disclose requires allowlisted app **and** active org→app subscription **and** audit event.
+5. No cross-DB foreign keys between Core, Billing, and product databases.
+6. No identification (or other `AdminDep`) methods on `@876/sdk`.
 7. Logs and audit properties never contain raw identification values.
 
 ---
@@ -1067,17 +1077,17 @@ apps/couriers/src/lib/portal/enroll.ts
 
 ### Planned follow-ups
 
-1. **Couriers TRN cutover** — portal + manage → `user_identifications`; stop R/W on `CourierCustomerProfile.trn`; drop column.  
-2. **Couriers import + `/customers/new`** — nullable `userId` on profile; claim-at-enrollment (verified email → EXTERNAL match → `link`).  
-3. **Link/unlink UI** — Billing customer detail + Console.  
-4. **Consumer self-service** — session-scoped `/users/me/identifications` when `@876/app` resumes.  
+1. **Couriers TRN cutover** — portal + manage → `user_identifications`; stop R/W on `CourierCustomerProfile.trn`; drop column.
+2. **Couriers import + `/customers/new`** — nullable `userId` on profile; claim-at-enrollment (verified email → EXTERNAL match → `link`).
+3. **Link/unlink UI** — Billing customer detail + Console.
+4. **Consumer self-service** — session-scoped `/users/me/identifications` when `@876/app` resumes.
 5. **Registry extraction** — only when §6.6 criteria fire.
 
 ### Revisit triggers
 
-- New identification type (NIS, foreign national ID) — extend registry + constraint; do not invent a parallel store.  
-- Compliance requires field-level encryption / KMS for `value`.  
-- Cross-org consumer “my packages / my invoices” product — still a read model, not a write store.  
+- New identification type (NIS, foreign national ID) — extend registry + constraint; do not invent a parallel store.
+- Compliance requires field-level encryption / KMS for `value`.
+- Cross-org consumer “my packages / my invoices” product — still a read model, not a write store.
 - Second non-billing app needs registry write semantics → extraction design.
 
 ---
@@ -1086,10 +1096,10 @@ apps/couriers/src/lib/portal/enroll.ts
 
 Do **not** conflate:
 
-| Concern | Where | Example |
-| ------- | ----- | ------- |
+| Concern                               | Where                                                                                             | Example                               |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | **Org** legal / tax IDs at onboarding | Onboarding catalog / org business fields ([ADR-004](004-standardized-organization-onboarding.md)) | Company TRN on Companies Office forms |
-| **Person** sensitive IDs | `user_identifications` (this spec) | Individual TRN for courier KYC |
+| **Person** sensitive IDs              | `user_identifications` (this spec)                                                                | Individual TRN for courier KYC        |
 
 ---
 
@@ -1097,19 +1107,19 @@ Do **not** conflate:
 
 ### Internal
 
-- Agent rule: `.claude/rules/customer-architecture.md`  
-- Placement & keys: `.claude/rules/platform-services.md`  
-- Client surface: `.claude/rules/sdk-conventions.md`  
-- Deletion policy: `.claude/rules/deletions.md`  
-- Core → Billing ensure: [billing-customer-sync](../billing-customer-sync.md)  
-- Finance vs entitlements: [ADR-001](001-finance-workspaces-and-billing-entitlements.md)  
+- Agent rule: `.claude/rules/customer-architecture.md`
+- Placement & keys: `.claude/rules/platform-services.md`
+- Client surface: `.claude/rules/sdk-conventions.md`
+- Deletion policy: `.claude/rules/deletions.md`
+- Core → Billing ensure: [billing-customer-sync](../billing-customer-sync.md)
+- Finance vs entitlements: [ADR-001](001-finance-workspaces-and-billing-entitlements.md)
 
 ### External (patterns, not prescriptions)
 
-- [Stripe Customers API](https://docs.stripe.com/api/customers) — commercial party independent of login  
-- [Snowflake dynamic / tag-based data masking](https://docs.snowflake.com/en/user-guide/security-column-ddm-intro) — mask by policy/role  
-- [AWS CloudWatch sensitive data protection](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/mask-sensitive-log-data.html) — passport, tax ID, driver’s license as PII classes  
-- Multi-tenant SaaS isolation practice (2025–2026 industry guides): authentication ≠ tenant isolation; enforce at data boundaries  
+- [Stripe Customers API](https://docs.stripe.com/api/customers) — commercial party independent of login
+- [Snowflake dynamic / tag-based data masking](https://docs.snowflake.com/en/user-guide/security-column-ddm-intro) — mask by policy/role
+- [AWS CloudWatch sensitive data protection](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/mask-sensitive-log-data.html) — passport, tax ID, driver’s license as PII classes
+- Multi-tenant SaaS isolation practice (2025–2026 industry guides): authentication ≠ tenant isolation; enforce at data boundaries
 
 ---
 
@@ -1194,4 +1204,4 @@ Does it need to be written from ≥2 non-billing apps with non-billing meaning?
 
 ---
 
-*End of specification. For day-to-day agent implementation constraints, prefer the short rule file; for design review, onboarding, and PR description, prefer this document.*
+_End of specification. For day-to-day agent implementation constraints, prefer the short rule file; for design review, onboarding, and PR description, prefer this document._

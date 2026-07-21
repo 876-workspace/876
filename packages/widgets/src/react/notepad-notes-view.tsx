@@ -185,7 +185,7 @@ function NoteCard({
         {pinned ? (
           <Star
             aria-label="Pinned"
-            className="size-3.5 shrink-0 fill-current text-amber-700 dark:text-amber-300"
+            className="text-primary size-3.5 shrink-0 fill-current"
           />
         ) : null}
       </span>

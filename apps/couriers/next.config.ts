@@ -21,7 +21,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
-  transpilePackages: ['@876/billing', '@876/sdk', '@876/core', '@876/ui'],
+  transpilePackages: [
+    '@876/billing',
+    '@876/sdk',
+    '@876/core',
+    '@876/ui',
+    '@876/widgets',
+  ],
   experimental: {
     optimizePackageImports: ['@base-ui/react', 'radix-ui'],
     serverActions: {

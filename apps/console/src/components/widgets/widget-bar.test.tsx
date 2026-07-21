@@ -20,16 +20,49 @@ describe('WidgetBar', () => {
   })
 
   it('renders a visible, explicitly sized icon in the Notepad trigger', () => {
-    render(<WidgetBar auditEvents={[]} enabledWidgetIds={['notepad']} />)
+    render(
+      <WidgetBar
+        auditEvents={[]}
+        enabledWidgetIds={['notepad']}
+        chatEnabled={false}
+      />
+    )
 
     const trigger = screen.getByRole('button', { name: 'Notepad' })
     const icon = trigger.querySelector('svg')
 
     expect(icon).not.toBeNull()
-    expect(icon?.getAttribute('width')).toBe('18')
-    expect(icon?.getAttribute('height')).toBe('18')
+    expect(icon?.getAttribute('width')).toBe('20')
+    expect(icon?.getAttribute('height')).toBe('20')
     expect(icon?.classList.contains('block')).toBe(true)
-    expect(icon?.classList.contains('size-[1.125rem]')).toBe(true)
+    expect(icon?.classList.contains('size-5')).toBe(true)
     expect(icon?.classList.contains('shrink-0')).toBe(true)
+  })
+
+  it('renders the chat-rail nav when chatEnabled is true', () => {
+    render(
+      <WidgetBar
+        auditEvents={[]}
+        enabledWidgetIds={['notepad']}
+        chatEnabled={true}
+      />
+    )
+
+    const chatRail = document.querySelector('[data-slot="chat-rail"]')
+    expect(chatRail).not.toBeNull()
+    expect(chatRail?.getAttribute('aria-label')).toBe('876 Chat')
+  })
+
+  it('does not render the chat-rail nav when chatEnabled is false', () => {
+    render(
+      <WidgetBar
+        auditEvents={[]}
+        enabledWidgetIds={['notepad']}
+        chatEnabled={false}
+      />
+    )
+
+    const chatRail = document.querySelector('[data-slot="chat-rail"]')
+    expect(chatRail).toBeNull()
   })
 })

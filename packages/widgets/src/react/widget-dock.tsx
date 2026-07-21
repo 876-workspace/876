@@ -4,6 +4,7 @@ import type { ComponentType } from 'react'
 import { notepadWidgetMetadata, type WidgetMetadata } from '../catalog'
 import { NotepadWidgetPanel } from './notepad-widget'
 import { NotepadIcon } from './notepad-icon'
+import { ChatRail } from './chat-rail'
 import { WidgetPopout } from './widget-popout'
 
 interface SharedWidgetRenderer {
@@ -22,16 +23,19 @@ const sharedWidgetRenderers: readonly SharedWidgetRenderer[] = [
 
 export function SharedWidgetDock({
   enabledWidgetIds,
+  chatEnabled = false,
   navbarHeight = 56,
 }: {
   enabledWidgetIds: readonly string[]
+  /** Renders the 876 Chat rail card below the widget triggers. */
+  chatEnabled?: boolean
   navbarHeight?: number
 }) {
   const enabled = new Set(enabledWidgetIds)
   const renderers = sharedWidgetRenderers.filter(({ metadata }) =>
     enabled.has(metadata.id)
   )
-  if (renderers.length === 0) return null
+  if (renderers.length === 0 && !chatEnabled) return null
 
   return (
     <WidgetPopout.Root side="right" navbarHeight={navbarHeight}>
@@ -47,7 +51,7 @@ export function SharedWidgetDock({
           </WidgetPopout.Content>
         ))}
       </WidgetPopout.Panel>
-      <WidgetPopout.Rail>
+      <WidgetPopout.Rail chat={chatEnabled ? <ChatRail /> : undefined}>
         {renderers.map(({ metadata, icon: Icon }) => (
           <WidgetPopout.Trigger
             key={metadata.id}

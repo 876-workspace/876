@@ -43,13 +43,35 @@ const SIZE_MAP: Record<WidgetPopoutSize, number> = {
   xl: 720,
 }
 
-const RAIL_WIDTH_PX = 52
-const RAIL_WIDTH_REM = '3.25rem'
-/** Gap between the floating popout and the icon rail / viewport edges. */
-const PANEL_GUTTER_PX = 24
-/** Extra top/bottom inset so the floating card is not edge-to-edge tall. */
-const PANEL_VERTICAL_INSET_PX = 10
+const RAIL_WIDTH_PX = 48
+const RAIL_WIDTH_REM = '3rem'
+/** Inset from the viewport edge for the floating icon rail. */
+const FLOAT_EDGE_GUTTER_PX = 16
+/** Gap between the floating panel and the floating icon rail. */
+const PANEL_TO_RAIL_GUTTER_PX = 8
+/**
+ * Top/bottom inset for floating rail + panel so they sit under the navbar
+ * as cards, not edge-to-edge sheets.
+ */
+const FLOAT_VERTICAL_INSET_PX = 20
 const MIN_MAIN_COLUMN_WIDTH_PX = 600
+
+/**
+ * Solid card chrome for floating dock surfaces — deliberately opaque (no
+ * backdrop blur/transparency) so page content behind the dock never shows
+ * through the rail or panel.
+ */
+const FLOATING_CARD_CHROME = [
+  // Same elevated surface step in both themes — `dark:bg-sidebar` sat too
+  // close to the dark canvas, visually collapsing the card gaps/padding.
+  'rounded-2xl border border-876-surface-border bg-876-surface',
+  // Drop shadow is light-mode only — dark mode relies on border/ring separation.
+  'shadow-[0_16px_48px_rgba(0,0,0,0.14),0_2px_12px_rgba(0,0,0,0.06)]',
+  'dark:shadow-none',
+  'ring-1 ring-black/5 dark:ring-white/10',
+] as const
+
+export const widgetFloatingCardClass = cn(...FLOATING_CARD_CHROME)
 
 type BeforeDeactivateHandler = () => boolean | void | Promise<boolean | void>
 
@@ -114,8 +136,9 @@ function useIsMobile(breakpoint: number): boolean {
 }
 
 /**
- * Widget dock: icon rail always lives in the shell layout.
- * Panel defaults to a floating popout; user can dock it into the layout column.
+ * Widget dock: the icon rail always lives in the shell layout (never
+ * overlays the body). The panel defaults to a floating popout card over the
+ * body; docking pulls it into the layout column beside main content too.
  */
 function Root({
   side = 'right',
@@ -283,9 +306,9 @@ function Root({
         data-presentation={presentation}
         aria-label="Widget dock"
         className={cn(
-          // Fills the body row under the navbar (host places dock inside AppShellBody).
-          '876-widget-dock relative z-20 hidden h-full min-h-0 shrink-0 md:flex',
-          // Docked panel | rail on the right; reverse on the left.
+          // The rail always lives in the layout column (never overlays the
+          // body). Only the panel overlays, and only while popped out.
+          '876-widget-dock relative z-20 hidden h-full min-h-0 shrink-0 overflow-visible md:flex',
           side === 'right' ? 'flex-row' : 'flex-row-reverse',
           className
         )}
@@ -296,31 +319,63 @@ function Root({
   )
 }
 
+/**
+ * Shared chrome for each rail section card (primary + secondary).
+ * In-flow floating cards — reserve real column space, never overlay the body.
+ */
+const RAIL_SECTION_CLASS = cn(
+  '876-widget-rail flex min-h-0 flex-col items-center gap-1',
+  'overflow-y-auto overscroll-contain p-1',
+  '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+  ...FLOATING_CARD_CHROME
+)
+
+/**
+ * Icon rail: floating card(s) — primary (top) for widget triggers, and
+ * optionally the 876 Chat card below (35%) when `chat` is provided.
+ */
 const Rail = memo(function Rail({
   className,
+  chat,
   children,
 }: {
   className?: string
+  /** 876 Chat rail card (bottom, 35%). When absent the widgets card fills the rail. */
+  chat?: ReactNode
+  /** Top card content — widget icon triggers. */
   children: ReactNode
 }) {
   const { side } = useWidgetPopout()
 
   return (
-    <nav
-      aria-label="Widgets"
+    <div
+      data-slot="widget-rail"
       className={cn(
-        '876-widget-rail flex h-full shrink-0 flex-col items-center gap-0.5',
-        'overflow-y-auto overscroll-contain p-1.5 pt-2',
-        '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
-        'border-border/80 bg-876-surface/95 supports-[backdrop-filter]:bg-876-surface/80 backdrop-blur-xl',
-        'dark:bg-sidebar/95 dark:supports-[backdrop-filter]:bg-sidebar/80',
-        side === 'right' ? 'border-l' : 'border-r',
+        'flex shrink-0 flex-col gap-2',
+        // Match FLOAT_EDGE_GUTTER_PX so the rail sits off the screen edge;
+        // the content-side margin keeps the main scrollbar off the rail.
+        side === 'right' ? 'mr-4 ml-3' : 'mr-3 ml-4',
         className
       )}
-      style={{ width: RAIL_WIDTH_REM }}
+      style={{
+        width: RAIL_WIDTH_REM,
+        marginTop: FLOAT_VERTICAL_INSET_PX,
+        marginBottom: FLOAT_VERTICAL_INSET_PX,
+        height: `calc(100% - ${FLOAT_VERTICAL_INSET_PX * 2}px)`,
+      }}
     >
-      {children}
-    </nav>
+      <nav
+        data-slot="widget-rail-primary"
+        aria-label="Widgets"
+        className={cn(
+          RAIL_SECTION_CLASS,
+          chat ? 'flex-[65] basis-0' : 'flex-1'
+        )}
+      >
+        {children}
+      </nav>
+      {chat}
+    </div>
   )
 })
 
@@ -359,23 +414,17 @@ const Trigger = memo(function Trigger({
         whileTap={{ scale: 0.94 }}
         transition={{ type: 'tween', duration: 0.12 }}
         className={cn(
-          'relative flex size-10 items-center justify-center rounded-[0.95rem]',
-          'transition-[color,background-color,box-shadow,transform]',
+          'relative flex size-10 items-center justify-center rounded-[0.85rem]',
+          'transition-[color,background-color,transform]',
           'focus-visible:ring-ring focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
-          '[&_svg]:size-[1.125rem] [&_svg]:shrink-0',
+          '[&_svg]:size-5 [&_svg]:shrink-0',
           isActive
-            ? [
-                'bg-[var(--876-nav-active-bg)] text-[var(--876-nav-active-fg)]',
-                'shadow-[inset_0_1px_0_color-mix(in_oklab,white_35%,transparent),0_1px_2px_color-mix(in_oklab,var(--876-nav-active-fg)_18%,transparent)]',
-                'ring-1 ring-[color-mix(in_oklab,var(--876-nav-active-fg)_22%,transparent)]',
-              ]
+            ? 'bg-[var(--876-nav-active-bg)] text-[var(--876-nav-active-fg)]'
             : 'text-muted-foreground hover:bg-muted/90 hover:text-foreground dark:hover:bg-white/8',
           className
         )}
       >
-        <span className={cn('relative', isActive && 'drop-shadow-sm')}>
-          {icon}
-        </span>
+        <span className="relative">{icon}</span>
       </motion.button>
 
       <AnimatePresence>
@@ -462,12 +511,15 @@ function Panel({
   const canDock =
     availableWidth !== null &&
     availableWidth - RAIL_WIDTH_PX - width >= MIN_MAIN_COLUMN_WIDTH_PX
-  const floatingOffset = isMobile ? 0 : RAIL_WIDTH_PX + PANEL_GUTTER_PX
+  // Panel sits left of the floating rail: edge gutter + rail + gap.
+  const floatingOffset = isMobile
+    ? 0
+    : FLOAT_EDGE_GUTTER_PX + RAIL_WIDTH_PX + PANEL_TO_RAIL_GUTTER_PX
   const slide =
     side === 'right' ? width + floatingOffset : -(width + floatingOffset)
   const floatingMaxWidth = isMobile
     ? '100%'
-    : `calc(100vw - ${RAIL_WIDTH_PX + PANEL_GUTTER_PX * 2}px)`
+    : `calc(100vw - ${FLOAT_EDGE_GUTTER_PX * 2 + RAIL_WIDTH_PX + PANEL_TO_RAIL_GUTTER_PX}px)`
   const panelContextValue = useMemo(() => ({ canDock }), [canDock])
 
   useLayoutEffect(() => {
@@ -483,18 +535,23 @@ function Panel({
       aria-hidden={!open}
       className={cn(
         '876-widget-panel flex min-h-0 shrink-0 flex-col overflow-hidden',
-        'border-876-surface-border bg-876-surface border',
         docked
           ? [
-              'relative h-full transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              'border-876-surface-border bg-876-surface relative h-full border',
+              'transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
               open && (side === 'right' ? 'border-l' : 'border-r'),
             ]
           : [
-              'fixed z-40 shadow-[0_16px_50px_rgba(0,0,0,0.14)] dark:shadow-[0_8px_28px_rgba(0,0,0,0.28)]',
-              isMobile ? 'bottom-0' : null,
-              side === 'right'
-                ? 'rounded-tl-2xl border-r-0 border-b-0'
-                : 'rounded-tr-2xl border-b-0 border-l-0',
+              // Floating panel card beside the floating icon rail.
+              'pointer-events-auto fixed z-40',
+              isMobile
+                ? [
+                    'border-876-surface-border bg-876-surface bottom-0 border',
+                    // Drop shadow is light-mode only — dark mode relies on border.
+                    'rounded-t-2xl shadow-[0_-8px_40px_rgba(0,0,0,0.12)]',
+                    'dark:shadow-none',
+                  ]
+                : FLOATING_CARD_CHROME,
             ],
         !open && 'pointer-events-none',
         className
@@ -504,8 +561,8 @@ function Panel({
           ? undefined
           : isMobile
             ? navbarHeight
-            : navbarHeight + PANEL_VERTICAL_INSET_PX,
-        bottom: docked || isMobile ? undefined : PANEL_VERTICAL_INSET_PX,
+            : navbarHeight + FLOAT_VERTICAL_INSET_PX,
+        bottom: docked || isMobile ? undefined : FLOAT_VERTICAL_INSET_PX,
         width: docked ? (open ? width : 0) : isMobile ? '100%' : width,
         maxWidth: docked ? width : floatingMaxWidth,
         ...(docked

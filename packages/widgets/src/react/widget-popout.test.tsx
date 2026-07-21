@@ -10,6 +10,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { WidgetPopout } from './widget-popout'
+import { ChatRail } from './chat-rail'
 
 let layoutWidth = 1_200
 
@@ -141,28 +142,105 @@ describe('Widget popout panel', () => {
     })
   })
 
-  it('clamps an xl floating panel to the viewport minus rail and gutter', () => {
+  it('clamps an xl floating panel to the viewport minus rail and gutters', () => {
     render(<PanelFixture size="xl" />)
 
     const panel = document.querySelector(
       '[data-slot="widget-panel"]'
     ) as HTMLElement
     expect(panel.style.width).toBe('720px')
-    // rail 52 + gutter 24 * 2 = 100
-    expect(panel.style.maxWidth).toBe('calc(100vw - 100px)')
+    // edge 8*2 + rail 48 + gap 8 = 72
+    // edge 16*2 + rail 48 + gap 8 = 88
+    expect(panel.style.maxWidth).toBe('calc(100vw - 88px)')
     expect(panel.getAttribute('data-can-dock')).toBe('false')
   })
 
-  it('offsets the floating panel from the rail and trims vertical height', () => {
+  it('renders the icon rail as an in-flow rounded card, not an overlay', () => {
+    render(<PanelFixture />)
+
+    const rail = document.querySelector(
+      '[data-slot="widget-rail"]'
+    ) as HTMLElement
+    const primary = document.querySelector(
+      '[data-slot="widget-rail-primary"]'
+    ) as HTMLElement
+
+    // Column shell — never fixed/absolute; reserves real layout space.
+    expect(rail.className).not.toContain('fixed')
+    expect(rail.className).not.toContain('absolute')
+    expect(rail.className).toContain('mr-4')
+    expect(rail.style.marginTop).toBe('20px')
+    expect(rail.style.marginBottom).toBe('20px')
+    expect(rail.style.height).toBe('calc(100% - 40px)')
+
+    // Primary section is its own floating card.
+    expect(primary.className).not.toContain('fixed')
+    expect(primary.className).not.toContain('absolute')
+    expect(primary.className).toContain('rounded-2xl')
+    expect(primary.className).toContain('ring-1')
+  })
+
+  it('Rail without chat renders only the primary card with flex-1 and no chat-rail in the DOM', () => {
+    render(<PanelFixture />)
+
+    const primary = document.querySelector(
+      '[data-slot="widget-rail-primary"]'
+    ) as HTMLElement
+    const chatRail = document.querySelector('[data-slot="chat-rail"]')
+
+    // Primary card fills the full rail when no chat card is present.
+    expect(primary.className).toContain('flex-1')
+    expect(primary.className).not.toContain('flex-[65]')
+    // Chat rail must be completely absent from the DOM.
+    expect(chatRail).toBeNull()
+  })
+
+  it('Rail with chat={<ChatRail />} renders chat-rail nav with aria-label "876 Chat" and primary keeps flex-[65]', () => {
+    render(
+      <div>
+        <WidgetPopout.Root defaultOpen="draft">
+          <WidgetPopout.Panel size="md">
+            <WidgetPopout.Content id="draft" title="Draft widget">
+              <input aria-label="Draft value" defaultValue="Initial draft" />
+            </WidgetPopout.Content>
+          </WidgetPopout.Panel>
+          <WidgetPopout.Rail chat={<ChatRail />}>
+            <WidgetPopout.Trigger id="draft" label="Draft" icon="D" />
+          </WidgetPopout.Rail>
+        </WidgetPopout.Root>
+      </div>
+    )
+
+    const primary = document.querySelector(
+      '[data-slot="widget-rail-primary"]'
+    ) as HTMLElement
+    const chatRail = document.querySelector(
+      '[data-slot="chat-rail"]'
+    ) as HTMLElement
+
+    // Primary must use the split flex ratio when chat is present.
+    expect(primary.className).toContain('flex-[65]')
+    expect(primary.className).toContain('basis-0')
+    // Chat rail must be present with the correct accessible label.
+    expect(chatRail).not.toBeNull()
+    expect(chatRail.getAttribute('aria-label')).toBe('876 Chat')
+    expect(chatRail.className).toContain('flex-[35]')
+    expect(chatRail.className).toContain('basis-0')
+  })
+
+  it('offsets the floating panel beside the in-flow rail', () => {
     render(<PanelFixture />)
 
     const panel = document.querySelector(
       '[data-slot="widget-panel"]'
     ) as HTMLElement
-    // rail 52 + gutter 24
-    expect(panel.style.right).toBe('76px')
-    expect(panel.style.top).toBe('74px') // default navbar 64 + inset 10
-    expect(panel.style.bottom).toBe('10px')
+    // edge 16 + rail 48 + gap 8 = 72
+    expect(panel.style.right).toBe('72px')
+    expect(panel.style.top).toBe('84px')
+    expect(panel.style.bottom).toBe('20px')
+    expect(panel.getAttribute('data-presentation')).toBe('popout')
+    expect(panel.className).toContain('fixed')
+    expect(panel.className).toContain('rounded-2xl')
   })
 
   it('uses a minus icon for dock and a panel icon for pop out', async () => {

@@ -194,36 +194,28 @@ export const NOTE_STICKY_COLOR_CSS = `
   color: color-mix(in oklab, var(--sticky-ink) 45%, transparent);
 }
 
-/* New-note CTA — soft neutral with a warm sticky accent (not solid neon amber). */
+/* New-note CTA — neutral platform chrome (no amber tint), both themes. */
 .note-new-button {
-  background-color: color-mix(in oklab, var(--background, #fff) 88%, #fcd34d) !important;
+  background-color: var(--876-surface, var(--background, #fff)) !important;
   color: var(--foreground, #171717) !important;
-  border-color: color-mix(in oklab, #f59e0b 28%, var(--border, #e5e5e5)) !important;
+  border-color: var(--border-strong, var(--border, #e5e5e5)) !important;
   border-width: 1px !important;
   border-style: solid !important;
-  box-shadow: 0 1px 2px oklch(0.45 0.04 75 / 0.08);
+  box-shadow: 0 1px 2px oklch(0.23 0.02 262 / 0.06);
 }
 .note-new-button:hover:not(:disabled) {
-  background-color: color-mix(in oklab, var(--background, #fff) 72%, #fde68a) !important;
+  background-color: var(--muted, #f4f4f5) !important;
   color: var(--foreground, #171717) !important;
-  border-color: color-mix(in oklab, #f59e0b 40%, var(--border, #e5e5e5)) !important;
 }
 .note-new-button:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--background, #fff),
-    0 0 0 4px color-mix(in oklab, #0ea5e9 45%, transparent);
+    0 0 0 4px color-mix(in oklab, var(--primary, #2563eb) 45%, transparent);
 }
 .dark .note-new-button,
 html.dark .note-new-button {
-  background-color: color-mix(in oklab, var(--background, #0a0a0a) 82%, oklch(0.45 0.08 88)) !important;
-  color: var(--foreground, #fafafa) !important;
-  border-color: color-mix(in oklab, oklch(0.72 0.12 85) 32%, transparent) !important;
   box-shadow: 0 1px 2px oklch(0 0 0 / 0.28);
-}
-.dark .note-new-button:hover:not(:disabled),
-html.dark .note-new-button:hover:not(:disabled) {
-  background-color: color-mix(in oklab, var(--background, #0a0a0a) 70%, oklch(0.5 0.1 88)) !important;
 }
 
 /* Dark mode: dusk-paper surfaces with soft chroma + light ink. */

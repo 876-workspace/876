@@ -117,6 +117,12 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "name": "Search bar",
             "description": "Controls access to the Console search bar.",
         },
+        {
+            "slug": "console_chat",
+            "name": "876 Chat",
+            "description": "Master switch for the 876 Chat rail in Console.",
+            "default_enabled": True,
+        },
     ],
     COURIERS_APP_SLUG: [
         {
@@ -131,6 +137,12 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "description": "Controls access to the shared Notepad widget in Couriers.",
             "parent_slug": "couriers_widgets",
             "tags": ["widget"],
+        },
+        {
+            "slug": "couriers_chat",
+            "name": "876 Chat",
+            "description": "Master switch for the 876 Chat rail in Couriers.",
+            "default_enabled": True,
         },
         {
             "slug": "couriers_theme_switcher",
@@ -195,6 +207,12 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "parent_slug": "billing_widgets",
             "tags": ["widget"],
             "legacy_slugs": ["billing_widgets_notes"],
+        },
+        {
+            "slug": "billing_chat",
+            "name": "876 Chat",
+            "description": "Master switch for the 876 Chat rail in Billing.",
+            "default_enabled": True,
         },
         {
             "slug": "billing_sales",

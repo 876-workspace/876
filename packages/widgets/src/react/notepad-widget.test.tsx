@@ -45,9 +45,13 @@ vi.mock('./notepad-body-editor', () => ({
     {
       initialBody: string
       onChange: (value: string) => void
+      autoFocus?: boolean
       disabled?: boolean
     }
-  >(function MockNotepadBodyEditor({ initialBody, onChange, disabled }, ref) {
+  >(function MockNotepadBodyEditor(
+    { initialBody, onChange, autoFocus, disabled },
+    ref
+  ) {
     const bodyRef = useRef(initialBody)
     useImperativeHandle(ref, () => ({
       flush: async () => bodyRef.current,
@@ -56,6 +60,7 @@ vi.mock('./notepad-body-editor', () => ({
     return (
       <textarea
         aria-label="Note body"
+        autoFocus={autoFocus}
         defaultValue={initialBody}
         disabled={disabled}
         onChange={(event) => {
@@ -204,6 +209,7 @@ describe('NotepadWidgetPanel', () => {
         'placeholder',
         'Untitled note'
       )
+      expect(screen.getByLabelText('Note body')).toHaveFocus()
       expect(mocks.create).not.toHaveBeenCalled()
     })
 

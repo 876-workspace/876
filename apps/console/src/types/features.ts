@@ -5,6 +5,7 @@ export interface ConsoleUiFeatures {
   globalAdd: boolean
   appSwitcher: boolean
   searchBar: boolean
+  chat: boolean
 }
 
 export interface ConsoleFeatures {

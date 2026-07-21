@@ -38,6 +38,7 @@ export async function ConsoleShell({
     globalAdd: false,
     appSwitcher: false,
     searchBar: false,
+    chat: false,
   },
 }: {
   children: ReactNode
@@ -49,6 +50,7 @@ export async function ConsoleShell({
     globalAdd: boolean
     appSwitcher: boolean
     searchBar: boolean
+    chat: boolean
   }
 }) {
   const cookieStore = await cookies()
@@ -102,6 +104,7 @@ export async function ConsoleShell({
             <WidgetBar
               auditEvents={auditEvents}
               enabledWidgetIds={enabledWidgetIds}
+              chatEnabled={uiFeatures.chat}
             />
           )}
         </AppShellBody>

@@ -4,6 +4,7 @@ export interface BillingUiFeatures {
   globalAdd: boolean
   appSwitcher: boolean
   orgSwitcher: boolean
+  chat: boolean
 }
 
 export interface BillingProductFeatures {
