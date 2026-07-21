@@ -2,6 +2,7 @@
 
 import { createElement } from 'react'
 import type { AdminAuditEvent } from '@876/admin'
+import { ChatRail } from '@876/widgets/react'
 
 import { PopoutBar } from './popout-bar'
 import { widgets } from './widgets-config'
@@ -18,9 +19,11 @@ const NAVBAR_HEIGHT = 56 // px — matches the shell's `h-14` header
 export function WidgetBar({
   auditEvents,
   enabledWidgetIds,
+  chatEnabled,
 }: {
   auditEvents: AdminAuditEvent[]
   enabledWidgetIds: string[]
+  chatEnabled: boolean
 }) {
   const enabledWidgetIdSet = new Set(enabledWidgetIds)
   const enabledWidgets = widgets.filter((widget) =>
@@ -52,7 +55,7 @@ export function WidgetBar({
         ))}
       </PopoutBar.Panel>
 
-      <PopoutBar.Rail>
+      <PopoutBar.Rail chat={chatEnabled ? <ChatRail /> : undefined}>
         {enabledWidgets.map((widget) => (
           <PopoutBar.Trigger
             key={widget.id}

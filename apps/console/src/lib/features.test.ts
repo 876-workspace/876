@@ -26,6 +26,7 @@ const disabledResult = {
     globalAdd: false,
     appSwitcher: false,
     searchBar: false,
+    chat: false,
   },
 }
 
@@ -125,6 +126,7 @@ describe('getConsoleFeatures', () => {
         globalAdd: false,
         appSwitcher: false,
         searchBar: true,
+        chat: false,
       },
     })
   })
@@ -153,6 +155,7 @@ describe('getConsoleFeatures', () => {
         globalAdd: true,
         appSwitcher: true,
         searchBar: false,
+        chat: false,
       },
     })
     expect(mocks.featuresEvaluate).toHaveBeenCalledWith({

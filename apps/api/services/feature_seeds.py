@@ -117,6 +117,12 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "name": "Search bar",
             "description": "Controls access to the Console search bar.",
         },
+        {
+            "slug": "console_chat",
+            "name": "876 Chat",
+            "description": "Master switch for the 876 Chat rail in Console.",
+            "default_enabled": True,
+        },
     ],
     COURIERS_APP_SLUG: [
         {

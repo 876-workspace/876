@@ -6,6 +6,8 @@ import { $876 } from '@/lib/876'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 import type { ConsoleFeatureRequest, ConsoleFeatures } from '@/types/features'
 
+export const CHAT_FEATURE_SLUG = 'console_chat'
+
 const DISABLED_FEATURES: ConsoleFeatures = {
   enabledWidgetIds: [],
   uiFeatures: {
@@ -13,6 +15,7 @@ const DISABLED_FEATURES: ConsoleFeatures = {
     globalAdd: false,
     appSwitcher: false,
     searchBar: false,
+    chat: false,
   },
 }
 
@@ -43,6 +46,7 @@ export async function getConsoleFeatures({
     globalAdd: enabledSlugs.has('console_global_add'),
     appSwitcher: enabledSlugs.has('console_app_switcher'),
     searchBar: enabledSlugs.has('console_search_bar'),
+    chat: enabledSlugs.has(CHAT_FEATURE_SLUG),
   }
 
   const enabledWidgetIds = widgets
