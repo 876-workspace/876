@@ -55,7 +55,7 @@
     "@876/ui": "workspace:*",
     "@base-ui/react": "1.4.1",
     "@posthog/react": "1.9.0",
-    "@sentry/nextjs": "^10.66.0",
+    "@sentry/nextjs": "^10.67.0",
     "@tanstack/react-form": "1.32.0",
     "@workos-inc/authkit-nextjs": "4.0.1",
     "@workos-inc/node": "9.2.0",
