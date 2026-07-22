@@ -5,6 +5,8 @@ import { customerProfiles } from './customer-profiles'
 import { mailboxes } from './mailboxes'
 import { packages } from './packages'
 import { warehouses } from './warehouses'
+import { roles } from './roles'
+import { team } from './team'
 
 export const service = {
   tenants,
@@ -12,4 +14,6 @@ export const service = {
   mailboxes,
   packages,
   warehouses,
+  roles,
+  team,
 }

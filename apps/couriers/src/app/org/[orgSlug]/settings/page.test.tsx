@@ -42,7 +42,8 @@ describe('Couriers settings page', () => {
       }))
     ).toEqual([
       { title: 'Profile', href: '/org/island-logistics/settings/orgprofile' },
-      { title: 'Team', href: '/org/island-logistics/settings/team' },
+      { title: 'Users', href: '/org/island-logistics/settings/users' },
+      { title: 'Roles', href: '/org/island-logistics/settings/users/roles' },
       { title: 'General', href: '/org/island-logistics/settings/general' },
       {
         title: 'Notifications',
@@ -56,9 +57,12 @@ describe('Couriers settings page', () => {
     await renderPage()
 
     expect(screen.getByText('Branding')).toBeVisible()
-    expect(screen.getByText('Roles')).toBeVisible()
+    expect(screen.getByText('User preferences')).toBeVisible()
     expect(
       screen.queryByRole('link', { name: 'Branding' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'User preferences' })
     ).not.toBeInTheDocument()
   })
 })

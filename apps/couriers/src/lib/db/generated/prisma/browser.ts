@@ -168,6 +168,21 @@ export type StaffPosition = Prisma.StaffPositionModel
  */
 export type StaffMember = Prisma.StaffMemberModel
 /**
+ * Model Role
+ * Tenant-scoped access role for the couriers app. Default (provisioned) roles are
+ * marked by systemKey ('admin' | 'staff'); their permissions resolve from the code
+ * catalog at read time and the stored permissions array stays empty. Custom roles
+ * store explicit permission keys ('<module>.<action>').
+ */
+export type Role = Prisma.RoleModel
+/**
+ * Model TeamMember
+ * A team member: an app access grant tying an opaque 876 user ID to a tenant and
+ * an app-local role. Identity (name/email/avatar) is resolved through the platform
+ * client at read time — never stored. Distinct from StaffMember (HR record).
+ */
+export type TeamMember = Prisma.TeamMemberModel
+/**
  * Model Tenant
  *
  */

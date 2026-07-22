@@ -17,6 +17,8 @@ const ENTITY_PREFIXES = {
   Domain: 'dom',
   Package: 'pkg',
   Contact: 'con',
+  Role: 'role',
+  TeamMember: 'tmem',
   Tenant: 'ten',
   Warehouse: 'whs',
 } as const

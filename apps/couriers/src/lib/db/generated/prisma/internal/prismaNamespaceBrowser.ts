@@ -73,6 +73,8 @@ export const ModelName = {
   Seller: 'Seller',
   StaffPosition: 'StaffPosition',
   StaffMember: 'StaffMember',
+  Role: 'Role',
+  TeamMember: 'TeamMember',
   Tenant: 'Tenant',
   Warehouse: 'Warehouse',
 } as const
@@ -427,6 +429,33 @@ export const StaffMemberScalarFieldEnum = {
 export type StaffMemberScalarFieldEnum =
   (typeof StaffMemberScalarFieldEnum)[keyof typeof StaffMemberScalarFieldEnum]
 
+export const RoleScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  description: 'description',
+  systemKey: 'systemKey',
+  permissions: 'permissions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type RoleScalarFieldEnum =
+  (typeof RoleScalarFieldEnum)[keyof typeof RoleScalarFieldEnum]
+
+export const TeamMemberScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  roleId: 'roleId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type TeamMemberScalarFieldEnum =
+  (typeof TeamMemberScalarFieldEnum)[keyof typeof TeamMemberScalarFieldEnum]
+
 export const TenantScalarFieldEnum = {
   id: 'id',
   orgId: 'orgId',
@@ -473,6 +502,13 @@ export const NullableJsonNullValueInput = {
 
 export type NullableJsonNullValueInput =
   (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull,
+} as const
+
+export type JsonNullValueInput =
+  (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 export const QueryMode = {
   default: 'default',
