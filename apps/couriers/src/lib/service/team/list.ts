@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/db'
-import type { TeamMemberStatusValue, TeamMemberView } from '@/types/team'
+import type { TeamMemberListParams, TeamMemberView } from '@/types/team'
 
 import { toTeamMemberView } from './view'
 
 export async function list(
   tenantId: string,
-  params: { status?: TeamMemberStatusValue } = {}
+  params: TeamMemberListParams = {}
 ): Promise<TeamMemberView[]> {
   const members = await prisma.teamMember.findMany({
     where: {

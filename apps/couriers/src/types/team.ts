@@ -3,6 +3,10 @@ import * as z from 'zod'
 export const teamMemberStatusValueSchema = z.enum(['active', 'inactive'])
 export type TeamMemberStatusValue = z.infer<typeof teamMemberStatusValueSchema>
 
+export type TeamMemberListParams = {
+  status?: TeamMemberStatusValue
+}
+
 const defaultRoleKeySchema = z.enum(['admin', 'staff'])
 
 export const teamMemberViewSchema = z.strictObject({
