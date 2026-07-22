@@ -17,6 +17,7 @@ from db.models import (
     Customer,
     Estimate,
     Invoice,
+    InvoicePreference,
     Payment,
     Quote,
     Subscription,
@@ -42,6 +43,8 @@ from domains.billing.workflows.currencies import (
     update_currency,
 )
 from domains.billing.workflows.documents import create_document
+from domains.billing.workflows.engine import bill_subscription, run_billing_sweep
+from domains.billing.workflows.late_fees import assess_late_fees
 from domains.billing.workflows.payments import apply_payment, cancel_payment, create_payment
 
 ACTION_SEGMENTS = {
@@ -99,7 +102,11 @@ async def dispatch(request: Request, session: AsyncSession, spec: RouteSpec) -> 
     if spec.path.startswith("/admin/stats/apps"):
         return await _app_stats(session, request.path_params.get("sourceAppId"))
     if spec.path == "/admin/billing/run":
-        return {"object": "billing_run", "accepted": True, "scheduledAt": int(time.time())}
+        return await run_billing_sweep(
+            session,
+            as_of=_optional_integer(body.get("asOf"), "asOf"),
+            limit=_optional_integer(body.get("limit"), "limit") or 100,
+        )
     if spec.path == "/currencies":
         if principal.tenant_id is None:
             raise AppHTTPException(
@@ -346,6 +353,22 @@ async def _action(
     if action == "preview-proration" and tenant_id is not None:
         return await subscription_preview(service.session, tenant_id, path_params["subscriptionId"], body)
 
+    if action == "assess-late-fees" and definition.model is InvoicePreference and tenant_id is not None:
+        return await assess_late_fees(
+            service.session,
+            tenant_id,
+            as_of=_optional_integer(body.get("asOf"), "asOf"),
+        )
+
+    if action == "bill" and definition.model is Subscription and tenant_id is not None:
+        result = await bill_subscription(
+            service.session,
+            tenant_id,
+            path_params["subscriptionId"],
+            as_of=_optional_integer(body.get("asOf"), "asOf"),
+        )
+        return {"object": "subscription_billing_result", "status": result.status, "invoiceId": result.invoice_id}
+
     if action == "apply" and definition.model is Payment:
         if tenant_id is None:
             raise AppHTTPException(
@@ -412,3 +435,15 @@ async def _json_body(request: Request) -> dict[str, Any]:
             code="validation/invalid-request", message="A JSON object is required.", http_status_code=422
         )
     return body
+
+
+def _optional_integer(value: Any, field: str) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        raise AppHTTPException(
+            code="validation/invalid-request",
+            message=f"{field} must be a positive integer.",
+            http_status_code=422,
+        )
+    return int(value)
