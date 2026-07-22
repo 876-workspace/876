@@ -5,6 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg'
 import { generateId, ID_PREFIXES, type EntityType } from '@/lib/id'
 
 import { PrismaClient } from './generated/prisma/client'
+import { assertLegacyBillingWriteAllowed } from './write-guard'
 
 export type {
   AppFinanceConnection,
@@ -70,18 +71,13 @@ function createPrisma() {
   return new PrismaClient({ adapter }).$extends({
     query: {
       $allModels: {
-        async create({
-          model,
-          args,
-          query,
-        }: {
-          model: string
-          args: Record<string, unknown>
-          query: (args: unknown) => Promise<unknown>
-        }) {
-          const data = args.data as Record<string, unknown>
-          if (model in ID_PREFIXES && !data.id) {
-            data.id = generateId(model as EntityType)
+        async $allOperations({ model, operation, args, query }) {
+          assertLegacyBillingWriteAllowed(operation)
+          if (operation === 'create') {
+            const data = (args as { data: Record<string, unknown> }).data
+            if (model in ID_PREFIXES && !data.id) {
+              data.id = generateId(model as EntityType)
+            }
           }
           return query(args)
         },

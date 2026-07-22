@@ -14,7 +14,7 @@ from api.v1 import router as api_v1_router
 from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.logging import configure_logging, get_logger
-from core.middleware import APIEnvelopeMiddleware, RequestLoggingMiddleware
+from core.middleware import APIEnvelopeMiddleware, BillingWriterMiddleware, RequestLoggingMiddleware
 from core.openapi import SWAGGER_UI_PARAMETERS, custom_generate_unique_id, setup_openapi
 from db.session import lifespan as db_lifespan
 from domains.health.router import router as health_router
@@ -74,6 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "X-Scheduler-Key",
         ],
     )
+    app.add_middleware(BillingWriterMiddleware, writer=active_settings.billing_writer)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(APIEnvelopeMiddleware)
 

@@ -5,13 +5,44 @@ from typing import Any
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 
 from core.id import generate_request_id
 from core.logging import bind_request_id, get_logger, reset_request_id
 
 logger = get_logger(__name__)
 _raw_paths = {"/docs", "/health", "/openapi.json", "/ready", "/redoc"}
+_unsafe_methods = {"DELETE", "PATCH", "POST", "PUT"}
+
+
+class BillingWriterMiddleware(BaseHTTPMiddleware):
+    """Allows mutations only while this service owns the Billing write lease."""
+
+    def __init__(self, app: Any, *, writer: str) -> None:
+        super().__init__(app)
+        self.writer = writer
+
+    async def dispatch(
+        self,
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
+        is_api_request = request.url.path == "/api/v1" or request.url.path.startswith("/api/v1/")
+        if is_api_request and request.method in _unsafe_methods and self.writer != "fastapi":
+            response: Response = JSONResponse(
+                status_code=503,
+                content={
+                    "data": None,
+                    "error": {
+                        "code": "billing/writer-inactive",
+                        "message": "The Billing API is not the active writer.",
+                    },
+                },
+            )
+        else:
+            response = await call_next(request)
+        response.headers["x-billing-writer"] = self.writer
+        return response
 
 
 def _error_code(error: Any, status_code: int) -> str:
