@@ -13,8 +13,8 @@ pnpm --filter @876/billing-api typecheck
 pnpm --filter @876/billing-api test
 ```
 
-The canonical versioned API prefix is `/api/v1`. Liveness and readiness are
-available at `/health` and `/ready`.
+The canonical versioned API prefix is `/api/v1`. Liveness, readiness, and
+Prometheus telemetry are available at `/health`, `/ready`, and `/metrics`.
 
 ## Database ownership
 
@@ -29,6 +29,7 @@ history.
 pnpm --filter @876/billing-api db:migrate
 pnpm --filter @876/billing-api db:migration:check
 pnpm --filter @876/billing-api db:reconcile
+pnpm --filter @876/billing-api cutover:check -- --base-url http://localhost:4004
 ```
 
 ## Billing engine
