@@ -31,6 +31,21 @@ pnpm --filter @876/billing-api db:migration:check
 pnpm --filter @876/billing-api db:reconcile
 ```
 
+## Billing engine
+
+The internal `POST /api/v1/admin/billing/run` operation and the scheduler CLI
+run the same bounded, provider-neutral engine. Both require the FastAPI service
+to own writes. Subscription-period runs and provider events are idempotent, and
+workers claim due rows with PostgreSQL `SKIP LOCKED` so overlapping scheduler
+deliveries do not produce duplicate invoices.
+
+```bash
+BILLING_WRITER=fastapi pnpm --filter @876/billing-api billing:run -- --limit 100
+```
+
+The command exits non-zero when any subscription fails, while preserving the
+successful per-subscription transactions and durable failure records for retry.
+
 `BILLING_WRITER` is the shared single-writer lease. Its valid values are
 `legacy`, `fastapi`, and `none`; missing or invalid configuration fails closed.
 The reconciliation command requires `BILLING_WRITER=none` operationally and
