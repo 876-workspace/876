@@ -1,0 +1,2624 @@
+{
+  "generated_from": "src/app/api/{admin,billing}/**/route.ts",
+  "routes": [
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/billing/run",
+      "source": "src/app/api/admin/billing/run/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/customers/ensure",
+      "source": "src/app/api/admin/customers/ensure/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/finance-connections/ensure",
+      "source": "src/app/api/admin/finance-connections/ensure/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/plans/ensure",
+      "source": "src/app/api/admin/plans/ensure/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/prices/ensure",
+      "source": "src/app/api/admin/prices/ensure/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/products/ensure",
+      "source": "src/app/api/admin/products/ensure/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            400,
+            404
+          ],
+          "method": "GET"
+        }
+      ],
+      "path": "/admin/stats/apps/{sourceAppId}",
+      "source": "src/app/api/admin/stats/apps/[sourceAppId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/admin/stats/apps",
+      "source": "src/app/api/admin/stats/apps/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "admin",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/admin/subscriptions/ensure",
+      "source": "src/app/api/admin/subscriptions/ensure/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PUT"
+        }
+      ],
+      "path": "/addons/{addonId}/associations",
+      "source": "src/app/api/billing/addons/[addonId]/associations/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/addons/{addonId}/clone",
+      "source": "src/app/api/billing/addons/[addonId]/clone/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/addons/{addonId}",
+      "source": "src/app/api/billing/addons/[addonId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/addons",
+      "source": "src/app/api/billing/addons/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/banking/accounts/{accountId}",
+      "source": "src/app/api/billing/banking/accounts/[accountId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/banking/accounts/{accountId}/transactions/{transactionId}",
+      "source": "src/app/api/billing/banking/accounts/[accountId]/transactions/[transactionId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/banking/accounts/{accountId}/transactions",
+      "source": "src/app/api/billing/banking/accounts/[accountId]/transactions/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "banking:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/banking/accounts",
+      "source": "src/app/api/billing/banking/accounts/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/credit-notes/{creditNoteId}/apply",
+      "source": "src/app/api/billing/credit-notes/[creditNoteId]/apply/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/credit-notes/{creditNoteId}/void",
+      "source": "src/app/api/billing/credit-notes/[creditNoteId]/void/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/credit-notes",
+      "source": "src/app/api/billing/credit-notes/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "currencies:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "currencies:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/currencies/{code}",
+      "source": "src/app/api/billing/currencies/[code]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "currencies:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "currencies:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "currencies:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/currencies",
+      "source": "src/app/api/billing/currencies/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        }
+      ],
+      "path": "/customers/{customerId}/account",
+      "source": "src/app/api/billing/customers/[customerId]/account/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/customers/{customerId}/link",
+      "source": "src/app/api/billing/customers/[customerId]/link/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/customers/{customerId}/opening-balance",
+      "source": "src/app/api/billing/customers/[customerId]/opening-balance/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/customers/{customerId}",
+      "source": "src/app/api/billing/customers/[customerId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/customers/{customerId}/unlink",
+      "source": "src/app/api/billing/customers/[customerId]/unlink/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/customers/import",
+      "source": "src/app/api/billing/customers/import/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "customers:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/customers",
+      "source": "src/app/api/billing/customers/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/discounts/coupons/{couponId}",
+      "source": "src/app/api/billing/discounts/coupons/[couponId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/discounts/coupons",
+      "source": "src/app/api/billing/discounts/coupons/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/discounts/promotion-codes",
+      "source": "src/app/api/billing/discounts/promotion-codes/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/estimates/{estimateId}",
+      "source": "src/app/api/billing/estimates/[estimateId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/estimates",
+      "source": "src/app/api/billing/estimates/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.payments.read"
+          ],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/bank-accounts",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/bank-accounts/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.customers.write"
+          ],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.customers.read"
+          ],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.customers.write"
+          ],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/customers/{customerId}",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/customers/[customerId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.customers.read"
+          ],
+          "declared_statuses": [
+            400
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.customers.write"
+          ],
+          "declared_statuses": [
+            422,
+            500
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/customers",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/customers/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.invoices.write"
+          ],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/invoices/{invoiceId}/finalize",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/invoices/[invoiceId]/finalize/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.invoices.read"
+          ],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.invoices.write"
+          ],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/invoices/{invoiceId}",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/invoices/[invoiceId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.invoices.write"
+          ],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/invoices/{invoiceId}/void",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/invoices/[invoiceId]/void/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.invoices.read"
+          ],
+          "declared_statuses": [
+            400
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.invoices.write"
+          ],
+          "declared_statuses": [
+            422,
+            500
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/invoices",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/invoices/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.items.write"
+          ],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.items.read"
+          ],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.items.write"
+          ],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/items/{itemId}",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/items/[itemId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.items.read"
+          ],
+          "declared_statuses": [
+            400
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.items.write"
+          ],
+          "declared_statuses": [
+            500
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/items",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/items/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.payments.read"
+          ],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/payment-modes",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/payment-modes/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.payments.read"
+          ],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/payments/{paymentId}",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/payments/[paymentId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.payments.read"
+          ],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.payments.write"
+          ],
+          "declared_statuses": [
+            500
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/payments",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/payments/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.plans.read"
+          ],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/plans",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/plans/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.organizations.read"
+          ],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "integration",
+          "declared_permissions": [],
+          "declared_scopes": [
+            "billing.subscriptions.read"
+          ],
+          "declared_statuses": [
+            400
+          ],
+          "method": "GET"
+        }
+      ],
+      "path": "/integrations/organizations/{organizationId}/subscriptions",
+      "source": "src/app/api/billing/integrations/organizations/[organizationId]/subscriptions/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "POST"
+        }
+      ],
+      "path": "/invoice-preferences/assess-late-fees",
+      "source": "src/app/api/billing/invoice-preferences/assess-late-fees/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/invoice-preferences",
+      "source": "src/app/api/billing/invoice-preferences/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/invoices/{invoiceId}/finalize",
+      "source": "src/app/api/billing/invoices/[invoiceId]/finalize/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/invoices/{invoiceId}",
+      "source": "src/app/api/billing/invoices/[invoiceId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/invoices/{invoiceId}/void",
+      "source": "src/app/api/billing/invoices/[invoiceId]/void/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/invoices",
+      "source": "src/app/api/billing/invoices/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/items/{itemId}",
+      "source": "src/app/api/billing/items/[itemId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/items",
+      "source": "src/app/api/billing/items/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "members:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/members/{userId}",
+      "source": "src/app/api/billing/members/[userId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/payment-providers/connections/{connectionId}",
+      "source": "src/app/api/billing/payment-providers/connections/[connectionId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/payment-providers/connections",
+      "source": "src/app/api/billing/payment-providers/connections/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        }
+      ],
+      "path": "/payment-providers",
+      "source": "src/app/api/billing/payment-providers/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/payment-terms",
+      "source": "src/app/api/billing/payment-terms/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/payments/{paymentId}/apply",
+      "source": "src/app/api/billing/payments/[paymentId]/apply/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/payments/{paymentId}",
+      "source": "src/app/api/billing/payments/[paymentId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/payments/modes/{modeId}",
+      "source": "src/app/api/billing/payments/modes/[modeId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/payments/modes",
+      "source": "src/app/api/billing/payments/modes/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "payments:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/payments",
+      "source": "src/app/api/billing/payments/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/plans/{planId}/clone",
+      "source": "src/app/api/billing/plans/[planId]/clone/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/plans/{planId}",
+      "source": "src/app/api/billing/plans/[planId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/plans",
+      "source": "src/app/api/billing/plans/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/price-lists/{priceListId}/resolve",
+      "source": "src/app/api/billing/price-lists/[priceListId]/resolve/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/price-lists/{priceListId}",
+      "source": "src/app/api/billing/price-lists/[priceListId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/price-lists",
+      "source": "src/app/api/billing/price-lists/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/prices/{priceId}",
+      "source": "src/app/api/billing/prices/[priceId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/prices",
+      "source": "src/app/api/billing/prices/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/products/{productId}",
+      "source": "src/app/api/billing/products/[productId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "catalog:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/products",
+      "source": "src/app/api/billing/products/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/quotes/{quoteId}",
+      "source": "src/app/api/billing/quotes/[quoteId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/quotes",
+      "source": "src/app/api/billing/quotes/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/refunds",
+      "source": "src/app/api/billing/refunds/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "roles:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "roles:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "roles:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/roles/{roleId}",
+      "source": "src/app/api/billing/roles/[roleId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "roles:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "roles:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/roles",
+      "source": "src/app/api/billing/roles/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "sales:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/salespeople",
+      "source": "src/app/api/billing/salespeople/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/subscription-preferences/invoice-modes",
+      "source": "src/app/api/billing/subscription-preferences/invoice-modes/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/subscription-preferences",
+      "source": "src/app/api/billing/subscription-preferences/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PUT"
+        }
+      ],
+      "path": "/subscription-views/{viewId}",
+      "source": "src/app/api/billing/subscription-views/[viewId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscription-views",
+      "source": "src/app/api/billing/subscription-views/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/amendments",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/amendments/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            409,
+            422,
+            500
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/bill",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/bill/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/cancel",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/cancel/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/charges/{chargeId}",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/charges/[chargeId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/charges",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/charges/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/discounts/{discountId}",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/discounts/[discountId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/discounts",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/discounts/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/extend",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/extend/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/pause",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/pause/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/preview-proration",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/preview-proration/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/reactivate",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/reactivate/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/resume",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/resume/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        }
+      ],
+      "path": "/subscriptions/{subscriptionId}/upcoming-invoice",
+      "source": "src/app/api/billing/subscriptions/[subscriptionId]/upcoming-invoice/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "subscriptions:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/subscriptions",
+      "source": "src/app/api/billing/subscriptions/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "taxes:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/tax-authorities/{taxAuthorityId}",
+      "source": "src/app/api/billing/tax-authorities/[taxAuthorityId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "taxes:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "taxes:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/tax-authorities",
+      "source": "src/app/api/billing/tax-authorities/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "taxes:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/tax-rates/{taxRateId}",
+      "source": "src/app/api/billing/tax-rates/[taxRateId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "taxes:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "taxes:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/tax-rates",
+      "source": "src/app/api/billing/tax-rates/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [],
+          "declared_scopes": [],
+          "declared_statuses": [
+            401,
+            403,
+            409,
+            422,
+            502
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/tenants",
+      "source": "src/app/api/billing/tenants/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "vendors:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "DELETE"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "vendors:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            404
+          ],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "vendors:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            422
+          ],
+          "method": "PATCH"
+        }
+      ],
+      "path": "/vendors/{vendorId}",
+      "source": "src/app/api/billing/vendors/[vendorId]/route.ts"
+    },
+    {
+      "operations": [
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "vendors:read"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [],
+          "method": "GET"
+        },
+        {
+          "auth_tier": "tenant",
+          "declared_permissions": [
+            "vendors:write"
+          ],
+          "declared_scopes": [],
+          "declared_statuses": [
+            201,
+            422
+          ],
+          "method": "POST"
+        }
+      ],
+      "path": "/vendors",
+      "source": "src/app/api/billing/vendors/route.ts"
+    }
+  ],
+  "version": 1
+}
