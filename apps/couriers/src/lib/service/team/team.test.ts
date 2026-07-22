@@ -527,3 +527,175 @@ describe('service.team', () => {
     })
   })
 })
+
+it('filters team grants by active status in the database query', async () => {
+  const findMany = mockPrismaRef.current!.teamMember.findMany
+
+  await team.list('ten_rocketship', { status: 'active' })
+
+  expect(findMany).toHaveBeenCalledWith({
+    where: { tenantId: 'ten_rocketship', status: 'ACTIVE' },
+    include: { role: true },
+    orderBy: { createdAt: 'asc' },
+  })
+})
+
+it('returns not-found when updating a missing team grant', async () => {
+  const findFirst = mockPrismaRef.current!.teamMember.findFirst
+  const update = mockPrismaRef.current!.teamMember.update
+  findFirst.mockResolvedValue(null)
+
+  const result = await team.update('ten_rocketship', 'tmem_missing', {
+    status: 'inactive',
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The requested team member was not found.',
+    status: 404,
+    code: 'team/not-found',
+  })
+  expect(update).not.toHaveBeenCalled()
+})
+
+it('rejects update assignment to a role from another tenant', async () => {
+  const memberFindFirst = mockPrismaRef.current!.teamMember.findFirst
+  const roleFindFirst = mockPrismaRef.current!.role.findFirst
+  const update = mockPrismaRef.current!.teamMember.update
+  memberFindFirst.mockResolvedValue(createMemberWithRole())
+  roleFindFirst.mockResolvedValue(null)
+
+  const result = await team.update('ten_rocketship', 'tmem_alejandra', {
+    roleId: 'role_other_tenant',
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The selected role is not available for this tenant.',
+    status: 400,
+    code: 'team/role-not-found',
+  })
+  expect(update).not.toHaveBeenCalled()
+})
+
+it('allows re-roling an Admin when another active Admin remains', async () => {
+  const memberFindFirst = mockPrismaRef.current!.teamMember.findFirst
+  const roleFindFirst = mockPrismaRef.current!.role.findFirst
+  const count = mockPrismaRef.current!.teamMember.count
+  const update = mockPrismaRef.current!.teamMember.update
+  memberFindFirst.mockResolvedValue(
+    createMemberWithRole(
+      { roleId: 'role_admin' },
+      { id: 'role_admin', name: 'Admin', systemKey: 'admin' }
+    )
+  )
+  roleFindFirst.mockResolvedValue(
+    createRole({ id: 'role_staff', name: 'Staff', systemKey: 'staff' })
+  )
+  count.mockResolvedValue(2)
+  update.mockResolvedValue(
+    createMemberWithRole(
+      {
+        roleId: 'role_staff',
+        updatedAt: NOW,
+      },
+      { id: 'role_staff', name: 'Staff', systemKey: 'staff' }
+    )
+  )
+
+  const result = await team.update('ten_rocketship', 'tmem_alejandra', {
+    roleId: 'role_staff',
+  })
+
+  expect(result.error).toBeNull()
+  expect(result.data?.roleSystemKey).toBe('staff')
+  expect(count).toHaveBeenCalledTimes(1)
+  expect(update).toHaveBeenCalledTimes(1)
+})
+
+it('returns not-found when deleting a missing team grant', async () => {
+  const findFirst = mockPrismaRef.current!.teamMember.findFirst
+  const deleteMember = mockPrismaRef.current!.teamMember.delete
+  findFirst.mockResolvedValue(null)
+
+  const result = await team.delete('ten_rocketship', 'tmem_missing')
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The requested team member was not found.',
+    status: 404,
+    code: 'team/not-found',
+  })
+  expect(deleteMember).not.toHaveBeenCalled()
+})
+
+it('returns role-not-found when ensure cannot resolve the default role', async () => {
+  const roleFindMany = mockPrismaRef.current!.role.findMany
+  const roleFindUnique = mockPrismaRef.current!.role.findUnique
+  const create = mockPrismaRef.current!.teamMember.create
+  roleFindMany.mockResolvedValue([
+    { systemKey: 'admin' },
+    { systemKey: 'staff' },
+  ])
+  roleFindUnique.mockResolvedValue(null)
+
+  const result = await team.ensure('ten_rocketship', {
+    userId: 'usr_alejandra',
+    systemKey: 'admin',
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The selected role is not available for this tenant.',
+    status: 400,
+    code: 'team/role-not-found',
+  })
+  expect(create).not.toHaveBeenCalled()
+})
+
+it('maps a concurrent ensure race to already-member conflict', async () => {
+  const roleFindMany = mockPrismaRef.current!.role.findMany
+  const roleFindUnique = mockPrismaRef.current!.role.findUnique
+  const create = mockPrismaRef.current!.teamMember.create
+  roleFindMany.mockResolvedValue([
+    { systemKey: 'admin' },
+    { systemKey: 'staff' },
+  ])
+  roleFindUnique.mockResolvedValue({ id: 'role_admin' })
+  create.mockRejectedValue({ code: 'P2002' })
+
+  const result = await team.ensure('ten_rocketship', {
+    userId: 'usr_alejandra',
+    systemKey: 'admin',
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'This user is already a team member.',
+    status: 409,
+    code: 'team/already-member',
+  })
+})
+
+it('allows deleting a non-last Admin when another active Admin remains', async () => {
+  const findFirst = mockPrismaRef.current!.teamMember.findFirst
+  const count = mockPrismaRef.current!.teamMember.count
+  const deleteMember = mockPrismaRef.current!.teamMember.delete
+  findFirst.mockResolvedValue(
+    createMemberWithRole(
+      { roleId: 'role_admin' },
+      { id: 'role_admin', name: 'Admin', systemKey: 'admin' }
+    )
+  )
+  count.mockResolvedValue(2)
+  deleteMember.mockResolvedValue(createMember({ roleId: 'role_admin' }))
+
+  const result = await team.delete('ten_rocketship', 'tmem_alejandra')
+
+  expect(result).toEqual({
+    data: { id: 'tmem_alejandra', deleted: true },
+    error: null,
+  })
+  expect(count).toHaveBeenCalledTimes(1)
+  expect(deleteMember).toHaveBeenCalledTimes(1)
+})

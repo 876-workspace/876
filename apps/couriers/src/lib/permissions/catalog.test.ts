@@ -4,6 +4,7 @@ import type { PermissionCatalog } from '@/types/permissions'
 
 import {
   PERMISSION_CATALOG,
+  DEFAULT_ROLE_DEFINITIONS,
   allPermissionKeys,
   defaultRolePermissions,
   isValidPermissionKey,
@@ -85,6 +86,39 @@ describe('permission catalog', () => {
     expect(result).toEqual(ALL_KEYS)
   })
 
+  it('includes every expected module key exactly once', () => {
+    const keys = PERMISSION_CATALOG.map((module) => module.key)
+
+    expect(keys).toEqual([
+      'items',
+      'customers',
+      'packages',
+      'pre_alerts',
+      'warehouse',
+      'manifests',
+      'deliveries',
+      'invoices',
+      'payments',
+      'reports',
+      'settings',
+    ])
+    expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  it('limits Reports to view and Settings to view/edit', () => {
+    const reports = PERMISSION_CATALOG.find(
+      (module) => module.key === 'reports'
+    )
+    const settings = PERMISSION_CATALOG.find(
+      (module) => module.key === 'settings'
+    )
+
+    expect(reports?.actions).toEqual(['view'])
+    expect(reports?.extras).toEqual([])
+    expect(settings?.actions).toEqual(['view', 'edit'])
+    expect(settings?.extras).toEqual([])
+  })
+
   it.each([
     ['parcels.scan', true],
     ['packages.export', false],
@@ -116,6 +150,22 @@ describe('permission catalog', () => {
     const result = defaultRolePermissions(PERMISSION_CATALOG, 'staff')
 
     expect(result).toEqual(ALL_KEYS.slice(0, -3))
+    expect(result).not.toContain('reports.view')
+    expect(result).not.toContain('settings.view')
+    expect(result).not.toContain('settings.edit')
+  })
+
+  it('defines stable default role names and descriptions', () => {
+    expect(DEFAULT_ROLE_DEFINITIONS).toEqual({
+      admin: {
+        name: 'Admin',
+        description: 'Unrestricted access to every module.',
+      },
+      staff: {
+        name: 'Staff',
+        description: 'Access to every module except Reports and Settings.',
+      },
+    })
   })
 
   it('filters invalid stored keys for custom roles', () => {
@@ -143,6 +193,15 @@ describe('permission catalog', () => {
     expect(result).toEqual([])
   })
 
+  it('rejects non-array stored custom permissions', () => {
+    const result = resolveRolePermissions({
+      systemKey: null,
+      permissions: { items: true },
+    })
+
+    expect(result).toEqual([])
+  })
+
   it.each([
     ['admin', ALL_KEYS],
     ['staff', ALL_KEYS.slice(0, -3)],
@@ -165,5 +224,13 @@ describe('permission catalog', () => {
 
     expect(result).toEqual(ALL_KEYS.slice(0, -3))
     expect(PERMISSION_CATALOG).toEqual(snapshot)
+  })
+
+  it('is pure for repeated allPermissionKeys calls', () => {
+    const first = allPermissionKeys(PERMISSION_CATALOG)
+    const second = allPermissionKeys(PERMISSION_CATALOG)
+
+    expect(first).toEqual(second)
+    expect(first).not.toBe(second)
   })
 })

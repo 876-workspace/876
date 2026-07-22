@@ -439,3 +439,125 @@ describe('service.roles', () => {
     )
   })
 })
+
+it('rejects create params that fail schema validation without writing', async () => {
+  const create = mockPrismaRef.current!.role.create
+
+  const result = await roles.create('ten_rocketship', {
+    name: '',
+    permissions: ['items.view'],
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The provided data failed validation.',
+    status: 422,
+    code: 'error/validation-failed',
+  })
+  expect(create).not.toHaveBeenCalled()
+})
+
+it('returns not-found when updating a missing role', async () => {
+  const findFirst = mockPrismaRef.current!.role.findFirst
+  const update = mockPrismaRef.current!.role.update
+  findFirst.mockResolvedValue(null)
+
+  const result = await roles.update('ten_rocketship', 'role_missing', {
+    name: 'Dispatch',
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The requested role was not found.',
+    status: 404,
+    code: 'role/not-found',
+  })
+  expect(update).not.toHaveBeenCalled()
+})
+
+it('rejects invalid permission keys on update without writing', async () => {
+  const findFirst = mockPrismaRef.current!.role.findFirst
+  const update = mockPrismaRef.current!.role.update
+  findFirst.mockResolvedValue(createRole())
+
+  const result = await roles.update('ten_rocketship', 'role_dispatcher', {
+    permissions: ['items.view', 'items.full'],
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'One or more permission keys are invalid.',
+    status: 400,
+    code: 'role/invalid-permission',
+  })
+  expect(update).not.toHaveBeenCalled()
+})
+
+it('maps a rename uniqueness conflict on update to name-taken', async () => {
+  const findFirst = mockPrismaRef.current!.role.findFirst
+  const update = mockPrismaRef.current!.role.update
+  findFirst.mockResolvedValue(createRole())
+  update.mockRejectedValue({ code: 'P2002' })
+
+  const result = await roles.update('ten_rocketship', 'role_dispatcher', {
+    name: 'Admin',
+  })
+
+  expect(result).toEqual({
+    data: null,
+    error: 'A role with that name already exists.',
+    status: 409,
+    code: 'role/name-taken',
+  })
+})
+
+it('returns not-found when deleting a missing role', async () => {
+  const findFirst = mockPrismaRef.current!.role.findFirst
+  const deleteRole = mockPrismaRef.current!.role.delete
+  findFirst.mockResolvedValue(null)
+
+  const result = await roles.delete('ten_rocketship', 'role_missing')
+
+  expect(result).toEqual({
+    data: null,
+    error: 'The requested role was not found.',
+    status: 404,
+    code: 'role/not-found',
+  })
+  expect(deleteRole).not.toHaveBeenCalled()
+})
+
+it('resolves staff default permissions from the catalog, ignoring stored JSON', async () => {
+  const findFirst = mockPrismaRef.current!.role.findFirst
+  findFirst.mockResolvedValue({
+    ...createRole({
+      id: 'role_staff',
+      name: 'Staff',
+      systemKey: 'staff',
+      permissions: ['bogus.stored'],
+    }),
+    _count: { members: 0 },
+  })
+
+  const result = await roles.retrieve('ten_rocketship', 'role_staff')
+
+  expect(result?.isDefault).toBe(true)
+  expect(result?.systemKey).toBe('staff')
+  expect(result?.permissions).toEqual(
+    allPermissionKeys(PERMISSION_CATALOG).filter(
+      (key) => !key.startsWith('reports.') && !key.startsWith('settings.')
+    )
+  )
+})
+
+it('rethrows non-unique-constraint errors from custom role create', async () => {
+  const create = mockPrismaRef.current!.role.create
+  create.mockRejectedValue(new Error('disk full'))
+
+  await expect(
+    roles.create('ten_rocketship', {
+      name: 'Dispatcher',
+      permissions: ['items.view'],
+    })
+  ).rejects.toThrow('disk full')
+})
