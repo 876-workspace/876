@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,6 +14,11 @@ class Settings(BaseSettings):
 
     port: int = Field(default=4004, validation_alias="PORT")
     database_url: str = Field(default="", validation_alias="BILLING_DATABASE_URL")
+    legacy_database_url: str = Field(default="", validation_alias="BILLING_LEGACY_DATABASE_URL")
+    billing_writer: Literal["legacy", "fastapi", "none"] = Field(
+        default="none",
+        validation_alias="BILLING_WRITER",
+    )
     identity_api_url: str = Field(default="http://127.0.0.1:4000", validation_alias="API_URL")
     identity_api_key: str = Field(default="", validation_alias="BILLING_API_876_KEY")
     internal_key: str = Field(default="", validation_alias="BILLING_INTERNAL_KEY")
