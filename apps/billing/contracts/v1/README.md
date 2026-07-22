@@ -9,17 +9,11 @@ preserve while it replaces the Next.js implementation.
   methods, authorization tiers, declared permissions and integration scopes,
   and explicitly declared HTTP status codes.
 
-Regenerate both files after an intentional contract change:
-
-```bash
-pnpm --filter @876/billing-app contract:generate
-```
-
-Verify that the committed baseline matches the implementation:
-
-```bash
-pnpm --filter @876/billing-app contract:check
-```
+These files are a frozen baseline from the legacy Next.js implementation.
+Do not regenerate them from the Billing UI. After intentional contract
+changes, update OpenAPI from `@876/billing-api` and keep the manifest in
+sync by hand (or via Billing API tooling) so Phase 1 parity checks still
+match the standalone service.
 
 ## Rewrite parity gates
 

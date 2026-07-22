@@ -61,10 +61,32 @@ Do not continue while the report has `matches: false`.
 1. Keep legacy writes frozen.
 2. Set `BILLING_WRITER=fastapi` on both runtimes. This enables FastAPI writes
    and keeps Prisma mutations blocked.
-3. Route service clients to `BILLING_API_URL` and verify a read, an idempotent
-   mutation, and the matching financial record.
-4. Re-enable only the FastAPI scheduler after the billing-engine phase is
+3. Route service clients to `BILLING_API_URL`, then run the deployment gate:
+
+   ```bash
+   BILLING_API_URL=https://billing-api.example.com \
+     pnpm --filter @876/billing-api cutover:check
+   ```
+
+   The command emits a secret-free JSON report and fails unless health,
+   readiness, the `fastapi` writer lease, and all 187 frozen v1 operations
+   match the deployment.
+4. Verify a read, an idempotent mutation, and the matching financial record.
+5. Re-enable only the FastAPI scheduler after the billing-engine phase is
    deployed.
+
+## Observe
+
+Scrape `/metrics` for request volume, latency, status, active writer metadata,
+and rejected mutation counts. Route labels use FastAPI templates rather than
+raw resource IDs. Alert on readiness failures, any unexpected writer rejection
+after cutover, elevated 5xx responses, and scheduler failures.
+
+The Billing UI no longer publishes its old `/api/billing/*` or `/api/admin/*`
+handlers and no longer runs Prisma migrations. Its `/api/v1/*` browser surface
+is an authenticated BFF for the standalone service. A temporary Prisma read
+projection remains for server-rendered pages; `BILLING_WRITER=fastapi` keeps it
+read-only until those page queries are moved to `@876/billing`.
 
 ## Rollback
 

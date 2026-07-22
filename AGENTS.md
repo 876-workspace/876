@@ -14,7 +14,8 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 | `@876/console`     | `apps/console`     | 3002 | Internal Console.                                                 |
 | `@876/api`         | `apps/api`         | 4000 | FastAPI backend; owns database/provider server calls.             |
 | `@876/docs`        | `apps/docs`        | 3003 | SDK documentation app with OpenAPI-backed method references.      |
-| `@876/billing-app` | `apps/billing`     | 3004 | Standalone Billing SaaS and versioned Billing HTTP API.           |
+| `@876/billing-app` | `apps/billing`     | 3004 | Billing SaaS presentation layer and authenticated API BFF.        |
+| `@876/billing-api` | `apps/billing-api` | 4004 | FastAPI financial data plane, providers, and scheduled billing.   |
 | `@876/widgets-api` | `apps/widgets-api` | 3005 | Widget-owned data service backed by dedicated Postgres.           |
 
 ### Shared packages
@@ -67,7 +68,7 @@ python -m ruff check .
 
 ## Boundaries
 
-- **All database access, provider calls, and business logic belong in `apps/api` (FastAPI).** Next.js apps must not contain raw `fetch` calls to FastAPI or any direct DB/provider access. Frontends fetch over HTTP via `@876/sdk` or `@876/core` fetchers.
+- **All database access, provider calls, and business logic belong in the owning FastAPI data service** (`apps/api`, `apps/billing-api`, or `apps/widgets-api`). Next.js apps must not contain raw `fetch` calls to FastAPI or any direct DB/provider access. Frontends fetch over HTTP via the owning typed package or BFF.
 - `@876/app` and `@876/console` fetch data exclusively through `@876/sdk` (consumer/auth) or `@876/admin` (Console server components).
 - `@876/admin` server-side calls use `internalKey: process.env.API_INTERNAL_KEY`. Never expose this key to the browser.
 - `@876/sdk` is request-only auth/OAuth transport; apps own cookies, session stores, and navigation.
