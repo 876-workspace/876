@@ -59,6 +59,7 @@ describe('getFeatures', () => {
         globalAdd: false,
         appSwitcher: false,
         orgSwitcher: false,
+        chat: false,
       },
     ],
     [
@@ -70,6 +71,7 @@ describe('getFeatures', () => {
         globalAdd: false,
         appSwitcher: false,
         orgSwitcher: false,
+        chat: false,
       },
     ],
     [
@@ -81,6 +83,7 @@ describe('getFeatures', () => {
         globalAdd: true,
         appSwitcher: false,
         orgSwitcher: false,
+        chat: false,
       },
     ],
     [
@@ -92,6 +95,7 @@ describe('getFeatures', () => {
         globalAdd: false,
         appSwitcher: true,
         orgSwitcher: false,
+        chat: false,
       },
     ],
     [
@@ -103,6 +107,7 @@ describe('getFeatures', () => {
         globalAdd: false,
         appSwitcher: false,
         orgSwitcher: true,
+        chat: false,
       },
     ],
   ] as const)(
@@ -151,6 +156,7 @@ describe('getFeatures', () => {
         globalAdd: false,
         appSwitcher: false,
         orgSwitcher: false,
+        chat: false,
       },
       enabledWidgetIds: ['notepad'],
     })
@@ -182,6 +188,7 @@ describe('getFeatures', () => {
         globalAdd: false,
         appSwitcher: false,
         orgSwitcher: false,
+        chat: false,
       },
       enabledWidgetIds: [],
     })
@@ -223,6 +230,7 @@ describe('getFeatures', () => {
           globalAdd: false,
           appSwitcher: false,
           orgSwitcher: false,
+          chat: false,
         },
         enabledWidgetIds: [],
       })
