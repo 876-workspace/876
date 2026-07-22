@@ -31,44 +31,44 @@ class Price(Base):
     __tablename__ = "billing_prices"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "entitlement_reference_id", name="billing_prices_tenant_entitlement_reference_key"),
+        Index("billing_prices_tenant_entitlement_reference_key", "tenant_id", "entitlement_reference_id", unique=True),
         Index("billing_prices_tenant_id_idx", "tenant_id"),
         Index("billing_prices_item_id_idx", "item_id"),
         Index("billing_prices_plan_id_idx", "plan_id"),
         Index("billing_prices_addon_id_idx", "addon_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["plan_id"], ["billing_plans.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["addon_id"], ["billing_addons.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["plan_id"], ["billing_plans.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["addon_id"], ["billing_addons.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    item_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    plan_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    plan_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    addon_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    addon_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    nickname: Mapped[str | None] = mapped_column(String, nullable=True)
+    nickname: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    entitlement_reference_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    entitlement_reference_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    currency: Mapped[str] = mapped_column(String, nullable=False)
+    currency: Mapped[str] = mapped_column(Text, nullable=False)
 
     unit_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
-    pricing_model: Mapped[PricingModel] = mapped_column(ENUM(PricingModel, name="BillingPricingModel", create_type=False), nullable=False, server_default=text("'FLAT'"))
+    pricing_model: Mapped[PricingModel] = mapped_column(ENUM(PricingModel, name="BillingPricingModel"), nullable=False, server_default=text("'FLAT'"))
 
-    price_type: Mapped[PriceType] = mapped_column(ENUM(PriceType, name="BillingPriceType", create_type=False), nullable=False, server_default=text("'ONE_TIME'"))
+    price_type: Mapped[PriceType] = mapped_column(ENUM(PriceType, name="BillingPriceType"), nullable=False, server_default=text("'ONE_TIME'"))
 
-    interval_unit: Mapped[IntervalUnit | None] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit", create_type=False), nullable=True)
+    interval_unit: Mapped[IntervalUnit | None] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit"), nullable=True)
 
     interval_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    unit_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    unit_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     package_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -86,14 +86,14 @@ class PriceTier(Base):
     __tablename__ = "billing_price_tiers"
 
     __table_args__ = (
-        UniqueConstraint("price_id", "from_unit", name="billing_price_tiers_price_id_from_unit_key"),
+        Index("billing_price_tiers_price_id_from_unit_key", "price_id", "from_unit", unique=True),
         Index("billing_price_tiers_price_id_idx", "price_id"),
-        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    price_id: Mapped[str] = mapped_column(String, nullable=False)
+    price_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     from_unit: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 

@@ -123,7 +123,7 @@ model InvoiceLine {
   subscriptionCharge SubscriptionCharge? @relation(fields: [subscriptionChargeId], references: [id], onDelete: SetNull)
   sourceTaxRate      TaxRate?            @relation(fields: [taxRateId], references: [id], onDelete: SetNull)
 
-  @@unique([invoiceId, position], name: "billing_invoice_lines_invoice_position_key")
+  @@unique([invoiceId, position], name: "billing_invoice_lines_invoice_id_position_key")
   @@index([invoiceId], name: "billing_invoice_lines_invoice_id_idx")
   @@index([itemId], name: "billing_invoice_lines_item_id_idx")
   @@index([priceId], name: "billing_invoice_lines_price_id_idx")

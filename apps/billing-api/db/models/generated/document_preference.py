@@ -31,16 +31,16 @@ class DocumentPreference(Base):
     __tablename__ = "billing_document_preferences"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType, name="BillingDocumentType", create_type=False), primary_key=True, nullable=False)
+    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType, name="BillingDocumentType"), primary_key=True, nullable=False)
 
-    customer_note: Mapped[str | None] = mapped_column(String, nullable=True)
+    customer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    terms_and_conditions: Mapped[str | None] = mapped_column(String, nullable=True)
+    terms_and_conditions: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     provisioning_version: Mapped[int] = mapped_column(Integer, nullable=False)
 

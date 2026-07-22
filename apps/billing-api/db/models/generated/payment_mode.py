@@ -31,15 +31,16 @@ class PaymentMode(Base):
     __tablename__ = "billing_payment_modes"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "name"),
+        Index("billing_payment_modes_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_payment_modes_tenant_id_name_key", "tenant_id", "name", unique=True),
         Index("billing_payment_modes_tenant_id_is_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        Index("billing_payment_modes_default_key", "tenant_id", unique=True, postgresql_where=text("is_default")),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     name: Mapped[str] = mapped_column(String(120), nullable=False)
 

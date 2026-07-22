@@ -31,46 +31,46 @@ class CustomerLedgerEntry(Base):
     __tablename__ = "billing_customer_ledger_entries"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "idempotency_key"),
+        Index("billing_customer_ledger_entries_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_customer_ledger_entries_tenant_idempotency_key", "tenant_id", "idempotency_key", unique=True),
         Index("billing_ledger_tenant_customer_date_idx", "tenant_id", "customer_id", "effective_at"),
         Index("billing_ledger_tenant_type_date_idx", "tenant_id", "type", "effective_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "credit_note_id"], ["billing_credit_notes.tenant_id", "billing_credit_notes.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "refund_id"], ["billing_refunds.tenant_id", "billing_refunds.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "credit_note_id"], ["billing_credit_notes.tenant_id", "billing_credit_notes.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "refund_id"], ["billing_refunds.tenant_id", "billing_refunds.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    subscription_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    invoice_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    payment_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    credit_note_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    credit_note_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    refund_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    refund_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    type: Mapped[LedgerEntryType] = mapped_column(ENUM(LedgerEntryType, name="BillingLedgerEntryType", create_type=False), nullable=False)
+    type: Mapped[LedgerEntryType] = mapped_column(ENUM(LedgerEntryType, name="BillingLedgerEntryType"), nullable=False)
 
-    direction: Mapped[LedgerDirection] = mapped_column(ENUM(LedgerDirection, name="BillingLedgerDirection", create_type=False), nullable=False)
+    direction: Mapped[LedgerDirection] = mapped_column(ENUM(LedgerDirection, name="BillingLedgerDirection"), nullable=False)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     currency: Mapped[str] = mapped_column(CHAR(3), nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    idempotency_key: Mapped[str] = mapped_column(String, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(Text, nullable=False)
 
     effective_at: Mapped[int] = mapped_column(Integer, nullable=False)
 

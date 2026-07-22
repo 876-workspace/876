@@ -31,19 +31,19 @@ class BankAccount(Base):
     __tablename__ = "billing_bank_accounts"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "name"),
+        Index("billing_bank_accounts_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_bank_accounts_tenant_id_name_key", "tenant_id", "name", unique=True),
         Index("billing_bank_accounts_tenant_id_is_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     name: Mapped[str] = mapped_column(String(120), nullable=False)
 
-    account_type: Mapped[BankAccountType] = mapped_column(ENUM(BankAccountType, name="BillingBankAccountType", create_type=False), nullable=False)
+    account_type: Mapped[BankAccountType] = mapped_column(ENUM(BankAccountType, name="BillingBankAccountType"), nullable=False)
 
     currency: Mapped[str] = mapped_column(CHAR(3), nullable=False)
 
@@ -59,23 +59,23 @@ class BankTransaction(Base):
     __tablename__ = "billing_bank_transactions"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "payment_id"),
+        Index("billing_bank_transactions_tenant_id_payment_id_key", "tenant_id", "payment_id", unique=True),
         Index("billing_bank_transactions_tenant_account_date_idx", "tenant_id", "account_id", "date"),
         Index("billing_bank_transactions_tenant_id_date_idx", "tenant_id", "date"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "account_id"], ["billing_bank_accounts.tenant_id", "billing_bank_accounts.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "account_id"], ["billing_bank_accounts.tenant_id", "billing_bank_accounts.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    account_id: Mapped[str] = mapped_column(String, nullable=False)
+    account_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    payment_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    type: Mapped[BankTransactionType] = mapped_column(ENUM(BankTransactionType, name="BillingBankTransactionType", create_type=False), nullable=False)
+    type: Mapped[BankTransactionType] = mapped_column(ENUM(BankTransactionType, name="BillingBankTransactionType"), nullable=False)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
@@ -83,7 +83,7 @@ class BankTransaction(Base):
 
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    status: Mapped[BankTransactionStatus] = mapped_column(ENUM(BankTransactionStatus, name="BillingBankTransactionStatus", create_type=False), nullable=False, server_default=text("'UNCATEGORIZED'"))
+    status: Mapped[BankTransactionStatus] = mapped_column(ENUM(BankTransactionStatus, name="BillingBankTransactionStatus"), nullable=False, server_default=text("'UNCATEGORIZED'"))
 
     reference: Mapped[str | None] = mapped_column(String(120), nullable=True)
 

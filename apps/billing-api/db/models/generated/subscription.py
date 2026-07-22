@@ -31,7 +31,8 @@ class Subscription(Base):
     __tablename__ = "billing_subscriptions"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "external_reference", name="billing_subscriptions_tenant_external_reference_key"),
+        Index("billing_subscriptions_replaces_subscription_id_key", "replaces_subscription_id", unique=True),
+        Index("billing_subscriptions_tenant_external_reference_key", "tenant_id", "external_reference", unique=True),
         Index("billing_subscriptions_tenant_id_idx", "tenant_id"),
         Index("billing_subscriptions_customer_id_idx", "customer_id"),
         Index("billing_subscriptions_status_idx", "status"),
@@ -40,26 +41,26 @@ class Subscription(Base):
         Index("billing_subscriptions_tenant_next_advance_invoice_idx", "tenant_id", "next_advance_invoice_at"),
         Index("billing_subscriptions_price_list_id_idx", "price_list_id"),
         Index("billing_subscriptions_tenant_deleted_at_idx", "tenant_id", "deleted_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["customer_id"], ["billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["replaces_subscription_id"], ["billing_subscriptions.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "payment_term_id"], ["billing_payment_terms.tenant_id", "billing_payment_terms.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["customer_id"], ["billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["replaces_subscription_id"], ["billing_subscriptions.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_term_id"], ["billing_payment_terms.tenant_id", "billing_payment_terms.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_app_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    replaces_subscription_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    replaces_subscription_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    status: Mapped[SubscriptionStatus] = mapped_column(ENUM(SubscriptionStatus, name="BillingSubscriptionStatus", create_type=False), nullable=False, server_default=text("'DRAFT'"))
+    status: Mapped[SubscriptionStatus] = mapped_column(ENUM(SubscriptionStatus, name="BillingSubscriptionStatus"), nullable=False, server_default=text("'DRAFT'"))
 
     start_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -85,21 +86,21 @@ class Subscription(Base):
 
     trial_ends_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    collection_method: Mapped[CollectionMethod] = mapped_column(ENUM(CollectionMethod, name="BillingCollectionMethod", create_type=False), nullable=False, server_default=text("'SEND_INVOICE'"))
+    collection_method: Mapped[CollectionMethod] = mapped_column(ENUM(CollectionMethod, name="BillingCollectionMethod"), nullable=False, server_default=text("'SEND_INVOICE'"))
 
-    billing_timing: Mapped[BillingTiming] = mapped_column(ENUM(BillingTiming, name="BillingTiming", create_type=False), nullable=False, server_default=text("'IN_ADVANCE'"))
+    billing_timing: Mapped[BillingTiming] = mapped_column(ENUM(BillingTiming, name="BillingTiming"), nullable=False, server_default=text("'IN_ADVANCE'"))
 
-    proration_behavior: Mapped[ProrationBehavior] = mapped_column(ENUM(ProrationBehavior, name="BillingProrationBehavior", create_type=False), nullable=False, server_default=text("'CREATE_PRORATIONS'"))
+    proration_behavior: Mapped[ProrationBehavior] = mapped_column(ENUM(ProrationBehavior, name="BillingProrationBehavior"), nullable=False, server_default=text("'CREATE_PRORATIONS'"))
 
-    payment_term_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_term_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     auto_apply_credits: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 
-    tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior", create_type=False), nullable=False, server_default=text("'EXCLUSIVE'"))
+    tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior"), nullable=False, server_default=text("'EXCLUSIVE'"))
 
-    invoice_mode_override: Mapped[SubscriptionInvoiceMode | None] = mapped_column(ENUM(SubscriptionInvoiceMode, name="BillingSubscriptionInvoiceMode", create_type=False), nullable=True)
+    invoice_mode_override: Mapped[SubscriptionInvoiceMode | None] = mapped_column(ENUM(SubscriptionInvoiceMode, name="BillingSubscriptionInvoiceMode"), nullable=True)
 
-    renewal_pricing_policy: Mapped[RenewalPricingPolicy] = mapped_column(ENUM(RenewalPricingPolicy, name="BillingRenewalPricingPolicy", create_type=False), nullable=False, server_default=text("'RETAIN_EXISTING'"))
+    renewal_pricing_policy: Mapped[RenewalPricingPolicy] = mapped_column(ENUM(RenewalPricingPolicy, name="BillingRenewalPricingPolicy"), nullable=False, server_default=text("'RETAIN_EXISTING'"))
 
     renewal_adjustment_percent: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
 
@@ -109,9 +110,9 @@ class Subscription(Base):
 
     expires_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    price_list_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_list_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     advance_billing_enabled: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
@@ -129,7 +130,7 @@ class Subscription(Base):
 
     deleted_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    entitlement_reference_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    entitlement_reference_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     metadata_: Mapped[dict[str, Any] | list[Any] | None] = mapped_column("metadata", JSONB, nullable=True)
 
@@ -143,23 +144,23 @@ class SubscriptionItem(Base):
     __table_args__ = (
         Index("billing_subscription_items_active_position_idx", "subscription_id", "is_active", "position"),
         Index("billing_subscription_items_price_id_idx", "price_id"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    subscription_id: Mapped[str] = mapped_column(String, nullable=False)
+    subscription_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    price_id: Mapped[str] = mapped_column(String, nullable=False)
+    price_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 
     unit_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
-    currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    currency: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     position: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
 
@@ -180,16 +181,16 @@ class SubscriptionEvent(Base):
 
     __table_args__ = (
         Index("billing_subscription_events_subscription_id_occurred_at_idx", "subscription_id", "occurred_at"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    subscription_id: Mapped[str] = mapped_column(String, nullable=False)
+    subscription_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    type: Mapped[SubscriptionEventType] = mapped_column(ENUM(SubscriptionEventType, name="BillingSubscriptionEventType", create_type=False), nullable=False)
+    type: Mapped[SubscriptionEventType] = mapped_column(ENUM(SubscriptionEventType, name="BillingSubscriptionEventType"), nullable=False)
 
-    actor_user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    actor_user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     details: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 

@@ -31,36 +31,36 @@ class SubscriptionPreference(Base):
     __tablename__ = "billing_subscription_preferences"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    default_tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior", create_type=False), nullable=False, server_default=text("'EXCLUSIVE'"))
+    default_tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior"), nullable=False, server_default=text("'EXCLUSIVE'"))
 
-    default_collection_method: Mapped[CollectionMethod] = mapped_column(ENUM(CollectionMethod, name="BillingCollectionMethod", create_type=False), nullable=False, server_default=text("'SEND_INVOICE'"))
+    default_collection_method: Mapped[CollectionMethod] = mapped_column(ENUM(CollectionMethod, name="BillingCollectionMethod"), nullable=False, server_default=text("'SEND_INVOICE'"))
 
-    default_billing_timing: Mapped[BillingTiming] = mapped_column(ENUM(BillingTiming, name="BillingTiming", create_type=False), nullable=False, server_default=text("'IN_ADVANCE'"))
+    default_billing_timing: Mapped[BillingTiming] = mapped_column(ENUM(BillingTiming, name="BillingTiming"), nullable=False, server_default=text("'IN_ADVANCE'"))
 
-    default_proration_behavior: Mapped[ProrationBehavior] = mapped_column(ENUM(ProrationBehavior, name="BillingProrationBehavior", create_type=False), nullable=False, server_default=text("'CREATE_PRORATIONS'"))
+    default_proration_behavior: Mapped[ProrationBehavior] = mapped_column(ENUM(ProrationBehavior, name="BillingProrationBehavior"), nullable=False, server_default=text("'CREATE_PRORATIONS'"))
 
-    default_invoice_mode: Mapped[SubscriptionInvoiceMode] = mapped_column(ENUM(SubscriptionInvoiceMode, name="BillingSubscriptionInvoiceMode", create_type=False), nullable=False, server_default=text("'AUTO_FINALIZE'"))
+    default_invoice_mode: Mapped[SubscriptionInvoiceMode] = mapped_column(ENUM(SubscriptionInvoiceMode, name="BillingSubscriptionInvoiceMode"), nullable=False, server_default=text("'AUTO_FINALIZE'"))
 
     notify_draft_invoice: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
     consolidated_billing_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
-    calendar_mode: Mapped[SubscriptionCalendarMode] = mapped_column(ENUM(SubscriptionCalendarMode, name="BillingSubscriptionCalendarMode", create_type=False), nullable=False, server_default=text("'ANNIVERSARY'"))
+    calendar_mode: Mapped[SubscriptionCalendarMode] = mapped_column(ENUM(SubscriptionCalendarMode, name="BillingSubscriptionCalendarMode"), nullable=False, server_default=text("'ANNIVERSARY'"))
 
     pause_resume_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 
-    pause_unbilled_charge_behavior: Mapped[PauseUnbilledChargeBehavior] = mapped_column(ENUM(PauseUnbilledChargeBehavior, name="BillingPauseUnbilledChargeBehavior", create_type=False), nullable=False, server_default=text("'RETAIN'"))
+    pause_unbilled_charge_behavior: Mapped[PauseUnbilledChargeBehavior] = mapped_column(ENUM(PauseUnbilledChargeBehavior, name="BillingPauseUnbilledChargeBehavior"), nullable=False, server_default=text("'RETAIN'"))
 
-    pause_credit_behavior: Mapped[PauseCreditBehavior] = mapped_column(ENUM(PauseCreditBehavior, name="BillingPauseCreditBehavior", create_type=False), nullable=False, server_default=text("'NONE'"))
+    pause_credit_behavior: Mapped[PauseCreditBehavior] = mapped_column(ENUM(PauseCreditBehavior, name="BillingPauseCreditBehavior"), nullable=False, server_default=text("'NONE'"))
 
-    default_resume_billing_behavior: Mapped[ResumeBillingBehavior] = mapped_column(ENUM(ResumeBillingBehavior, name="BillingResumeBillingBehavior", create_type=False), nullable=False, server_default=text("'START_NEW_PERIOD'"))
+    default_resume_billing_behavior: Mapped[ResumeBillingBehavior] = mapped_column(ENUM(ResumeBillingBehavior, name="BillingResumeBillingBehavior"), nullable=False, server_default=text("'START_NEW_PERIOD'"))
 
-    default_renewal_pricing_policy: Mapped[RenewalPricingPolicy] = mapped_column(ENUM(RenewalPricingPolicy, name="BillingRenewalPricingPolicy", create_type=False), nullable=False, server_default=text("'RETAIN_EXISTING'"))
+    default_renewal_pricing_policy: Mapped[RenewalPricingPolicy] = mapped_column(ENUM(RenewalPricingPolicy, name="BillingRenewalPricingPolicy"), nullable=False, server_default=text("'RETAIN_EXISTING'"))
 
     lock_trial_and_future_activation_price: Mapped[bool] = mapped_column("lock_trial_future_activation_price", Boolean, nullable=False, server_default=text("true"))
 
@@ -70,7 +70,7 @@ class SubscriptionPreference(Base):
 
     advance_billing_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
-    advance_billing_method: Mapped[AdvanceBillingMethod] = mapped_column(ENUM(AdvanceBillingMethod, name="BillingAdvanceBillingMethod", create_type=False), nullable=False, server_default=text("'INVOICE'"))
+    advance_billing_method: Mapped[AdvanceBillingMethod] = mapped_column(ENUM(AdvanceBillingMethod, name="BillingAdvanceBillingMethod"), nullable=False, server_default=text("'INVOICE'"))
 
     automate_advance_billing: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
@@ -86,13 +86,13 @@ class SubscriptionAdvanceBillingRule(Base):
     __tablename__ = "billing_subscription_advance_rules"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_subscription_preferences.tenant_id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_subscription_preferences.tenant_id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    interval_unit: Mapped[IntervalUnit] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit", create_type=False), primary_key=True, nullable=False)
+    interval_unit: Mapped[IntervalUnit] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit"), primary_key=True, nullable=False)
 
     days_before: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -104,11 +104,11 @@ class SubscriptionCalendarDay(Base):
     __tablename__ = "billing_subscription_calendar_days"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_subscription_preferences.tenant_id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_subscription_preferences.tenant_id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     day_of_month: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
 
@@ -116,10 +116,10 @@ class SubscriptionCalendarMonth(Base):
     __tablename__ = "billing_subscription_calendar_months"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_subscription_preferences.tenant_id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_subscription_preferences.tenant_id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     month: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

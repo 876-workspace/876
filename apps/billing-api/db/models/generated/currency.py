@@ -30,11 +30,11 @@ from db.models.generated.enums import *  # noqa: F403
 class Currency(Base):
     __tablename__ = "billing_currencies"
 
-    code: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    code: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    symbol: Mapped[str | None] = mapped_column(String, nullable=True)
+    symbol: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     decimal_places: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("2"))
 
@@ -49,13 +49,14 @@ class TenantCurrency(Base):
 
     __table_args__ = (
         Index("billing_tenant_currencies_currency_code_idx", "currency_code"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["currency_code"], ["billing_currencies.code"], ondelete="RESTRICT"),
+        Index("billing_tenant_currencies_default_currency_key", "tenant_id", unique=True, postgresql_where=text("is_default")),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["currency_code"], ["billing_currencies.code"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    currency_code: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    currency_code: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 

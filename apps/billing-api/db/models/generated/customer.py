@@ -31,84 +31,85 @@ class Customer(Base):
     __tablename__ = "billing_customers"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "organization_id", name="billing_customers_tenant_id_organization_id_key"),
-        UniqueConstraint("tenant_id", "user_id", name="billing_customers_tenant_id_user_id_key"),
-        UniqueConstraint("tenant_id", "external_reference", name="billing_customers_tenant_id_external_reference_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_external_reference", name="billing_customers_source_external_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_idempotency_key", name="billing_customers_source_idempotency_key"),
+        Index("billing_customers_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_customers_tenant_id_organization_id_key", "tenant_id", "organization_id", unique=True),
+        Index("billing_customers_tenant_id_user_id_key", "tenant_id", "user_id", unique=True),
+        Index("billing_customers_tenant_id_external_reference_key", "tenant_id", "external_reference", unique=True),
+        Index("billing_customers_source_external_key", "tenant_id", "source_app_id", "source_external_reference", unique=True),
+        Index("billing_customers_source_idempotency_key", "tenant_id", "source_app_id", "source_idempotency_key", unique=True),
         Index("billing_customers_tenant_id_idx", "tenant_id"),
         Index("billing_customers_source_app_idx", "tenant_id", "source_app_id"),
         Index("billing_customers_price_list_id_idx", "price_list_id"),
         Index("billing_customers_external_reference_idx", "external_reference"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["language"], ["billing_languages.code"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["tenant_id", "payment_term_id"], ["billing_payment_terms.tenant_id", "billing_payment_terms.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "salesperson_id"], ["billing_salespeople.tenant_id", "billing_salespeople.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT"),
+        Index("billing_customers_language_idx", "language"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["language"], ["billing_languages.code"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_term_id"], ["billing_payment_terms.tenant_id", "billing_payment_terms.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "salesperson_id"], ["billing_salespeople.tenant_id", "billing_salespeople.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_type: Mapped[CustomerType] = mapped_column(ENUM(CustomerType, name="BillingCustomerType", create_type=False), nullable=False, server_default=text("'EXTERNAL'"))
+    customer_type: Mapped[CustomerType] = mapped_column(ENUM(CustomerType, name="BillingCustomerType"), nullable=False, server_default=text("'EXTERNAL'"))
 
-    customer_kind: Mapped[CustomerKind] = mapped_column(ENUM(CustomerKind, name="BillingCustomerKind", create_type=False), nullable=False, server_default=text("'INDIVIDUAL'"))
+    customer_kind: Mapped[CustomerKind] = mapped_column(ENUM(CustomerKind, name="BillingCustomerKind"), nullable=False, server_default=text("'INDIVIDUAL'"))
 
-    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    organization_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_app_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_idempotency_key: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_payload_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_payload_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    salutation: Mapped[str | None] = mapped_column(String, nullable=True)
+    salutation: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    first_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    first_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    last_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    company_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    company_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    email: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    phone: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    work_phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    work_phone: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     billing_address: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 
     metadata_: Mapped[dict[str, Any] | list[Any] | None] = mapped_column("metadata", JSONB, nullable=True)
 
-    default_currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_currency: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    language: Mapped[str | None] = mapped_column(String, nullable=True)
+    language: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    payment_term_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_term_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    salesperson_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    salesperson_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_list_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     consolidated_billing_override: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
-    tax_behavior_override: Mapped[TaxBehavior | None] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior", create_type=False), nullable=True)
+    tax_behavior_override: Mapped[TaxBehavior | None] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior"), nullable=True)
 
     late_fee_exempt: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
-    invoice_notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    invoice_terms: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_terms: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     outstanding_receivable: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("0"))
 
@@ -116,7 +117,7 @@ class Customer(Base):
 
     core_synced_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    status: Mapped[CustomerStatus] = mapped_column(ENUM(CustomerStatus, name="BillingCustomerStatus", create_type=False), nullable=False, server_default=text("'ACTIVE'"))
+    status: Mapped[CustomerStatus] = mapped_column(ENUM(CustomerStatus, name="BillingCustomerStatus"), nullable=False, server_default=text("'ACTIVE'"))
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -126,31 +127,32 @@ class Contact(Base):
     __tablename__ = "billing_contacts"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "id", name="billing_contacts_tenant_id_id_key"),
         Index("billing_contacts_tenant_customer_idx", "tenant_id", "customer_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="CASCADE"),
+        Index("billing_contacts_primary_key", "tenant_id", "customer_id", unique=True, postgresql_where=text("is_primary")),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    salutation: Mapped[str | None] = mapped_column(String, nullable=True)
+    salutation: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    first_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    first_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    last_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    email: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    work_phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    work_phone: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    mobile_phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    mobile_phone: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
@@ -164,35 +166,35 @@ class Address(Base):
     __tablename__ = "billing_addresses"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "id", name="billing_addresses_tenant_id_id_key"),
         Index("billing_addresses_tenant_customer_idx", "tenant_id", "customer_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    type: Mapped[str] = mapped_column(String, nullable=False, server_default=text("'billing'"))
+    type: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'billing'"))
 
-    label: Mapped[str | None] = mapped_column(String, nullable=True)
+    label: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    attention: Mapped[str | None] = mapped_column(String, nullable=True)
+    attention: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    line1: Mapped[str | None] = mapped_column(String, nullable=True)
+    line1: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    line2: Mapped[str | None] = mapped_column(String, nullable=True)
+    line2: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    city: Mapped[str | None] = mapped_column(String, nullable=True)
+    city: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    state: Mapped[str | None] = mapped_column(String, nullable=True)
+    state: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    postal_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    postal_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    country_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    country_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
 

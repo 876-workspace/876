@@ -31,38 +31,38 @@ class Addon(Base):
     __tablename__ = "billing_addons"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "code", name="billing_addons_tenant_code_key"),
+        Index("billing_addons_tenant_code_key", "tenant_id", "code", unique=True),
         Index("billing_addons_tenant_active_idx", "tenant_id", "is_active"),
         Index("billing_addons_product_idx", "product_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["product_id"], ["billing_products.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["product_id"], ["billing_products.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    product_id: Mapped[str] = mapped_column(String, nullable=False)
+    product_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    code: Mapped[str] = mapped_column(String, nullable=False)
+    code: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    type: Mapped[ItemType] = mapped_column(ENUM(ItemType, name="BillingItemType", create_type=False), nullable=False, server_default=text("'SERVICE'"))
+    type: Mapped[ItemType] = mapped_column(ENUM(ItemType, name="BillingItemType"), nullable=False, server_default=text("'SERVICE'"))
 
-    price_type: Mapped[PriceType] = mapped_column(ENUM(PriceType, name="BillingPriceType", create_type=False), nullable=False, server_default=text("'RECURRING'"))
+    price_type: Mapped[PriceType] = mapped_column(ENUM(PriceType, name="BillingPriceType"), nullable=False, server_default=text("'RECURRING'"))
 
-    interval_unit: Mapped[IntervalUnit | None] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit", create_type=False), nullable=True)
+    interval_unit: Mapped[IntervalUnit | None] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit"), nullable=True)
 
     interval_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    unit_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    unit_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    tax_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_taxable: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
@@ -82,27 +82,27 @@ class PlanAddonAssociation(Base):
     __tablename__ = "billing_plan_addon_associations"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "plan_id", "addon_id", name="billing_plan_addon_associations_key"),
+        Index("billing_plan_addon_associations_key", "tenant_id", "plan_id", "addon_id", unique=True),
         Index("billing_plan_addon_associations_plan_idx", "plan_id", "is_active"),
         Index("billing_plan_addon_associations_addon_idx", "addon_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["plan_id"], ["billing_plans.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["addon_id"], ["billing_addons.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["plan_id"], ["billing_plans.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["addon_id"], ["billing_addons.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    plan_id: Mapped[str] = mapped_column(String, nullable=False)
+    plan_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    addon_id: Mapped[str] = mapped_column(String, nullable=False)
+    addon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    association_type: Mapped[AddonAssociationType] = mapped_column(ENUM(AddonAssociationType, name="BillingAddonAssociationType", create_type=False), nullable=False, server_default=text("'OPTIONAL'"))
+    association_type: Mapped[AddonAssociationType] = mapped_column(ENUM(AddonAssociationType, name="BillingAddonAssociationType"), nullable=False, server_default=text("'OPTIONAL'"))
 
-    events: Mapped[list[AddonAssociationEvent]] = mapped_column(ARRAY(ENUM(AddonAssociationEvent, name="BillingAddonAssociationEvent", create_type=False)), nullable=False, server_default=text('ARRAY[\'SUBSCRIPTION_ACTIVATION\']::"BillingAddonAssociationEvent"[]'))
+    events: Mapped[list[AddonAssociationEvent]] = mapped_column(ARRAY(ENUM(AddonAssociationEvent, name="BillingAddonAssociationEvent")), nullable=False, server_default=text('ARRAY[\'SUBSCRIPTION_ACTIVATION\']::"BillingAddonAssociationEvent"[]'))
 
-    frequency: Mapped[AddonAssociationFrequency] = mapped_column(ENUM(AddonAssociationFrequency, name="BillingAddonAssociationFrequency", create_type=False), nullable=False, server_default=text("'EVERY_OCCURRENCE'"))
+    frequency: Mapped[AddonAssociationFrequency] = mapped_column(ENUM(AddonAssociationFrequency, name="BillingAddonAssociationFrequency"), nullable=False, server_default=text("'EVERY_OCCURRENCE'"))
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 

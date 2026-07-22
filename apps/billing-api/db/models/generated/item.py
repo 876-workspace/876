@@ -31,49 +31,49 @@ class Item(Base):
     __tablename__ = "billing_items"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "sku", name="billing_items_tenant_id_sku_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_external_reference", name="billing_items_source_external_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_idempotency_key", name="billing_items_source_idempotency_key"),
+        Index("billing_items_tenant_id_sku_key", "tenant_id", "sku", unique=True),
+        Index("billing_items_source_external_key", "tenant_id", "source_app_id", "source_external_reference", unique=True),
+        Index("billing_items_source_idempotency_key", "tenant_id", "source_app_id", "source_idempotency_key", unique=True),
         Index("billing_items_tenant_id_idx", "tenant_id"),
         Index("billing_items_source_app_idx", "tenant_id", "source_app_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_app_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_idempotency_key: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_payload_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_payload_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    type: Mapped[ItemType] = mapped_column(ENUM(ItemType, name="BillingItemType", create_type=False), nullable=False)
+    type: Mapped[ItemType] = mapped_column(ENUM(ItemType, name="BillingItemType"), nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    sku: Mapped[str | None] = mapped_column(String, nullable=True)
+    sku: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    unit: Mapped[str | None] = mapped_column(String, nullable=True)
+    unit: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     default_selling_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
-    default_selling_currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_selling_currency: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     default_cost_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
-    default_cost_currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_cost_currency: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_taxable: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
-    tax_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 

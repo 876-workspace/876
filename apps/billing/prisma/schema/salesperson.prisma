@@ -15,7 +15,7 @@ model Salesperson {
   invoices  Invoice[]
 
   @@unique([tenantId, id])
-  @@unique([tenantId, externalReference])
+  @@unique([tenantId, externalReference], name: "billing_salespeople_tenant_external_reference_key")
   @@index([tenantId, isActive], name: "billing_salespeople_tenant_active_idx")
   @@map("billing_salespeople")
 }

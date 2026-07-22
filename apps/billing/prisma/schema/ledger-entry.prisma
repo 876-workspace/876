@@ -27,7 +27,7 @@ model CustomerLedgerEntry {
   refund       Refund?       @relation(fields: [tenantId, refundId], references: [tenantId, id], onDelete: Restrict)
 
   @@unique([tenantId, id])
-  @@unique([tenantId, idempotencyKey])
+  @@unique([tenantId, idempotencyKey], name: "billing_customer_ledger_entries_tenant_idempotency_key")
   @@index([tenantId, customerId, effectiveAt], name: "billing_ledger_tenant_customer_date_idx")
   @@index([tenantId, type, effectiveAt], name: "billing_ledger_tenant_type_date_idx")
   @@map("billing_customer_ledger_entries")

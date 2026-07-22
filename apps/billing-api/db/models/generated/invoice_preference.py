@@ -31,22 +31,22 @@ class InvoicePreference(Base):
     __tablename__ = "billing_invoice_preferences"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    default_tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior", create_type=False), nullable=False, server_default=text("'EXCLUSIVE'"))
+    default_tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior"), nullable=False, server_default=text("'EXCLUSIVE'"))
 
-    default_notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    default_terms: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_terms: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     allow_editing_sent_invoices: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
     late_fees_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
-    late_fee_calculation_type: Mapped[LateFeeCalculationType] = mapped_column(ENUM(LateFeeCalculationType, name="BillingLateFeeCalculationType", create_type=False), nullable=False, server_default=text("'PERCENTAGE'"))
+    late_fee_calculation_type: Mapped[LateFeeCalculationType] = mapped_column(ENUM(LateFeeCalculationType, name="BillingLateFeeCalculationType"), nullable=False, server_default=text("'PERCENTAGE'"))
 
     late_fee_percent: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
 
@@ -64,23 +64,24 @@ class LateFeeAssessment(Base):
     __tablename__ = "billing_late_fee_assessments"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "source_invoice_id", name="billing_late_fee_assessments_tenant_source_key"),
+        Index("billing_late_fee_assessments_late_fee_invoice_id_key", "late_fee_invoice_id", unique=True),
+        Index("billing_late_fee_assessments_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_late_fee_assessments_tenant_id_source_invoice_id_key", "tenant_id", "source_invoice_id", unique=True),
         Index("billing_late_fee_assessments_tenant_date_idx", "tenant_id", "assessed_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["source_invoice_id"], ["billing_invoices.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["late_fee_invoice_id"], ["billing_invoices.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["source_invoice_id"], ["billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["late_fee_invoice_id"], ["billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_invoice_id: Mapped[str] = mapped_column(String, nullable=False)
+    source_invoice_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    late_fee_invoice_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    late_fee_invoice_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    calculation_type: Mapped[LateFeeCalculationType] = mapped_column(ENUM(LateFeeCalculationType, name="BillingLateFeeCalculationType", create_type=False), nullable=False)
+    calculation_type: Mapped[LateFeeCalculationType] = mapped_column(ENUM(LateFeeCalculationType, name="BillingLateFeeCalculationType"), nullable=False)
 
     base_amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 

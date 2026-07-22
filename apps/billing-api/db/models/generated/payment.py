@@ -31,48 +31,48 @@ class Payment(Base):
     __tablename__ = "billing_payments"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "number"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_external_reference", name="billing_payments_source_external_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_idempotency_key", name="billing_payments_source_idempotency_key"),
-        UniqueConstraint("provider_connection_id", "provider_payment_id", name="billing_payments_provider_external_key"),
+        Index("billing_payments_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_payments_tenant_id_number_key", "tenant_id", "number", unique=True),
+        Index("billing_payments_source_external_key", "tenant_id", "source_app_id", "source_external_reference", unique=True),
+        Index("billing_payments_source_idempotency_key", "tenant_id", "source_app_id", "source_idempotency_key", unique=True),
+        Index("billing_payments_provider_external_key", "provider_connection_id", "provider_payment_id", unique=True),
         Index("billing_payments_source_app_idx", "tenant_id", "source_app_id"),
         Index("billing_payments_tenant_customer_date_idx", "tenant_id", "customer_id", "payment_date"),
         Index("billing_payments_tenant_deposit_account_idx", "tenant_id", "deposit_account_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "payment_mode_id"], ["billing_payment_modes.tenant_id", "billing_payment_modes.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "deposit_account_id"], ["billing_bank_accounts.tenant_id", "billing_bank_accounts.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "provider_connection_id"], ["billing_payment_provider_connections.tenant_id", "billing_payment_provider_connections.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_mode_id"], ["billing_payment_modes.tenant_id", "billing_payment_modes.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "deposit_account_id"], ["billing_bank_accounts.tenant_id", "billing_bank_accounts.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "provider_connection_id"], ["billing_payment_provider_connections.tenant_id", "billing_payment_provider_connections.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_app_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_idempotency_key: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_payload_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_payload_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    payment_mode_id: Mapped[str] = mapped_column(String, nullable=False)
+    payment_mode_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    deposit_account_id: Mapped[str] = mapped_column(String, nullable=False)
+    deposit_account_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    provider_connection_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_connection_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    number: Mapped[str] = mapped_column(String, nullable=False)
+    number: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[PaymentStatus] = mapped_column(ENUM(PaymentStatus, name="BillingPaymentStatus", create_type=False), nullable=False, server_default=text("'SUCCEEDED'"))
+    status: Mapped[PaymentStatus] = mapped_column(ENUM(PaymentStatus, name="BillingPaymentStatus"), nullable=False, server_default=text("'SUCCEEDED'"))
 
     revision: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
 
-    provider_payment_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_payment_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
@@ -99,22 +99,22 @@ class PaymentAllocation(Base):
         Index("billing_payment_allocations_tenant_payment_idx", "tenant_id", "payment_id"),
         Index("billing_payment_allocations_tenant_invoice_idx", "tenant_id", "invoice_id"),
         Index("billing_payment_allocations_active_idx", "tenant_id", "payment_id", "reversed_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    payment_id: Mapped[str] = mapped_column(String, nullable=False)
+    payment_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    invoice_id: Mapped[str] = mapped_column(String, nullable=False)
+    invoice_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
-    invoice_status_before: Mapped[InvoiceStatus] = mapped_column(ENUM(InvoiceStatus, name="BillingInvoiceStatus", create_type=False), nullable=False)
+    invoice_status_before: Mapped[InvoiceStatus] = mapped_column(ENUM(InvoiceStatus, name="BillingInvoiceStatus"), nullable=False)
 
     invoice_paid_at_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

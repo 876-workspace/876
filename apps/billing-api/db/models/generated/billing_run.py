@@ -31,20 +31,20 @@ class SubscriptionBillingRun(Base):
     __tablename__ = "billing_subscription_runs"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("subscription_id", "period_start", "period_end", name="billing_runs_subscription_period_key"),
+        Index("billing_subscription_runs_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_runs_subscription_period_key", "subscription_id", "period_start", "period_end", unique=True),
         Index("billing_runs_tenant_status_schedule_idx", "tenant_id", "status", "scheduled_for"),
         Index("billing_subscription_runs_invoice_id_idx", "invoice_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    subscription_id: Mapped[str] = mapped_column(String, nullable=False)
+    subscription_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     period_start: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -52,19 +52,19 @@ class SubscriptionBillingRun(Base):
 
     scheduled_for: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    status: Mapped[BillingRunStatus] = mapped_column(ENUM(BillingRunStatus, name="BillingRunStatus", create_type=False), nullable=False, server_default=text("'PROCESSING'"))
+    status: Mapped[BillingRunStatus] = mapped_column(ENUM(BillingRunStatus, name="BillingRunStatus"), nullable=False, server_default=text("'PROCESSING'"))
 
     attempt_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 
-    invoice_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_advance_billing: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
     period_advanced_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    error_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    error_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    error_message: Mapped[str | None] = mapped_column(String, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     started_at: Mapped[int] = mapped_column(Integer, nullable=False)
 

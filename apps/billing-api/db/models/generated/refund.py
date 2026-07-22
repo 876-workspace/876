@@ -31,40 +31,40 @@ class Refund(Base):
     __tablename__ = "billing_refunds"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "id", name="billing_refunds_tenant_id_id_key"),
         UniqueConstraint("tenant_id", "number", name="billing_refunds_tenant_id_number_key"),
         Index("billing_refunds_tenant_customer_idx", "tenant_id", "customer_id"),
         Index("billing_refunds_tenant_credit_note_idx", "tenant_id", "credit_note_id"),
         Index("billing_refunds_tenant_payment_idx", "tenant_id", "payment_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["credit_note_id"], ["billing_credit_notes.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["payment_id"], ["billing_payments.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["tenant_id", "payment_mode_id"], ["billing_payment_modes.tenant_id", "billing_payment_modes.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "deposit_account_id"], ["billing_bank_accounts.tenant_id", "billing_bank_accounts.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["credit_note_id"], ["billing_credit_notes.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["payment_id"], ["billing_payments.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_mode_id"], ["billing_payment_modes.tenant_id", "billing_payment_modes.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "deposit_account_id"], ["billing_bank_accounts.tenant_id", "billing_bank_accounts.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    credit_note_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    credit_note_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    payment_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    payment_mode_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_mode_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    deposit_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    deposit_account_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    number: Mapped[str] = mapped_column(String, nullable=False)
+    number: Mapped[str] = mapped_column(Text, nullable=False)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     currency: Mapped[str] = mapped_column(CHAR(3), nullable=False)
 
-    reason: Mapped[str | None] = mapped_column(String, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 

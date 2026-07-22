@@ -31,31 +31,31 @@ class CreditNote(Base):
     __tablename__ = "billing_credit_notes"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
+        UniqueConstraint("tenant_id", "id", name="billing_credit_notes_tenant_id_id_key"),
         UniqueConstraint("tenant_id", "number", name="billing_credit_notes_tenant_id_number_key"),
         Index("billing_credit_notes_tenant_id_status_idx", "tenant_id", "status"),
         Index("billing_credit_notes_customer_id_idx", "customer_id"),
         Index("billing_credit_notes_invoice_id_idx", "invoice_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    invoice_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    number: Mapped[str] = mapped_column(String, nullable=False)
+    number: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[CreditNoteStatus] = mapped_column(ENUM(CreditNoteStatus, name="BillingCreditNoteStatus", create_type=False), nullable=False, server_default=text("'DRAFT'"))
+    status: Mapped[CreditNoteStatus] = mapped_column(ENUM(CreditNoteStatus, name="BillingCreditNoteStatus"), nullable=False, server_default=text("'DRAFT'"))
 
-    currency: Mapped[str] = mapped_column(String, nullable=False)
+    currency: Mapped[str] = mapped_column(Text, nullable=False)
 
-    reason: Mapped[str | None] = mapped_column(String, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     subtotal_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("0"))
 
@@ -65,9 +65,9 @@ class CreditNote(Base):
 
     balance_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("0"))
 
-    notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    terms: Mapped[str | None] = mapped_column(String, nullable=True)
+    terms: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     metadata_: Mapped[dict[str, Any] | list[Any] | None] = mapped_column("metadata", JSONB, nullable=True)
 
@@ -86,20 +86,20 @@ class CreditNoteLine(Base):
         Index("billing_credit_note_lines_credit_note_id_idx", "credit_note_id"),
         Index("billing_credit_note_lines_item_id_idx", "item_id"),
         Index("billing_credit_note_lines_price_id_idx", "price_id"),
-        ForeignKeyConstraint(["credit_note_id"], ["billing_credit_notes.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["credit_note_id"], ["billing_credit_notes.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    credit_note_id: Mapped[str] = mapped_column(String, nullable=False)
+    credit_note_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    item_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    description: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 
@@ -122,22 +122,22 @@ class CreditNoteAllocation(Base):
         Index("billing_credit_note_allocations_tenant_credit_note_idx", "tenant_id", "credit_note_id"),
         Index("billing_credit_note_allocations_tenant_invoice_idx", "tenant_id", "invoice_id"),
         Index("billing_credit_note_allocations_active_idx", "tenant_id", "credit_note_id", "reversed_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "credit_note_id"], ["billing_credit_notes.tenant_id", "billing_credit_notes.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "credit_note_id"], ["billing_credit_notes.tenant_id", "billing_credit_notes.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    credit_note_id: Mapped[str] = mapped_column(String, nullable=False)
+    credit_note_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    invoice_id: Mapped[str] = mapped_column(String, nullable=False)
+    invoice_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
-    invoice_status_before: Mapped[InvoiceStatus] = mapped_column(ENUM(InvoiceStatus, name="BillingInvoiceStatus", create_type=False), nullable=False)
+    invoice_status_before: Mapped[InvoiceStatus] = mapped_column(ENUM(InvoiceStatus, name="BillingInvoiceStatus"), nullable=False)
 
     invoice_paid_at_before: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

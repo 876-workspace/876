@@ -31,31 +31,31 @@ class Vendor(Base):
     __tablename__ = "billing_vendors"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "external_reference", name="billing_vendors_tenant_id_external_reference_key"),
+        Index("billing_vendors_tenant_id_external_reference_key", "tenant_id", "external_reference", unique=True),
         Index("billing_vendors_tenant_id_idx", "tenant_id"),
         Index("billing_vendors_external_reference_idx", "external_reference"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    email: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    phone: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     billing_address: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 
     metadata_: Mapped[dict[str, Any] | list[Any] | None] = mapped_column("metadata", JSONB, nullable=True)
 
-    default_currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_currency: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    status: Mapped[VendorStatus] = mapped_column(ENUM(VendorStatus, name="BillingVendorStatus", create_type=False), nullable=False, server_default=text("'ACTIVE'"))
+    status: Mapped[VendorStatus] = mapped_column(ENUM(VendorStatus, name="BillingVendorStatus"), nullable=False, server_default=text("'ACTIVE'"))
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 

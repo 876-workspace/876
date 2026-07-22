@@ -31,12 +31,12 @@ class DocumentSequence(Base):
     __tablename__ = "billing_document_sequences"
 
     __table_args__ = (
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    tenant_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType, name="BillingDocumentType", create_type=False), primary_key=True, nullable=False)
+    document_type: Mapped[DocumentType] = mapped_column(ENUM(DocumentType, name="BillingDocumentType"), primary_key=True, nullable=False)
 
     next_number: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 

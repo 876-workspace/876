@@ -31,10 +31,12 @@ class Invoice(Base):
     __tablename__ = "billing_invoices"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "number", name="billing_invoices_tenant_id_number_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_external_reference", name="billing_invoices_source_external_key"),
-        UniqueConstraint("tenant_id", "source_app_id", "source_idempotency_key", name="billing_invoices_source_idempotency_key"),
+        Index("billing_invoices_quote_id_key", "quote_id", unique=True),
+        Index("billing_invoices_estimate_id_key", "estimate_id", unique=True),
+        Index("billing_invoices_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_invoices_tenant_id_number_key", "tenant_id", "number", unique=True),
+        Index("billing_invoices_source_external_key", "tenant_id", "source_app_id", "source_external_reference", unique=True),
+        Index("billing_invoices_source_idempotency_key", "tenant_id", "source_app_id", "source_idempotency_key", unique=True),
         Index("billing_invoices_tenant_id_status_idx", "tenant_id", "status"),
         Index("billing_invoices_source_app_idx", "tenant_id", "source_app_id"),
         Index("billing_invoices_customer_id_idx", "customer_id"),
@@ -44,63 +46,63 @@ class Invoice(Base):
         Index("billing_invoices_tenant_billing_reason_idx", "tenant_id", "billing_reason"),
         Index("billing_invoices_order_number_idx", "tenant_id", "order_number"),
         Index("billing_invoices_reference_number_idx", "tenant_id", "reference_number"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["customer_id"], ["billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["quote_id"], ["billing_quotes.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["estimate_id"], ["billing_estimates.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["tenant_id", "payment_term_id"], ["billing_payment_terms.tenant_id", "billing_payment_terms.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "salesperson_id"], ["billing_salespeople.tenant_id", "billing_salespeople.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["customer_id"], ["billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["quote_id"], ["billing_quotes.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["estimate_id"], ["billing_estimates.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_term_id"], ["billing_payment_terms.tenant_id", "billing_payment_terms.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "salesperson_id"], ["billing_salespeople.tenant_id", "billing_salespeople.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_app_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_idempotency_key: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_idempotency_key: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source_payload_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_payload_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    price_list_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_list_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    quote_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    quote_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    estimate_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    estimate_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    subscription_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    payment_term_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_term_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    salesperson_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    salesperson_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    number: Mapped[str] = mapped_column(String, nullable=False)
+    number: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[InvoiceStatus] = mapped_column(ENUM(InvoiceStatus, name="BillingInvoiceStatus", create_type=False), nullable=False, server_default=text("'DRAFT'"))
+    status: Mapped[InvoiceStatus] = mapped_column(ENUM(InvoiceStatus, name="BillingInvoiceStatus"), nullable=False, server_default=text("'DRAFT'"))
 
-    billing_reason: Mapped[InvoiceBillingReason] = mapped_column(ENUM(InvoiceBillingReason, name="BillingInvoiceBillingReason", create_type=False), nullable=False, server_default=text("'MANUAL'"))
+    billing_reason: Mapped[InvoiceBillingReason] = mapped_column(ENUM(InvoiceBillingReason, name="BillingInvoiceBillingReason"), nullable=False, server_default=text("'MANUAL'"))
 
-    currency: Mapped[str] = mapped_column(String, nullable=False)
+    currency: Mapped[str] = mapped_column(Text, nullable=False)
 
-    order_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    order_number: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    reference_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    reference_number: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    subject: Mapped[str | None] = mapped_column(String, nullable=True)
+    subject: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior", create_type=False), nullable=False, server_default=text("'EXCLUSIVE'"))
+    tax_behavior: Mapped[TaxBehavior] = mapped_column(ENUM(TaxBehavior, name="BillingTaxBehavior"), nullable=False, server_default=text("'EXCLUSIVE'"))
 
-    customer_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    customer_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    customer_email: Mapped[str | None] = mapped_column(String, nullable=True)
+    customer_email: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     billing_address_snapshot: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 
@@ -142,13 +144,13 @@ class Invoice(Base):
 
     amount_written_off: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("0"))
 
-    payment_term_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_term_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    salesperson_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    salesperson_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    terms: Mapped[str | None] = mapped_column(String, nullable=True)
+    terms: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     metadata_: Mapped[dict[str, Any] | list[Any] | None] = mapped_column("metadata", JSONB, nullable=True)
 
@@ -160,38 +162,38 @@ class InvoiceLine(Base):
     __tablename__ = "billing_invoice_lines"
 
     __table_args__ = (
-        UniqueConstraint("invoice_id", "position", name="billing_invoice_lines_invoice_position_key"),
+        Index("billing_invoice_lines_invoice_id_position_key", "invoice_id", "position", unique=True),
         Index("billing_invoice_lines_invoice_id_idx", "invoice_id"),
         Index("billing_invoice_lines_item_id_idx", "item_id"),
         Index("billing_invoice_lines_price_id_idx", "price_id"),
         Index("billing_invoice_lines_subscription_item_id_idx", "subscription_item_id"),
         Index("billing_invoice_lines_subscription_charge_id_idx", "subscription_charge_id"),
         Index("billing_invoice_lines_tax_rate_id_idx", "tax_rate_id"),
-        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["subscription_item_id"], ["billing_subscription_items.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["subscription_charge_id"], ["billing_subscription_charges.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["tax_rate_id"], ["billing_tax_rates.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_item_id"], ["billing_subscription_items.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_charge_id"], ["billing_subscription_charges.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tax_rate_id"], ["billing_tax_rates.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    invoice_id: Mapped[str] = mapped_column(String, nullable=False)
+    invoice_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    item_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    subscription_item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_item_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    subscription_charge_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_charge_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    tax_rate_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_rate_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    description: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
-    unit: Mapped[str | None] = mapped_column(String, nullable=True)
+    unit: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     position: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
 
@@ -201,7 +203,7 @@ class InvoiceLine(Base):
 
     tax_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("0"))
 
-    tax_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     tax_rate: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
 

@@ -30,9 +30,9 @@ from db.models.generated.enums import *  # noqa: F403
 class Language(Base):
     __tablename__ = "billing_languages"
 
-    code: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    code: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 

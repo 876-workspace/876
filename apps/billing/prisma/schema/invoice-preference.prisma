@@ -41,7 +41,7 @@ model LateFeeAssessment {
   lateFeeInvoice Invoice @relation("LateFeeInvoice", fields: [lateFeeInvoiceId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, id])
-  @@unique([tenantId, sourceInvoiceId], name: "billing_late_fee_assessments_tenant_source_key")
+  @@unique([tenantId, sourceInvoiceId], name: "billing_late_fee_assessments_tenant_id_source_invoice_id_key")
   @@index([tenantId, assessedAt], name: "billing_late_fee_assessments_tenant_date_idx")
   @@map("billing_late_fee_assessments")
 }

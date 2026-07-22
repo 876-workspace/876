@@ -35,21 +35,21 @@ class FinanceProvisioningInbox(Base):
         Index("billing_finance_inbox_org_app_idx", "organization_id", "source_app_id"),
     )
 
-    event_id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    event_id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    event_type: Mapped[str] = mapped_column(String, nullable=False)
+    event_type: Mapped[str] = mapped_column(Text, nullable=False)
 
     contract_version: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    payload_hash: Mapped[str] = mapped_column(String, nullable=False)
+    payload_hash: Mapped[str] = mapped_column(Text, nullable=False)
 
-    aggregate_id: Mapped[str] = mapped_column(String, nullable=False)
+    aggregate_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    organization_id: Mapped[str] = mapped_column(String, nullable=False)
+    organization_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str] = mapped_column(String, nullable=False)
+    source_app_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    connection_id: Mapped[str] = mapped_column(String, nullable=False)
+    connection_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     provisioning_version: Mapped[int] = mapped_column(Integer, nullable=False)
 

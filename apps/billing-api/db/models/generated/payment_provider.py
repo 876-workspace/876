@@ -30,15 +30,19 @@ from db.models.generated.enums import *  # noqa: F403
 class PaymentProvider(Base):
     __tablename__ = "billing_payment_providers"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    __table_args__ = (
+        Index("billing_payment_providers_key_key", "key", unique=True),
+    )
 
-    key: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    key: Mapped[str] = mapped_column(Text, nullable=False)
 
-    logo_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    adapter: Mapped[str] = mapped_column(String, nullable=False)
+    logo_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    adapter: Mapped[str] = mapped_column(Text, nullable=False)
 
     capabilities: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 
@@ -52,30 +56,30 @@ class PaymentProviderConnection(Base):
     __tablename__ = "billing_payment_provider_connections"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "provider_id", "name"),
+        Index("billing_payment_provider_connections_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_provider_connections_tenant_provider_name_key", "tenant_id", "provider_id", "name", unique=True),
         Index("billing_provider_connections_tenant_status_idx", "tenant_id", "status"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["provider_id"], ["billing_payment_providers.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["provider_id"], ["billing_payment_providers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    provider_id: Mapped[str] = mapped_column(String, nullable=False)
+    provider_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    environment: Mapped[PaymentProviderEnvironment] = mapped_column(ENUM(PaymentProviderEnvironment, name="BillingPaymentProviderEnvironment", create_type=False), nullable=False)
+    environment: Mapped[PaymentProviderEnvironment] = mapped_column(ENUM(PaymentProviderEnvironment, name="BillingPaymentProviderEnvironment"), nullable=False)
 
-    status: Mapped[PaymentProviderConnectionStatus] = mapped_column(ENUM(PaymentProviderConnectionStatus, name="BillingPaymentProviderConnectionStatus", create_type=False), nullable=False, server_default=text("'PENDING'"))
+    status: Mapped[PaymentProviderConnectionStatus] = mapped_column(ENUM(PaymentProviderConnectionStatus, name="BillingPaymentProviderConnectionStatus"), nullable=False, server_default=text("'PENDING'"))
 
-    merchant_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    merchant_account_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    credentials_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    credentials_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    webhook_secret_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    webhook_secret_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     settings: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 
@@ -89,47 +93,47 @@ class PaymentAttempt(Base):
     __tablename__ = "billing_payment_attempts"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "idempotency_key"),
-        UniqueConstraint("connection_id", "external_reference"),
+        Index("billing_payment_attempts_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_payment_attempts_tenant_idempotency_key", "tenant_id", "idempotency_key", unique=True),
+        Index("billing_payment_attempts_connection_external_key", "connection_id", "external_reference", unique=True),
         Index("billing_payment_attempts_tenant_status_date_idx", "tenant_id", "status", "attempted_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "connection_id"], ["billing_payment_provider_connections.tenant_id", "billing_payment_provider_connections.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "connection_id"], ["billing_payment_provider_connections.tenant_id", "billing_payment_provider_connections.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "invoice_id"], ["billing_invoices.tenant_id", "billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "payment_id"], ["billing_payments.tenant_id", "billing_payments.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    connection_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    connection_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    invoice_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    subscription_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    payment_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payment_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    idempotency_key: Mapped[str] = mapped_column(String, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(Text, nullable=False)
 
-    external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    status: Mapped[PaymentAttemptStatus] = mapped_column(ENUM(PaymentAttemptStatus, name="BillingPaymentAttemptStatus", create_type=False), nullable=False, server_default=text("'PROCESSING'"))
+    status: Mapped[PaymentAttemptStatus] = mapped_column(ENUM(PaymentAttemptStatus, name="BillingPaymentAttemptStatus"), nullable=False, server_default=text("'PROCESSING'"))
 
     amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     currency: Mapped[str] = mapped_column(CHAR(3), nullable=False)
 
-    failure_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    failure_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    failure_message: Mapped[str | None] = mapped_column(String, nullable=True)
+    failure_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    provider_response_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    provider_response_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     attempted_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -143,28 +147,28 @@ class PaymentProviderEvent(Base):
     __tablename__ = "billing_payment_provider_events"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("connection_id", "external_event_id"),
+        Index("billing_payment_provider_events_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_provider_events_connection_external_key", "connection_id", "external_event_id", unique=True),
         Index("billing_provider_events_tenant_status_date_idx", "tenant_id", "status", "received_at"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "connection_id"], ["billing_payment_provider_connections.tenant_id", "billing_payment_provider_connections.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "connection_id"], ["billing_payment_provider_connections.tenant_id", "billing_payment_provider_connections.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    connection_id: Mapped[str] = mapped_column(String, nullable=False)
+    connection_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    external_event_id: Mapped[str] = mapped_column(String, nullable=False)
+    external_event_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    event_type: Mapped[str] = mapped_column(String, nullable=False)
+    event_type: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[ProviderEventStatus] = mapped_column(ENUM(ProviderEventStatus, name="BillingProviderEventStatus", create_type=False), nullable=False, server_default=text("'RECEIVED'"))
+    status: Mapped[ProviderEventStatus] = mapped_column(ENUM(ProviderEventStatus, name="BillingProviderEventStatus"), nullable=False, server_default=text("'RECEIVED'"))
 
     payload: Mapped[dict[str, Any] | list[Any] | None] = mapped_column(JSONB, nullable=True)
 
-    error_message: Mapped[str | None] = mapped_column(String, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     occurred_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

@@ -31,23 +31,23 @@ class AppFinanceConnection(Base):
     __tablename__ = "billing_app_finance_connections"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "source_app_id", name="billing_app_finance_connections_tenant_source_app_key"),
+        Index("billing_app_finance_connections_tenant_source_app_key", "tenant_id", "source_app_id", unique=True),
         Index("billing_app_finance_connections_tenant_status_idx", "tenant_id", "status"),
         Index("billing_app_finance_connections_source_app_status_idx", "source_app_id", "status"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str] = mapped_column(String, nullable=False)
+    source_app_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[AppFinanceConnectionStatus] = mapped_column(ENUM(AppFinanceConnectionStatus, name="BillingAppFinanceConnectionStatus", create_type=False), nullable=False, server_default=text("'PROVISIONING'"))
+    status: Mapped[AppFinanceConnectionStatus] = mapped_column(ENUM(AppFinanceConnectionStatus, name="BillingAppFinanceConnectionStatus"), nullable=False, server_default=text("'PROVISIONING'"))
 
-    scopes: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
+    scopes: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False)
 
-    entitlement_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    entitlement_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     provisioning_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 

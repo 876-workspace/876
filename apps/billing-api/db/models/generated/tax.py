@@ -31,23 +31,24 @@ class TaxAuthority(Base):
     __tablename__ = "billing_tax_authorities"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "name"),
+        Index("billing_tax_authorities_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_tax_authorities_tenant_id_name_key", "tenant_id", "name", unique=True),
         Index("billing_tax_authorities_tenant_id_is_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        Index("billing_tax_authorities_default_key", "tenant_id", unique=True, postgresql_where=text("is_default")),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    country_code: Mapped[str] = mapped_column(String, nullable=False)
+    country_code: Mapped[str] = mapped_column(Text, nullable=False)
 
-    subdivision_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    subdivision_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
@@ -63,21 +64,22 @@ class TaxRate(Base):
     __table_args__ = (
         Index("billing_tax_rates_tenant_id_active_starts_at_idx", "tenant_id", "is_active", "starts_at"),
         Index("billing_tax_rates_tax_authority_id_idx", "tax_authority_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "tax_authority_id"], ["billing_tax_authorities.tenant_id", "billing_tax_authorities.id"], ondelete="RESTRICT"),
+        Index("billing_tax_rates_default_key", "tenant_id", unique=True, postgresql_where=text("is_default")),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "tax_authority_id"], ["billing_tax_authorities.tenant_id", "billing_tax_authorities.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    tax_authority_id: Mapped[str] = mapped_column(String, nullable=False)
+    tax_authority_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    tax_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_type: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     rate: Mapped[Decimal] = mapped_column(Numeric(7, 4), nullable=False)
 

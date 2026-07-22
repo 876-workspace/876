@@ -9,6 +9,7 @@ remains the schema authority; ``check`` fails when the Python representation dri
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import sys
 from dataclasses import dataclass, field
@@ -21,6 +22,30 @@ OUTPUT_ROOT = BILLING_API_ROOT / "db" / "models" / "generated"
 
 SCALAR_TYPES = {"BigInt", "Boolean", "DateTime", "Decimal", "Float", "Int", "Json", "String", "Bytes"}
 RESERVED_ATTRIBUTES = {"metadata"}
+PARTIAL_INDEXES: dict[str, tuple[tuple[str, tuple[str, ...], str], ...]] = {
+    "billing_contacts": (("billing_contacts_primary_key", ("tenant_id", "customer_id"), "is_primary"),),
+    "billing_payment_modes": (("billing_payment_modes_default_key", ("tenant_id",), "is_default"),),
+    "billing_payment_terms": (("billing_payment_terms_default_key", ("tenant_id",), "is_default"),),
+    "billing_roles": (("billing_roles_default_key", ("tenant_id",), "is_default"),),
+    "billing_tax_authorities": (("billing_tax_authorities_default_key", ("tenant_id",), "is_default"),),
+    "billing_tax_rates": (("billing_tax_rates_default_key", ("tenant_id",), "is_default"),),
+    "billing_tenant_currencies": (("billing_tenant_currencies_default_currency_key", ("tenant_id",), "is_default"),),
+}
+LEGACY_UNIQUE_CONSTRAINTS = {
+    ("billing_addresses", ("tenant_id", "id")),
+    ("billing_contacts", ("tenant_id", "id")),
+    ("billing_credit_notes", ("tenant_id", "id")),
+    ("billing_credit_notes", ("tenant_id", "number")),
+    ("billing_refunds", ("tenant_id", "id")),
+    ("billing_refunds", ("tenant_id", "number")),
+}
+
+
+def postgres_identifier(value: str) -> str:
+    if len(value) <= 63:
+        return value
+    digest = hashlib.sha1(value.encode(), usedforsecurity=False).hexdigest()[:8]
+    return f"{value[:54]}_{digest}"
 
 
 @dataclass(frozen=True)
@@ -203,7 +228,7 @@ def render_type(field: FieldDefinition, enums: dict[str, EnumDefinition]) -> tup
             return "str", "Text"
         if db_attribute and db_attribute.group(1) == "VarChar":
             return "str", f"String({db_attribute.group(2)})"
-        return "str", "String"
+        return "str", "Text"
     if prisma_type == "Int":
         return "int", "Integer"
     if prisma_type == "BigInt":
@@ -224,7 +249,7 @@ def render_type(field: FieldDefinition, enums: dict[str, EnumDefinition]) -> tup
         return "bytes", "LargeBinary"
     if prisma_type in enums:
         enum = enums[prisma_type]
-        return prisma_type, f'ENUM({prisma_type}, name="{enum.database_name}", create_type=False)'
+        return prisma_type, f'ENUM({prisma_type}, name="{enum.database_name}")'
     raise RuntimeError(f"Unsupported Prisma scalar type: {prisma_type}")
 
 
@@ -291,8 +316,6 @@ def render_model(
         column_args.append(sqlalchemy_type)
         if "@id" in parsed_field.attributes or parsed_field.name in composite_primary_keys:
             column_args.append("primary_key=True")
-        if "@unique" in parsed_field.attributes:
-            column_args.append("unique=True")
         if parsed_field.optional:
             column_args.append("nullable=True")
         else:
@@ -350,15 +373,26 @@ def render_module(
 def render_table_args(model: ModelDefinition, models_by_name: dict[str, ModelDefinition]) -> list[str]:
     results: list[str] = []
     field_map = {item.name: item for item in model.fields}
+    for parsed_field in model.fields:
+        if "@unique" in parsed_field.attributes:
+            name = postgres_identifier(f"{model.table_name}_{parsed_field.column_name}_key")
+            results.append(f'Index("{name}", "{parsed_field.column_name}", unique=True)')
     for constraint in model.constraints:
         columns = [field_map[name].column_name for name in constraint.fields]
         quoted = ", ".join(f'"{name}"' for name in columns)
-        name = f', name="{constraint.name}"' if constraint.name else ""
         if constraint.kind == "unique":
-            results.append(f"UniqueConstraint({quoted}{name})")
+            unique_name = postgres_identifier(constraint.name or f"{model.table_name}_{'_'.join(columns)}_key")
+            if (model.table_name, tuple(columns)) in LEGACY_UNIQUE_CONSTRAINTS:
+                results.append(f'UniqueConstraint({quoted}, name="{unique_name}")')
+            else:
+                results.append(f'Index("{unique_name}", {quoted}, unique=True)')
         elif constraint.kind == "index":
-            index_name = constraint.name or f"ix_{model.table_name}_{'_'.join(columns)}"
+            index_name = postgres_identifier(constraint.name or f"ix_{model.table_name}_{'_'.join(columns)}")
             results.append(f'Index("{index_name}", {quoted})')
+
+    for index_name, columns, predicate in PARTIAL_INDEXES.get(model.table_name, ()):
+        quoted = ", ".join(f'"{name}"' for name in columns)
+        results.append(f'Index("{index_name}", {quoted}, unique=True, postgresql_where=text("{predicate}"))')
 
     for relation in model.relations:
         target = models_by_name[relation.referenced_model]
@@ -370,8 +404,7 @@ def render_table_args(model: ModelDefinition, models_by_name: dict[str, ModelDef
         options = []
         if relation.on_delete:
             options.append(f'ondelete="{sql_action(relation.on_delete)}"')
-        if relation.on_update:
-            options.append(f'onupdate="{sql_action(relation.on_update)}"')
+        options.append(f'onupdate="{sql_action(relation.on_update) or "CASCADE"}"')
         suffix = f", {', '.join(options)}" if options else ""
         results.append(f"ForeignKeyConstraint([{local}], [{remote}]{suffix})")
     return results

@@ -82,6 +82,7 @@ model Customer {
   @@index([tenantId, sourceAppId], name: "billing_customers_source_app_idx")
   @@index([priceListId], name: "billing_customers_price_list_id_idx")
   @@index([externalReference], name: "billing_customers_external_reference_idx")
+  @@index([language], name: "billing_customers_language_idx")
   @@map("billing_customers")
 }
 

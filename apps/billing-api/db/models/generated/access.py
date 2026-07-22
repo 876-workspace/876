@@ -31,23 +31,24 @@ class Role(Base):
     __tablename__ = "billing_roles"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "slug"),
+        Index("billing_roles_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_roles_tenant_id_slug_key", "tenant_id", "slug", unique=True),
         Index("billing_roles_tenant_id_idx", "tenant_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        Index("billing_roles_default_key", "tenant_id", unique=True, postgresql_where=text("is_default")),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    slug: Mapped[str] = mapped_column(String, nullable=False)
+    slug: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str] = mapped_column(String, nullable=False, server_default=text("''"))
+    description: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
 
-    permissions: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
+    permissions: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False)
 
     is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 
@@ -61,21 +62,21 @@ class Member(Base):
     __tablename__ = "billing_members"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "user_id"),
+        Index("billing_members_tenant_id_user_id_key", "tenant_id", "user_id", unique=True),
         Index("billing_members_role_id_idx", "role_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "role_id"], ["billing_roles.tenant_id", "billing_roles.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "role_id"], ["billing_roles.tenant_id", "billing_roles.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    user_id: Mapped[str] = mapped_column(String, nullable=False)
+    user_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    role_id: Mapped[str] = mapped_column(String, nullable=False)
+    role_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[MemberStatus] = mapped_column(ENUM(MemberStatus, name="BillingMemberStatus", create_type=False), nullable=False, server_default=text("'ACTIVE'"))
+    status: Mapped[MemberStatus] = mapped_column(ENUM(MemberStatus, name="BillingMemberStatus"), nullable=False, server_default=text("'ACTIVE'"))
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 

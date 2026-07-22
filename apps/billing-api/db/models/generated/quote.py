@@ -31,30 +31,30 @@ class Quote(Base):
     __tablename__ = "billing_quotes"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "number", name="billing_quotes_tenant_id_number_key"),
+        Index("billing_quotes_tenant_id_number_key", "tenant_id", "number", unique=True),
         Index("billing_quotes_tenant_id_status_idx", "tenant_id", "status"),
         Index("billing_quotes_customer_id_idx", "customer_id"),
         Index("billing_quotes_price_list_id_idx", "price_list_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["customer_id"], ["billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["customer_id"], ["billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    price_list_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_list_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_list_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    number: Mapped[str] = mapped_column(String, nullable=False)
+    number: Mapped[str] = mapped_column(Text, nullable=False)
 
-    status: Mapped[QuoteStatus] = mapped_column(ENUM(QuoteStatus, name="BillingQuoteStatus", create_type=False), nullable=False, server_default=text("'DRAFT'"))
+    status: Mapped[QuoteStatus] = mapped_column(ENUM(QuoteStatus, name="BillingQuoteStatus"), nullable=False, server_default=text("'DRAFT'"))
 
-    currency: Mapped[str] = mapped_column(String, nullable=False)
+    currency: Mapped[str] = mapped_column(Text, nullable=False)
 
     issue_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -72,9 +72,9 @@ class Quote(Base):
 
     total_amount: Mapped[int] = mapped_column(BigInteger, nullable=False, server_default=text("0"))
 
-    notes: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    terms: Mapped[str | None] = mapped_column(String, nullable=True)
+    terms: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     metadata_: Mapped[dict[str, Any] | list[Any] | None] = mapped_column("metadata", JSONB, nullable=True)
 
@@ -89,20 +89,20 @@ class QuoteLine(Base):
         Index("billing_quote_lines_quote_id_idx", "quote_id"),
         Index("billing_quote_lines_item_id_idx", "item_id"),
         Index("billing_quote_lines_price_id_idx", "price_id"),
-        ForeignKeyConstraint(["quote_id"], ["billing_quotes.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="SET NULL"),
-        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["quote_id"], ["billing_quotes.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["item_id"], ["billing_items.id"], ondelete="SET NULL", onupdate="CASCADE"),
+        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    quote_id: Mapped[str] = mapped_column(String, nullable=False)
+    quote_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    item_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    price_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    price_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    description: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
 
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 

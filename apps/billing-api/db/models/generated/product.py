@@ -31,33 +31,33 @@ class Product(Base):
     __tablename__ = "billing_products"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "slug", name="billing_products_tenant_id_slug_key"),
+        Index("billing_products_tenant_id_slug_key", "tenant_id", "slug", unique=True),
         Index("billing_products_tenant_id_idx", "tenant_id"),
         Index("billing_products_source_app_id_idx", "source_app_id"),
         Index("billing_products_fallback_plan_id_idx", "fallback_plan_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["fallback_plan_id"], ["billing_plans.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["fallback_plan_id"], ["billing_plans.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    source_app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_app_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    fallback_plan_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    fallback_plan_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    slug: Mapped[str] = mapped_column(String, nullable=False)
+    slug: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    type: Mapped[ItemType] = mapped_column(ENUM(ItemType, name="BillingItemType", create_type=False), nullable=False, server_default=text("'SERVICE'"))
+    type: Mapped[ItemType] = mapped_column(ENUM(ItemType, name="BillingItemType"), nullable=False, server_default=text("'SERVICE'"))
 
-    notification_recipients: Mapped[str | None] = mapped_column(String, nullable=True)
+    notification_recipients: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    redirect_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    redirect_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 

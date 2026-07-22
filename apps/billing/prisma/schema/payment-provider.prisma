@@ -40,7 +40,7 @@ model PaymentProviderConnection {
   events          PaymentProviderEvent[]
 
   @@unique([tenantId, id])
-  @@unique([tenantId, providerId, name])
+  @@unique([tenantId, providerId, name], name: "billing_provider_connections_tenant_provider_name_key")
   @@index([tenantId, status], name: "billing_provider_connections_tenant_status_idx")
   @@map("billing_payment_provider_connections")
 }
@@ -76,8 +76,8 @@ model PaymentAttempt {
   payment      Payment?                   @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Restrict)
 
   @@unique([tenantId, id])
-  @@unique([tenantId, idempotencyKey])
-  @@unique([connectionId, externalReference])
+  @@unique([tenantId, idempotencyKey], name: "billing_payment_attempts_tenant_idempotency_key")
+  @@unique([connectionId, externalReference], name: "billing_payment_attempts_connection_external_key")
   @@index([tenantId, status, attemptedAt], name: "billing_payment_attempts_tenant_status_date_idx")
   @@map("billing_payment_attempts")
 }
@@ -103,7 +103,7 @@ model PaymentProviderEvent {
   connection PaymentProviderConnection @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Cascade)
 
   @@unique([tenantId, id])
-  @@unique([connectionId, externalEventId])
+  @@unique([connectionId, externalEventId], name: "billing_provider_events_connection_external_key")
   @@index([tenantId, status, receivedAt], name: "billing_provider_events_tenant_status_date_idx")
   @@map("billing_payment_provider_events")
 }

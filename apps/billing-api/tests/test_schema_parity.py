@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from sqlalchemy import ARRAY, BigInteger, Boolean, ForeignKeyConstraint, Integer, Numeric, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ENUM, JSONB
 
 from db.models import Base
 
@@ -69,6 +69,8 @@ def test_enum_arrays_and_server_defaults_are_preserved() -> None:
     assert events.server_default is not None
     assert "SUBSCRIPTION_ACTIVATION" in str(events.server_default.arg)
     assert '"BillingAddonAssociationEvent"[]' in str(events.server_default.arg)
+    assert isinstance(events.type.item_type, ENUM)
+    assert events.type.item_type.create_type is True
 
     roles = Base.metadata.tables["billing_roles"]
     assert str(roles.c.description.server_default.arg) == "''"
@@ -92,4 +94,19 @@ def test_named_indexes_and_unique_constraints_are_preserved() -> None:
     customers = Base.metadata.tables["billing_customers"]
 
     assert "billing_customers_source_app_idx" in {index.name for index in customers.indexes}
-    assert "billing_customers_source_external_key" in {constraint.name for constraint in customers.constraints}
+    assert "billing_customers_source_external_key" in {index.name for index in customers.indexes if index.unique}
+
+
+def test_unique_index_names_are_postgres_safe_and_globally_unique() -> None:
+    names = [index.name for table in Base.metadata.tables.values() for index in table.indexes if index.unique]
+
+    assert all(name is not None and len(name) <= 63 for name in names)
+    assert len(names) == len(set(names))
+
+
+def test_legacy_partial_unique_indexes_are_preserved() -> None:
+    contacts = Base.metadata.tables["billing_contacts"]
+    primary = next(index for index in contacts.indexes if index.name == "billing_contacts_primary_key")
+
+    assert primary.unique is True
+    assert str(primary.dialect_options["postgresql"]["where"]) == "is_primary"

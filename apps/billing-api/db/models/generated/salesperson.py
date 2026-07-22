@@ -31,21 +31,21 @@ class Salesperson(Base):
     __tablename__ = "billing_salespeople"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "external_reference"),
+        Index("billing_salespeople_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_salespeople_tenant_external_reference_key", "tenant_id", "external_reference", unique=True),
         Index("billing_salespeople_tenant_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     name: Mapped[str] = mapped_column(String(160), nullable=False)
 
-    email: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    external_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    external_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 

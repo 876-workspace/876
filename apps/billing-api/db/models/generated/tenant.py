@@ -31,25 +31,27 @@ class Tenant(Base):
     __tablename__ = "billing_tenants"
 
     __table_args__ = (
-        ForeignKeyConstraint(["default_currency"], ["billing_currencies.code"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["default_language"], ["billing_languages.code"], ondelete="RESTRICT"),
+        Index("billing_tenants_organization_id_key", "organization_id", unique=True),
+        Index("billing_tenants_slug_key", "slug", unique=True),
+        ForeignKeyConstraint(["default_currency"], ["billing_currencies.code"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["default_language"], ["billing_languages.code"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    organization_id: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    organization_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    slug: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    slug: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    country_code: Mapped[str] = mapped_column(String, nullable=False, server_default=text("'JM'"))
+    country_code: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'JM'"))
 
-    status: Mapped[TenantStatus] = mapped_column(ENUM(TenantStatus, name="BillingTenantStatus", create_type=False), nullable=False, server_default=text("'ACTIVE'"))
+    status: Mapped[TenantStatus] = mapped_column(ENUM(TenantStatus, name="BillingTenantStatus"), nullable=False, server_default=text("'ACTIVE'"))
 
-    default_currency: Mapped[str] = mapped_column(String, nullable=False, server_default=text("'JMD'"))
+    default_currency: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'JMD'"))
 
-    default_language: Mapped[str] = mapped_column(String, nullable=False, server_default=text("'en'"))
+    default_language: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'en'"))
 
     provisioning_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("3"))
 

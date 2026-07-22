@@ -31,29 +31,29 @@ class PriceList(Base):
     __tablename__ = "billing_price_lists"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "name", name="billing_price_lists_tenant_name_key"),
+        Index("billing_price_lists_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_price_lists_tenant_name_key", "tenant_id", "name", unique=True),
         Index("billing_price_lists_tenant_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    mode: Mapped[PriceListMode] = mapped_column(ENUM(PriceListMode, name="BillingPriceListMode", create_type=False), nullable=False)
+    mode: Mapped[PriceListMode] = mapped_column(ENUM(PriceListMode, name="BillingPriceListMode"), nullable=False)
 
-    direction: Mapped[PriceListDirection | None] = mapped_column(ENUM(PriceListDirection, name="BillingPriceListDirection", create_type=False), nullable=True)
+    direction: Mapped[PriceListDirection | None] = mapped_column(ENUM(PriceListDirection, name="BillingPriceListDirection"), nullable=True)
 
     percentage: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
 
     currency: Mapped[str | None] = mapped_column(CHAR(3), nullable=True)
 
-    rounding: Mapped[PriceListRounding] = mapped_column(ENUM(PriceListRounding, name="BillingPriceListRounding", create_type=False), nullable=False, server_default=text("'NONE'"))
+    rounding: Mapped[PriceListRounding] = mapped_column(ENUM(PriceListRounding, name="BillingPriceListRounding"), nullable=False, server_default=text("'NONE'"))
 
     rounding_precision: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("2"))
 
@@ -67,21 +67,21 @@ class PriceListEntry(Base):
     __tablename__ = "billing_price_list_entries"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "price_list_id", "price_id", name="billing_price_list_entries_price_key"),
+        Index("billing_price_list_entries_price_key", "tenant_id", "price_list_id", "price_id", unique=True),
         Index("billing_price_list_entries_list_idx", "price_list_id"),
         Index("billing_price_list_entries_price_idx", "price_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "price_list_id"], ["billing_price_lists.tenant_id", "billing_price_lists.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["price_id"], ["billing_prices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    price_list_id: Mapped[str] = mapped_column(String, nullable=False)
+    price_list_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    price_id: Mapped[str] = mapped_column(String, nullable=False)
+    price_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     unit_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
@@ -93,14 +93,14 @@ class PriceListEntryTier(Base):
     __tablename__ = "billing_price_list_entry_tiers"
 
     __table_args__ = (
-        UniqueConstraint("price_list_entry_id", "from_unit", name="billing_price_list_entry_tiers_from_key"),
+        Index("billing_price_list_entry_tiers_from_key", "price_list_entry_id", "from_unit", unique=True),
         Index("billing_price_list_entry_tiers_entry_idx", "price_list_entry_id"),
-        ForeignKeyConstraint(["price_list_entry_id"], ["billing_price_list_entries.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["price_list_entry_id"], ["billing_price_list_entries.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    price_list_entry_id: Mapped[str] = mapped_column(String, nullable=False)
+    price_list_entry_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     from_unit: Mapped[int] = mapped_column(Integer, nullable=False)
 

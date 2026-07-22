@@ -31,36 +31,36 @@ class Plan(Base):
     __tablename__ = "billing_plans"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "code", name="billing_plans_tenant_id_code_key"),
-        UniqueConstraint("tenant_id", "entitlement_reference_id", "interval_unit", "interval_count", name="billing_plans_tenant_entitlement_cadence_key"),
+        Index("billing_plans_tenant_id_code_key", "tenant_id", "code", unique=True),
+        Index("billing_plans_tenant_entitlement_cadence_key", "tenant_id", "entitlement_reference_id", "interval_unit", "interval_count", unique=True),
         Index("billing_plans_tenant_id_idx", "tenant_id"),
         Index("billing_plans_product_id_idx", "product_id"),
         Index("billing_plans_entitlement_reference_id_idx", "entitlement_reference_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["product_id"], ["billing_products.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["product_id"], ["billing_products.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    product_id: Mapped[str] = mapped_column(String, nullable=False)
+    product_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    code: Mapped[str] = mapped_column(String, nullable=False)
+    code: Mapped[str] = mapped_column(Text, nullable=False)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    unit_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    unit_name: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    tax_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_code: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    entitlement_reference_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    entitlement_reference_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    interval_unit: Mapped[IntervalUnit] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit", create_type=False), nullable=False)
+    interval_unit: Mapped[IntervalUnit] = mapped_column(ENUM(IntervalUnit, name="BillingIntervalUnit"), nullable=False)
 
     interval_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("1"))
 
@@ -70,7 +70,7 @@ class Plan(Base):
 
     setup_fee_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
-    setup_fee_currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    setup_fee_currency: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     is_taxable: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
 

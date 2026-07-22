@@ -31,21 +31,21 @@ class Coupon(Base):
     __tablename__ = "billing_coupons"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
+        Index("billing_coupons_tenant_id_id_key", "tenant_id", "id", unique=True),
         Index("billing_coupons_tenant_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["product_id"], ["billing_products.id"], ondelete="SET NULL"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["product_id"], ["billing_products.id"], ondelete="SET NULL", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    product_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    product_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
-    discount_type: Mapped[DiscountType] = mapped_column(ENUM(DiscountType, name="BillingDiscountType", create_type=False), nullable=False)
+    discount_type: Mapped[DiscountType] = mapped_column(ENUM(DiscountType, name="BillingDiscountType"), nullable=False)
 
     percent_off: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
 
@@ -53,11 +53,11 @@ class Coupon(Base):
 
     currency: Mapped[str | None] = mapped_column(CHAR(3), nullable=True)
 
-    duration: Mapped[DiscountDuration] = mapped_column(ENUM(DiscountDuration, name="BillingDiscountDuration", create_type=False), nullable=False)
+    duration: Mapped[DiscountDuration] = mapped_column(ENUM(DiscountDuration, name="BillingDiscountDuration"), nullable=False)
 
     duration_in_cycles: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    discount_preference: Mapped[CouponDiscountPreference] = mapped_column(ENUM(CouponDiscountPreference, name="BillingCouponDiscountPreference", create_type=False), nullable=False, server_default=text("'INVOICE_LEVEL'"))
+    discount_preference: Mapped[CouponDiscountPreference] = mapped_column(ENUM(CouponDiscountPreference, name="BillingCouponDiscountPreference"), nullable=False, server_default=text("'INVOICE_LEVEL'"))
 
     applies_to_all_plans: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
 
@@ -87,23 +87,23 @@ class PromotionCode(Base):
     __tablename__ = "billing_promotion_codes"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
-        UniqueConstraint("tenant_id", "code"),
+        Index("billing_promotion_codes_tenant_id_id_key", "tenant_id", "id", unique=True),
+        Index("billing_promotion_codes_tenant_id_code_key", "tenant_id", "code", unique=True),
         Index("billing_promotion_codes_tenant_active_idx", "tenant_id", "is_active"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str] = mapped_column(String, nullable=False)
+    coupon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    code: Mapped[str] = mapped_column(String, nullable=False)
+    code: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    customer_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     expires_at: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
@@ -121,18 +121,18 @@ class CouponCurrencyAmount(Base):
     __tablename__ = "billing_coupon_currency_amounts"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "coupon_id", "currency", name="billing_coupon_currency_amounts_coupon_currency_key"),
+        Index("billing_coupon_currency_amounts_coupon_currency_key", "tenant_id", "coupon_id", "currency", unique=True),
         Index("billing_coupon_currency_amounts_coupon_idx", "coupon_id"),
         Index("billing_coupon_currency_amounts_tenant_currency_idx", "tenant_id", "currency"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str] = mapped_column(String, nullable=False)
+    coupon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     currency: Mapped[str] = mapped_column(CHAR(3), nullable=False)
 
@@ -146,21 +146,21 @@ class CouponPlanApplicability(Base):
     __tablename__ = "billing_coupon_plan_applicabilities"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "coupon_id", "plan_id", name="billing_coupon_plan_applicability_key"),
+        Index("billing_coupon_plan_applicability_key", "tenant_id", "coupon_id", "plan_id", unique=True),
         Index("billing_coupon_plan_applicability_coupon_idx", "coupon_id"),
         Index("billing_coupon_plan_applicability_plan_idx", "plan_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["plan_id"], ["billing_plans.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["plan_id"], ["billing_plans.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str] = mapped_column(String, nullable=False)
+    coupon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    plan_id: Mapped[str] = mapped_column(String, nullable=False)
+    plan_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -168,21 +168,21 @@ class CouponAddonApplicability(Base):
     __tablename__ = "billing_coupon_addon_applicabilities"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "coupon_id", "addon_id", name="billing_coupon_addon_applicability_key"),
+        Index("billing_coupon_addon_applicability_key", "tenant_id", "coupon_id", "addon_id", unique=True),
         Index("billing_coupon_addon_applicability_coupon_idx", "coupon_id"),
         Index("billing_coupon_addon_applicability_addon_idx", "addon_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["addon_id"], ["billing_addons.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["addon_id"], ["billing_addons.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str] = mapped_column(String, nullable=False)
+    coupon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    addon_id: Mapped[str] = mapped_column(String, nullable=False)
+    addon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -190,21 +190,21 @@ class CouponCustomerEligibility(Base):
     __tablename__ = "billing_coupon_customer_eligibilities"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "coupon_id", "customer_id", name="billing_coupon_customer_eligibility_key"),
+        Index("billing_coupon_customer_eligibility_key", "tenant_id", "coupon_id", "customer_id", unique=True),
         Index("billing_coupon_customer_eligibility_coupon_idx", "coupon_id"),
         Index("billing_coupon_customer_eligibility_customer_idx", "customer_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="CASCADE"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="CASCADE", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str] = mapped_column(String, nullable=False)
+    coupon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -216,27 +216,27 @@ class CouponRedemption(Base):
         Index("billing_coupon_redemptions_promotion_code_idx", "promotion_code_id"),
         Index("billing_coupon_redemptions_subscription_idx", "subscription_id"),
         Index("billing_coupon_redemptions_invoice_idx", "invoice_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "promotion_code_id"], ["billing_promotion_codes.tenant_id", "billing_promotion_codes.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "promotion_code_id"], ["billing_promotion_codes.tenant_id", "billing_promotion_codes.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "customer_id"], ["billing_customers.tenant_id", "billing_customers.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["invoice_id"], ["billing_invoices.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str] = mapped_column(String, nullable=False)
+    coupon_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    promotion_code_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    promotion_code_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    customer_id: Mapped[str] = mapped_column(String, nullable=False)
+    customer_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    subscription_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    invoice_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    invoice_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     discount_amount: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 
@@ -248,35 +248,35 @@ class SubscriptionDiscount(Base):
     __tablename__ = "billing_subscription_discounts"
 
     __table_args__ = (
-        UniqueConstraint("tenant_id", "id"),
+        Index("billing_subscription_discounts_tenant_id_id_key", "tenant_id", "id", unique=True),
         Index("billing_subscription_discounts_subscription_status_idx", "subscription_id", "status"),
         Index("billing_subscription_discounts_subscription_item_idx", "subscription_item_id"),
-        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE"),
-        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["tenant_id", "promotion_code_id"], ["billing_promotion_codes.tenant_id", "billing_promotion_codes.id"], ondelete="RESTRICT"),
-        ForeignKeyConstraint(["subscription_item_id"], ["billing_subscription_items.id"], ondelete="RESTRICT"),
+        ForeignKeyConstraint(["tenant_id"], ["billing_tenants.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_id"], ["billing_subscriptions.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "coupon_id"], ["billing_coupons.tenant_id", "billing_coupons.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["tenant_id", "promotion_code_id"], ["billing_promotion_codes.tenant_id", "billing_promotion_codes.id"], ondelete="RESTRICT", onupdate="CASCADE"),
+        ForeignKeyConstraint(["subscription_item_id"], ["billing_subscription_items.id"], ondelete="RESTRICT", onupdate="CASCADE"),
     )
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    subscription_id: Mapped[str] = mapped_column(String, nullable=False)
+    subscription_id: Mapped[str] = mapped_column(Text, nullable=False)
 
-    coupon_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    coupon_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    promotion_code_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    promotion_code_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    subscription_item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subscription_item_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    source: Mapped[SubscriptionDiscountSource] = mapped_column(ENUM(SubscriptionDiscountSource, name="BillingSubscriptionDiscountSource", create_type=False), nullable=False, server_default=text("'COUPON'"))
+    source: Mapped[SubscriptionDiscountSource] = mapped_column(ENUM(SubscriptionDiscountSource, name="BillingSubscriptionDiscountSource"), nullable=False, server_default=text("'COUPON'"))
 
-    scope: Mapped[SubscriptionDiscountScope] = mapped_column(ENUM(SubscriptionDiscountScope, name="BillingSubscriptionDiscountScope", create_type=False), nullable=False, server_default=text("'TRANSACTION'"))
+    scope: Mapped[SubscriptionDiscountScope] = mapped_column(ENUM(SubscriptionDiscountScope, name="BillingSubscriptionDiscountScope"), nullable=False, server_default=text("'TRANSACTION'"))
 
-    status: Mapped[DiscountStatus] = mapped_column(ENUM(DiscountStatus, name="BillingDiscountStatus", create_type=False), nullable=False, server_default=text("'ACTIVE'"))
+    status: Mapped[DiscountStatus] = mapped_column(ENUM(DiscountStatus, name="BillingDiscountStatus"), nullable=False, server_default=text("'ACTIVE'"))
 
-    discount_type: Mapped[DiscountType] = mapped_column(ENUM(DiscountType, name="BillingDiscountType", create_type=False), nullable=False)
+    discount_type: Mapped[DiscountType] = mapped_column(ENUM(DiscountType, name="BillingDiscountType"), nullable=False)
 
     percent_off: Mapped[Decimal | None] = mapped_column(Numeric(7, 4), nullable=True)
 
@@ -284,13 +284,13 @@ class SubscriptionDiscount(Base):
 
     currency: Mapped[str | None] = mapped_column(CHAR(3), nullable=True)
 
-    duration: Mapped[DiscountDuration] = mapped_column(ENUM(DiscountDuration, name="BillingDiscountDuration", create_type=False), nullable=False)
+    duration: Mapped[DiscountDuration] = mapped_column(ENUM(DiscountDuration, name="BillingDiscountDuration"), nullable=False)
 
     remaining_cycles: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    granted_by_user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    granted_by_user_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    grant_reason: Mapped[str | None] = mapped_column(String, nullable=True)
+    grant_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     starts_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
