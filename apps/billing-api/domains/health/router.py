@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from core.metrics import metrics_response
 from db.schema_ownership import HEAD_REVISION, current_revision
 from domains.health import docs
 from domains.health.schemas import HealthResponse, ReadinessResponse
@@ -19,6 +20,11 @@ router = APIRouter(tags=["System"])
 )
 async def get_health() -> HealthResponse:
     return HealthResponse()
+
+
+@router.get("/metrics", include_in_schema=False)
+async def get_metrics() -> Response:
+    return metrics_response()
 
 
 @router.get(
