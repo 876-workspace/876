@@ -75,6 +75,14 @@ export const PackageDocumentType = {
 export type PackageDocumentType =
   (typeof PackageDocumentType)[keyof typeof PackageDocumentType]
 
+export const TeamMemberStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const
+
+export type TeamMemberStatus =
+  (typeof TeamMemberStatus)[keyof typeof TeamMemberStatus]
+
 export const TenantStatus = {
   PENDING: 'PENDING',
   ACTIVE: 'ACTIVE',

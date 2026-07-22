@@ -255,6 +255,8 @@ export type TenantWhereInput = {
   branches?: Prisma.BranchListRelationFilter
   staffPositions?: Prisma.StaffPositionListRelationFilter
   staffMembers?: Prisma.StaffMemberListRelationFilter
+  roles?: Prisma.RoleListRelationFilter
+  teamMembers?: Prisma.TeamMemberListRelationFilter
   packageCategories?: Prisma.PackageCategoryListRelationFilter
   manifests?: Prisma.ManifestListRelationFilter
   cashSessions?: Prisma.CashSessionListRelationFilter
@@ -278,6 +280,8 @@ export type TenantOrderByWithRelationInput = {
   branches?: Prisma.BranchOrderByRelationAggregateInput
   staffPositions?: Prisma.StaffPositionOrderByRelationAggregateInput
   staffMembers?: Prisma.StaffMemberOrderByRelationAggregateInput
+  roles?: Prisma.RoleOrderByRelationAggregateInput
+  teamMembers?: Prisma.TeamMemberOrderByRelationAggregateInput
   packageCategories?: Prisma.PackageCategoryOrderByRelationAggregateInput
   manifests?: Prisma.ManifestOrderByRelationAggregateInput
   cashSessions?: Prisma.CashSessionOrderByRelationAggregateInput
@@ -305,6 +309,8 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<
     branches?: Prisma.BranchListRelationFilter
     staffPositions?: Prisma.StaffPositionListRelationFilter
     staffMembers?: Prisma.StaffMemberListRelationFilter
+    roles?: Prisma.RoleListRelationFilter
+    teamMembers?: Prisma.TeamMemberListRelationFilter
     packageCategories?: Prisma.PackageCategoryListRelationFilter
     manifests?: Prisma.ManifestListRelationFilter
     cashSessions?: Prisma.CashSessionListRelationFilter
@@ -369,6 +375,8 @@ export type TenantCreateInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -392,6 +400,8 @@ export type TenantUncheckedCreateInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -420,6 +430,8 @@ export type TenantUpdateInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -448,6 +460,8 @@ export type TenantUncheckedUpdateInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -841,6 +855,58 @@ export type TenantUpdateOneRequiredWithoutStaffMembersNestedInput = {
   >
 }
 
+export type TenantCreateNestedOneWithoutRolesInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutRolesInput,
+    Prisma.TenantUncheckedCreateWithoutRolesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutRolesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutRolesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutRolesInput,
+    Prisma.TenantUncheckedCreateWithoutRolesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutRolesInput
+  upsert?: Prisma.TenantUpsertWithoutRolesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.TenantUpdateToOneWithWhereWithoutRolesInput,
+      Prisma.TenantUpdateWithoutRolesInput
+    >,
+    Prisma.TenantUncheckedUpdateWithoutRolesInput
+  >
+}
+
+export type TenantCreateNestedOneWithoutTeamMembersInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutTeamMembersInput,
+    Prisma.TenantUncheckedCreateWithoutTeamMembersInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutTeamMembersInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutTeamMembersNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutTeamMembersInput,
+    Prisma.TenantUncheckedCreateWithoutTeamMembersInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutTeamMembersInput
+  upsert?: Prisma.TenantUpsertWithoutTeamMembersInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.TenantUpdateToOneWithWhereWithoutTeamMembersInput,
+      Prisma.TenantUpdateWithoutTeamMembersInput
+    >,
+    Prisma.TenantUncheckedUpdateWithoutTeamMembersInput
+  >
+}
+
 export type EnumTenantStatusFieldUpdateOperationsInput = {
   set?: $Enums.TenantStatus
 }
@@ -887,6 +953,8 @@ export type TenantCreateWithoutCashSessionsInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
@@ -909,6 +977,8 @@ export type TenantUncheckedCreateWithoutCashSessionsInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
@@ -964,6 +1034,8 @@ export type TenantUpdateWithoutCashSessionsInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
@@ -991,6 +1063,8 @@ export type TenantUncheckedUpdateWithoutCashSessionsInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
@@ -1012,6 +1086,8 @@ export type TenantCreateWithoutBranchesInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -1034,6 +1110,8 @@ export type TenantUncheckedCreateWithoutBranchesInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -1089,6 +1167,8 @@ export type TenantUpdateWithoutBranchesInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -1116,6 +1196,8 @@ export type TenantUncheckedUpdateWithoutBranchesInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -1139,6 +1221,8 @@ export type TenantCreateWithoutCustomerIdTypesInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -1161,6 +1245,8 @@ export type TenantUncheckedCreateWithoutCustomerIdTypesInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -1216,6 +1302,8 @@ export type TenantUpdateWithoutCustomerIdTypesInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -1243,6 +1331,8 @@ export type TenantUncheckedUpdateWithoutCustomerIdTypesInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -1265,6 +1355,8 @@ export type TenantCreateWithoutCustomerDocumentsInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -1287,6 +1379,8 @@ export type TenantUncheckedCreateWithoutCustomerDocumentsInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -1342,6 +1436,8 @@ export type TenantUpdateWithoutCustomerDocumentsInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -1369,6 +1465,8 @@ export type TenantUncheckedUpdateWithoutCustomerDocumentsInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -1390,6 +1488,8 @@ export type TenantCreateWithoutCustomersInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -1412,6 +1512,8 @@ export type TenantUncheckedCreateWithoutCustomersInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -1467,6 +1569,8 @@ export type TenantUpdateWithoutCustomersInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -1494,6 +1598,8 @@ export type TenantUncheckedUpdateWithoutCustomersInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -1517,6 +1623,8 @@ export type TenantCreateWithoutManifestsInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
@@ -1539,6 +1647,8 @@ export type TenantUncheckedCreateWithoutManifestsInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
@@ -1594,6 +1704,8 @@ export type TenantUpdateWithoutManifestsInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
@@ -1621,6 +1733,8 @@ export type TenantUncheckedUpdateWithoutManifestsInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
@@ -1643,6 +1757,8 @@ export type TenantCreateWithoutPackageCategoriesInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
@@ -1665,6 +1781,8 @@ export type TenantUncheckedCreateWithoutPackageCategoriesInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
@@ -1720,6 +1838,8 @@ export type TenantUpdateWithoutPackageCategoriesInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
@@ -1747,6 +1867,8 @@ export type TenantUncheckedUpdateWithoutPackageCategoriesInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
@@ -1768,6 +1890,8 @@ export type TenantCreateWithoutPackagesInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -1790,6 +1914,8 @@ export type TenantUncheckedCreateWithoutPackagesInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -1845,6 +1971,8 @@ export type TenantUpdateWithoutPackagesInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -1872,6 +2000,8 @@ export type TenantUncheckedUpdateWithoutPackagesInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -1894,6 +2024,8 @@ export type TenantCreateWithoutDomainsInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -1916,6 +2048,8 @@ export type TenantUncheckedCreateWithoutDomainsInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -1971,6 +2105,8 @@ export type TenantUpdateWithoutDomainsInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -1998,6 +2134,8 @@ export type TenantUncheckedUpdateWithoutDomainsInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -2020,6 +2158,8 @@ export type TenantCreateWithoutStaffPositionsInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -2042,6 +2182,8 @@ export type TenantUncheckedCreateWithoutStaffPositionsInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -2097,6 +2239,8 @@ export type TenantUpdateWithoutStaffPositionsInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -2124,6 +2268,8 @@ export type TenantUncheckedUpdateWithoutStaffPositionsInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -2146,6 +2292,8 @@ export type TenantCreateWithoutStaffMembersInput = {
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -2168,6 +2316,8 @@ export type TenantUncheckedCreateWithoutStaffMembersInput = {
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -2223,6 +2373,8 @@ export type TenantUpdateWithoutStaffMembersInput = {
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -2250,6 +2402,276 @@ export type TenantUncheckedUpdateWithoutStaffMembersInput = {
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutRolesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutRolesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutRolesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutRolesInput,
+    Prisma.TenantUncheckedCreateWithoutRolesInput
+  >
+}
+
+export type TenantUpsertWithoutRolesInput = {
+  update: Prisma.XOR<
+    Prisma.TenantUpdateWithoutRolesInput,
+    Prisma.TenantUncheckedUpdateWithoutRolesInput
+  >
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutRolesInput,
+    Prisma.TenantUncheckedCreateWithoutRolesInput
+  >
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutRolesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<
+    Prisma.TenantUpdateWithoutRolesInput,
+    Prisma.TenantUncheckedUpdateWithoutRolesInput
+  >
+}
+
+export type TenantUpdateWithoutRolesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutRolesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutTeamMembersInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutTeamMembersInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutTeamMembersInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutTeamMembersInput,
+    Prisma.TenantUncheckedCreateWithoutTeamMembersInput
+  >
+}
+
+export type TenantUpsertWithoutTeamMembersInput = {
+  update: Prisma.XOR<
+    Prisma.TenantUpdateWithoutTeamMembersInput,
+    Prisma.TenantUncheckedUpdateWithoutTeamMembersInput
+  >
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutTeamMembersInput,
+    Prisma.TenantUncheckedCreateWithoutTeamMembersInput
+  >
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutTeamMembersInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<
+    Prisma.TenantUpdateWithoutTeamMembersInput,
+    Prisma.TenantUncheckedUpdateWithoutTeamMembersInput
+  >
+}
+
+export type TenantUpdateWithoutTeamMembersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutTeamMembersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -2272,6 +2694,8 @@ export type TenantCreateWithoutWarehousesInput = {
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
@@ -2294,6 +2718,8 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
   staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
   staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
@@ -2349,6 +2775,8 @@ export type TenantUpdateWithoutWarehousesInput = {
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
@@ -2376,6 +2804,8 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
   staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
   staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
@@ -2395,6 +2825,8 @@ export type TenantCountOutputType = {
   branches: number
   staffPositions: number
   staffMembers: number
+  roles: number
+  teamMembers: number
   packageCategories: number
   manifests: number
   cashSessions: number
@@ -2413,6 +2845,8 @@ export type TenantCountOutputTypeSelect<
   branches?: boolean | TenantCountOutputTypeCountBranchesArgs
   staffPositions?: boolean | TenantCountOutputTypeCountStaffPositionsArgs
   staffMembers?: boolean | TenantCountOutputTypeCountStaffMembersArgs
+  roles?: boolean | TenantCountOutputTypeCountRolesArgs
+  teamMembers?: boolean | TenantCountOutputTypeCountTeamMembersArgs
   packageCategories?: boolean | TenantCountOutputTypeCountPackageCategoriesArgs
   manifests?: boolean | TenantCountOutputTypeCountManifestsArgs
   cashSessions?: boolean | TenantCountOutputTypeCountCashSessionsArgs
@@ -2506,6 +2940,26 @@ export type TenantCountOutputTypeCountStaffMembersArgs<
 /**
  * TenantCountOutputType without action
  */
+export type TenantCountOutputTypeCountRolesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.RoleWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountTeamMembersArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.TeamMemberWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
 export type TenantCountOutputTypeCountPackageCategoriesArgs<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -2573,6 +3027,8 @@ export type TenantSelect<
     branches?: boolean | Prisma.Tenant$branchesArgs<ExtArgs>
     staffPositions?: boolean | Prisma.Tenant$staffPositionsArgs<ExtArgs>
     staffMembers?: boolean | Prisma.Tenant$staffMembersArgs<ExtArgs>
+    roles?: boolean | Prisma.Tenant$rolesArgs<ExtArgs>
+    teamMembers?: boolean | Prisma.Tenant$teamMembersArgs<ExtArgs>
     packageCategories?: boolean | Prisma.Tenant$packageCategoriesArgs<ExtArgs>
     manifests?: boolean | Prisma.Tenant$manifestsArgs<ExtArgs>
     cashSessions?: boolean | Prisma.Tenant$cashSessionsArgs<ExtArgs>
@@ -2653,6 +3109,8 @@ export type TenantInclude<
   branches?: boolean | Prisma.Tenant$branchesArgs<ExtArgs>
   staffPositions?: boolean | Prisma.Tenant$staffPositionsArgs<ExtArgs>
   staffMembers?: boolean | Prisma.Tenant$staffMembersArgs<ExtArgs>
+  roles?: boolean | Prisma.Tenant$rolesArgs<ExtArgs>
+  teamMembers?: boolean | Prisma.Tenant$teamMembersArgs<ExtArgs>
   packageCategories?: boolean | Prisma.Tenant$packageCategoriesArgs<ExtArgs>
   manifests?: boolean | Prisma.Tenant$manifestsArgs<ExtArgs>
   cashSessions?: boolean | Prisma.Tenant$cashSessionsArgs<ExtArgs>
@@ -2682,6 +3140,8 @@ export type $TenantPayload<
     branches: Prisma.$BranchPayload<ExtArgs>[]
     staffPositions: Prisma.$StaffPositionPayload<ExtArgs>[]
     staffMembers: Prisma.$StaffMemberPayload<ExtArgs>[]
+    roles: Prisma.$RolePayload<ExtArgs>[]
+    teamMembers: Prisma.$TeamMemberPayload<ExtArgs>[]
     packageCategories: Prisma.$PackageCategoryPayload<ExtArgs>[]
     manifests: Prisma.$ManifestPayload<ExtArgs>[]
     cashSessions: Prisma.$CashSessionPayload<ExtArgs>[]
@@ -3319,6 +3779,28 @@ export interface Prisma__TenantClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$StaffMemberPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
+  roles<T extends Prisma.Tenant$rolesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Tenant$rolesArgs<ExtArgs>>
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$RolePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
+  teamMembers<T extends Prisma.Tenant$teamMembersArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Tenant$teamMembersArgs<ExtArgs>>
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$TeamMemberPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -4092,6 +4574,66 @@ export type Tenant$staffMembersArgs<
   distinct?:
     | Prisma.StaffMemberScalarFieldEnum
     | Prisma.StaffMemberScalarFieldEnum[]
+}
+
+/**
+ * Tenant.roles
+ */
+export type Tenant$rolesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Role
+   */
+  select?: Prisma.RoleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Role
+   */
+  omit?: Prisma.RoleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RoleInclude<ExtArgs> | null
+  where?: Prisma.RoleWhereInput
+  orderBy?:
+    | Prisma.RoleOrderByWithRelationInput
+    | Prisma.RoleOrderByWithRelationInput[]
+  cursor?: Prisma.RoleWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RoleScalarFieldEnum | Prisma.RoleScalarFieldEnum[]
+}
+
+/**
+ * Tenant.teamMembers
+ */
+export type Tenant$teamMembersArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the TeamMember
+   */
+  select?: Prisma.TeamMemberSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TeamMember
+   */
+  omit?: Prisma.TeamMemberOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TeamMemberInclude<ExtArgs> | null
+  where?: Prisma.TeamMemberWhereInput
+  orderBy?:
+    | Prisma.TeamMemberOrderByWithRelationInput
+    | Prisma.TeamMemberOrderByWithRelationInput[]
+  cursor?: Prisma.TeamMemberWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?:
+    | Prisma.TeamMemberScalarFieldEnum
+    | Prisma.TeamMemberScalarFieldEnum[]
 }
 
 /**

@@ -17,7 +17,15 @@ export type {
   TenantStatus,
   CustomerStatus,
   PackageStatus,
+  Role,
+  TeamMember,
+  TeamMemberStatus,
 } from './generated/prisma/client'
+
+function assignGeneratedId(model: string, data: Record<string, unknown>): void {
+  if (model in COURIERS_ID_PREFIXES && !data.id)
+    data.id = generateId(model as EntityType)
+}
 
 function createPrisma() {
   const connectionString = process.env.DATABASE_URL
@@ -38,9 +46,22 @@ function createPrisma() {
           query: (args: unknown) => Promise<unknown>
         }) {
           const data = args.data as Record<string, unknown>
-          if (model in COURIERS_ID_PREFIXES && !data.id) {
-            data.id = generateId(model as EntityType)
-          }
+          assignGeneratedId(model, data)
+
+          return query(args)
+        },
+        async upsert({
+          model,
+          args,
+          query,
+        }: {
+          model: string
+          args: Record<string, unknown>
+          query: (args: unknown) => Promise<unknown>
+        }) {
+          const create = args.create as Record<string, unknown>
+          assignGeneratedId(model, create)
+
           return query(args)
         },
       },
@@ -49,6 +70,13 @@ function createPrisma() {
 }
 
 type CouriersPrisma = ReturnType<typeof createPrisma>
+type TransactionCallback = Parameters<CouriersPrisma['$transaction']>[0]
+
+export type PrismaTransactionClient = TransactionCallback extends (
+  tx: infer TransactionClient
+) => unknown
+  ? TransactionClient
+  : never
 
 const globalForPrisma = globalThis as unknown as { prisma?: CouriersPrisma }
 

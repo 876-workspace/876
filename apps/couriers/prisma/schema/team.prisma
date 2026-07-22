@@ -1,0 +1,48 @@
+/// Tenant-scoped access role for the couriers app. Default (provisioned) roles are
+/// marked by systemKey ('admin' | 'staff'); their permissions resolve from the code
+/// catalog at read time and the stored permissions array stays empty. Custom roles
+/// store explicit permission keys ('<module>.<action>').
+model Role {
+  id          String  @id @default(cuid())
+  tenantId    String  @map("tenant_id")
+  name        String
+  description String  @default("")
+  systemKey   String? @map("system_key")
+  permissions Json    @default("[]")
+  createdAt   Int     @map("created_at")
+  updatedAt   Int     @map("updated_at")
+
+  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+
+  @@unique([tenantId, name], name: "roles_tenant_id_name_key")
+  @@unique([tenantId, systemKey], name: "roles_tenant_id_system_key_key")
+  @@index([tenantId], name: "roles_tenant_id_idx")
+  @@map("roles")
+}
+
+/// A team member: an app access grant tying an opaque 876 user ID to a tenant and
+/// an app-local role. Identity (name/email/avatar) is resolved through the platform
+/// client at read time — never stored. Distinct from StaffMember (HR record).
+model TeamMember {
+  id        String           @id @default(cuid())
+  tenantId  String           @map("tenant_id")
+  userId    String           @map("user_id")
+  roleId    String           @map("role_id")
+  status    TeamMemberStatus @default(ACTIVE)
+  createdAt Int              @map("created_at")
+  updatedAt Int              @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId], name: "team_members_tenant_id_user_id_key")
+  @@index([tenantId], name: "team_members_tenant_id_idx")
+  @@index([roleId], name: "team_members_role_id_idx")
+  @@map("team_members")
+}
+
+enum TeamMemberStatus {
+  ACTIVE
+  INACTIVE
+}
