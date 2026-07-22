@@ -52,9 +52,9 @@ async function parseDelimited(file: File): Promise<ParsedSheet> {
 
 /** Parses XLSX via read-excel-file, treating the first row as headers. */
 async function parseExcel(file: File): Promise<ParsedSheet> {
-  const readXlsxFile = (await import('read-excel-file')).default
+  const { readSheet } = await import('read-excel-file/browser')
 
-  const matrix = await readXlsxFile(file)
+  const matrix = await readSheet(file)
   if (matrix.length === 0)
     throw new Error('The spreadsheet is empty. Add a header row and try again.')
 
