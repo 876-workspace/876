@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/api/v1/:path*',
-        destination: '/api/billing/:path*',
+        destination: '/api/billing-gateway/:path*',
       },
     ]
   },
