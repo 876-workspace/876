@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 4000 --reload",
+    "db:bootstrap": ".venv/bin/python scripts/bootstrap.py",
     "build": "[ -x .venv/bin/python ] && .venv/bin/python -m compileall -q . || echo 'skip api build (no venv)'",
     "start": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-4000}",
     "typecheck": ".venv/bin/python -m mypy --explicit-package-bases api core db domains providers schemas services utils main.py",

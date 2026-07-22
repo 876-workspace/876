@@ -49,12 +49,8 @@ from db.repositories.products import ProductRepository
 from db.session import AsyncSessionLocal
 from db.session import lifespan as db_lifespan
 from services.billing_customer_dispatch import run_billing_sync_worker
-from services.feature_seeds import (
-    seed_billing_features,
-    seed_console_features,
-    seed_couriers_features,
-    seed_platform_widget_features,
-)
+from services.bootstrap import BootstrapStep, run_bootstrap
+from services.feature_seeds import seed_all_features
 from services.finance_provisioning_dispatch import run_finance_provisioning_worker
 from services.plan_seeds import (
     backfill_billing_plan_assignments,
@@ -614,6 +610,41 @@ def _check_session_secret(settings: Settings) -> None:
         logger.warning("session_secret.weak", length=len(configured))
 
 
+def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
+    """Return startup work in dependency order.
+
+    Bump only the affected step revision when its migration, seed definition,
+    or backfill behavior changes. Completed revisions are skipped on subsequent
+    process starts and development reloads.
+    """
+
+    return (
+        BootstrapStep("identity_tables", 1, _seed_identity_tables),
+        BootstrapStep("platform_apps", 1, _seed_platform_apps),
+        BootstrapStep("geo_regions", 1, _seed_geo_regions),
+        BootstrapStep("provisioning", 1, _ensure_provisioning_tables),
+        BootstrapStep("onboarding", 1, _ensure_onboarding_tables),
+        BootstrapStep("audit_events", 1, _ensure_audit_events_table),
+        BootstrapStep("user_app_enrollments", 1, _ensure_user_app_enrollments_table),
+        BootstrapStep("subscriptions", 1, _ensure_subscriptions_table),
+        BootstrapStep("finance_provisioning", 1, _ensure_finance_provisioning_tables),
+        BootstrapStep("billing_customer_outbox", 1, _ensure_billing_customer_outbox_table),
+        BootstrapStep("first_party_provisioning", 1, seed_first_party_provisioning_manifests),
+        BootstrapStep("billing_v2_cutover", 1, _cut_over_billing_v2),
+        BootstrapStep("org_erm_tables", 1, _ensure_org_erm_tables),
+        BootstrapStep("org_access_tables", 1, _ensure_org_access_tables),
+        BootstrapStep("feature_flag_tables", 1, _ensure_feature_flag_tables),
+        BootstrapStep("plan_module_tables", 1, ensure_plan_module_tables),
+        BootstrapStep("platform_products", 1, _seed_platform_products),
+        BootstrapStep("subscription_items", 1, _ensure_subscription_items_table),
+        BootstrapStep("feature_catalog", 1, seed_all_features, required=False),
+        BootstrapStep("platform_plan_modules", 1, seed_platform_plan_modules),
+        BootstrapStep("billing_plan_assignments", 1, backfill_billing_plan_assignments),
+        BootstrapStep("org_access_backfill", 1, _backfill_org_access),
+        BootstrapStep("user_identifications", 1, _ensure_user_identifications_table),
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = getattr(app.state, "settings", None) or get_settings()
@@ -624,47 +655,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         worker_task: asyncio.Task[None] | None = None
         billing_worker_task: asyncio.Task[None] | None = None
         if hasattr(app.state, "engine") and app.state.engine is not None:
-            steps = (
-                ("identity_tables", _seed_identity_tables),
-                ("platform_apps", _seed_platform_apps),
-                ("geo_regions", _seed_geo_regions),
-                ("provisioning", _ensure_provisioning_tables),
-                ("onboarding", _ensure_onboarding_tables),
-                ("audit_events", _ensure_audit_events_table),
-                ("user_app_enrollments", _ensure_user_app_enrollments_table),
-                ("subscriptions", _ensure_subscriptions_table),
-                ("finance_provisioning", _ensure_finance_provisioning_tables),
-                ("billing_customer_outbox", _ensure_billing_customer_outbox_table),
-                ("first_party_provisioning", seed_first_party_provisioning_manifests),
-                ("billing_v2_cutover", _cut_over_billing_v2),
-                ("org_erm_tables", _ensure_org_erm_tables),
-                ("org_access_tables", _ensure_org_access_tables),
-                ("feature_flag_tables", _ensure_feature_flag_tables),
-                ("plan_module_tables", ensure_plan_module_tables),
-                ("platform_products", _seed_platform_products),
-                ("subscription_items", _ensure_subscription_items_table),
-                ("console_features", seed_console_features),
-                ("billing_features", seed_billing_features),
-                ("couriers_features", seed_couriers_features),
-                ("platform_widget_features", seed_platform_widget_features),
-                ("platform_plan_modules", seed_platform_plan_modules),
-                ("billing_plan_assignments", backfill_billing_plan_assignments),
-                ("org_access_backfill", _backfill_org_access),
-                ("user_identifications", _ensure_user_identifications_table),
-            )
-            logger.info("db.seed.started")
-            for step_name, step_fn in steps:
-                try:
-                    await step_fn(app.state.engine)
-                except Exception:
-                    # Emit a structured event but DO NOT re-raise. In a
-                    # serverless deployment this lifespan runs on every cold
-                    # start; a transient DB failure here must not crash the
-                    # entire ASGI app and take every route (including health
-                    # and OAuth) down with it. Seeding is idempotent, so a
-                    # later cold start will retry it.
-                    logger.error("db.seed.failed", step=step_name, exc_info=True)
-            logger.info("db.seed.completed")
+            await run_bootstrap(app.state.engine, get_bootstrap_steps())
             if settings.billing_url and settings.billing_internal_key:
                 worker_stop = asyncio.Event()
                 worker_task = asyncio.create_task(

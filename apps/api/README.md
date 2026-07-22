@@ -19,6 +19,7 @@ Run from the repository root:
 
 ```bash
 pnpm --filter @876/api dev
+pnpm --filter @876/api db:bootstrap
 pnpm --filter @876/api typecheck
 pnpm --filter @876/api test
 pnpm --filter @876/api lint
@@ -33,6 +34,27 @@ python -m pytest
 python -m mypy . tests
 python -m ruff check .
 ```
+
+## Database bootstrap
+
+API startup runs schema setup, catalog seeds, and historical backfills through
+revision-gated bootstrap phases. A completed phase is recorded in
+`platform_bootstrap_state`, so ordinary process starts and Uvicorn reloads only
+perform a lightweight revision check. PostgreSQL advisory locking prevents two
+replicas from running pending phases concurrently.
+
+When changing a phase's migration, seed definition, or backfill behavior, bump
+that phase's revision in `main.get_bootstrap_steps()`. To retry reconciliation
+without another code change, run all phases or a selected phase explicitly:
+
+```bash
+pnpm --filter @876/api db:bootstrap --force
+pnpm --filter @876/api db:bootstrap --force --step feature_catalog
+```
+
+Required database phases fail startup when they fail, preventing an unhealthy
+schema from reporting ready. External feature-provider reconciliation is
+non-blocking and remains pending for a later retry after a failure.
 
 ## Local URLs
 

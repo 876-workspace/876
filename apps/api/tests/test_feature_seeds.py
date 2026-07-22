@@ -1,4 +1,8 @@
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+
 from core.platform_apps import BILLING_APP_SLUG, COURIERS_APP_SLUG
+from services import feature_seeds
 from services.feature_seeds import FEATURE_SEEDS_BY_APP, _validate_feature_seeds
 
 
@@ -56,3 +60,23 @@ def test_couriers_feature_seeds_define_expected_groups() -> None:
         assert "parent_slug" not in seeds_by_slug[standalone_slug]
 
     _validate_feature_seeds(COURIERS_APP_SLUG, seeds)
+
+
+async def test_seed_all_features_reuses_one_provider_snapshot(monkeypatch) -> None:
+    settings = SimpleNamespace(
+        posthog_personal_api_key="phx_test",
+        posthog_project_id=123,
+        posthog_host="https://posthog.example.test",
+    )
+    posthog = SimpleNamespace(list_features=AsyncMock(return_value=[{"id": 1, "key": "existing"}]))
+    reconcile = AsyncMock()
+    monkeypatch.setattr(feature_seeds, "get_settings", lambda: settings)
+    monkeypatch.setattr(feature_seeds, "get_posthog_client", lambda _settings: posthog)
+    monkeypatch.setattr(feature_seeds, "_seed_posthog_features", reconcile)
+
+    await feature_seeds.seed_all_features(object())
+
+    posthog.list_features.assert_awaited_once_with()
+    assert reconcile.await_count == 4
+    snapshots = [call.kwargs["provider_features"] for call in reconcile.await_args_list]
+    assert all(snapshot is snapshots[0] for snapshot in snapshots)

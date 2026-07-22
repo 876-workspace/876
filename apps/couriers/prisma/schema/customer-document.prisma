@@ -55,5 +55,6 @@ model CustomerDocument {
 
   @@index([tenantId], name: "customer_documents_tenant_id_idx")
   @@index([customerId], name: "customer_documents_customer_id_idx")
+  @@index([typeId], name: "customer_documents_type_id_idx")
   @@map("customer_documents")
 }

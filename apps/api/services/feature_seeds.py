@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import NotRequired, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from sqlalchemy import select as sa_select
 
@@ -18,7 +18,7 @@ from db.models import FeatureFlagMigrationArchive
 from db.repositories.apps import AppRepository
 from db.repositories.features import FeatureRepository
 from db.session import AsyncSessionLocal
-from providers.posthog.client import get_posthog_client
+from providers.posthog.client import PostHogClient, get_posthog_client
 
 logger = get_logger(__name__)
 
@@ -339,6 +339,8 @@ async def _seed_posthog_features(
     *,
     app_slug: str | None,
     feature_seeds: list[FeatureSeed],
+    posthog: PostHogClient | None = None,
+    provider_features: dict[str, dict[str, Any]] | None = None,
 ) -> None:
     scope_label = app_slug or "platform"
     settings = get_settings()
@@ -368,8 +370,9 @@ async def _seed_posthog_features(
             )
             return
 
-        posthog = get_posthog_client(settings)
-        provider_features = {str(row.get("key")): row for row in await posthog.list_features()}
+        active_posthog = posthog or get_posthog_client(settings)
+        if provider_features is None:
+            provider_features = {str(row.get("key")): row for row in await active_posthog.list_features()}
         repo = FeatureRepository(session)
         feature_ids_by_slug: dict[str, str] = {}
 
@@ -380,7 +383,7 @@ async def _seed_posthog_features(
                     legacy_provider_feature = provider_features.get(legacy_slug)
                     if legacy_provider_feature is None:
                         continue
-                    provider_feature = await posthog.update_feature(
+                    provider_feature = await active_posthog.update_feature(
                         str(legacy_provider_feature["id"]),
                         key=feature_seed["slug"],
                         description=feature_seed["description"],
@@ -396,7 +399,7 @@ async def _seed_posthog_features(
                     )
                     break
             if provider_feature is None:
-                provider_feature = await posthog.create_feature(
+                provider_feature = await active_posthog.create_feature(
                     key=feature_seed["slug"],
                     name=feature_seed["name"],
                     description=feature_seed["description"],
@@ -511,4 +514,29 @@ async def seed_platform_widget_features(_engine: object) -> None:
     await _seed_posthog_features(
         app_slug=None,
         feature_seeds=PLATFORM_FEATURE_SEEDS,
+    )
+
+
+async def seed_all_features(_engine: object) -> None:
+    """Reconcile every seeded feature scope from one PostHog snapshot."""
+
+    settings = get_settings()
+    if not (settings.posthog_personal_api_key and settings.posthog_project_id and settings.posthog_host):
+        logger.info("features.seed.skipped", app_slug="all", reason="posthog_not_configured")
+        return
+
+    posthog = get_posthog_client(settings)
+    provider_features = {str(row.get("key")): row for row in await posthog.list_features()}
+    for app_slug in (CONSOLE_APP_SLUG, BILLING_APP_SLUG, COURIERS_APP_SLUG):
+        await _seed_posthog_features(
+            app_slug=app_slug,
+            feature_seeds=FEATURE_SEEDS_BY_APP[app_slug],
+            posthog=posthog,
+            provider_features=provider_features,
+        )
+    await _seed_posthog_features(
+        app_slug=None,
+        feature_seeds=PLATFORM_FEATURE_SEEDS,
+        posthog=posthog,
+        provider_features=provider_features,
     )

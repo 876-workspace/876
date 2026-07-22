@@ -17,8 +17,10 @@ test.describe('Console public boundary', () => {
   }) => {
     await page.goto('/access-denied')
 
-    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-    await expect(page.getByText('to access Console')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Sign in to Console' })
+    ).toBeVisible()
+    await expect(page.getByText('with your 876 account')).toBeVisible()
     await expectNoAccessibilityViolations(page)
     if (browserName === 'chromium')
       await expect(page).toHaveScreenshot('console-sign-in.png', {

@@ -175,9 +175,7 @@ describe('Couriers roles create route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(400)
-    expect(body.error.message).toBe(
-      'One or more permission keys are invalid.'
-    )
+    expect(body.error.message).toBe('One or more permission keys are invalid.')
     expect(body.error.code).toBe('role/invalid-permission')
     expect(body.data).toBeNull()
   })

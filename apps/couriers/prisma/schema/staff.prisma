@@ -38,5 +38,7 @@ model StaffMember {
   @@unique([tenantId, userId], name: "staff_members_tenant_id_user_id_key")
   @@index([tenantId], name: "staff_members_tenant_id_idx")
   @@index([userId], name: "staff_members_user_id_idx")
+  @@index([branchId], name: "staff_members_branch_id_idx")
+  @@index([positionId], name: "staff_members_position_id_idx")
   @@map("staff_members")
 }
