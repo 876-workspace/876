@@ -79,6 +79,7 @@ export async function POST() {
       orgId: ctx.orgId,
       name: platformName,
       slug: toSlug(platformName),
+      ownerUserId: ctx.userId,
     })
     if (created.error)
       return apiJson({ error: created.error }, { status: created.status })

@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
     orgId: ctx.orgId,
     name,
     slug,
+    ownerUserId: ctx.userId,
   })
   if (result.error) {
     return apiJson({ error: result.error }, { status: result.status })
