@@ -15,3 +15,27 @@ pnpm --filter @876/billing-api test
 
 The canonical versioned API prefix is `/api/v1`. Liveness and readiness are
 available at `/health` and `/ready`.
+
+## Database ownership
+
+Alembic owns schema changes after revision `202607220001`. The adoption
+revision adopts the exact legacy Prisma schema without replaying DDL and
+refuses empty, partial, or drifted schemas. New environments restore the
+Billing database before Alembic adopts it. Revision `202607220002` creates the
+vendor table that existed in the Prisma schema but was absent from its migration
+history.
+
+```bash
+pnpm --filter @876/billing-api db:migrate
+pnpm --filter @876/billing-api db:migration:check
+pnpm --filter @876/billing-api db:reconcile
+```
+
+`BILLING_WRITER` is the shared single-writer lease. Its valid values are
+`legacy`, `fastapi`, and `none`; missing or invalid configuration fails closed.
+The reconciliation command requires `BILLING_WRITER=none` operationally and
+reads its source from `BILLING_LEGACY_DATABASE_URL` and target from
+`BILLING_DATABASE_URL`.
+
+See [the cutover runbook](../../docs/billing-api-cutover.md) for the ordered
+handoff and rollback procedure.
