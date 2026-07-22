@@ -76,6 +76,14 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
         })
       },
 
+      /** Revokes a pending invite token for an organization. */
+      revoke(orgId: string, inviteId: string) {
+        return platformRequest<PlatformInviteToken>(runtime, {
+          method: 'DELETE',
+          path: `/organizations/${orgId}/invites/${inviteId}`,
+        })
+      },
+
       /** Lists invite tokens for an organization. */
       list(orgId: string) {
         return platformRequest<PlatformList<PlatformInviteToken>>(runtime, {
