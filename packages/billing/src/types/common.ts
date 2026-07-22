@@ -62,14 +62,24 @@ export interface List<T> {
  */
 export interface ClientOptions {
   /**
-   * Billing service origin. Defaults to same-origin in a browser.
+   * Billing API origin. Defaults to same-origin in a browser and port 4004 on the server.
    */
   baseUrl?: string
 
   /**
-   * Credentials mode used for 876 session cookies.
+   * Credentials mode used for same-origin frontend gateways.
    */
   credentials?: RequestCredentials
+
+  /**
+   * Short-lived delegated 876 access token. Required by the standalone API.
+   */
+  accessToken?: string
+
+  /**
+   * Core organization whose Billing workspace should be used.
+   */
+  organizationId?: string
 
   /**
    * Optional fetch implementation for tests or custom runtimes.

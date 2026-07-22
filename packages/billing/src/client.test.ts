@@ -37,6 +37,38 @@ describe('create876Client', () => {
     )
   })
 
+  it('sends delegated identity and organization context to the standalone API', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: { object: 'invoice', id: 'blinv_1' },
+        error: null,
+      })
+    )
+    const client = create876Client({
+      baseUrl: 'https://billing-api.example.test',
+      accessToken: 'oauth-token',
+      organizationId: 'org_123',
+      requestId: 'req_123',
+      fetch: fetchMock,
+    })
+
+    await client.invoices.create({
+      customerId: 'blcus_1',
+      lines: [{ description: 'Dinner', unitAmount: 2500 }],
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://billing-api.example.test/api/v1/invoices',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer oauth-token',
+          'x-billing-organization-id': 'org_123',
+          'x-request-id': 'req_123',
+        }),
+      })
+    )
+  })
+
   it('updates invoice preferences through the versioned tenant API', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({

@@ -15,9 +15,15 @@ export function Request<T>(
       baseUrl: runtime.baseUrl,
       fetch: runtime.fetch,
       credentials: runtime.credentials,
-      headers: runtime.requestId
-        ? { 'x-request-id': runtime.requestId }
-        : undefined,
+      headers: {
+        ...(runtime.accessToken
+          ? { Authorization: `Bearer ${runtime.accessToken}` }
+          : {}),
+        ...(runtime.organizationId
+          ? { 'x-billing-organization-id': runtime.organizationId }
+          : {}),
+        ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
+      },
     },
     request,
     responseSchema

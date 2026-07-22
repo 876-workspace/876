@@ -16,6 +16,10 @@
     "./integration": {
       "types": "./src/integration/index.ts",
       "default": "./src/integration/index.ts"
+    },
+    "./proxy": {
+      "types": "./src/proxy.ts",
+      "default": "./src/proxy.ts"
     }
   },
   "scripts": {

@@ -5,7 +5,7 @@ import type { Error, List, Result } from '../../types'
  */
 export interface IntegrationClientOptions {
   /**
-   * Billing service origin. Defaults from `BILLING_URL`.
+   * Billing API origin. Defaults from `BILLING_API_URL` (or legacy `BILLING_URL`).
    */
   baseUrl?: string
 

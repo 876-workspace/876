@@ -4,7 +4,7 @@ export type IntervalUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
 
 /** Options for the server-only Billing administration client. */
 export interface AdminClientOptions {
-  /** Billing service origin. Defaults from `BILLING_URL`. */
+  /** Billing API origin. Defaults from `BILLING_API_URL` (or legacy `BILLING_URL`). */
   baseUrl?: string
   /** Secret server-to-server key. Never expose this value to a browser. */
   internalKey?: string

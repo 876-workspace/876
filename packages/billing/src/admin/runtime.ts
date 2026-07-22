@@ -2,12 +2,12 @@ import { readClientEnv, resolveClientBaseUrl } from '@876/core/client'
 
 import type { AdminClientOptions } from './types'
 
-const AdminBaseUrlEnvKeys = ['BILLING_URL'] as const
+const AdminBaseUrlEnvKeys = ['BILLING_API_URL', 'BILLING_URL'] as const
 
 function resolveBaseUrl(baseUrl?: string): string {
   const configured = resolveClientBaseUrl(baseUrl, AdminBaseUrlEnvKeys)
 
-  return (configured ?? 'http://localhost:3004').replace(/\/$/, '')
+  return (configured ?? 'http://localhost:4004').replace(/\/$/, '')
 }
 
 /** Builds the runtime shared by Billing administration resources. */
