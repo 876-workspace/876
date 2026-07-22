@@ -380,6 +380,11 @@ def serialize_resource(row: DeclarativeBase, object_name: str) -> dict[str, Any]
         key = attribute.key
         if key in {"tenant_id", "source_idempotency_key", "source_payload_hash"}:
             continue
+        if isinstance(row, PaymentProviderConnection) and key in {
+            "credentials_reference",
+            "webhook_secret_reference",
+        }:
+            continue
         output_key = "metadata" if key == "metadata_" else camel_case(key)
         value = getattr(row, key)
         if isinstance(attribute.columns[0].type, BigInteger) and value is not None:
