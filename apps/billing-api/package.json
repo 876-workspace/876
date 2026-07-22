@@ -10,6 +10,8 @@
     "test": ".venv/bin/python -m pytest",
     "lint": ".venv/bin/python -m ruff check .",
     "format": ".venv/bin/python -m ruff format .",
-    "format:check": ".venv/bin/python -m ruff format --check ."
+    "format:check": ".venv/bin/python -m ruff format --check .",
+    "db:models:generate": ".venv/bin/python scripts/generate_models.py generate",
+    "db:models:check": ".venv/bin/python scripts/generate_models.py check"
   }
 }
