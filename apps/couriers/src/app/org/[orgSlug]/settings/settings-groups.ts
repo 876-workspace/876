@@ -41,8 +41,8 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     tileClass: 'bg-violet-500/10',
     iconClass: 'text-violet-600 dark:text-violet-400',
     items: [
-      { title: 'Team', href: '/settings/team' },
-      { title: 'Roles' },
+      { title: 'Users', href: '/settings/users' },
+      { title: 'Roles', href: '/settings/users/roles' },
       { title: 'User preferences' },
     ],
   },
