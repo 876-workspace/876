@@ -68,8 +68,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "Content-Type",
             "Idempotency-Key",
             "X-876-API-Key",
+            "X-Billing-Organization-Id",
             "X-Internal-Key",
             "X-Request-Id",
+            "X-Scheduler-Key",
         ],
     )
     app.add_middleware(RequestLoggingMiddleware)

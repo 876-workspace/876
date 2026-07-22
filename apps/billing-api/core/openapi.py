@@ -38,6 +38,24 @@ def setup_openapi(app: FastAPI) -> None:
             if path.startswith("/api/v1")
         }
         schema["servers"] = [{"url": "/api/v1"}]
+        identity_api_url = app.state.settings.identity_api_url.rstrip("/")
+        components = schema.setdefault("components", {})
+        components["securitySchemes"] = {
+            "tenantOAuth": {
+                "type": "oauth2",
+                "description": "Delegated 876 access token for an active Billing organization member.",
+                "flows": {
+                    "authorizationCode": {
+                        "authorizationUrl": f"{identity_api_url}/api/v1/oauth/authorize",
+                        "tokenUrl": f"{identity_api_url}/api/v1/oauth/token",
+                        "scopes": {},
+                    }
+                },
+            },
+            "appApiKey": {"type": "apiKey", "in": "header", "name": "x-876-api-key"},
+            "internalKey": {"type": "apiKey", "in": "header", "name": "x-internal-key"},
+            "schedulerKey": {"type": "apiKey", "in": "header", "name": "x-scheduler-key"},
+        }
         app.openapi_schema = schema
         return schema
 

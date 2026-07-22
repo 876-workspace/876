@@ -22,9 +22,11 @@ _sensitive_fields = frozenset(
         "refresh_token",
         "secret",
         "session",
+        "scheduler_key",
         "token",
         "x_876_api_key",
         "x_internal_key",
+        "x_scheduler_key",
     }
 )
 
