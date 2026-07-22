@@ -25,7 +25,7 @@ billing_customer_outbox  (same DB transaction)
 run_billing_sync_worker  (API lifespan)
         │
         ▼
-POST {BILLING_URL}/api/v1/admin/customers/ensure
+POST {BILLING_API_URL}/api/v1/admin/customers/ensure
   headers: x-internal-key, x-request-id=<outbox id>
         │
         ▼
@@ -176,7 +176,7 @@ Response (`BillingCustomerSyncDispatchResponse`):
 }
 ```
 
-`configured: false` when `BILLING_URL` or `BILLING_INTERNAL_KEY` is empty.
+`configured: false` when `BILLING_API_URL` or `BILLING_INTERNAL_KEY` is empty.
 
 ```bash
 curl -sS -X POST "$API_URL/billing/customer-sync/dispatch" \
@@ -215,14 +215,14 @@ curl -sS -X POST "$API_URL/billing/customer-sync/dispatch" \
 
 | Variable                            | Owner   | Role                                                                  |
 | ----------------------------------- | ------- | --------------------------------------------------------------------- |
-| `BILLING_URL`                       | Core    | Base URL of Billing app                                               |
+| `BILLING_API_URL`                   | Core    | Base URL of the standalone Billing API                                |
 | `BILLING_INTERNAL_KEY`              | Core    | `x-internal-key` for Billing admin ensure / billing run               |
 | `BILLING_RUN_INTERVAL_SECONDS`      | Core    | Cadence for `POST …/admin/billing/run` (default `3600`; `0` disables) |
 | `FINANCE_PROVISIONING_POLL_SECONDS` | Core    | Worker sleep between loops (default `30`; shared with finance outbox) |
 | `FINANCE_PROVISIONING_BATCH_SIZE`   | Core    | Claim batch size (default `25`)                                       |
 | `BILLING_PLATFORM_TENANT_SLUG`      | Billing | Platform tenant receiving customers                                   |
 
-Worker starts in API lifespan only when both `BILLING_URL` and
+Worker starts in API lifespan only when both `BILLING_API_URL` and
 `BILLING_INTERNAL_KEY` are set.
 
 ---

@@ -53,8 +53,8 @@ import 'server-only'
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 
 const $billingIntegration = create876BillingIntegrationClient({
-  baseUrl: process.env.BILLING_URL,
-  serviceKey: process.env.BILLING_INTERNAL_KEY,
+  baseUrl: process.env.BILLING_API_URL,
+  internalKey: process.env.BILLING_INTERNAL_KEY,
 })
 
 const [organization, customers] = await Promise.all([

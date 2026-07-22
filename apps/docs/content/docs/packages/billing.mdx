@@ -10,11 +10,11 @@ entitlements are stored only as opaque IDs with no cross-database foreign keys.
 
 ## Client tiers
 
-| Import                     | Credential                          | Intended consumers                                   |
-| -------------------------- | ----------------------------------- | ---------------------------------------------------- |
-| `@876/billing`             | Authenticated Billing session       | Billing UI and tenant-scoped product operations      |
-| `@876/billing/integration` | Service key or scoped OAuth token   | Organization and customer interoperability           |
-| `@876/billing/admin`       | `BILLING_INTERNAL_KEY`, server-only | Console catalogue/subscription projection and repair |
+| Import                     | Credential                           | Intended consumers                                   |
+| -------------------------- | ------------------------------------ | ---------------------------------------------------- |
+| `@876/billing`             | Delegated OAuth token + organization | Billing UI and tenant-scoped product operations      |
+| `@876/billing/integration` | Service key or scoped OAuth token    | Organization and customer interoperability           |
+| `@876/billing/admin`       | `BILLING_INTERNAL_KEY`, server-only  | Console catalogue/subscription projection and repair |
 
 The canonical HTTP base path is `/api/v1`. The machine-readable contract is
 available from `GET /api/v1/openapi` on the Billing service.
@@ -22,11 +22,12 @@ available from `GET /api/v1/openapi` on the Billing service.
 ## Tenant client
 
 ```ts
-import { create876BillingClient } from '@876/billing'
+import { create876Client } from '@876/billing'
 
-const $billing = create876BillingClient({
-  baseUrl: 'https://billing.example.com',
-  credentials: 'include',
+const $billing = create876Client({
+  baseUrl: 'https://billing-api.example.com',
+  accessToken,
+  organizationId,
 })
 
 const result = await $billing.invoices.create({
@@ -38,8 +39,8 @@ const result = await $billing.invoices.create({
 
 Native applications are public OAuth clients. They must authenticate through
 876 identity with authorization code + PKCE and must never contain a Billing
-internal key. The current public client slice uses the Billing session; bearer
-and tenant-key tiers require an explicit security/scoping design before release.
+internal key. The access token is scoped again by the explicit organization ID;
+the API verifies active membership and Billing permissions on every request.
 
 ## Organization integration client
 
@@ -48,8 +49,8 @@ import 'server-only'
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 
 export const $billingIntegration = create876BillingIntegrationClient({
-  baseUrl: process.env.BILLING_URL,
-  serviceKey: process.env.BILLING_INTERNAL_KEY,
+  baseUrl: process.env.BILLING_API_URL,
+  internalKey: process.env.BILLING_INTERNAL_KEY,
 })
 ```
 
@@ -65,7 +66,7 @@ import 'server-only'
 import { create876AdminClient } from '@876/billing/admin'
 
 export const $billing = create876AdminClient({
-  baseUrl: process.env.BILLING_URL,
+  baseUrl: process.env.BILLING_API_URL,
   internalKey: process.env.BILLING_INTERNAL_KEY,
 })
 ```

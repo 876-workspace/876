@@ -14,8 +14,9 @@ exposes the first integration slice needed by product applications:
 import { create876Client } from '@876/billing'
 
 const $billing = create876Client({
-  baseUrl: 'https://billing.example.com',
-  credentials: 'include',
+  baseUrl: 'https://billing-api.example.com',
+  accessToken,
+  organizationId,
 })
 
 const result = await $billing.invoices.create({
@@ -38,7 +39,7 @@ import 'server-only'
 import { create876BillingAdminClient } from '@876/billing/admin'
 
 export const $billing = create876BillingAdminClient({
-  baseUrl: process.env.BILLING_URL,
+  baseUrl: process.env.BILLING_API_URL,
   internalKey: process.env.BILLING_INTERNAL_KEY,
 })
 

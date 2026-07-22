@@ -86,7 +86,7 @@ duplicate invoices for the same period.
 
 1. Drain customer outbox
 2. If `billing_run_interval_seconds > 0` and interval elapsed since last run →
-   `POST {BILLING_URL}/api/v1/admin/billing/run` with `x-internal-key`
+   `POST {BILLING_API_URL}/api/v1/admin/billing/run` with `x-internal-key`
 3. Sleep `finance_provisioning_poll_seconds`
 
 Default interval: **3600** seconds. Set `BILLING_RUN_INTERVAL_SECONDS=0` to
