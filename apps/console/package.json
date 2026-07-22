@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack --port 3002",
+    "dev": "prisma migrate deploy && next dev --turbopack --port 3002",
     "build": "next build",
     "start": "next start --port ${PORT:-3002}",
     "lint": "eslint",

@@ -18,6 +18,8 @@ builder = "RAILPACK"
 buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @876/sdk build && pnpm --filter @876/console build"
 
 [deploy]
+# Apply pending Console-owned Prisma migrations before the app boots.
+preDeployCommand = "pnpm --filter @876/console db:deploy"
 # PORT is injected by Railway as an env var; the app's `start` script reads it
 # via `${PORT:-3002}` (sh expansion inside the script). Do NOT append
 # `-- --port $PORT` here — Railway start commands are not guaranteed a shell,
