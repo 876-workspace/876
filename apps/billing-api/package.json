@@ -12,6 +12,8 @@
     "format": ".venv/bin/python -m ruff format .",
     "format:check": ".venv/bin/python -m ruff format --check .",
     "db:models:generate": ".venv/bin/python scripts/generate_models.py generate",
-    "db:models:check": ".venv/bin/python scripts/generate_models.py check"
+    "db:models:check": ".venv/bin/python scripts/generate_models.py check",
+    "api:routes:generate": ".venv/bin/python scripts/generate_routes.py generate",
+    "api:routes:check": ".venv/bin/python scripts/generate_routes.py check"
   }
 }

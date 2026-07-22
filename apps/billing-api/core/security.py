@@ -104,7 +104,9 @@ def require_internal_service(request: Request) -> BillingPrincipal:
             message="The internal service credential is invalid.",
             http_status_code=status.HTTP_401_UNAUTHORIZED,
         )
-    return BillingPrincipal(kind="internal", platform_admin=True)
+    principal = BillingPrincipal(kind="internal", platform_admin=True)
+    request.state.billing_principal = principal
+    return principal
 
 
 def require_scheduler(request: Request) -> BillingPrincipal:
@@ -122,7 +124,9 @@ def require_scheduler(request: Request) -> BillingPrincipal:
             message="The scheduler credential is invalid.",
             http_status_code=status.HTTP_401_UNAUTHORIZED,
         )
-    return BillingPrincipal(kind="scheduler")
+    principal = BillingPrincipal(kind="scheduler")
+    request.state.billing_principal = principal
+    return principal
 
 
 async def _active_tenant(repository: AuthRepository, organization_id: str) -> Tenant:
@@ -189,7 +193,7 @@ def require_tenant_permission(permission: str) -> Callable[..., Awaitable[Billin
                 message="The authenticated user lacks the required Billing permission.",
                 http_status_code=status.HTTP_403_FORBIDDEN,
             )
-        return BillingPrincipal(
+        principal = BillingPrincipal(
             kind="oauth",
             tenant_id=tenant.id,
             organization_id=organization_id,
@@ -198,8 +202,43 @@ def require_tenant_permission(permission: str) -> Callable[..., Awaitable[Billin
             scopes=identity.scopes,
             permissions=member.permissions,
         )
+        request.state.billing_principal = principal
+        return principal
 
     return dependency
+
+
+async def require_organization_member(
+    request: Request,
+    gateway: Annotated[IdentityGateway, Depends(get_identity_gateway)],
+    organization_id: Annotated[
+        str | None,
+        Header(alias="X-Billing-Organization-Id"),
+    ] = None,
+) -> BillingPrincipal:
+    kind, token = _require_single_credential(request)
+    if kind != "oauth":
+        raise AppHTTPException(
+            code="auth/session-required",
+            message="A delegated user access token is required.",
+            http_status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+    if not organization_id:
+        raise AppHTTPException(
+            code="billing/organization-required",
+            message="X-Billing-Organization-Id is required.",
+            http_status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    identity = await _active_oauth_identity(gateway, token, organization_id)
+    principal = BillingPrincipal(
+        kind="oauth",
+        organization_id=organization_id,
+        user_id=identity.subject,
+        app_id=identity.app_id,
+        scopes=identity.scopes,
+    )
+    request.state.billing_principal = principal
+    return principal
 
 
 def require_integration_scope(required_scope: str) -> Callable[..., Awaitable[BillingPrincipal]]:
@@ -219,12 +258,14 @@ def require_integration_scope(required_scope: str) -> Callable[..., Awaitable[Bi
         if kind == "internal":
             internal = require_internal_service(request)
             tenant = await _active_tenant(repository, organization_id)
-            return BillingPrincipal(
+            principal = BillingPrincipal(
                 kind=internal.kind,
                 tenant_id=tenant.id,
                 organization_id=organization_id,
                 platform_admin=True,
             )
+            request.state.billing_principal = principal
+            return principal
 
         if kind == "app_api_key":
             app = await gateway.app_for_api_key(credential)
@@ -257,7 +298,7 @@ def require_integration_scope(required_scope: str) -> Callable[..., Awaitable[Bi
                 message="The app finance connection lacks the required scope.",
                 http_status_code=status.HTTP_403_FORBIDDEN,
             )
-        return BillingPrincipal(
+        principal = BillingPrincipal(
             kind=kind,
             tenant_id=tenant.id,
             organization_id=organization_id,
@@ -265,6 +306,8 @@ def require_integration_scope(required_scope: str) -> Callable[..., Awaitable[Bi
             app_id=app_id,
             scopes=token_scopes,
         )
+        request.state.billing_principal = principal
+        return principal
 
     return dependency
 

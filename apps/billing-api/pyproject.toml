@@ -38,7 +38,7 @@ asyncio_mode = "auto"
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = ["db/models/generated"]
+extend-exclude = ["db/models/generated", "domains/billing/generated_routes.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
