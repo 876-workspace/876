@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -62,7 +62,10 @@ class Settings(BaseSettings):
 
     stripe_secret_key: str = Field(default="", validation_alias="STRIPE_SECRET_KEY")
     stripe_webhook_secret: str = Field(default="", validation_alias="STRIPE_WEBHOOK_SECRET")
-    billing_url: str = Field(default="", validation_alias="BILLING_URL")
+    billing_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("BILLING_API_URL", "BILLING_URL"),
+    )
     billing_internal_key: str = Field(default="", validation_alias="BILLING_INTERNAL_KEY")
     billing_run_interval_seconds: int = Field(
         default=3600,

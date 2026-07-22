@@ -7,7 +7,7 @@ export function getAppsDirectory(basePath: string): AppSwitcherApp[] {
     { name: '876 Couriers', url: basePath, current: true },
     {
       name: '876 Billing',
-      url: process.env.BILLING_URL ?? 'https://billing.876.app',
+      url: process.env.NEXT_PUBLIC_BILLING_URL ?? 'https://billing.876.app',
     },
   ]
 }

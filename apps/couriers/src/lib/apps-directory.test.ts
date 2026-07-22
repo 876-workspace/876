@@ -12,7 +12,7 @@ describe('getAppsDirectory', () => {
   })
 
   it('marks Couriers current and uses the organization base path', () => {
-    vi.stubEnv('BILLING_URL', 'https://billing.internal.876.test')
+    vi.stubEnv('NEXT_PUBLIC_BILLING_URL', 'https://billing.internal.876.test')
 
     const result = getAppsDirectory('/org/island-logistics')
 
@@ -30,7 +30,10 @@ describe('getAppsDirectory', () => {
   })
 
   it('uses the configured Billing URL when the environment variable exists', () => {
-    vi.stubEnv('BILLING_URL', 'https://billing.staging.876.test/workspace')
+    vi.stubEnv(
+      'NEXT_PUBLIC_BILLING_URL',
+      'https://billing.staging.876.test/workspace'
+    )
 
     const result = getAppsDirectory('/org/montego-express')
 
@@ -48,7 +51,7 @@ describe('getAppsDirectory', () => {
   })
 
   it('falls back to the public Billing URL when the environment variable is absent', () => {
-    vi.stubEnv('BILLING_URL', undefined)
+    vi.stubEnv('NEXT_PUBLIC_BILLING_URL', undefined)
 
     const result = getAppsDirectory('/org/portland-freight')
 

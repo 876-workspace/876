@@ -5,7 +5,7 @@ import { create876BillingIntegrationClient } from '@876/billing/integration'
 
 /** Server-only client for 876 Billing's versioned administration surface. */
 export const $billing = create876AdminClient({
-  baseUrl: process.env.BILLING_URL,
+  baseUrl: process.env.BILLING_API_URL,
   internalKey: process.env.BILLING_INTERNAL_KEY,
 })
 
@@ -16,7 +16,7 @@ export const $billing = create876AdminClient({
  */
 export function getBillingIntegrationClient(requestId?: string) {
   return create876BillingIntegrationClient({
-    baseUrl: process.env.BILLING_URL,
+    baseUrl: process.env.BILLING_API_URL,
     internalKey: process.env.BILLING_INTERNAL_KEY,
     requestId,
   })

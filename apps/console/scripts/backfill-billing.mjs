@@ -3,7 +3,7 @@
  * into 876 Billing's platform tenant, using the same idempotent `ensure`
  * endpoints the live Console mirror calls. Safe to re-run at any time.
  *
- * Requires the core API (port 4000) and the Billing app (port 3004) to be
+ * Requires the core API (port 4000) and Billing API (port 4004) to be
  * running, and reads credentials from apps/console/.env.local.
  *
  * Usage: node apps/console/scripts/backfill-billing.mjs
@@ -29,14 +29,14 @@ const env = Object.fromEntries(
 )
 
 const CORE_URL = (env.API_URL ?? 'http://127.0.0.1:4000').replace(/\/+$/, '')
-const BILLING_URL = (env.BILLING_URL ?? '').replace(/\/+$/, '')
+const BILLING_API_URL = (env.BILLING_API_URL ?? '').replace(/\/+$/, '')
 const CORE_HEADERS = {
   'x-internal-key': env.API_INTERNAL_KEY ?? '',
   'X-876-API-Key': env.API_876_KEY ?? '',
 }
 
-if (!BILLING_URL || !env.BILLING_INTERNAL_KEY) {
-  console.error('BILLING_URL / BILLING_INTERNAL_KEY missing in .env.local')
+if (!BILLING_API_URL || !env.BILLING_INTERNAL_KEY) {
+  console.error('BILLING_API_URL / BILLING_INTERNAL_KEY missing in .env.local')
   process.exit(1)
 }
 if (!env.API_INTERNAL_KEY) {
@@ -55,14 +55,17 @@ async function core(path) {
 }
 
 async function billingEnsure(path, body) {
-  const response = await fetch(`${BILLING_URL}/api/v1/admin/${path}/ensure`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-internal-key': env.BILLING_INTERNAL_KEY,
-    },
-    body: JSON.stringify(body),
-  })
+  const response = await fetch(
+    `${BILLING_API_URL}/api/v1/admin/${path}/ensure`,
+    {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-internal-key': env.BILLING_INTERNAL_KEY,
+      },
+      body: JSON.stringify(body),
+    }
+  )
   const payload = await response.json().catch(() => null)
   if (!response.ok || !payload?.data) {
     const message =
