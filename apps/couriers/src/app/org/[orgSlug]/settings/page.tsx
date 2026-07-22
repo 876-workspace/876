@@ -16,15 +16,7 @@ export default async function SettingsPage({
 
       <div className="grid items-start gap-6 sm:grid-cols-2 lg:max-w-5xl lg:grid-cols-3">
         {SETTINGS_GROUPS.map((group) => (
-          <SettingsCard
-            key={group.title}
-            title={group.title}
-            icon={group.icon}
-            tileClass={group.tileClass}
-            iconClass={group.iconClass}
-            items={group.items}
-            orgSlug={orgSlug}
-          />
+          <SettingsCard key={group.title} group={group} orgSlug={orgSlug} />
         ))}
       </div>
     </Page>

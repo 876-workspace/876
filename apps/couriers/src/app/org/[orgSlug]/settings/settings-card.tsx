@@ -1,26 +1,16 @@
 import Link from 'next/link'
-import type { ComponentType, SVGProps } from 'react'
 import { ChevronRightIcon } from '@876/ui/icons'
 
-import type { SettingsItem } from './settings-groups'
+import type { SettingsGroup } from './settings-groups'
 
 type SettingsCardProps = {
-  title: string
-  icon: ComponentType<SVGProps<SVGSVGElement>>
-  tileClass: string
-  iconClass: string
-  items: SettingsItem[]
+  group: SettingsGroup
   orgSlug: string
 }
 
-export function SettingsCard({
-  title,
-  icon: Icon,
-  tileClass,
-  iconClass,
-  items,
-  orgSlug,
-}: SettingsCardProps) {
+export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
+  const { title, icon: Icon, tileClass, iconClass, items } = group
+
   return (
     <section className="876-card p-5 transition-shadow hover:shadow-sm">
       <div className="mb-4 flex items-center gap-3 border-b pb-4">
