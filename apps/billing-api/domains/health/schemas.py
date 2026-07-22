@@ -16,3 +16,5 @@ class ReadinessResponse(BaseModel):
     object: Literal["readiness"] = Field(default="readiness", description="Always 'readiness'.")
     status: Literal["ready", "not_ready"]
     service: Literal["@876/billing-api"] = "@876/billing-api"
+    migration: Literal["current", "pending", "unavailable"]
+    writer: Literal["legacy", "fastapi", "none"]

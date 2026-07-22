@@ -32,6 +32,8 @@ async def test_readiness_reports_missing_database_engine() -> None:
         "object": "readiness",
         "status": "not_ready",
         "service": "@876/billing-api",
+        "migration": "unavailable",
+        "writer": "none",
     }
 
 
