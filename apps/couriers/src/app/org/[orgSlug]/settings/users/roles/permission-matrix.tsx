@@ -66,10 +66,7 @@ export function PermissionMatrix({ value, onChange, readOnly = false }: Props) {
             <TableHead className="px-5 py-3.5">Module</TableHead>
             <TableHead className="px-4 py-3.5 text-center">Full</TableHead>
             {ACTIONS.map((action) => (
-              <TableHead
-                key={action.key}
-                className="px-4 py-3.5 text-center"
-              >
+              <TableHead key={action.key} className="px-4 py-3.5 text-center">
                 {action.label}
               </TableHead>
             ))}

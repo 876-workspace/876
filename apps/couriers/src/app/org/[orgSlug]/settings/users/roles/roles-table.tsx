@@ -14,7 +14,9 @@ const columns: ColumnDef<RoleView, unknown>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2 font-medium">
         {row.original.name}
-        {row.original.systemKey ? <Badge variant="outline">Default</Badge> : null}
+        {row.original.systemKey ? (
+          <Badge variant="outline">Default</Badge>
+        ) : null}
       </div>
     ),
   },

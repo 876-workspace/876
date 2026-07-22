@@ -29,12 +29,7 @@ type Props = {
   roles: Array<{ id: string; name: string }>
 }
 
-export function InviteDialog({
-  open,
-  onOpenChange,
-  orgSlug,
-  roles,
-}: Props) {
+export function InviteDialog({ open, onOpenChange, orgSlug, roles }: Props) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [roleId, setRoleId] = useState(roles[0]?.id ?? '')
@@ -106,9 +101,7 @@ export function InviteDialog({
               </SelectContent>
             </Select>
           </div>
-          {error ? (
-            <p className="text-destructive text-sm">{error}</p>
-          ) : null}
+          {error ? <p className="text-destructive text-sm">{error}</p> : null}
           <DialogFooter>
             <Button
               type="button"

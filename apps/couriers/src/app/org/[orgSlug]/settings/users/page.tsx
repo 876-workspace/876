@@ -34,9 +34,7 @@ export default async function UsersSettingsPage({
   searchParams,
 }: Props) {
   const [{ orgSlug }, query] = await Promise.all([params, searchParams])
-  const selectedStatus = isTeamMemberStatus(query.status)
-    ? query.status
-    : 'all'
+  const selectedStatus = isTeamMemberStatus(query.status) ? query.status : 'all'
   const status = selectedStatus === 'all' ? undefined : selectedStatus
 
   const ctx = await getManageContext(orgSlug)
@@ -49,15 +47,15 @@ export default async function UsersSettingsPage({
           className="mb-4"
         />
         <div className="876-empty-dashed max-w-2xl">
-          We couldn&apos;t load this organization&apos;s users. Please try again.
+          We couldn&apos;t load this organization&apos;s users. Please try
+          again.
         </div>
       </Page>
     )
 
   await service.team.ensure(ctx.tenant.id, {
     userId: ctx.userId,
-    systemKey:
-      ctx.role === 'owner' || ctx.role === 'admin' ? 'admin' : 'staff',
+    systemKey: ctx.role === 'owner' || ctx.role === 'admin' ? 'admin' : 'staff',
   })
 
   const platform = await getPlatformClient()

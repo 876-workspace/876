@@ -13,11 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@876/ui/alert-dialog'
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@876/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { DataTable } from '@876/ui/data-table'
@@ -110,9 +106,7 @@ export function UsersSplit({ rows, roles, selectedId, orgSlug }: Props) {
           columns={[userColumn]}
           data={rows}
           onRowClick={(row) => selectUser(row.id)}
-          rowClassName={(row) =>
-            row.id === selected.id ? 'bg-muted/70' : ''
-          }
+          rowClassName={(row) => (row.id === selected.id ? 'bg-muted/70' : '')}
         />
       </div>
       <UserDetail
@@ -220,9 +214,7 @@ function UserDetail({
           <TabsTrigger value="permissions">Permissions</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-5 space-y-5">
-          {error ? (
-            <p className="text-destructive text-sm">{error}</p>
-          ) : null}
+          {error ? <p className="text-destructive text-sm">{error}</p> : null}
           <div className="grid gap-2 sm:grid-cols-[140px_1fr] sm:items-center">
             <span className="text-muted-foreground text-sm">Role</span>
             <Select
@@ -245,7 +237,9 @@ function UserDetail({
           <div className="grid gap-2 sm:grid-cols-[140px_1fr] sm:items-center">
             <span className="text-muted-foreground text-sm">Status</span>
             <div className="flex items-center gap-3">
-              <Badge variant={row.status === 'active' ? 'success' : 'secondary'}>
+              <Badge
+                variant={row.status === 'active' ? 'success' : 'secondary'}
+              >
                 {row.status === 'active' ? 'Active' : 'Inactive'}
               </Badge>
               <Button
@@ -265,7 +259,7 @@ function UserDetail({
           </div>
           <DetailRow label="Joined">{formatDate(row.createdAt)}</DetailRow>
           <DetailRow label="User ID">
-            <code className="text-muted-foreground break-all text-xs">
+            <code className="text-muted-foreground text-xs break-all">
               {row.userId}
             </code>
           </DetailRow>
@@ -339,9 +333,7 @@ function PermissionsSummary({ role }: { role?: TeamRoleOption }) {
       {PERMISSION_CATALOG.map((module) => {
         const labels = [
           ...module.actions
-            .filter((action) =>
-              granted.has(permissionKey(module.key, action))
-            )
+            .filter((action) => granted.has(permissionKey(module.key, action)))
             .map((action) =>
               action === 'view'
                 ? 'View'

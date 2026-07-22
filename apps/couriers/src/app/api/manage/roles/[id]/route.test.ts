@@ -37,16 +37,13 @@ describe('Couriers role route', () => {
 
   it('updates the tenant-scoped role', async () => {
     const response = await PATCH(
-      new NextRequest(
-        'http://couriers.test/api/manage/roles/role_dispatcher',
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            orgSlug: 'island-logistics',
-            name: 'Dispatch',
-          }),
-        }
-      ),
+      new NextRequest('http://couriers.test/api/manage/roles/role_dispatcher', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          orgSlug: 'island-logistics',
+          name: 'Dispatch',
+        }),
+      }),
       context
     )
 

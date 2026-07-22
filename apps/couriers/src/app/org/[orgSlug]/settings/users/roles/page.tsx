@@ -25,7 +25,8 @@ export default async function RolesSettingsPage({
           className="mb-4"
         />
         <div className="876-empty-dashed max-w-2xl">
-          We couldn&apos;t load this organization&apos;s roles. Please try again.
+          We couldn&apos;t load this organization&apos;s roles. Please try
+          again.
         </div>
       </Page>
     )
