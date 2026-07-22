@@ -213,6 +213,46 @@ pre-deploy command applies committed migrations before the new application insta
 
 ---
 
+## Step 5a — Add the Billing API (`876-billing-api`)
+
+Deploy the FastAPI data plane as a separate service before handing it write
+ownership. The initial shadow deployment must use `BILLING_WRITER=none`; this
+permits readiness and reconciliation checks while rejecting every mutation.
+Provision one additional Railway service slot before starting this step. The API
+and its scheduler are separate services; keep the scheduler disabled until the
+write-owner handoff is complete.
+
+### Dashboard settings
+
+1. Add the GitHub repository as a new service named `876-billing-api`.
+2. Set **Root Directory** to `apps/billing-api`.
+3. Leave **Config File Path** blank so Railway loads `railway.toml` from that root.
+4. Set **Watch Paths** to `apps/billing-api/**`.
+5. Generate a public domain only when external Billing clients require one;
+   first-party services should use the Railway private domain.
+
+### Environment variables
+
+| Variable               | Value / Notes                                                         |
+| ---------------------- | --------------------------------------------------------------------- |
+| `BILLING_DATABASE_URL` | Reference `876-billing.BILLING_DATABASE_URL` during the handoff       |
+| `BILLING_WRITER`       | Start with `none`; change to `fastapi` only during the cutover freeze |
+| `API_URL`              | `http://${{876-api.RAILWAY_PRIVATE_DOMAIN}}`                          |
+| `BILLING_API_876_KEY`  | Reference the canonical Billing app API key                           |
+| `BILLING_INTERNAL_KEY` | Reference the server-only Billing administration key                  |
+| `CORS_ALLOWED_ORIGINS` | Public Billing UI and approved first-party origins                    |
+| `ENVIRONMENT`          | `production`                                                          |
+| `LOG_LEVEL`            | `info`                                                                |
+| `SENTRY_DSN`           | Optional service-specific Sentry DSN                                  |
+
+The pre-deploy command validates required settings and applies Alembic before
+Railway probes `/ready`. Do not create the `876-billing-scheduler` cron service
+until the cutover runbook has moved `BILLING_WRITER` to `fastapi`; its config is
+`apps/billing-api/railway.scheduler.toml` and it runs one bounded sweep every
+five minutes.
+
+---
+
 ## Step 6 — Add the Widgets API Service (`876-widgets-api`)
 
 The Widgets API is the only service allowed to connect to the Widgets Postgres database. Its
@@ -352,11 +392,12 @@ the new domains, then redeploy the affected public services.
 
 ## Configuration File Reference
 
-| File                                                        | Service                                                            |
-| ----------------------------------------------------------- | ------------------------------------------------------------------ |
-| [`apps/api/Dockerfile`](../apps/api/Dockerfile)             | `876-api` — Python 3.12 slim image                                 |
-| [`apps/api/railway.toml`](../apps/api/railway.toml)         | `876-api` — Dockerfile builder, health check                       |
-| [`apps/876/railway.toml`](../apps/876/railway.toml)         | `876-app` — Railpack, pnpm monorepo build                          |
-| [`apps/console/railway.toml`](../apps/console/railway.toml) | `876-console` — Railpack, pnpm monorepo build                      |
-| [`apps/billing/railway.toml`](../apps/billing/railway.toml) | `876-billing` — Railpack, Prisma migration and pnpm monorepo build |
-| [`railway.toml`](../railway.toml)                           | `876-widgets-api` — Railpack, env validation and Prisma migration  |
+| File                                                                | Service                                                             |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [`apps/api/Dockerfile`](../apps/api/Dockerfile)                     | `876-api` — Python 3.12 slim image                                  |
+| [`apps/api/railway.toml`](../apps/api/railway.toml)                 | `876-api` — Dockerfile builder, health check                        |
+| [`apps/876/railway.toml`](../apps/876/railway.toml)                 | `876-app` — Railpack, pnpm monorepo build                           |
+| [`apps/console/railway.toml`](../apps/console/railway.toml)         | `876-console` — Railpack, pnpm monorepo build                       |
+| [`apps/billing/railway.toml`](../apps/billing/railway.toml)         | `876-billing` — Railpack, Prisma migration and pnpm monorepo build  |
+| [`apps/billing-api/railway.toml`](../apps/billing-api/railway.toml) | `876-billing-api` — Dockerfile, Alembic pre-deploy, readiness check |
+| [`railway.toml`](../railway.toml)                                   | `876-widgets-api` — Railpack, env validation and Prisma migration   |
