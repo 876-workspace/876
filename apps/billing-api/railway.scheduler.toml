@@ -1,0 +1,12 @@
+# Railway cron configuration for the provider-neutral Billing sweep.
+# Keep this service disabled until BILLING_WRITER is handed to FastAPI.
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+preDeployCommand = "python -m scripts.check_environment && python -m alembic upgrade head"
+startCommand = "python -m scripts.run_billing --limit 100"
+cronSchedule = "*/5 * * * *"
+restartPolicyType = "NEVER"
