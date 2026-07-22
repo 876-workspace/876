@@ -49,9 +49,7 @@ describe('Couriers team invite revoke route', () => {
 
   it('rejects a missing orgSlug without calling the platform', async () => {
     const response = await DELETE(
-      deleteRequest(
-        'http://couriers.test/api/manage/team/invites/invite_123'
-      ),
+      deleteRequest('http://couriers.test/api/manage/team/invites/invite_123'),
       context
     )
     const body = await response.json()
