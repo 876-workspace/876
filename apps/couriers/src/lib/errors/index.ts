@@ -5,12 +5,16 @@ import { GENERIC_ERRORS } from './generic'
 import { TENANT_ERRORS } from './tenant'
 import { CUSTOMER_ERRORS } from './customer'
 import { PORTAL_ERRORS } from './portal'
+import { ROLE_ERRORS } from './role'
+import { TEAM_ERRORS } from './team'
 
 export const COURIERS_ERRORS = {
   ...GENERIC_ERRORS,
   ...TENANT_ERRORS,
   ...CUSTOMER_ERRORS,
   ...PORTAL_ERRORS,
+  ...ROLE_ERRORS,
+  ...TEAM_ERRORS,
 } as const satisfies Record<string, ErrorDef>
 
 export type CouriersErrorCode = keyof typeof COURIERS_ERRORS
