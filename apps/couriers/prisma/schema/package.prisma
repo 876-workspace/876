@@ -94,6 +94,12 @@ model Package {
   @@index([manifestId], name: "packages_manifest_id_idx")
   @@index([billingInvoiceId], name: "packages_billing_invoice_id_idx")
   @@index([tenantId, trackingNum], name: "packages_tenant_id_tracking_num_idx")
+  @@index([branchId], name: "packages_branch_id_idx")
+  @@index([carrierId], name: "packages_carrier_id_idx")
+  @@index([categoryId], name: "packages_category_id_idx")
+  @@index([collectedById], name: "packages_collected_by_id_idx")
+  @@index([mailboxId], name: "packages_mailbox_id_idx")
+  @@index([sellerId], name: "packages_seller_id_idx")
   @@map("packages")
 }
 

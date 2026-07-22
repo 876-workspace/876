@@ -75,6 +75,7 @@ model Manifest {
 
   @@unique([tenantId, manifestNumber], name: "manifests_tenant_id_manifest_number_key")
   @@index([tenantId], name: "manifests_tenant_id_idx")
+  @@index([warehouseId], name: "manifests_warehouse_id_idx")
   @@map("manifests")
 }
 

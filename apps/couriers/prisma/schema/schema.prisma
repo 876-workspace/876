@@ -31,5 +31,6 @@ model Domain {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([hostname], name: "domains_hostname_idx")
+  @@index([tenantId], name: "domains_tenant_id_idx")
   @@map("domains")
 }
