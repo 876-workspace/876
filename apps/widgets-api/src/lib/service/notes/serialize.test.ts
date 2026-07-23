@@ -7,6 +7,7 @@ function createRow(
   overrides: Partial<{
     id: string
     ownerAccountId: string
+    collectionId: string | null
     title: string
     body: string
     color: string | null
@@ -18,6 +19,7 @@ function createRow(
   return {
     id: 'wnote_2kL9mN4q',
     ownerAccountId: 'user_alejandra',
+    collectionId: null as string | null,
     title: 'Sprint retro notes',
     body: 'Discuss shipping the sticky notes dock',
     color: 'yellow',
@@ -37,6 +39,7 @@ describe('serializeNote', () => {
       object: 'note',
       id: 'wnote_2kL9mN4q',
       owner_account_id: 'user_alejandra',
+      collection_id: null,
       title: 'Sprint retro notes',
       body: 'Discuss shipping the sticky notes dock',
       color: 'yellow',
@@ -44,6 +47,12 @@ describe('serializeNote', () => {
       created_at: 1_720_000_000,
       updated_at: 1_720_000_100,
     })
+  })
+
+  it('when collectionId is set, then serializes collection_id', () => {
+    expect(
+      serializeNote(createRow({ collectionId: 'wcol_sprint' })).collection_id
+    ).toBe('wcol_sprint')
   })
 
   it('when color is null, then serializes color as null', () => {
