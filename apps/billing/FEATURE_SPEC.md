@@ -38,8 +38,8 @@ truth for invoices, allocations, customer credit, and subscription schedules.
   Billing database.
 - Subscription lifecycle history and currency-separated commercial reporting.
 - Canonical, versioned API routes under `/api/v1` using the existing
-  `{ data, error }` result pattern. Legacy `/api/billing/*` handlers remain as
-  internal rewrite targets.
+  `{ data, error }` result pattern. The Next.js Billing app is presentation +
+  authenticated BFF only; financial data lives in `@876/billing-api`.
 - `@876/billing` tenant client for customer, invoice, and subscription writes,
   plus the server-only `@876/billing/admin` projection client used by Console.
 - Internal admin surface (`POST /api/v1/admin/<resource>/ensure`) guarded by
@@ -216,18 +216,20 @@ items so add-ons can be added later without a schema redesign.
 
 ## API and client pattern
 
-Route handlers under `src/app/api/billing/*` authorize the resource-specific
-Billing read or write permission and are published canonically through
-`/api/v1/*` rewrites. They
-validate entity-specific Zod contracts, call `service`, and return:
+The standalone FastAPI service owns versioned Billing operations, financial
+business logic, provider calls, and database writes. The Billing UI publishes
+an authenticated `/api/v1/*` BFF that delegates to `BILLING_API_URL`; it does
+not publish a second set of resource route handlers.
+
+FastAPI returns:
 
 ```ts
 { data: ResourceOrList, error: null }
 { data: null, error: { code, message } }
 ```
 
-Browser code uses `src/lib/client/request.ts`; reusable integrations use
-`@876/billing`. Both expose
+Browser code uses `src/lib/client/request.ts` through the BFF; reusable
+integrations use `@876/billing` directly. Both expose
 `client.<resource>.create()`, matching Console. Do not introduce a second
 browser result or error shape.
 
@@ -261,8 +263,9 @@ browser result or error shape.
 ### Internal admin ensure routes
 
 Auth: `x-internal-key` header must match `BILLING_INTERNAL_KEY` (constant-time
-compare; empty/unset key rejects all requests). Guard: `src/lib/api/admin-route.ts`.
-Contracts: `src/types/sync.ts`. All routes are idempotent create-or-reconcile:
+compare; empty/unset key rejects all requests). Owned by `@876/billing-api`
+admin routes. Contracts: `src/types/sync.ts`. All routes are idempotent
+create-or-reconcile:
 repeated calls update mutable projection fields without creating duplicates, while
 immutable price terms must still match the original price.
 
