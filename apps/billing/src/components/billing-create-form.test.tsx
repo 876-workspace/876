@@ -114,13 +114,10 @@ describe('Billing create form', () => {
     await user.click(screen.getByRole('button', { name: 'Save customer' }))
 
     await waitFor(() =>
-      expect(mocks.request).toHaveBeenCalledWith(
-        '/api/v1/customers/cus_123',
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ name: 'Kingston Studio' }),
-        }
-      )
+      expect(mocks.request).toHaveBeenCalledWith('/api/v1/customers/cus_123', {
+        method: 'PATCH',
+        body: JSON.stringify({ name: 'Kingston Studio' }),
+      })
     )
     expect(mocks.push).toHaveBeenCalledWith('/customers/cus_123')
   })

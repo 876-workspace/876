@@ -7,11 +7,11 @@ not** contain raw `fetch` calls to FastAPI or any direct DB/provider access.
 
 ## Correct pattern
 
-| App                              | Package      | Auth method                                               |
-| -------------------------------- | ------------ | --------------------------------------------------------- |
-| `@876/app` (consumer/enterprise) | `@876/sdk`   | Session cookie / OAuth                                    |
-| `@876/console`                   | `@876/admin` | `internalKey: process.env.API_INTERNAL_KEY` (server-only) |
-| `@876/billing-app`               | `@876/billing` | OAuth/session through its authenticated BFF             |
+| App                              | Package        | Auth method                                               |
+| -------------------------------- | -------------- | --------------------------------------------------------- |
+| `@876/app` (consumer/enterprise) | `@876/sdk`     | Session cookie / OAuth                                    |
+| `@876/console`                   | `@876/admin`   | `internalKey: process.env.API_INTERNAL_KEY` (server-only) |
+| `@876/billing-app`               | `@876/billing` | OAuth/session through its authenticated BFF               |
 
 ### Console server component example
 
