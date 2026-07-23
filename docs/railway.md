@@ -182,8 +182,9 @@ Same pattern as the consumer app — builds from repo root with its own `railway
 
 ## Step 5 — Add the Billing Service (`876-billing`)
 
-Billing builds from the repository root and owns an app-local Prisma database. Its Railway
-pre-deploy command applies committed migrations before the new application instance starts.
+Billing builds from the repository root. The UI may temporarily read its
+existing Prisma projection, but it does not own schema migrations; only
+`876-billing-api` applies Alembic migrations.
 
 ### Dashboard settings
 
@@ -398,6 +399,6 @@ the new domains, then redeploy the affected public services.
 | [`apps/api/railway.toml`](../apps/api/railway.toml)                 | `876-api` — Dockerfile builder, health check                        |
 | [`apps/876/railway.toml`](../apps/876/railway.toml)                 | `876-app` — Railpack, pnpm monorepo build                           |
 | [`apps/console/railway.toml`](../apps/console/railway.toml)         | `876-console` — Railpack, pnpm monorepo build                       |
-| [`apps/billing/railway.toml`](../apps/billing/railway.toml)         | `876-billing` — Railpack, Prisma migration and pnpm monorepo build  |
+| [`apps/billing/railway.toml`](../apps/billing/railway.toml)         | `876-billing` — Railpack and pnpm monorepo UI build                 |
 | [`apps/billing-api/railway.toml`](../apps/billing-api/railway.toml) | `876-billing-api` — Dockerfile, Alembic pre-deploy, readiness check |
 | [`railway.toml`](../railway.toml)                                   | `876-widgets-api` — Railpack, env validation and Prisma migration   |
