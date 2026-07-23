@@ -31,8 +31,8 @@ export * from "./enums"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more NotepadNotes
- * const notepadNotes = await prisma.notepadNote.findMany()
+ * // Fetch zero or more NotepadCollections
+ * const notepadCollections = await prisma.notepadCollection.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -41,6 +41,11 @@ export const PrismaClient = $Class.getPrismaClientClass()
 export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
 export { Prisma }
 
+/**
+ * Model NotepadCollection
+ * Account-owned Notepad collection (topic folder for grouping notes).
+ */
+export type NotepadCollection = Prisma.NotepadCollectionModel
 /**
  * Model NotepadNote
  * Account-owned Notepad content (shared portable widget).
