@@ -14,6 +14,7 @@ from api.v1 import router as api_v1_router
 from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.logging import configure_logging, get_logger
+from core.metrics import MetricsMiddleware, configure_service_metrics
 from core.middleware import APIEnvelopeMiddleware, BillingWriterMiddleware, RequestLoggingMiddleware
 from core.openapi import SWAGGER_UI_PARAMETERS, custom_generate_unique_id, setup_openapi
 from db.session import lifespan as db_lifespan
@@ -34,6 +35,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app(settings: Settings | None = None) -> FastAPI:
     active_settings = settings or get_settings()
     configure_logging(active_settings.environment, active_settings.log_level)
+    configure_service_metrics(
+        environment=active_settings.environment,
+        writer=active_settings.billing_writer,
+    )
 
     if active_settings.sentry_dsn and _sentry_sdk is not None:
         _sentry_sdk.init(
@@ -77,6 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(BillingWriterMiddleware, writer=active_settings.billing_writer)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(APIEnvelopeMiddleware)
+    app.add_middleware(MetricsMiddleware)
 
     @app.exception_handler(AppHTTPException)
     async def app_http_exception_handler(request: Request, exc: AppHTTPException) -> JSONResponse:
