@@ -10,10 +10,14 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf .next .turbo",
+    "clean": "rm -rf .next .turbo .open-next .wrangler",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@876/core": "workspace:*",
@@ -22,7 +26,8 @@
     "next": "16.2.6",
     "pg": "8.13.1",
     "server-only": "0.0.1",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@opennextjs/cloudflare": "1.20.2"
   },
   "devDependencies": {
     "@types/node": "25.6.2",
@@ -32,6 +37,7 @@
     "eslint-config-next": "16.2.6",
     "prisma": "7.7.0",
     "typescript": "5.9.3",
-    "vitest": "4.1.5"
+    "vitest": "4.1.5",
+    "wrangler": "4.113.0"
   }
 }

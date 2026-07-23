@@ -13,7 +13,11 @@
     "generate:api-internals": "tsx scripts/generate-api-internals.ts",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "clean": "rm -rf .next .turbo .source"
+    "clean": "rm -rf .next .turbo .open-next .wrangler .source",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@876/analytics": "workspace:*",
@@ -28,7 +32,8 @@
     "next": "16.2.6",
     "next-themes": "0.4.6",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "@opennextjs/cloudflare": "1.20.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.3",
@@ -42,6 +47,7 @@
     "fumadocs-mdx": "15.0.10",
     "tailwindcss": "4.3.0",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "wrangler": "4.113.0"
   }
 }

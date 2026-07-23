@@ -40,7 +40,7 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ## Cloudflare Deployment
 
-Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). `@876/api` (FastAPI/Python) cannot run on Cloudflare — deploy it separately on Railway, Fly.io, or Render.
+Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). FastAPI services (`@876/api`, `@876/billing-api`) deploy as **Cloudflare Containers** (Dockerfile + Worker front door). See `docs/cloudflare.md` for the full layout; Railway remains dual-run only during cutover (`docs/railway.md`).
 
 **Adapter:** `@opennextjs/cloudflare` v1.20+ (installed in all four Next.js apps). Do NOT use the deprecated `@cloudflare/next-on-pages`.
 

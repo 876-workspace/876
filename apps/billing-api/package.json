@@ -20,6 +20,17 @@
     "db:models:generate": ".venv/bin/python scripts/generate_models.py generate",
     "db:models:check": ".venv/bin/python scripts/generate_models.py check",
     "api:routes:generate": ".venv/bin/python scripts/generate_routes.py generate",
-    "api:routes:check": ".venv/bin/python scripts/generate_routes.py check"
+    "api:routes:check": ".venv/bin/python scripts/generate_routes.py check",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7"
+  },
+  "devDependencies": {
+    "wrangler": "4.113.0",
+    "typescript": "5.9.3",
+    "@types/node": "25.6.2"
   }
 }
