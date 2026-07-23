@@ -1,7 +1,9 @@
 # Data Fetching Boundaries
 
-All database access, provider calls, and business logic belong in `apps/api` (FastAPI).
-Next.js apps **must not** contain raw `fetch` calls to the FastAPI or any direct DB/provider access.
+All database access, provider calls, and business logic belong in the owning
+FastAPI data service: `apps/api` for core platform data, `apps/billing-api` for
+financial data, and `apps/widgets-api` for widget data. Next.js apps **must
+not** contain raw `fetch` calls to FastAPI or any direct DB/provider access.
 
 ## Correct pattern
 
@@ -9,6 +11,7 @@ Next.js apps **must not** contain raw `fetch` calls to the FastAPI or any direct
 | -------------------------------- | ------------ | --------------------------------------------------------- |
 | `@876/app` (consumer/enterprise) | `@876/sdk`   | Session cookie / OAuth                                    |
 | `@876/console`                   | `@876/admin` | `internalKey: process.env.API_INTERNAL_KEY` (server-only) |
+| `@876/billing-app`               | `@876/billing` | OAuth/session through its authenticated BFF             |
 
 ### Console server component example
 
@@ -36,9 +39,10 @@ import { create876Client } from '@876/sdk'
 
 ## What goes where
 
-- **`apps/api`** — SQL queries, WorkOS calls, Stripe calls, session validation, business rules
+- **FastAPI services** — SQL queries, provider calls, credential validation, business rules
 - **`@876/admin`** — typed client wrapping FastAPI admin endpoints; used only in MC server components
 - **`@876/sdk`** — typed client wrapping FastAPI auth/OAuth endpoints; used in consumer/enterprise apps
+- **`@876/billing`** — typed client wrapping tenant, integration, and Billing admin endpoints
 - **Next.js apps** — rendering, routing, UX state; no direct backend calls
 
 ## Never do this in a Next.js app
@@ -55,6 +59,6 @@ import { db } from '@876/db'
 
 ## Adding new API operations
 
-1. Add the endpoint to `apps/api` (FastAPI router).
-2. Add the typed method to `@876/admin` (for MC) or `@876/sdk` (for consumer/enterprise).
+1. Add the endpoint to its owning FastAPI router.
+2. Add the typed method to `@876/admin`, `@876/sdk`, or `@876/billing`.
 3. Call through the package in the Next.js app — never fetch directly.
