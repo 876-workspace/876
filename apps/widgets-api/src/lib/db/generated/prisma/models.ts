@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/NotepadCollection'
 export type * from './models/NotepadNote'
 export type * from './models/WidgetAuditEvent'
 export type * from './commonInputTypes'

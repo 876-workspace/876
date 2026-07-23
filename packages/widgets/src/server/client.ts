@@ -1,6 +1,14 @@
 import 'server-only'
 
 import {
+  collectionListSchema,
+  deletedCollectionSchema,
+  notepadCollectionSchema,
+  type CollectionList,
+  type DeletedCollection,
+  type NotepadCollection,
+} from '../types/collections'
+import {
   deletedNoteSchema,
   noteListSchema,
   notepadNoteSchema,
@@ -30,7 +38,12 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
     notes: {
       list(
         actor: Actor,
-        params: { limit?: number; starting_after?: string } = {}
+        params: {
+          limit?: number
+          starting_after?: string
+          collection_id?: string
+          unfiled?: boolean
+        } = {}
       ) {
         return requestJson(
           config,
@@ -41,6 +54,8 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
             query: {
               limit: params.limit,
               starting_after: params.starting_after,
+              collection_id: params.collection_id,
+              unfiled: params.unfiled ? '1' : undefined,
             },
           },
           (data) => {
@@ -57,6 +72,7 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
           body: string
           color?: NoteColor
           pinned?: boolean
+          collection_id?: string | null
         }
       ) {
         return requestJson(
@@ -78,6 +94,7 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
           body?: string
           color?: NoteColor
           pinned?: boolean
+          collection_id?: string | null
         }
       ) {
         return requestJson(
@@ -108,6 +125,67 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
             return parsed.success ? parsed.data : null
           }
         ) as Promise<WidgetsClientResult<DeletedNote>>
+      },
+    },
+
+    collections: {
+      list(actor: Actor) {
+        return requestJson(
+          config,
+          actor,
+          { method: 'GET', path: '/api/v1/collections' },
+          (data) => {
+            const parsed = collectionListSchema.safeParse(data)
+            return parsed.success ? parsed.data : null
+          }
+        ) as Promise<WidgetsClientResult<CollectionList>>
+      },
+
+      create(actor: Actor, params: { name: string; color?: NoteColor | null }) {
+        return requestJson(
+          config,
+          actor,
+          { method: 'POST', path: '/api/v1/collections', body: params },
+          (data) => {
+            const parsed = notepadCollectionSchema.safeParse(data)
+            return parsed.success ? parsed.data : null
+          }
+        ) as Promise<WidgetsClientResult<NotepadCollection>>
+      },
+
+      update(
+        actor: Actor,
+        id: string,
+        params: { name?: string; color?: NoteColor | null }
+      ) {
+        return requestJson(
+          config,
+          actor,
+          {
+            method: 'PATCH',
+            path: `/api/v1/collections/${encodeURIComponent(id)}`,
+            body: params,
+          },
+          (data) => {
+            const parsed = notepadCollectionSchema.safeParse(data)
+            return parsed.success ? parsed.data : null
+          }
+        ) as Promise<WidgetsClientResult<NotepadCollection>>
+      },
+
+      delete(actor: Actor, id: string) {
+        return requestJson(
+          config,
+          actor,
+          {
+            method: 'DELETE',
+            path: `/api/v1/collections/${encodeURIComponent(id)}`,
+          },
+          (data) => {
+            const parsed = deletedCollectionSchema.safeParse(data)
+            return parsed.success ? parsed.data : null
+          }
+        ) as Promise<WidgetsClientResult<DeletedCollection>>
       },
     },
   }

@@ -16,6 +16,7 @@ export type NotepadNoteResource = {
   object: 'note'
   id: string
   owner_account_id: string
+  collection_id: string | null
   title: string
   body: string
   color: NoteColor | null

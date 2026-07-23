@@ -60,6 +60,7 @@ export function createWidgetsAdminClient(
           body?: string
           color?: NoteColor
           pinned?: boolean
+          collection_id?: string | null
         }
       ) {
         return requestJson(

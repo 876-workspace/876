@@ -15,6 +15,10 @@ export async function listNotes(params: {
   ownerAccountId: string
   limit?: number
   startingAfter?: string
+  /** Filter to a single collection. */
+  collectionId?: string
+  /** When true, only notes with no collection (Unfiled). */
+  unfiled?: boolean
 }): Promise<ServiceResult<NoteList>> {
   const limit = clampLimit(params.limit)
   let updatedAtCursor: number | undefined
@@ -27,9 +31,16 @@ export async function listNotes(params: {
       updatedAtCursor = cursor.updatedAt
   }
 
+  const collectionFilter = params.unfiled
+    ? { collectionId: null }
+    : params.collectionId
+      ? { collectionId: params.collectionId }
+      : {}
+
   const rows = await prisma.notepadNote.findMany({
     where: {
       ownerAccountId: params.ownerAccountId,
+      ...collectionFilter,
       ...(updatedAtCursor !== undefined
         ? { updatedAt: { lt: updatedAtCursor } }
         : {}),

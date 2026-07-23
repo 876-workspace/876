@@ -31,6 +31,12 @@ export async function PATCH(request: Request, context: Context) {
         ? (record.color as NoteColor)
         : undefined,
     pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
+    collection_id:
+      record.collection_id === null
+        ? null
+        : typeof record.collection_id === 'string'
+          ? record.collection_id
+          : undefined,
   })
   if (result.error)
     return apiError(result.error.message, {

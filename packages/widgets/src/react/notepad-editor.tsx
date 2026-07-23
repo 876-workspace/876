@@ -9,7 +9,7 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { cn } from '@876/core/utils'
-import { ArrowLeft, Loader2Icon, Star, Trash } from '@876/ui/icons'
+import { ArrowLeft, LayoutList, Loader2Icon, Star, Trash } from '@876/ui/icons'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +22,15 @@ import {
   AlertDialogTrigger,
 } from '@876/ui/alert-dialog'
 import { Button } from '@876/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@876/ui/dropdown-menu'
 
 import { browserNotes } from '../browser/notes'
+import type { NotepadCollection } from '../types/collections'
 import type { NotepadNote } from '../types/notes'
 import { NotepadBodyEditor } from './notepad-body-editor'
 import {
@@ -49,7 +56,7 @@ import {
 
 type NotepadEntry = Pick<
   NotepadNote,
-  'id' | 'title' | 'body' | 'updated_at'
+  'id' | 'title' | 'body' | 'updated_at' | 'collection_id'
 > & {
   color?: NoteColor | null
   pinned?: boolean | null
@@ -60,18 +67,21 @@ type NoteDraft = {
   body: string
   color: NoteColor
   pinned: boolean
+  collectionId: string | null
 }
 
 const AUTO_SAVE_MS = 650
 
 export function NotepadEditor({
   entry,
+  collections = [],
   onBack,
   onDeleted,
   onPersisted,
   onDiscardDraft,
 }: {
   entry: NotepadEntry
+  collections?: readonly NotepadCollection[]
   onBack: () => void
   onDeleted: () => void
   /** Called after any successful save (create or update) with the server note. */
@@ -84,6 +94,9 @@ export function NotepadEditor({
   const [body, setBody] = useState(entry.body)
   const [color, setColor] = useState<NoteColor>(resolveNoteColor(entry.color))
   const [pinned, setPinned] = useState(Boolean(entry.pinned))
+  const [collectionId, setCollectionId] = useState<string | null>(
+    entry.collection_id ?? null
+  )
   const [savedTitle, setSavedTitle] = useState(() =>
     titleForEditor(entry.title)
   )
@@ -92,6 +105,9 @@ export function NotepadEditor({
     resolveNoteColor(entry.color)
   )
   const [savedPinned, setSavedPinned] = useState(Boolean(entry.pinned))
+  const [savedCollectionId, setSavedCollectionId] = useState<string | null>(
+    entry.collection_id ?? null
+  )
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -99,29 +115,40 @@ export function NotepadEditor({
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const bodyEditorRef = useRef<NotepadBodyEditorHandle>(null)
   const noteIdRef = useRef(noteId)
-  const draftRef = useRef<NoteDraft>({ title, body, color, pinned })
+  const draftRef = useRef<NoteDraft>({
+    title,
+    body,
+    color,
+    pinned,
+    collectionId,
+  })
   const savedDraftRef = useRef<NoteDraft>({
     title: savedTitle,
     body: savedBody,
     color: savedColor,
     pinned: savedPinned,
+    collectionId: savedCollectionId,
   })
   const saveInFlightRef = useRef<Promise<boolean> | null>(null)
   const deletingRef = useRef(false)
   const panelLifecycle = useWidgetPanelLifecycle()
   noteIdRef.current = noteId
-  draftRef.current = { title, body, color, pinned }
+  draftRef.current = { title, body, color, pinned, collectionId }
   savedDraftRef.current = {
     title: savedTitle,
     body: savedBody,
     color: savedColor,
     pinned: savedPinned,
+    collectionId: savedCollectionId,
   }
   const dirty =
     title !== savedTitle ||
     body !== savedBody ||
     color !== savedColor ||
-    pinned !== savedPinned
+    pinned !== savedPinned ||
+    collectionId !== savedCollectionId
+  const collectionLabel =
+    collections.find((item) => item.id === collectionId)?.name ?? 'Unfiled'
   const isDraft = isDraftNoteId(noteId)
   const words = useMemo(() => getNoteWordCount(body), [body])
   const characters = useMemo(() => getNoteCharacterCount(body), [body])
@@ -170,7 +197,8 @@ export function NotepadEditor({
         nextDraft.title !== savedPersistTitle ||
         currentDraft.body !== savedDraft.body ||
         currentDraft.color !== savedDraft.color ||
-        currentDraft.pinned !== savedDraft.pinned
+        currentDraft.pinned !== savedDraft.pinned ||
+        currentDraft.collectionId !== savedDraft.collectionId
 
       if (!hasChanges) return true
 
@@ -186,6 +214,7 @@ export function NotepadEditor({
               body: nextDraft.body,
               color: nextDraft.color,
               pinned: nextDraft.pinned,
+              collection_id: nextDraft.collectionId,
             })
             if (result.error || !result.data) {
               setSaveError(result.error ?? 'Unable to save this note.')
@@ -197,16 +226,20 @@ export function NotepadEditor({
             setNoteId(note.id)
 
             const editorTitle = titleForEditor(note.title)
+            const nextCollectionId = note.collection_id
             savedDraftRef.current = {
               title: editorTitle,
               body: note.body,
               color: resolveNoteColor(note.color),
               pinned: note.pinned,
+              collectionId: nextCollectionId,
             }
             setSavedTitle(editorTitle)
             setSavedBody(note.body)
             setSavedColor(resolveNoteColor(note.color))
             setSavedPinned(note.pinned)
+            setSavedCollectionId(nextCollectionId)
+            setCollectionId(nextCollectionId)
 
             if (draftRef.current.title === currentDraft.title) {
               draftRef.current = {
@@ -227,6 +260,7 @@ export function NotepadEditor({
             body: nextDraft.body,
             color: nextDraft.color,
             pinned: nextDraft.pinned,
+            collection_id: nextDraft.collectionId,
           })
           if (result.error || !result.data) {
             setSaveError(result.error ?? 'Unable to save this note.')
@@ -244,11 +278,13 @@ export function NotepadEditor({
             body: nextDraft.body,
             color: nextDraft.color,
             pinned: nextDraft.pinned,
+            collectionId: nextDraft.collectionId,
           }
           setSavedTitle(editorTitle)
           setSavedBody(nextDraft.body)
           setSavedColor(nextDraft.color)
           setSavedPinned(nextDraft.pinned)
+          setSavedCollectionId(nextDraft.collectionId)
 
           if (draftRef.current.title === currentDraft.title) {
             draftRef.current = {
@@ -298,7 +334,18 @@ export function NotepadEditor({
     }, AUTO_SAVE_MS)
 
     return () => window.clearTimeout(timer)
-  }, [title, body, color, pinned, dirty, saving, deleting, isDraft, saveEntry])
+  }, [
+    title,
+    body,
+    color,
+    pinned,
+    collectionId,
+    dirty,
+    saving,
+    deleting,
+    isDraft,
+    saveEntry,
+  ])
 
   async function returnToNotes() {
     // saveEntry flushes first and no-ops for empty local drafts, so this
@@ -375,6 +422,40 @@ export function NotepadEditor({
                 ? 'Draft'
                 : 'Saved'}
         </p>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={deleting}
+                aria-label={`Move to collection, currently ${collectionLabel}`}
+                className="text-muted-foreground max-w-36 gap-1 px-2"
+              >
+                <LayoutList aria-hidden="true" className="size-3.5 shrink-0" />
+                <span className="truncate text-xs">{collectionLabel}</span>
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="min-w-40">
+            <DropdownMenuItem
+              onClick={() => setCollectionId(null)}
+              className={cn(collectionId === null && 'font-medium')}
+            >
+              Unfiled
+            </DropdownMenuItem>
+            {collections.map((collection) => (
+              <DropdownMenuItem
+                key={collection.id}
+                onClick={() => setCollectionId(collection.id)}
+                className={cn(collectionId === collection.id && 'font-medium')}
+              >
+                {collection.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           type="button"
           variant="ghost"
