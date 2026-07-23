@@ -105,6 +105,7 @@ describe('UsersSplit', () => {
     expect(screen.getByRole('button', { name: 'Deactivate' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Remove' })).toBeVisible()
     expect(screen.getByRole('tab', { name: 'Permissions' })).toBeVisible()
+    expect(screen.getByRole('tab', { name: 'Activity' })).toBeVisible()
   })
 
   it('deactivates the selected member through the typed client and refreshes', async () => {
