@@ -1,0 +1,10 @@
+# Secrets for local `wrangler dev` / container preview. Never commit real values.
+# DATABASE_URL=
+# API_INTERNAL_KEY=
+# WORKOS_API_KEY=
+# WORKOS_CLIENT_ID=
+# WORKOS_COOKIE_PASSWORD=
+# POSTHOG_PERSONAL_API_KEY=
+# POSTHOG_PROJECT_ID=
+# POSTHOG_HOST=https://us.posthog.com
+# CORS_ALLOWED_ORIGINS=
