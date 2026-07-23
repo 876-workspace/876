@@ -6,32 +6,16 @@ import { $widgets } from '@/lib/widgets'
 
 export const runtime = 'nodejs'
 
-export async function GET(request: Request) {
+export async function GET() {
   const access = await requireNotepadMember()
   if (access.response) return access.response
 
-  const url = new URL(request.url)
-  const unfiledParam = url.searchParams.get('unfiled')
-  const unfiled =
-    unfiledParam === '1' || unfiledParam === 'true' ? true : undefined
-
-  const result = await $widgets.notes.list(
-    { userId: access.userId },
-    {
-      limit: Number(url.searchParams.get('limit') ?? '') || undefined,
-      starting_after: url.searchParams.get('starting_after') ?? undefined,
-      collection_id: unfiled
-        ? undefined
-        : (url.searchParams.get('collection_id') ?? undefined),
-      unfiled,
-    }
-  )
+  const result = await $widgets.collections.list({ userId: access.userId })
   if (result.error)
     return apiError(result.error.message, {
       status: 502,
       code: result.error.code,
     })
-
   return apiJson({ data: result.data, error: null })
 }
 
@@ -48,29 +32,22 @@ export async function POST(request: Request) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $widgets.notes.create(
+  const result = await $widgets.collections.create(
     { userId: access.userId },
     {
-      title: typeof record.title === 'string' ? record.title : '',
-      body: typeof record.body === 'string' ? record.body : '',
+      name: typeof record.name === 'string' ? record.name : '',
       color:
-        typeof record.color === 'string'
-          ? (record.color as NoteColor)
-          : undefined,
-      pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
-      collection_id:
-        record.collection_id === null
+        record.color === null
           ? null
-          : typeof record.collection_id === 'string'
-            ? record.collection_id
+          : typeof record.color === 'string'
+            ? (record.color as NoteColor)
             : undefined,
     }
   )
   if (result.error)
     return apiError(result.error.message, {
-      status: 502,
+      status: result.error.message.includes('already exists') ? 409 : 502,
       code: result.error.code,
     })
-
   return apiJson({ data: result.data, error: null }, { status: 201 })
 }

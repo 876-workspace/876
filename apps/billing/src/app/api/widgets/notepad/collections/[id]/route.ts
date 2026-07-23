@@ -6,14 +6,13 @@ import { $widgets } from '@/lib/widgets'
 
 export const runtime = 'nodejs'
 
-type Context = { params: Promise<{ id: string }> }
+type Ctx = { params: Promise<{ id: string }> }
 
-export async function PATCH(request: Request, context: Context) {
+export async function PATCH(request: Request, context: Ctx) {
   const access = await requireNotepadMember()
   if (access.response) return access.response
 
   const { id } = await context.params
-
   let body: unknown
   try {
     body = await request.json()
@@ -23,41 +22,44 @@ export async function PATCH(request: Request, context: Context) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $widgets.notes.update({ userId: access.userId }, id, {
-    title: typeof record.title === 'string' ? record.title : undefined,
-    body: typeof record.body === 'string' ? record.body : undefined,
-    color:
-      typeof record.color === 'string'
-        ? (record.color as NoteColor)
-        : undefined,
-    pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
-    collection_id:
-      record.collection_id === null
-        ? null
-        : typeof record.collection_id === 'string'
-          ? record.collection_id
-          : undefined,
-  })
+  const result = await $widgets.collections.update(
+    { userId: access.userId },
+    id,
+    {
+      name: typeof record.name === 'string' ? record.name : undefined,
+      color:
+        record.color === null
+          ? null
+          : typeof record.color === 'string'
+            ? (record.color as NoteColor)
+            : undefined,
+    }
+  )
   if (result.error)
     return apiError(result.error.message, {
-      status: result.error.message.includes('not found') ? 404 : 502,
+      status: result.error.message.includes('not found')
+        ? 404
+        : result.error.message.includes('already exists')
+          ? 409
+          : 502,
       code: result.error.code,
     })
-
   return apiJson({ data: result.data, error: null })
 }
 
-export async function DELETE(_request: Request, context: Context) {
+export async function DELETE(_request: Request, context: Ctx) {
   const access = await requireNotepadMember()
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $widgets.notes.delete({ userId: access.userId }, id)
+  const result = await $widgets.collections.delete(
+    { userId: access.userId },
+    id
+  )
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,
       code: result.error.code,
     })
-
   return apiJson({ data: result.data, error: null })
 }
