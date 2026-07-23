@@ -174,7 +174,9 @@ export const NotepadBodyEditor = forwardRef<
   return (
     <div
       className={cn(
-        'notepad-editorjs mt-3 min-h-0 flex-1 overflow-y-auto',
+        // overflow-y scrolls long notes; popovers use high z-index + solid
+        // panels so toolbox/settings stay readable over sticky-note ink.
+        'notepad-editorjs mt-3 min-h-0 flex-1 overflow-x-visible overflow-y-auto',
         className
       )}
     >
