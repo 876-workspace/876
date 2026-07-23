@@ -15,6 +15,7 @@ export const notepadNoteSchema = z.object({
   object: z.literal('note'),
   id: z.string(),
   owner_account_id: z.string(),
+  collection_id: z.string().nullable(),
   title: z.string(),
   body: z.string(),
   color: noteColorSchema.nullable(),

@@ -24,3 +24,8 @@ export type {
   NoteList,
   NotepadNote,
 } from './types/notes'
+export type {
+  CollectionList,
+  DeletedCollection,
+  NotepadCollection,
+} from './types/collections'

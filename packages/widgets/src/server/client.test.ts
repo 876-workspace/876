@@ -8,6 +8,7 @@ const sampleNote = {
   object: 'note' as const,
   id: 'wnote_1',
   owner_account_id: 'user_alejandra',
+  collection_id: null,
   title: 'Ops checklist',
   body: 'Verify Hyperdrive binding',
   color: 'yellow' as const,
