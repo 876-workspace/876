@@ -10,12 +10,16 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf .next .turbo",
+    "clean": "rm -rf .next .turbo .open-next .wrangler",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "db:seed": "tsx --env-file .env.local prisma/seed.ts"
+    "db:seed": "tsx --env-file .env.local prisma/seed.ts",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@876/analytics": "workspace:*",
@@ -32,7 +36,8 @@
     "pg": "8.13.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@opennextjs/cloudflare": "1.20.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.0",
@@ -50,6 +55,7 @@
     "tailwindcss": "4.3.0",
     "tsx": "4.20.3",
     "tw-animate-css": "1.4.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "wrangler": "4.113.0"
   }
 }

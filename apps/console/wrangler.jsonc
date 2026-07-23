@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-console",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "876-console",
+    },
+  ],
+  // After `wrangler hyperdrive create 876-console-neon --connection-string=...`
+  // paste the config id here and wire CONSOLE_DATABASE_URL via Hyperdrive in code.
+  // "hyperdrive": [
+  //   {
+  //     "binding": "HYPERDRIVE",
+  //     "id": "<HYPERDRIVE_ID>",
+  //   },
+  // ],
+  "observability": {
+    "enabled": true,
+  },
+}

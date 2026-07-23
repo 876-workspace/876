@@ -1,0 +1,13 @@
+# Copy to .dev.vars (gitignored). Used by `wrangler` / OpenNext preview.
+NEXTJS_ENV=development
+
+# Server-side secrets / URLs — mirror production keys from Railway / CF secrets.
+# API_URL=
+# API_INTERNAL_KEY=
+# API_876_KEY=
+# CONSOLE_DATABASE_URL=
+# WORKOS_COOKIE_PASSWORD=
+# WIDGETS_API_URL=
+# WIDGETS_SERVICE_KEY=
+# BILLING_URL=
+# BILLING_INTERNAL_KEY=
