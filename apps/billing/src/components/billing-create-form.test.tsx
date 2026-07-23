@@ -63,7 +63,7 @@ describe('Billing create form', () => {
     render(
       <CreateForm
         title="Catalog item"
-        endpoint="/api/billing/items"
+        endpoint="/api/v1/items"
         fields={fields}
         returnUrl="/items"
       />
@@ -80,7 +80,7 @@ describe('Billing create form', () => {
     )
 
     await waitFor(() =>
-      expect(mocks.request).toHaveBeenCalledWith('/api/billing/items', {
+      expect(mocks.request).toHaveBeenCalledWith('/api/v1/items', {
         method: 'POST',
         body: JSON.stringify({
           name: 'Priority delivery',
@@ -101,7 +101,7 @@ describe('Billing create form', () => {
     render(
       <CreateForm
         title="Customer"
-        endpoint="/api/billing/customers/cus_123"
+        endpoint="/api/v1/customers/cus_123"
         fields={[{ name: 'name', label: 'Name', type: 'text' }]}
         returnUrl="/customers/cus_123"
         method="PATCH"
@@ -115,7 +115,7 @@ describe('Billing create form', () => {
 
     await waitFor(() =>
       expect(mocks.request).toHaveBeenCalledWith(
-        '/api/billing/customers/cus_123',
+        '/api/v1/customers/cus_123',
         {
           method: 'PATCH',
           body: JSON.stringify({ name: 'Kingston Studio' }),
@@ -134,7 +134,7 @@ describe('Billing create form', () => {
     render(
       <CreateForm
         title="Catalog item"
-        endpoint="/api/billing/items"
+        endpoint="/api/v1/items"
         fields={[{ name: 'name', label: 'Name', type: 'text' }]}
         returnUrl="/items"
       />
