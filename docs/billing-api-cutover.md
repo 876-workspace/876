@@ -71,6 +71,7 @@ Do not continue while the report has `matches: false`.
    The command emits a secret-free JSON report and fails unless health,
    readiness, the `fastapi` writer lease, and all 187 frozen v1 operations
    match the deployment.
+
 4. Verify a read, an idempotent mutation, and the matching financial record.
 5. Re-enable only the FastAPI scheduler after the billing-engine phase is
    deployed.

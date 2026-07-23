@@ -1,4 +1,4 @@
-import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -41,11 +41,6 @@ export default async function UsersSettingsPage({
   if (!ctx?.tenant)
     return (
       <Page>
-        <PageBreadcrumb
-          href={`/org/${orgSlug}/settings`}
-          label="Settings"
-          className="mb-4"
-        />
         <div className="876-empty-dashed max-w-2xl">
           We couldn&apos;t load this organization&apos;s users. Please try
           again.
@@ -113,11 +108,6 @@ export default async function UsersSettingsPage({
 
   return (
     <Page>
-      <PageBreadcrumb
-        href={`/org/${orgSlug}/settings`}
-        label="Settings"
-        className="mb-4"
-      />
       <UsersToolbar
         orgSlug={orgSlug}
         roles={roles.map(({ id, name }) => ({ id, name }))}
