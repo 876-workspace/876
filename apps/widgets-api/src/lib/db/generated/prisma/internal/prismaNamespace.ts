@@ -384,6 +384,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  NotepadCollection: 'NotepadCollection',
   NotepadNote: 'NotepadNote',
   WidgetAuditEvent: 'WidgetAuditEvent'
 } as const
@@ -401,10 +402,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "notepadNote" | "widgetAuditEvent"
+    modelProps: "notepadCollection" | "notepadNote" | "widgetAuditEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    NotepadCollection: {
+      payload: Prisma.$NotepadCollectionPayload<ExtArgs>
+      fields: Prisma.NotepadCollectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotepadCollectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotepadCollectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>
+        }
+        findFirst: {
+          args: Prisma.NotepadCollectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotepadCollectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>
+        }
+        findMany: {
+          args: Prisma.NotepadCollectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>[]
+        }
+        create: {
+          args: Prisma.NotepadCollectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>
+        }
+        createMany: {
+          args: Prisma.NotepadCollectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotepadCollectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>[]
+        }
+        delete: {
+          args: Prisma.NotepadCollectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>
+        }
+        update: {
+          args: Prisma.NotepadCollectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.NotepadCollectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotepadCollectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotepadCollectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.NotepadCollectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotepadCollectionPayload>
+        }
+        aggregate: {
+          args: Prisma.NotepadCollectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotepadCollection>
+        }
+        groupBy: {
+          args: Prisma.NotepadCollectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotepadCollectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotepadCollectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotepadCollectionCountAggregateOutputType> | number
+        }
+      }
+    }
     NotepadNote: {
       payload: Prisma.$NotepadNotePayload<ExtArgs>
       fields: Prisma.NotepadNoteFieldRefs
@@ -592,9 +667,22 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const NotepadCollectionScalarFieldEnum = {
+  id: 'id',
+  ownerAccountId: 'ownerAccountId',
+  name: 'name',
+  color: 'color',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotepadCollectionScalarFieldEnum = (typeof NotepadCollectionScalarFieldEnum)[keyof typeof NotepadCollectionScalarFieldEnum]
+
+
 export const NotepadNoteScalarFieldEnum = {
   id: 'id',
   ownerAccountId: 'ownerAccountId',
+  collectionId: 'collectionId',
   title: 'title',
   body: 'body',
   color: 'color',
@@ -665,13 +753,6 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -682,6 +763,13 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -793,6 +881,7 @@ export type PrismaClientOptions = ({
   comments?: runtime.SqlCommenterPlugin[]
 }
 export type GlobalOmitConfig = {
+  notepadCollection?: Prisma.NotepadCollectionOmit
   notepadNote?: Prisma.NotepadNoteOmit
   widgetAuditEvent?: Prisma.WidgetAuditEventOmit
 }

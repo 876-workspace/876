@@ -39,6 +39,7 @@ export type NotepadNoteSumAggregateOutputType = {
 export type NotepadNoteMinAggregateOutputType = {
   id: string | null
   ownerAccountId: string | null
+  collectionId: string | null
   title: string | null
   body: string | null
   color: string | null
@@ -51,6 +52,7 @@ export type NotepadNoteMinAggregateOutputType = {
 export type NotepadNoteMaxAggregateOutputType = {
   id: string | null
   ownerAccountId: string | null
+  collectionId: string | null
   title: string | null
   body: string | null
   color: string | null
@@ -63,6 +65,7 @@ export type NotepadNoteMaxAggregateOutputType = {
 export type NotepadNoteCountAggregateOutputType = {
   id: number
   ownerAccountId: number
+  collectionId: number
   title: number
   body: number
   color: number
@@ -87,6 +90,7 @@ export type NotepadNoteSumAggregateInputType = {
 export type NotepadNoteMinAggregateInputType = {
   id?: true
   ownerAccountId?: true
+  collectionId?: true
   title?: true
   body?: true
   color?: true
@@ -99,6 +103,7 @@ export type NotepadNoteMinAggregateInputType = {
 export type NotepadNoteMaxAggregateInputType = {
   id?: true
   ownerAccountId?: true
+  collectionId?: true
   title?: true
   body?: true
   color?: true
@@ -111,6 +116,7 @@ export type NotepadNoteMaxAggregateInputType = {
 export type NotepadNoteCountAggregateInputType = {
   id?: true
   ownerAccountId?: true
+  collectionId?: true
   title?: true
   body?: true
   color?: true
@@ -210,6 +216,7 @@ export type NotepadNoteGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 export type NotepadNoteGroupByOutputType = {
   id: string
   ownerAccountId: string
+  collectionId: string | null
   title: string
   body: string
   color: string | null
@@ -245,6 +252,7 @@ export type NotepadNoteWhereInput = {
   NOT?: Prisma.NotepadNoteWhereInput | Prisma.NotepadNoteWhereInput[]
   id?: Prisma.StringFilter<"NotepadNote"> | string
   ownerAccountId?: Prisma.StringFilter<"NotepadNote"> | string
+  collectionId?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
   title?: Prisma.StringFilter<"NotepadNote"> | string
   body?: Prisma.StringFilter<"NotepadNote"> | string
   color?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
@@ -252,11 +260,13 @@ export type NotepadNoteWhereInput = {
   createdAt?: Prisma.IntFilter<"NotepadNote"> | number
   updatedAt?: Prisma.IntFilter<"NotepadNote"> | number
   legacyConvexId?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
+  collection?: Prisma.XOR<Prisma.NotepadCollectionNullableScalarRelationFilter, Prisma.NotepadCollectionWhereInput> | null
 }
 
 export type NotepadNoteOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   ownerAccountId?: Prisma.SortOrder
+  collectionId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
   body?: Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -264,6 +274,7 @@ export type NotepadNoteOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   legacyConvexId?: Prisma.SortOrderInput | Prisma.SortOrder
+  collection?: Prisma.NotepadCollectionOrderByWithRelationInput
 }
 
 export type NotepadNoteWhereUniqueInput = Prisma.AtLeast<{
@@ -273,17 +284,20 @@ export type NotepadNoteWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.NotepadNoteWhereInput[]
   NOT?: Prisma.NotepadNoteWhereInput | Prisma.NotepadNoteWhereInput[]
   ownerAccountId?: Prisma.StringFilter<"NotepadNote"> | string
+  collectionId?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
   title?: Prisma.StringFilter<"NotepadNote"> | string
   body?: Prisma.StringFilter<"NotepadNote"> | string
   color?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
   pinned?: Prisma.BoolFilter<"NotepadNote"> | boolean
   createdAt?: Prisma.IntFilter<"NotepadNote"> | number
   updatedAt?: Prisma.IntFilter<"NotepadNote"> | number
+  collection?: Prisma.XOR<Prisma.NotepadCollectionNullableScalarRelationFilter, Prisma.NotepadCollectionWhereInput> | null
 }, "id" | "legacyConvexId">
 
 export type NotepadNoteOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   ownerAccountId?: Prisma.SortOrder
+  collectionId?: Prisma.SortOrderInput | Prisma.SortOrder
   title?: Prisma.SortOrder
   body?: Prisma.SortOrder
   color?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -304,6 +318,7 @@ export type NotepadNoteScalarWhereWithAggregatesInput = {
   NOT?: Prisma.NotepadNoteScalarWhereWithAggregatesInput | Prisma.NotepadNoteScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"NotepadNote"> | string
   ownerAccountId?: Prisma.StringWithAggregatesFilter<"NotepadNote"> | string
+  collectionId?: Prisma.StringNullableWithAggregatesFilter<"NotepadNote"> | string | null
   title?: Prisma.StringWithAggregatesFilter<"NotepadNote"> | string
   body?: Prisma.StringWithAggregatesFilter<"NotepadNote"> | string
   color?: Prisma.StringNullableWithAggregatesFilter<"NotepadNote"> | string | null
@@ -323,11 +338,13 @@ export type NotepadNoteCreateInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  collection?: Prisma.NotepadCollectionCreateNestedOneWithoutNotesInput
 }
 
 export type NotepadNoteUncheckedCreateInput = {
   id: string
   ownerAccountId: string
+  collectionId?: string | null
   title: string
   body: string
   color?: string | null
@@ -347,11 +364,13 @@ export type NotepadNoteUpdateInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   legacyConvexId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collection?: Prisma.NotepadCollectionUpdateOneWithoutNotesNestedInput
 }
 
 export type NotepadNoteUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -364,6 +383,7 @@ export type NotepadNoteUncheckedUpdateInput = {
 export type NotepadNoteCreateManyInput = {
   id: string
   ownerAccountId: string
+  collectionId?: string | null
   title: string
   body: string
   color?: string | null
@@ -388,6 +408,7 @@ export type NotepadNoteUpdateManyMutationInput = {
 export type NotepadNoteUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   ownerAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  collectionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   title?: Prisma.StringFieldUpdateOperationsInput | string
   body?: Prisma.StringFieldUpdateOperationsInput | string
   color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -397,9 +418,20 @@ export type NotepadNoteUncheckedUpdateManyInput = {
   legacyConvexId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
+export type NotepadNoteListRelationFilter = {
+  every?: Prisma.NotepadNoteWhereInput
+  some?: Prisma.NotepadNoteWhereInput
+  none?: Prisma.NotepadNoteWhereInput
+}
+
+export type NotepadNoteOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type NotepadNoteCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerAccountId?: Prisma.SortOrder
+  collectionId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   body?: Prisma.SortOrder
   color?: Prisma.SortOrder
@@ -417,6 +449,7 @@ export type NotepadNoteAvgOrderByAggregateInput = {
 export type NotepadNoteMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerAccountId?: Prisma.SortOrder
+  collectionId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   body?: Prisma.SortOrder
   color?: Prisma.SortOrder
@@ -429,6 +462,7 @@ export type NotepadNoteMaxOrderByAggregateInput = {
 export type NotepadNoteMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ownerAccountId?: Prisma.SortOrder
+  collectionId?: Prisma.SortOrder
   title?: Prisma.SortOrder
   body?: Prisma.SortOrder
   color?: Prisma.SortOrder
@@ -443,24 +477,164 @@ export type NotepadNoteSumOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
+export type NotepadNoteCreateNestedManyWithoutCollectionInput = {
+  create?: Prisma.XOR<Prisma.NotepadNoteCreateWithoutCollectionInput, Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput> | Prisma.NotepadNoteCreateWithoutCollectionInput[] | Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput[]
+  connectOrCreate?: Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput | Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput[]
+  createMany?: Prisma.NotepadNoteCreateManyCollectionInputEnvelope
+  connect?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type NotepadNoteUncheckedCreateNestedManyWithoutCollectionInput = {
+  create?: Prisma.XOR<Prisma.NotepadNoteCreateWithoutCollectionInput, Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput> | Prisma.NotepadNoteCreateWithoutCollectionInput[] | Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput[]
+  connectOrCreate?: Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput | Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput[]
+  createMany?: Prisma.NotepadNoteCreateManyCollectionInputEnvelope
+  connect?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+}
+
+export type NotepadNoteUpdateManyWithoutCollectionNestedInput = {
+  create?: Prisma.XOR<Prisma.NotepadNoteCreateWithoutCollectionInput, Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput> | Prisma.NotepadNoteCreateWithoutCollectionInput[] | Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput[]
+  connectOrCreate?: Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput | Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput[]
+  upsert?: Prisma.NotepadNoteUpsertWithWhereUniqueWithoutCollectionInput | Prisma.NotepadNoteUpsertWithWhereUniqueWithoutCollectionInput[]
+  createMany?: Prisma.NotepadNoteCreateManyCollectionInputEnvelope
+  set?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  disconnect?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  delete?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  connect?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  update?: Prisma.NotepadNoteUpdateWithWhereUniqueWithoutCollectionInput | Prisma.NotepadNoteUpdateWithWhereUniqueWithoutCollectionInput[]
+  updateMany?: Prisma.NotepadNoteUpdateManyWithWhereWithoutCollectionInput | Prisma.NotepadNoteUpdateManyWithWhereWithoutCollectionInput[]
+  deleteMany?: Prisma.NotepadNoteScalarWhereInput | Prisma.NotepadNoteScalarWhereInput[]
+}
+
+export type NotepadNoteUncheckedUpdateManyWithoutCollectionNestedInput = {
+  create?: Prisma.XOR<Prisma.NotepadNoteCreateWithoutCollectionInput, Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput> | Prisma.NotepadNoteCreateWithoutCollectionInput[] | Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput[]
+  connectOrCreate?: Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput | Prisma.NotepadNoteCreateOrConnectWithoutCollectionInput[]
+  upsert?: Prisma.NotepadNoteUpsertWithWhereUniqueWithoutCollectionInput | Prisma.NotepadNoteUpsertWithWhereUniqueWithoutCollectionInput[]
+  createMany?: Prisma.NotepadNoteCreateManyCollectionInputEnvelope
+  set?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  disconnect?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  delete?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  connect?: Prisma.NotepadNoteWhereUniqueInput | Prisma.NotepadNoteWhereUniqueInput[]
+  update?: Prisma.NotepadNoteUpdateWithWhereUniqueWithoutCollectionInput | Prisma.NotepadNoteUpdateWithWhereUniqueWithoutCollectionInput[]
+  updateMany?: Prisma.NotepadNoteUpdateManyWithWhereWithoutCollectionInput | Prisma.NotepadNoteUpdateManyWithWhereWithoutCollectionInput[]
+  deleteMany?: Prisma.NotepadNoteScalarWhereInput | Prisma.NotepadNoteScalarWhereInput[]
 }
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
+export type NotepadNoteCreateWithoutCollectionInput = {
+  id: string
+  ownerAccountId: string
+  title: string
+  body: string
+  color?: string | null
+  pinned?: boolean
+  createdAt: number
+  updatedAt: number
+  legacyConvexId?: string | null
+}
+
+export type NotepadNoteUncheckedCreateWithoutCollectionInput = {
+  id: string
+  ownerAccountId: string
+  title: string
+  body: string
+  color?: string | null
+  pinned?: boolean
+  createdAt: number
+  updatedAt: number
+  legacyConvexId?: string | null
+}
+
+export type NotepadNoteCreateOrConnectWithoutCollectionInput = {
+  where: Prisma.NotepadNoteWhereUniqueInput
+  create: Prisma.XOR<Prisma.NotepadNoteCreateWithoutCollectionInput, Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput>
+}
+
+export type NotepadNoteCreateManyCollectionInputEnvelope = {
+  data: Prisma.NotepadNoteCreateManyCollectionInput | Prisma.NotepadNoteCreateManyCollectionInput[]
+  skipDuplicates?: boolean
+}
+
+export type NotepadNoteUpsertWithWhereUniqueWithoutCollectionInput = {
+  where: Prisma.NotepadNoteWhereUniqueInput
+  update: Prisma.XOR<Prisma.NotepadNoteUpdateWithoutCollectionInput, Prisma.NotepadNoteUncheckedUpdateWithoutCollectionInput>
+  create: Prisma.XOR<Prisma.NotepadNoteCreateWithoutCollectionInput, Prisma.NotepadNoteUncheckedCreateWithoutCollectionInput>
+}
+
+export type NotepadNoteUpdateWithWhereUniqueWithoutCollectionInput = {
+  where: Prisma.NotepadNoteWhereUniqueInput
+  data: Prisma.XOR<Prisma.NotepadNoteUpdateWithoutCollectionInput, Prisma.NotepadNoteUncheckedUpdateWithoutCollectionInput>
+}
+
+export type NotepadNoteUpdateManyWithWhereWithoutCollectionInput = {
+  where: Prisma.NotepadNoteScalarWhereInput
+  data: Prisma.XOR<Prisma.NotepadNoteUpdateManyMutationInput, Prisma.NotepadNoteUncheckedUpdateManyWithoutCollectionInput>
+}
+
+export type NotepadNoteScalarWhereInput = {
+  AND?: Prisma.NotepadNoteScalarWhereInput | Prisma.NotepadNoteScalarWhereInput[]
+  OR?: Prisma.NotepadNoteScalarWhereInput[]
+  NOT?: Prisma.NotepadNoteScalarWhereInput | Prisma.NotepadNoteScalarWhereInput[]
+  id?: Prisma.StringFilter<"NotepadNote"> | string
+  ownerAccountId?: Prisma.StringFilter<"NotepadNote"> | string
+  collectionId?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
+  title?: Prisma.StringFilter<"NotepadNote"> | string
+  body?: Prisma.StringFilter<"NotepadNote"> | string
+  color?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
+  pinned?: Prisma.BoolFilter<"NotepadNote"> | boolean
+  createdAt?: Prisma.IntFilter<"NotepadNote"> | number
+  updatedAt?: Prisma.IntFilter<"NotepadNote"> | number
+  legacyConvexId?: Prisma.StringNullableFilter<"NotepadNote"> | string | null
+}
+
+export type NotepadNoteCreateManyCollectionInput = {
+  id: string
+  ownerAccountId: string
+  title: string
+  body: string
+  color?: string | null
+  pinned?: boolean
+  createdAt: number
+  updatedAt: number
+  legacyConvexId?: string | null
+}
+
+export type NotepadNoteUpdateWithoutCollectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  legacyConvexId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type NotepadNoteUncheckedUpdateWithoutCollectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  legacyConvexId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type NotepadNoteUncheckedUpdateManyWithoutCollectionInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerAccountId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pinned?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  legacyConvexId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -468,6 +642,7 @@ export type IntFieldUpdateOperationsInput = {
 export type NotepadNoteSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ownerAccountId?: boolean
+  collectionId?: boolean
   title?: boolean
   body?: boolean
   color?: boolean
@@ -475,11 +650,13 @@ export type NotepadNoteSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   createdAt?: boolean
   updatedAt?: boolean
   legacyConvexId?: boolean
+  collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
 }, ExtArgs["result"]["notepadNote"]>
 
 export type NotepadNoteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ownerAccountId?: boolean
+  collectionId?: boolean
   title?: boolean
   body?: boolean
   color?: boolean
@@ -487,11 +664,13 @@ export type NotepadNoteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   createdAt?: boolean
   updatedAt?: boolean
   legacyConvexId?: boolean
+  collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
 }, ExtArgs["result"]["notepadNote"]>
 
 export type NotepadNoteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   ownerAccountId?: boolean
+  collectionId?: boolean
   title?: boolean
   body?: boolean
   color?: boolean
@@ -499,11 +678,13 @@ export type NotepadNoteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   createdAt?: boolean
   updatedAt?: boolean
   legacyConvexId?: boolean
+  collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
 }, ExtArgs["result"]["notepadNote"]>
 
 export type NotepadNoteSelectScalar = {
   id?: boolean
   ownerAccountId?: boolean
+  collectionId?: boolean
   title?: boolean
   body?: boolean
   color?: boolean
@@ -513,14 +694,26 @@ export type NotepadNoteSelectScalar = {
   legacyConvexId?: boolean
 }
 
-export type NotepadNoteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerAccountId" | "title" | "body" | "color" | "pinned" | "createdAt" | "updatedAt" | "legacyConvexId", ExtArgs["result"]["notepadNote"]>
+export type NotepadNoteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerAccountId" | "collectionId" | "title" | "body" | "color" | "pinned" | "createdAt" | "updatedAt" | "legacyConvexId", ExtArgs["result"]["notepadNote"]>
+export type NotepadNoteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
+}
+export type NotepadNoteIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
+}
+export type NotepadNoteIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
+}
 
 export type $NotepadNotePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "NotepadNote"
-  objects: {}
+  objects: {
+    collection: Prisma.$NotepadCollectionPayload<ExtArgs> | null
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     ownerAccountId: string
+    collectionId: string | null
     title: string
     body: string
     color: string | null
@@ -925,6 +1118,7 @@ readonly fields: NotepadNoteFieldRefs;
  */
 export interface Prisma__NotepadNoteClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  collection<T extends Prisma.NotepadNote$collectionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.NotepadNote$collectionArgs<ExtArgs>>): Prisma.Prisma__NotepadCollectionClient<runtime.Types.Result.GetResult<Prisma.$NotepadCollectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -956,6 +1150,7 @@ export interface Prisma__NotepadNoteClient<T, Null = never, ExtArgs extends runt
 export interface NotepadNoteFieldRefs {
   readonly id: Prisma.FieldRef<"NotepadNote", 'String'>
   readonly ownerAccountId: Prisma.FieldRef<"NotepadNote", 'String'>
+  readonly collectionId: Prisma.FieldRef<"NotepadNote", 'String'>
   readonly title: Prisma.FieldRef<"NotepadNote", 'String'>
   readonly body: Prisma.FieldRef<"NotepadNote", 'String'>
   readonly color: Prisma.FieldRef<"NotepadNote", 'String'>
@@ -980,6 +1175,10 @@ export type NotepadNoteFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.I
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
+  /**
    * Filter, which NotepadNote to fetch.
    */
   where: Prisma.NotepadNoteWhereUniqueInput
@@ -998,6 +1197,10 @@ export type NotepadNoteFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Exten
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
+  /**
    * Filter, which NotepadNote to fetch.
    */
   where: Prisma.NotepadNoteWhereUniqueInput
@@ -1015,6 +1218,10 @@ export type NotepadNoteFindFirstArgs<ExtArgs extends runtime.Types.Extensions.In
    * Omit specific fields from the NotepadNote
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
   /**
    * Filter, which NotepadNote to fetch.
    */
@@ -1064,6 +1271,10 @@ export type NotepadNoteFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extens
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
+  /**
    * Filter, which NotepadNote to fetch.
    */
   where?: Prisma.NotepadNoteWhereInput
@@ -1111,6 +1322,10 @@ export type NotepadNoteFindManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Omit specific fields from the NotepadNote
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
   /**
    * Filter, which NotepadNotes to fetch.
    */
@@ -1160,6 +1375,10 @@ export type NotepadNoteCreateArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
+  /**
    * The data needed to create a NotepadNote.
    */
   data: Prisma.XOR<Prisma.NotepadNoteCreateInput, Prisma.NotepadNoteUncheckedCreateInput>
@@ -1193,6 +1412,10 @@ export type NotepadNoteCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    */
   data: Prisma.NotepadNoteCreateManyInput | Prisma.NotepadNoteCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1207,6 +1430,10 @@ export type NotepadNoteUpdateArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Omit specific fields from the NotepadNote
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
   /**
    * The data needed to update a NotepadNote.
    */
@@ -1259,6 +1486,10 @@ export type NotepadNoteUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    * Limit how many NotepadNotes to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1273,6 +1504,10 @@ export type NotepadNoteUpsertArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Omit specific fields from the NotepadNote
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
   /**
    * The filter to search for the NotepadNote to update in case it exists.
    */
@@ -1300,6 +1535,10 @@ export type NotepadNoteDeleteArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
+  /**
    * Filter which NotepadNote to delete.
    */
   where: Prisma.NotepadNoteWhereUniqueInput
@@ -1320,6 +1559,25 @@ export type NotepadNoteDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
+ * NotepadNote.collection
+ */
+export type NotepadNote$collectionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the NotepadCollection
+   */
+  select?: Prisma.NotepadCollectionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the NotepadCollection
+   */
+  omit?: Prisma.NotepadCollectionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadCollectionInclude<ExtArgs> | null
+  where?: Prisma.NotepadCollectionWhereInput
+}
+
+/**
  * NotepadNote without action
  */
 export type NotepadNoteDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1331,4 +1589,8 @@ export type NotepadNoteDefaultArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Omit specific fields from the NotepadNote
    */
   omit?: Prisma.NotepadNoteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotepadNoteInclude<ExtArgs> | null
 }

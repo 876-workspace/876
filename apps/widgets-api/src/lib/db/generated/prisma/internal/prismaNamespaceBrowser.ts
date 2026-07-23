@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  NotepadCollection: 'NotepadCollection',
   NotepadNote: 'NotepadNote',
   WidgetAuditEvent: 'WidgetAuditEvent'
 } as const
@@ -71,9 +72,22 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const NotepadCollectionScalarFieldEnum = {
+  id: 'id',
+  ownerAccountId: 'ownerAccountId',
+  name: 'name',
+  color: 'color',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotepadCollectionScalarFieldEnum = (typeof NotepadCollectionScalarFieldEnum)[keyof typeof NotepadCollectionScalarFieldEnum]
+
+
 export const NotepadNoteScalarFieldEnum = {
   id: 'id',
   ownerAccountId: 'ownerAccountId',
+  collectionId: 'collectionId',
   title: 'title',
   body: 'body',
   color: 'color',
