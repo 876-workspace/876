@@ -9,9 +9,10 @@ from starlette.responses import JSONResponse, Response
 
 from core.id import generate_request_id
 from core.logging import bind_request_id, get_logger, reset_request_id
+from core.metrics import WRITER_REJECTIONS
 
 logger = get_logger(__name__)
-_raw_paths = {"/docs", "/health", "/openapi.json", "/ready", "/redoc"}
+_raw_paths = {"/docs", "/health", "/metrics", "/openapi.json", "/ready", "/redoc"}
 _unsafe_methods = {"DELETE", "PATCH", "POST", "PUT"}
 
 
@@ -29,6 +30,7 @@ class BillingWriterMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         is_api_request = request.url.path == "/api/v1" or request.url.path.startswith("/api/v1/")
         if is_api_request and request.method in _unsafe_methods and self.writer != "fastapi":
+            WRITER_REJECTIONS.inc()
             response: Response = JSONResponse(
                 status_code=503,
                 content={
