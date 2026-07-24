@@ -9,7 +9,7 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { cn } from '@876/core/utils'
-import { ArrowLeft, LayoutList, Loader2Icon, Star, Trash } from '@876/ui/icons'
+import { ArrowLeft, Folder, Loader2Icon, Star, Trash } from '@876/ui/icons'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -433,7 +433,7 @@ export function NotepadEditor({
                 aria-label={`Move to collection, currently ${collectionLabel}`}
                 className="text-muted-foreground max-w-36 gap-1 px-2"
               >
-                <LayoutList aria-hidden="true" className="size-3.5 shrink-0" />
+                <Folder aria-hidden="true" className="size-3.5 shrink-0" />
                 <span className="truncate text-xs">{collectionLabel}</span>
               </Button>
             }

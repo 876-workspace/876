@@ -209,8 +209,8 @@ export function NotepadWidgetPanel() {
     setEditorSessionKey(null)
   }
 
-  async function handleCreateCollection(name: string) {
-    const result = await browserCollections.create({ name })
+  async function handleCreateCollection(name: string, color: NoteColor) {
+    const result = await browserCollections.create({ name, color })
     if (result.error || !result.data) return result.error ?? 'Unable to create.'
     setCollections((prev) =>
       [...prev, result.data!].toSorted((a, b) =>
@@ -221,8 +221,12 @@ export function NotepadWidgetPanel() {
     return null
   }
 
-  async function handleRenameCollection(id: string, name: string) {
-    const result = await browserCollections.update(id, { name })
+  async function handleRenameCollection(
+    id: string,
+    name: string,
+    color: NoteColor
+  ) {
+    const result = await browserCollections.update(id, { name, color })
     if (result.error || !result.data) return result.error ?? 'Unable to rename.'
     setCollections((prev) =>
       prev

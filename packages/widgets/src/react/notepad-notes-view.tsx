@@ -5,7 +5,8 @@ import { cn } from '@876/core/utils'
 import {
   ArrowLeft,
   CheckIcon,
-  LayoutList,
+  Folder,
+  FolderPlus,
   Loader2Icon,
   MoreHorizontalIcon,
   Plus,
@@ -28,9 +29,12 @@ import type { NotepadCollection } from '../types/collections'
 import type { NotepadNote } from '../types/notes'
 import { titleForDisplay } from './notepad-draft'
 import {
+  DEFAULT_NOTE_COLOR,
   formatNoteUpdatedAt,
   getNotePreview,
   noteColorCssVars,
+  NOTE_COLOR_PALETTE,
+  NOTE_COLORS,
   NOTE_STICKY_COLOR_CSS,
   sortStickyNotes,
   type NoteColor,
@@ -73,8 +77,12 @@ export function NotepadNotesView({
   onScopeChange: (scope: NotesScope) => void
   onCreate: () => void
   onOpen: (entryId: string) => void
-  onCreateCollection: (name: string) => Promise<string | null>
-  onRenameCollection: (id: string, name: string) => Promise<string | null>
+  onCreateCollection: (name: string, color: NoteColor) => Promise<string | null>
+  onRenameCollection: (
+    id: string,
+    name: string,
+    color: NoteColor
+  ) => Promise<string | null>
   onDeleteCollection: (id: string) => Promise<string | null>
   onLoadMore: () => void
 }) {
@@ -85,6 +93,9 @@ export function NotepadNotesView({
   const [collectionError, setCollectionError] = useState<string | null>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [collectionColor, setCollectionColor] =
+    useState<NoteColor>(DEFAULT_NOTE_COLOR)
   const deferredSearch = useDeferredValue(search)
 
   const filteredEntries = useMemo(() => {
@@ -108,13 +119,16 @@ export function NotepadNotesView({
     (status === 'CanLoadMore' || status === 'LoadingMore')
   const inCollection = scope.type === 'collection'
   const showCollectionBrowser = scope.type === 'all'
+  const activeCollection = inCollection
+    ? collections.find((item) => item.id === scope.id)
+    : undefined
 
   async function submitNewCollection() {
     const name = newCollectionName.trim()
     if (!name || collectionBusy) return
     setCollectionBusy(true)
     setCollectionError(null)
-    const error = await onCreateCollection(name)
+    const error = await onCreateCollection(name, collectionColor)
     setCollectionBusy(false)
     if (error) {
       setCollectionError(error)
@@ -130,7 +144,7 @@ export function NotepadNotesView({
     if (!name) return
     setCollectionBusy(true)
     setCollectionError(null)
-    const error = await onRenameCollection(renamingId, name)
+    const error = await onRenameCollection(renamingId, name, collectionColor)
     setCollectionBusy(false)
     if (error) {
       setCollectionError(error)
@@ -138,6 +152,20 @@ export function NotepadNotesView({
     }
     setRenamingId(null)
     setRenameValue('')
+  }
+
+  async function submitDelete() {
+    if (scope.type !== 'collection' || collectionBusy) return
+    setCollectionBusy(true)
+    setCollectionError(null)
+    const error = await onDeleteCollection(scope.id)
+    setCollectionBusy(false)
+    if (error) {
+      setCollectionError(error)
+      return
+    }
+    // Parent navigates home on success; unmounts this confirm row.
+    setConfirmingDelete(false)
   }
 
   return (
@@ -159,9 +187,19 @@ export function NotepadNotesView({
             >
               <ArrowLeft aria-hidden="true" />
             </Button>
+            <Folder
+              aria-hidden="true"
+              className="text-muted-foreground size-4 shrink-0"
+            />
             <h2 className="min-w-0 flex-1 truncate text-sm font-semibold tracking-tight">
               {scope.name}
             </h2>
+            {activeCollection ? (
+              <span className="text-muted-foreground shrink-0 text-xs tabular-nums">
+                {activeCollection.note_count}{' '}
+                {activeCollection.note_count === 1 ? 'note' : 'notes'}
+              </span>
+            ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -181,6 +219,9 @@ export function NotepadNotesView({
                   onClick={() => {
                     setRenamingId(scope.id)
                     setRenameValue(scope.name)
+                    setCollectionColor(
+                      activeCollection?.color ?? DEFAULT_NOTE_COLOR
+                    )
                     setCollectionError(null)
                   }}
                 >
@@ -189,7 +230,10 @@ export function NotepadNotesView({
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={() => {
-                    void onDeleteCollection(scope.id)
+                    setCreatingCollection(false)
+                    setRenamingId(null)
+                    setCollectionError(null)
+                    setConfirmingDelete(true)
                   }}
                 >
                   <Trash aria-hidden="true" className="size-4" />
@@ -268,11 +312,12 @@ export function NotepadNotesView({
               className="text-muted-foreground h-7 px-2 text-xs"
               onClick={() => {
                 setCreatingCollection(true)
+                setCollectionColor(DEFAULT_NOTE_COLOR)
                 setCollectionError(null)
               }}
             >
-              <Plus aria-hidden="true" className="size-3.5" />
-              Collection
+              <FolderPlus aria-hidden="true" className="size-3.5" />
+              New collection
             </Button>
           </div>
         ) : null}
@@ -338,6 +383,80 @@ export function NotepadNotesView({
                 <XIcon aria-hidden="true" />
               </Button>
             </div>
+            <div
+              role="group"
+              aria-label="Collection color"
+              className="flex items-center gap-2 px-0.5"
+            >
+              {NOTE_COLORS.map((noteColor) => {
+                const active = collectionColor === noteColor
+                const palette = NOTE_COLOR_PALETTE[noteColor]
+                return (
+                  <button
+                    key={noteColor}
+                    type="button"
+                    disabled={collectionBusy}
+                    aria-label={`${palette.label} collection`}
+                    aria-pressed={active}
+                    onClick={() => setCollectionColor(noteColor)}
+                    className={cn(
+                      'size-5 rounded-full border shadow-xs transition-transform',
+                      active &&
+                        'ring-ring ring-offset-background scale-110 ring-2 ring-offset-2',
+                      'disabled:opacity-50'
+                    )}
+                    style={{
+                      backgroundColor: palette.swatch,
+                      borderColor: palette.swatchBorder,
+                    }}
+                  />
+                )
+              })}
+            </div>
+            {collectionError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {collectionError}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {confirmingDelete && inCollection ? (
+          <div className="border-destructive/30 bg-destructive/5 flex flex-col gap-2 rounded-lg border p-2.5">
+            <p className="text-xs leading-5">
+              Delete <span className="font-medium">{scope.name}</span>? Notes
+              inside move to Unfiled — they are not deleted.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="h-7"
+                disabled={collectionBusy}
+                onClick={() => void submitDelete()}
+              >
+                {collectionBusy ? (
+                  <Loader2Icon aria-hidden="true" className="animate-spin" />
+                ) : (
+                  <Trash aria-hidden="true" className="size-3.5" />
+                )}
+                Delete
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7"
+                disabled={collectionBusy}
+                onClick={() => {
+                  setConfirmingDelete(false)
+                  setCollectionError(null)
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
             {collectionError ? (
               <p role="alert" className="text-destructive text-xs">
                 {collectionError}
@@ -353,11 +472,12 @@ export function NotepadNotesView({
             <p className="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
               Collections
             </p>
-            <div className="grid min-w-0 grid-cols-2 gap-2">
+            <div className="grid min-w-0 grid-cols-2 gap-x-3 gap-y-4">
               {collections.map((collection) => (
                 <button
                   key={collection.id}
                   type="button"
+                  aria-label={`Open ${collection.name} collection`}
                   onClick={() =>
                     onScopeChange({
                       type: 'collection',
@@ -366,20 +486,25 @@ export function NotepadNotesView({
                     })
                   }
                   className={cn(
-                    'bg-card hover:bg-accent/40 border-border flex min-h-16 min-w-0 flex-col rounded-xl border p-3 text-left shadow-xs transition-colors',
-                    'focus-visible:ring-ring focus-visible:ring-offset-background outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
+                    'note-collection-card flex min-h-16 min-w-0 flex-col rounded-xl border p-3 text-left outline-none',
+                    'focus-visible:ring-ring focus-visible:ring-offset-background focus-visible:ring-2 focus-visible:ring-offset-2'
                   )}
+                  style={
+                    collection.color
+                      ? noteColorCssVars(collection.color)
+                      : undefined
+                  }
                 >
                   <span className="flex items-center gap-1.5">
-                    <LayoutList
+                    <Folder
                       aria-hidden="true"
-                      className="text-muted-foreground size-3.5 shrink-0"
+                      className="note-collection-icon size-3.5 shrink-0"
                     />
                     <span className="truncate text-sm font-medium">
                       {collection.name}
                     </span>
                   </span>
-                  <span className="text-muted-foreground mt-1 text-xs tabular-nums">
+                  <span className="note-collection-count mt-auto pt-2 text-xs tabular-nums">
                     {collection.note_count}{' '}
                     {collection.note_count === 1 ? 'note' : 'notes'}
                   </span>
@@ -402,6 +527,7 @@ export function NotepadNotesView({
             scope={scope}
             onCreateCollection={() => {
               setCreatingCollection(true)
+              setCollectionColor(DEFAULT_NOTE_COLOR)
               setCollectionError(null)
             }}
           />
@@ -574,8 +700,8 @@ function NotepadEmptyState({
             size="sm"
             onClick={onCreateCollection}
           >
-            <Plus aria-hidden="true" />
-            Collection
+            <FolderPlus aria-hidden="true" />
+            New collection
           </Button>
         ) : null}
       </div>

@@ -242,6 +242,57 @@ html.dark .note-sticky-editor {
 html.dark .note-sticky-editor input::placeholder {
   color: color-mix(in oklab, var(--sticky-ink-dark) 42%, transparent);
 }
+
+/* Collection tiles — "folders" that hold the colored stickies. A collection
+   with a color wears that color (via the same --sticky-* vars as notes); an
+   uncolored collection falls back to a warm kraft/manila paper tone. The
+   stacked-paper edge is drawn with downward, horizontally-inset box-shadows
+   (negative spread) so sheets peek out the bottom only and never collide with
+   neighbors in the two-column grid. */
+.note-collection-card {
+  /* Surface/ink resolve to the note color when set, else kraft. */
+  --cc-surface: var(--sticky-surface, #f4ecd8);
+  --cc-surface-hover: var(--sticky-surface-hover, #efe4c9);
+  --cc-border: var(--sticky-border, rgba(161, 128, 68, 0.4));
+  --cc-ink: var(--sticky-ink, #463c27);
+  --cc-sheet-2: color-mix(in oklab, var(--cc-surface) 82%, var(--cc-border));
+  --cc-sheet-3: color-mix(in oklab, var(--cc-surface) 64%, var(--cc-border));
+  --cc-cast: rgba(90, 68, 30, 0.24);
+  background-color: var(--cc-surface);
+  border-color: var(--cc-border);
+  color: var(--cc-ink);
+  box-shadow:
+    0 3px 0 -1px var(--cc-sheet-2),
+    0 6px 0 -2px var(--cc-sheet-3),
+    0 8px 11px -7px var(--cc-cast);
+  transition:
+    transform 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+.note-collection-card:hover {
+  background-color: var(--cc-surface-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 0 -1px var(--cc-sheet-2),
+    0 8px 0 -2px var(--cc-sheet-3),
+    0 11px 15px -7px var(--cc-cast);
+}
+.note-collection-icon {
+  color: color-mix(in oklab, var(--cc-ink) 62%, transparent);
+}
+.note-collection-count {
+  color: color-mix(in oklab, var(--cc-ink) 62%, transparent);
+}
+
+.dark .note-collection-card,
+html.dark .note-collection-card {
+  --cc-surface: var(--sticky-surface-dark, oklch(0.31 0.022 78));
+  --cc-surface-hover: var(--sticky-surface-hover-dark, oklch(0.345 0.026 78));
+  --cc-border: var(--sticky-border-dark, oklch(0.7 0.03 80 / 0.3));
+  --cc-ink: var(--sticky-ink-dark, oklch(0.92 0.02 85));
+  --cc-cast: oklch(0 0 0 / 0.5);
+}
 `
 
 function isSameDay(left: Date, right: Date) {
