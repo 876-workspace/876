@@ -10,6 +10,9 @@ const { prismaRef } = vi.hoisted(() => ({
         update: ReturnType<typeof vi.fn>
         delete: ReturnType<typeof vi.fn>
       }
+      notepadCollection: {
+        findUnique: ReturnType<typeof vi.fn>
+      }
       widgetAuditEvent: {
         create: ReturnType<typeof vi.fn>
       }
@@ -39,6 +42,7 @@ function createRow(
   overrides: Partial<{
     id: string
     ownerAccountId: string
+    collectionId: string | null
     title: string
     body: string
     color: string
@@ -50,6 +54,7 @@ function createRow(
   return {
     id: 'wnote_existing_01',
     ownerAccountId: 'user_alejandra',
+    collectionId: null as string | null,
     title: 'Customer call notes',
     body: 'Follow up with the Kingston logistics team',
     color: 'yellow',
@@ -69,12 +74,16 @@ describe('Notepad notes service', () => {
       update: vi.fn(),
       delete: vi.fn(),
     }
+    const notepadCollection = {
+      findUnique: vi.fn(),
+    }
     const widgetAuditEvent = {
       create: vi.fn().mockResolvedValue({}),
     }
 
     prismaRef.current = {
       notepadNote,
+      notepadCollection,
       widgetAuditEvent,
       $transaction: vi.fn(async (callback: (tx: unknown) => unknown) =>
         callback({
@@ -108,6 +117,7 @@ describe('Notepad notes service', () => {
         object: 'note',
         id: 'wnote_generated_01',
         owner_account_id: 'user_alejandra',
+        collection_id: null,
         title: 'Customer call notes',
         body: 'Follow up with the Kingston logistics team',
         color: 'yellow',
@@ -120,6 +130,7 @@ describe('Notepad notes service', () => {
         data: {
           id: 'wnote_generated_01',
           ownerAccountId: 'user_alejandra',
+          collectionId: null,
           title: 'Customer call notes',
           body: 'Follow up with the Kingston logistics team',
           color: 'pink',
@@ -128,6 +139,39 @@ describe('Notepad notes service', () => {
           updatedAt: 1_720_100_000,
         },
       })
+    })
+
+    it('when collectionId is provided and owned, then attaches the note to the collection', async () => {
+      prismaRef.current!.notepadCollection.findUnique.mockResolvedValue({
+        id: 'wcol_sprint',
+        ownerAccountId: 'user_alejandra',
+        name: 'Sprint',
+        color: null,
+        createdAt: 1,
+        updatedAt: 1,
+      })
+      const row = createRow({
+        id: 'wnote_generated_01',
+        collectionId: 'wcol_sprint',
+        createdAt: 1_720_100_000,
+        updatedAt: 1_720_100_000,
+      })
+      prismaRef.current!.notepadNote.create.mockResolvedValue(row)
+
+      const result = await createNote({
+        ownerAccountId: 'user_alejandra',
+        title: 'In sprint',
+        body: '',
+        collectionId: 'wcol_sprint',
+      })
+
+      expect(result.error).toBeNull()
+      expect(result.data?.collection_id).toBe('wcol_sprint')
+      expect(prismaRef.current!.notepadNote.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ collectionId: 'wcol_sprint' }),
+        })
+      )
     })
 
     it('when title is blank, then does not touch the database', async () => {

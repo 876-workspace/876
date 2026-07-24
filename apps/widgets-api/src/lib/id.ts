@@ -4,6 +4,10 @@ export function noteId() {
   return createPrefixedId('wnote')
 }
 
+export function collectionId() {
+  return createPrefixedId('wcol')
+}
+
 export function auditId() {
   return createPrefixedId('waudit')
 }

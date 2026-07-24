@@ -10,6 +10,10 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  listCollections: vi.fn(),
+  createCollection: vi.fn(),
+  updateCollection: vi.fn(),
+  deleteCollection: vi.fn(),
   beforeDeactivateHandlers: [] as Array<
     () => boolean | void | Promise<boolean | void>
   >,
@@ -21,6 +25,12 @@ vi.mock('../browser/notes', () => ({
     create: mocks.create,
     update: mocks.update,
     delete: mocks.delete,
+  },
+  browserCollections: {
+    list: mocks.listCollections,
+    create: mocks.createCollection,
+    update: mocks.updateCollection,
+    delete: mocks.deleteCollection,
   },
 }))
 
@@ -79,6 +89,7 @@ const entries = [
     object: 'note' as const,
     id: 'wnote_first',
     owner_account_id: 'user_owner',
+    collection_id: null,
     title: 'First note',
     body: 'Plan the launch checklist',
     color: 'yellow' as const,
@@ -90,6 +101,7 @@ const entries = [
     object: 'note' as const,
     id: 'wnote_second',
     owner_account_id: 'user_owner',
+    collection_id: null,
     title: 'Second note',
     body: 'Remember the customer follow-up',
     color: 'pink' as const,
@@ -118,11 +130,22 @@ describe('NotepadWidgetPanel', () => {
     vi.clearAllMocks()
     mocks.beforeDeactivateHandlers = []
     mocks.list.mockResolvedValue(listResponse())
+    mocks.listCollections.mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        url: '/v1/collections',
+        total_count: 0,
+      },
+      error: null,
+    })
     mocks.create.mockResolvedValue({
       data: {
         object: 'note',
         id: 'wnote_new',
         owner_account_id: 'user_owner',
+        collection_id: null,
         title: 'Untitled note',
         body: '',
         color: 'yellow',
@@ -254,12 +277,14 @@ describe('NotepadWidgetPanel', () => {
         {
           ...entries[0],
           id: 'wnote_page_one_a',
+          collection_id: null,
           title: 'Page one A',
           updated_at: 30,
         },
         {
           ...entries[1],
           id: 'wnote_page_one_b',
+          collection_id: null,
           title: 'Page one B',
           updated_at: 20,
         },
@@ -268,6 +293,7 @@ describe('NotepadWidgetPanel', () => {
         {
           ...entries[0],
           id: 'wnote_page_two',
+          collection_id: null,
           title: 'Page two note',
           updated_at: 10,
         },
@@ -364,6 +390,7 @@ describe('NotepadWidgetPanel', () => {
         {
           ...entries[0],
           id: 'wnote_stale',
+          collection_id: null,
           title: 'Stale page',
         },
       ])
@@ -371,6 +398,7 @@ describe('NotepadWidgetPanel', () => {
         {
           ...entries[0],
           id: 'wnote_fresh',
+          collection_id: null,
           title: 'Fresh page',
         },
       ])
@@ -422,6 +450,7 @@ describe('NotepadWidgetPanel', () => {
           {
             ...entries[0],
             id: 'wnote_untitled',
+            collection_id: null,
             title: 'Untitled note',
             body: 'body text',
           },

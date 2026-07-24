@@ -40,6 +40,8 @@ import {
   EyeSlashIcon,
   FingerPrintIcon,
   FlagIcon,
+  FolderIcon,
+  FolderPlusIcon,
   GlobeAltIcon,
   HashtagIcon,
   HomeIcon,
@@ -113,6 +115,8 @@ export {
   EyeSlashIcon,
   FingerPrintIcon,
   FlagIcon,
+  FolderIcon,
+  FolderPlusIcon,
   GlobeAltIcon,
   HashtagIcon,
   HomeIcon,
@@ -167,6 +171,8 @@ export const Eye = EyeIcon
 export const EyeOff = EyeSlashIcon
 export const Fingerprint = FingerPrintIcon
 export const Flag = FlagIcon
+export const Folder = FolderIcon
+export const FolderPlus = FolderPlusIcon
 export const Footprints = MapIcon
 export const GitCommitVertical = CodeBracketIcon
 export const Globe = GlobeAltIcon

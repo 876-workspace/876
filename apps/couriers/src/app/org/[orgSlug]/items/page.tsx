@@ -49,7 +49,7 @@ export default async function ItemsPage({ params, searchParams }: Props) {
         name: item.name,
         subtitle: item.sku ?? item.description ?? item.id,
         type: item.type,
-        origin: item.source ? 'Connected app' : 'Billing workspace',
+        origin: item.sourceAppId ? 'Connected app' : 'Billing workspace',
         priceLabel: formatPrice(
           item.defaultSellingAmount,
           item.defaultSellingCurrency

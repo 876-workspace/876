@@ -12,10 +12,22 @@ ports:
     visibility: public
     onOpen: notify
   - port: 3003
-    name: 876 Auth
+    name: 876 Couriers
+    visibility: public
+    onOpen: notify
+  - port: 3004
+    name: 876 Billing
+    visibility: public
+    onOpen: notify
+  - port: 3005
+    name: 876 Widgets API
     visibility: public
     onOpen: notify
   - port: 4000
     name: API
+    visibility: public
+    onOpen: notify
+  - port: 4004
+    name: Billing API
     visibility: public
     onOpen: notify

@@ -45,7 +45,7 @@ class HTTPIdentityGateway:
     async def app_for_api_key(self, api_key: str) -> IdentityApp | None:
         payload = await self._request(
             "GET",
-            "/api/v1/apps/current",
+            "/apps/current",
             headers={"x-876-api-key": api_key},
         )
         app_id = payload.get("id") if payload else None
@@ -57,7 +57,7 @@ class HTTPIdentityGateway:
             return TokenIntrospection(active=False)
         payload = await self._request(
             "POST",
-            "/api/v1/oauth/introspect",
+            "/oauth/introspect",
             headers={"authorization": f"Bearer {self._resource_server_key}"},
             data={"token": token},
         )
@@ -78,7 +78,7 @@ class HTTPIdentityGateway:
             return False
         payload = await self._request(
             "GET",
-            "/api/v1/users/me/memberships",
+            "/users/me/memberships",
             headers={
                 "authorization": f"Bearer {token}",
                 "x-876-api-key": self._resource_server_key,

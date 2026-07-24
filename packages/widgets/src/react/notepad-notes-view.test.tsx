@@ -10,6 +10,7 @@ import { NotepadNotesView } from './notepad-notes-view'
 const entries = [
   {
     id: 'wnote_pinned',
+    collection_id: null,
     title: 'Pinned launch checklist',
     body: serializeNoteBody({
       blocks: [
@@ -22,6 +23,7 @@ const entries = [
   },
   {
     id: 'wnote_recent',
+    collection_id: null,
     title: 'Customer follow-up',
     body: serializeNoteBody({
       blocks: [
@@ -34,6 +36,7 @@ const entries = [
   },
   {
     id: 'wnote_older',
+    collection_id: null,
     title: 'Archived brainstorm',
     body: 'plain legacy body about search ranking',
     color: 'blue' as const,
@@ -41,6 +44,15 @@ const entries = [
     updated_at: 100,
   },
 ]
+
+const viewHandlers = {
+  collections: [] as const,
+  scope: { type: 'all' as const },
+  onScopeChange: vi.fn(),
+  onCreateCollection: vi.fn(async () => null),
+  onRenameCollection: vi.fn(async () => null),
+  onDeleteCollection: vi.fn(async () => null),
+}
 
 describe('NotepadNotesView', () => {
   afterEach(() => {
@@ -51,6 +63,7 @@ describe('NotepadNotesView', () => {
     it('when notes are loaded, then shows the sticky notes landmark and New note action', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -68,6 +81,7 @@ describe('NotepadNotesView', () => {
     it('when notes include pinned entries, then pinned notes render before unpinned ones', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -88,6 +102,7 @@ describe('NotepadNotesView', () => {
     it('when a note uses Editor.js JSON, then the card preview shows plain text without tags', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -110,6 +125,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={onCreate}
@@ -129,6 +145,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -152,6 +169,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -175,6 +193,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -195,6 +214,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -216,6 +236,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="Exhausted"
           onCreate={vi.fn()}
@@ -240,6 +261,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={[]}
           status="Exhausted"
           onCreate={onCreate}
@@ -259,6 +281,7 @@ describe('NotepadNotesView', () => {
     it('when status is LoadingFirstPage with no entries, then only the skeleton region is shown', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={[]}
           status="LoadingFirstPage"
           onCreate={vi.fn()}
@@ -280,6 +303,7 @@ describe('NotepadNotesView', () => {
     it('when status is LoadingFirstPage but entries already exist, then shows notes without skeletons', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="LoadingFirstPage"
           onCreate={vi.fn()}
@@ -301,6 +325,7 @@ describe('NotepadNotesView', () => {
     it('when status is LoadingMore, then keeps the note grid and does not show first-page skeletons', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="LoadingMore"
           onCreate={vi.fn()}
@@ -323,9 +348,11 @@ describe('NotepadNotesView', () => {
     it('when an empty title is stored, then the card shows Untitled note', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={[
             {
               id: 'wnote_blank_title',
+              collection_id: null,
               title: '',
               body: 'just a body',
               color: 'yellow',
@@ -353,6 +380,7 @@ describe('NotepadNotesView', () => {
 
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="CanLoadMore"
           onCreate={vi.fn()}
@@ -369,6 +397,7 @@ describe('NotepadNotesView', () => {
     it('when status is LoadingMore, then the load control is disabled', () => {
       render(
         <NotepadNotesView
+          {...viewHandlers}
           entries={entries}
           status="LoadingMore"
           onCreate={vi.fn()}

@@ -1,0 +1,15 @@
+/// Account-owned Notepad collection (topic folder for grouping notes).
+model NotepadCollection {
+  id             String @id
+  ownerAccountId String @map("owner_account_id")
+  name           String
+  color          String?
+  createdAt      Int    @map("created_at")
+  updatedAt      Int    @map("updated_at")
+
+  notes NotepadNote[]
+
+  @@unique([ownerAccountId, name], name: "notepad_collections_owner_name_uidx")
+  @@index([ownerAccountId, updatedAt(sort: Desc)], name: "notepad_collections_owner_updated_idx")
+  @@map("notepad_collections")
+}

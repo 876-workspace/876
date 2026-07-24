@@ -11,9 +11,9 @@ async def test_identity_gateway_uses_the_required_credential_tiers() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
-        if request.url.path == "/api/v1/apps/current":
+        if request.url.path == "/apps/current":
             return httpx.Response(200, json={"data": {"id": "app_courier"}, "error": None})
-        if request.url.path == "/api/v1/oauth/introspect":
+        if request.url.path == "/oauth/introspect":
             return httpx.Response(
                 200,
                 json={
@@ -60,6 +60,15 @@ async def test_identity_gateway_uses_the_required_credential_tiers() -> None:
     assert requests[1].content == b"token=oauth_access_token"
     assert requests[2].headers["authorization"] == "Bearer oauth_access_token"
     assert requests[2].headers["x-876-api-key"] == "876_app_secret_billing"
+
+    # Pin the exact core paths. The core API mounts every router at the root
+    # (no /api/v1 prefix), so a stray prefix here 404s and is misreported as an
+    # invalid key — the original couriers "app API key is invalid" bug.
+    assert [request.url.path for request in requests] == [
+        "/apps/current",
+        "/oauth/introspect",
+        "/users/me/memberships",
+    ]
 
 
 async def test_identity_gateway_fails_closed_without_resource_server_key() -> None:

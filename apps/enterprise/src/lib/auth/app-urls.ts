@@ -8,11 +8,11 @@ const CONSOLE_ORIGIN_DEFAULT = 'http://localhost:3002'
 function readOrigin(
   value: string | undefined,
   fallback: string,
-  codespacePort: number
+  previewPort: number
 ): string {
   const configured = normalizeValue(value)
   if (configured && !isLocalOrigin(configured)) return configured
-  return getCodespaceOrigin(codespacePort) ?? configured ?? fallback
+  return getDevPreviewOrigin(previewPort) ?? configured ?? fallback
 }
 
 export function consumerOrigin(): string {
@@ -61,7 +61,17 @@ function isLocalOrigin(origin: string): boolean {
   }
 }
 
-function getCodespaceOrigin(port: number): string | null {
+/**
+ * Origin for a forwarded port inside a remote dev workspace.
+ *
+ * `DEV_PREVIEW_HOST_TEMPLATE` is the provider-agnostic contract written by
+ * `scripts/setup-dev-env.mjs`; the Codespaces env vars remain as a fallback for
+ * containers started before the setup script has run.
+ */
+function getDevPreviewOrigin(port: number): string | null {
+  const template = normalizeValue(process.env.DEV_PREVIEW_HOST_TEMPLATE)
+  if (template) return `https://${template.replaceAll('{port}', String(port))}`
+
   const codespaceName = normalizeValue(process.env.CODESPACE_NAME)
   const forwardingDomain = normalizeValue(
     process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN

@@ -34,7 +34,6 @@
   "dependencies": {
     "@876/core": "workspace:*",
     "@876/ui": "workspace:*",
-    "@editorjs/checklist": "1.6.0",
     "@editorjs/editorjs": "2.31.6",
     "@editorjs/header": "2.8.9",
     "@editorjs/list": "2.0.9",

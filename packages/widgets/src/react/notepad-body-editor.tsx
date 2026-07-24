@@ -2,7 +2,6 @@
 
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import type EditorJS from '@editorjs/editorjs'
-import type { ToolConstructable } from '@editorjs/editorjs'
 import { cn } from '@876/core/utils'
 
 import { parseNoteBody, serializeNoteBody } from './notepad-editor-data'
@@ -64,19 +63,12 @@ export const NotepadBodyEditor = forwardRef<
         { default: Header },
         { default: EditorjsList },
         { default: Underline },
-        checklistModule,
       ] = await Promise.all([
         import('@editorjs/editorjs'),
         import('@editorjs/header'),
         import('@editorjs/list'),
         import('@editorjs/underline'),
-        // Host apps that typecheck this source may not pick up ambient d.ts.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        import('@editorjs/checklist' as any) as Promise<{
-          default: ToolConstructable
-        }>,
       ])
-      const Checklist = checklistModule.default
 
       if (cancelled || !holderRef.current) return
 
@@ -102,10 +94,6 @@ export const NotepadBodyEditor = forwardRef<
             config: {
               defaultStyle: 'unordered',
             },
-          },
-          checklist: {
-            class: Checklist,
-            inlineToolbar: ['bold', 'italic', 'underline'],
           },
           underline: Underline,
         },
@@ -174,7 +162,9 @@ export const NotepadBodyEditor = forwardRef<
   return (
     <div
       className={cn(
-        'notepad-editorjs mt-3 min-h-0 flex-1 overflow-y-auto',
+        // overflow-y scrolls long notes; popovers use high z-index + solid
+        // panels so toolbox/settings stay readable over sticky-note ink.
+        'notepad-editorjs mt-3 min-h-0 flex-1 overflow-x-visible overflow-y-auto',
         className
       )}
     >

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import { auditId, unixSeconds } from '@/lib/id'
 import { err, ok, type ServiceResult } from '../result'
+import { assertOwnedCollection } from './collection'
 import { serializeNote } from './serialize'
 import type { NoteColor, NotepadNoteResource } from './types'
 import { validateEntryText } from './validate'
@@ -12,6 +13,7 @@ export async function updateNote(params: {
   body?: string
   color?: NoteColor
   pinned?: boolean
+  collectionId?: string | null
 }): Promise<ServiceResult<NotepadNoteResource>> {
   const existing = await prisma.notepadNote.findUnique({
     where: { id: params.id },
@@ -24,6 +26,14 @@ export async function updateNote(params: {
   const validation = validateEntryText(title, body)
   if (validation) return validation
 
+  if (params.collectionId !== undefined) {
+    const collectionCheck = await assertOwnedCollection({
+      ownerAccountId: params.ownerAccountId,
+      collectionId: params.collectionId,
+    })
+    if (collectionCheck) return collectionCheck
+  }
+
   const row = await prisma.notepadNote.update({
     where: { id: existing.id },
     data: {
@@ -31,6 +41,9 @@ export async function updateNote(params: {
       body,
       ...(params.color !== undefined ? { color: params.color } : {}),
       ...(params.pinned !== undefined ? { pinned: params.pinned } : {}),
+      ...(params.collectionId !== undefined
+        ? { collectionId: params.collectionId }
+        : {}),
       updatedAt: unixSeconds(),
     },
   })
@@ -45,6 +58,7 @@ export async function adminUpdateNote(params: {
   body?: string
   color?: NoteColor
   pinned?: boolean
+  collectionId?: string | null
 }): Promise<ServiceResult<NotepadNoteResource>> {
   const existing = await prisma.notepadNote.findUnique({
     where: { id: params.id },
@@ -57,6 +71,14 @@ export async function adminUpdateNote(params: {
   const validation = validateEntryText(title, body)
   if (validation) return validation
 
+  if (params.collectionId !== undefined) {
+    const collectionCheck = await assertOwnedCollection({
+      ownerAccountId: existing.ownerAccountId,
+      collectionId: params.collectionId,
+    })
+    if (collectionCheck) return collectionCheck
+  }
+
   const row = await prisma.$transaction(async (tx) => {
     const updated = await tx.notepadNote.update({
       where: { id: existing.id },
@@ -65,6 +87,9 @@ export async function adminUpdateNote(params: {
         body,
         ...(params.color !== undefined ? { color: params.color } : {}),
         ...(params.pinned !== undefined ? { pinned: params.pinned } : {}),
+        ...(params.collectionId !== undefined
+          ? { collectionId: params.collectionId }
+          : {}),
         updatedAt: unixSeconds(),
       },
     })
