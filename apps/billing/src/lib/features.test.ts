@@ -22,6 +22,7 @@ describe('getFeatures', () => {
           { slug: 'billing_search_bar' },
           { slug: 'billing_theme_switcher' },
           { slug: 'billing_org_switcher' },
+          { slug: 'billing_chat' },
           { slug: 'billing_sales' },
           { slug: 'billing_sales_quotes' },
           { slug: 'billing_sales_invoices' },
@@ -54,6 +55,7 @@ describe('getFeatures', () => {
       globalAdd: false,
       appSwitcher: false,
       orgSwitcher: true,
+      chat: true,
     })
     expect(result.productFeatures).toEqual({
       sales: true,
@@ -98,6 +100,7 @@ describe('getFeatures', () => {
       globalAdd: false,
       appSwitcher: false,
       orgSwitcher: false,
+      chat: false,
     })
     expect(result.productFeatures).toEqual({
       sales: false,
@@ -140,6 +143,7 @@ describe('getFeatures', () => {
       globalAdd: false,
       appSwitcher: false,
       orgSwitcher: false,
+      chat: false,
     })
     expect(result.productFeatures).toEqual({
       sales: false,
@@ -174,6 +178,7 @@ describe('getFeatures', () => {
       globalAdd: false,
       appSwitcher: false,
       orgSwitcher: false,
+      chat: false,
     })
     expect(result.productFeatures).toEqual({
       sales: false,
