@@ -277,6 +277,11 @@ built. Use `cf:build` (`opennextjs-cloudflare build`) instead.
 | `876-couriers`    | `/apps/couriers`    |
 | `876-widgets-api` | `/apps/widgets-api` |
 
+The deploy command is the only field that can stay as it was: once `.open-next/`
+exists, a plain `npx wrangler deploy` also ships the Worker. Prefer
+`opennextjs-cloudflare deploy` anyway — it is what populates the incremental
+cache once `open-next.config.ts` configures one.
+
 Install needs no configuration: the build image detects `pnpm@11.3.0` from
 `packageManager` and runs `pnpm install --frozen-lockfile`, which resolves the
 whole workspace from the repo root even though the root directory is one app.
