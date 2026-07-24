@@ -6,7 +6,7 @@
 
   "postStartCommand": "node .devcontainer/setup-env.mjs && bash scripts/bootstrap-claude.sh && bash scripts/bootstrap-tools.sh",
 
-  "forwardPorts": [3000, 3001, 3002, 3003, 4000],
+  "forwardPorts": [3000, 3001, 3002, 3003, 3004, 3005, 4000, 4004],
 
   "portsAttributes": {
     "3000": {
@@ -29,8 +29,23 @@
       "onAutoForward": "notify",
       "visibility": "public"
     },
+    "3004": {
+      "label": "876 Billing",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    },
+    "3005": {
+      "label": "876 Widgets API",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    },
     "4000": {
       "label": "876 API",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    },
+    "4004": {
+      "label": "876 Billing API",
       "onAutoForward": "notify",
       "visibility": "public"
     }
