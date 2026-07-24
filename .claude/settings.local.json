@@ -83,5 +83,6 @@
       "Bash(railway usage *)",
       "Bash(railway volume *)"
     ]
-  }
+  },
+  "outputStyle": "default"
 }

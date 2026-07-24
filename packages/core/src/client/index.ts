@@ -33,7 +33,26 @@ export const DEFAULT_DEVELOPMENT_API_BASE_URL = 'http://localhost:4000'
 export const DEFAULT_PRODUCTION_API_BASE_URL =
   'https://eight76-api.onrender.com'
 
-const CODESPACES_API_PORT = '4000'
+const PREVIEW_API_PORT = '4000'
+
+/**
+ * Forwarded-port hostname shapes for the remote dev workspaces we support.
+ * Each pattern captures the parts around the port so it can be swapped for the
+ * API port, letting a browser on a forwarded app origin find the forwarded API.
+ *
+ *   Codespaces   <name>-<port>.app.github.dev       — port as suffix
+ *   Ona/Gitpod   <port>--<env-id>.<cluster>.gitpod.dev — port as prefix
+ */
+const PREVIEW_HOST_PATTERNS: readonly {
+  pattern: RegExp
+  replacement: string
+}[] = [
+  {
+    pattern: /-\d+(\.app\.github\.dev)$/,
+    replacement: `-${PREVIEW_API_PORT}$1`,
+  },
+  { pattern: /^\d+(--.+\.gitpod\.dev)$/, replacement: `${PREVIEW_API_PORT}$1` },
+]
 
 /**
  * Resolves a client base URL from an explicit option or ordered env keys.
@@ -64,8 +83,8 @@ export function resolveClientBaseUrl(
 /**
  * Resolves the 876 API URL with the platform production API as the final
  * production fallback. Local development still falls back to the local API
- * server, and browser-side Codespaces previews derive the matching forwarded
- * port when no env var is configured.
+ * server, and browser-side remote-workspace previews (Codespaces, Ona/Gitpod)
+ * derive the matching forwarded port when no env var is configured.
  */
 export function resolve876ApiBaseUrl(
   baseUrl: string | undefined,
@@ -74,8 +93,8 @@ export function resolve876ApiBaseUrl(
   const configured = resolveClientBaseUrl(baseUrl, envKeys)
   if (configured) return configured
 
-  const codespacesUrl = resolveCodespacesApiBaseUrl()
-  if (codespacesUrl && !isProductionEnv()) return codespacesUrl
+  const previewUrl = resolvePreviewApiBaseUrl()
+  if (previewUrl && !isProductionEnv()) return previewUrl
 
   return isProductionEnv()
     ? DEFAULT_PRODUCTION_API_BASE_URL
@@ -87,17 +106,18 @@ export function isProductionEnv(): boolean {
   return readClientEnv().NODE_ENV === 'production'
 }
 
-function resolveCodespacesApiBaseUrl(): string | undefined {
-  const location = (globalThis as { location?: Location }).location
-  if (!location?.hostname.endsWith('.app.github.dev')) return undefined
+function resolvePreviewApiBaseUrl(): string | undefined {
+  const location = (
+    globalThis as { location?: { hostname: string; protocol: string } }
+  ).location
+  if (!location) return undefined
 
-  const apiHost = location.hostname.replace(
-    /-\d+(\.app\.github\.dev)$/,
-    `-${CODESPACES_API_PORT}$1`
-  )
-  if (apiHost === location.hostname) return undefined
+  for (const { pattern, replacement } of PREVIEW_HOST_PATTERNS) {
+    const apiHost = location.hostname.replace(pattern, replacement)
+    if (apiHost !== location.hostname) return `${location.protocol}//${apiHost}`
+  }
 
-  return `${location.protocol}//${apiHost}`
+  return undefined
 }
 
 /**

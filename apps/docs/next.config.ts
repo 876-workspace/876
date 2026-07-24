@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
+  // Allow HMR websocket connections from Ona/Gitpod and GitHub Codespaces preview URLs.
+  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
   transpilePackages: [
     '@876/analytics',
     '@876/core',

@@ -6,7 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env.development", ".env"),
+        # Later files win. `.env.development.local` is gitignored and written by
+        # scripts/setup-dev-env.mjs with this workspace's forwarded origins.
+        env_file=(".env.development", ".env", ".env.development.local"),
         extra="ignore",
         populate_by_name=True,
     )

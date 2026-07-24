@@ -18,6 +18,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
+  // Allow HMR websocket connections from Ona/Gitpod and GitHub Codespaces preview URLs.
+  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
@@ -25,7 +27,12 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['@base-ui/react', 'radix-ui', 'zod'],
     serverActions: {
-      allowedOrigins: ['localhost:3001', '127.0.0.1:3001', '*.app.github.dev'],
+      allowedOrigins: [
+        'localhost:3001',
+        '127.0.0.1:3001',
+        '*.app.github.dev',
+        '**.gitpod.dev',
+      ],
     },
   },
 }
