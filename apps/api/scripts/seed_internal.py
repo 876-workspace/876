@@ -20,9 +20,12 @@ import sys
 _api_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _api_root)
 
-# Load .env.development then .env so local secrets override defaults
+# Load .env.development.local, then .env.development, then .env. `override=False`
+# means the first file to define a key wins, so the gitignored `.local` file
+# (written by scripts/setup-dev-env.mjs) takes precedence.
 from dotenv import load_dotenv
 
+load_dotenv(os.path.join(_api_root, ".env.development.local"), override=False)
 load_dotenv(os.path.join(_api_root, ".env.development"), override=False)
 load_dotenv(os.path.join(_api_root, ".env"), override=False)
 
@@ -207,20 +210,20 @@ async def upsert_internal_app(
 def internal_app_logout_uris(slug: str) -> list[str]:
     """Post-logout redirect URIs validated by the end_session_endpoint."""
     if slug == "876-enterprise":
-        origins = [os.environ.get("ENTERPRISE_URL"), codespace_origin(3001), "http://localhost:3001"]
+        origins = [os.environ.get("ENTERPRISE_URL"), dev_preview_origin(3001), "http://localhost:3001"]
     elif slug == "876-consumer":
-        origins = [os.environ.get("APP_URL"), codespace_origin(3000), "http://localhost:3000"]
+        origins = [os.environ.get("APP_URL"), dev_preview_origin(3000), "http://localhost:3000"]
     elif slug == "console":
         origins = [
             os.environ.get("CONSOLE_URL"),
-            codespace_origin(3002),
+            dev_preview_origin(3002),
             "http://localhost:3002",
             "https://876-misc.vercel.app",
         ]
     elif slug == "876-couriers":
-        origins = [os.environ.get("COURIERS_URL"), codespace_origin(3003), "http://localhost:3003"]
+        origins = [os.environ.get("COURIERS_URL"), dev_preview_origin(3003), "http://localhost:3003"]
     elif slug == "876-billing":
-        origins = [os.environ.get("BILLING_URL"), codespace_origin(3004), "http://localhost:3004"]
+        origins = [os.environ.get("BILLING_URL"), dev_preview_origin(3004), "http://localhost:3004"]
     else:
         return []
     return [f"{o.rstrip('/')}/logged-out" for o in dict.fromkeys(origins) if o]
@@ -231,21 +234,21 @@ def internal_app_redirect_uris(slug: str) -> list[str]:
         configured_url = os.environ.get("ENTERPRISE_URL")
         origins = [
             configured_url,
-            codespace_origin(3001),
+            dev_preview_origin(3001),
             "http://localhost:3001",
         ]
     elif slug == "876-consumer":
         configured_url = os.environ.get("APP_URL")
         origins = [
             configured_url,
-            codespace_origin(3000),
+            dev_preview_origin(3000),
             "http://localhost:3000",
         ]
     elif slug == "console":
         configured_url = os.environ.get("CONSOLE_URL")
         origins = [
             configured_url,
-            codespace_origin(3002),
+            dev_preview_origin(3002),
             "http://localhost:3002",
             "https://876-misc.vercel.app",
         ]
@@ -253,14 +256,14 @@ def internal_app_redirect_uris(slug: str) -> list[str]:
         configured_url = os.environ.get("COURIERS_URL")
         origins = [
             configured_url,
-            codespace_origin(3003),
+            dev_preview_origin(3003),
             "http://localhost:3003",
         ]
     elif slug == "876-billing":
         configured_url = os.environ.get("BILLING_URL")
         origins = [
             configured_url,
-            codespace_origin(3004),
+            dev_preview_origin(3004),
             "http://localhost:3004",
         ]
     else:
@@ -291,7 +294,18 @@ def sync_logout_uris(app: App, logout_uris: list[str]) -> bool:
     return True
 
 
-def codespace_origin(port: int) -> str | None:
+def dev_preview_origin(port: int) -> str | None:
+    """Browser origin for a forwarded port inside a remote dev workspace.
+
+    `DEV_PREVIEW_HOST_TEMPLATE` is the provider-agnostic contract written by
+    `scripts/setup-dev-env.mjs` — a hostname containing a literal `{port}`
+    placeholder, since Codespaces and Ona/Gitpod shape forwarded hostnames
+    differently. The Codespaces env vars remain as a fallback.
+    """
+    template = os.environ.get("DEV_PREVIEW_HOST_TEMPLATE", "").strip()
+    if template:
+        return f"https://{template.replace('{port}', str(port))}"
+
     codespace_name = os.environ.get("CODESPACE_NAME")
     forwarding_domain = os.environ.get("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN")
     if not codespace_name or not forwarding_domain:
