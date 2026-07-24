@@ -1,6 +1,7 @@
 {
   "$schema": "https://v2-10-1.turborepo.dev/schema.json",
   "globalPassThroughEnv": [
+    "DEV_PREVIEW_HOST_TEMPLATE",
     "CODESPACE_NAME",
     "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN"
   ],
