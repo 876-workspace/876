@@ -7,6 +7,15 @@ name: Deploy to Cloudflare
 # rebuild the API container. A change to any shared package or the lockfile
 # fans out to every app that could consume it.
 #
+# Division of labour with Cloudflare Workers Builds (the git integration):
+#   - Workers Builds owns build + deploy of the six OpenNext Workers on push.
+#     It cannot run Docker, and it does not touch the database.
+#   - This workflow owns (a) the two Container services, which need Docker,
+#     and (b) `prisma migrate deploy` for the four apps with a datastore.
+#   - The OpenNext deploy steps below therefore run on `workflow_dispatch`
+#     only — a manual escape hatch when Workers Builds is unavailable. Leaving
+#     them on `push` would deploy every Worker twice per commit.
+#
 # Required repository secrets:
 #   CLOUDFLARE_API_TOKEN    Workers Scripts:Edit (+ Containers for api jobs)
 #   CLOUDFLARE_ACCOUNT_ID
@@ -106,6 +115,7 @@ jobs:
         env:
           WIDGETS_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
       - name: Deploy
+        if: github.event_name == 'workflow_dispatch'
         run: pnpm --filter @876/widgets-api exec opennextjs-cloudflare deploy
 
   api:
@@ -146,6 +156,7 @@ jobs:
         env:
           CONSOLE_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
       - name: Deploy
+        if: github.event_name == 'workflow_dispatch'
         run: pnpm --filter @876/console exec opennextjs-cloudflare deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -166,6 +177,7 @@ jobs:
         env:
           BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Deploy
+        if: github.event_name == 'workflow_dispatch'
         run: pnpm --filter @876/billing-app exec opennextjs-cloudflare deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -184,15 +196,18 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Deploy
+        if: github.event_name == 'workflow_dispatch'
         run: pnpm --filter @876/couriers exec opennextjs-cloudflare deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
           NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
 
+  # enterprise and app have no datastore, so on push there is nothing for this
+  # workflow to do — Workers Builds owns them end to end.
   enterprise:
     needs: [changes, api]
-    if: always() && !failure() && !cancelled() && (needs.changes.outputs.enterprise == 'true' || inputs.app == 'all' || inputs.app == 'enterprise')
+    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'enterprise')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -206,7 +221,7 @@ jobs:
 
   app:
     needs: [changes, api]
-    if: always() && !failure() && !cancelled() && (needs.changes.outputs.app == 'true' || inputs.app == 'all' || inputs.app == 'app')
+    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'app')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
