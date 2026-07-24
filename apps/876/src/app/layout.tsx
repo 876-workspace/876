@@ -96,9 +96,7 @@ export default async function RootLayout({
         <Providers user={initialUser}>
           <ThemeProvider>
             <UserStoreProvider initialUser={initialUser}>
-              <SerwistProvider swUrl="/serwist/sw.js">
-                {children}
-              </SerwistProvider>
+              <SerwistProvider swUrl="/sw.js">{children}</SerwistProvider>
             </UserStoreProvider>
           </ThemeProvider>
         </Providers>
