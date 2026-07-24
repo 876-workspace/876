@@ -133,14 +133,22 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 - App-owned timestamps are Unix seconds in DB/API/SDK/client contracts.
 - Do not commit real secrets from `.env*` files.
 
-## Routing — proxy.ts (not middleware.ts)
+## Routing — no proxy.ts / middleware.ts
 
-Both Next.js apps use `src/proxy.ts` (exported as `middleware`) instead of `middleware.ts`. The proxy runs on the Edge runtime and only has access to the sealed session cookie snapshot (`userId`, `accountType`). It performs coarse routing only:
+**Do not add `src/proxy.ts` (or `middleware.ts`) to any app.** Next.js 16 runs
+`proxy.ts` on the Node.js runtime and throws if you set a `runtime` config, and
+`@opennextjs/cloudflare` cannot execute Node.js middleware — a proxy file fails
+the Cloudflare build outright.
 
-- `@876/app`: redirects enterprise users off `/app/*` and consumer users off `/org/*`.
-- `@876/console`: validates session exists; all permission checks happen in RSC layouts.
+All routing, session, and permission checks live in **RSC layouts and server
+components** via each app's `src/lib/auth/guards.ts`:
 
-Fine-grained permission and feature checks belong in **RSC layouts and server components**, not in the proxy.
+- `@876/app`: `requireConsumerRealm` (in the `/app` layout) blocks enterprise-realm
+  sessions, sending them to `/access-denied`.
+- `@876/console`, `@876/enterprise`, `@876/billing-app`, `@876/couriers`:
+  `requireSession` + the resource guard, called from the protected layout.
+
+See `docs/cloudflare.md` → "Runtime constraints".
 
 ## Authentication Architecture
 

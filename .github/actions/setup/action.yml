@@ -1,0 +1,19 @@
+name: Setup toolchain
+description: Install pnpm + Node, restore the store, install deps and build the SDK.
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        version: 11.3.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.13
+        cache: pnpm
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+    # Every app imports @876/sdk from its build output, so it must exist
+    # before any app build runs.
+    - run: pnpm build:sdk
+      shell: bash

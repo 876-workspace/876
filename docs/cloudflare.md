@@ -1,8 +1,8 @@
 # Cloudflare Deployment Guide
 
 Deploy the **876 monorepo** on [Cloudflare](https://developers.cloudflare.com/) as
-Workers (Next.js via OpenNext) and Containers (FastAPI), with Neon Postgres behind
-[Hyperdrive](https://developers.cloudflare.com/hyperdrive/).
+Workers (Next.js via OpenNext) and Containers (FastAPI), against the existing
+Neon Postgres databases.
 
 This replaces the Railway layout in [`docs/railway.md`](./railway.md). Keep Railway
 warm only during dual-run cutover.
@@ -17,32 +17,62 @@ warm only during dual-run cutover.
 | `876-billing-api`  | `@876/billing-api` | `apps/billing-api` | **Container** + Cron `*/5 * * * *`             |
 | `876-app`          | `@876/app`         | `apps/876`         | OpenNext Worker                                |
 | `876-enterprise`   | `@876/enterprise`  | `apps/enterprise`  | OpenNext Worker                                |
-| `876-console`      | `@876/console`     | `apps/console`     | OpenNext Worker + Hyperdrive                   |
-| `876-billing`      | `@876/billing-app` | `apps/billing`     | OpenNext Worker + Hyperdrive                   |
-| `876-couriers`     | `@876/couriers`    | `apps/couriers`    | OpenNext Worker + Hyperdrive                   |
-| `876-widgets-api`  | `@876/widgets-api` | `apps/widgets-api` | OpenNext Worker + Hyperdrive                   |
-| `876-docs`         | `@876/docs`        | `apps/docs`        | OpenNext Worker                                |
+| `876-console`      | `@876/console`     | `apps/console`     | OpenNext Worker                                |
+| `876-billing`      | `@876/billing-app` | `apps/billing`     | OpenNext Worker                                |
+| `876-couriers`     | `@876/couriers`    | `apps/couriers`    | OpenNext Worker                                |
+| `876-widgets-api`  | `@876/widgets-api` | `apps/widgets-api` | OpenNext Worker                                |
+
+`@876/docs` is **not** deployed to Cloudflare.
 
 **Hostname strategy (phase 1):** `*.workers.dev` script names above. Custom
 domains (`api.876.app`, etc.) come after dual-run is healthy.
 
-**Databases:** Neon (already production). Do not put Postgres on Railway. Create
-one Hyperdrive config per Neon endpoint for Worker-side Prisma.
+**Databases:** Neon (already production). Do not put Postgres on Railway.
 
-| Hyperdrive name (suggested) | Neon usage                                  | Env var on app                          |
-| --------------------------- | ------------------------------------------- | --------------------------------------- |
-| `876-identity-neon`         | Identity API (+ billing DB if still shared) | `DATABASE_URL` / `BILLING_DATABASE_URL` |
-| `876-console-neon`          | Console app-local                           | `CONSOLE_DATABASE_URL`                  |
-| `876-couriers-neon`         | Couriers app-local                          | `DATABASE_URL`                          |
-| `876-widgets-neon`          | Widgets only                                | `WIDGETS_DATABASE_URL`                  |
+| Neon endpoint       | Used by            | Env var                  |
+| ------------------- | ------------------ | ------------------------ |
+| `ep-muddy-cell`     | api + billing-api  | `(BILLING_)DATABASE_URL` |
+| `ep-purple-brook`   | Console app-local  | `CONSOLE_DATABASE_URL`   |
+| `ep-rough-darkness` | Couriers app-local | `DATABASE_URL`           |
+| `ep-falling-flower` | Widgets only       | `WIDGETS_DATABASE_URL`   |
 
-```bash
-# Example — connection string never committed
-wrangler hyperdrive create 876-console-neon \
-  --connection-string="$CONSOLE_DATABASE_URL"
-```
+**Hyperdrive is not used.** The Worker-side Prisma clients use
+`@prisma/adapter-neon` (Neon's serverless driver, HTTP/WebSocket), which pools
+at Neon's edge and needs no TCP socket. Setting the plain Neon connection
+string as a Worker secret is sufficient — there is no binding to wire.
 
-Paste the returned `id` into the app’s `wrangler.jsonc` `hyperdrive` binding.
+> Why not `@prisma/adapter-pg`: `pg` reaches Postgres over TCP, which on Workers
+> comes from `pg-cloudflare`'s `workerd` export condition. Next's file tracing
+> only resolves the `default` condition, so OpenNext copies `dist/empty.js` and
+> the bundle fails with `Could not resolve "pg-cloudflare"`. The Node-only
+> `prisma/seed.ts` and backfill scripts still use `adapter-pg`.
+
+---
+
+## Runtime constraints
+
+Cloudflare Workers is not Node. Three constraints shaped the port:
+
+**1. No `proxy.ts`.** Next.js 16 runs `proxy.ts` on the Node.js runtime and
+throws if you set a `runtime` config, so OpenNext rejects it outright
+(`Node.js middleware is not currently supported`). All five proxies were
+removed. They were coarse session gates whose RSC layouts already call
+`requireSession` before rendering; `apps/876`'s realm hard block moved to
+`requireConsumerRealm` in `src/lib/auth/guards.ts`, called by the `/app`
+layout. Put new coarse routing in RSC layouts, never in a proxy.
+
+Side effect: `x-request-id` is no longer minted at the edge. Consumers already
+treat it as optional and forward it when present.
+
+**2. No Node built-ins at module scope.** `node:child_process`, `spawnSync`,
+and friends fail at bundle time. `apps/876/src/app/serwist/[path]/route.ts`
+currently calls `spawnSync('git', …)` and bundles a service worker per request,
+which is why `@876/app` does not yet build for Workers. It needs the service
+worker precompiled to a static asset (or the PWA dropped) before it can deploy.
+
+**3. Worker size.** Free plan caps a Worker at 3 MiB; every Next.js app exceeds
+that. **Workers Paid is required** (it also gates Containers, so both FastAPI
+services need it too).
 
 ---
 
@@ -62,12 +92,12 @@ Account used in migration planning: `b033115f2e5e7382047b69539b971105`.
 
 Each Next app has:
 
-| File                  | Role                                                      |
-| --------------------- | --------------------------------------------------------- |
-| `wrangler.jsonc`      | Worker name, `nodejs_compat`, assets, optional Hyperdrive |
-| `open-next.config.ts` | OpenNext Cloudflare adapter                               |
-| `.dev.vars.example`   | Local secret template (copy to `.dev.vars`)               |
-| `public/_headers`     | Long-cache `/_next/static/*`                              |
+| File                  | Role                                        |
+| --------------------- | ------------------------------------------- |
+| `wrangler.jsonc`      | Worker name, `nodejs_compat`, assets        |
+| `open-next.config.ts` | OpenNext Cloudflare adapter                 |
+| `.dev.vars.example`   | Local secret template (copy to `.dev.vars`) |
+| `public/_headers`     | Long-cache `/_next/static/*`                |
 
 ### Scripts
 
@@ -85,7 +115,7 @@ pnpm --filter @876/console add -D wrangler
 ```
 
 Same pattern for `@876/app`, `@876/enterprise`, `@876/billing-app`,
-`@876/couriers`, `@876/widgets-api`, `@876/docs`.
+`@876/couriers` and `@876/widgets-api`.
 
 ### Local dev
 
@@ -201,7 +231,8 @@ Railway private DNS (`http://876-api.railway.internal`) has no CF equivalent.
 
 ## Cutover order
 
-1. Create Hyperdrive configs (four Neon endpoints).
+1. Upgrade the Cloudflare account to **Workers Paid** (gates Worker size and
+   Containers — nothing below deploys without it).
 2. Deploy `876-widgets-api` → smoke `/api/health`.
 3. Deploy `876-api` Container → smoke `/health`.
 4. Deploy `876-billing-api` shadow (`BILLING_WRITER=none`).
@@ -212,11 +243,32 @@ Railway private DNS (`http://876-api.railway.internal`) has no CF equivalent.
 
 ---
 
-## CI notes
+## Continuous deployment
 
-- Path-filter deploys (console changes should not rebuild API containers).
-- Run `prisma migrate deploy` / `alembic upgrade head` in CI **before**
-  `wrangler deploy` / `opennextjs-cloudflare deploy`.
+`.github/workflows/deploy-cloudflare.yml` deploys on every push to `main`, and
+on demand via **workflow_dispatch** (pick one app or `all`).
+
+- **Path-filtered.** A Console change does not rebuild the API container. A
+  change under `packages/**` or to the lockfile fans out to every app.
+- **Ordered.** `widgets-api` and `api` deploy first; the UI Workers depend on
+  them, so a failed data-plane deploy stops the UIs from shipping against it.
+- **Migrations run before deploy** (`prisma migrate deploy`), never inside the
+  Worker.
+- Shared toolchain setup lives in `.github/actions/setup`.
+
+### Required GitHub configuration
+
+| Kind     | Name                                                                                                              |
+| -------- | ----------------------------------------------------------------------------------------------------------------- |
+| Secret   | `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit + Containers), `CLOUDFLARE_ACCOUNT_ID`                               |
+| Secret   | `WIDGETS_DATABASE_URL`, `CONSOLE_DATABASE_URL`, `BILLING_DATABASE_URL`, `COURIERS_DATABASE_URL` (migrations only) |
+| Secret   | `NEXT_PUBLIC_876_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`                                                              |
+| Variable | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`                                      |
+
+Only build-time (`NEXT_PUBLIC_*`) values and migration URLs belong in GitHub.
+Every runtime secret is set with `wrangler secret put` and read from the Worker
+environment — CI never sees them.
+
 - Never commit `.dev.vars` or exported Railway env files.
 
 ---
