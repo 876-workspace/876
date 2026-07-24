@@ -48,7 +48,7 @@ const RAIL_WIDTH_REM = '3rem'
 /** Inset from the viewport edge for the floating icon rail. */
 const FLOAT_EDGE_GUTTER_PX = 16
 /** Gap between the floating panel and the floating icon rail. */
-const PANEL_TO_RAIL_GUTTER_PX = 8
+const PANEL_TO_RAIL_GUTTER_PX = 16
 /**
  * Top/bottom inset for floating rail + panel so they sit under the navbar
  * as cards, not edge-to-edge sheets.
@@ -351,7 +351,8 @@ const Rail = memo(function Rail({
     <div
       data-slot="widget-rail"
       className={cn(
-        'flex shrink-0 flex-col gap-2',
+        // gap between the widget triggers card (top) and the 876 Chat card (bottom)
+        'flex shrink-0 flex-col gap-4',
         // Match FLOAT_EDGE_GUTTER_PX so the rail sits off the screen edge;
         // the content-side margin keeps the main scrollbar off the rail.
         side === 'right' ? 'mr-4 ml-3' : 'mr-3 ml-4',
