@@ -35,6 +35,38 @@ function isEditorData(value: unknown): value is NoteEditorData {
   )
 }
 
+/**
+ * Notes saved by the old standalone `@editorjs/checklist` tool carry
+ * `type: 'checklist'` blocks. That tool has been removed in favor of the
+ * checklist style built into `@editorjs/list`, so rewrite those blocks to the
+ * list shape (`style: 'checklist'`, `content`/`meta.checked` items) — otherwise
+ * Editor.js has no tool for the block and drops it on load.
+ */
+function migrateLegacyBlock(block: OutputBlockData): OutputBlockData {
+  if (block.type !== 'checklist') return block
+
+  const data = (block.data ?? {}) as Record<string, unknown>
+  const items = Array.isArray(data.items) ? data.items : []
+  return {
+    ...block,
+    type: 'list',
+    data: {
+      style: 'checklist',
+      items: items.map((item) => {
+        const record =
+          item && typeof item === 'object'
+            ? (item as Record<string, unknown>)
+            : {}
+        return {
+          content: typeof record.text === 'string' ? record.text : '',
+          meta: { checked: record.checked === true },
+          items: [],
+        }
+      }),
+    },
+  }
+}
+
 function listItemText(item: unknown): string {
   if (typeof item === 'string') return stripHtml(item)
   if (!item || typeof item !== 'object') return ''
@@ -81,7 +113,7 @@ export function parseNoteBody(body: string): NoteEditorData {
     const parsed: unknown = JSON.parse(trimmed)
     if (isEditorData(parsed)) {
       if (parsed.blocks.length === 0) return structuredClone(EMPTY_NOTE_DATA)
-      return parsed
+      return { ...parsed, blocks: parsed.blocks.map(migrateLegacyBlock) }
     }
   } catch {
     // Legacy plain-text body from before Editor.js.

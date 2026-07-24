@@ -3,9 +3,13 @@ import 'server-only'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 import { PrismaClient } from './generated/prisma/client'
-import { noteId } from '../id'
+import { collectionId, noteId } from '../id'
 
-export type { NotepadNote, WidgetAuditEvent } from './generated/prisma/client'
+export type {
+  NotepadCollection,
+  NotepadNote,
+  WidgetAuditEvent,
+} from './generated/prisma/client'
 
 function createPrisma() {
   const rawConnectionString = process.env.WIDGETS_DATABASE_URL
@@ -29,6 +33,19 @@ function createPrisma() {
         }) {
           const data = args.data as Record<string, unknown>
           if (!data.id) data.id = noteId()
+          return query(args)
+        },
+      },
+      notepadCollection: {
+        async create({
+          args,
+          query,
+        }: {
+          args: Record<string, unknown>
+          query: (args: unknown) => Promise<unknown>
+        }) {
+          const data = args.data as Record<string, unknown>
+          if (!data.id) data.id = collectionId()
           return query(args)
         },
       },

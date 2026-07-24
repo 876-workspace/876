@@ -15,6 +15,7 @@ export function serializeNote(row: NotepadNote): NotepadNoteResource {
     object: 'note',
     id: row.id,
     owner_account_id: row.ownerAccountId,
+    collection_id: row.collectionId ?? null,
     title: row.title,
     body: row.body,
     color: resolveColor(row.color),

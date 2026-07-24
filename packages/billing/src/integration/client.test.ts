@@ -5,7 +5,8 @@ import { create876BillingIntegrationClient } from './client'
 const customer = {
   object: 'customer' as const,
   id: 'cus_1',
-  source: null,
+  sourceAppId: null,
+  sourceExternalReference: null,
   customerType: 'EXTERNAL' as const,
   customerKind: 'BUSINESS' as const,
   organizationId: null,

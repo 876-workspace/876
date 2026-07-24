@@ -1,5 +1,4 @@
 import type { List } from '../../types'
-import type { BillingSource } from './common'
 import type { BillingItemType } from './enums'
 
 /**
@@ -17,9 +16,14 @@ export interface BillingItem {
   id: string
 
   /**
-   * Source metadata from the product app that created the item, if any.
+   * ID of the product app that created this item, if any.
    */
-  source: BillingSource | null
+  sourceAppId: string | null
+
+  /**
+   * External reference in the product app that created this item, if any.
+   */
+  sourceExternalReference: string | null
 
   /**
    * Whether the item is a good or a service. One of `GOOD` or `SERVICE`.

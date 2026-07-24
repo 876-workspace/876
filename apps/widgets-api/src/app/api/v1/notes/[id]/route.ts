@@ -27,6 +27,13 @@ export async function PATCH(request: Request, context: Ctx) {
   if (color && typeof color === 'object' && 'error' in color)
     return serviceResponse(color)
 
+  const collectionId =
+    record.collection_id === null
+      ? null
+      : typeof record.collection_id === 'string'
+        ? record.collection_id
+        : undefined
+
   const result = await service.notes.updateNote({
     id,
     ownerAccountId: auth.actorUserId,
@@ -34,6 +41,7 @@ export async function PATCH(request: Request, context: Ctx) {
     body: typeof record.body === 'string' ? record.body : undefined,
     color: typeof color === 'string' ? color : undefined,
     pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
+    collectionId,
   })
   return serviceResponse(result)
 }
