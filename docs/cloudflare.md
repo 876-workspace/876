@@ -245,15 +245,66 @@ Railway private DNS (`http://876-api.railway.internal`) has no CF equivalent.
 
 ## Continuous deployment
 
-`.github/workflows/deploy-cloudflare.yml` deploys on every push to `main`, and
-on demand via **workflow_dispatch** (pick one app or `all`).
+Two systems share the job, and they must not overlap:
+
+| System                        | Owns                                                               | Trigger                     |
+| ----------------------------- | ------------------------------------------------------------------ | --------------------------- |
+| **Cloudflare Workers Builds** | Build + deploy of the six OpenNext Workers                         | Push to `main` (git-linked) |
+| **GitHub Actions**            | The two Container services (need Docker) + `prisma migrate deploy` | Push to `main`              |
+| GitHub Actions (manual)       | OpenNext deploys as a fallback when Workers Builds is unavailable  | `workflow_dispatch`         |
+
+### Cloudflare Workers Builds settings
+
+Set these under **Workers & Pages → \<worker\> → Settings → Build**. The
+defaults are wrong for this repo: `pnpm run build` runs `next build`, which
+produces `.next/`, but every `wrangler.jsonc` points `main` at
+`.open-next/worker.js`. The deploy then fails because that file was never
+built. Use `cf:build` (`opennextjs-cloudflare build`) instead.
+
+| Setting           | Value                              |
+| ----------------- | ---------------------------------- |
+| Build command     | `pnpm run cf:build`                |
+| Deploy command    | `npx opennextjs-cloudflare deploy` |
+| Root directory    | `/apps/<app>` (see table below)    |
+| Build watch paths | `apps/<app>/*`, `packages/*`       |
+
+| Worker            | Root directory      |
+| ----------------- | ------------------- |
+| `876-app`         | `/apps/876`         |
+| `876-enterprise`  | `/apps/enterprise`  |
+| `876-console`     | `/apps/console`     |
+| `876-billing`     | `/apps/billing`     |
+| `876-couriers`    | `/apps/couriers`    |
+| `876-widgets-api` | `/apps/widgets-api` |
+
+Install needs no configuration: the build image detects `pnpm@11.3.0` from
+`packageManager` and runs `pnpm install --frozen-lockfile`, which resolves the
+whole workspace from the repo root even though the root directory is one app.
+
+**Build variables** are required — Workers Builds does not inherit the Worker's
+runtime secrets, and `NEXT_PUBLIC_*` values are inlined at build time. Set per
+Worker:
+
+| Worker           | Build variables                                                              |
+| ---------------- | ---------------------------------------------------------------------------- |
+| all Next.js apps | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` |
+| `876-console`    | plus `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_876_API_KEY`                    |
+
+**Workers Builds does not run migrations.** `prisma migrate deploy` stays in
+GitHub Actions, which already holds the database URLs. Keep migrations additive
+so a Workers Build that lands before the migration job does not break.
+
+### GitHub Actions
+
+`.github/workflows/deploy-cloudflare.yml`:
 
 - **Path-filtered.** A Console change does not rebuild the API container. A
   change under `packages/**` or to the lockfile fans out to every app.
 - **Ordered.** `widgets-api` and `api` deploy first; the UI Workers depend on
   them, so a failed data-plane deploy stops the UIs from shipping against it.
-- **Migrations run before deploy** (`prisma migrate deploy`), never inside the
-  Worker.
+- **Migrations run on push** (`prisma migrate deploy`), never inside the Worker.
+- **OpenNext deploy steps are `workflow_dispatch`-only** so pushes do not deploy
+  each Worker twice (once here, once from Workers Builds).
 - Shared toolchain setup lives in `.github/actions/setup`.
 
 ### Required GitHub configuration

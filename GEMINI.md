@@ -105,12 +105,12 @@ pnpm --filter @876/app deploy    # deploy to Cloudflare Workers
 **Cloudflare dashboard setup** (one-time, per app):
 
 1. Create a Workers project per app (NOT Pages)
-2. Set Root Directory to the app folder (e.g. `apps/876`)
-3. Build command: `pnpm --filter @876/app build` (skip `turbo run build` — it tries to build the Python API)
-4. Deploy command: `opennextjs-cloudflare deploy`
-5. Set environment variables matching the app's `.env.local` keys
+2. Set Root Directory to the app folder (e.g. `/apps/876`)
+3. Build command: `pnpm run cf:build` — **not** `pnpm run build`. `build` is `next build`, which only produces `.next/`; every `wrangler.jsonc` points `main` at `.open-next/worker.js`, so the deploy fails without the OpenNext build.
+4. Deploy command: `npx opennextjs-cloudflare deploy`
+5. Set build variables for the app's `NEXT_PUBLIC_*` keys (inlined at build time; Workers Builds does not inherit runtime secrets)
 
-**Prisma apps (console + couriers):** Cloudflare Workers needs **Hyperdrive** for Postgres connection pooling. Add a `hyperdrive` binding in `wrangler.jsonc` before deploying. Direct `pg` connections per invocation will fail.
+**Prisma apps (console, couriers, billing, widgets-api):** these use `@prisma/adapter-neon` (Neon's serverless driver over HTTP/WebSocket), so **no Hyperdrive binding is needed** — the plain Neon URL as a Worker secret is enough. Migrations run in GitHub Actions, never in the Worker or the Cloudflare build. See `docs/cloudflare.md`.
 
 **`.open-next/` is gitignored** — it's the OpenNext build output directory.
 
