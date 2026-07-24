@@ -273,18 +273,24 @@ Two systems share the job, and they must not overlap:
 
 ### Cloudflare Workers Builds settings
 
-Set these under **Workers & Pages → \<worker\> → Settings → Build**. The
-defaults are wrong for this repo: `pnpm run build` runs `next build`, which
-produces `.next/`, but every `wrangler.jsonc` points `main` at
-`.open-next/worker.js`. The deploy then fails because that file was never
-built. Use `cf:build` (`opennextjs-cloudflare build`) instead.
+Set these under **Workers & Pages → \<worker\> → Settings → Build**. Builds
+trigger on merge to the production branch (`main`).
+
+Every `wrangler.jsonc` points `main` at `.open-next/worker.js`, so the build
+step must run OpenNext — plain `next build` only writes `.next/` and the
+deploy fails. Each Worker app's `pnpm run build` (and `cf:build`) therefore
+runs `opennextjs-cloudflare build`. Prefer these dashboard values:
 
 | Setting           | Value                              |
 | ----------------- | ---------------------------------- |
-| Build command     | `pnpm run cf:build`                |
+| Build command     | `pnpm run build` (or `cf:build`)   |
 | Deploy command    | `npx opennextjs-cloudflare deploy` |
 | Root directory    | `/apps/<app>` (see table below)    |
 | Build watch paths | `apps/<app>/*`, `packages/*`       |
+
+`npx wrangler deploy` also works once `.open-next/` exists; prefer
+`opennextjs-cloudflare deploy` so incremental cache wiring stays intact.
+A pure Next.js build (no Worker bundle) is still available as `build:next`.
 
 | Worker            | Root directory      |
 | ----------------- | ------------------- |
@@ -294,11 +300,6 @@ built. Use `cf:build` (`opennextjs-cloudflare build`) instead.
 | `876-billing`     | `/apps/billing`     |
 | `876-couriers`    | `/apps/couriers`    |
 | `876-widgets-api` | `/apps/widgets-api` |
-
-The deploy command is the only field that can stay as it was: once `.open-next/`
-exists, a plain `npx wrangler deploy` also ships the Worker. Prefer
-`opennextjs-cloudflare deploy` anyway — it is what populates the incremental
-cache once `open-next.config.ts` configures one.
 
 Install needs no configuration: the build image detects `pnpm@11.3.0` from
 `packageManager` and runs `pnpm install --frozen-lockfile`, which resolves the
