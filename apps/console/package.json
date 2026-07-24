@@ -29,6 +29,9 @@
     "@876/sdk": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/widgets": "workspace:*",
+    "@neondatabase/serverless": "1.1.0",
+    "@opennextjs/cloudflare": "1.20.2",
+    "@prisma/adapter-neon": "7.7.0",
     "@prisma/adapter-pg": "7.7.0",
     "@prisma/client": "7.7.0",
     "@sentry/nextjs": "^10.55.0",
@@ -48,8 +51,7 @@
     "sonner": "2.0.7",
     "uploadthing": "7.7.4",
     "zod": "4.4.3",
-    "zustand": "5.0.13",
-    "@opennextjs/cloudflare": "1.20.2"
+    "zustand": "5.0.13"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.0",
@@ -66,6 +68,7 @@
     "eslint-config-next": "16.2.6",
     "jsdom": "29.1.1",
     "pg": "8.13.1",
+    "pg-cloudflare": "1.4.0",
     "prisma": "7.7.0",
     "tailwindcss": "4.3.0",
     "tsx": "4.20.3",
