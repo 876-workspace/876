@@ -4,17 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack --port 3000",
-    "build": "next build",
+    "dev": "pnpm build:sw && next dev --turbopack --port 3000",
+    "build:sw": "node scripts/build-sw.mjs",
+    "build": "pnpm build:sw && next build",
     "start": "next start --port ${PORT:-3000}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "clean": "rm -rf .next .turbo .open-next .wrangler",
-    "cf:build": "opennextjs-cloudflare build",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf:build": "pnpm build:sw && opennextjs-cloudflare build",
+    "preview": "pnpm build:sw && opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "pnpm build:sw && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "pnpm build:sw && opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
     "@876/sdk": "workspace:*",
     "@876/types": "workspace:*",
     "@876/ui": "workspace:*",
+    "@opennextjs/cloudflare": "1.20.2",
     "@sentry/nextjs": "^10.53.1",
     "@tanstack/react-form": "1.32.0",
     "@workos-inc/node": "9.2.0",
@@ -36,8 +38,7 @@
     "serwist": "9.5.11",
     "sonner": "2.0.7",
     "zod": "4.4.3",
-    "zustand": "5.0.13",
-    "@opennextjs/cloudflare": "1.20.2"
+    "zustand": "5.0.13"
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "^5.0.0",
@@ -50,6 +51,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.1",
+    "esbuild": "0.28.0",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
     "jsdom": "29.1.1",

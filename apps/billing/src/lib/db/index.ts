@@ -99,14 +99,38 @@ const globalForPrisma = globalThis as unknown as {
   prismaClientConstructor?: typeof PrismaClient
 }
 
-/** Only `@/lib/service` may query Billing's local database directly. */
-export const prisma =
-  globalForPrisma.prisma &&
-  globalForPrisma.prismaClientConstructor === PrismaClient
-    ? globalForPrisma.prisma
-    : createPrisma()
+let client: Prisma | undefined
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
-  globalForPrisma.prismaClientConstructor = PrismaClient
+function resolvePrisma(): Prisma {
+  if (client) return client
+
+  client =
+    globalForPrisma.prisma &&
+    globalForPrisma.prismaClientConstructor === PrismaClient
+      ? globalForPrisma.prisma
+      : createPrisma()
+
+  if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = client
+    globalForPrisma.prismaClientConstructor = PrismaClient
+  }
+
+  return client
 }
+
+/**
+ * Only `@/lib/service` may query Billing's local database directly.
+ *
+ * The client is built on first property access, not at import. `next build`
+ * imports every route module to collect page data, so eager construction made
+ * the connection string a build-time requirement — and the Cloudflare build
+ * environment has no `BILLING_DATABASE_URL`, only the Worker runtime does.
+ */
+export const prisma = new Proxy({} as Prisma, {
+  get(_target, property) {
+    const resolved = resolvePrisma()
+    const value = resolved[property as keyof Prisma]
+
+    return typeof value === 'function' ? value.bind(resolved) : value
+  },
+})

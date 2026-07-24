@@ -45,10 +45,32 @@ type ConsolePrisma = ReturnType<typeof createPrisma>
 
 const globalForPrisma = globalThis as unknown as { prisma?: ConsolePrisma }
 
+let client: ConsolePrisma | undefined
+
+function resolvePrisma(): ConsolePrisma {
+  if (client) return client
+
+  client = globalForPrisma.prisma ?? createPrisma()
+
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = client
+
+  return client
+}
+
 /**
  * Console's Prisma client. Only `@/lib/service` may query this; everything
  * else calls `service.<resource>.<verb>()`.
+ *
+ * The client is built on first property access, not at import. `next build`
+ * imports every route module to collect page data, so eager construction made
+ * the connection string a build-time requirement — and the Cloudflare build
+ * environment has no `CONSOLE_DATABASE_URL`, only the Worker runtime does.
  */
-export const prisma = globalForPrisma.prisma ?? createPrisma()
+export const prisma = new Proxy({} as ConsolePrisma, {
+  get(_target, property) {
+    const resolved = resolvePrisma()
+    const value = resolved[property as keyof ConsolePrisma]
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+    return typeof value === 'function' ? value.bind(resolved) : value
+  },
+})

@@ -53,11 +53,36 @@ function createPrisma() {
   })
 }
 
+type WidgetsPrisma = ReturnType<typeof createPrisma>
+
 const globalForPrisma = globalThis as unknown as {
-  widgetsPrisma?: ReturnType<typeof createPrisma>
+  widgetsPrisma?: WidgetsPrisma
 }
 
-export const prisma = globalForPrisma.widgetsPrisma ?? createPrisma()
+let client: WidgetsPrisma | undefined
 
-if (process.env.NODE_ENV !== 'production')
-  globalForPrisma.widgetsPrisma = prisma
+function resolvePrisma(): WidgetsPrisma {
+  if (client) return client
+
+  client = globalForPrisma.widgetsPrisma ?? createPrisma()
+
+  if (process.env.NODE_ENV !== 'production')
+    globalForPrisma.widgetsPrisma = client
+
+  return client
+}
+
+/**
+ * The client is built on first property access, not at import. `next build`
+ * imports every route module to collect page data, so eager construction made
+ * the connection string a build-time requirement — and the Cloudflare build
+ * environment has no `WIDGETS_DATABASE_URL`, only the Worker runtime does.
+ */
+export const prisma = new Proxy({} as WidgetsPrisma, {
+  get(_target, property) {
+    const resolved = resolvePrisma()
+    const value = resolved[property as keyof WidgetsPrisma]
+
+    return typeof value === 'function' ? value.bind(resolved) : value
+  },
+})

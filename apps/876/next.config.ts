@@ -1,5 +1,4 @@
 import { withSentryConfig } from '@sentry/nextjs'
-import { withSerwist } from '@serwist/turbopack'
 import type { NextConfig } from 'next'
 
 const securityHeaders = [
@@ -46,7 +45,7 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withSentryConfig(withSerwist(nextConfig), {
+export default withSentryConfig(nextConfig, {
   org: 'efesto',
 
   project: '876-0b',
