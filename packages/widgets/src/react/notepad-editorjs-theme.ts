@@ -236,8 +236,14 @@ html.dark .notepad-editorjs-holder .ce-block--selected .ce-block__content {
 .notepad-editorjs-holder .ce-conversion-tool svg,
 .notepad-editorjs-holder .ce-settings__button svg,
 .notepad-editorjs-holder .cdx-settings-button svg {
+  /*
+   * Editor.js + @codexteam/icons ship stroke-based icons
+   * (fill="none" + stroke="currentColor"). Only steer the color — never force
+   * \`fill\`, or outlined glyphs (underline, link, checkbox) flood solid black.
+   */
   color: currentColor !important;
-  fill: currentColor;
+  fill: none;
+  stroke: currentColor;
 }
 
 .notepad-editorjs-holder .ce-popover-item:hover .ce-popover-item__icon,
