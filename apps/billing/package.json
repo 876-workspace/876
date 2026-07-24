@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack --port 3004",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
+    "build:next": "next build",
     "start": "next start --port ${PORT:-3004}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
