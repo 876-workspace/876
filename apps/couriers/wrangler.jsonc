@@ -15,6 +15,13 @@
     },
   ],
   // "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<HYPERDRIVE_ID>" }],
+  // Non-secret service URLs. Secrets are set with `wrangler secret put`.
+  // API_URL still points at Railway until the 876-api Container deploys in CI.
+  "vars": {
+    "API_URL": "https://876-api-production-e78f.up.railway.app",
+    "WIDGETS_API_URL": "https://876-widgets-api.raheemforschool.workers.dev",
+    "BILLING_URL": "https://876-billing.raheemforschool.workers.dev",
+  },
   "observability": {
     "enabled": true,
   },
