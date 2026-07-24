@@ -1,9 +1,14 @@
 // Widgets bounded-context database (Prisma 7).
 // Only apps/widgets-api may connect. Hosts never receive this URL.
 
+// runtime = "workerd" makes the generated client import Prisma's query-compiler
+// WASM as a module. The default (nodejs) compiles it from bytes at runtime,
+// which Cloudflare Workers refuses: "WebAssembly.Module(): Wasm code generation
+// disallowed by embedder".
 generator client {
   provider = "prisma-client"
   output   = "../../src/lib/db/generated/prisma"
+  runtime  = "workerd"
 }
 
 datasource db {

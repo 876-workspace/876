@@ -17,9 +17,24 @@
 // its own sibling `*.prisma` file in this folder. The schema folder is wired in
 // `prisma.config.ts` (`schema: "prisma/schema"`).
 
+// runtime = "workerd" makes the generated client import Prisma's query-compiler
+// WASM as a module. The default (nodejs) compiles it from bytes at runtime,
+// which Cloudflare Workers refuses: "WebAssembly.Module(): Wasm code generation
+// disallowed by embedder".
 generator client {
   provider = "prisma-client"
   output   = "../../src/lib/db/generated/prisma"
+  runtime  = "workerd"
+}
+
+// Node-targeted client for prisma/seed.ts and prisma/backfill.ts. Those run
+// under tsx, which cannot resolve the workerd client's `?module` WASM import.
+// Generated on demand and gitignored — the workerd client above is the one
+// the app imports and the source of the exported model types.
+generator nodeClient {
+  provider = "prisma-client"
+  output   = "../../src/lib/db/generated/prisma-node"
+  runtime  = "nodejs"
 }
 
 datasource db {

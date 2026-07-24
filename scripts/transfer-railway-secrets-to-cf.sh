@@ -16,6 +16,9 @@ RAILWAY_SERVICE="${1:?Railway service name}"
 CF_WORKER="${2:?Cloudflare Worker name (wrangler --name)}"
 ENVIRONMENT="${3:-production}"
 
+# wrangler is a workspace devDependency, not a global binary.
+WRANGLER="${WRANGLER:-npx --yes wrangler}"
+
 # Keys that must never be copied as-is (platform or replaced by CF).
 SKIP_PREFIXES=(
   RAILWAY_
@@ -72,7 +75,7 @@ for line in "${LINES[@]}"; do
       echo "WARN: $key is still the dev placeholder — generate a new secret and put it on all services instead of copying."
       continue
     fi
-    printf '%s' "$value" | wrangler secret put "$key" --name "$CF_WORKER" >/dev/null
+    printf '%s' "$value" | $WRANGLER secret put "$key" --name "$CF_WORKER" >/dev/null
     echo "secret: $key"
   else
     echo "plain (set manually in wrangler.jsonc vars or dashboard): $key"

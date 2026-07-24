@@ -25,7 +25,7 @@ import { config } from 'dotenv'
 import pg from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 
-import { PrismaClient } from '../src/lib/db/generated/prisma/client'
+import { PrismaClient } from '../src/lib/db/generated/prisma-node/client'
 import { SYSTEM_ROLE_DEFINITIONS } from '../src/lib/permissions'
 
 const { Client } = pg
