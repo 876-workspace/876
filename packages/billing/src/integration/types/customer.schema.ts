@@ -26,11 +26,18 @@ export const sourceSchema = z
 
 /**
  * The schema for a Billing customer resource.
+ *
+ * `z.object` (strip) rather than `z.strictObject`: the Billing API serializes
+ * resources by reflecting over every model column, so it emits additive fields
+ * (payment terms, salesperson, price list, tax/late-fee attributes, …) that are
+ * not part of this integration contract. Stripping unknown keys keeps the client
+ * resilient to new Billing columns instead of failing validation on each one.
  */
-export const BillingCustomerSchema = z.strictObject({
+export const BillingCustomerSchema = z.object({
   object: z.literal('customer'),
   id: z.string().min(1),
-  source: sourceSchema,
+  sourceAppId: z.string().nullable(),
+  sourceExternalReference: z.string().nullable(),
   customerType: customerTypeSchema,
   customerKind: customerKindSchema,
   organizationId: z.string().nullable(),

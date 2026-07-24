@@ -1,15 +1,20 @@
 import { z } from 'zod'
 
 import type { BillingItem, BillingItemList, DeletedBillingItem } from './item'
-import { sourceSchema } from './customer.schema'
 
 /**
  * The schema for a Billing item resource.
+ *
+ * `z.object` (strip) rather than `z.strictObject`: the Billing API serializes
+ * resources by reflecting over every model column, so it may emit additive
+ * fields not part of this integration contract. Stripping unknown keys keeps the
+ * client resilient to new Billing columns instead of failing validation.
  */
-export const BillingItemSchema = z.strictObject({
+export const BillingItemSchema = z.object({
   object: z.literal('item'),
   id: z.string().min(1),
-  source: sourceSchema,
+  sourceAppId: z.string().nullable(),
+  sourceExternalReference: z.string().nullable(),
   type: z.enum(['GOOD', 'SERVICE']),
   name: z.string(),
   sku: z.string().nullable(),

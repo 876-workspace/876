@@ -1,5 +1,4 @@
 import type { List } from '../../types'
-import type { BillingSource } from './common'
 import type {
   BillingCustomerKind,
   BillingCustomerStatus,
@@ -21,9 +20,14 @@ export interface BillingCustomer {
   id: string
 
   /**
-   * Source metadata from the product app that created the customer, if any.
+   * ID of the product app that created this customer, if any.
    */
-  source: BillingSource | null
+  sourceAppId: string | null
+
+  /**
+   * External reference in the product app that created this customer, if any.
+   */
+  sourceExternalReference: string | null
 
   /**
    * How this customer is linked to the 876 identity platform.
