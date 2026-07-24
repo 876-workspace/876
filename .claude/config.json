@@ -10,5 +10,22 @@
     "post-command": [],
     "on-error": []
   },
-  "mcp_servers": {}
+  "mcp_servers": {
+    "railway": {
+      "url": "https://mcp.railway.com",
+      "transport": "http"
+    },
+    "posthog": {
+      "url": "https://mcp.posthog.com/mcp",
+      "transport": "http"
+    },
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "transport": "http"
+    },
+    "cloudflare": {
+      "url": "https://mcp.cloudflare.com/mcp",
+      "transport": "http"
+    }
+  }
 }
