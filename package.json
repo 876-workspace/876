@@ -52,7 +52,6 @@
     "deploy:console": "pnpm --filter @876/console deploy",
     "deploy:billing": "pnpm --filter @876/billing-app deploy",
     "deploy:couriers": "pnpm --filter @876/couriers deploy",
-    "deploy:docs": "pnpm --filter @876/docs deploy",
     "build": "turbo run build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
