@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 4004 --reload",
+    "dev": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 4004 --reload --reload-include '.env' --reload-include '.env.*'",
     "build": "[ -x .venv/bin/python ] && .venv/bin/python -m compileall -q . || echo 'skip billing api build (no venv)'",
     "start": ".venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-4004}",
     "typecheck": ".venv/bin/python -m mypy --explicit-package-bases api core db domains migrations scripts/check_cutover.py scripts/check_environment.py scripts/check_migration.py scripts/reconcile_databases.py scripts/run_billing.py main.py",
