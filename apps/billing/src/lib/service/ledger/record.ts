@@ -33,7 +33,7 @@ export async function recordLedgerEntry(
 
   await tx.customerLedgerEntry.upsert({
     where: {
-      tenantId_idempotencyKey: {
+      billing_customer_ledger_entries_tenant_idempotency_key: {
         tenantId: params.tenantId,
         idempotencyKey: params.idempotencyKey,
       },

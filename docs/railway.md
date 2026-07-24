@@ -1,5 +1,9 @@
 # Railway Deployment Guide
 
+> **Migration:** Production is moving to Cloudflare Workers + Containers. Prefer
+> [`docs/cloudflare.md`](./cloudflare.md) for new deploys. Keep this guide for dual-run
+> cutover and historical Railway env keys.
+
 This guide covers how to deploy the **876 monorepo** on [Railway](https://railway.com) as a set of
 independently scaled services, all from the same GitHub repository.
 

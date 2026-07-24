@@ -4,7 +4,7 @@ import { AccountShell } from '@/components/account/account-shell'
 import {
   getEnabledConsumerFeatureSlugs,
   requireActiveUser,
-  requireSession,
+  requireConsumerRealm,
 } from '@/lib/auth/guards'
 
 export default async function ConsumerLayout({
@@ -12,7 +12,7 @@ export default async function ConsumerLayout({
 }: {
   children: ReactNode
 }) {
-  const sessionUser = await requireSession('/app')
+  const sessionUser = await requireConsumerRealm('/app')
   const dbUser = await requireActiveUser(sessionUser.id)
   const shellUser = dbUser ?? sessionUser
 

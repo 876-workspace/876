@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-console",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "876-console",
+    },
+  ],
+  // Non-secret service URLs. Secrets (keys, DB URLs) are set with
+  // `wrangler secret put` and never appear here.
+  // API_URL still points at Railway until the 876-api Container is deployed
+  // (Containers need Docker, so that deploy runs in CI).
+  "vars": {
+    "API_URL": "https://876-api-production-e78f.up.railway.app",
+    "WIDGETS_API_URL": "https://876-widgets-api.raheemforschool.workers.dev",
+    "BILLING_URL": "https://876-billing.raheemforschool.workers.dev",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

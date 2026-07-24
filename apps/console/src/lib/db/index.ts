@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaNeon } from '@prisma/adapter-neon'
 
 import { PrismaClient } from './generated/prisma/client'
 import { generateId } from '../id'
@@ -19,7 +19,7 @@ function createPrisma() {
     /([?&]sslmode=)(require|prefer|verify-ca)\b/,
     '$1verify-full'
   )
-  const adapter = new PrismaPg({ connectionString })
+  const adapter = new PrismaNeon({ connectionString })
   return new PrismaClient({ adapter }).$extends({
     query: {
       note: {

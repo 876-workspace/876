@@ -1,0 +1,44 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-billing-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "BillingApiContainer",
+      "image": "./Dockerfile",
+      "max_instances": 3,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "BILLING_API_CONTAINER",
+        "class_name": "BillingApiContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["BillingApiContainer"],
+    },
+  ],
+  // Mirrors Railway apps/billing-api/railway.scheduler.toml (*/5 * * * *).
+  // Keep disabled in dashboard until BILLING_WRITER=fastapi if desired;
+  // the handler is a no-op until /internal/billing-sweep exists on the API.
+  "triggers": {
+    "crons": ["*/5 * * * *"],
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "LOG_LEVEL": "info",
+    "PORT": "4004",
+    // Shadow mode until finance cutover.
+    "BILLING_WRITER": "none",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "ApiContainer",
+      "image": "./Dockerfile",
+      // Raise after traffic validation; Containers are billed per instance-time.
+      "max_instances": 5,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "API_CONTAINER",
+        "class_name": "ApiContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["ApiContainer"],
+    },
+  ],
+  // Non-secret defaults. Secrets: wrangler secret put <NAME> --name 876-api
+  "vars": {
+    "ENVIRONMENT": "production",
+    "IS_PRODUCTION": "true",
+    "LOG_LEVEL": "info",
+    "PORT": "4000",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

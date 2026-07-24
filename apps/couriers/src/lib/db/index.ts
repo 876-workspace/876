@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaNeon } from '@prisma/adapter-neon'
 
 import { PrismaClient } from './generated/prisma/client'
 import { COURIERS_ID_PREFIXES, generateId, type EntityType } from '../id'
@@ -32,7 +32,7 @@ function createPrisma() {
   if (!connectionString) {
     throw new Error('DATABASE_URL is not set; Couriers DB unavailable.')
   }
-  const adapter = new PrismaPg({ connectionString })
+  const adapter = new PrismaNeon({ connectionString })
   return new PrismaClient({ adapter }).$extends({
     query: {
       $allModels: {

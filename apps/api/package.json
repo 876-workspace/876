@@ -11,6 +11,17 @@
     "test": ".venv/bin/python -m pytest",
     "lint": ".venv/bin/python -m ruff check .",
     "format": ".venv/bin/python -m ruff format .",
-    "format:check": ".venv/bin/python -m ruff format --check ."
+    "format:check": ".venv/bin/python -m ruff format --check .",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7"
+  },
+  "devDependencies": {
+    "wrangler": "4.113.0",
+    "typescript": "5.9.3",
+    "@types/node": "25.6.2"
   }
 }

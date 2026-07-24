@@ -1,0 +1,219 @@
+name: Deploy to Cloudflare
+
+# Continuous deployment for the 876 monorepo.
+#
+# Next.js apps ship as OpenNext Workers; the FastAPI services ship as
+# Cloudflare Containers. Jobs are path-filtered so a Console change does not
+# rebuild the API container. A change to any shared package or the lockfile
+# fans out to every app that could consume it.
+#
+# Required repository secrets:
+#   CLOUDFLARE_API_TOKEN    Workers Scripts:Edit (+ Containers for api jobs)
+#   CLOUDFLARE_ACCOUNT_ID
+# Plus the per-app NEXT_PUBLIC_* build-time values listed in each job.
+# Runtime secrets are NOT set here — they live in `wrangler secret put`.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Deploy a single app (or "all")'
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - widgets-api
+          - api
+          - billing-api
+          - console
+          - billing
+          - couriers
+          - enterprise
+          - app
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-cloudflare-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      widgets-api: ${{ steps.filter.outputs.widgets-api }}
+      api: ${{ steps.filter.outputs.api }}
+      billing-api: ${{ steps.filter.outputs.billing-api }}
+      console: ${{ steps.filter.outputs.console }}
+      billing: ${{ steps.filter.outputs.billing }}
+      couriers: ${{ steps.filter.outputs.couriers }}
+      enterprise: ${{ steps.filter.outputs.enterprise }}
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared: &shared
+              - 'packages/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/deploy-cloudflare.yml'
+            widgets-api:
+              - 'apps/widgets-api/**'
+              - *shared
+            api:
+              - 'apps/api/**'
+            billing-api:
+              - 'apps/billing-api/**'
+            console:
+              - 'apps/console/**'
+              - *shared
+            billing:
+              - 'apps/billing/**'
+              - *shared
+            couriers:
+              - 'apps/couriers/**'
+              - *shared
+            enterprise:
+              - 'apps/enterprise/**'
+              - *shared
+            app:
+              - 'apps/876/**'
+              - *shared
+
+  # ── Data plane ───────────────────────────────────────────────────────────
+  # widgets-api deploys first: the UIs call it.
+
+  widgets-api:
+    needs: changes
+    if: needs.changes.outputs.widgets-api == 'true' || inputs.app == 'all' || inputs.app == 'widgets-api'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Apply migrations
+        run: pnpm --filter @876/widgets-api exec prisma migrate deploy
+        env:
+          WIDGETS_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
+      - name: Deploy
+        run: pnpm --filter @876/widgets-api exec opennextjs-cloudflare deploy
+
+  api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true' || inputs.app == 'all' || inputs.app == 'api'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # Containers build and push the Dockerfile image; the runner's Docker
+      # daemon is used directly by wrangler.
+      - name: Deploy container Worker
+        working-directory: apps/api
+        run: pnpm exec wrangler deploy
+
+  billing-api:
+    needs: changes
+    if: needs.changes.outputs.billing-api == 'true' || inputs.app == 'all' || inputs.app == 'billing-api'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Deploy container Worker
+        working-directory: apps/billing-api
+        run: pnpm exec wrangler deploy
+
+  # ── UI Workers ───────────────────────────────────────────────────────────
+
+  console:
+    needs: [changes, widgets-api, api]
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.console == 'true' || inputs.app == 'all' || inputs.app == 'console')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Apply migrations
+        run: pnpm --filter @876/console exec prisma migrate deploy
+        env:
+          CONSOLE_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
+      - name: Deploy
+        run: pnpm --filter @876/console exec opennextjs-cloudflare deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_876_API_URL: ${{ vars.NEXT_PUBLIC_876_API_URL }}
+          NEXT_PUBLIC_876_API_KEY: ${{ secrets.NEXT_PUBLIC_876_API_KEY }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+
+  billing:
+    needs: [changes, widgets-api, api, billing-api]
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.billing == 'true' || inputs.app == 'all' || inputs.app == 'billing')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Apply migrations
+        run: pnpm --filter @876/billing-app exec prisma migrate deploy
+        env:
+          BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      - name: Deploy
+        run: pnpm --filter @876/billing-app exec opennextjs-cloudflare deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+
+  couriers:
+    needs: [changes, widgets-api, api]
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.couriers == 'true' || inputs.app == 'all' || inputs.app == 'couriers')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Apply migrations
+        run: pnpm --filter @876/couriers exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
+      - name: Deploy
+        run: pnpm --filter @876/couriers exec opennextjs-cloudflare deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+
+  enterprise:
+    needs: [changes, api]
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.enterprise == 'true' || inputs.app == 'all' || inputs.app == 'enterprise')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Deploy
+        run: pnpm --filter @876/enterprise exec opennextjs-cloudflare deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+
+  app:
+    needs: [changes, api]
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.app == 'true' || inputs.app == 'all' || inputs.app == 'app')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Deploy
+        run: pnpm --filter @876/app exec opennextjs-cloudflare deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
