@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "prisma migrate deploy && prisma generate && next dev --turbopack --port 3005",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
+    "build:next": "next build",
     "start": "next start -H :: --port ${PORT:-3005}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
