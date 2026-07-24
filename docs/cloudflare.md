@@ -70,6 +70,13 @@ currently calls `spawnSync('git', …)` and bundles a service worker per request
 which is why `@876/app` does not yet build for Workers. It needs the service
 worker precompiled to a static asset (or the PWA dropped) before it can deploy.
 
+The bundler stops on the second half of that first: `createSerwistRoute` reaches
+for a bundler at request time, and the Worker build fails with
+`Could not resolve "esbuild-wasm"`. Installing `esbuild-wasm` would not help —
+running esbuild inside the Worker hits the same `Wasm code generation disallowed
+by embedder` wall the Prisma client did, and `spawnSync` still cannot run there.
+Precompiling the service worker is the only route.
+
 **3. Worker size.** Free plan caps a Worker at 3 MiB; every Next.js app exceeds
 that. **Workers Paid is required** (it also gates Containers, so both FastAPI
 services need it too).
