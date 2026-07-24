@@ -80,10 +80,32 @@ export type PrismaTransactionClient = TransactionCallback extends (
 
 const globalForPrisma = globalThis as unknown as { prisma?: CouriersPrisma }
 
+let client: CouriersPrisma | undefined
+
+function resolvePrisma(): CouriersPrisma {
+  if (client) return client
+
+  client = globalForPrisma.prisma ?? createPrisma()
+
+  if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = client
+
+  return client
+}
+
 /**
  * Couriers' Prisma client. Only `@/lib/service` may query this; everything
  * else calls `service.<resource>.<verb>()`.
+ *
+ * The client is built on first property access, not at import. `next build`
+ * imports every route module to collect page data, so eager construction made
+ * the connection string a build-time requirement — and the Cloudflare build
+ * environment has no `DATABASE_URL`, only the Worker runtime does.
  */
-export const prisma = globalForPrisma.prisma ?? createPrisma()
+export const prisma = new Proxy({} as CouriersPrisma, {
+  get(_target, property) {
+    const resolved = resolvePrisma()
+    const value = resolved[property as keyof CouriersPrisma]
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+    return typeof value === 'function' ? value.bind(resolved) : value
+  },
+})
