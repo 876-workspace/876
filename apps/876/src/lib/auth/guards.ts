@@ -19,6 +19,27 @@ export async function requireSession(returnTo: string) {
   return result.user
 }
 
+/**
+ * Session + consumer-realm hard block for the personal-account surface.
+ *
+ * This is the consumer app, for personal accounts only. An enterprise-realm
+ * session must NOT be auto-redirected into the other app — it lands on a
+ * dedicated access-denied page requiring an explicit account switch.
+ * Cross-realm accounts (owner + chosen admins) are exempt and may pass.
+ *
+ * Lives here rather than in an Edge proxy because Next.js 16 `proxy.ts` runs
+ * on the Node.js runtime, which the Cloudflare Workers adapter cannot execute.
+ */
+export async function requireConsumerRealm(returnTo: string) {
+  const result = await getAuthSession()
+  if (!isSignedSession(result)) redirect(createAuthStartPath(returnTo))
+
+  if (result.realm === 'enterprise' && !result.crossRealm)
+    redirect('/access-denied')
+
+  return result.user
+}
+
 // ─── User lookup ──────────────────────────────────────────────────────────────
 
 type AuthRoutingUser = {

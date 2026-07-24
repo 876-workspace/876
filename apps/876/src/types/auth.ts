@@ -16,6 +16,10 @@ export type SessionUser = {
 export type Signed876Session = {
   user: SessionUser
   accessToken?: string
+  /** 'consumer' for personal accounts; 'enterprise' for SSO-linked org sessions. */
+  realm?: 'consumer' | 'enterprise'
+  /** Realm-gate exception: when true this account may use any app/realm. */
+  crossRealm?: boolean
 }
 
 /** Current 876 session — either signed-in or not. */
