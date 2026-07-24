@@ -64,18 +64,29 @@ layout. Put new coarse routing in RSC layouts, never in a proxy.
 Side effect: `x-request-id` is no longer minted at the edge. Consumers already
 treat it as optional and forward it when present.
 
-**2. No Node built-ins at module scope.** `node:child_process`, `spawnSync`,
-and friends fail at bundle time. `apps/876/src/app/serwist/[path]/route.ts`
-currently calls `spawnSync('git', …)` and bundles a service worker per request,
-which is why `@876/app` does not yet build for Workers. It needs the service
-worker precompiled to a static asset (or the PWA dropped) before it can deploy.
+**2. No Node built-ins, and no bundler, at request time.** `@876/app` used
+`@serwist/turbopack`'s `/serwist/[path]` route, which compiled the service
+worker per request: it reached for `esbuild-wasm` (the Worker build failed with
+`Could not resolve "esbuild-wasm"`, and shipping it would only move the failure
+to the same `Wasm code generation disallowed by embedder` wall the Prisma client
+hit) and read the git SHA with `spawnSync` at module scope.
 
-The bundler stops on the second half of that first: `createSerwistRoute` reaches
-for a bundler at request time, and the Worker build fails with
-`Could not resolve "esbuild-wasm"`. Installing `esbuild-wasm` would not help —
-running esbuild inside the Worker hits the same `Wasm code generation disallowed
-by embedder` wall the Prisma client did, and `spawnSync` still cannot run there.
-Precompiling the service worker is the only route.
+Both are build-machine work, so they moved there:
+`apps/876/scripts/build-sw.mjs` compiles `src/app/sw.ts` to `public/sw.js` with
+esbuild before every build, injecting the precache manifest and revision via
+`define`; OpenNext ships it as a static asset and `SerwistProvider` registers
+`/sw.js`. Precaching covers the offline fallback rather than the full Next asset
+manifest (that is only known after `next build`); runtime caching is unchanged.
+
+The general rule stands: anything needing a Node built-in or a bundler belongs
+in a build script, never in a route.
+
+**2b. No database URL at build time.** `next build` imports every route module
+to collect page data, so a module-scope Prisma client makes the connection
+string a build requirement — and the Cloudflare builder has no database URL, by
+design. Each app-local `src/lib/db/index.ts` therefore exports `prisma` as a
+Proxy that constructs the client on first property access. Keep it that way when
+adding a datastore to a new app.
 
 **3. Worker size.** Free plan caps a Worker at 3 MiB; every Next.js app exceeds
 that. **Workers Paid is required** (it also gates Containers, so both FastAPI
