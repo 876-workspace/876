@@ -291,6 +291,8 @@ runs `opennextjs-cloudflare build`. Prefer these dashboard values:
 `npx wrangler deploy` also works once `.open-next/` exists; prefer
 `opennextjs-cloudflare deploy` so incremental cache wiring stays intact.
 A pure Next.js build (no Worker bundle) is still available as `build:next`.
+Each app's `open-next.config.ts` sets `buildCommand: 'pnpm run build:next'` so
+OpenNext does not re-enter `pnpm build` (which would recurse forever).
 
 | Worker            | Root directory      |
 | ----------------- | ------------------- |
