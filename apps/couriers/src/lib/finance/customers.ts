@@ -69,7 +69,7 @@ async function findCoreUserCustomer(
 ): Promise<CustomerLookupResult> {
   const result = await finance.customers.list(organizationId, {
     limit: 2,
-    user_id: userId,
+    userId,
   })
   if (result.error) return result
   if (result.data.data.length > 1)

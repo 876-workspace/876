@@ -19,7 +19,7 @@ export default async function UsersPage() {
     service.roles.list(context.tenant.id),
     service.members.list(context.tenant.id),
     platform.memberships.list({
-      organization_id: context.orgId,
+      organizationId: context.orgId,
       limit: 100,
     }),
   ])

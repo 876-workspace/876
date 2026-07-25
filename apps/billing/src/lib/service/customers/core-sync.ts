@@ -24,7 +24,7 @@ export async function resolveOrgOwner(
   organizationId: string
 ): Promise<ResolvedOrgOwner | null> {
   const memberships = await platform.memberships.list({
-    organization_id: organizationId,
+    organizationId,
     limit: 100,
   })
   if (memberships.error || !memberships.data) return null
