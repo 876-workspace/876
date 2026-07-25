@@ -8,18 +8,22 @@ import type { AuthError } from './api.ts'
 
 const optionalStringSchema = z.string().trim().min(1).nullable().optional()
 
+/**
+ * Public create params are camelCase; the resource maps them onto the
+ * snake_case wire contract before sending.
+ */
 export const sdk876AuditEventCreateParamsSchema = z.strictObject({
   event: z.string().trim().min(1).max(120),
   source: z.string().trim().min(1).max(40).optional(),
-  app_name: z.string().trim().min(1).max(80),
-  user_id: optionalStringSchema,
+  appName: z.string().trim().min(1).max(80),
+  userId: optionalStringSchema,
   path: optionalStringSchema,
   search: optionalStringSchema,
   referrer: optionalStringSchema,
   title: optionalStringSchema,
-  request_id: optionalStringSchema,
-  session_id: optionalStringSchema,
-  distinct_id: optionalStringSchema,
+  requestId: optionalStringSchema,
+  sessionId: optionalStringSchema,
+  distinctId: optionalStringSchema,
   properties: analyticsPropertiesSchema.optional(),
 })
 
