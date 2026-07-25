@@ -10,6 +10,7 @@
     "start": "next start --port ${PORT:-3003}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "typecheck:db": "tsc --noEmit -p prisma",
     "test": "vitest run",
     "clean": "rm -rf .next .turbo .open-next .wrangler",
     "db:generate": "prisma generate",
