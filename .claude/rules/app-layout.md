@@ -343,7 +343,12 @@ For status, role, and type chips in tables and detail views, prefer
 
 ```tsx
 export type SoftBadgeTone =
-  | 'sky' | 'emerald' | 'amber' | 'slate' | 'purple' | 'rose'
+  | 'sky'
+  | 'emerald'
+  | 'amber'
+  | 'slate'
+  | 'purple'
+  | 'rose'
 
 <SoftBadge tone="emerald">Active</SoftBadge>
 ```

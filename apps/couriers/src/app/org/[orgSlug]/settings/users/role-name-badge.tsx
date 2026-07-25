@@ -11,8 +11,7 @@ type Props = {
 }
 
 export function RoleNameBadge({ name, systemKey }: Props) {
-  const tone =
-    systemKey != null ? (ROLE_TONE[systemKey] ?? 'purple') : 'purple'
+  const tone = systemKey != null ? (ROLE_TONE[systemKey] ?? 'purple') : 'purple'
 
   return <SoftBadge tone={tone}>{name}</SoftBadge>
 }

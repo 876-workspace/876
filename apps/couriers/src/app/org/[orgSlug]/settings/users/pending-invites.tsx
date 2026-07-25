@@ -55,12 +55,9 @@ export function PendingInvites({ orgSlug, invites }: Props) {
       header: 'Role',
       cell: ({ row }) => {
         const raw = row.original.role ?? 'member'
-        const systemKey =
-          raw === 'admin' || raw === 'staff' ? raw : null
+        const systemKey = raw === 'admin' || raw === 'staff' ? raw : null
         const name =
-          systemKey != null
-            ? raw.charAt(0).toUpperCase() + raw.slice(1)
-            : raw
+          systemKey != null ? raw.charAt(0).toUpperCase() + raw.slice(1) : raw
 
         return <RoleNameBadge name={name} systemKey={systemKey} />
       },
