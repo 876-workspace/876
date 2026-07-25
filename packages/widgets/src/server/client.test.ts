@@ -70,7 +70,7 @@ describe('createWidgetsClient', () => {
 
     const result = await client.notes.list(
       { userId: 'user_alejandra' },
-      { limit: 10, starting_after: 'wnote_cursor' }
+      { limit: 10, startingAfter: 'wnote_cursor' }
     )
 
     expect(result.error).toBeNull()

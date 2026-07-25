@@ -175,7 +175,7 @@ describe('NotepadWidgetPanel', () => {
       expect(screen.getByText('Second note')).toBeInTheDocument()
       expect(mocks.list).toHaveBeenCalledWith({
         limit: 50,
-        starting_after: undefined,
+        startingAfter: undefined,
       })
     })
 
@@ -312,7 +312,7 @@ describe('NotepadWidgetPanel', () => {
       await waitFor(() => {
         expect(mocks.list).toHaveBeenCalledWith({
           limit: 50,
-          starting_after: 'wnote_page_one_b',
+          startingAfter: 'wnote_page_one_b',
         })
       })
       await waitFor(() => {

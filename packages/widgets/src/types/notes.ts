@@ -43,3 +43,78 @@ export const deletedNoteSchema = z.object({
 })
 
 export type DeletedNote = z.infer<typeof deletedNoteSchema>
+
+/**
+ * Public note write params. Callers use camelCase; {@link toNoteBody} maps
+ * them onto the widgets-api snake_case wire body.
+ */
+export type NoteWriteParams = {
+  title?: string
+  body?: string
+  color?: NoteColor
+  pinned?: boolean
+  /** `null` unfiles the note; omit to leave the collection unchanged. */
+  collectionId?: string | null
+}
+
+/** Params for creating a note — `title` and `body` are required. */
+export type NoteCreateParams = NoteWriteParams &
+  Required<Pick<NoteWriteParams, 'title' | 'body'>>
+
+/** Public list params for member note listings. */
+export type NoteListParams = {
+  limit?: number
+  startingAfter?: string
+  collectionId?: string
+  unfiled?: boolean
+}
+
+/** Public list params for admin note listings. */
+export type AdminNoteListParams = {
+  ownerAccountId?: string
+  limit?: number
+  startingAfter?: string
+}
+
+/**
+ * Maps public {@link NoteWriteParams} onto the widgets-api wire body.
+ *
+ * Undefined fields are dropped by `JSON.stringify`, preserving PATCH
+ * semantics: an omitted key leaves the field unchanged.
+ */
+export function toNoteBody(params: NoteWriteParams): Record<string, unknown> {
+  return {
+    title: params.title,
+    body: params.body,
+    color: params.color,
+    pinned: params.pinned,
+    collection_id: params.collectionId,
+  }
+}
+
+/**
+ * Maps public {@link NoteListParams} onto the widgets-api / host wire query.
+ */
+export function toNoteListQuery(
+  params: NoteListParams = {}
+): Record<string, string | number | undefined> {
+  return {
+    limit: params.limit,
+    starting_after: params.startingAfter,
+    collection_id: params.collectionId,
+    unfiled: params.unfiled ? '1' : undefined,
+  }
+}
+
+/**
+ * Maps public {@link AdminNoteListParams} onto the widgets-api / host wire query.
+ */
+export function toAdminNoteListQuery(
+  params: AdminNoteListParams = {}
+): Record<string, string | number | undefined> {
+  return {
+    owner_account_id: params.ownerAccountId,
+    limit: params.limit,
+    starting_after: params.startingAfter,
+  }
+}

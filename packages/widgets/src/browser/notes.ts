@@ -4,10 +4,19 @@ import type {
   NotepadCollection,
 } from '../types/collections'
 import type {
+  AdminNoteListParams,
   DeletedNote,
   NoteColor,
+  NoteCreateParams,
   NoteList,
+  NoteListParams,
   NotepadNote,
+  NoteWriteParams,
+} from '../types/notes'
+import {
+  toAdminNoteListQuery,
+  toNoteBody,
+  toNoteListQuery,
 } from '../types/notes'
 
 export type BrowserNotesResult<T> =
@@ -17,6 +26,18 @@ export type BrowserNotesResult<T> =
 const MEMBER_BASE = '/api/widgets/notepad'
 const MEMBER_COLLECTIONS = '/api/widgets/notepad/collections'
 const ADMIN_BASE = '/api/widgets/admin/notepad'
+
+function toQueryString(
+  query: Record<string, string | number | undefined>
+): string {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined) continue
+    params.set(key, String(value))
+  }
+  const suffix = params.toString()
+  return suffix ? `?${suffix}` : ''
+}
 
 async function hostRequest<T>(
   path: string,
@@ -57,52 +78,25 @@ async function hostRequest<T>(
 
 /** Browser client for host same-origin Notepad routes. */
 export const browserNotes = {
-  list(
-    params: {
-      limit?: number
-      starting_after?: string
-      collection_id?: string
-      unfiled?: boolean
-    } = {}
-  ) {
-    const query = new URLSearchParams()
-    if (params.limit) query.set('limit', String(params.limit))
-    if (params.starting_after)
-      query.set('starting_after', params.starting_after)
-    if (params.collection_id) query.set('collection_id', params.collection_id)
-    if (params.unfiled) query.set('unfiled', '1')
-    const suffix = query.size ? `?${query}` : ''
-    return hostRequest<NoteList>(`${MEMBER_BASE}${suffix}`)
+  list(params: NoteListParams = {}) {
+    return hostRequest<NoteList>(
+      `${MEMBER_BASE}${toQueryString(toNoteListQuery(params))}`
+    )
   },
 
-  create(params: {
-    title: string
-    body: string
-    color?: NoteColor
-    pinned?: boolean
-    collection_id?: string | null
-  }) {
+  create(params: NoteCreateParams) {
     return hostRequest<NotepadNote>(MEMBER_BASE, {
       method: 'POST',
-      body: JSON.stringify(params),
+      body: JSON.stringify(toNoteBody(params)),
     })
   },
 
-  update(
-    id: string,
-    params: {
-      title?: string
-      body?: string
-      color?: NoteColor
-      pinned?: boolean
-      collection_id?: string | null
-    }
-  ) {
+  update(id: string, params: NoteWriteParams) {
     return hostRequest<NotepadNote>(
       `${MEMBER_BASE}/${encodeURIComponent(id)}`,
       {
         method: 'PATCH',
-        body: JSON.stringify(params),
+        body: JSON.stringify(toNoteBody(params)),
       }
     )
   },
@@ -114,36 +108,16 @@ export const browserNotes = {
     )
   },
 
-  listAll(
-    params: {
-      owner_account_id?: string
-      limit?: number
-      starting_after?: string
-    } = {}
-  ) {
-    const query = new URLSearchParams()
-    if (params.owner_account_id)
-      query.set('owner_account_id', params.owner_account_id)
-    if (params.limit) query.set('limit', String(params.limit))
-    if (params.starting_after)
-      query.set('starting_after', params.starting_after)
-    const suffix = query.size ? `?${query}` : ''
-    return hostRequest<NoteList>(`${ADMIN_BASE}${suffix}`)
+  listAll(params: AdminNoteListParams = {}) {
+    return hostRequest<NoteList>(
+      `${ADMIN_BASE}${toQueryString(toAdminNoteListQuery(params))}`
+    )
   },
 
-  adminUpdate(
-    id: string,
-    params: {
-      title?: string
-      body?: string
-      color?: NoteColor
-      pinned?: boolean
-      collection_id?: string | null
-    }
-  ) {
+  adminUpdate(id: string, params: NoteWriteParams) {
     return hostRequest<NotepadNote>(`${ADMIN_BASE}/${encodeURIComponent(id)}`, {
       method: 'PATCH',
-      body: JSON.stringify(params),
+      body: JSON.stringify(toNoteBody(params)),
     })
   },
 

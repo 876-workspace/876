@@ -214,7 +214,7 @@ export function NotepadEditor({
               body: nextDraft.body,
               color: nextDraft.color,
               pinned: nextDraft.pinned,
-              collection_id: nextDraft.collectionId,
+              collectionId: nextDraft.collectionId,
             })
             if (result.error || !result.data) {
               setSaveError(result.error ?? 'Unable to save this note.')
@@ -260,7 +260,7 @@ export function NotepadEditor({
             body: nextDraft.body,
             color: nextDraft.color,
             pinned: nextDraft.pinned,
-            collection_id: nextDraft.collectionId,
+            collectionId: nextDraft.collectionId,
           })
           if (result.error || !result.data) {
             setSaveError(result.error ?? 'Unable to save this note.')
