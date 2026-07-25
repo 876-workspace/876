@@ -4,14 +4,12 @@ import {
   FEATURE_GROUPS,
   findFeatureGroupByMasterSlug,
   isFeatureGroupChild,
-  PINNED_ROOT_FEATURE_SLUGS,
 } from './feature-groups'
 
 describe('feature groups', () => {
-  it('keeps pinned roots synchronized with the configured group masters', () => {
-    expect(PINNED_ROOT_FEATURE_SLUGS).toEqual(
-      FEATURE_GROUPS.map((group) => group.masterSlug)
-    )
+  it('uses unique master slugs for each feature group', () => {
+    const masters = FEATURE_GROUPS.map((group) => group.masterSlug)
+    expect(new Set(masters).size).toBe(masters.length)
   })
 
   it('returns the matching group for a master slug', () => {

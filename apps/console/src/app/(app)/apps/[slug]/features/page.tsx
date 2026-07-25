@@ -13,7 +13,6 @@ import {
 } from '@876/ui/empty'
 
 import { $876 } from '@/lib/876'
-import { PINNED_ROOT_FEATURE_SLUGS } from '@/lib/feature-groups'
 import { resolveApp } from '../_data'
 import { AppFeaturesTable } from './features-table'
 
@@ -36,33 +35,20 @@ export default async function AppFeaturesPage({ params, searchParams }: Props) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const [featureListResult, groupFeatureResult] = await Promise.all([
-    $876.apps.features.list(app.id, {
-      limit: 25,
-      starting_after: after,
-      ending_before: before,
-      rootOnly: true,
-      excludeTag: 'widget',
-    }),
-    $876.apps.features.list(app.id, {
-      limit: 100,
-      excludeTag: 'widget',
-    }),
-  ])
+  const featureResult = await $876.apps.features.list(app.id, {
+    limit: 25,
+    startingAfter: after,
+    endingBefore: before,
+    rootOnly: true,
+    excludeTag: 'widget',
+  })
 
-  const featureById = new Map(
-    (featureListResult.data?.data ?? []).map((feature) => [feature.id, feature])
-  )
-  const firstId = featureListResult.data?.data[0]?.id ?? null
-  const lastId = featureListResult.data?.data.at(-1)?.id ?? null
-  for (const rootSlug of PINNED_ROOT_FEATURE_SLUGS) {
-    const rootFeature = groupFeatureResult.data?.data.find(
-      (feature) => feature.slug === rootSlug
-    )
-    if (rootFeature) featureById.set(rootFeature.id, rootFeature)
-  }
-  const features = Array.from(featureById.values())
-  const hasMore = featureListResult.data?.has_more ?? false
+  if (featureResult.error) throw new Error(featureResult.error.message)
+
+  const features = featureResult.data?.data ?? []
+  const firstId = features[0]?.id ?? null
+  const lastId = features.at(-1)?.id ?? null
+  const hasMore = featureResult.data?.has_more ?? false
 
   return (
     <div className="space-y-5">
