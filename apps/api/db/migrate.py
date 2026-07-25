@@ -789,6 +789,42 @@ def ensure_user_profile_country_column(conn: Connection) -> None:
     )
 
 
+def ensure_billing_customer_outbox_party_columns(conn: Connection) -> None:
+    """Add the party and primary-contact snapshot columns to the customer outbox.
+
+    Purely additive. Existing rows keep their delivered state and are left with
+    NULL snapshot fields; ``customer_event_payload`` falls back to the subject
+    type for those, and the next reconcile refreshes them.
+    """
+    inspector: Any = sa_inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "billing_customer_outbox" not in tables:
+        return
+
+    columns = {column["name"] for column in inspector.get_columns("billing_customer_outbox")}
+    for column in (
+        "customer_kind VARCHAR",
+        "company_name VARCHAR",
+        "first_name VARCHAR",
+        "last_name VARCHAR",
+        "phone VARCHAR",
+        "contact_user_id VARCHAR",
+        "contact_first_name VARCHAR",
+        "contact_last_name VARCHAR",
+        "contact_email VARCHAR",
+        "contact_phone VARCHAR",
+        "payload_hash VARCHAR",
+    ):
+        name = column.split()[0]
+        if name in columns:
+            continue
+        exec_isolated(
+            conn,
+            f"billing_customer_outbox.{name}",
+            f"ALTER TABLE billing_customer_outbox ADD COLUMN {column}",
+        )
+
+
 def ensure_indexes(conn: Connection) -> None:
     """Create foreign-key lookup indexes on existing tables.
 

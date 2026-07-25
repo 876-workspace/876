@@ -38,6 +38,7 @@ export function createIntegrationCustomersResource(
             status: params.status,
             user_id: params.userId,
             organization_id: params.organizationId,
+            ids: params.ids?.length ? params.ids.join(',') : undefined,
           },
         },
         BillingCustomerListSchema

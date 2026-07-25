@@ -43,6 +43,17 @@ export function CustomersTable({ customers, emptyState }: Props) {
       ),
     },
     {
+      accessorKey: 'contactName',
+      header: 'Contact',
+      cell: ({ row }) => (
+        <span
+          className={row.original.contactName ? '' : 'text-muted-foreground'}
+        >
+          {row.original.contactName ?? '—'}
+        </span>
+      ),
+    },
+    {
       accessorKey: 'phone',
       header: 'Phone',
       cell: ({ row }) => (

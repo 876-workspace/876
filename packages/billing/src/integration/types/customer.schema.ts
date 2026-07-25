@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type {
+  BillingContact,
   BillingCustomer,
   BillingCustomerList,
   DeletedBillingCustomer,
@@ -23,6 +24,23 @@ export const sourceSchema = z
     externalReference: z.string().nullable(),
   })
   .nullable()
+
+/**
+ * The schema for a contact person attached to a Billing customer.
+ */
+export const BillingContactSchema = z.object({
+  object: z.literal('contact'),
+  id: z.string().min(1),
+  userId: z.string().nullable(),
+  salutation: z.string().nullable(),
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable(),
+  email: z.string().nullable(),
+  workPhone: z.string().nullable(),
+  mobilePhone: z.string().nullable(),
+  isPrimary: z.boolean(),
+  coreSyncedAt: z.number().int().nullable(),
+}) satisfies z.ZodType<BillingContact>
 
 /**
  * The schema for a Billing customer resource.
@@ -61,6 +79,11 @@ export const BillingCustomerSchema = z.object({
   status: customerStatusSchema,
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
+  // Older Billing deployments omit the field entirely; treat that as "no
+  // contact" rather than failing the whole response.
+  primaryContact: BillingContactSchema.nullish().transform(
+    (value) => value ?? null
+  ),
   counts: z
     .strictObject({
       invoices: z.number().int(),

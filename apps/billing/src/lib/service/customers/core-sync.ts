@@ -12,6 +12,16 @@ export interface ResolvedOrgOwner {
   email: string | null
 }
 
+/** The organization identity fields mirrored onto its customer record. */
+interface ResolvedOrgParty {
+  /** Registered/legal name. */
+  companyName: string | null
+  /** Trading name when set, otherwise the legal name. */
+  displayName: string | null
+  email: string | null
+  phone: string | null
+}
+
 /**
  * Resolves the owner of a core 876 organization via the platform API. Prefers
  * the membership whose role is `owner`; falls back to the earliest-created
@@ -55,6 +65,37 @@ export async function resolveOrgOwner(
   }
 }
 
+/**
+ * Resolves an organization's identity fields from the live 876 record.
+ *
+ * Uses the profile endpoint so the legal name, trading name, and AP contact
+ * details are available; falls back to the basic org record when the profile
+ * cannot be read. Returns null only when neither can be resolved.
+ */
+export async function resolveOrgParty(
+  platform: Platform876Client,
+  organizationId: string
+): Promise<ResolvedOrgParty | null> {
+  const profile = await platform.orgs.retrieveProfile(organizationId)
+  if (profile.data)
+    return {
+      companyName: profile.data.name,
+      displayName: profile.data.doing_business_as ?? profile.data.name,
+      email: profile.data.primary_email,
+      phone: profile.data.primary_phone,
+    }
+
+  const org = await platform.orgs.retrieve(organizationId)
+  if (!org.data) return null
+
+  return {
+    companyName: org.data.name,
+    displayName: org.data.name,
+    email: null,
+    phone: null,
+  }
+}
+
 /** Outcome of a single owner-contact sync. */
 export type OwnerContactSync =
   | { status: 'created'; contactId: string }
@@ -72,10 +113,34 @@ export async function syncOrgOwnerContact(
   customerId: string,
   organizationId: string
 ): Promise<OwnerContactSync> {
-  const owner = await resolveOrgOwner(platform, organizationId)
-  if (!owner) return { status: 'skipped', reason: 'unresolved' }
+  const [owner, party] = await Promise.all([
+    resolveOrgOwner(platform, organizationId),
+    resolveOrgParty(platform, organizationId),
+  ])
 
   const now = nowUnixSeconds()
+
+  // Repair the party snapshot even when the owner cannot be resolved: a
+  // business customer with a company name and no contact still beats a blank
+  // row. Only fields Core actually resolved are written.
+  if (party)
+    await prisma.customer.updateMany({
+      where: { id: customerId, tenantId },
+      data: {
+        customerKind: 'BUSINESS',
+        ...(party.displayName ? { name: party.displayName } : {}),
+        companyName: party.companyName,
+        ...(party.email ? { email: party.email } : {}),
+        ...(party.phone ? { phone: party.phone } : {}),
+        ...(owner
+          ? { firstName: owner.firstName, lastName: owner.lastName }
+          : {}),
+        coreSyncedAt: now,
+        updatedAt: now,
+      },
+    })
+
+  if (!owner) return { status: 'skipped', reason: 'unresolved' }
   const existing = await prisma.contact.findFirst({
     where: { tenantId, customerId, userId: owner.userId },
     select: { id: true },

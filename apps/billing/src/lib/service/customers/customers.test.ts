@@ -28,6 +28,24 @@ vi.mock('../shared', async (importOriginal) => {
   return { ...actual, hasEnabledCurrency: mocks.hasEnabledCurrency }
 })
 
+function prismaCustomer() {
+  return mocks.prismaRef.current as unknown as {
+    customer: {
+      create: ReturnType<typeof vi.fn>
+      delete: ReturnType<typeof vi.fn>
+      findFirst: ReturnType<typeof vi.fn>
+      update: ReturnType<typeof vi.fn>
+      updateMany: ReturnType<typeof vi.fn>
+    }
+    contact: {
+      findFirst: ReturnType<typeof vi.fn>
+      update: ReturnType<typeof vi.fn>
+      updateMany: ReturnType<typeof vi.fn>
+      create: ReturnType<typeof vi.fn>
+    }
+  }
+}
+
 function createParams(overrides: Record<string, unknown> = {}) {
   return {
     customerType: 'EXTERNAL',
@@ -58,6 +76,12 @@ describe('customer mutations', () => {
         findFirst: vi.fn().mockResolvedValue(null),
         update: vi.fn().mockResolvedValue({ id: 'cus_123' }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+      contact: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        update: vi.fn().mockResolvedValue({ id: 'con_123' }),
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        create: vi.fn().mockResolvedValue({ id: 'con_123' }),
       },
     }
     mocks.hasEnabledCurrency.mockResolvedValue(true)
@@ -474,6 +498,12 @@ describe('customer mutations', () => {
       data: {
         name: 'Efesto Technologies',
         email: null,
+        companyName: null,
+        firstName: null,
+        lastName: null,
+        phone: null,
+        customerKind: 'BUSINESS',
+        coreSyncedAt: 1_783_771_200,
         updatedAt: 1_783_771_200,
       },
     })
@@ -572,6 +602,12 @@ describe('customer mutations', () => {
       data: {
         name: 'Ada Byron',
         email: null,
+        companyName: null,
+        firstName: null,
+        lastName: null,
+        phone: null,
+        customerKind: 'INDIVIDUAL',
+        coreSyncedAt: 1_783_771_200,
         updatedAt: 1_783_771_200,
       },
     })
@@ -647,5 +683,347 @@ describe('customer mutations', () => {
     const result = CustomerEnsureSchema.safeParse(payload)
 
     expect(result.success).toBe(false)
+  })
+
+  it('persists the full party snapshot when ensuring an organization', async () => {
+    const { customer } = prismaCustomer()
+
+    const result = await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      customerKind: 'BUSINESS',
+      name: 'Efesto',
+      companyName: 'Efesto Technologies',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      email: 'ap@efesto.test',
+      phone: '+18765550000',
+    })
+
+    expect(result).toEqual({ data: { id: 'cus_123' }, error: null })
+    expect(customer.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        customerType: 'CORE_ORGANIZATION',
+        customerKind: 'BUSINESS',
+        organizationId: 'org_123',
+        userId: null,
+        name: 'Efesto',
+        companyName: 'Efesto Technologies',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ap@efesto.test',
+        phone: '+18765550000',
+      }),
+    })
+  })
+
+  it('seeds a primary contact when ensuring a new organization customer', async () => {
+    const { customer, contact } = prismaCustomer()
+    mocks.generateId
+      .mockReturnValueOnce('cus_123')
+      .mockReturnValueOnce('con_123')
+
+    const result = await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto Technologies',
+      primaryContact: {
+        userId: 'usr_owner',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@example.com',
+        phone: '+18765550111',
+      },
+    })
+
+    expect(result.error).toBeNull()
+    expect(customer.create).toHaveBeenCalledTimes(1)
+    expect(contact.findFirst).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'ten_123',
+        customerId: 'cus_123',
+        userId: 'usr_owner',
+      },
+      select: { id: true },
+    })
+    expect(contact.updateMany).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_123', customerId: 'cus_123', isPrimary: true },
+      data: { isPrimary: false, updatedAt: 1_783_771_200 },
+    })
+    expect(contact.create).toHaveBeenCalledWith({
+      data: {
+        id: 'con_123',
+        tenantId: 'ten_123',
+        customerId: 'cus_123',
+        userId: 'usr_owner',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@example.com',
+        mobilePhone: '+18765550111',
+        isPrimary: true,
+        coreSyncedAt: 1_783_771_200,
+        createdAt: 1_783_771_200,
+        updatedAt: 1_783_771_200,
+      },
+    })
+  })
+
+  it('refreshes an existing primary contact on re-ensure', async () => {
+    const { customer, contact } = prismaCustomer()
+    customer.findFirst.mockResolvedValue({ id: 'cus_existing' })
+    contact.findFirst.mockResolvedValue({ id: 'con_existing' })
+
+    const result = await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      companyName: 'Efesto Technologies',
+      firstName: 'Ada',
+      lastName: 'Byron',
+      primaryContact: {
+        userId: 'usr_owner',
+        firstName: 'Ada',
+        lastName: 'Byron',
+        email: 'ada@byron.test',
+      },
+    })
+
+    expect(result).toEqual({ data: { id: 'cus_existing' }, error: null })
+    expect(customer.update).toHaveBeenCalledWith({
+      where: { id: 'cus_existing' },
+      data: expect.objectContaining({
+        name: 'Efesto',
+        companyName: 'Efesto Technologies',
+        firstName: 'Ada',
+        lastName: 'Byron',
+        customerKind: 'BUSINESS',
+        coreSyncedAt: 1_783_771_200,
+      }),
+    })
+    expect(contact.update).toHaveBeenCalledWith({
+      where: { id: 'con_existing' },
+      data: {
+        firstName: 'Ada',
+        lastName: 'Byron',
+        email: 'ada@byron.test',
+        isPrimary: true,
+        coreSyncedAt: 1_783_771_200,
+        updatedAt: 1_783_771_200,
+      },
+    })
+    expect(contact.create).not.toHaveBeenCalled()
+    expect(contact.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('does not seed a contact when primaryContact is omitted', async () => {
+    const { contact } = prismaCustomer()
+
+    await ensure('ten_123', {
+      customerType: 'CORE_USER',
+      userId: 'usr_123',
+      name: 'Ada Lovelace',
+      email: 'ada@example.com',
+    })
+
+    expect(contact.findFirst).not.toHaveBeenCalled()
+    expect(contact.create).not.toHaveBeenCalled()
+  })
+
+  it('does not seed a contact when primaryContact has no userId', async () => {
+    const { contact } = prismaCustomer()
+
+    await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      // Schema requires userId; call ensure with a cast so the runtime guard is
+      // the unit under test.
+      primaryContact: {
+        firstName: 'Ghost',
+      } as never,
+    })
+
+    expect(contact.findFirst).not.toHaveBeenCalled()
+    expect(contact.create).not.toHaveBeenCalled()
+  })
+
+  it('defaults customerKind from customerType when Core omits it', async () => {
+    const { customer } = prismaCustomer()
+    customer.findFirst.mockResolvedValue({ id: 'cus_existing' })
+
+    await ensure('ten_123', {
+      customerType: 'CORE_USER',
+      userId: 'usr_123',
+      name: 'Ada',
+    })
+
+    expect(customer.update).toHaveBeenCalledWith({
+      where: { id: 'cus_existing' },
+      data: expect.objectContaining({ customerKind: 'INDIVIDUAL' }),
+    })
+  })
+
+  it('honours an explicit customerKind on ensure', async () => {
+    const { customer } = prismaCustomer()
+    customer.findFirst.mockResolvedValue({ id: 'cus_existing' })
+
+    await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      customerKind: 'BUSINESS',
+    })
+
+    expect(customer.update).toHaveBeenCalledWith({
+      where: { id: 'cus_existing' },
+      data: expect.objectContaining({ customerKind: 'BUSINESS' }),
+    })
+  })
+
+  it('propagates a non-conflict create failure without contact work', async () => {
+    const { customer, contact } = prismaCustomer()
+    customer.create.mockRejectedValue(new Error('disk full'))
+
+    const result = await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      primaryContact: {
+        userId: 'usr_owner',
+        firstName: 'Ada',
+      },
+    })
+
+    expect(result.error).toBeTruthy()
+    expect(result.status).toBe(500)
+    expect(contact.findFirst).not.toHaveBeenCalled()
+    expect(contact.create).not.toHaveBeenCalled()
+  })
+
+  it('does not sync contact when race re-query finds no winner', async () => {
+    const { customer, contact } = prismaCustomer()
+    customer.findFirst.mockResolvedValue(null)
+    customer.create.mockRejectedValue({ code: 'P2002' })
+
+    const result = await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      primaryContact: { userId: 'usr_owner', firstName: 'Ada' },
+    })
+
+    expect(result.status).toBe(409)
+    // Race path returns without calling syncPrimaryContact.
+    expect(contact.create).not.toHaveBeenCalled()
+  })
+
+  it('does not sync contact after a race win either', async () => {
+    // Documented current behaviour: race winner is returned by id only —
+    // contact seeding is left to a later ensure retry.
+    const { customer, contact } = prismaCustomer()
+    customer.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'cus_winner' })
+    customer.create.mockRejectedValue({ code: 'P2002' })
+
+    const result = await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      primaryContact: { userId: 'usr_owner', firstName: 'Ada' },
+    })
+
+    expect(result).toEqual({ data: { id: 'cus_winner' }, error: null })
+    expect(contact.create).not.toHaveBeenCalled()
+    expect(contact.update).not.toHaveBeenCalled()
+  })
+
+  it('treats null primaryContact the same as omitted', async () => {
+    const { contact } = prismaCustomer()
+
+    await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      primaryContact: null,
+    })
+
+    expect(contact.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('writes null optional party fields explicitly on update', async () => {
+    const { customer } = prismaCustomer()
+    customer.findFirst.mockResolvedValue({ id: 'cus_existing' })
+
+    await ensure('ten_123', {
+      customerType: 'CORE_USER',
+      userId: 'usr_1',
+      name: 'Ada',
+      email: null,
+      companyName: null,
+      firstName: null,
+      lastName: null,
+      phone: null,
+    })
+
+    expect(customer.update).toHaveBeenCalledWith({
+      where: { id: 'cus_existing' },
+      data: {
+        name: 'Ada',
+        email: null,
+        companyName: null,
+        firstName: null,
+        lastName: null,
+        phone: null,
+        customerKind: 'INDIVIDUAL',
+        coreSyncedAt: 1_783_771_200,
+        updatedAt: 1_783_771_200,
+      },
+    })
+  })
+
+  it('coerces undefined email to null on create path', async () => {
+    const { customer } = prismaCustomer()
+
+    await ensure('ten_123', {
+      customerType: 'CORE_USER',
+      userId: 'usr_1',
+      name: 'Ada',
+      email: undefined,
+    })
+
+    expect(customer.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ email: null }),
+    })
+  })
+
+  it('refreshes contact with null names when Core clears them', async () => {
+    const { customer, contact } = prismaCustomer()
+    customer.findFirst.mockResolvedValue({ id: 'cus_existing' })
+    contact.findFirst.mockResolvedValue({ id: 'con_existing' })
+
+    await ensure('ten_123', {
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_123',
+      name: 'Efesto',
+      primaryContact: {
+        userId: 'usr_owner',
+        firstName: null,
+        lastName: null,
+        email: null,
+      },
+    })
+
+    expect(contact.update).toHaveBeenCalledWith({
+      where: { id: 'con_existing' },
+      data: {
+        firstName: null,
+        lastName: null,
+        email: null,
+        isPrimary: true,
+        coreSyncedAt: 1_783_771_200,
+        updatedAt: 1_783_771_200,
+      },
+    })
   })
 })

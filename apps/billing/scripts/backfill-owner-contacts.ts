@@ -1,11 +1,15 @@
 /**
- * One-off, idempotent backfill: seed the owner of every core 876 organization
- * customer as that customer's default primary contact, snapshotting the owner's
- * name/email from the live identity API. Safe to re-run — existing owner
- * contacts are refreshed, unresolved orgs are skipped (never fabricated).
+ * One-off, idempotent backfill for core 876 organization customers. For each
+ * one it refreshes the party snapshot (company name, trading name, AP email,
+ * phone) and seeds the org's owner as the default primary contact, reading
+ * both from the live identity API.
+ *
+ * Safe to re-run: existing owner contacts are refreshed rather than
+ * duplicated, a hand-added primary contact is demoted rather than deleted, and
+ * an org that cannot be resolved is skipped (a contact is never fabricated).
  *
  * Run from apps/billing:
- *   node --env-file=.env.local ./node_modules/.bin/tsx scripts/backfill-owner-contacts.ts
+ *   node --env-file=.env ./node_modules/.bin/tsx scripts/backfill-owner-contacts.ts
  */
 import { createBackgroundPlatformClient } from '@/lib/876/platform-client'
 import { service } from '@/lib/service'

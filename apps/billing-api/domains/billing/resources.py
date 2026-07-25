@@ -169,6 +169,12 @@ class ResourceService:
                 statement = statement.where(getattr(definition.model, attribute_name) == value)
         limit = min(max(int(query_params.get("limit", "100")), 1), 100)
         id_column = getattr(definition.model, definition.id_attribute)
+        # `ids` resolves a known set in one round trip. An app that owns its own
+        # profile table holds the ids already; without this it would issue one
+        # retrieve per row.
+        requested_ids = [value for value in (query_params.get("ids") or "").split(",") if value.strip()]
+        if requested_ids:
+            statement = statement.where(id_column.in_(requested_ids[:limit]))
         statement = statement.order_by(id_column).limit(limit + 1)
         rows = list((await self.session.scalars(statement)).all())
         has_more = len(rows) > limit

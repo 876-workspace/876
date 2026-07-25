@@ -60,6 +60,25 @@ export const CustomerEnsureSchema = z
     userId: IdSchema.optional(),
     name: z.string().trim().min(1).max(160),
     email: z.email().nullable().optional(),
+    // Party snapshot owned by Core. Present so Billing can render a customer
+    // without calling back into the identity API.
+    customerKind: z.enum(['INDIVIDUAL', 'BUSINESS']).optional(),
+    companyName: z.string().trim().max(160).nullable().optional(),
+    firstName: z.string().trim().max(80).nullable().optional(),
+    lastName: z.string().trim().max(80).nullable().optional(),
+    phone: z.string().trim().max(40).nullable().optional(),
+    // The organization's primary contact (its owner by default). Seeded as the
+    // customer's primary contact; members are never bulk-imported.
+    primaryContact: z
+      .strictObject({
+        userId: IdSchema,
+        firstName: z.string().trim().max(80).nullable().optional(),
+        lastName: z.string().trim().max(80).nullable().optional(),
+        email: z.email().nullable().optional(),
+        phone: z.string().trim().max(40).nullable().optional(),
+      })
+      .nullable()
+      .optional(),
   })
   .refine(
     (value) =>

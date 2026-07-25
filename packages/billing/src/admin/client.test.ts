@@ -143,4 +143,110 @@ describe('create876AdminClient', () => {
       expect.objectContaining({ body: JSON.stringify(params) })
     )
   })
+
+  it('posts a full organization party snapshot with primary contact', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: { object: 'customer', id: 'blcus_org' },
+        error: null,
+      })
+    )
+    const client = create876AdminClient({
+      baseUrl: 'https://billing.example.test',
+      internalKey: 'secret-key',
+      requestId: 'req_mirror_1',
+      fetch: fetchMock,
+    })
+    const params = {
+      customerType: 'CORE_ORGANIZATION' as const,
+      organizationId: 'org_1',
+      customerKind: 'BUSINESS' as const,
+      name: 'Efesto',
+      companyName: 'Efesto Technologies',
+      email: 'ap@efesto.test',
+      phone: '+18765550000',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      primaryContact: {
+        userId: 'usr_owner',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@efesto.test',
+        phone: '+18765550111',
+      },
+    }
+
+    const result = await client.customers.ensure(params)
+
+    expect(result).toEqual({
+      data: { object: 'customer', id: 'blcus_org' },
+      error: null,
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://billing.example.test/api/v1/admin/customers/ensure',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(params),
+        headers: expect.objectContaining({
+          'x-internal-key': 'secret-key',
+          'x-request-id': 'req_mirror_1',
+        }),
+      })
+    )
+  })
+
+  it('posts a null primaryContact without dropping other party fields', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: { object: 'customer', id: 'blcus_2' },
+        error: null,
+      })
+    )
+    const client = create876AdminClient({
+      baseUrl: 'https://billing.example.test',
+      internalKey: 'secret-key',
+      fetch: fetchMock,
+    })
+    const params = {
+      customerType: 'CORE_ORGANIZATION' as const,
+      organizationId: 'org_1',
+      customerKind: 'BUSINESS' as const,
+      name: 'Empty Contact Org',
+      companyName: 'Empty Contact Org',
+      email: null,
+      phone: null,
+      firstName: null,
+      lastName: null,
+      primaryContact: null,
+    }
+
+    await client.customers.ensure(params)
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://billing.example.test/api/v1/admin/customers/ensure',
+      expect.objectContaining({ body: JSON.stringify(params) })
+    )
+  })
+
+  it('rejects a non-customer ensure acknowledgement', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: { object: 'subscription', id: 'blsub_1' },
+        error: null,
+      })
+    )
+    const client = create876AdminClient({
+      baseUrl: 'https://billing.example.test',
+      internalKey: 'secret-key',
+      fetch: fetchMock,
+    })
+
+    const result = await client.customers.ensure({
+      organizationId: 'org_1',
+      name: 'Efesto',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toBeTruthy()
+  })
 })

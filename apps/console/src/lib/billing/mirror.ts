@@ -1,11 +1,13 @@
 import 'server-only'
 
 import type {
+  AdminOrganization,
   AdminPrice,
   AdminProduct,
   AdminSubscription,
   AdminSubscriptionStatus,
 } from '@876/admin'
+import type { CustomerEnsureParams } from '@876/billing/admin'
 import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 
 import { $876 } from '@/lib/876'
@@ -19,6 +21,46 @@ import { $billing } from '@/lib/billing'
  * the backfill script) — mirror failures are logged, never thrown, and must
  * never fail the core write that triggered them.
  */
+
+/**
+ * Resolves the person Billing should attach to an organization customer.
+ *
+ * Order: the organization's declared primary contact, then the owner
+ * membership, then the earliest member. Returns null when the org has no
+ * members — a contact is never fabricated.
+ */
+async function resolveOrgPrimaryContact(
+  org: AdminOrganization | null | undefined
+): Promise<CustomerEnsureParams['primaryContact']> {
+  if (!org) return null
+
+  let contactUserId = org.primary_contact_user_id
+  if (!contactUserId) {
+    const memberships = await $876.memberships.list({
+      organizationId: org.id,
+      limit: 100,
+    })
+    const rows = memberships.data?.data ?? []
+    if (rows.length === 0) return null
+
+    const owner =
+      rows.find((membership) => membership.role === 'owner') ??
+      rows.reduce((earliest, current) =>
+        current.created_at < earliest.created_at ? current : earliest
+      )
+    contactUserId = owner.user_id
+  }
+
+  const user = await $876.users.retrieve(contactUserId)
+  if (!user.data) return { userId: contactUserId }
+
+  return {
+    userId: contactUserId,
+    firstName: user.data.first_name,
+    lastName: user.data.last_name,
+    email: user.data.email,
+  }
+}
 
 const INTERVAL_BY_CORE: Record<string, IntervalUnit> = {
   day: 'DAY',
@@ -220,11 +262,20 @@ export async function mirrorCoreSubscription(
   )
   if (catalogResults.some((result) => !result)) return false
 
-  const customerName = org.data?.name ?? subscription.organization_id
+  const legalName = org.data?.name ?? subscription.organization_id
+  const contact = await resolveOrgPrimaryContact(org.data)
 
   const ensuredCustomer = await $billing.customers.ensure({
     organizationId: subscription.organization_id,
-    name: customerName,
+    customerType: 'CORE_ORGANIZATION',
+    customerKind: 'BUSINESS',
+    name: org.data?.doing_business_as ?? legalName,
+    companyName: legalName,
+    email: org.data?.primary_email ?? contact?.email ?? null,
+    phone: org.data?.primary_phone ?? null,
+    firstName: contact?.firstName ?? null,
+    lastName: contact?.lastName ?? null,
+    primaryContact: contact,
   })
   if (ensuredCustomer.error !== null) {
     console.error(
