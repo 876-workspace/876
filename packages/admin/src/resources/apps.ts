@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -20,22 +22,27 @@ export function createAdminAppsResource(runtime: AdminRuntime) {
      * Lists apps. When no `organizationId` filter is provided
      * the internal key must be present — returns all registered platform apps.
      */
-    list(params?: {
-      limit?: number
-      starting_after?: string
-      ending_before?: string
-      organizationId?: string
-      /** Filter by app kind (e.g. "internal"). Admin only when no owner/org filter. */
-      appKind?: string
-      /** Filter by client type (e.g. "public" to exclude service/confidential apps). */
-      clientType?: string
-      /** Filter by app status. Defaults are owned by the caller. */
-      status?: AdminAppStatus
-    }) {
+    list(
+      params?: CursorPageParams & {
+        organizationId?: string
+        /** Filter by app kind (e.g. "internal"). Admin only when no owner/org filter. */
+        appKind?: string
+        /** Filter by client type (e.g. "public" to exclude service/confidential apps). */
+        clientType?: string
+        /** Filter by app status. Defaults are owned by the caller. */
+        status?: AdminAppStatus
+      }
+    ) {
       return adminRequest<AdminListResponse<AdminApp>>(runtime, {
         method: 'GET',
         path: '/apps',
-        query: params as Record<string, string | number | undefined>,
+        query: {
+          ...toCursorQuery(params),
+          organizationId: params?.organizationId,
+          appKind: params?.appKind,
+          clientType: params?.clientType,
+          status: params?.status,
+        },
       })
     },
 
@@ -94,10 +101,7 @@ export function createAdminAppsResource(runtime: AdminRuntime) {
       /** Returns a paginated list of feature flags assigned to this app. */
       list(
         appId: string,
-        params?: {
-          limit?: number
-          starting_after?: string
-          ending_before?: string
+        params?: CursorPageParams & {
           rootOnly?: boolean
           includeTag?: string
           excludeTag?: string
@@ -106,7 +110,12 @@ export function createAdminAppsResource(runtime: AdminRuntime) {
         return adminRequest<AdminListResponse<AdminFeature>>(runtime, {
           method: 'GET',
           path: `/apps/${appId}/features`,
-          query: params as Record<string, string | number | undefined>,
+          query: {
+            ...toCursorQuery(params),
+            rootOnly: params?.rootOnly,
+            includeTag: params?.includeTag,
+            excludeTag: params?.excludeTag,
+          },
         })
       },
     },

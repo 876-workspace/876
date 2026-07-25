@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -63,19 +65,23 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
      * @param params - Optional pagination and filtering parameters.
      * @returns A result containing a list object of organizations, or an error.
      */
-    list(params?: {
-      limit?: number
-      starting_after?: string
-      ending_before?: string
-      search?: string
-      include_deleted?: boolean
-      /** Filter to organizations with this exact status (e.g. `active`, `suspended`, `archived`). */
-      status?: string
-    }) {
+    list(
+      params?: CursorPageParams & {
+        search?: string
+        includeDeleted?: boolean
+        /** Filter to organizations with this exact status (e.g. `active`, `suspended`, `archived`). */
+        status?: string
+      }
+    ) {
       return adminRequest<AdminListResponse<AdminOrganization>>(runtime, {
         method: 'GET',
         path: '/organizations',
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          ...toCursorQuery(params),
+          search: params?.search,
+          include_deleted: params?.includeDeleted,
+          status: params?.status,
+        },
       })
     },
 
@@ -83,14 +89,16 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
      * Retrieves an organization by ID.
      *
      * @param orgId - The ID of the organization to retrieve.
-     * @param params - Optional query params (e.g. include_deleted).
+     * @param params - Optional query params (e.g. includeDeleted).
      * @returns A result containing the organization, or an error.
      */
-    retrieve(orgId: string, params?: { include_deleted?: boolean }) {
+    retrieve(orgId: string, params?: { includeDeleted?: boolean }) {
       return adminRequest<AdminOrganization>(runtime, {
         method: 'GET',
         path: `/organizations/${orgId}`,
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          include_deleted: params?.includeDeleted,
+        },
       })
     },
 
@@ -98,14 +106,16 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
      * Retrieves an organization by slug.
      *
      * @param slug - The organization slug to look up.
-     * @param params - Optional query params (e.g. include_deleted).
+     * @param params - Optional query params (e.g. includeDeleted).
      * @returns A result containing the organization, or an error.
      */
-    retrieveBySlug(slug: string, params?: { include_deleted?: boolean }) {
+    retrieveBySlug(slug: string, params?: { includeDeleted?: boolean }) {
       return adminRequest<AdminOrganization>(runtime, {
         method: 'GET',
         path: `/organizations/by-slug/${slug}`,
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          include_deleted: params?.includeDeleted,
+        },
       })
     },
 
@@ -184,18 +194,11 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
      * @param params - Optional pagination parameters.
      * @returns A result containing a list object of memberships, or an error.
      */
-    listMemberships(
-      orgId: string,
-      params?: {
-        limit?: number
-        starting_after?: string
-        ending_before?: string
-      }
-    ) {
+    listMemberships(orgId: string, params?: CursorPageParams) {
       return adminRequest<AdminListResponse<AdminMembership>>(runtime, {
         method: 'GET',
         path: `/organizations/${orgId}/memberships`,
-        query: params as Record<string, string | number | undefined>,
+        query: toCursorQuery(params),
       })
     },
 
@@ -243,18 +246,11 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
      * @param params - Optional pagination parameters.
      * @returns A result containing a list of invite tokens, or an error.
      */
-    listInvites(
-      orgId: string,
-      params?: {
-        limit?: number
-        starting_after?: string
-        ending_before?: string
-      }
-    ) {
+    listInvites(orgId: string, params?: CursorPageParams) {
       return adminRequest<AdminListResponse<AdminInviteToken>>(runtime, {
         method: 'GET',
         path: `/organizations/${orgId}/invites`,
-        query: params as Record<string, string | number | undefined>,
+        query: toCursorQuery(params),
       })
     },
 
@@ -655,15 +651,19 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
       list(
         orgId: string,
         params?: {
-          user_id?: string
-          app_id?: string
-          include_revoked?: boolean
+          userId?: string
+          appId?: string
+          includeRevoked?: boolean
         }
       ) {
         return adminRequest<AdminListResponse<AdminAppAssignment>>(runtime, {
           method: 'GET',
           path: `/organizations/${orgId}/app-assignments`,
-          query: params as Record<string, string | boolean | undefined>,
+          query: {
+            user_id: params?.userId,
+            app_id: params?.appId,
+            include_revoked: params?.includeRevoked,
+          },
         })
       },
 

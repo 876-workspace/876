@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -60,24 +62,29 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
      * @param params - Optional pagination and filtering parameters.
      * @returns A result containing a list object of users, or an error.
      */
-    list(params?: {
-      limit?: number
-      starting_after?: string
-      ending_before?: string
-      search?: string
-      include_deleted?: boolean
-      /**
-       * When true, return only users whose dedicated Console role grants
-       * access — the "who has Console access" view.
-       */
-      consoleAccess?: boolean
-      /** Filter to users with this exact status (e.g. `active`, `inactive`, `suspended`). */
-      status?: string
-    }) {
+    list(
+      params?: CursorPageParams & {
+        search?: string
+        includeDeleted?: boolean
+        /**
+         * When true, return only users whose dedicated Console role grants
+         * access — the "who has Console access" view.
+         */
+        consoleAccess?: boolean
+        /** Filter to users with this exact status (e.g. `active`, `inactive`, `suspended`). */
+        status?: string
+      }
+    ) {
       return adminRequest<AdminListResponse<AdminUser>>(runtime, {
         method: 'GET',
         path: '/users',
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          ...toCursorQuery(params),
+          search: params?.search,
+          include_deleted: params?.includeDeleted,
+          consoleAccess: params?.consoleAccess,
+          status: params?.status,
+        },
       })
     },
 
@@ -85,14 +92,16 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
      * Retrieves a user by ID.
      *
      * @param userId - The ID of the user to retrieve.
-     * @param params - Optional query params (e.g. include_deleted).
+     * @param params - Optional query params (e.g. includeDeleted).
      * @returns A result containing the user, or an error.
      */
-    retrieve(userId: string, params?: { include_deleted?: boolean }) {
+    retrieve(userId: string, params?: { includeDeleted?: boolean }) {
       return adminRequest<AdminUser>(runtime, {
         method: 'GET',
         path: `/users/${userId}`,
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          include_deleted: params?.includeDeleted,
+        },
       })
     },
 
@@ -113,17 +122,19 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
      * Retrieves a user by username.
      *
      * @param username - The username to look up.
-     * @param params - Optional query params (e.g. include_deleted).
+     * @param params - Optional query params (e.g. includeDeleted).
      * @returns A result containing the user, or an error.
      */
     retrieveByUsername(
       username: string,
-      params?: { include_deleted?: boolean }
+      params?: { includeDeleted?: boolean }
     ) {
       return adminRequest<AdminUser>(runtime, {
         method: 'GET',
         path: `/users/by-username/${username}`,
-        query: params as Record<string, string | number | boolean | undefined>,
+        query: {
+          include_deleted: params?.includeDeleted,
+        },
       })
     },
 
