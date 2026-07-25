@@ -51,9 +51,9 @@ describe('Console notepad admin collection route', () => {
     expect(mocks.list).toHaveBeenCalledWith(
       { userId: 'user_console_admin' },
       {
-        owner_account_id: 'user_target',
+        ownerAccountId: 'user_target',
         limit: 50,
-        starting_after: undefined,
+        startingAfter: undefined,
       }
     )
   })

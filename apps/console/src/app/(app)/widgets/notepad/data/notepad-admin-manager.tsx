@@ -26,9 +26,9 @@ function NotepadAdminTable() {
     async (cursor?: string) => {
       setLoading(true)
       const result = await browserNotes.listAll({
-        owner_account_id: ownerFilter || undefined,
+        ownerAccountId: ownerFilter || undefined,
         limit: 50,
-        starting_after: cursor,
+        startingAfter: cursor,
       })
       setLoading(false)
       if (result.error !== null) {
