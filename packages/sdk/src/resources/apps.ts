@@ -1,4 +1,4 @@
-import { buildClientQuery } from '@876/core/client'
+import { buildClientQuery, toCursorQuery } from '@876/core/client'
 
 import { sendAuthRequest } from '../request.ts'
 import type { SdkRuntime } from '../request.ts'
@@ -38,7 +38,11 @@ export function createAppsResource(runtime: SdkRuntime) {
       return sendAuthRequest(
         runtime,
         'GET',
-        `/apps${buildClientQuery(params)}`,
+        `/apps${buildClientQuery({
+          ...toCursorQuery(params),
+          organizationId: params.organizationId,
+          status: params.status,
+        })}`,
         undefined,
         sdk876AppListSchema,
         requestOptions
