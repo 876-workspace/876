@@ -87,20 +87,37 @@ def _identity_filter(customer_type: str, body: dict[str, Any]) -> tuple[str, str
     return "user_id", str(user_id)
 
 
+# Snapshot fields Core owns, mapped to their column. Billing-owned fields
+# (currency, payment terms, price list, …) are never touched here.
+_SNAPSHOT_FIELDS: tuple[tuple[str, str], ...] = (
+    ("name", "name"),
+    ("email", "email"),
+    ("companyName", "company_name"),
+    ("firstName", "first_name"),
+    ("lastName", "last_name"),
+    ("phone", "phone"),
+)
+
+
 def _identity_values(body: dict[str, Any], now: int) -> dict[str, Any]:
-    """The snapshot fields Core owns. Billing-owned fields are never touched."""
-    kind = str(body.get("customerKind") or CustomerKind.INDIVIDUAL.value)
-    return {
-        "customer_kind": CustomerKind(kind),
-        "name": str(body.get("name") or ""),
-        "email": body.get("email"),
-        "company_name": body.get("companyName"),
-        "first_name": body.get("firstName"),
-        "last_name": body.get("lastName"),
-        "phone": body.get("phone"),
-        "core_synced_at": now,
-        "updated_at": now,
-    }
+    """Builds the column updates for one ensure payload.
+
+    Only fields the payload actually carries are written. A partial or legacy
+    event — one queued before the party snapshot existed — must leave the
+    fields it says nothing about alone, rather than blanking a company name and
+    contact that a later, richer event already stored. An explicit null is
+    still honoured, so Core can clear a field on purpose.
+    """
+    values: dict[str, Any] = {"core_synced_at": now, "updated_at": now}
+
+    if "customerKind" in body and body["customerKind"]:
+        values["customer_kind"] = CustomerKind(str(body["customerKind"]))
+
+    for key, column in _SNAPSHOT_FIELDS:
+        if key in body:
+            values[column] = body[key]
+
+    return values
 
 
 async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> dict[str, Any]:
@@ -128,6 +145,16 @@ async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> d
 
     values = _identity_values(body, now)
     if existing is None:
+        # A new row needs the non-nullable columns even when the payload omits
+        # them; kind falls back to the party's link type.
+        defaults = {
+            "customer_kind": (
+                CustomerKind.BUSINESS
+                if customer_type == CustomerType.CORE_ORGANIZATION.value
+                else CustomerKind.INDIVIDUAL
+            ),
+            "name": str(body.get("name") or value),
+        }
         customer = Customer(
             id=_generated_id("cust"),
             tenant_id=tenant.id,
@@ -138,7 +165,7 @@ async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> d
             language=tenant.default_language,
             status=CustomerStatus.ACTIVE,
             created_at=now,
-            **values,
+            **{**defaults, **values},
         )
         session.add(customer)
         await session.flush()
@@ -146,8 +173,8 @@ async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> d
     else:
         # A name is only overwritten when Core supplies one, so a workspace that
         # renamed a customer locally is not clobbered by an empty snapshot.
-        if not values["name"]:
-            values.pop("name")
+        if not values.get("name"):
+            values.pop("name", None)
         for key, field_value in values.items():
             setattr(existing, key, field_value)
         customer = existing

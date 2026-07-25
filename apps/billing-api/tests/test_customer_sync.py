@@ -227,7 +227,33 @@ def test_identity_values_maps_party_snapshot_and_defaults_kind() -> None:
     }
 
     defaulted = sync._identity_values({"name": "Ada"}, now=1)
-    assert defaulted["customer_kind"] == CustomerKind.INDIVIDUAL
+    # An absent kind is left to the create-path default rather than guessed.
+    assert "customer_kind" not in defaulted
+
+
+def test_identity_values_omits_fields_the_payload_does_not_carry() -> None:
+    """A legacy event must not blank fields a richer event already stored."""
+    values = sync._identity_values(
+        {"name": "Efesto Technologies", "email": None},
+        now=1_700,
+    )
+
+    assert values == {
+        "name": "Efesto Technologies",
+        "email": None,
+        "core_synced_at": 1_700,
+        "updated_at": 1_700,
+    }
+    for absent in ("company_name", "first_name", "last_name", "phone", "customer_kind"):
+        assert absent not in values
+
+
+def test_identity_values_honours_an_explicit_null() -> None:
+    """Core clearing a field on purpose is distinct from omitting it."""
+    values = sync._identity_values({"companyName": None}, now=1)
+
+    assert "company_name" in values
+    assert values["company_name"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -725,11 +751,55 @@ async def test_attach_primary_contacts_skips_payloads_without_id() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_identity_values_empty_name_becomes_empty_string() -> None:
+def test_identity_values_of_an_empty_payload_touches_only_the_sync_stamp() -> None:
+    """An empty ensure body must not overwrite any stored identity field."""
     values = sync._identity_values({}, now=1)
 
-    assert values["name"] == ""
-    assert values["customer_kind"] == CustomerKind.INDIVIDUAL
+    assert values == {"core_synced_at": 1, "updated_at": 1}
+
+
+@pytest.mark.asyncio
+async def test_legacy_event_retry_does_not_blank_a_synced_customer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: a queued pre-snapshot event must not undo a richer sync.
+
+    Events queued before the party snapshot existed carry only customerType,
+    organizationId, name, and email. When such an event is retried after a
+    newer event already stored the company name and contact, it must leave
+    those fields intact.
+    """
+    tenant = _tenant()
+    monkeypatch.setattr(
+        sync,
+        "get_settings",
+        lambda: SimpleNamespace(platform_tenant_slug=tenant.slug),
+    )
+    existing = _customer(
+        company_name="Efesto Technologies",
+        first_name="Ada",
+        last_name="Lovelace",
+    )
+    session = _FakeSession(tenants_by_slug={tenant.slug: tenant}, customers=[existing])
+
+    result = await sync.ensure_core_customer(
+        session,
+        {
+            "customerType": "CORE_ORGANIZATION",
+            "organizationId": "org_1",
+            "name": "Efesto",
+            "email": None,
+        },
+    )
+
+    assert result["created"] is False
+    assert existing.company_name == "Efesto Technologies"
+    assert existing.first_name == "Ada"
+    assert existing.last_name == "Lovelace"
+    assert existing.customer_kind == CustomerKind.BUSINESS
+    # The fields the legacy event does carry still apply.
+    assert existing.name == "Efesto"
+    assert existing.email is None
 
 
 def test_identity_values_rejects_unknown_kind_via_enum() -> None:
