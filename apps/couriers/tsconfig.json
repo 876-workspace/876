@@ -31,5 +31,10 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  // `prisma/` holds Node-only maintenance scripts (seed) that import the
+  // gitignored `prisma-node` client. They are not part of the Next.js app, and
+  // `next build` type-checks everything in `include` — on a clean CI checkout
+  // (Cloudflare Workers Builds) that client does not exist and the build fails.
+  // Check them on demand with `pnpm typecheck:db`.
+  "exclude": ["node_modules", "prisma"]
 }
