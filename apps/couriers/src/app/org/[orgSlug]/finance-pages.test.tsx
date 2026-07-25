@@ -143,8 +143,8 @@ describe('Couriers finance-backed pages', () => {
     expect(screen.getByText('Ada Lovelace')).toBeVisible()
     expect(screen.getByText('ada@example.test')).toBeVisible()
     expect(screen.getByText('Individual')).toBeVisible()
-    // Contact column shows an em dash when there is no separate contact.
-    expect(screen.getByText('—')).toBeVisible()
+    // Contact and mailbox columns both show an em dash when empty.
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
     expect(screen.queryByText('Nia Campbell')).toBeNull()
   })
 
@@ -380,7 +380,8 @@ describe('Couriers finance-backed pages', () => {
 
     render(await CustomersPage({ params, searchParams: emptySearchParams }))
 
-    expect(screen.getByText('—')).toBeVisible()
+    // Contact and mailbox both fall back to a dash when empty.
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('contact@biz.test')).toBeVisible()
   })
 
@@ -466,7 +467,7 @@ describe('Couriers finance-backed pages', () => {
           sku: 'DELIVERY-SAME-DAY',
           description: null,
           type: 'SERVICE',
-          source: { app: '876-couriers' },
+          sourceAppId: '876-couriers',
           defaultSellingAmount: '125000',
           defaultSellingCurrency: 'JMD',
         },
@@ -476,7 +477,7 @@ describe('Couriers finance-backed pages', () => {
           sku: null,
           description: 'Reusable mailer',
           type: 'GOOD',
-          source: null,
+          sourceAppId: null,
           defaultSellingAmount: null,
           defaultSellingCurrency: null,
         },

@@ -75,7 +75,7 @@ export default async function CustomersPage({ params, searchParams }: Props) {
     return {
       id: profile.id,
       billingCustomerId: profile.billingCustomerId,
-      name: identity?.name ?? profile.billingCustomerId,
+      name: identity?.name ?? profile.billingCustomerId ?? profile.id,
       contactName,
       email: contact?.email ?? identity?.email ?? null,
       mailboxNumber: primaryMailbox?.number ?? null,

@@ -27,12 +27,14 @@ type Props = {
 }
 
 function customerInitials(name: string): string {
-  return name
+  const initials = name
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('')
+
+  return initials || '?'
 }
 
 const columns: ColumnDef<CustomerTableRow, unknown>[] = [
@@ -50,7 +52,7 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
           <div className="min-w-0">
             <div className="truncate font-medium">{name}</div>
             <div className="text-muted-foreground truncate text-xs">
-              {email ?? billingCustomerId}
+              {email ?? billingCustomerId ?? '—'}
             </div>
           </div>
         </div>
