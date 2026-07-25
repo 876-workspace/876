@@ -1,3 +1,5 @@
+import { toCursorQuery } from '@876/core/client'
+
 import {
   BillingCustomerListSchema,
   BillingCustomerSchema,
@@ -32,12 +34,10 @@ export function createIntegrationCustomersResource(
           method: 'GET',
           path: collectionPath(organizationId),
           query: {
-            limit: params.limit,
-            starting_after: params.starting_after,
-            ending_before: params.ending_before,
+            ...toCursorQuery(params),
             status: params.status,
-            user_id: params.user_id,
-            organization_id: params.organization_id,
+            user_id: params.userId,
+            organization_id: params.organizationId,
           },
         },
         BillingCustomerListSchema

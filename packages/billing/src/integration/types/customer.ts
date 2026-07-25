@@ -1,3 +1,5 @@
+import type { CursorPageParams } from '@876/core/client'
+
 import type { List } from '../../types'
 import type {
   BillingCustomerKind,
@@ -238,22 +240,7 @@ export interface BillingCustomerCreateParams {
 /**
  * Parameters for listing Billing customers.
  */
-export interface BillingCustomerListParams {
-  /**
-   * A limit on the number of objects to be returned.
-   */
-  limit?: number
-
-  /**
-   * A cursor for pagination across multiple pages of results. Fetch the next page with `starting_after`.
-   */
-  starting_after?: string
-
-  /**
-   * A cursor for pagination across multiple pages of results. Fetch the previous page with `ending_before`.
-   */
-  ending_before?: string
-
+export interface BillingCustomerListParams extends CursorPageParams {
   /**
    * Filter by lifecycle status. One of `ACTIVE` or `ARCHIVED`.
    */
@@ -262,12 +249,12 @@ export interface BillingCustomerListParams {
   /**
    * Resolve the one shared Billing customer linked to a Core user.
    */
-  user_id?: string
+  userId?: string
 
   /**
    * Resolve the one shared Billing customer linked to a Core organization.
    */
-  organization_id?: string
+  organizationId?: string
 }
 
 /**
