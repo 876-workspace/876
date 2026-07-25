@@ -49,15 +49,23 @@ export default async function CustomersPage({ searchParams }: Props) {
     context.tenant.id,
     filterStatus
   )
-  const rows = customers.map((customer) => ({
-    id: customer.id,
-    name: customer.name,
-    companyName: customer.companyName,
-    phone: customer.phone ?? customer.workPhone,
-    receivables: Number(customer.outstandingReceivable),
-    currency: customer.defaultCurrency ?? context.tenant.defaultCurrency,
-    status: customer.status,
-  }))
+  const rows = customers.map((customer) => {
+    const contact = customer.contacts[0]
+    return {
+      id: customer.id,
+      name: customer.name,
+      companyName: customer.companyName,
+      contactName:
+        [contact?.firstName, contact?.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim() || null,
+      phone: customer.phone ?? customer.workPhone,
+      receivables: Number(customer.outstandingReceivable),
+      currency: customer.defaultCurrency ?? context.tenant.defaultCurrency,
+      status: customer.status,
+    }
+  })
 
   return (
     <Page>

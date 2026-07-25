@@ -74,6 +74,20 @@ const cases: QueryCase[] = [
     args: {
       where: { tenantId: 'ten_123' },
       orderBy: { createdAt: 'desc' },
+      include: {
+        contacts: {
+          where: { isPrimary: true },
+          take: 1,
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            workPhone: true,
+            mobilePhone: true,
+          },
+        },
+      },
     },
   },
   {
@@ -84,6 +98,20 @@ const cases: QueryCase[] = [
     args: {
       where: { tenantId: 'ten_123', status: 'ARCHIVED' },
       orderBy: { createdAt: 'desc' },
+      include: {
+        contacts: {
+          where: { isPrimary: true },
+          take: 1,
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            workPhone: true,
+            mobilePhone: true,
+          },
+        },
+      },
     },
   },
   {
