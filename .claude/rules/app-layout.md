@@ -334,6 +334,36 @@ expand/collapse trigger are separate hit targets, not a single button.
   accent color for create actions. Don't introduce a second accent (gold,
   purple, etc.) for the same role on a different page.
 
+### Status/role chips — `SoftBadge`
+
+For status, role, and type chips in tables and detail views, prefer
+`SoftBadge` (soft border/background tone) over `@876/ui/badge`'s solid
+`variant` props. Reference implementation: Couriers'
+`src/components/soft-badge.tsx`.
+
+```tsx
+export type SoftBadgeTone =
+  | 'sky' | 'emerald' | 'amber' | 'slate' | 'purple' | 'rose'
+
+<SoftBadge tone="emerald">Active</SoftBadge>
+```
+
+- Pick a tone by semantic meaning, not visual preference: `emerald` for a
+  positive/terminal state (active, collected, enrolled), `sky` for
+  in-progress/informational states, `amber` for attention/pending, `rose` for
+  negative/error states, `slate` for neutral/default, `purple` for a
+  secondary category axis unrelated to status (e.g. item type).
+- Build a `Record<Status, SoftBadgeTone>` map next to the column definition
+  instead of branching inline per row — see `PACKAGE_STATUS_TONE` in
+  `apps/couriers/src/components/portal/package-status-badge.tsx`.
+- Wrap a specific resource's status/role logic in a small named component
+  (`MemberStatusBadge`, `RoleNameBadge`) rather than inlining the tone map at
+  every call site — copy this pattern into new sidebar-style apps
+  (Console, Enterprise, Billing) rather than reintroducing `@876/ui/badge`
+  solid variants for the same role.
+- This does not replace the "no green buttons" rule above — `SoftBadge`
+  tones are for status/role indicators only, never for interactive buttons.
+
 ---
 
 ## 10. Button labels
