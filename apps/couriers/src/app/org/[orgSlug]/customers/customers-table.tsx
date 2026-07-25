@@ -7,17 +7,20 @@ import { DataTable } from '@876/ui/data-table'
 
 export type CustomerTableRow = {
   id: string
+  billingCustomerId: string
+  /** Business name for a company, person's name for an individual. */
   name: string
+  /** Primary contact's name. Set for businesses; null for individuals. */
+  contactName: string | null
   email: string | null
   customerKind: 'BUSINESS' | 'INDIVIDUAL' | string
-  status: 'ACTIVE' | 'ARCHIVED' | string
-  enrolled: boolean
+  status: 'ACTIVE' | 'SUSPENDED' | string
+  isCommercial: boolean
 }
 
 type Props = {
   customers: CustomerTableRow[]
   emptyState?: ReactNode
-  hasMore?: boolean
 }
 
 const columns: ColumnDef<CustomerTableRow, unknown>[] = [
@@ -28,10 +31,20 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
       <>
         <div className="font-medium">{row.original.name}</div>
         <div className="text-muted-foreground text-xs">
-          {row.original.email ?? row.original.id}
+          {row.original.email ?? row.original.billingCustomerId}
         </div>
       </>
     ),
+  },
+  {
+    id: 'contact',
+    header: 'Contact',
+    cell: ({ row }) =>
+      row.original.contactName ? (
+        <span className="text-sm">{row.original.contactName}</span>
+      ) : (
+        <span className="text-muted-foreground text-sm">&mdash;</span>
+      ),
   },
   {
     id: 'type',
@@ -44,39 +57,23 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   },
   {
     id: 'status',
-    header: 'Status',
-    cell: ({ row }) => (
-      <Badge
-        variant={row.original.status === 'ACTIVE' ? 'secondary' : 'outline'}
-      >
-        {row.original.status === 'ACTIVE' ? 'Active' : 'Archived'}
-      </Badge>
-    ),
-  },
-  {
-    id: 'enrolled',
-    header: () => <div className="text-right">Courier profile</div>,
+    header: () => <div className="text-right">Status</div>,
     cell: ({ row }) => (
       <div className="text-right">
-        {row.original.enrolled ? (
-          <Badge variant="secondary">Enrolled</Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">Not enrolled</span>
-        )}
+        <Badge
+          variant={row.original.status === 'ACTIVE' ? 'secondary' : 'outline'}
+        >
+          {row.original.status === 'ACTIVE' ? 'Active' : 'Suspended'}
+        </Badge>
       </div>
     ),
   },
 ]
 
-export function CustomersTable({ customers, emptyState, hasMore }: Props) {
+export function CustomersTable({ customers, emptyState }: Props) {
   return (
     <div className="876-card overflow-hidden">
       <DataTable columns={columns} data={customers} emptyState={emptyState} />
-      {hasMore ? (
-        <p className="text-muted-foreground border-t px-5 py-3 text-xs">
-          Showing the first 100 customers.
-        </p>
-      ) : null}
     </div>
   )
 }

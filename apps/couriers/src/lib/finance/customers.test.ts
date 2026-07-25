@@ -31,6 +31,8 @@ const sharedCustomer = {
   status: 'ACTIVE' as const,
   createdAt: 1,
   updatedAt: 1,
+  // Individuals are their own contact — integration payloads leave this null.
+  primaryContact: null,
 }
 
 function client(options?: { lists?: unknown[]; create?: unknown }) {
@@ -89,7 +91,7 @@ describe('ensureSharedCoreUserCustomer', () => {
     expect(result.data?.id).toBe('cus_shared')
     expect(finance.customers.list).toHaveBeenCalledWith('org_1', {
       limit: 2,
-      user_id: 'usr_1',
+      userId: 'usr_1',
     })
     expect(finance.customers.create).not.toHaveBeenCalled()
   })
@@ -110,6 +112,103 @@ describe('ensureSharedCoreUserCustomer', () => {
       }),
       { idempotencyKey: 'couriers:core-user:usr_1' }
     )
+  })
+
+  it('creates with first and last name so Billing can render the party snapshot', async () => {
+    const finance = client()
+
+    await ensureSharedCoreUserCustomer(finance, 'org_1', user)
+
+    expect(finance.customers.create).toHaveBeenCalledWith(
+      'org_1',
+      expect.objectContaining({
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@example.test',
+        customerKind: 'INDIVIDUAL',
+      }),
+      expect.any(Object)
+    )
+  })
+
+  it('propagates a non-conflict create error after a fruitless race recheck', async () => {
+    const finance = client({
+      lists: [
+        {
+          data: {
+            object: 'list',
+            data: [],
+            has_more: false,
+            total_count: 0,
+            url: '/customers',
+          },
+          error: null,
+        },
+        {
+          data: {
+            object: 'list',
+            data: [],
+            has_more: false,
+            total_count: 0,
+            url: '/customers',
+          },
+          error: null,
+        },
+      ],
+      create: {
+        data: null,
+        error: {
+          code: 'billing/unavailable',
+          message: 'Billing is offline.',
+        },
+      },
+    })
+
+    const result = await ensureSharedCoreUserCustomer(finance, 'org_1', user)
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('billing/unavailable')
+    // Initial miss + post-create race recheck; neither finds a row.
+    expect(finance.customers.list).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects when more than one Billing customer shares the same core user', async () => {
+    const finance = client({
+      lists: [
+        {
+          data: {
+            object: 'list',
+            data: [sharedCustomer, { ...sharedCustomer, id: 'cus_dup' }],
+            has_more: false,
+            total_count: 2,
+            url: '/customers',
+          },
+          error: null,
+        },
+      ],
+    })
+
+    const result = await ensureSharedCoreUserCustomer(finance, 'org_1', user)
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('couriers/ambiguous-billing-customer')
+    expect(finance.customers.create).not.toHaveBeenCalled()
+  })
+
+  it('propagates a list error before attempting create', async () => {
+    const finance = client({
+      lists: [
+        {
+          data: null,
+          error: { code: 'billing/unauthorized', message: 'No access.' },
+        },
+      ],
+    })
+
+    const result = await ensureSharedCoreUserCustomer(finance, 'org_1', user)
+
+    expect(result.error?.code).toBe('billing/unauthorized')
+    expect(finance.customers.create).not.toHaveBeenCalled()
   })
 
   it('adopts the concurrent winner after a unique-core-reference race', async () => {
