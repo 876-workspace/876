@@ -48,22 +48,35 @@ export default async function CustomersPage({ params, searchParams }: Props) {
     }),
     service.customerProfiles.list(ctx.tenant.id),
   ])
-  const enrolledCustomerIds = new Set(
-    profiles.flatMap((profile) =>
-      profile.billingCustomerId ? [profile.billingCustomerId] : []
-    )
+  const profileByBillingId = new Map(
+    profiles.map((profile) => [profile.billingCustomerId, profile])
   )
 
   const rows = customers.error
     ? []
-    : customers.data.data.map((customer) => ({
-        id: customer.id,
-        name: customer.name,
-        email: customer.email,
-        customerKind: customer.customerKind,
-        status: customer.status,
-        enrolled: enrolledCustomerIds.has(customer.id),
-      }))
+    : customers.data.data.map((customer) => {
+        const profile = profileByBillingId.get(customer.id)
+        const primaryMailbox = profile?.mailboxes[0]
+        const contactName = [customer.firstName, customer.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim()
+        // Name = owner/contact person; organization stays on its own column.
+        const name =
+          contactName ||
+          (customer.customerKind === 'INDIVIDUAL' ? customer.name : '—')
+        const organization =
+          customer.companyName ??
+          (customer.customerKind === 'BUSINESS' ? customer.name : null)
+
+        return {
+          id: customer.id,
+          name,
+          email: customer.email,
+          organization,
+          mailboxNumber: primaryMailbox?.number ?? null,
+        }
+      })
 
   const emptyMessage =
     selectedStatus === 'all'

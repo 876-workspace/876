@@ -60,22 +60,28 @@ describe('Couriers finance-backed pages', () => {
     mocks.listProfiles.mockResolvedValue([])
   })
 
-  it('when shared customers exist, distinguishes enrolled and unenrolled courier profiles', async () => {
+  it('when shared customers exist, shows contact name, organization, and mailbox columns', async () => {
     mocks.listCustomers.mockResolvedValue(
       listResult(
         [
           {
             id: 'cus_business',
             name: 'Blue Mountain Trading',
+            firstName: 'Marlon',
+            lastName: 'Grant',
             email: 'ops@bluemountain.test',
             customerKind: 'BUSINESS',
+            companyName: 'Blue Mountain Trading Ltd',
             status: 'ACTIVE',
           },
           {
             id: 'cus_person',
             name: 'Nia Campbell',
+            firstName: 'Nia',
+            lastName: 'Campbell',
             email: null,
             customerKind: 'INDIVIDUAL',
+            companyName: null,
             status: 'ARCHIVED',
           },
         ],
@@ -83,15 +89,25 @@ describe('Couriers finance-backed pages', () => {
       )
     )
     mocks.listProfiles.mockResolvedValue([
-      { id: 'profile_1', billingCustomerId: 'cus_business' },
+      {
+        id: 'profile_1',
+        billingCustomerId: 'cus_business',
+        mailboxes: [{ number: 'RSJ1001', isPrimary: true }],
+      },
     ])
 
     render(await CustomersPage({ params, searchParams: emptySearchParams }))
 
-    expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
+    expect(
+      screen.getByRole('columnheader', { name: 'Organization' })
+    ).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Mailbox' })).toBeVisible()
+    expect(screen.getByText('Marlon Grant')).toBeVisible()
+    expect(screen.getByText('ops@bluemountain.test')).toBeVisible()
+    expect(screen.getByText('Blue Mountain Trading Ltd')).toBeVisible()
+    expect(screen.getByText('RSJ1001')).toBeVisible()
     expect(screen.getByText('Nia Campbell')).toBeVisible()
-    expect(screen.getByText('Enrolled')).toBeVisible()
-    expect(screen.getByText('Not enrolled')).toBeVisible()
     expect(screen.getByText('Showing the first 100 customers.')).toBeVisible()
     expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
       limit: 100,
@@ -113,7 +129,7 @@ describe('Couriers finance-backed pages', () => {
       limit: 100,
       status: 'ARCHIVED',
     })
-    expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
     expect(screen.getByText('No customers')).toBeVisible()
     expect(screen.getByText('No archived customers.')).toBeVisible()
   })
@@ -123,7 +139,7 @@ describe('Couriers finance-backed pages', () => {
     const { rerender } = render(
       await CustomersPage({ params, searchParams: emptySearchParams })
     )
-    expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
     expect(screen.getByText('No customers')).toBeVisible()
     expect(
       screen.getByText('No shared customers in this finance workspace yet.')
@@ -134,7 +150,7 @@ describe('Couriers finance-backed pages', () => {
       error: { message: 'Finance customers are temporarily unavailable.' },
     })
     rerender(await CustomersPage({ params, searchParams: emptySearchParams }))
-    expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
     expect(
       screen.getByText('Finance customers are temporarily unavailable.')
     ).toBeVisible()

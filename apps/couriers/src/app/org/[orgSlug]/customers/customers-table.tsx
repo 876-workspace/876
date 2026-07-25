@@ -2,16 +2,15 @@
 
 import type { ReactNode } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@876/ui/badge'
+import { Avatar, AvatarFallback } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
 
 export type CustomerTableRow = {
   id: string
   name: string
   email: string | null
-  customerKind: 'BUSINESS' | 'INDIVIDUAL' | string
-  status: 'ACTIVE' | 'ARCHIVED' | string
-  enrolled: boolean
+  organization: string | null
+  mailboxNumber: string | null
 }
 
 type Props = {
@@ -20,50 +19,53 @@ type Props = {
   hasMore?: boolean
 }
 
+function customerInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('')
+}
+
 const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   {
-    id: 'customer',
-    header: 'Customer',
-    cell: ({ row }) => (
-      <>
-        <div className="font-medium">{row.original.name}</div>
-        <div className="text-muted-foreground text-xs">
-          {row.original.email ?? row.original.id}
+    id: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const { name, email, id } = row.original
+
+      return (
+        <div className="flex min-w-0 items-center gap-4">
+          <Avatar>
+            <AvatarFallback>{customerInitials(name)}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <div className="truncate font-medium">{name}</div>
+            <div className="text-muted-foreground truncate text-xs">
+              {email ?? id}
+            </div>
+          </div>
         </div>
-      </>
-    ),
+      )
+    },
   },
   {
-    id: 'type',
-    header: 'Type',
+    id: 'organization',
+    header: 'Organization',
     cell: ({ row }) => (
       <span className="text-muted-foreground text-sm">
-        {row.original.customerKind === 'BUSINESS' ? 'Business' : 'Individual'}
+        {row.original.organization || '—'}
       </span>
     ),
   },
   {
-    id: 'status',
-    header: 'Status',
+    id: 'mailbox',
+    header: 'Mailbox',
     cell: ({ row }) => (
-      <Badge
-        variant={row.original.status === 'ACTIVE' ? 'secondary' : 'outline'}
-      >
-        {row.original.status === 'ACTIVE' ? 'Active' : 'Archived'}
-      </Badge>
-    ),
-  },
-  {
-    id: 'enrolled',
-    header: () => <div className="text-right">Courier profile</div>,
-    cell: ({ row }) => (
-      <div className="text-right">
-        {row.original.enrolled ? (
-          <Badge variant="secondary">Enrolled</Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">Not enrolled</span>
-        )}
-      </div>
+      <span className="font-medium tabular-nums">
+        {row.original.mailboxNumber || '—'}
+      </span>
     ),
   },
 ]
