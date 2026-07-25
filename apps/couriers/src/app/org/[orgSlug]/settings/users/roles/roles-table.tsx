@@ -2,22 +2,21 @@
 
 import { useRouter } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 
 import type { RoleView } from '@/types/role'
+
+import { RoleNameBadge } from '../role-name-badge'
 
 const columns: ColumnDef<RoleView, unknown>[] = [
   {
     id: 'name',
     header: 'Name',
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 font-medium">
-        {row.original.name}
-        {row.original.systemKey ? (
-          <Badge variant="outline">Default</Badge>
-        ) : null}
-      </div>
+      <RoleNameBadge
+        name={row.original.name}
+        systemKey={row.original.systemKey}
+      />
     ),
   },
   {
@@ -28,10 +27,6 @@ const columns: ColumnDef<RoleView, unknown>[] = [
         {row.original.description || '—'}
       </span>
     ),
-  },
-  {
-    accessorKey: 'memberCount',
-    header: 'Members',
   },
 ]
 

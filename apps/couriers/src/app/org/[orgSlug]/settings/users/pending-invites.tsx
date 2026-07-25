@@ -3,12 +3,13 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { DataTable } from '@876/ui/data-table'
 
 import { client } from '@/lib/client'
 import type { PendingTeamInvite } from '@/types/team'
+
+import { RoleNameBadge } from './role-name-badge'
 
 type Props = {
   orgSlug: string
@@ -52,9 +53,17 @@ export function PendingInvites({ orgSlug, invites }: Props) {
     {
       id: 'role',
       header: 'Role',
-      cell: ({ row }) => (
-        <Badge variant="outline">{row.original.role ?? 'member'}</Badge>
-      ),
+      cell: ({ row }) => {
+        const raw = row.original.role ?? 'member'
+        const systemKey =
+          raw === 'admin' || raw === 'staff' ? raw : null
+        const name =
+          systemKey != null
+            ? raw.charAt(0).toUpperCase() + raw.slice(1)
+            : raw
+
+        return <RoleNameBadge name={name} systemKey={systemKey} />
+      },
     },
     {
       id: 'expires',

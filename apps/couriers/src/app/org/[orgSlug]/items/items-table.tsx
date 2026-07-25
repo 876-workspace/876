@@ -2,8 +2,9 @@
 
 import type { ReactNode } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+
+import { SoftBadge } from '@/components/soft-badge'
 
 export type ItemTableRow = {
   id: string
@@ -35,11 +36,12 @@ const columns: ColumnDef<ItemTableRow, unknown>[] = [
   {
     id: 'type',
     header: 'Type',
-    cell: ({ row }) => (
-      <Badge variant="outline">
-        {row.original.type === 'SERVICE' ? 'Service' : 'Good'}
-      </Badge>
-    ),
+    cell: ({ row }) =>
+      row.original.type === 'SERVICE' ? (
+        <SoftBadge tone="sky">Service</SoftBadge>
+      ) : (
+        <SoftBadge tone="purple">Good</SoftBadge>
+      ),
   },
   {
     id: 'origin',

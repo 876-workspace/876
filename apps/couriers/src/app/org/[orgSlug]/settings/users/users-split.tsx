@@ -3,12 +3,13 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
-import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 
 import type { TeamMemberRow, TeamRoleOption } from '@/types/team'
 
 import { memberInitials } from './member-initials'
+import { MemberStatusBadge } from './member-status-badge'
+import { RoleNameBadge } from './role-name-badge'
 import { UserDetail } from './user-detail'
 
 type Props = {
@@ -29,18 +30,17 @@ const fullColumns: ColumnDef<TeamMemberRow, unknown>[] = [
   {
     id: 'role',
     header: 'Role',
-    cell: ({ row }) => <span className="text-sm">{row.original.roleName}</span>,
+    cell: ({ row }) => (
+      <RoleNameBadge
+        name={row.original.roleName}
+        systemKey={row.original.roleSystemKey}
+      />
+    ),
   },
   {
     id: 'status',
     header: 'Status',
-    cell: ({ row }) => (
-      <Badge
-        variant={row.original.status === 'active' ? 'success' : 'secondary'}
-      >
-        {row.original.status === 'active' ? 'Active' : 'Inactive'}
-      </Badge>
-    ),
+    cell: ({ row }) => <MemberStatusBadge status={row.original.status} />,
   },
 ]
 

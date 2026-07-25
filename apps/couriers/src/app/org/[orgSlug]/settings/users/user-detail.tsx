@@ -14,7 +14,6 @@ import {
 } from '@876/ui/alert-dialog'
 import { Alert, AlertDescription } from '@876/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
-import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Activity, TriangleAlertIcon, XIcon } from '@876/ui/icons'
 import {
@@ -30,6 +29,7 @@ import { client } from '@/lib/client'
 import type { TeamMemberRow, TeamRoleOption } from '@/types/team'
 
 import { memberInitials } from './member-initials'
+import { MemberStatusBadge } from './member-status-badge'
 import { UserPermissionsSummary } from './user-permissions-summary'
 
 /** In-panel tab chrome matching RouteTabs line look. */
@@ -98,9 +98,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
             <h2 className="truncate text-base font-semibold tracking-tight">
               {row.name}
             </h2>
-            <Badge variant={isActive ? 'success' : 'secondary'}>
-              {isActive ? 'Active' : 'Inactive'}
-            </Badge>
+            <MemberStatusBadge status={row.status} />
           </div>
           <p className="text-muted-foreground mt-0.5 truncate text-sm">
             {row.email ?? 'No email available'}
