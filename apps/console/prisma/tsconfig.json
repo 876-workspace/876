@@ -1,0 +1,12 @@
+{
+  // Type-checks the Node-only Prisma maintenance scripts (seed, backfill),
+  // which the app tsconfig excludes so `next build` does not depend on the
+  // gitignored `prisma-node` client. Run `pnpm db:generate` first.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "incremental": false
+  },
+  "include": ["**/*.ts"],
+  "exclude": []
+}
