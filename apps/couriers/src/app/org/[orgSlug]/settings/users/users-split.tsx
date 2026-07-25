@@ -81,6 +81,9 @@ export function UsersSplit({ rows, roles, selectedId, orgSlug }: Props) {
         <DataTable
           columns={[userColumn]}
           data={rows}
+          rowClassName={(row) =>
+            row.id === selectedId ? 'bg-accent/80 font-medium' : ''
+          }
           onRowClick={(row) => selectUser(row.id)}
         />
       </div>
