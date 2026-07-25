@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   orgRetrieve: vi.fn(),
   productRetrieve: vi.fn(),
   subscriptionRetrieve: vi.fn(),
+  membershipsList: vi.fn(),
+  usersRetrieve: vi.fn(),
   productEnsure: vi.fn(),
   planEnsure: vi.fn(),
   priceEnsure: vi.fn(),
@@ -24,6 +26,8 @@ vi.mock('@/lib/876', () => ({
     orgs: { retrieve: mocks.orgRetrieve },
     products: { retrieve: mocks.productRetrieve },
     subscriptions: { retrieve: mocks.subscriptionRetrieve },
+    memberships: { list: mocks.membershipsList },
+    users: { retrieve: mocks.usersRetrieve },
   },
 }))
 
@@ -153,14 +157,49 @@ function createSubscription(
   }
 }
 
+function createOrg(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'org_1',
+    name: 'Efesto Technologies, Inc',
+    doing_business_as: null as string | null,
+    primary_email: null as string | null,
+    primary_phone: null as string | null,
+    primary_contact_user_id: null as string | null,
+    ...overrides,
+  }
+}
+
 function setUpMocks() {
   vi.clearAllMocks()
   vi.spyOn(console, 'error').mockImplementation(() => {})
-  mocks.orgRetrieve.mockReturnValue(
-    success({ id: 'org_1', name: 'Efesto Technologies, Inc' })
-  )
+  mocks.orgRetrieve.mockReturnValue(success(createOrg()))
   mocks.productRetrieve.mockReturnValue(success(createProduct()))
   mocks.subscriptionRetrieve.mockReturnValue(success(createSubscription()))
+  mocks.membershipsList.mockReturnValue(
+    success({
+      object: 'list',
+      data: [
+        {
+          id: 'mem_1',
+          organization_id: 'org_1',
+          user_id: 'usr_owner',
+          role: 'owner',
+          created_at: 10,
+        },
+      ],
+      has_more: false,
+      url: '/memberships',
+      total_count: 1,
+    })
+  )
+  mocks.usersRetrieve.mockReturnValue(
+    success({
+      id: 'usr_owner',
+      first_name: 'Ada',
+      last_name: 'Lovelace',
+      email: 'ada@efesto.test',
+    })
+  )
   mocks.productEnsure.mockReturnValue(
     success({ object: 'product', id: 'blprod_1' })
   )
@@ -200,6 +239,23 @@ describe('mirrorCoreSubscription', () => {
         currency: 'JMD',
       })
     )
+    expect(mocks.customerEnsure).toHaveBeenCalledWith({
+      organizationId: 'org_1',
+      customerType: 'CORE_ORGANIZATION',
+      customerKind: 'BUSINESS',
+      name: 'Efesto Technologies, Inc',
+      companyName: 'Efesto Technologies, Inc',
+      email: 'ada@efesto.test',
+      phone: null,
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      primaryContact: {
+        userId: 'usr_owner',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@efesto.test',
+      },
+    })
     expect(mocks.subscriptionEnsure).toHaveBeenCalledWith({
       externalReference: 'sub_core_1',
       sourceAppId: 'rap_billing',
@@ -564,8 +620,199 @@ describe('mirrorCoreSubscription edge cases', () => {
     expect(result).toBe(true)
     expect(mocks.customerEnsure).toHaveBeenCalledWith({
       organizationId: 'org_1',
+      customerType: 'CORE_ORGANIZATION',
+      customerKind: 'BUSINESS',
       name: 'org_1',
+      companyName: 'org_1',
+      email: null,
+      phone: null,
+      firstName: null,
+      lastName: null,
+      primaryContact: null,
     })
+    // No org → no membership/user lookups; never fabricate a contact.
+    expect(mocks.membershipsList).not.toHaveBeenCalled()
+    expect(mocks.usersRetrieve).not.toHaveBeenCalled()
+  })
+
+  it('mirrors trading name, AP email, phone, and declared primary contact', async () => {
+    mocks.orgRetrieve.mockReturnValue(
+      success(
+        createOrg({
+          doing_business_as: 'Efesto',
+          primary_email: 'ap@efesto.test',
+          primary_phone: '+18765550000',
+          primary_contact_user_id: 'usr_declared',
+        })
+      )
+    )
+    mocks.usersRetrieve.mockReturnValue(
+      success({
+        id: 'usr_declared',
+        first_name: 'Grace',
+        last_name: 'Hopper',
+        email: 'grace@efesto.test',
+      })
+    )
+
+    const result = await mirrorCoreSubscription(createSubscription())
+
+    expect(result).toBe(true)
+    expect(mocks.membershipsList).not.toHaveBeenCalled()
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith('usr_declared')
+    expect(mocks.customerEnsure).toHaveBeenCalledWith({
+      organizationId: 'org_1',
+      customerType: 'CORE_ORGANIZATION',
+      customerKind: 'BUSINESS',
+      name: 'Efesto',
+      companyName: 'Efesto Technologies, Inc',
+      email: 'ap@efesto.test',
+      phone: '+18765550000',
+      firstName: 'Grace',
+      lastName: 'Hopper',
+      primaryContact: {
+        userId: 'usr_declared',
+        firstName: 'Grace',
+        lastName: 'Hopper',
+        email: 'grace@efesto.test',
+      },
+    })
+  })
+
+  it('prefers the owner membership over an earlier admin when resolving contact', async () => {
+    mocks.membershipsList.mockReturnValue(
+      success({
+        object: 'list',
+        data: [
+          {
+            id: 'mem_admin',
+            organization_id: 'org_1',
+            user_id: 'usr_admin',
+            role: 'admin',
+            created_at: 1,
+          },
+          {
+            id: 'mem_owner',
+            organization_id: 'org_1',
+            user_id: 'usr_owner',
+            role: 'owner',
+            created_at: 99,
+          },
+        ],
+        has_more: false,
+        url: '/memberships',
+        total_count: 2,
+      })
+    )
+
+    await mirrorCoreSubscription(createSubscription())
+
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith('usr_owner')
+    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        primaryContact: expect.objectContaining({ userId: 'usr_owner' }),
+      })
+    )
+  })
+
+  it('falls back to the earliest member when no owner role exists', async () => {
+    mocks.membershipsList.mockReturnValue(
+      success({
+        object: 'list',
+        data: [
+          {
+            id: 'mem_late',
+            organization_id: 'org_1',
+            user_id: 'usr_late',
+            role: 'admin',
+            created_at: 50,
+          },
+          {
+            id: 'mem_early',
+            organization_id: 'org_1',
+            user_id: 'usr_early',
+            role: 'member',
+            created_at: 5,
+          },
+        ],
+        has_more: false,
+        url: '/memberships',
+        total_count: 2,
+      })
+    )
+    mocks.usersRetrieve.mockReturnValue(
+      success({
+        id: 'usr_early',
+        first_name: 'Early',
+        last_name: 'Bird',
+        email: 'early@efesto.test',
+      })
+    )
+
+    await mirrorCoreSubscription(createSubscription())
+
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith('usr_early')
+    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        primaryContact: {
+          userId: 'usr_early',
+          firstName: 'Early',
+          lastName: 'Bird',
+          email: 'early@efesto.test',
+        },
+      })
+    )
+  })
+
+  it('sends only userId when the contact user cannot be retrieved', async () => {
+    mocks.usersRetrieve.mockResolvedValue({ data: null, error: null })
+
+    await mirrorCoreSubscription(createSubscription())
+
+    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        firstName: null,
+        lastName: null,
+        email: null,
+        primaryContact: { userId: 'usr_owner' },
+      })
+    )
+  })
+
+  it('omits primaryContact when the org has no members', async () => {
+    mocks.membershipsList.mockReturnValue(
+      success({
+        object: 'list',
+        data: [],
+        has_more: false,
+        url: '/memberships',
+        total_count: 0,
+      })
+    )
+
+    await mirrorCoreSubscription(createSubscription())
+
+    expect(mocks.usersRetrieve).not.toHaveBeenCalled()
+    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+      expect.objectContaining({
+        primaryContact: null,
+        firstName: null,
+        lastName: null,
+        email: null,
+      })
+    )
+  })
+
+  it('uses contact email when the org has no primary_email', async () => {
+    mocks.orgRetrieve.mockReturnValue(
+      success(createOrg({ primary_email: null }))
+    )
+
+    await mirrorCoreSubscription(createSubscription())
+
+    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'ada@efesto.test' })
+    )
   })
 
   it('stops when the Billing customer cannot be ensured', async () => {
