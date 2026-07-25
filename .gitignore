@@ -112,3 +112,6 @@ apps/876/public/sw.js.map
 
 # Local Cloudflare CLI dump from agent sessions
 .cf-logs/
+
+# Local database backups (e.g. outbox prune snapshots) — never commit data dumps
+.backups/

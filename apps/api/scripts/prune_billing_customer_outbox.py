@@ -5,21 +5,35 @@ organization whether or not anything had changed, so the outbox accumulated
 many delivered duplicates per subject. Deduplication stops the growth; this
 script clears the backlog it left behind.
 
-Only `delivered` rows are considered, and the most recent delivered row per
-subject is always kept, so the delivery history for each party survives.
-Pending, processing, and failed rows are never touched.
+A row is superseded when a *newer delivered* row exists for the same subject:
+
+- `delivered` duplicates — the party synced again afterwards, so the older
+  delivery record is redundant.
+- `failed` rows older than that delivery — the work they represent has since
+  succeeded, so retrying them is pointless. Worse, a `failed` row queued
+  before the party snapshot existed carries only a name and email, so a retry
+  would re-sync the customer from a poorer payload.
+
+The newest delivered row per subject is always kept, so every party retains a
+delivery record. `pending` and `processing` rows, and any `failed` row that is
+the newest event for its subject (real undelivered work), are never touched.
 
 Dry run (default) — reports what would be removed and changes nothing:
     .venv/bin/python -m scripts.prune_billing_customer_outbox
 
-Apply:
-    .venv/bin/python -m scripts.prune_billing_customer_outbox --apply
+Write the rows to be removed to a JSON backup, then delete them:
+    .venv/bin/python -m scripts.prune_billing_customer_outbox \\
+        --backup outbox-backup.json --apply
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import json
+from collections import Counter
+from pathlib import Path
+from typing import Any
 
 from sqlalchemy import func, select
 
@@ -28,9 +42,9 @@ from db.models import BillingCustomerOutbox
 from db.session import AsyncSessionLocal, _make_engine
 
 
-async def _superseded_ids(session: object) -> list[str]:
-    """Delivered event ids that are not the newest for their subject."""
-    newest = (
+async def _superseded_rows(session: Any) -> list[BillingCustomerOutbox]:
+    """Rows made redundant by a newer successful delivery for the same subject."""
+    newest_delivery = (
         select(
             BillingCustomerOutbox.subject_type,
             BillingCustomerOutbox.subject_id,
@@ -42,48 +56,67 @@ async def _superseded_ids(session: object) -> list[str]:
     )
 
     statement = (
-        select(BillingCustomerOutbox.id)
+        select(BillingCustomerOutbox)
         .join(
-            newest,
-            (BillingCustomerOutbox.subject_type == newest.c.subject_type)
-            & (BillingCustomerOutbox.subject_id == newest.c.subject_id),
+            newest_delivery,
+            (BillingCustomerOutbox.subject_type == newest_delivery.c.subject_type)
+            & (BillingCustomerOutbox.subject_id == newest_delivery.c.subject_id),
         )
         .where(
-            BillingCustomerOutbox.status == "delivered",
-            BillingCustomerOutbox.created_at < newest.c.newest_created_at,
+            # `pending` and `processing` are live work and are never pruned.
+            BillingCustomerOutbox.status.in_(("delivered", "failed")),
+            BillingCustomerOutbox.created_at < newest_delivery.c.newest_created_at,
         )
+        .order_by(BillingCustomerOutbox.created_at, BillingCustomerOutbox.id)
     )
-    return list((await session.scalars(statement)).all())  # type: ignore[attr-defined]
+    return list((await session.scalars(statement)).all())
 
 
-async def main(apply: bool) -> None:
+def _as_dict(row: BillingCustomerOutbox) -> dict[str, Any]:
+    return {
+        column.key: getattr(row, column.key) for column in row.__mapper__.column_attrs
+    }
+
+
+async def main(apply: bool, backup_path: str | None) -> None:
     engine = _make_engine(get_settings().database_url)
     AsyncSessionLocal.configure(bind=engine)
 
-    async with AsyncSessionLocal() as session:
-        total = await session.scalar(select(func.count()).select_from(BillingCustomerOutbox))
-        stale = await _superseded_ids(session)
+    try:
+        async with AsyncSessionLocal() as session:
+            total = await session.scalar(select(func.count()).select_from(BillingCustomerOutbox))
+            stale = await _superseded_rows(session)
 
-        print(f"[prune-customer-outbox] total={total} superseded_delivered={len(stale)}")
-        if not stale:
-            print("[prune-customer-outbox] nothing to prune")
-            return
+            by_status = Counter(row.status for row in stale)
+            summary = ", ".join(f"{status}={count}" for status, count in sorted(by_status.items()))
+            print(f"[prune-customer-outbox] total={total} superseded={len(stale)} ({summary or 'none'})")
 
-        if not apply:
-            print("[prune-customer-outbox] dry run — re-run with --apply to delete")
-            return
+            if not stale:
+                print("[prune-customer-outbox] nothing to prune")
+                return
 
-        for event_id in stale:
-            event = await session.get(BillingCustomerOutbox, event_id)
-            if event is not None:
-                await session.delete(event)
-        await session.commit()
-        print(f"[prune-customer-outbox] deleted={len(stale)} remaining={(total or 0) - len(stale)}")
+            if backup_path:
+                payload = [_as_dict(row) for row in stale]
+                Path(backup_path).write_text(json.dumps(payload, indent=2, default=str))
+                print(f"[prune-customer-outbox] wrote backup of {len(payload)} rows to {backup_path}")
 
-    await engine.dispose()
+            if not apply:
+                print("[prune-customer-outbox] dry run — re-run with --apply to delete")
+                return
+
+            for row in stale:
+                await session.delete(row)
+            await session.commit()
+
+            remaining = await session.scalar(select(func.count()).select_from(BillingCustomerOutbox))
+            print(f"[prune-customer-outbox] deleted={len(stale)} remaining={remaining}")
+    finally:
+        await engine.dispose()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true", help="Delete instead of reporting.")
-    asyncio.run(main(parser.parse_args().apply))
+    parser.add_argument("--backup", help="Write the rows to be removed to this JSON file first.")
+    args = parser.parse_args()
+    asyncio.run(main(args.apply, args.backup))
