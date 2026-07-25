@@ -71,9 +71,9 @@ describe('createWidgetsAdminClient', () => {
     const result = await client.notes.list(
       { userId: 'user_console_admin' },
       {
-        owner_account_id: 'user_alejandra',
+        ownerAccountId: 'user_alejandra',
         limit: 25,
-        starting_after: 'wnote_cursor',
+        startingAfter: 'wnote_cursor',
       }
     )
 

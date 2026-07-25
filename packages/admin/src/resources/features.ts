@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -18,20 +20,26 @@ import type {
 export function createAdminFeaturesResource(runtime: AdminRuntime) {
   return {
     /** Returns a paginated list of all synced feature flags. Optionally filtered by appId. */
-    list(params?: {
-      limit?: number
-      starting_after?: string
-      ending_before?: string
-      appId?: string
-      search?: string
-      rootOnly?: boolean
-      includeTag?: string
-      excludeTag?: string
-    }) {
+    list(
+      params?: CursorPageParams & {
+        appId?: string
+        search?: string
+        rootOnly?: boolean
+        includeTag?: string
+        excludeTag?: string
+      }
+    ) {
       return adminRequest<AdminListResponse<AdminFeature>>(runtime, {
         method: 'GET',
         path: '/features',
-        query: params as Record<string, string | number | undefined>,
+        query: {
+          ...toCursorQuery(params),
+          appId: params?.appId,
+          search: params?.search,
+          rootOnly: params?.rootOnly,
+          includeTag: params?.includeTag,
+          excludeTag: params?.excludeTag,
+        },
       })
     },
 

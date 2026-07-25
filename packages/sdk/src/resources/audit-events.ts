@@ -11,6 +11,26 @@ import type {
 } from '../types/audit-events.ts'
 import { validateParams } from '../validation.ts'
 
+/** Maps camelCase create params onto the `/audit-events` wire contract. */
+function toAuditEventCreateBody(
+  params: AuditEventCreateParams
+): Record<string, unknown> {
+  return {
+    event: params.event,
+    source: params.source,
+    app_name: params.appName,
+    user_id: params.userId,
+    path: params.path,
+    search: params.search,
+    referrer: params.referrer,
+    title: params.title,
+    request_id: params.requestId,
+    session_id: params.sessionId,
+    distinct_id: params.distinctId,
+    properties: params.properties,
+  }
+}
+
 /** `$876.auditEvents.*` — first-party analytics/telemetry event recording. */
 export function createAuditEventsResource(runtime: SdkRuntime) {
   return {
@@ -28,11 +48,12 @@ export function createAuditEventsResource(runtime: SdkRuntime) {
         params
       )
       if (validation.error) return Promise.resolve(validation)
+
       return sendAuthRequest(
         runtime,
         'POST',
         '/audit-events',
-        validation.data,
+        toAuditEventCreateBody(validation.data),
         sdk876AuditEventSchema,
         requestOptions
       )

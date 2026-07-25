@@ -844,16 +844,16 @@ export function createOrgsResource(runtime: SdkRuntime) {
       list(
         orgId: string,
         params?: {
-          user_id?: string
-          app_id?: string
-          include_revoked?: boolean
+          userId?: string | undefined
+          appId?: string | undefined
+          includeRevoked?: boolean | undefined
         },
         requestOptions?: RequestOptions
       ): Promise<Result<AppAssignmentList>> {
         const query = new URLSearchParams()
-        if (params?.user_id) query.set('user_id', params.user_id)
-        if (params?.app_id) query.set('app_id', params.app_id)
-        if (params?.include_revoked) query.set('include_revoked', 'true')
+        if (params?.userId) query.set('user_id', params.userId)
+        if (params?.appId) query.set('app_id', params.appId)
+        if (params?.includeRevoked) query.set('include_revoked', 'true')
         const suffix = query.size > 0 ? `?${query.toString()}` : ''
         return sendAuthRequest(
           runtime,

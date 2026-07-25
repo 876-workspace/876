@@ -320,7 +320,7 @@ export async function reconcileBillingMirror() {
     try {
       const orgResult = await $876.orgs.list({
         limit: 100,
-        starting_after: startingAfter,
+        startingAfter,
       })
       if (orgResult.error) {
         failures += 1

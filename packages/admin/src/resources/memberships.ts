@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -31,17 +33,20 @@ export function createAdminMembershipsResource(runtime: AdminRuntime) {
      * @param params - Optional filters and pagination.
      * @returns A result containing a list object of memberships, or an error.
      */
-    list(params?: {
-      limit?: number
-      starting_after?: string
-      ending_before?: string
-      organization_id?: string
-      user_id?: string
-    }) {
+    list(
+      params?: CursorPageParams & {
+        organizationId?: string
+        userId?: string
+      }
+    ) {
       return adminRequest<AdminListResponse<AdminMembership>>(runtime, {
         method: 'GET',
         path: '/memberships',
-        query: params as Record<string, string | number | undefined>,
+        query: {
+          ...toCursorQuery(params),
+          organization_id: params?.organizationId,
+          user_id: params?.userId,
+        },
       })
     },
 

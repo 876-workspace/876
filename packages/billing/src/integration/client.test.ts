@@ -55,9 +55,9 @@ describe('create876BillingIntegrationClient', () => {
 
     const result = await client.customers.list('org_1', {
       limit: 25,
-      starting_after: 'cus_previous',
+      startingAfter: 'cus_previous',
       status: 'ACTIVE',
-      user_id: 'usr_1',
+      userId: 'usr_1',
     })
 
     expect(result.data?.data).toEqual([customer])

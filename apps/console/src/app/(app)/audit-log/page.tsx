@@ -54,9 +54,13 @@ export default async function AuditLogPage({ searchParams }: Props) {
   const filters = cleanFilters(params)
   const { data } = await $876.auditEvents.list({
     limit: 50,
-    starting_after: params.after,
-    ending_before: params.before,
-    ...filters,
+    startingAfter: params.after,
+    endingBefore: params.before,
+    q: filters.q,
+    appName: filters.app_name,
+    event: filters.event,
+    userId: filters.user_id,
+    path: filters.path,
   })
 
   const events = data?.data ?? []

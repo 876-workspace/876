@@ -66,7 +66,7 @@ describe('Console notepad member collection route', () => {
       expect(body.data.data).toHaveLength(1)
       expect(mocks.list).toHaveBeenCalledWith(
         { userId: 'user_alejandra' },
-        { limit: 25, starting_after: 'wnote_cursor' }
+        { limit: 25, startingAfter: 'wnote_cursor' }
       )
     })
 

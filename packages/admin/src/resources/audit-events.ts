@@ -1,19 +1,21 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type { AdminAuditEvent, AdminListResponse } from '../types'
 
 export type AdminAuditEventCreateParams = {
   event: string
-  app_name: string
+  appName: string
   source?: string
-  user_id?: string | null
+  userId?: string | null
   path?: string | null
   search?: string | null
   referrer?: string | null
   title?: string | null
-  request_id?: string | null
-  session_id?: string | null
-  distinct_id?: string | null
+  requestId?: string | null
+  sessionId?: string | null
+  distinctId?: string | null
   properties?: Record<string, unknown>
 }
 
@@ -29,7 +31,20 @@ export function createAdminAuditEventsResource(runtime: AdminRuntime) {
       return adminRequest<AdminAuditEvent>(runtime, {
         method: 'POST',
         path: '/audit-events',
-        body: params,
+        body: {
+          event: params.event,
+          app_name: params.appName,
+          source: params.source,
+          user_id: params.userId,
+          path: params.path,
+          search: params.search,
+          referrer: params.referrer,
+          title: params.title,
+          request_id: params.requestId,
+          session_id: params.sessionId,
+          distinct_id: params.distinctId,
+          properties: params.properties,
+        },
       })
     },
 
@@ -39,20 +54,26 @@ export function createAdminAuditEventsResource(runtime: AdminRuntime) {
      * @param params - Optional pagination and filtering parameters.
      * @returns A result containing a list object of audit events, or an error.
      */
-    list(params?: {
-      limit?: number
-      starting_after?: string
-      ending_before?: string
-      app_name?: string
-      event?: string
-      user_id?: string
-      path?: string
-      q?: string
-    }) {
+    list(
+      params?: CursorPageParams & {
+        appName?: string
+        event?: string
+        userId?: string
+        path?: string
+        q?: string
+      }
+    ) {
       return adminRequest<AdminListResponse<AdminAuditEvent>>(runtime, {
         method: 'GET',
         path: '/audit-events',
-        query: params as Record<string, string | number | undefined>,
+        query: {
+          ...toCursorQuery(params),
+          app_name: params?.appName,
+          event: params?.event,
+          user_id: params?.userId,
+          path: params?.path,
+          q: params?.q,
+        },
       })
     },
   }

@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -20,18 +22,11 @@ export function createAdminApiKeysResource(runtime: AdminRuntime) {
       })
     },
 
-    list(
-      appId: string,
-      params?: {
-        limit?: number
-        starting_after?: string
-        ending_before?: string
-      }
-    ) {
+    list(appId: string, params?: CursorPageParams) {
       return adminRequest<AdminListResponse<AdminApiKey>>(runtime, {
         method: 'GET',
         path: `/apps/${appId}/api-keys`,
-        query: params as Record<string, string | number | undefined>,
+        query: toCursorQuery(params),
       })
     },
 

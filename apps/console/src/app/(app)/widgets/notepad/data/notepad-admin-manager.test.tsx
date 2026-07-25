@@ -74,9 +74,9 @@ describe('NotepadAdminManager', () => {
         expect(screen.getByText('Hello')).toBeInTheDocument()
       })
       expect(mocks.listAll).toHaveBeenCalledWith({
-        owner_account_id: undefined,
+        ownerAccountId: undefined,
         limit: 50,
-        starting_after: undefined,
+        startingAfter: undefined,
       })
     })
 
@@ -117,7 +117,7 @@ describe('NotepadAdminManager', () => {
 
       await waitFor(() => {
         expect(mocks.listAll).toHaveBeenLastCalledWith(
-          expect.objectContaining({ owner_account_id: 'user_target' })
+          expect.objectContaining({ ownerAccountId: 'user_target' })
         )
       })
     })
@@ -131,7 +131,7 @@ describe('NotepadAdminManager', () => {
       await user.click(screen.getByRole('button', { name: 'Filter' }))
       await waitFor(() =>
         expect(mocks.listAll).toHaveBeenLastCalledWith(
-          expect.objectContaining({ owner_account_id: 'user_target' })
+          expect.objectContaining({ ownerAccountId: 'user_target' })
         )
       )
 
@@ -139,7 +139,7 @@ describe('NotepadAdminManager', () => {
 
       await waitFor(() => {
         expect(mocks.listAll).toHaveBeenLastCalledWith(
-          expect.objectContaining({ owner_account_id: undefined })
+          expect.objectContaining({ ownerAccountId: undefined })
         )
       })
     })
@@ -247,7 +247,7 @@ describe('NotepadAdminManager', () => {
         expect(screen.getByText('Second page note')).toBeInTheDocument()
       })
       expect(mocks.listAll).toHaveBeenLastCalledWith(
-        expect.objectContaining({ starting_after: 'wnote_1' })
+        expect.objectContaining({ startingAfter: 'wnote_1' })
       )
     })
   })

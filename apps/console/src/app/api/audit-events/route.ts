@@ -15,9 +15,9 @@ export async function POST(request: NextRequest): Promise<Response> {
   const body = (await request
     .json()
     .catch(() => null)) as AdminAuditEventCreateParams | null
-  if (!body?.event || !body?.app_name) {
+  if (!body?.event || !body?.appName) {
     return apiJson(
-      { error: 'event and app_name are required.' },
+      { error: 'event and appName are required.' },
       { status: 400 }
     )
   }

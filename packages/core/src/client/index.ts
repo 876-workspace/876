@@ -388,6 +388,35 @@ function waitForRetryDelay(
   return new Promise((resolve) => setTimeout(resolve, delay))
 }
 
+/**
+ * Shared cursor pagination inputs for TypeScript-facing client methods.
+ *
+ * Public SDK params use camelCase; resources map to the HTTP wire contract
+ * (`starting_after` / `ending_before`) via {@link toCursorQuery}.
+ */
+export type CursorPageParams = {
+  limit?: number | undefined
+  startingAfter?: string | undefined
+  endingBefore?: string | undefined
+}
+
+/**
+ * Maps public {@link CursorPageParams} onto the FastAPI list cursor query keys.
+ *
+ * Undefined fields are preserved and dropped later by `buildClientQuery`.
+ */
+export function toCursorQuery(params: CursorPageParams = {}): {
+  limit?: number | undefined
+  starting_after?: string | undefined
+  ending_before?: string | undefined
+} {
+  return {
+    limit: params.limit,
+    starting_after: params.startingAfter,
+    ending_before: params.endingBefore,
+  }
+}
+
 /** Serializes defined params into a `?key=value` query string (or `''`). */
 export function buildClientQuery(
   params: Record<string, string | number | boolean | undefined>

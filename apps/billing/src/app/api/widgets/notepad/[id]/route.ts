@@ -30,7 +30,7 @@ export async function PATCH(request: Request, context: Ctx) {
         ? (record.color as NoteColor)
         : undefined,
     pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
-    collection_id:
+    collectionId:
       record.collection_id === null
         ? null
         : typeof record.collection_id === 'string'

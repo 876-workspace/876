@@ -4,10 +4,13 @@ import {
   deletedNoteSchema,
   noteListSchema,
   notepadNoteSchema,
+  toAdminNoteListQuery,
+  toNoteBody,
+  type AdminNoteListParams,
   type DeletedNote,
-  type NoteColor,
   type NoteList,
   type NotepadNote,
+  type NoteWriteParams,
 } from '../types/notes'
 import {
   requestJson,
@@ -24,14 +27,7 @@ export function createWidgetsAdminClient(
 
   return {
     notes: {
-      list(
-        actor: Actor,
-        params: {
-          owner_account_id?: string
-          limit?: number
-          starting_after?: string
-        } = {}
-      ) {
+      list(actor: Actor, params: AdminNoteListParams = {}) {
         return requestJson(
           config,
           actor,
@@ -39,11 +35,7 @@ export function createWidgetsAdminClient(
             method: 'GET',
             path: '/api/v1/admin/notes',
             role: 'admin',
-            query: {
-              owner_account_id: params.owner_account_id,
-              limit: params.limit,
-              starting_after: params.starting_after,
-            },
+            query: toAdminNoteListQuery(params),
           },
           (data) => {
             const parsed = noteListSchema.safeParse(data)
@@ -52,24 +44,14 @@ export function createWidgetsAdminClient(
         ) as Promise<WidgetsClientResult<NoteList>>
       },
 
-      update(
-        actor: Actor,
-        id: string,
-        params: {
-          title?: string
-          body?: string
-          color?: NoteColor
-          pinned?: boolean
-          collection_id?: string | null
-        }
-      ) {
+      update(actor: Actor, id: string, params: NoteWriteParams) {
         return requestJson(
           config,
           actor,
           {
             method: 'PATCH',
             path: `/api/v1/admin/notes/${encodeURIComponent(id)}`,
-            body: params,
+            body: toNoteBody(params),
             role: 'admin',
           },
           (data) => {

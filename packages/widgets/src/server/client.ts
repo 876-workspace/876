@@ -12,10 +12,15 @@ import {
   deletedNoteSchema,
   noteListSchema,
   notepadNoteSchema,
+  toNoteBody,
+  toNoteListQuery,
   type DeletedNote,
   type NoteColor,
+  type NoteCreateParams,
   type NoteList,
+  type NoteListParams,
   type NotepadNote,
+  type NoteWriteParams,
 } from '../types/notes'
 import {
   requestJson,
@@ -36,27 +41,14 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
 
   return {
     notes: {
-      list(
-        actor: Actor,
-        params: {
-          limit?: number
-          starting_after?: string
-          collection_id?: string
-          unfiled?: boolean
-        } = {}
-      ) {
+      list(actor: Actor, params: NoteListParams = {}) {
         return requestJson(
           config,
           actor,
           {
             method: 'GET',
             path: '/api/v1/notes',
-            query: {
-              limit: params.limit,
-              starting_after: params.starting_after,
-              collection_id: params.collection_id,
-              unfiled: params.unfiled ? '1' : undefined,
-            },
+            query: toNoteListQuery(params),
           },
           (data) => {
             const parsed = noteListSchema.safeParse(data)
@@ -65,20 +57,11 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
         ) as Promise<WidgetsClientResult<NoteList>>
       },
 
-      create(
-        actor: Actor,
-        params: {
-          title: string
-          body: string
-          color?: NoteColor
-          pinned?: boolean
-          collection_id?: string | null
-        }
-      ) {
+      create(actor: Actor, params: NoteCreateParams) {
         return requestJson(
           config,
           actor,
-          { method: 'POST', path: '/api/v1/notes', body: params },
+          { method: 'POST', path: '/api/v1/notes', body: toNoteBody(params) },
           (data) => {
             const parsed = notepadNoteSchema.safeParse(data)
             return parsed.success ? parsed.data : null
@@ -86,24 +69,14 @@ export function createWidgetsClient(options: CreateWidgetsClientOptions = {}) {
         ) as Promise<WidgetsClientResult<NotepadNote>>
       },
 
-      update(
-        actor: Actor,
-        id: string,
-        params: {
-          title?: string
-          body?: string
-          color?: NoteColor
-          pinned?: boolean
-          collection_id?: string | null
-        }
-      ) {
+      update(actor: Actor, id: string, params: NoteWriteParams) {
         return requestJson(
           config,
           actor,
           {
             method: 'PATCH',
             path: `/api/v1/notes/${encodeURIComponent(id)}`,
-            body: params,
+            body: toNoteBody(params),
           },
           (data) => {
             const parsed = notepadNoteSchema.safeParse(data)

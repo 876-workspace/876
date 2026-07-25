@@ -44,9 +44,9 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
   const [runsResult, appsResult, organizationsResult] = await Promise.all([
     $876.provisioning.runs.list({
       status,
-      app_id: appId,
-      organization_id: organizationId,
-      starting_after: query.after,
+      appId,
+      organizationId,
+      startingAfter: query.after,
       limit: 50,
     }),
     $876.apps.list({ limit: 100 }),

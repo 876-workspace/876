@@ -38,10 +38,7 @@ export const validate = (
     body: JSON.stringify(params),
   })
 
-export const createNote = (
-  appId: string,
-  params: { body: string; author_user_id?: string | null }
-) =>
+export const createNote = (appId: string, params: { body: string }) =>
   request<AdminProvisioningNote>(`${path(appId)}/notes`, {
     method: 'POST',
     body: JSON.stringify(params),

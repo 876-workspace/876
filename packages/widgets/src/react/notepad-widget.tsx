@@ -54,7 +54,7 @@ function pendingAsNote(pending: PendingEntry): NotepadNote {
 }
 
 function listParamsForScope(scope: NotesScope) {
-  if (scope.type === 'collection') return { collection_id: scope.id }
+  if (scope.type === 'collection') return { collectionId: scope.id }
   if (scope.type === 'unfiled') return { unfiled: true as const }
   return {}
 }
@@ -102,7 +102,7 @@ export function NotepadWidgetPanel() {
     setLoadError(null)
     const result = await browserNotes.list({
       limit: 50,
-      starting_after: cursor,
+      startingAfter: cursor ?? undefined,
       ...listParamsForScope(activeScope),
     })
 

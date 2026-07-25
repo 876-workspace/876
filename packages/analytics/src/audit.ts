@@ -3,14 +3,14 @@ import type { AnalyticsProperties } from './types'
 export type AnalyticsAuditEventCreateParams = {
   event: string
   source: 'client'
-  app_name: string
-  user_id: string | null
+  appName: string
+  userId: string | null
   path: string | null
   search: string | null
   referrer: string | null
   title: string | null
-  request_id: string | null
-  distinct_id: string | null
+  requestId: string | null
+  distinctId: string | null
   properties: AnalyticsProperties
 }
 
@@ -42,14 +42,14 @@ export function createAuditEventMirror<TEvent extends string>({
     void createEvent({
       event,
       source: 'client',
-      app_name: appName,
-      user_id: readString(properties[userIdProperty]),
+      appName,
+      userId: readString(properties[userIdProperty]),
       path: readString(properties.path),
       search: readString(properties.search),
       referrer: readString(properties.referrer),
       title: readString(properties.title ?? properties.page_title),
-      request_id: readString(properties.request_id),
-      distinct_id: readString(properties.distinct_id),
+      requestId: readString(properties.request_id),
+      distinctId: readString(properties.distinct_id),
       properties,
     })
   }

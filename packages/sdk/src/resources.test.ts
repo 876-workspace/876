@@ -338,3 +338,68 @@ describe('$876.users', () => {
     )
   })
 })
+
+describe('$876.auditEvents', () => {
+  const auditEventPayload = {
+    object: 'audit_event',
+    id: 'aud_123',
+    event: 'page_viewed',
+    source: 'client',
+    app_name: '876-enterprise',
+    app_id: 'app_2Yt0kQ',
+    user_id: 'user_123',
+    path: '/dashboard',
+    search: null,
+    referrer: null,
+    title: 'Dashboard',
+    request_id: null,
+    session_id: null,
+    distinct_id: 'anon_1',
+    properties: {},
+    created_at: 1717200000,
+  } as const
+
+  it('maps camelCase create params onto the snake_case wire body', async () => {
+    const fetchMock = jsonFetch({ data: auditEventPayload, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    const result = await $876.auditEvents.create({
+      event: 'page_viewed',
+      source: 'client',
+      appName: '876-enterprise',
+      userId: 'user_123',
+      path: '/dashboard',
+      title: 'Dashboard',
+      distinctId: 'anon_1',
+    })
+
+    expect(result).toEqual({ data: auditEventPayload, error: null })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('/api/audit-events')
+    expect(JSON.parse(init.body as string)).toEqual({
+      event: 'page_viewed',
+      source: 'client',
+      app_name: '876-enterprise',
+      user_id: 'user_123',
+      path: '/dashboard',
+      title: 'Dashboard',
+      distinct_id: 'anon_1',
+    })
+  })
+
+  it('rejects snake_case create params without sending a request', async () => {
+    const fetchMock = jsonFetch({ data: auditEventPayload, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    const result = await $876.auditEvents.create({
+      event: 'page_viewed',
+      app_name: '876-enterprise',
+    } as unknown as Parameters<typeof $876.auditEvents.create>[0])
+
+    expect(result.data).toBeNull()
+    expect(result.error?.code).toBe('auth/invalid-input')
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+})

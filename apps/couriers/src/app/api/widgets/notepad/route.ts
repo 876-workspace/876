@@ -19,8 +19,8 @@ export async function GET(request: Request) {
     { userId: access.userId },
     {
       limit: Number(url.searchParams.get('limit') ?? '') || undefined,
-      starting_after: url.searchParams.get('starting_after') ?? undefined,
-      collection_id: unfiled
+      startingAfter: url.searchParams.get('starting_after') ?? undefined,
+      collectionId: unfiled
         ? undefined
         : (url.searchParams.get('collection_id') ?? undefined),
       unfiled,
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
           ? (record.color as NoteColor)
           : undefined,
       pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
-      collection_id:
+      collectionId:
         record.collection_id === null
           ? null
           : typeof record.collection_id === 'string'

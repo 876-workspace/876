@@ -1,3 +1,5 @@
+import { toCursorQuery, type CursorPageParams } from '@876/core/client'
+
 import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
@@ -82,18 +84,22 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
     },
 
     runs: {
-      list(params?: {
-        organization_id?: string
-        app_id?: string
-        status?: AdminProvisioningRunStatus
-        limit?: number
-        starting_after?: string
-        ending_before?: string
-      }) {
+      list(
+        params?: CursorPageParams & {
+          organizationId?: string
+          appId?: string
+          status?: AdminProvisioningRunStatus
+        }
+      ) {
         return adminRequest<AdminListResponse<AdminProvisioningRun>>(runtime, {
           method: 'GET',
           path: '/provisioning/runs',
-          query: params,
+          query: {
+            ...toCursorQuery(params),
+            organization_id: params?.organizationId,
+            app_id: params?.appId,
+            status: params?.status,
+          },
         })
       },
 
@@ -111,11 +117,14 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
         })
       },
 
-      claimApplication(body: { organization_id: string; app_id: string }) {
+      claimApplication(body: { organizationId: string; appId: string }) {
         return adminRequest<AdminProvisioningRun>(runtime, {
           method: 'POST',
           path: '/provisioning/runs/application/claim',
-          body,
+          body: {
+            organization_id: body.organizationId,
+            app_id: body.appId,
+          },
         })
       },
 
@@ -131,15 +140,20 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
       },
 
       reconcile(body: {
-        app_id?: string | null
-        organization_id?: string | null
+        appId?: string | null
+        organizationId?: string | null
         limit?: number
-        starting_after?: string | null
+        startingAfter?: string | null
       }) {
         return adminRequest<AdminProvisioningReconciliationResult>(runtime, {
           method: 'POST',
           path: '/provisioning/runs/reconcile',
-          body,
+          body: {
+            app_id: body.appId,
+            organization_id: body.organizationId,
+            limit: body.limit,
+            starting_after: body.startingAfter,
+          },
         })
       },
     },
@@ -148,28 +162,27 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
       list(
         targetType: AdminProvisioningTargetType,
         targetKey: string,
-        params?: {
-          limit?: number
-          starting_after?: string
-          ending_before?: string
-        }
+        params?: CursorPageParams
       ) {
         return adminRequest<AdminListResponse<AdminProvisioningNote>>(runtime, {
           method: 'GET',
           path: `/provisioning/manifests/${targetPath(targetType, targetKey)}/notes`,
-          query: params,
+          query: toCursorQuery(params),
         })
       },
 
       create(
         targetType: AdminProvisioningTargetType,
         targetKey: string,
-        body: { body: string; author_user_id?: string | null }
+        body: { body: string; authorUserId?: string | null }
       ) {
         return adminRequest<AdminProvisioningNote>(runtime, {
           method: 'POST',
           path: `/provisioning/manifests/${targetPath(targetType, targetKey)}/notes`,
-          body,
+          body: {
+            body: body.body,
+            author_user_id: body.authorUserId,
+          },
         })
       },
 

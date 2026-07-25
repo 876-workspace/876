@@ -1,4 +1,8 @@
-import { buildClientQuery } from '@876/core/client'
+import {
+  buildClientQuery,
+  toCursorQuery,
+  type CursorPageParams,
+} from '@876/core/client'
 
 import { sendAuthRequest } from '../request.ts'
 import type { SdkRuntime } from '../request.ts'
@@ -13,19 +17,20 @@ export function createProductsResource(runtime: SdkRuntime) {
   return {
     /** Lists products (with their prices). */
     list(
-      params?: {
-        appId?: string
-        status?: 'active' | 'archived'
-        limit?: number
-        starting_after?: string
-        ending_before?: string
+      params?: CursorPageParams & {
+        appId?: string | undefined
+        status?: 'active' | 'archived' | undefined
       },
       requestOptions?: RequestOptions
     ): Promise<ProductListResult> {
       return sendAuthRequest(
         runtime,
         'GET',
-        `/products${buildClientQuery(params ?? {})}`,
+        `/products${buildClientQuery({
+          ...toCursorQuery(params),
+          appId: params?.appId,
+          status: params?.status,
+        })}`,
         undefined,
         sdk876ProductListSchema,
         requestOptions

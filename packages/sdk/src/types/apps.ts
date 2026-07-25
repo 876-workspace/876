@@ -11,6 +11,7 @@
  * client does not. A future `@876/core`-owned resource schema would let both
  * packages share one source of truth.
  */
+import type { CursorPageParams } from '@876/core/client'
 import * as z from 'zod'
 
 import type { Result } from './api.ts'
@@ -80,10 +81,7 @@ export type AppList = z.infer<typeof sdk876AppListSchema>
 /** Parameters accepted by `$876.apps.create`. */
 export type AppCreateParams = z.input<typeof sdk876AppCreateParamsSchema>
 /** Optional pagination/filter parameters for `$876.apps.list`. */
-export type AppListParams = {
-  limit?: number
-  starting_after?: string
-  ending_before?: string
+export type AppListParams = CursorPageParams & {
   organizationId?: string
   status?: z.infer<typeof appStatusSchema>
 }

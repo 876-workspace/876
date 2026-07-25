@@ -38,7 +38,7 @@ describe('browserNotes host client', () => {
 
       const result = await browserNotes.list({
         limit: 25,
-        starting_after: 'wnote_cursor',
+        startingAfter: 'wnote_cursor',
       })
 
       expect(result.error).toBeNull()
@@ -157,7 +157,7 @@ describe('browserNotes host client', () => {
       )
 
       await browserNotes.listAll({
-        owner_account_id: 'user_target',
+        ownerAccountId: 'user_target',
         limit: 50,
       })
 

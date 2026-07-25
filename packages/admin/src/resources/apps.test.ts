@@ -87,11 +87,11 @@ describe('admin provisioning resource', () => {
     })
 
     await $876.provisioning.runs.list({
-      organization_id: 'org_1',
+      organizationId: 'org_1',
       status: 'failed',
     })
     await $876.provisioning.runs.retry('run/1')
-    await $876.provisioning.runs.reconcile({ app_id: '876-couriers' })
+    await $876.provisioning.runs.reconcile({ appId: '876-couriers' })
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,

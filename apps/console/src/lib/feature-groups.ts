@@ -64,14 +64,6 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
   },
 ]
 
-export const PINNED_ROOT_FEATURE_SLUGS = [
-  'console_notifications',
-  'billing_sales',
-  'billing_purchases',
-  'couriers_operations',
-  'couriers_widgets',
-] as const
-
 export function findFeatureGroupByMasterSlug(
   slug: string
 ): FeatureGroup | null {

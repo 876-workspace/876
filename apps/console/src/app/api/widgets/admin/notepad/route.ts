@@ -13,9 +13,9 @@ export async function GET(request: Request) {
   const result = await $widgetsAdmin.notes.list(
     { userId: access.sessionUser.id },
     {
-      owner_account_id: url.searchParams.get('owner_account_id') ?? undefined,
+      ownerAccountId: url.searchParams.get('owner_account_id') ?? undefined,
       limit: Number(url.searchParams.get('limit') ?? '') || undefined,
-      starting_after: url.searchParams.get('starting_after') ?? undefined,
+      startingAfter: url.searchParams.get('starting_after') ?? undefined,
     }
   )
   if (result.error)
