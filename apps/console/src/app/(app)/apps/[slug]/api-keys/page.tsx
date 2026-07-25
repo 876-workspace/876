@@ -27,8 +27,8 @@ export default async function AppApiKeysPage({ params, searchParams }: Props) {
 
   const { data } = await $876.apiKeys.list(app.id, {
     limit: 25,
-    starting_after: after,
-    ending_before: before,
+    startingAfter: after,
+    endingBefore: before,
   })
   const keys = data?.data ?? []
   const hasMore = data?.has_more ?? false

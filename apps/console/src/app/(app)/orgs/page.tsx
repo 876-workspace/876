@@ -67,8 +67,8 @@ export default async function OrganizationsPage({ searchParams }: Props) {
   } else {
     const result = await $876.orgs.list({
       limit: 25,
-      starting_after: after,
-      ending_before: before,
+      startingAfter: after,
+      endingBefore: before,
       status: orgStatus,
     })
     if (result.error) throw new Error(result.error.message)

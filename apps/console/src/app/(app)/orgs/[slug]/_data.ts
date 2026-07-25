@@ -9,7 +9,7 @@ import { $876 } from '@/lib/876'
  * each tab page dedupe to a single fetch per request.
  */
 export const resolveOrg = cache(async (slug: string) => {
-  const result = await $876.orgs.retrieveBySlug(slug, { include_deleted: true })
+  const result = await $876.orgs.retrieveBySlug(slug, { includeDeleted: true })
   if (result.error) return null
   return result.data
 })

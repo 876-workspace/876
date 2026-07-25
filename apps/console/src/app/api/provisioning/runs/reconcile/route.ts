@@ -24,8 +24,8 @@ export async function POST(request: Request) {
   const organizationId =
     typeof body.organization_id === 'string' ? body.organization_id.trim() : ''
   const result = await $876.provisioning.runs.reconcile({
-    app_id: appId || null,
-    organization_id: organizationId || null,
+    appId: appId || null,
+    organizationId: organizationId || null,
   })
   if (result.error || !result.data)
     return apiJson(

@@ -11,8 +11,8 @@ import { $876 } from '@/lib/876'
  */
 export const resolveUser = cache(async (username: string) => {
   const result = username.startsWith('user_')
-    ? await $876.users.retrieve(username, { include_deleted: true })
-    : await $876.users.retrieveByUsername(username, { include_deleted: true })
+    ? await $876.users.retrieve(username, { includeDeleted: true })
+    : await $876.users.retrieveByUsername(username, { includeDeleted: true })
   if (result.error) return null
   return result.data
 })
@@ -57,7 +57,7 @@ export const resolveUserMcRole = cache(async (userId: string) => {
  * without the per-org N+1 (org details load lazily when the panel opens).
  */
 export const resolveUserMembershipCount = cache(async (userId: string) => {
-  const result = await $876.memberships.list({ user_id: userId, limit: 50 })
+  const result = await $876.memberships.list({ userId, limit: 50 })
   if (result.error) return 0
   return result.data.total_count ?? result.data.data.length
 })

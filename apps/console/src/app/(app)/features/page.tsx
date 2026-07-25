@@ -32,8 +32,8 @@ export default async function FeaturesPage({ searchParams }: Props) {
   const [featuresResult, ...appResults] = await Promise.all([
     $876.features.list({
       limit: 25,
-      starting_after: after,
-      ending_before: before,
+      startingAfter: after,
+      endingBefore: before,
       rootOnly: true,
       excludeTag: 'widget',
     }),

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, context: Context) {
     return apiJson({ error: 'Note text is required.' }, { status: 400 })
   const result = await $876.provisioning.notes.create('application', appId, {
     body: body.body.trim(),
-    author_user_id: access.caller.id,
+    authorUserId: access.caller.id,
   })
   if (result.error || !result.data)
     return apiJson(
