@@ -17,7 +17,7 @@ can ever surface in a browsable UI. Companion to
 | **876 Drive**     | The end-user interface for browsing, uploading, organizing, and managing files. **Not yet built.** Deliberately deferred.   |
 | **File**          | A metadata record with a stable internal ID (`file_…`). The canonical identity of a stored object.                          |
 | **Object**        | The bytes in Cloudflare R2, addressed by a server-generated object key. Never referenced directly by application code.      |
-| **Upload route**  | A named, server-declared upload policy (`organization.primaryLogo`) that fixes MIME types, size, ownership, and visibility. |
+| **Upload route**  | A named, server-declared upload policy (`organization.primaryLogo`) fixing MIME types, size, ownership, category, audience. |
 | **Resource link** | The typed association between a file and a business record (`appId` + `resourceType` + `resourceId` + `relation`).          |
 
 Never call a file record "an upload", never call an object key "the URL", and
@@ -43,77 +43,114 @@ Consequences, all non-negotiable:
 - R2 credentials are server-only, held by the Storage service alone. No other
   app, and no browser, ever holds them.
 
-## The rule that answers "can this file show up in Drive?"
+## Classification: the model that decides who sees a file, and where
 
-Every file carries three **server-assigned** classifications, fixed by the
-upload route at creation time. **None of them are ever supplied by the client,
-and none are editable by an end user.**
+Every file carries **server-assigned** classifications, fixed by the upload route
+at creation time. **None are ever supplied by the client, and none are editable
+by an end user.**
 
-### Axis 1 — `visibility`: may this file be enumerated by a browsing UI?
+Two questions are being answered, and they are **different questions**. Keeping
+them in separate fields is the whole design — collapsing them into one "visible"
+flag is how receipts end up in file pickers.
 
-| Value     | Meaning                                                                                                                       | Example                                                      |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `library` | The user deliberately filed this. Browsable, searchable, movable, renamable, user-deletable in Drive.                         | A document a user uploads to their own files.                |
-| `managed` | An app created it as part of a business record. Reachable **only** by resolving its resource link. Never enumerated by Drive. | Payment evidence, chat media, pre-alert docs, org logo.      |
-| `system`  | Platform internals, not user-addressable at all.                                                                              | Thumbnails, derivatives, export bundles, generated invoices. |
+1. **`category`** — _how is this file managed, and can it be browsed?_
+2. **`audience`** — _who is allowed to read the bytes?_
 
-**Enforcement is a query predicate, not a UI concern.** Drive's browse and
-search endpoints in the Storage service filter `visibility = 'library'` **in the
-repository query**. A `managed` file is not hidden from the response — it is
-never in the result set. There is no client-side filtering, no "hidden" flag the
-UI honors, and no endpoint that returns mixed visibility and expects the caller
-to filter. This is the single rule that keeps a payment receipt out of a file
-picker.
+A term note, because it is easy to get wrong: we deliberately do **not** use the
+word "visibility" for either. It reads as "who can see it" but was originally
+used here for "can it be listed", and that ambiguity is exactly the bug. Say
+`category` or `audience`; never "visibility".
 
-Reading a `managed` file requires its `fileId` **plus** authorization from the
-app that owns its resource link. Storage verifies the file exists and the caller
-holds an entitlement; the owning app verifies the caller may see that business
-record. Neither side is sufficient alone — the same split as identification
-disclosure in `customer-architecture.md`.
+### Axis 1 — `category`: how the file is managed, and whether Drive lists it
 
-**The default for every new upload route is `managed`.** A route must
-_explicitly_ opt in to `library`. This makes the failure mode "a file is less
-discoverable than intended", never "a receipt leaked into a browsable list."
+| Value        | Meaning                                                                                                              | Example                                                      |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `library`    | The user deliberately filed this. Browsable, searchable, movable, renamable, user-deletable in Drive.                | A document a user uploads to their own files.                |
+| `attachment` | An app created it as part of a business record. Reachable **only** through its resource link. Never listed by Drive. | Payment receipt, invoice PDF, chat media, org logo.          |
+| `system`     | Platform internals, not user-addressable at all.                                                                     | Thumbnails, derivatives, export bundles, generated archives. |
 
-### Axis 2 — `delivery`: how do the bytes reach a viewer?
+**Browsability is derived from `category`, not stored separately.** Drive's
+browse and search endpoints filter `category = 'library'` **in the repository
+query**. An `attachment` is not hidden from the response — it is never in the
+result set. There is no client-side filtering, no "hidden" flag the UI honors,
+and no endpoint that returns mixed categories and expects the caller to filter.
+This is the single rule that keeps a payment receipt out of a file picker.
 
-| Value     | Meaning                                                                                                      |
-| --------- | ------------------------------------------------------------------------------------------------------------ |
-| `public`  | Immutable path in the public assets bucket, served by CDN at a stable URL. Anyone with the URL can fetch it. |
-| `private` | Private bucket. Bytes only via a short-lived signed read URL minted per request, after authorization.        |
+**`attachment` is the default.** A route must _explicitly_ opt in to `library`,
+so the failure mode is "less discoverable than intended", never "a receipt leaked
+into a browsable list."
 
-`public` is reserved for brand assets that are meant to be world-readable
-(organization logos, app icons, avatars). Everything else is `private`, and
-`private` is the default. Never place a document in the public bucket "because
-it is easier to render" — if it needs a URL in an `<img>`, it needs a signed
-read URL with a short TTL.
+### Axis 2 — `audience`: who may read the bytes
 
-The two axes are **orthogonal**, and both are required:
+| Value          | Who can read                                                                                                | Bytes served as               | Example                              |
+| -------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------ |
+| `private`      | The owning user alone.                                                                                      | short-lived signed URL        | A user's personal document, ID scan. |
+| `organization` | Members of the owning organization, subject to the owning app's permission check.                           | short-lived signed URL        | An invoice PDF, a vendor contract.   |
+| `app`          | Delegated: the **owning app arbitrates**. Storage discloses only when that app asserts an authorized actor. | short-lived signed URL        | Chat media, payment evidence.        |
+| `public`       | Anyone with the URL.                                                                                        | stable CDN URL, public bucket | Organization logo, app icon, avatar. |
 
-|           | `library`                            | `managed`                               |
-| --------- | ------------------------------------ | --------------------------------------- |
-| `public`  | (rare — a deliberately shared asset) | organization logo, app icon             |
-| `private` | a user's own uploaded document       | payment evidence, chat media, contracts |
+`app` is the value for "limited to only the chat app". Storage cannot itself know
+whether a given user is a participant in a given conversation — that is the
+app's domain knowledge — so Storage refuses to disclose and requires 876 Chat to
+assert authorization for a named actor. The same applies to payment evidence,
+where Billing decides who may view a receipt.
+
+**Delivery is derived from `audience`, not a separate field.** `public` means the
+public assets bucket and a stable CDN URL; every other audience means the private
+bucket and a per-request signed URL. There is deliberately **no way to express
+"private audience, public delivery"** — that combination was a footgun, so the
+model makes it unrepresentable rather than merely discouraged.
+
+`private` is the default. Never widen a route to `public` because a URL is easier
+to render in an `<img>` — if it needs a URL, it gets a signed one with a short TTL.
+
+### The two axes are independent
+
+|                | `library`                      | `attachment`                       |
+| -------------- | ------------------------------ | ---------------------------------- |
+| `private`      | a user's own filed document    | a user's ID scan on an application |
+| `organization` | a shared org document in Drive | an invoice PDF, a vendor contract  |
+| `app`          | (rare)                         | chat media, payment evidence       |
+| `public`       | a deliberately published asset | organization logo, app icon        |
+
+Read the org logo row carefully: it is `attachment` + `public` — world-readable,
+but **not** a browsable library file a user could rename or delete out from under
+the org's branding.
 
 ### Axis 3 — `sourceAppId` + `purpose`: what created it, and why
 
 `purpose` is the upload route's stable key (`organization_logo`,
-`payment_evidence`, `chat_attachment`). It drives retention, classification,
-and — much later — Drive smart collections. A smart collection is an **explicit
-query by purpose that the owning app opts into**, never a relaxation of the
-`visibility` predicate. Surfacing organization logos in a future "Branding"
-collection is such an opt-in; it does not make them `library`, does not make
-them user-deletable, and does not put them in the browse tree.
+`payment_receipt`, `chat_attachment`, `invoice_document`). It drives retention
+and, much later, Drive smart collections. A smart collection is an **explicit
+query the owning app opts into**, never a relaxation of the `category`
+predicate: surfacing logos in a future "Branding" collection does not make them
+`library`, does not make them user-deletable, and does not put them in the
+browse tree.
 
-### Why classification, not permissions
+### Resource links: what the file is attached to
 
-"Should this appear in Drive?" is a property of **why the file exists**, decided
-once by the route at upload time. It is not a permission a user can be granted,
-not a folder they can move a file out of, and not an ACL to evaluate at read
-time. Folders, when they arrive, are metadata only and **cannot promote a
-`managed` file into the library**. Modeling this as an ACL would mean every new
-app could accidentally widen exposure; modeling it as route-fixed classification
-means a new app cannot, even by mistake.
+An `attachment` is meaningful only in relation to the record it hangs off, so
+every one carries a typed link:
+
+```
+{ fileId, appId, resourceType, resourceId, relation }
+```
+
+`payment → receipt`, `invoice → document`, `organization → primary_logo`,
+`conversation → media`. This is how an app retrieves "the files for this
+invoice" without ever enumerating storage, and it is the only supported way to
+reach an `attachment`. A file with no resource link and `category = 'attachment'`
+is an orphan for the cleanup job, not a browsable file.
+
+### Why classification, not an ACL
+
+"May this appear in Drive, and who may read it" is a property of **why the file
+exists**, decided once by the route at upload time — not a permission a user can
+be granted, not a folder they can move a file out of, and not an ACL evaluated at
+read time. Folders, when they arrive, are metadata only and **cannot promote an
+`attachment` into the library** or widen its audience. An ACL model would let
+every new app accidentally widen exposure; route-fixed classification means a new
+app cannot, even by mistake.
 
 ## Object keys
 
@@ -125,10 +162,10 @@ organizations/{organizationId}/branding/{fileId}/{versionId}
 ```
 
 Never include a raw filename, an organization name, an email, a user-controlled
-path segment, or anything a client supplies. A client never chooses a key,
-a bucket, an owner, a visibility, or a delivery mode — it names an **upload
-route**, and the server derives all of the above from that route plus the
-authenticated caller.
+path segment, or anything a client supplies. A client never chooses a key, a
+bucket, an owner, a category, or an audience — it names an **upload route**, and
+the server derives all of the above from that route plus the authenticated
+caller.
 
 ## Upload flow (the only sanctioned shape)
 
@@ -169,13 +206,19 @@ file until the new one is verified `ready`.
 ## Do not
 
 - Do not let a browser hold R2 credentials, or any long-lived storage credential.
-- Do not let a client supply the object key, bucket, owner ID, visibility,
-  delivery mode, or purpose.
+- Do not let a client supply the object key, bucket, owner ID, category,
+  audience, or purpose.
+- Do not use the word "visibility" for either axis — say `category` (how it is
+  managed and whether Drive lists it) or `audience` (who may read it).
+- Do not add a separate "delivery" or "public" flag; delivery is derived from
+  `audience`, so that "private audience, public delivery" stays unrepresentable.
 - Do not store a provider URL as a file's identity — always the `fileId`.
 - Do not add a cross-database foreign key from an app to the Storage database.
 - Do not mark a file `ready` on the client's word; verify the object server-side.
-- Do not add an endpoint that returns files of mixed `visibility` and expects the
+- Do not add an endpoint that returns files of mixed `category` and expects the
   caller to filter.
+- Do not disclose an `audience: app` file without the owning app asserting an
+  authorized actor — Storage does not know that app's domain rules.
 - Do not accept SVG until a sanitization step exists — it is an active-content
   format.
 - Do not build the Drive explorer, folders, tags, sharing, OCR, or smart
