@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     log_level: str = Field(default="info", validation_alias="LOG_LEVEL")
     sentry_dsn: str = Field(default="", validation_alias="SENTRY_DSN")
     identity_timeout_seconds: float = Field(default=5.0, validation_alias="IDENTITY_API_TIMEOUT_SECONDS")
+    # Workspace that owns platform-level customers: every 876 organization is a
+    # customer of the platform operator. Core's customer.ensure events carry no
+    # tenant, so they land here.
+    platform_tenant_slug: str = Field(default="", validation_alias="BILLING_PLATFORM_TENANT_SLUG")
 
     @property
     def cors_origins(self) -> list[str]:

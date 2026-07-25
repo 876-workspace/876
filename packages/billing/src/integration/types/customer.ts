@@ -147,6 +147,13 @@ export interface BillingCustomer {
   updatedAt: number
 
   /**
+   * The customer's primary contact person. For a business customer linked to a
+   * Core organization this is the organization's primary contact (its owner by
+   * default). Null when the customer has no contact on file.
+   */
+  primaryContact: BillingContact | null
+
+  /**
    * Related resource counts, when the endpoint includes them.
    */
   counts?: {
@@ -154,6 +161,66 @@ export interface BillingCustomer {
     quotes: number
     subscriptions: number
   }
+}
+
+/**
+ * A contact person attached to a Billing customer.
+ */
+export interface BillingContact {
+  /**
+   * String representing the object's type. Objects of the same type share the same value.
+   */
+  object: 'contact'
+
+  /**
+   * Unique identifier for the object.
+   */
+  id: string
+
+  /**
+   * ID of the Core user this contact represents, when they have an 876 account.
+   */
+  userId: string | null
+
+  /**
+   * Optional salutation for the contact.
+   */
+  salutation: string | null
+
+  /**
+   * The contact's first name.
+   */
+  firstName: string | null
+
+  /**
+   * The contact's last name.
+   */
+  lastName: string | null
+
+  /**
+   * The contact's email address.
+   */
+  email: string | null
+
+  /**
+   * The contact's work phone number.
+   */
+  workPhone: string | null
+
+  /**
+   * The contact's mobile phone number.
+   */
+  mobilePhone: string | null
+
+  /**
+   * Whether this is the customer's primary contact.
+   */
+  isPrimary: boolean
+
+  /**
+   * Time at which Core identity fields were last synced. Measured in seconds since the Unix epoch.
+   */
+  coreSyncedAt: number | null
 }
 
 /**
@@ -255,6 +322,13 @@ export interface BillingCustomerListParams extends CursorPageParams {
    * Resolve the one shared Billing customer linked to a Core organization.
    */
   organizationId?: string
+
+  /**
+   * Resolve a known set of customers in a single request. Use this when the
+   * calling app already holds the customer IDs — for example an app listing its
+   * own enrolled customer profiles.
+   */
+  ids?: string[]
 }
 
 /**

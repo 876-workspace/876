@@ -23,6 +23,45 @@ Directional rules: an account _becomes_ a customer of an org only through a
 customer record that references it; a customer _is not_ an account and must
 never be auto-created as one. Importing customers never creates accounts.
 
+### Party kind vs. party link — two independent axes
+
+Every customer answers two separate questions. Do not collapse them.
+
+|                                    | `customerKind = INDIVIDUAL`  | `customerKind = BUSINESS`              |
+| ---------------------------------- | ---------------------------- | -------------------------------------- |
+| `customerType = EXTERNAL`          | hand-entered/imported person | hand-entered/imported company          |
+| `customerType = CORE_USER`         | an 876 account               | (not used — a person is not a company) |
+| `customerType = CORE_ORGANIZATION` | (not used)                   | an 876 organization                    |
+
+`customerKind` is **what the party is**; `customerType` is **how it links to 876
+identity**. This mirrors Salesforce's Account/Person-Account split and SAP's
+Business Partner roles — one party record, the role layered on top.
+
+### Every business customer has a person attached
+
+A business customer that renders as a blank name is the single most common
+defect in this area. The rule:
+
+- A **`CORE_ORGANIZATION`** customer carries `companyName` (the legal name),
+  `name` (the trading name — `doing_business_as` when set, else the legal
+  name), and a **primary contact**.
+- The primary contact resolves in this order, and is **never fabricated**:
+  1. the organization's declared `primary_contact_user_id`,
+  2. the `owner` membership,
+  3. the earliest membership.
+     If the org has no members, the customer is still written with its company
+     name and simply has no contact.
+- The customer's own `firstName`/`lastName` **mirror the primary contact**, so a
+  single "customer name" column renders a person for both party kinds.
+- Members are **never bulk-imported**. Only the primary contact is seeded.
+- A hand-added primary contact is **demoted, never deleted**, when a Core sync
+  promotes the owner — locally-entered people are the workspace's data.
+- An **individual is their own contact**: `primaryContact` is null, and no
+  contact row is created.
+
+The serialized customer exposes `primaryContact` (a `contact` object or null) on
+both list and retrieve, so no app has to resolve the org owner itself.
+
 ## The three layers
 
 ```
@@ -91,6 +130,24 @@ CORE_USER | CORE_ORGANIZATION` (opaque `userId`/`organizationId`, no
   `billingCustomerId` behind an ensure-style API, extraction changes the
   service behind the contract, not the apps.
 
+#### Who lands in the registry, and in which workspace
+
+- **Every 876 organization is a customer of the platform operator** from the
+  moment it exists. Core emits `customer.ensure` per org through the
+  `billing_customer_outbox`; those events carry no tenant and land in the
+  workspace named by `BILLING_PLATFORM_TENANT_SLUG` on the Billing API.
+- **A free 876 account is not a customer.** Signing up must never enqueue a
+  `customer.ensure`. A person enters the registry only when an app enrols them
+  (`ensureSharedCoreUserCustomer`) or a sale is made to them. Reconciliation
+  refreshes users already known to Billing; it never manufactures new ones.
+- `customer.ensure` matches on the **core identity** (`organizationId` /
+  `userId`) within the resolved tenant — never on a Billing id, which Core does
+  not know. The `(tenant, organization_id)` / `(tenant, user_id)` unique indexes
+  make the match total.
+- Outbox events are **deduplicated by payload hash**: an unchanged record does
+  not enqueue a second row, and an undelivered row is refreshed in place.
+  Without this, every reconcile appends a duplicate per subject.
+
 ### Layer 3 — App profiles (each app's datastore)
 
 - Per-tenant operational data about a customer stays in the app that owns the
@@ -105,6 +162,35 @@ CORE_USER | CORE_ORGANIZATION` (opaque `userId`/`organizationId`, no
 - Profiles must not become shadow PII stores: sensitive identifiers live in
   Layer 1 only. `CourierCustomerProfile.trn` is deprecated — new code must not
   write it; TRN capture goes through `user_identifications` (see follow-ups).
+
+#### Visibility: an app lists its own customers, never the registry
+
+**A product app's customer list is its Layer-3 profile table.** The registry is
+read only to resolve the identity of customers the app already has profiles
+for. This is the rule that keeps the apps separate:
+
+> Someone who buys an event ticket is a customer of the organization. They are
+> **not** a courier customer, and must not appear in Couriers — unless they are
+> separately enrolled there, with a courier profile of their own.
+
+The shape every app follows (reference:
+`apps/couriers/src/app/org/[orgSlug]/customers/page.tsx`):
+
+1. List the app's own profiles for the tenant — this set _is_ the page, and the
+   status filter applies to the **profile** (e.g. `ACTIVE`/`SUSPENDED`), not to
+   the registry customer's `ACTIVE`/`ARCHIVED`.
+2. Resolve identity for exactly those rows in one call:
+   `customers.list(orgId, { ids })`. Never fetch the registry and filter in the
+   app; never issue one retrieve per row.
+3. Render the registry `name` plus `primaryContact` for the person.
+
+Listing the whole registry and flagging which rows are "enrolled" is the
+anti-pattern this rule exists to prevent — it leaks every other app's customers
+into an app that has no business seeing them.
+
+**Billing is the deliberate exception.** The Billing app is the finance plane
+for the whole organization: it shows every customer across every app, with all
+invoices and balances in one place. That is its purpose, not a leak.
 
 ## Importing customers
 
@@ -144,3 +230,14 @@ tables for it.
   detail action) and in Console.
 - Core: session-scoped `/users/me/identifications` for the consumer app once
   it resumes development.
+- Registry: a `CORE_ORGANIZATION` customer only refreshes its party snapshot
+  when Core emits an event. An org renaming itself, or changing its primary
+  contact, should enqueue `customer.ensure` from the org-profile update path so
+  the snapshot follows without waiting for a reconcile.
+- Outbox: `scripts/prune_billing_customer_outbox.py` clears delivered
+  duplicates left by the pre-deduplication reconcile. Dry-run by default; run
+  with `--apply` once per environment.
+- Cross-org invoicing (an org billing another org, appearing as an expense the
+  recipient accepts or declines) builds on this model: the recipient is already
+  a `CORE_ORGANIZATION` customer of the sender's workspace. It needs a new
+  document-direction concept in the registry, not a new customer concept.

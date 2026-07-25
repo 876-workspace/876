@@ -26,6 +26,7 @@ from core.timestamps import now_unix_seconds
 from db.migrate import (
     backfill_billing_v3_data,
     ensure_apps_status_column,
+    ensure_billing_customer_outbox_party_columns,
     ensure_billing_v2,
     ensure_billing_v3_schema,
     ensure_feature_flag_provider_columns,
@@ -468,6 +469,9 @@ async def _ensure_billing_customer_outbox_table(engine: object) -> None:
                 checkfirst=True,
             )
         )
+        # Outbox tables created before the party snapshot need the added
+        # columns; create_all never alters an existing table.
+        await conn.run_sync(ensure_billing_customer_outbox_party_columns)
 
 
 async def _ensure_user_identifications_table(engine: object) -> None:
@@ -628,7 +632,8 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("user_app_enrollments", 1, _ensure_user_app_enrollments_table),
         BootstrapStep("subscriptions", 1, _ensure_subscriptions_table),
         BootstrapStep("finance_provisioning", 1, _ensure_finance_provisioning_tables),
-        BootstrapStep("billing_customer_outbox", 1, _ensure_billing_customer_outbox_table),
+        # Revision 2 adds the party and primary-contact snapshot columns.
+        BootstrapStep("billing_customer_outbox", 2, _ensure_billing_customer_outbox_table),
         BootstrapStep("first_party_provisioning", 1, seed_first_party_provisioning_manifests),
         BootstrapStep("billing_v2_cutover", 1, _cut_over_billing_v2),
         BootstrapStep("org_erm_tables", 1, _ensure_org_erm_tables),

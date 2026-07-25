@@ -24,6 +24,7 @@ export type {
 export type { BillingOrganization } from './organization'
 export { BillingOrganizationSchema } from './organization.schema'
 export type {
+  BillingContact,
   BillingCustomer,
   BillingCustomerCreateParams,
   BillingCustomerListParams,
@@ -33,6 +34,7 @@ export type {
 } from './customer'
 export {
   sourceSchema,
+  BillingContactSchema,
   BillingCustomerSchema,
   BillingCustomerListSchema,
   DeletedBillingCustomerSchema,

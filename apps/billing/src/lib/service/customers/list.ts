@@ -11,6 +11,22 @@ export function listCustomers(
       ...(status ? { status } : {}),
     },
     orderBy: { createdAt: 'desc' },
+    // The primary contact is the person behind a business customer; the roster
+    // shows it next to the company name.
+    include: {
+      contacts: {
+        where: { isPrimary: true },
+        take: 1,
+        select: {
+          userId: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          workPhone: true,
+          mobilePhone: true,
+        },
+      },
+    },
   })
 }
 

@@ -118,4 +118,61 @@ describe('listCustomerPage', () => {
       where: { tenantId: 'blten_1', status: 'ACTIVE' },
     })
   })
+
+  it('filters shared customer resolution by an opaque Core organization ID', async () => {
+    customer.findMany.mockResolvedValue([
+      { id: 'cus_org', organizationId: 'org_1' },
+    ])
+    customer.count.mockResolvedValue(1)
+
+    const result = await listCustomerPage('blten_1', {
+      limit: 2,
+      organizationId: 'org_1',
+    })
+
+    expect(result?.customers).toEqual([
+      { id: 'cus_org', organizationId: 'org_1' },
+    ])
+    expect(customer.findMany).toHaveBeenCalledWith({
+      where: { tenantId: 'blten_1', organizationId: 'org_1' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 3,
+    })
+    expect(customer.count).toHaveBeenCalledWith({
+      where: { tenantId: 'blten_1', organizationId: 'org_1' },
+    })
+  })
+
+  it('combines status and identity filters for cursor resolution', async () => {
+    customer.findFirst.mockResolvedValue({ id: 'cus_2', createdAt: 20 })
+    customer.findMany.mockResolvedValue([{ id: 'cus_1', createdAt: 10 }])
+    customer.count.mockResolvedValue(1)
+
+    await listCustomerPage('blten_1', {
+      limit: 25,
+      startingAfter: 'cus_2',
+      status: 'ACTIVE',
+      userId: 'usr_1',
+    })
+
+    expect(customer.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 'cus_2',
+        tenantId: 'blten_1',
+        status: 'ACTIVE',
+        userId: 'usr_1',
+      },
+      select: { id: true, createdAt: true },
+    })
+    expect(customer.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'blten_1',
+        status: 'ACTIVE',
+        userId: 'usr_1',
+        OR: [{ createdAt: { lt: 20 } }, { createdAt: 20, id: { lt: 'cus_2' } }],
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: 26,
+    })
+  })
 })

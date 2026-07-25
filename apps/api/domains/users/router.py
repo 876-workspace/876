@@ -73,7 +73,6 @@ from domains.users.schemas import (
     UserUpdate,
 )
 from providers.workos.client import get_workos_client
-from services.billing_customer_sync import enqueue_customer_ensure_for_user
 from services.features import FeatureService
 from services.provisioning import resolve_member_permissions
 
@@ -1500,7 +1499,6 @@ async def ensure_user(
         created_at=now,
         updated_at=now,
     )
-    await enqueue_customer_ensure_for_user(db, user, now)
 
     profile = UserProfile(
         id=generate_id("userProfile"),
@@ -1641,7 +1639,6 @@ async def create_user(
         created_at=now,
         updated_at=now,
     )
-    await enqueue_customer_ensure_for_user(db, user, now)
 
     db.add(UserProfile(id=generate_id("userProfile"), user_id=user_id, created_at=now, updated_at=now))
     await db.flush()

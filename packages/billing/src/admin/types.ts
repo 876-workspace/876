@@ -66,6 +66,26 @@ export interface CustomerEnsureParams {
   userId?: string
   name: string
   email?: string | null
+  /** Whether the party is a person or a business. Defaults from `customerType`. */
+  customerKind?: 'INDIVIDUAL' | 'BUSINESS'
+  /** Registered/legal name of a business customer. */
+  companyName?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  phone?: string | null
+  /**
+   * The organization's primary contact — its owner by default. Seeded as the
+   * customer's primary contact so a business customer always has a person
+   * attached. Omit for individuals: a person is their own contact.
+   */
+  primaryContact?: {
+    /** Opaque core user ID of the contact. */
+    userId: string
+    firstName?: string | null
+    lastName?: string | null
+    email?: string | null
+    phone?: string | null
+  } | null
 }
 
 /** Financial rollup for subscriptions attributed to one core 876 app. */

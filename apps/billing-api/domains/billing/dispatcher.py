@@ -42,6 +42,7 @@ from domains.billing.workflows.currencies import (
     set_default_currency,
     update_currency,
 )
+from domains.billing.workflows.customer_sync import attach_primary_contacts, ensure_core_customer
 from domains.billing.workflows.documents import create_document
 from domains.billing.workflows.engine import bill_subscription, run_billing_sweep
 from domains.billing.workflows.late_fees import assess_late_fees
@@ -144,6 +145,10 @@ async def dispatch(request: Request, session: AsyncSession, spec: RouteSpec) -> 
         body.setdefault("provisionedAt", int(time.time()))
         body.setdefault("provisioningVersion", 3)
         return await _created(service, definition, None, body, path_params)
+    if spec.path == "/admin/customers/ensure":
+        # Core identifies a party by organization/user id, not a Billing id, so
+        # customer ensure cannot use the generic id-keyed path below.
+        return await ensure_core_customer(session, body)
     if "/admin/" in spec.path and spec.path.endswith("/ensure"):
         return await _ensure(service, definition, body, path_params)
     if spec.path == "/customers/import":
@@ -158,8 +163,14 @@ async def dispatch(request: Request, session: AsyncSession, spec: RouteSpec) -> 
     if request.method == "GET":
         if detail:
             row = await service.retrieve(definition, tenant_id, path_params)
-            return serialize_resource(row, definition.object_name)
-        return await service.list(definition, tenant_id, path_params, query_params)
+            payload = serialize_resource(row, definition.object_name)
+            if definition.model is Customer:
+                await attach_primary_contacts(session, [payload])
+            return payload
+        listing = await service.list(definition, tenant_id, path_params, query_params)
+        if definition.model is Customer:
+            await attach_primary_contacts(session, listing["data"])
+        return listing
     if request.method == "POST":
         return await _created(service, definition, tenant_id, body, path_params)
     if request.method in {"PATCH", "PUT"}:

@@ -1,10 +1,4 @@
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@876/ui/empty'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
@@ -13,13 +7,18 @@ import { StatusFilterHeading } from '@/components/status-filter-heading'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFinanceClient } from '@/lib/finance/client'
 import { service } from '@/lib/service'
+import { customerStatusSchema } from '@/types/customer'
 
-import { CustomersTable } from './customers-table'
+import { CustomersTable, type CustomerTableRow } from './customers-table'
 
 const CUSTOMER_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Customers' },
   { value: 'active', label: 'Active', headingLabel: 'Active Customers' },
-  { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
+  {
+    value: 'suspended',
+    label: 'Suspended',
+    headingLabel: 'Suspended Customers',
+  },
 ]
 
 type Props = {
@@ -31,44 +30,58 @@ export default async function CustomersPage({ params, searchParams }: Props) {
   const { orgSlug } = await params
   const { status } = await searchParams
   const selectedStatus =
-    status === 'active' || status === 'archived' ? status : 'all'
-  const filterStatus =
+    status === 'active' || status === 'suspended' ? status : 'all'
+  const profileStatus =
     selectedStatus === 'all'
       ? undefined
-      : (selectedStatus.toUpperCase() as 'ACTIVE' | 'ARCHIVED')
+      : customerStatusSchema.parse(selectedStatus.toUpperCase())
 
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
-  const finance = await getFinanceClient()
-  const [customers, profiles] = await Promise.all([
-    finance.customers.list(ctx.orgId, {
-      limit: 100,
-      status: filterStatus,
-    }),
-    service.customerProfiles.list(ctx.tenant.id),
-  ])
-  const enrolledCustomerIds = new Set(
-    profiles.flatMap((profile) =>
-      profile.billingCustomerId ? [profile.billingCustomerId] : []
-    )
+  // Layer 3 first: this workspace's own enrolled customers are the list. The
+  // shared registry is then read only for the identity of those customers.
+  const profiles = await service.customerProfiles.list(
+    ctx.tenant.id,
+    profileStatus
   )
 
-  const rows = customers.error
-    ? []
-    : customers.data.data.map((customer) => ({
-        id: customer.id,
-        name: customer.name,
-        email: customer.email,
-        customerKind: customer.customerKind,
-        status: customer.status,
-        enrolled: enrolledCustomerIds.has(customer.id),
-      }))
+  const billingCustomerIds = profiles.flatMap((profile) =>
+    profile.billingCustomerId ? [profile.billingCustomerId] : []
+  )
 
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No shared customers in this finance workspace yet.'
-      : `No ${selectedStatus} customers.`
+  const finance = await getFinanceClient()
+  const registry = billingCustomerIds.length
+    ? await finance.customers.list(ctx.orgId, {
+        limit: 100,
+        ids: billingCustomerIds,
+      })
+    : null
+
+  const identityById = new Map(
+    registry?.data?.data.map((customer) => [customer.id, customer]) ?? []
+  )
+
+  const rows: CustomerTableRow[] = profiles.map((profile) => {
+    const identity = identityById.get(profile.billingCustomerId)
+    const contact = identity?.primaryContact ?? null
+    const contactName =
+      [contact?.firstName, contact?.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim() || null
+
+    return {
+      id: profile.id,
+      billingCustomerId: profile.billingCustomerId,
+      name: identity?.name ?? profile.billingCustomerId,
+      contactName,
+      email: contact?.email ?? identity?.email ?? null,
+      customerKind: identity?.customerKind ?? 'INDIVIDUAL',
+      status: profile.status,
+      isCommercial: profile.isCommercial,
+    }
+  })
 
   return (
     <Page>
@@ -89,7 +102,7 @@ export default async function CustomersPage({ params, searchParams }: Props) {
           { label: 'Import', icon: 'import' },
           { label: 'Export', icon: 'export' },
           {
-            label: 'Delete customers',
+            label: 'Delete',
             icon: 'delete',
             destructive: true,
             separator: true,
@@ -97,15 +110,14 @@ export default async function CustomersPage({ params, searchParams }: Props) {
         ]}
       />
 
-      {customers.error ? (
+      {registry?.error ? (
         <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-sm">
-          {customers.error.message}
+          {registry.error.message}
         </div>
       ) : null}
 
       <CustomersTable
         customers={rows}
-        hasMore={!customers.error && customers.data.has_more}
         emptyState={
           <Empty className="border-0 py-6">
             <EmptyHeader>
@@ -113,7 +125,6 @@ export default async function CustomersPage({ params, searchParams }: Props) {
                 <UsersIcon />
               </EmptyMedia>
               <EmptyTitle>No customers</EmptyTitle>
-              <EmptyDescription>{emptyMessage}</EmptyDescription>
             </EmptyHeader>
           </Empty>
         }

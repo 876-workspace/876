@@ -26,7 +26,6 @@ from db.repositories.users import UserRepository
 from db.session import get_db
 from providers.protocol import AuthEvent, AuthProvider, AuthSession, ProviderUser
 from providers.workos.adapter import get_auth_provider
-from services.billing_customer_sync import enqueue_customer_ensure_for_user
 from services.organization_bootstrap import OrganizationBootstrapService
 from services.provisioning import (
     assign_member_apps,
@@ -296,7 +295,6 @@ class AuthService:
                 created_at=now,
                 updated_at=now,
             )
-            await enqueue_customer_ensure_for_user(self._db, local_user, now)
             await self._grant_default_consumer_features(workos_user.id, local_user.id, now)
 
         # Attempt login to discover if email verification is required
@@ -377,7 +375,6 @@ class AuthService:
                     created_at=now,
                     updated_at=now,
                 )
-                await enqueue_customer_ensure_for_user(self._db, local_user, now)
 
             if not created_now:
                 memberships, _ = await self._memberships.list(limit=1, user_id=local_user.id)
@@ -627,7 +624,6 @@ class AuthService:
                 created_at=now,
                 updated_at=now,
             )
-            await enqueue_customer_ensure_for_user(self._db, local_user, now)
 
         return ServiceAuthOk(session=result)
 
