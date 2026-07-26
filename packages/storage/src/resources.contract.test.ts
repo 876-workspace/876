@@ -53,7 +53,11 @@ describe('resource path contracts', () => {
   ] as const)('retrieve encodes %s as %s', async (id, path) => {
     const fetchMock = vi
       .fn<typeof fetch>()
-      .mockResolvedValue(Response.json(readyFile({ id: id.startsWith('file_') ? id : 'file_01J8XYZ' })))
+      .mockResolvedValue(
+        Response.json(
+          readyFile({ id: id.startsWith('file_') ? id : 'file_01J8XYZ' })
+        )
+      )
     // id may fail schema if not file_ prefix — only assert URL
     const client = create876StorageClient({
       baseUrl: 'https://storage.example.test',
@@ -110,9 +114,11 @@ describe('resource path contracts', () => {
   })
 
   it('delete encodes file id and uses DELETE', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ object: 'file', id: 'file_01', deleted: true })
-    )
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        Response.json({ object: 'file', id: 'file_01', deleted: true })
+      )
     const client = create876StorageClient({
       baseUrl: 'https://storage.example.test',
       internalKey: 'k',
@@ -151,7 +157,9 @@ describe('resource path contracts', () => {
       category: 'library',
       audience: 'public',
     })
-    const body = JSON.parse(String((fetchMock.mock.calls[0]?.[1] as RequestInit).body))
+    const body = JSON.parse(
+      String((fetchMock.mock.calls[0]?.[1] as RequestInit).body)
+    )
     // JSON.stringify of typed object may still include extra if cast — client passes params through
     // Assert the documented fields are present
     expect(body.route_key).toBe('organization.primaryLogo')

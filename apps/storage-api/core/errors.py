@@ -13,3 +13,11 @@ class AppHTTPException(HTTPException):
         self.app_code = code
         self.app_message = message
         super().__init__(status_code=http_status_code, detail=message)
+
+
+def provider_error() -> AppHTTPException:
+    return AppHTTPException(
+        code="storage/provider-error",
+        message="The storage provider could not complete the request.",
+        http_status_code=status.HTTP_502_BAD_GATEWAY,
+    )

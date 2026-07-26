@@ -95,10 +95,16 @@ async def _initialize_database(database_url: str) -> None:
         await engine.dispose()
 
 
-def make_settings(database_url: str, *, internal_key: str = "storage-test-key") -> Settings:
+def make_settings(
+    database_url: str,
+    *,
+    internal_key: str = "storage-test-key",
+    scheduler_key: str = "scheduler-test-key",
+) -> Settings:
     return Settings(
         database_url=database_url,
         internal_key=internal_key,
+        scheduler_key=scheduler_key,
         r2_assets_bucket="assets-test",
         r2_files_bucket="files-test",
         r2_endpoint="https://r2.example.test",

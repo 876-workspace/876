@@ -46,7 +46,11 @@ describe('storageRequest', () => {
     const fetchMock = vi.fn<typeof fetch>()
     const runtime = createRuntime({ internalKey: undefined, fetch: fetchMock })
 
-    const result = await storageRequest(runtime, { method: 'GET', path: '/v1/files/x' }, fileSchema)
+    const result = await storageRequest(
+      runtime,
+      { method: 'GET', path: '/v1/files/x' },
+      fileSchema
+    )
 
     expect(result).toEqual({
       data: null,
@@ -62,7 +66,11 @@ describe('storageRequest', () => {
     const fetchMock = vi.fn<typeof fetch>()
     const runtime = createRuntime({ internalKey: '', fetch: fetchMock })
 
-    const result = await storageRequest(runtime, { method: 'GET', path: '/v1/files/x' }, fileSchema)
+    const result = await storageRequest(
+      runtime,
+      { method: 'GET', path: '/v1/files/x' },
+      fileSchema
+    )
 
     expect(result.error?.code).toBe('storage/not-configured')
     expect(fetchMock).not.toHaveBeenCalled()
@@ -180,9 +188,14 @@ describe('storageRequest', () => {
   })
 
   it('maps malformed error payloads to provider-error', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ error: { code: 'nope', message: 'x' } }, { status: 400 })
-    )
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        Response.json(
+          { error: { code: 'nope', message: 'x' } },
+          { status: 400 }
+        )
+      )
     const runtime = createRuntime({ fetch: fetchMock })
 
     const result = await storageRequest(

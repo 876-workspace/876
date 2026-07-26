@@ -4,8 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.audit import record_audit_event
 from core.errors import AppHTTPException
+from core.observability import StorageOperationContext, log_storage_event, observe_provider_call
 from db.repositories.files import FileRepository
+from db.repositories.upload_sessions import UploadSessionRepository
 from db.session import get_db
 from domains.files import docs
 from domains.files.schemas import FileDeleteResponse, FileResponse, ReadUrlRequest, ReadUrlResponse
@@ -41,12 +44,38 @@ async def delete_file(
     row = await repository.get_by_id(file_id)
     if row is None:
         raise _not_found()
+    upload_session = (await UploadSessionRepository(db).latest_by_file_ids([row.id])).get(row.id)
+    context = StorageOperationContext(
+        source_app_id=row.source_app_id,
+        actor_id=row.created_by,
+        owner_id=row.owner_id,
+        file_id=row.id,
+        upload_session_id=upload_session.id if upload_session else None,
+        route_key=upload_session.route_key if upload_session else None,
+    )
+    now = int(time.time())
+    deletion_mode = request.app.state.settings.deletion_mode
     await repository.delete(
         row,
-        deletion_mode=request.app.state.settings.deletion_mode,
-        deleted_at=int(time.time()),
+        deletion_mode=deletion_mode,
+        deleted_at=now,
         deleted_by=None,
         deletion_reason=None,
+    )
+    action = "file.soft_deleted" if deletion_mode == "soft" else "file.hard_deleted"
+    await record_audit_event(
+        db,
+        context,
+        owner_type=row.owner_type,
+        action=action,
+        outcome="succeeded",
+        error_code=None,
+        created_at=now,
+    )
+    log_storage_event(
+        "storage.file_soft_deleted" if deletion_mode == "soft" else "storage.file_hard_deleted",
+        context,
+        error_code=None,
     )
     return FileDeleteResponse(id=file_id)
 
@@ -72,8 +101,21 @@ async def create_file_read_url(
     settings = request.app.state.settings
     if row.audience == "public":
         return ReadUrlResponse(url=public_asset_url(settings, row), expires_at=None)
-    output = await provider.create_read_url(
-        CreateReadUrlInput(bucket=row.bucket, object_key=row.object_key, expires_in=body.expires_in)
+    upload_session = (await UploadSessionRepository(db).latest_by_file_ids([row.id])).get(row.id)
+    context = StorageOperationContext(
+        source_app_id=row.source_app_id,
+        actor_id=row.created_by,
+        owner_id=row.owner_id,
+        file_id=row.id,
+        upload_session_id=upload_session.id if upload_session else None,
+        route_key=upload_session.route_key if upload_session else None,
+    )
+    output = await observe_provider_call(
+        "create_read_url",
+        context,
+        lambda: provider.create_read_url(
+            CreateReadUrlInput(bucket=row.bucket, object_key=row.object_key, expires_in=body.expires_in)
+        ),
     )
     return ReadUrlResponse(url=output.url, expires_at=int(time.time()) + body.expires_in)
 

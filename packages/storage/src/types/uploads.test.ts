@@ -197,33 +197,29 @@ describe('uploadSessionSchema', () => {
 
   it('rejects non-upload_session object discriminator', () => {
     expect(
-      uploadSessionSchema.safeParse(
-        createUploadSession({ object: 'file' })
-      ).success
+      uploadSessionSchema.safeParse(createUploadSession({ object: 'file' }))
+        .success
     ).toBe(false)
   })
 
   it('rejects session ids that do not start with upl_', () => {
     expect(
-      uploadSessionSchema.safeParse(
-        createUploadSession({ id: 'session_123' })
-      ).success
+      uploadSessionSchema.safeParse(createUploadSession({ id: 'session_123' }))
+        .success
     ).toBe(false)
   })
 
   it('rejects file ids that do not start with file_', () => {
     expect(
-      uploadSessionSchema.safeParse(
-        createUploadSession({ file_id: 'upl_01' })
-      ).success
+      uploadSessionSchema.safeParse(createUploadSession({ file_id: 'upl_01' }))
+        .success
     ).toBe(false)
   })
 
   it('rejects non-PUT methods', () => {
     expect(
-      uploadSessionSchema.safeParse(
-        createUploadSession({ method: 'POST' })
-      ).success
+      uploadSessionSchema.safeParse(createUploadSession({ method: 'POST' }))
+        .success
     ).toBe(false)
   })
 
@@ -237,9 +233,8 @@ describe('uploadSessionSchema', () => {
 
   it('rejects negative expires_at', () => {
     expect(
-      uploadSessionSchema.safeParse(
-        createUploadSession({ expires_at: -1 })
-      ).success
+      uploadSessionSchema.safeParse(createUploadSession({ expires_at: -1 }))
+        .success
     ).toBe(false)
   })
 

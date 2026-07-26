@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     port: int = Field(default=4005, validation_alias="PORT")
     database_url: str = Field(default="", validation_alias="STORAGE_DATABASE_URL")
     internal_key: str = Field(default="", validation_alias="STORAGE_INTERNAL_KEY")
+    scheduler_key: str = Field(default="", validation_alias="STORAGE_SCHEDULER_KEY")
     r2_account_id: str = Field(default="", validation_alias="R2_ACCOUNT_ID")
     r2_access_key_id: str = Field(default="", validation_alias="R2_ACCESS_KEY_ID")
     r2_secret_access_key: str = Field(default="", validation_alias="R2_SECRET_ACCESS_KEY")
