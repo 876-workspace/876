@@ -67,7 +67,8 @@
     "deploy:widgets": "pnpm --filter @876/widgets-api deploy",
     "preview:widgets": "pnpm --filter @876/widgets-api preview",
     "dev:env": "node scripts/setup-dev-env.mjs",
-    "check:session-secret": "node scripts/check-session-secret.mjs"
+    "check:session-secret": "node scripts/check-session-secret.mjs",
+    "check:worker-secrets": "node scripts/check-worker-secrets.mjs"
   },
   "dependencies": {
     "@876/admin": "workspace:*",

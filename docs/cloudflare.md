@@ -204,6 +204,19 @@ openssl rand -hex 32
 
 Values are **not** stored in git.
 
+Verify the runtime secret bindings for every Worker, or one Worker at a time:
+
+```bash
+pnpm check:worker-secrets
+pnpm check:worker-secrets 876-couriers
+```
+
+The checker calls `wrangler secret list`, which returns names and types only;
+it never reads or prints secret values. A missing `API_INTERNAL_KEY` can look
+like an application access problem because `AdminDep` calls return 401. In
+Couriers, affected users are routed to onboarding and see
+`Setup is unavailable.` rather than an obvious authentication error.
+
 **876-api:** `API_INTERNAL_KEY`, `COOKIE_SECURE`, `CORS_ALLOWED_ORIGINS`,
 `DATABASE_URL`, `ENVIRONMENT`, `IS_PRODUCTION`, `LOG_LEVEL`, `POSTHOG_*`,
 `WORKOS_*`, `SENTRY_DSN`, `PLATFORM_OWNER_EMAIL`.
@@ -215,7 +228,8 @@ Values are **not** stored in git.
 `NEXT_PUBLIC_*`, `WIDGETS_*`.
 
 **876 couriers:** `API_876_KEY`, `API_INTERNAL_KEY`, `API_URL`, `BILLING_URL`,
-`DATABASE_URL`, `NEXT_PUBLIC_*`, `WIDGETS_*`, `WORKOS_COOKIE_PASSWORD`.
+`DATABASE_URL`, `NEXT_PUBLIC_*`, `STORAGE_INTERNAL_KEY`, `WIDGETS_*`,
+`WORKOS_COOKIE_PASSWORD`.
 
 **876-widgets-api:** `WIDGETS_DATABASE_URL`, `WIDGETS_SERVICE_KEY` only.
 
