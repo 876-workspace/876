@@ -74,14 +74,8 @@
       "Read(//home/codespace/.local/share/claude/versions/**)",
       "Bash(awk '{print $4}')",
       "Bash(codex exec --model gpt-5.6-sol -c model_reasoning_effort=high -s workspace-write --dangerously-bypass-approvals-and-sandbox -C /workspaces/876 'You are fixing code-review findings on branch feature/provisioning-v2-foundation. Scope: apps/billing ONLY \\(read anything, write only under apps/billing\\). Do NOT commit. There are uncommitted changes in apps/api and apps/console from parallel work — do not touch them. *)",
-      "Bash(railway --version)",
-      "Bash(railway whoami *)",
-      "Bash(railway status *)",
-      "Bash(railway list *)",
-      "Bash(railway variables *)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('scripts:',json.dumps\\(d.get\\('scripts',{}\\),indent=1\\)\\); print\\('deps:',list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\")",
-      "Bash(railway usage *)",
-      "Bash(railway volume *)"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('scripts:',json.dumps\\(d.get\\('scripts',{}\\),indent=1\\)\\); print\\('deps:',list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\")"
     ]
   },
   "outputStyle": "default"
