@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { expectNoAccessibilityViolations } from '../support/accessibility'
+import { expectShellOnlyPwa } from '../support/pwa'
 
 test.describe('Couriers public boundary', () => {
   test('when an anonymous user visits a workspace, redirects to sign in', async ({
@@ -40,5 +41,22 @@ test.describe('Couriers public boundary', () => {
     await expect(
       page.getByRole('button', { name: /Change account/i })
     ).toBeVisible()
+  })
+
+  test('installs a shell-only PWA without caching tenant data', async ({
+    browserName,
+    context,
+    page,
+  }) => {
+    test.skip(browserName !== 'chromium', 'Cache inspection uses Chromium')
+    await page.goto('/no-access')
+
+    await expectShellOnlyPwa({
+      appName: '876 Couriers',
+      context,
+      offlineMessage: 'Reconnect to continue managing courier operations.',
+      page,
+      themeColor: '#1f4f82',
+    })
   })
 })
