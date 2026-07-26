@@ -27,11 +27,9 @@ describe('standalone Billing API boundary', () => {
     const packageJson = JSON.parse(
       readFileSync(join(APP_ROOT, 'package.json'), 'utf8')
     ) as { scripts: Record<string, string> }
-    const railway = readFileSync(join(APP_ROOT, 'railway.toml'), 'utf8')
 
     expect(packageJson.scripts['db:migrate']).toBeUndefined()
     expect(packageJson.scripts['db:deploy']).toBeUndefined()
-    expect(railway).not.toMatch(/prisma\s+migrate/)
   })
 })
 

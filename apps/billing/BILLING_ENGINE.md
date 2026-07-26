@@ -130,8 +130,8 @@ period, and ends finite subscriptions after their contracted cycle count.
 Repeating a delivered job returns the same run instead of creating a duplicate
 invoice.
 
-Railway cron, a queue, or another scheduler may trigger the sweep. Recurrence,
-catch-up, and idempotency remain owned by 876 Billing.
+A Cloudflare Cron trigger, a queue, or another scheduler may trigger the sweep.
+Recurrence, catch-up, and idempotency remain owned by 876 Billing.
 
 ## Proration
 
