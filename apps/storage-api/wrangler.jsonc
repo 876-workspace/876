@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "876-storage-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-07-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "StorageApiContainer",
+      "image": "./Dockerfile",
+      "max_instances": 3,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "STORAGE_API_CONTAINER",
+        "class_name": "StorageApiContainer",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["StorageApiContainer"],
+    },
+  ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    "LOG_LEVEL": "info",
+    "PORT": "4005",
+    "DELETION_MODE": "soft",
+    "STORAGE_UPLOAD_TTL_SECONDS": "600",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}
