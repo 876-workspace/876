@@ -1,9 +1,11 @@
 import 'server-only'
 
+import * as Sentry from '@sentry/nextjs'
 import { isWidgetEnabled } from '@876/widgets'
 
 import { $876 } from '@/lib/876'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
+import { logger } from '@/lib/logger'
 import type { ConsoleFeatureRequest, ConsoleFeatures } from '@/types/features'
 
 export const CHAT_FEATURE_SLUG = 'console_chat'
@@ -27,16 +29,63 @@ export async function getConsoleFeatures({
     limit: 100,
     clientType: 'public',
   })
-  if (appError || !appList) return DISABLED_FEATURES
+  if (appError || !appList) {
+    const message = 'Feature flag outage: apps.list failed'
+    const context = {
+      call: 'apps.list',
+      errorCode: appError?.code ?? null,
+      errorMessage: appError?.message ?? null,
+      appSlug: CONSOLE_APP_SLUG,
+    }
+    Sentry.captureMessage(message, {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: context,
+    })
+    logger.error(context, message)
+    return DISABLED_FEATURES
+  }
 
   const consoleApp = appList.data.find((app) => app.slug === CONSOLE_APP_SLUG)
-  if (!consoleApp) return DISABLED_FEATURES
+  if (!consoleApp) {
+    const message =
+      'Feature flag configuration drift: Console app missing from apps.list'
+    const context = {
+      call: 'apps.list',
+      errorCode: null,
+      errorMessage: null,
+      appSlug: CONSOLE_APP_SLUG,
+    }
+    Sentry.captureMessage(message, {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: context,
+    })
+    logger.error(context, message)
+    return DISABLED_FEATURES
+  }
 
   const enabledResult = await $876.features.evaluate({
     appId: consoleApp.id,
     userId,
   })
-  if (enabledResult.error || !enabledResult.data) return DISABLED_FEATURES
+  if (enabledResult.error || !enabledResult.data) {
+    const message = 'Feature flag outage: features.evaluate failed'
+    const context = {
+      call: 'features.evaluate',
+      errorCode: enabledResult.error?.code ?? null,
+      errorMessage: enabledResult.error?.message ?? null,
+      appSlug: CONSOLE_APP_SLUG,
+      appId: consoleApp.id,
+    }
+    Sentry.captureMessage(message, {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: context,
+    })
+    logger.error(context, message)
+    return DISABLED_FEATURES
+  }
 
   const enabledSlugs = new Set(
     enabledResult.data.data.map((feature) => feature.slug)
