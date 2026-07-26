@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <title>Offline | 876 Console</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #ffffff;
+        color: #171717;
+      }
+
+      body {
+        display: grid;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0;
+        place-items: center;
+      }
+
+      main {
+        max-width: 28rem;
+        padding: 3rem 1.5rem;
+        text-align: center;
+      }
+
+      .brand {
+        margin: 0 0 2rem;
+        font-size: 1.25rem;
+        font-weight: 900;
+      }
+
+      .accent {
+        color: #b7791f;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.75rem;
+      }
+
+      p {
+        margin: 0.75rem 0 1.5rem;
+        color: #525252;
+        line-height: 1.6;
+      }
+
+      a {
+        display: inline-block;
+        border-radius: 0.5rem;
+        background: #0a0a0a;
+        color: #ffffff;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          background: #0a0a0a;
+          color: #fafafa;
+        }
+
+        p {
+          color: #a3a3a3;
+        }
+
+        a {
+          background: #fafafa;
+          color: #0a0a0a;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand" aria-label="876 Console">
+        87<span class="accent">6</span> Console
+      </div>
+      <h1>You are offline</h1>
+      <p>Reconnect to continue using the operations console.</p>
+      <a href="/">Try again</a>
+    </main>
+  </body>
+</html>
