@@ -82,14 +82,11 @@ describe('fileSchema contract matrix', () => {
     ['uploaded', null],
     ['failed', null],
     ['deleted', null],
-  ] as const)(
-    'accepts public %s files only with null url',
-    (status, url) => {
-      expect(
-        fileSchema.safeParse(createFilePayload({ status, url })).success
-      ).toBe(true)
-    }
-  )
+  ] as const)('accepts public %s files only with null url', (status, url) => {
+    expect(
+      fileSchema.safeParse(createFilePayload({ status, url })).success
+    ).toBe(true)
+  })
 
   it.each(['private', 'organization', 'app'] as const)(
     'accepts ready %s files only with null url',

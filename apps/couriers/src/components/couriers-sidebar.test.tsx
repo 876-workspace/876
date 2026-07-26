@@ -44,9 +44,7 @@ beforeAll(() => {
   })
 })
 
-function renderSidebar(
-  props: React.ComponentProps<typeof CouriersSidebar>
-) {
+function renderSidebar(props: React.ComponentProps<typeof CouriersSidebar>) {
   return render(
     <SidebarProvider>
       <CouriersSidebar {...props} />
