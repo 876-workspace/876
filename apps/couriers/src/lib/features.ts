@@ -13,6 +13,7 @@ const COURIERS_GLOBAL_ADD_SLUG = 'couriers_global_add'
 const COURIERS_APP_SWITCHER_SLUG = 'couriers_app_switcher'
 const COURIERS_ORG_SWITCHER_SLUG = 'couriers_org_switcher'
 const COURIERS_CHAT_SLUG = 'couriers_chat'
+const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers_storage_org_logo_upload'
 const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   searchBar: false,
   themeSwitcher: false,
@@ -22,6 +23,7 @@ const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   chat: false,
 }
 const DISABLED_FEATURES: CouriersFeatures = {
+  storageOrgLogoUpload: false,
   uiFeatures: DEFAULT_UI_FEATURES,
   enabledWidgetIds: [],
 }
@@ -55,6 +57,9 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     : []
 
   return {
+    storageOrgLogoUpload: enabledSlugs.has(
+      COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG
+    ),
     uiFeatures: {
       searchBar: enabledSlugs.has(COURIERS_SEARCH_BAR_SLUG),
       themeSwitcher: enabledSlugs.has(COURIERS_THEME_SWITCHER_SLUG),

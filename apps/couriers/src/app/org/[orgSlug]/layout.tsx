@@ -50,6 +50,7 @@ export default async function OrgLayout({
     name: ctx.orgName,
     slug: ctx.orgSlug!,
     role: ctx.role,
+    logoUrl: ctx.orgLogoUrl,
   }
   const apps = getAppsDirectory(basePath)
   const user = {

@@ -31,6 +31,7 @@ export type OrgSummary = {
   name: string | null
   slug: string
   role: OrgRole
+  logoUrl: string | null
 }
 
 export type ManageContext = {
@@ -38,6 +39,7 @@ export type ManageContext = {
   orgId: string
   orgName: string | null
   orgSlug: string | null
+  orgLogoUrl: string | null
   organizations: OrgSummary[]
   tenant: Tenant | null
   role: OrgRole
