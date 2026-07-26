@@ -145,6 +145,16 @@ npx wrangler secret put R2_SECRET_ACCESS_KEY --name 876-storage-api
 When it is empty the service rejects every authenticated request, matching core
 `apps/api`'s `AdminDep` posture — an unset key fails closed, never open.
 
+`STORAGE_SCHEDULER_KEY` is a separate credential used only by the daily
+reclamation trigger. The Worker presents it as `x-scheduler-key` to
+`POST /internal/storage-sweep`; it cannot authenticate any `/v1` storage
+operation, and `STORAGE_INTERNAL_KEY` cannot authenticate the sweep. Configure
+it as a Worker secret rather than a plain Wrangler variable:
+
+```bash
+npx wrangler secret put STORAGE_SCHEDULER_KEY --name 876-storage-api
+```
+
 ## Verifying the setup
 
 ```bash
@@ -183,6 +193,13 @@ time, because files are soft-deleted per `.claude/rules/deletions.md`. The job
 also removes objects orphaned by expired or abandoned upload sessions — a
 session that is signed but never completed leaves bytes with no `ready` file
 record pointing at them.
+
+The Cloudflare Worker invokes the internal sweep every day at **03:17 UTC**
+(`17 3 * * *`). It uses a dedicated scheduler container instance and the
+scheduler-only credential described above. The endpoint claims rows with
+database locks that skip already-claimed work, so overlapping runs do not
+double-process a file. Operators may still run the CLI manually; it remains a
+dry run unless passed `--apply`.
 
 Do not add an R2 lifecycle rule that deletes objects on an age basis: it would
 delete bytes out from under live metadata rows. Object lifetime is owned by the
