@@ -3,9 +3,37 @@
 Read this before spawning any sub-agent or driving any external CLI (Codex,
 `agy`, `opencode`, Command Code) for a delegated chunk of work. It defines
 **which model/tool handles which class of task**, and how to invoke each CLI
-non-interactively. See `.claude/rules/implementation-tracker.md` for tracking
+non-interactively. See `.agents/rules/implementation-tracker.md` for tracking
 multi-file delegated work, and the root `CLAUDE.md` "Sub-Agent Rules" section
-for the foreground-only rule (never background a sub-agent).
+for the background-execution rule.
+
+## Available tooling — verified, do not re-probe
+
+This inventory exists so a session knows what it can reach **without spending
+turns probing**. Trust it; re-verify only if a command actually fails.
+
+| Tool                    | Command                                    | Auth state            | Notes                                                                                                                                                                                                                                                       |
+| ----------------------- | ------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Codex**               | `codex exec -m gpt-5.6-sol`                | ready                 | The model id is **`gpt-5.6-sol`**. `~/.codex/config.toml` sets `approval_policy = "never"`, `sandbox_mode = "danger-full-access"`, and marks `/workspaces/876` trusted, so `--dangerously-bypass-approvals-and-sandbox` runs unattended.                    |
+| **opencode**            | `opencode run -m deepseek/deepseek-v4-pro` | ready                 | Trivial/mechanical tier. See below.                                                                                                                                                                                                                         |
+| **Command Code**        | `command-code -p --yolo`                   | ready                 | Alternative to opencode, same tier.                                                                                                                                                                                                                         |
+| **agy** (Antigravity)   | `agy`                                      | ready                 | Docs-only tier, Sonnet 4.6 Thinking.                                                                                                                                                                                                                        |
+| **Cloudflare Wrangler** | `npx wrangler`                             | **authenticated**     | OAuth as `raheemforschool@gmail.com`, account `b033115f2e5e7382047b69539b971105`. Scopes include `workers:write`, `workers_scripts:write`, `workers_kv:write`, `workers_routes:write`. Can deploy Workers, read/set secrets, and `wrangler tail` live logs. |
+| **GitHub CLI**          | `gh`                                       | **authenticated**     | Account `876-workspace`, scopes `repo`, `workflow`, `read:org`, `gist`. Can open/merge PRs, dispatch workflows, read Actions logs.                                                                                                                          |
+| **Sentry**              | `sentry`                                   | **authenticated**     | v0.38.0 at `~/.local/bin/sentry`, org **`efesto`** (Efesto-Technologies), team `efesto-technologies`. Token auto-refreshes.                                                                                                                                 |
+| ~~sentry-cli~~          | `sentry-cli`                               | **NOT authenticated** | v3.6.2 at `/usr/local/bin/sentry-cli`, **no auth token**. This is a _different, unusable_ binary — always use `sentry`, never `sentry-cli`.                                                                                                                 |
+| **Docker**              | —                                          | **UNAVAILABLE**       | No binary, no daemon. This is why Cloudflare **Container** services (`876-api`, `876-billing-api`, `876-storage-api`) cannot be deployed locally — their image build must run in GitHub Actions.                                                            |
+
+**MCP servers** (`.mcp.json`, repo root): `sentry` — HTTP, `https://mcp.sentry.dev/mcp`.
+
+Two traps worth remembering:
+
+- **`sentry` vs `sentry-cli` are not the same tool.** Only `sentry` is
+  authenticated. Reaching for `sentry-cli` wastes a turn on an auth error.
+- **Never write a `pgrep` guard whose own pattern matches the command line it
+  runs in.** `until ! pgrep -f "sentry project create"; do …; done` inside a
+  script that then calls `sentry project create` matches _itself_ and hangs
+  forever. Match on the binary path instead (e.g. `pgrep -f "bin/codex"`).
 
 ## Routing table
 
@@ -142,11 +170,17 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
 ## Shared rules across all delegated CLIs/sub-agents
 
 - **Never let a delegated CLI or sub-agent commit.** The orchestrating
-  Claude agent stages and commits, per `.claude/rules/git.md` (no AI
+  Claude agent stages and commits, per `.agents/rules/git.md` (no AI
   attribution).
-- **Never run any of these in the background** — root `CLAUDE.md`'s
-  "Sub-Agent Rules" foreground-only requirement applies to all of them, not
-  just Codex/`agy`.
+- **Background execution is authorized** (user, 2026-07-26: _"run codex in the
+  background always going further"_, refined to _"in the background only if they
+  make sense, you make that decision"_). This is the written authorization the
+  root `CLAUDE.md` "Sub-Agent Rules" exception requires. Judgement still
+  applies: background genuinely long-running work (a Codex run, a CI/checks
+  poll) and keep quick checks in the foreground, where the result is available
+  immediately. Backgrounding a two-second command costs a round trip and buys
+  nothing. Whatever the mode, you still **read and verify the output** — a
+  backgrounded delegation you never inspect is not delegation.
 - Scope parallel tasks (Codex, `agy`, `opencode`, Command Code, or Claude
   sub-agents) to non-overlapping file sets; run overlapping areas
   sequentially.
@@ -168,7 +202,7 @@ command or left to exist solely in conversation history.
   e.g. `.claude/briefs/codex/2026-07-18-couriers-org-bootstrap.md`. Do not
   let briefs accumulate as an unsorted pile of `brief1.md`, `brief2.md`.
 - **Do not gitignore `.claude/briefs/`.** Unlike `.claude/tracker/` (local,
-  ephemeral, gitignored per `.claude/rules/implementation-tracker.md`),
+  ephemeral, gitignored per `.agents/rules/implementation-tracker.md`),
   briefs are committed and versioned — they are the durable record of what
   was asked of a delegated tool and why, and later work (or another agent)
   may need to see exactly what a prior brief specified.
