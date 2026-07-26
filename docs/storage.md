@@ -47,8 +47,25 @@ service composes public file URLs as `${R2_ASSETS_BASE_URL}/${object_key}`.
 `876-files-<env>`. If a private file ever needs to be shown in an `<img>`, the
 answer is a signed read URL with a short TTL, never public access.
 
-Do not use `r2.dev` URLs in production — they are development conveniences and
-are rate-limited.
+### Development may use the managed `r2.dev` URL
+
+Development does not need a custom domain. Enable the managed URL instead:
+
+```bash
+npx wrangler r2 bucket dev-url enable 876-assets-development
+```
+
+**Do not use `r2.dev` URLs in staging or production** — they are rate-limited
+and not intended for real traffic. Those environments get a custom domain.
+
+### Currently provisioned (development)
+
+| Bucket                   | Public access                                         | CORS     |
+| ------------------------ | ----------------------------------------------------- | -------- |
+| `876-assets-development` | `https://pub-eb91fec27f7c45b9922c0c409a11f5bf.r2.dev` | PUT rule |
+| `876-files-development`  | disabled                                              | none     |
+
+Staging and production buckets are **not** created yet.
 
 ## CORS on the assets bucket
 
@@ -56,29 +73,40 @@ The browser uploads bytes **directly to R2** with the signed `PUT`, so the bucke
 must allow the app origins as cross-origin callers. Without this, uploads fail at
 the preflight and the failure is easy to misread as a signing bug.
 
-`cors-assets.json`:
+`cors-assets.json` — note this is the **R2 API schema** (a `rules` array), not
+the S3-style `AllowedOrigins` array. Wrangler rejects the S3 shape outright:
 
 ```json
-[
-  {
-    "AllowedOrigins": ["http://localhost:3003", "https://couriers.876.app"],
-    "AllowedMethods": ["PUT"],
-    "AllowedHeaders": ["Content-Type", "Content-Length"],
-    "ExposeHeaders": ["ETag"],
-    "MaxAgeSeconds": 3600
-  }
-]
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "http://localhost:3003",
+          "http://127.0.0.1:3003",
+          "https://*.app.github.dev"
+        ],
+        "methods": ["PUT"],
+        "headers": ["content-type", "content-length"]
+      },
+      "exposeHeaders": ["ETag"],
+      "maxAgeSeconds": 3600
+    }
+  ]
+}
 ```
 
 ```bash
-npx wrangler r2 bucket cors set 876-assets-development --file cors-assets.json
+npx wrangler r2 bucket cors set 876-assets-development --file cors-assets.json --force
 ```
 
-List origins explicitly — never `"*"`. `AllowedHeaders` must include exactly the
-headers the service signs into the presigned `PUT` (`Content-Type`,
-`Content-Length`); a header the browser sends but the bucket does not allow fails
-preflight, and one the browser sends that was not signed fails with
-`SignatureDoesNotMatch`.
+List origins explicitly — never `"*"`. `headers` must include exactly the headers
+the service signs into the presigned `PUT` (`content-type`, `content-length`); a
+header the browser sends that the bucket does not allow fails preflight, and one
+the browser sends that was not signed fails with `SignatureDoesNotMatch`.
+
+**Never set a CORS policy on `876-files-<env>`.** Private files are read through
+signed URLs the server mints; no browser needs to `PUT` to that bucket directly.
 
 Add each app origin as it starts uploading. Codespaces/preview origins are
 per-environment and belong only in the development bucket's policy.
@@ -88,6 +116,11 @@ per-environment and belong only in the development bucket's policy.
 Create an **R2 API token scoped to these buckets only**, with Object Read &
 Write. Do not reuse an account-wide token, and use a distinct token per
 environment so a leak is contained to one.
+
+**This step is dashboard-only** — wrangler has no command that mints R2
+S3-compatible credentials. Go to **R2 → API → Manage API tokens → Create API
+token**, scope it to the two buckets for the environment, and copy the access
+key id and secret. The secret is shown once.
 
 ```
 R2_ACCOUNT_ID=<cloudflare account id>
