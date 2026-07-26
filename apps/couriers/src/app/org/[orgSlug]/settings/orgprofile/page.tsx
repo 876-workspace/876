@@ -3,6 +3,7 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { getFeatures } from '@/lib/features'
 import { ProfileForm, type ProfileFormValues } from './profile-form'
 
 export const metadata = { title: 'Organization profile — Settings' }
@@ -23,9 +24,10 @@ export default async function ProfileSettingsPage({
   if (!ctx) notFound()
 
   const platform = await getPlatformClient()
-  const [result, regionsResult] = await Promise.all([
+  const [result, regionsResult, features] = await Promise.all([
     platform.orgs.retrieveProfile(ctx.orgId),
     platform.geo.listRegions('JM'),
+    getFeatures({ userId: ctx.userId, organizationId: ctx.orgId }),
   ])
 
   if (result.error)
@@ -94,6 +96,8 @@ export default async function ProfileSettingsPage({
       <ProfileForm
         orgSlug={orgSlug}
         canEdit={canEdit}
+        logoUrl={profile.logo_url}
+        logoUploadEnabled={features.storageOrgLogoUpload}
         initial={initial}
         parishes={parishes}
       />

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { BuildingOffice2Icon } from '@876/ui/icons'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
@@ -15,6 +14,7 @@ import {
 } from '@876/ui/select'
 
 import { request } from '@/lib/client/request'
+import { OrganizationLogoUpload } from './organization-logo-upload'
 
 /** The editable organization profile fields surfaced in Couriers. */
 export type ProfileFormValues = {
@@ -174,12 +174,21 @@ function toNullable(value: string): string | null {
 type Props = {
   orgSlug: string
   canEdit: boolean
+  logoUrl: string | null
+  logoUploadEnabled: boolean
   initial: ProfileFormValues
   /** Parish options ({ value: region_id, label: name }) for the address block. */
   parishes: { value: string; label: string }[]
 }
 
-export function ProfileForm({ orgSlug, canEdit, initial, parishes }: Props) {
+export function ProfileForm({
+  orgSlug,
+  canEdit,
+  logoUrl,
+  logoUploadEnabled,
+  initial,
+  parishes,
+}: Props) {
   const router = useRouter()
   const [values, setValues] = useState<ProfileFormValues>(initial)
   const [saving, setSaving] = useState(false)
@@ -252,14 +261,13 @@ export function ProfileForm({ orgSlug, canEdit, initial, parishes }: Props) {
         <SectionHeading>Organization</SectionHeading>
 
         <FieldRow label="Organization logo">
-          <div className="flex items-center gap-4">
-            <div className="border-input text-muted-foreground flex size-20 items-center justify-center rounded-md border border-dashed">
-              <BuildingOffice2Icon className="size-6" />
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Logo upload is coming soon.
-            </p>
-          </div>
+          <OrganizationLogoUpload
+            orgSlug={orgSlug}
+            orgName={values.name}
+            logoUrl={logoUrl}
+            canEdit={canEdit}
+            featureEnabled={logoUploadEnabled}
+          />
         </FieldRow>
 
         <InputRow
