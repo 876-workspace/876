@@ -4,9 +4,6 @@ Deploy the **876 monorepo** on [Cloudflare](https://developers.cloudflare.com/) 
 Workers (Next.js via OpenNext) and Containers (FastAPI), against the existing
 Neon Postgres databases.
 
-This replaces the Railway layout in [`docs/railway.md`](./railway.md). Keep Railway
-warm only during dual-run cutover.
-
 ---
 
 ## Architecture
@@ -24,10 +21,10 @@ warm only during dual-run cutover.
 
 `@876/docs` is **not** deployed to Cloudflare.
 
-**Hostname strategy (phase 1):** `*.workers.dev` script names above. Custom
-domains (`api.876.app`, etc.) come after dual-run is healthy.
+**Hostname strategy:** `*.workers.dev` script names above, with custom domains
+(`api.876.app`, etc.) added as needed.
 
-**Databases:** Neon (already production). Do not put Postgres on Railway.
+**Databases:** Neon (already production).
 
 | Neon endpoint       | Used by            | Env var                  |
 | ------------------- | ------------------ | ------------------------ |
@@ -150,7 +147,7 @@ Continue using `next dev`. Optionally call `initOpenNextCloudflareForDev()` from
 `@opennextjs/cloudflare` in `next.config.ts` when you need local bindings.
 
 Migrations (`prisma migrate deploy`) run in **CI before deploy**, not inside the
-Worker (there is no Railway-style `preDeployCommand` shell).
+Worker.
 
 ---
 
@@ -180,19 +177,13 @@ Health: `GET /health` on the Worker URL (proxied into the container).
 
 ## Secrets and env vars
 
-### Do not migrate from Railway
+### URL values
 
-Any `RAILWAY_*` key, plus `HOSTNAME=::` (Railway IPv6 private bind).
-
-### Replace URL values on cutover
-
-| Pattern                | Action                                           |
-| ---------------------- | ------------------------------------------------ |
-| `*.railway.internal`   | Service bindings or public `*.workers.dev` HTTPS |
-| `*.up.railway.app`     | New Worker/Container URL                         |
-| `CORS_ALLOWED_ORIGINS` | Rebuild list of all CF public origins            |
-| `BILLING_OAUTH_ISSUER` | Public `876-api` workers.dev (or custom) URL     |
-| `NEXT_PUBLIC_*_URL`    | Matching public CF hostnames                     |
+| Variable               | Value                                         |
+| ---------------------- | --------------------------------------------- |
+| `CORS_ALLOWED_ORIGINS` | List of all Cloudflare public origins         |
+| `BILLING_OAUTH_ISSUER` | Public `876-api` workers.dev (or custom) URL  |
+| `NEXT_PUBLIC_*_URL`    | Matching public Cloudflare application origin |
 
 ### Shared secrets (must match across services)
 
@@ -203,18 +194,7 @@ Any `RAILWAY_*` key, plus `HOSTNAME=::` (Railway IPv6 private bind).
 | `WIDGETS_SERVICE_KEY`                              | widgets-api + every host that calls it                                          |
 | `BILLING_INTERNAL_KEY`                             | console + billing                                                               |
 
-### Transfer helper
-
-```bash
-chmod +x scripts/transfer-railway-secrets-to-cf.sh
-./scripts/transfer-railway-secrets-to-cf.sh 876-api 876-api
-./scripts/transfer-railway-secrets-to-cf.sh "876 console" 876-console
-./scripts/transfer-railway-secrets-to-cf.sh 876-billing 876-billing
-./scripts/transfer-railway-secrets-to-cf.sh "876 couriers" 876-couriers
-./scripts/transfer-railway-secrets-to-cf.sh 876-widgets-api 876-widgets-api
-```
-
-The script refuses to copy the known weak `API_INTERNAL_KEY` placeholder. Generate:
+Generate a strong `API_INTERNAL_KEY`:
 
 ```bash
 openssl rand -hex 32
@@ -224,7 +204,7 @@ openssl rand -hex 32
 
 ### Production key inventory (names only)
 
-Snapshot from Railway production (2026-07-23). Values are **not** stored in git.
+Values are **not** stored in git.
 
 **876-api:** `API_INTERNAL_KEY`, `COOKIE_SECURE`, `CORS_ALLOWED_ORIGINS`,
 `DATABASE_URL`, `ENVIRONMENT`, `IS_PRODUCTION`, `LOG_LEVEL`, `POSTHOG_*`,
@@ -239,34 +219,17 @@ Snapshot from Railway production (2026-07-23). Values are **not** stored in git.
 **876 couriers:** `API_876_KEY`, `API_INTERNAL_KEY`, `API_URL`, `BILLING_URL`,
 `DATABASE_URL`, `NEXT_PUBLIC_*`, `WIDGETS_*`, `WORKOS_COOKIE_PASSWORD`.
 
-**876-widgets-api:** `WIDGETS_DATABASE_URL`, `WIDGETS_SERVICE_KEY` only
-(drop `HOSTNAME` / `PORT` Railway hacks).
+**876-widgets-api:** `WIDGETS_DATABASE_URL`, `WIDGETS_SERVICE_KEY` only.
 
 ---
 
 ## Inter-service networking
 
-Railway private DNS (`http://876-api.railway.internal`) has no CF equivalent.
-
-| Caller → callee   | Phase 1 (workers.dev)                                                    | Later                            |
+| Caller → callee   | Current                                                                  | Later                            |
 | ----------------- | ------------------------------------------------------------------------ | -------------------------------- |
 | UI → `876-api`    | `https://876-api.<subdomain>.workers.dev` + `API_INTERNAL_KEY` / app key | Custom domain + optional mTLS    |
 | UI → widgets-api  | Public workers.dev + `WIDGETS_SERVICE_KEY`                               | Worker **service binding**       |
 | Console → billing | Public billing Worker URL                                                | Service binding or custom domain |
-
----
-
-## Cutover order
-
-1. Upgrade the Cloudflare account to **Workers Paid** (gates Worker size and
-   Containers — nothing below deploys without it).
-2. Deploy `876-widgets-api` → smoke `/api/health`.
-3. Deploy `876-api` Container → smoke `/health`.
-4. Deploy `876-billing-api` shadow (`BILLING_WRITER=none`).
-5. Deploy console, billing UI, couriers; point env at CF API/widgets.
-6. Deploy app, enterprise, docs.
-7. Dual-run 48–72h; flip any remaining DNS/custom domains.
-8. Decommission Railway services; archive `railway.toml` usage.
 
 ---
 
@@ -355,13 +318,12 @@ Only build-time (`NEXT_PUBLIC_*`) values and migration URLs belong in GitHub.
 Every runtime secret is set with `wrangler secret put` and read from the Worker
 environment — CI never sees them.
 
-- Never commit `.dev.vars` or exported Railway env files.
+- Never commit `.dev.vars` or exported environment files.
 
 ---
 
 ## Related docs
 
-- [`docs/railway.md`](./railway.md) — legacy Railway layout (source of env keys)
 - [`docs/billing-api-cutover.md`](./billing-api-cutover.md) — `BILLING_WRITER` handoff
 - [OpenNext Cloudflare](https://opennext.js.org/cloudflare)
 - [Cloudflare Containers](https://developers.cloudflare.com/containers/)

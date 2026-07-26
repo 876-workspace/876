@@ -51,12 +51,6 @@ Browser
 `packages/widgets` owns catalog metadata, typed contracts, server/browser
 HTTP clients, and React panels. It does **not** open a database connection.
 
-In Railway, `apps/widgets-api` binds to `::` and pins `PORT=3005`. Hosts use
-`http://876-widgets-api.railway.internal:3005` on Railway's private network,
-with `https://876-widgets-api-production.up.railway.app` as the public fallback.
-The Widgets environment check rejects portless `.railway.internal` URLs because
-the private service contract requires the explicit `:3005` port.
-
 ## Local environment
 
 Widgets use ordinary app-local `.env` files in Codespaces and other local
