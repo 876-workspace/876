@@ -11,10 +11,10 @@ name: Deploy to Cloudflare
 #   - Workers Builds owns build + deploy of the six OpenNext Workers on push.
 #     It cannot run Docker, and it does not touch the database.
 #   - This workflow owns (a) the Container services, which need Docker,
-#     and (b) `prisma migrate deploy` for the four apps with a datastore.
-#   - The OpenNext deploy steps below therefore run on `workflow_dispatch`
-#     only — a manual escape hatch when Workers Builds is unavailable. Leaving
-#     them on `push` would deploy every Worker twice per commit.
+#     and (b) manual migration + deploys for Workers with a datastore.
+#   - Worker jobs therefore run on `workflow_dispatch` only. This keeps push
+#     deployments owned by Workers Builds and avoids running migrations without
+#     the database secrets required by an explicitly configured manual deploy.
 #
 # Required repository secrets:
 #   CLOUDFLARE_API_TOKEN    Workers Scripts:Edit (+ Containers for api jobs)
@@ -109,7 +109,7 @@ jobs:
 
   widgets-api:
     needs: changes
-    if: needs.changes.outputs.widgets-api == 'true' || inputs.app == 'all' || inputs.app == 'widgets-api'
+    if: github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'widgets-api')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -174,7 +174,7 @@ jobs:
 
   console:
     needs: [changes, widgets-api, api]
-    if: always() && !failure() && !cancelled() && (needs.changes.outputs.console == 'true' || inputs.app == 'all' || inputs.app == 'console')
+    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'console')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -195,7 +195,7 @@ jobs:
 
   billing:
     needs: [changes, widgets-api, api, billing-api]
-    if: always() && !failure() && !cancelled() && (needs.changes.outputs.billing == 'true' || inputs.app == 'all' || inputs.app == 'billing')
+    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'billing')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -214,7 +214,7 @@ jobs:
 
   couriers:
     needs: [changes, widgets-api, api]
-    if: always() && !failure() && !cancelled() && (needs.changes.outputs.couriers == 'true' || inputs.app == 'all' || inputs.app == 'couriers')
+    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'couriers')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
