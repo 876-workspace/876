@@ -16,7 +16,7 @@
   ],
   // Non-secret service URLs. Secrets are set with `wrangler secret put`.
   "vars": {
-    "API_URL": "https://876-api-production-e78f.up.railway.app",
+    "API_URL": "https://876-api.raheemforschool.workers.dev",
   },
   "observability": {
     "enabled": true,

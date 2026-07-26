@@ -16,12 +16,11 @@
   ],
   // Non-secret service URLs. Secrets (keys, DB URLs) are set with
   // `wrangler secret put` and never appear here.
-  // API_URL still points at Railway until the 876-api Container is deployed
-  // (Containers need Docker, so that deploy runs in CI).
   "vars": {
-    "API_URL": "https://876-api-production-e78f.up.railway.app",
+    "API_URL": "https://876-api.raheemforschool.workers.dev",
     "WIDGETS_API_URL": "https://876-widgets-api.raheemforschool.workers.dev",
     "BILLING_URL": "https://876-billing.raheemforschool.workers.dev",
+    "BILLING_API_URL": "https://876-billing-api.raheemforschool.workers.dev",
   },
   "observability": {
     "enabled": true,
