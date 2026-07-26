@@ -483,7 +483,7 @@ Returns a user's organization memberships for server-side routing decisions.
 
 This endpoint is designed for use in routing middleware and server-side \
 request handlers. It returns each membership alongside the associated \
-organization's `id`, `name`, `slug`, and `status`, so your middleware can \
+organization's `id`, `name`, `slug`, `status`, and rendered logo URL, so your middleware can \
 route authenticated users to the correct workspace — individual (`/app`) \
 or organization (`/org/{slug}`) — in a single request.
 

@@ -406,6 +406,7 @@ async def test_internal_key_can_list_organizations(monkeypatch) -> None:
                 "short_name": None,
                 "slug": "acme-corp",
                 "status": "active",
+                "logo_file_id": None,
                 "logo_url": None,
                 "primary_phone": None,
                 "primary_email": None,
@@ -1798,6 +1799,7 @@ async def test_list_my_memberships_returns_only_session_users_rows() -> None:
         name = "Acme Corp"
         slug = "acme-corp"
         status = "active"
+        logo_url = None
 
     class _MembershipWithOrgRow:
         id = "mbr_test"
@@ -1853,6 +1855,7 @@ async def test_list_my_memberships_returns_only_session_users_rows() -> None:
                     "name": "Acme Corp",
                     "slug": "acme-corp",
                     "status": "active",
+                    "logo_url": None,
                 },
                 }
             ],

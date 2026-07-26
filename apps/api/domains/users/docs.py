@@ -260,7 +260,7 @@ LIST_MY_CONTACTS_RESPONSES: dict = {}
 
 LIST_MY_MEMBERSHIPS_SUMMARY = "List my memberships"
 LIST_MY_MEMBERSHIPS_DESCRIPTION = (
-    "Returns the current user's organization memberships with each org's id, name, slug, and status. "
+    "Returns the current user's organization memberships with each org's id, name, slug, status, and logo URL. "
     "Session tier — the self-scoped replacement for the admin routing-memberships lookup."
 )
 LIST_MY_MEMBERSHIPS_RESPONSES: dict = {}

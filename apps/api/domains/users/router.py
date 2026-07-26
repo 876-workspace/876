@@ -841,6 +841,7 @@ async def list_my_memberships(
                     name=m.organization.name,
                     slug=m.organization.slug,
                     status=m.organization.status,
+                    logo_url=m.organization.logo_url,
                 ),
             )
             for m in rows
