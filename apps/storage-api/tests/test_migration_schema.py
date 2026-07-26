@@ -44,8 +44,8 @@ def test_upload_sessions_reference_files_with_cascade_delete() -> None:
 
 def test_files_owner_category_index_supports_drive_browse() -> None:
     index_cols = {
-        index.name: tuple(col.name for col in index.columns)
-        for index in File.__table__.indexes
+        str(index.name): tuple(col.name for col in index.columns)
+        for index in cast(Table, File.__table__).indexes
     }
     assert index_cols["ix_files_owner_category"] == ("owner_type", "owner_id", "category")
     assert "ix_files_owner" not in index_cols

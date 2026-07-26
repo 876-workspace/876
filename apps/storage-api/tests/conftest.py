@@ -7,10 +7,12 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import event
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from core.config import Settings
 from db.models import Base
-from db.session import make_engine
+from db.session import make_engine as _make_engine
 from main import create_app
 from providers.base import (
     CreateReadUrlInput,
@@ -25,6 +27,20 @@ from providers.base import (
 )
 
 NOW = 1_753_487_000
+
+
+def make_engine(database_url: str) -> AsyncEngine:
+    """Test wrapper: enable SQLite foreign keys so ON DELETE CASCADE matches Postgres."""
+    engine = _make_engine(database_url)
+    if database_url.startswith("sqlite"):
+
+        @event.listens_for(engine.sync_engine, "connect")
+        def _enable_sqlite_fks(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+    return engine
 
 
 @dataclass
@@ -98,6 +114,9 @@ def make_settings(database_url: str, *, internal_key: str = "storage-test-key") 
 def storage_harness(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[StorageHarness]:
     database_path = tmp_path / "storage.db"
     database_url = f"sqlite+aiosqlite:///{database_path}"
+    # Lifespan builds its engine via db.session.make_engine — patch it so
+    # request connections enforce SQLite foreign keys (CASCADE).
+    monkeypatch.setattr("db.session.make_engine", make_engine)
     asyncio.run(_initialize_database(database_url))
     settings = make_settings(database_url)
     provider = InMemoryObjectStorageProvider()

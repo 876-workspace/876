@@ -11,7 +11,13 @@ from fastapi.testclient import TestClient
 
 from main import create_app
 from providers.base import CreateReadUrlInput
-from tests.conftest import NOW, InMemoryObjectStorageProvider, StorageHarness, make_settings
+from tests.conftest import (
+    NOW,
+    InMemoryObjectStorageProvider,
+    StorageHarness,
+    make_engine,
+    make_settings,
+)
 from tests.test_storage_api import (
     AUTH_HEADERS,
     OBJECT_KEY,
@@ -22,26 +28,11 @@ from tests.test_storage_api import (
 
 
 async def _initialize_database(database_url: str) -> None:
-    from sqlalchemy import event, text
-
     from db.models import Base
-    from db.session import make_engine
 
     engine = make_engine(database_url)
-
-    # SQLite disables FK enforcement unless PRAGMA foreign_keys=ON.
-    # Production Postgres always enforces ON DELETE CASCADE from the migration.
-    if database_url.startswith("sqlite"):
-        @event.listens_for(engine.sync_engine, "connect")
-        def _enable_sqlite_fks(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
-            cursor = dbapi_connection.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.close()
-
     try:
         async with engine.begin() as connection:
-            if database_url.startswith("sqlite"):
-                await connection.execute(text("PRAGMA foreign_keys=ON"))
             await connection.run_sync(Base.metadata.create_all)
     finally:
         await engine.dispose()
@@ -189,14 +180,11 @@ def test_soft_delete_does_not_delete_r2_object(storage_harness: StorageHarness) 
 
     assert deleted.status_code == 200
     assert storage_harness.provider.delete_calls == []
-    assert (
-        database_value(
-            storage_harness.database_path,
-            "SELECT deleted_at FROM files WHERE id = ?",
-            ("file_01TESTFILE",),
-        )
-        == NOW
-    )
+    assert database_value(
+        storage_harness.database_path,
+        "SELECT deleted_at FROM files WHERE id = ?",
+        ("file_01TESTFILE",),
+    ) == NOW
 
 
 def test_hard_delete_cascades_upload_sessions(
@@ -205,11 +193,12 @@ def test_hard_delete_cascades_upload_sessions(
 ) -> None:
     """Hard delete removes the file and cascades child upload sessions.
 
-    Migration declares ON DELETE CASCADE; with SQLite FK enforcement enabled
-    in this test (mirroring Postgres), orphan sessions must not remain.
+    Migration declares ON DELETE CASCADE; the test harness enables SQLite FK
+    enforcement so cascade matches Postgres production behavior.
     """
     database_path = tmp_path / "hard.db"
     database_url = f"sqlite+aiosqlite:///{database_path}"
+    monkeypatch.setattr("db.session.make_engine", make_engine)
     asyncio.run(_initialize_database(database_url))
     settings = make_settings(database_url).model_copy(update={"deletion_mode": "hard"})
     provider = InMemoryObjectStorageProvider()
@@ -222,24 +211,6 @@ def test_hard_delete_cascades_upload_sessions(
     monkeypatch.setattr("domains.uploads.router.time.time", lambda: NOW)
     monkeypatch.setattr("domains.files.router.time.time", lambda: NOW)
     app = create_app(settings, provider)
-
-    # Ensure request-scoped connections also enforce FKs (SQLite is connection-local).
-    from sqlalchemy import event
-
-    from db.session import make_engine
-
-    engine = make_engine(database_url)
-
-    @event.listens_for(engine.sync_engine, "connect")
-    def _enable_sqlite_fks(dbapi_connection, _connection_record) -> None:  # type: ignore[no-untyped-def]
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
-
-    app.state.engine = engine
-    from db.session import AsyncSessionLocal
-
-    AsyncSessionLocal.configure(bind=engine)
 
     with TestClient(app) as client:
         harness = StorageHarness(
@@ -277,7 +248,6 @@ def test_hard_delete_cascades_upload_sessions(
 
         retrieved = client.get("/v1/files/file_01TESTFILE", headers=AUTH_HEADERS)
         assert retrieved.status_code == 404
-
 
 
 def test_deleted_file_cannot_create_read_url(storage_harness: StorageHarness) -> None:
