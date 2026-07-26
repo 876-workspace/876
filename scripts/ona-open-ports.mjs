@@ -14,7 +14,6 @@ const PORTS = {
   'billing-api': { port: 4004, name: '876-billing-api' },
   'billing-app': { port: 3004, name: '876-billing-app' },
   couriers: { port: 3003, name: '876-couriers' },
-  docs: { port: 3003, name: '876-docs' },
 }
 
 // Mirrors the turbo --filter sets in package.json's dev:* scripts exactly —
@@ -28,7 +27,6 @@ const TARGETS = {
     'console',
     'billing-api',
     'billing-app',
-    'docs',
   ],
   dev: [
     'api',

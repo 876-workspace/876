@@ -29,11 +29,11 @@
 ## 1. High-Level Architecture
 
 ```
-┌──────────────────────┐      ┌──────────────────────┐      ┌──────────────────────┐
-│    @876/app          │      │  @876/console         │      │  @876/docs            │
-│  (Next.js, port 3000)│      │  (Next.js, port 3002) │      │  (Next.js, port 3003) │
-│  Consumer-facing app │      │  Internal Console     │      │  SDK docs app         │
-└──────────┬───────────┘      └──────────┬────────────┘      └──────────────────────┘
+┌──────────────────────┐      ┌──────────────────────┐
+│    @876/app          │      │  @876/console         │
+│  (Next.js, port 3000)│      │  (Next.js, port 3002) │
+│  Consumer-facing app │      │  Internal Console     │
+└──────────┬───────────┘      └──────────┬────────────┘
            │                             │
            │ @876/sdk                    │ @876/admin
            │ (consumer/auth tier)        │ (internal-key tier)

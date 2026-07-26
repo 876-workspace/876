@@ -13,7 +13,6 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 | `@876/app`         | `apps/876`         | 3000 | Consumer app, org workspaces, auth pages, OAuth provider UI, PWA. |
 | `@876/console`     | `apps/console`     | 3002 | Internal Console.                                                 |
 | `@876/api`         | `apps/api`         | 4000 | FastAPI backend; owns database/provider server calls.             |
-| `@876/docs`        | `apps/docs`        | 3003 | SDK documentation app with OpenAPI-backed method references.      |
 | `@876/billing-app` | `apps/billing`     | 3004 | Billing SaaS presentation layer and authenticated API BFF.        |
 | `@876/billing-api` | `apps/billing-api` | 4004 | FastAPI financial data plane, providers, and scheduled billing.   |
 | `@876/widgets-api` | `apps/widgets-api` | 3005 | Widget-owned data service backed by dedicated Postgres.           |
@@ -58,7 +57,6 @@ python -m ruff check .
 
 ## Required Context
 
-- Read `apps/docs/content/docs/index.mdx` at session start when working on documentation.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
@@ -152,8 +150,6 @@ In GitHub Codespaces, `NEXT_PUBLIC_API_URL` must be the HTTPS-forwarded Codespac
 
 ## Docs
 
-- SDK documentation lives under `apps/docs/content/docs/` and is rendered by `@876/docs`.
-- API method references in the docs app use `apps/docs/openapi.json`; regenerate it with `pnpm sync:openapi` when API contracts change.
 - Package-local notes stay in package `README.md` files.
 
 ## Commit Attribution

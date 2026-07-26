@@ -17,9 +17,6 @@
 | `@876/api`         | `apps/api`         | 4000 | FastAPI backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
 | `@876/billing-api` | `apps/billing-api` | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
 | `@876/storage-api` | `apps/storage-api` | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
-| `@876/docs`        | `apps/docs`        | 3003 | Internal engineering docs — API route references, identity model, client package guides, OpenAPI browser.   |
-
-`@876/docs` and `@876/couriers` both default to port 3003 — don't run them at the same time without overriding one.
 
 ## Packages
 
@@ -62,7 +59,6 @@ pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 | Couriers            | http://localhost:3003      |
 | Billing             | http://localhost:3004      |
 | Widgets API         | http://localhost:3005      |
-| Docs                | http://localhost:3003      |
 | FastAPI core (docs) | http://localhost:4000/docs |
 | Billing API (docs)  | http://localhost:4004/docs |
 | Storage API (docs)  | http://localhost:4005/docs |
@@ -81,7 +77,6 @@ pnpm dev:console                     # Console + API + Widgets API
 pnpm dev:couriers                    # Couriers app + API + Storage API
 pnpm dev:billing                     # Billing + API + Widgets API
 pnpm dev:widgets                     # Widgets API only
-pnpm dev:docs                        # Docs app only
 
 # Quality
 pnpm check                           # format:check + lint + typecheck + test
@@ -109,10 +104,6 @@ pnpm --filter @876/storage-api test  # pytest
 # Storage service (Alembic; core apps/api instead uses idempotent bootstrap DDL)
 pnpm --filter @876/storage-api db:migrate
 pnpm dev:storage                     # 876 Storage service alone on :4005
-
-# Docs
-pnpm sync:openapi                    # Fetch live OpenAPI JSON from API → apps/docs/openapi.json
-pnpm --filter @876/docs generate:api-internals   # Regenerate route docs from API source
 
 # App-local Prisma datastores (Console, Couriers)
 pnpm --filter @876/console db:generate   # Regenerate Console's Prisma client
@@ -163,7 +154,7 @@ resolved through @876/admin.
 
 ### Client Surface
 
-All calls follow `$876.<resource>.<verb>(params)` — see [Packages docs](apps/docs/content/docs/packages/) and `.claude/rules/sdk-conventions.md`.
+All calls follow `$876.<resource>.<verb>(params)` — see the package READMEs and `.claude/rules/sdk-conventions.md`.
 
 | Client       | Use when                                                                                | Browser-safe?  |
 | ------------ | --------------------------------------------------------------------------------------- | -------------- |
@@ -174,13 +165,9 @@ All calls follow `$876.<resource>.<verb>(params)` — see [Packages docs](apps/d
 
 ## Documentation
 
-Full identity model, API route reference, and package guides live in the `@876/docs` app (rendered at http://localhost:3003 when running `pnpm dev`).
-
-| Resource         | Path                                                                                    | Description                                                     |
-| ---------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Docs source      | `apps/docs/content/docs/`                                                               | Identity model, API route reference, package guides             |
-| OpenAPI snapshot | `apps/docs/openapi.json`                                                                | Committed; regenerate with `pnpm sync:openapi`                  |
-| Agent rules      | `.claude/rules/` (mirrored in `.agents/rules/` and `.grok/rules/`; Grok omits `cli.md`) | Code style, data fetching, API backend, git, performance, types |
+Package-specific guidance lives in each package's `README.md`. Repository-wide
+agent rules live in `.claude/rules/` and are mirrored in `.agents/rules/` and
+`.grok/rules/` (Grok omits `cli.md`).
 
 ---
 

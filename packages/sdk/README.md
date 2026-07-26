@@ -140,10 +140,6 @@ Do not expose `clientSecret` in browser bundles.
 | Local development without env        | `http://localhost:4000`            |
 | Production without env               | `https://eight76-api.onrender.com` |
 
-## Full Documentation
-
-See `../../apps/docs/content/docs/index.mdx` for the full method reference, examples, types, and error codes.
-
 ## Package Commands
 
 ```bash

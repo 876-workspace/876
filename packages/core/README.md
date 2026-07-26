@@ -35,4 +35,4 @@ console.log(unixTimestamp(), result.data.data)
 pnpm --filter @876/core typecheck
 ```
 
-See `../../apps/docs/content/docs/index.mdx` and the root `package.json` scripts for current package ownership and commands.
+See the root `README.md` and `package.json` scripts for current package ownership and commands.

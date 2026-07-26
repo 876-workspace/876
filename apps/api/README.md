@@ -93,4 +93,4 @@ Console server code calls this app through `API_URL`, defaulting to `http://127.
 - App-owned timestamps are Unix seconds.
 - Provider errors must be normalized before crossing API boundaries.
 
-See `../../.agents/rules/stripe-api-pattern.md`. Public SDK-facing API schemas are snapshotted in `../../apps/docs/openapi.json`.
+See `../../.agents/rules/stripe-api-pattern.md`.
