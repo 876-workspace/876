@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 const securityHeaders = [
@@ -63,7 +64,16 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  org: 'efesto',
+  project: '876-couriers',
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  tunnelRoute: '/monitoring',
+  sourcemaps: {
+    disable: true,
+  },
+})
 
 // OpenNext Cloudflare local bindings (no-op when not using wrangler preview).
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
