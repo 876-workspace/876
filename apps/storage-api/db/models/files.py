@@ -42,6 +42,9 @@ class File(Base):
     deleted_at: Mapped[int | None] = mapped_column(BigInteger)
     deleted_by: Mapped[str | None] = mapped_column(String(255))
     deletion_reason: Mapped[str | None] = mapped_column(String(1024))
+    # Set once the R2 object has been reclaimed. Distinct from deleted_at:
+    # a soft delete hides the file, purging removes the bytes.
+    purged_at: Mapped[int | None] = mapped_column(BigInteger)
 
     upload_sessions: Mapped[list["UploadSession"]] = relationship(
         back_populates="file",

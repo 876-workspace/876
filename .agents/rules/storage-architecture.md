@@ -226,8 +226,10 @@ file until the new one is verified `ready`.
 
 ## Current implementation boundary
 
-Built: R2 provider adapter, file metadata, upload sessions, the
-`organization.primaryLogo` route, and Couriers organization-logo upload.
+In scope for the current cycle: the R2 provider adapter, file metadata,
+upload sessions, the `organization.primaryLogo` route, and Couriers
+organization-logo upload. This rule lands ahead of that code, so check the
+tree rather than assuming any of it already exists.
 
 Not built, and not to be built without an explicit decision: Drive explorer,
 folders, tags, versions beyond replacement, sharing links, OCR, malware

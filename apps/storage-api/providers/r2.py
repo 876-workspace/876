@@ -4,7 +4,7 @@ from typing import Any
 import anyio
 import boto3  # type: ignore[import-untyped]
 from botocore.client import Config
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import status
 
 from core.config import Settings
@@ -55,7 +55,7 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         )
         try:
             url = await anyio.to_thread.run_sync(call)
-        except ClientError as exc:
+        except (ClientError, BotoCoreError) as exc:
             raise _provider_error() from exc
         return CreateUploadUrlOutput(
             url=str(url),
@@ -69,7 +69,7 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         call = partial(self._client.head_object, Bucket=params.bucket, Key=params.object_key)
         try:
             response = await anyio.to_thread.run_sync(call)
-        except ClientError as exc:
+        except (ClientError, BotoCoreError) as exc:
             error = exc.response.get("Error", {})
             metadata = exc.response.get("ResponseMetadata", {})
             if error.get("Code") in {"404", "NoSuchKey", "NotFound"} or metadata.get("HTTPStatusCode") == 404:
@@ -90,7 +90,7 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         )
         try:
             url = await anyio.to_thread.run_sync(call)
-        except ClientError as exc:
+        except (ClientError, BotoCoreError) as exc:
             raise _provider_error() from exc
         return CreateReadUrlOutput(url=str(url))
 
@@ -98,6 +98,6 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         call = partial(self._client.delete_object, Bucket=params.bucket, Key=params.object_key)
         try:
             await anyio.to_thread.run_sync(call)
-        except ClientError as exc:
+        except (ClientError, BotoCoreError) as exc:
             raise _provider_error() from exc
         return DeleteObjectOutput(deleted=True)
