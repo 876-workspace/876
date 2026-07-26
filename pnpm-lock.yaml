@@ -677,6 +677,9 @@ importers:
       '@876/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
+      '@876/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui

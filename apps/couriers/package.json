@@ -29,6 +29,7 @@
     "@876/billing": "workspace:*",
     "@876/core": "workspace:*",
     "@876/sdk": "workspace:*",
+    "@876/storage": "workspace:*",
     "@876/ui": "workspace:*",
     "@876/widgets": "workspace:*",
     "@neondatabase/serverless": "1.1.0",

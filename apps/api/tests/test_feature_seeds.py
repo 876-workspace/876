@@ -56,6 +56,7 @@ def test_couriers_feature_seeds_define_expected_groups() -> None:
         "couriers_global_add",
         "couriers_app_switcher",
         "couriers_org_switcher",
+        "couriers_storage_org_logo_upload",
     ):
         assert "parent_slug" not in seeds_by_slug[standalone_slug]
 

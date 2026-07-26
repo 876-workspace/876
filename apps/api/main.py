@@ -35,6 +35,7 @@ from db.migrate import (
     ensure_indexes,
     ensure_invite_source_app_column,
     ensure_org_business_identity_columns,
+    ensure_organizations_logo_file_id_column,
     ensure_organizations_stripe_customer_id,
     ensure_provisioning_v1_cutover,
     ensure_subscription_lifecycle_columns,
@@ -74,6 +75,7 @@ async def _seed_identity_tables(engine: object) -> None:
         await conn.run_sync(ensure_indexes)
         await conn.run_sync(ensure_organizations_stripe_customer_id)
         await conn.run_sync(ensure_org_business_identity_columns)
+        await conn.run_sync(ensure_organizations_logo_file_id_column)
         await conn.run_sync(ensure_user_profile_country_column)
         await conn.run_sync(
             lambda c: Base.metadata.create_all(

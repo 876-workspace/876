@@ -53,6 +53,7 @@ class Organization(Base):
     doing_business_as: Mapped[str | None] = mapped_column(String, nullable=True)
     slug: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False, server_default="active")
+    logo_file_id: Mapped[str | None] = mapped_column(String, nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String, nullable=True)
     # Business identity
     industry: Mapped[str | None] = mapped_column(String, nullable=True)

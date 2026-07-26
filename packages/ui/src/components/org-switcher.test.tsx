@@ -53,6 +53,46 @@ describe('OrgSwitcher', () => {
     expect(onSelect).not.toHaveBeenCalled()
   })
 
+  it('renders organization logos in the trigger, details, and menu list', async () => {
+    const user = userEvent.setup()
+    const current = createOrg({
+      logoUrl: 'https://assets.876.test/current.png',
+    })
+    const other = createOrg({
+      id: 'org_other',
+      name: 'Other Couriers',
+      slug: 'other-couriers',
+      logoUrl: 'https://assets.876.test/other.png',
+    })
+
+    render(
+      <OrgSwitcher
+        current={current}
+        orgs={[current, other]}
+        onSelect={vi.fn()}
+      />
+    )
+
+    expect(document.querySelector('img')).toHaveAttribute(
+      'src',
+      current.logoUrl
+    )
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Switch organization. Current organization: Marley Logistics',
+      })
+    )
+    await screen.findByRole('menuitem', { name: 'Other Couriers' })
+
+    expect(
+      document.querySelectorAll(`img[src="${current.logoUrl}"]`)
+    ).toHaveLength(3)
+    expect(
+      document.querySelector(`img[src="${other.logoUrl}"]`)
+    ).toBeInTheDocument()
+  })
+
   it('shows the current organization details and role when opened', async () => {
     const user = userEvent.setup()
     const current = createOrg()

@@ -38,12 +38,14 @@ export const getManageContext = cache(async function getManageContext(
       name: membership.organization.name,
       slug: membership.organization.slug,
       role: membership.role as OrgRole,
+      logoUrl: membership.organization.logo_url,
     }))
   const orgId = user.orgId ?? null
 
   let resolvedOrgId: string | null = null
   let resolvedOrgName: string | null = null
   let resolvedOrgSlug: string | null = null
+  let resolvedOrgLogoUrl: string | null = null
   let resolvedRole: OrgRole = 'member'
   let resolvedTenant: Tenant | null = null
 
@@ -59,6 +61,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgId = match.organization.id
     resolvedOrgName = match.organization.name
     resolvedOrgSlug = match.organization.slug
+    resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
     resolvedTenant = await service.tenants.retrieveByOrgId(
       match.organization.id
@@ -72,6 +75,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgId = orgId
     resolvedOrgName = match.organization.name
     resolvedOrgSlug = match.organization.slug
+    resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
     resolvedTenant = await service.tenants.retrieveByOrgId(orgId)
   } else {
@@ -83,6 +87,7 @@ export const getManageContext = cache(async function getManageContext(
         resolvedOrgId = m.organization.id
         resolvedOrgName = m.organization.name
         resolvedOrgSlug = m.organization.slug
+        resolvedOrgLogoUrl = m.organization.logo_url
         resolvedRole = m.role as OrgRole
         resolvedTenant = tenant
         break
@@ -94,6 +99,7 @@ export const getManageContext = cache(async function getManageContext(
       resolvedOrgId = first.organization.id
       resolvedOrgName = first.organization.name
       resolvedOrgSlug = first.organization.slug
+      resolvedOrgLogoUrl = first.organization.logo_url
       resolvedRole = first.role as OrgRole
     }
   }
@@ -113,6 +119,7 @@ export const getManageContext = cache(async function getManageContext(
     orgId: resolvedOrgId,
     orgName: resolvedOrgName,
     orgSlug: resolvedOrgSlug,
+    orgLogoUrl: resolvedOrgLogoUrl,
     organizations,
     tenant: resolvedTenant,
     role: resolvedRole,
