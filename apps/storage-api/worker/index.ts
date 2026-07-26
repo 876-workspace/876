@@ -1,9 +1,31 @@
 import { Container, getContainer } from '@cloudflare/containers'
 
 /** Cloudflare Containers front door for the 876 Storage data plane. */
-export class StorageApiContainer extends Container {
+export class StorageApiContainer extends Container<Env> {
   defaultPort = 4005
   sleepAfter = '15m'
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env)
+    // Without this the container starts with an empty environment — no
+    // STORAGE_DATABASE_URL, no R2 credentials — so every data route fails
+    // while /health still answers.
+    this.envVars = toContainerEnv(env)
+  }
+}
+
+/**
+ * Copies the Worker's string-valued vars and secrets into the container
+ * environment. Bindings are objects, not strings, and are skipped.
+ */
+function toContainerEnv(env: Env): Record<string, string> {
+  const forwarded: Record<string, string> = {}
+
+  for (const [key, value] of Object.entries(env)) {
+    if (typeof value === 'string') forwarded[key] = value
+  }
+
+  return forwarded
 }
 
 export default {
