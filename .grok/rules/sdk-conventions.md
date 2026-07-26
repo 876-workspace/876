@@ -88,7 +88,6 @@ Future improvement (not yet built): a session-scoped `/auth/me` (`SessionDep`) e
 1. Add the FastAPI route in `apps/api` with its auth dependency.
 2. Add the typed method to the correct tier per the gating rule — `@876/admin` (if `AdminDep`) and/or `@876/sdk` (if API-key/session and self-scoped). Match the verb vocabulary. SDK methods validate responses with Zod schemas defined per-category under `packages/sdk/src/types/<resource>.ts`.
 3. Call it through the package's `$876` — never a raw `fetch` to FastAPI.
-4. Regenerate API docs with `pnpm sync:openapi`.
 
 ## Types
 
