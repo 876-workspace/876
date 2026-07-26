@@ -14,6 +14,8 @@ Sentry.init({
   },
 })
 
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart
+
 function scrubEvent(
   event: Parameters<
     NonNullable<Parameters<typeof Sentry.init>[0]['beforeSend']>
