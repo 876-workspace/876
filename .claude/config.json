@@ -11,10 +11,6 @@
     "on-error": []
   },
   "mcp_servers": {
-    "railway": {
-      "url": "https://mcp.railway.com",
-      "transport": "http"
-    },
     "posthog": {
       "url": "https://mcp.posthog.com/mcp",
       "transport": "http"
