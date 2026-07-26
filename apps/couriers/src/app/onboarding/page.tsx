@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import * as Sentry from '@sentry/nextjs'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
@@ -26,6 +27,29 @@ function OnboardingShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   )
+}
+
+/**
+ * "Setup is unavailable" is the single visible outcome of every failed platform
+ * call on this page, so on its own it says nothing about which call failed or
+ * why. Report the failing call before rendering it.
+ */
+function reportSetupUnavailable(
+  call: string,
+  error: { code?: string | null; message?: string | null } | null | undefined
+) {
+  Sentry.captureMessage(`Onboarding unavailable: ${call} failed`, {
+    level: 'error',
+    tags: { category: 'platform_client' },
+    extra: {
+      call,
+      errorCode: error?.code ?? null,
+      errorMessage: error?.message ?? null,
+      appSlug: COURIERS_APP_SLUG,
+      consequence:
+        'The onboarding wizard is replaced by "Setup is unavailable".',
+    },
+  })
 }
 
 function SetupUnavailable() {
@@ -81,6 +105,17 @@ export default async function OnboardingPage() {
       ),
     ])
 
+    if (orgCatalog.error)
+      reportSetupUnavailable(
+        'onboarding.retrieveCatalog(organization)',
+        orgCatalog.error
+      )
+    if (appCatalog.error)
+      reportSetupUnavailable(
+        'onboarding.retrieveCatalog(application)',
+        appCatalog.error
+      )
+
     if (!orgCatalog.error && !appCatalog.error) {
       wizardProps = {
         needsOrg: false,
@@ -95,6 +130,9 @@ export default async function OnboardingPage() {
     const memberships = await platform.auth.getRoutingMemberships({
       userId: session.user.id,
     })
+
+    if (memberships.error)
+      reportSetupUnavailable('auth.getRoutingMemberships', memberships.error)
 
     if (!memberships.error) {
       if (memberships.data.data.length > 0) redirect('/no-access')
@@ -111,6 +149,17 @@ export default async function OnboardingPage() {
           ONBOARDING_COUNTRY
         ),
       ])
+
+      if (orgCatalog.error)
+        reportSetupUnavailable(
+          'onboarding.retrieveCatalog(organization)',
+          orgCatalog.error
+        )
+      if (appCatalog.error)
+        reportSetupUnavailable(
+          'onboarding.retrieveCatalog(application)',
+          appCatalog.error
+        )
 
       if (!orgCatalog.error && !appCatalog.error) {
         wizardProps = {
