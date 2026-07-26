@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   org: 'efesto',
 
-  project: '876-0b',
+  project: '876-app',
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
