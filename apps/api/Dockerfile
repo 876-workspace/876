@@ -1,5 +1,5 @@
 # Dockerfile for @876/api (FastAPI)
-# Used by Railway when Root Directory is set to apps/api.
+# Used to build the FastAPI service container from apps/api.
 
 FROM python:3.12-slim
 
@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source
 COPY . .
 
-# Railway injects $PORT at runtime; default to 4000 for local docker runs
+# Default to port 4000 for local Docker runs and container deployments
 ENV PORT=4000
 
 EXPOSE $PORT
