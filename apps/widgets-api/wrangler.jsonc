@@ -14,6 +14,10 @@
       "service": "876-widgets-api",
     },
   ],
+  "vars": {
+    "SENTRY_DSN": "https://b4507723864a778a1097eeeb587816ae@o4507681618591744.ingest.us.sentry.io/4511802776944640",
+    "NEXT_PUBLIC_SENTRY_DSN": "https://b4507723864a778a1097eeeb587816ae@o4507681618591744.ingest.us.sentry.io/4511802776944640",
+  },
   // "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<HYPERDRIVE_ID>" }],
   "observability": {
     "enabled": true,
