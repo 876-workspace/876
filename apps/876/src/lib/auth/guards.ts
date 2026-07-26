@@ -2,6 +2,7 @@ import 'server-only'
 
 import { redirect } from 'next/navigation'
 
+import * as Sentry from '@sentry/nextjs'
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { unwrapOptional, unwrapResult } from '@876/core/client/lookup'
 
@@ -163,6 +164,18 @@ export async function getEnabledConsumerFeatureSlugs(
     userId,
     appSlug: CONSUMER_APP_SLUG,
   })
+  if (result.error)
+    Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: {
+        call: 'features.evaluate',
+        errorCode: result.error.code,
+        errorMessage: result.error.message,
+        appSlug: CONSUMER_APP_SLUG,
+      },
+    })
+
   const features = unwrapResult(result, 'consumer features').data
   return new Set(features.map((f) => f.slug))
 }
