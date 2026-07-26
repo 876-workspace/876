@@ -283,10 +283,15 @@ whole workspace from the repo root even though the root directory is one app.
 runtime secrets, and `NEXT_PUBLIC_*` values are inlined at build time. Set per
 Worker:
 
-| Worker           | Build variables                                                              |
-| ---------------- | ---------------------------------------------------------------------------- |
-| all Next.js apps | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` |
-| `876-console`    | plus `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_876_API_KEY`                    |
+| Worker           | Build variables                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| all Next.js apps | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_SENTRY_DSN` |
+| `876-console`    | plus `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_876_API_KEY`                                              |
+
+`NEXT_PUBLIC_SENTRY_DSN` must be configured here as a Workers Builds build
+variable for browser-side error capture. Next.js inlines `NEXT_PUBLIC_*` values
+during the build, and runtime Worker vars from `wrangler.jsonc` are not visible
+to that build.
 
 **Workers Builds does not run migrations.** `prisma migrate deploy` stays in
 GitHub Actions, which already holds the database URLs. Keep migrations additive

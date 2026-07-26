@@ -21,6 +21,8 @@
     "WIDGETS_API_URL": "https://876-widgets-api.raheemforschool.workers.dev",
     "BILLING_URL": "https://876-billing.raheemforschool.workers.dev",
     "BILLING_API_URL": "https://876-billing-api.raheemforschool.workers.dev",
+    "SENTRY_DSN": "https://83d33d619c53ce274bb1c1aefb7d1867@o4507681618591744.ingest.us.sentry.io/4511802776092672",
+    "NEXT_PUBLIC_SENTRY_DSN": "https://83d33d619c53ce274bb1c1aefb7d1867@o4507681618591744.ingest.us.sentry.io/4511802776092672",
   },
   "observability": {
     "enabled": true,
