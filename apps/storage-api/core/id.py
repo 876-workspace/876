@@ -12,3 +12,7 @@ def generate_id(entity_type: str) -> str:
     if prefix is None:
         raise ValueError(f"Unknown entity type: {entity_type}")
     return f"{prefix}_{secrets.token_urlsafe(18)}"
+
+
+def generate_request_id() -> str:
+    return f"req_{secrets.token_urlsafe(18)}"

@@ -5,10 +5,9 @@ import anyio
 import boto3  # type: ignore[import-untyped]
 from botocore.client import Config
 from botocore.exceptions import BotoCoreError, ClientError
-from fastapi import status
 
 from core.config import Settings
-from core.errors import AppHTTPException
+from core.errors import provider_error
 from providers.base import (
     CreateReadUrlInput,
     CreateReadUrlOutput,
@@ -20,14 +19,6 @@ from providers.base import (
     HeadObjectOutput,
     ObjectStorageProvider,
 )
-
-
-def _provider_error() -> AppHTTPException:
-    return AppHTTPException(
-        code="storage/provider-error",
-        message="The storage provider could not complete the request.",
-        http_status_code=status.HTTP_502_BAD_GATEWAY,
-    )
 
 
 class R2ObjectStorageProvider(ObjectStorageProvider):
@@ -56,7 +47,7 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         try:
             url = await anyio.to_thread.run_sync(call)
         except (ClientError, BotoCoreError) as exc:
-            raise _provider_error() from exc
+            raise provider_error() from exc
         return CreateUploadUrlOutput(
             url=str(url),
             headers={
@@ -74,7 +65,7 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
             metadata = exc.response.get("ResponseMetadata", {})
             if error.get("Code") in {"404", "NoSuchKey", "NotFound"} or metadata.get("HTTPStatusCode") == 404:
                 return HeadObjectOutput(exists=False)
-            raise _provider_error() from exc
+            raise provider_error() from exc
         return HeadObjectOutput(
             exists=True,
             content_type=str(response.get("ContentType")) if response.get("ContentType") is not None else None,
@@ -91,7 +82,7 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         try:
             url = await anyio.to_thread.run_sync(call)
         except (ClientError, BotoCoreError) as exc:
-            raise _provider_error() from exc
+            raise provider_error() from exc
         return CreateReadUrlOutput(url=str(url))
 
     async def delete_object(self, params: DeleteObjectInput) -> DeleteObjectOutput:
@@ -99,5 +90,5 @@ class R2ObjectStorageProvider(ObjectStorageProvider):
         try:
             await anyio.to_thread.run_sync(call)
         except (ClientError, BotoCoreError) as exc:
-            raise _provider_error() from exc
+            raise provider_error() from exc
         return DeleteObjectOutput(deleted=True)

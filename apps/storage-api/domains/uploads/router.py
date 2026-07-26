@@ -5,8 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.audit import record_audit_event
 from core.errors import AppHTTPException
 from core.id import generate_id
+from core.observability import StorageOperationContext, log_storage_event, observe_provider_call
 from db.repositories.files import FileRepository
 from db.repositories.upload_sessions import UploadSessionRepository
 from db.session import get_db
@@ -59,6 +61,46 @@ def _validate_upload(body: UploadCreate) -> UploadRoute:
             status.HTTP_400_BAD_REQUEST,
         )
     return route
+
+
+def _log_completion_rejected(
+    context: StorageOperationContext,
+    *,
+    error_code: str,
+    reason: str,
+) -> None:
+    log_storage_event(
+        "storage.completion_rejected",
+        context,
+        error_code=error_code,
+        level="warning",
+        metric_name="completions_rejected",
+        metric_value=1,
+        rejection_reason=reason,
+    )
+
+
+def _verification_rejection_reason(
+    *,
+    content_length: int | None,
+    content_type: str | None,
+    declared_size_bytes: int,
+    declared_content_type: str,
+    route: UploadRoute,
+) -> str | None:
+    if content_length is None:
+        return "missing_content_length"
+    if content_type is None:
+        return "missing_content_type"
+    if content_type not in route.allowed_content_types:
+        return "content_type_not_allowed"
+    if content_length <= 0 or content_length > route.max_size_bytes:
+        return "invalid_size"
+    if content_length != declared_size_bytes:
+        return "size_mismatch"
+    if content_type != declared_content_type:
+        return "content_type_mismatch"
+    return None
 
 
 @router.post(
@@ -121,14 +163,42 @@ async def create_upload(
         created_at=now,
         updated_at=now,
     )
-    output = await provider.create_upload_url(
-        CreateUploadUrlInput(
-            bucket=bucket,
-            object_key=object_key,
-            content_type=body.content_type,
-            content_length=body.size_bytes,
-            expires_in=settings.upload_ttl_seconds,
-        )
+    context = StorageOperationContext(
+        source_app_id=body.source_app_id,
+        actor_id=body.actor_user_id,
+        owner_id=body.owner_id,
+        file_id=file_row.id,
+        upload_session_id=upload_session.id,
+        route_key=route.key,
+    )
+    output = await observe_provider_call(
+        "create_upload_url",
+        context,
+        lambda: provider.create_upload_url(
+            CreateUploadUrlInput(
+                bucket=bucket,
+                object_key=object_key,
+                content_type=body.content_type,
+                content_length=body.size_bytes,
+                expires_in=settings.upload_ttl_seconds,
+            )
+        ),
+    )
+    await record_audit_event(
+        db,
+        context,
+        owner_type=file_row.owner_type,
+        action="upload_session.created",
+        outcome="succeeded",
+        error_code=None,
+        created_at=now,
+    )
+    log_storage_event(
+        "storage.upload_created",
+        context,
+        error_code=None,
+        metric_name="uploads_created",
+        metric_value=1,
     )
     return UploadSessionResponse(
         id=upload_session.id,
@@ -158,6 +228,18 @@ async def complete_upload(
     file_repository = FileRepository(db)
     upload_session = await session_repository.get_by_id(session_id, for_update=True)
     if upload_session is None:
+        _log_completion_rejected(
+            StorageOperationContext(
+                source_app_id=None,
+                actor_id=None,
+                owner_id=None,
+                file_id=None,
+                upload_session_id=session_id,
+                route_key=None,
+            ),
+            error_code="storage/upload-not-found",
+            reason="upload_session_not_found",
+        )
         raise _error(
             "storage/upload-not-found",
             "The upload session was not found.",
@@ -166,17 +248,43 @@ async def complete_upload(
 
     file_row = await file_repository.get_by_id(upload_session.file_id, include_deleted=True)
     if file_row is None:
+        _log_completion_rejected(
+            StorageOperationContext(
+                source_app_id=None,
+                actor_id=upload_session.created_by,
+                owner_id=None,
+                file_id=upload_session.file_id,
+                upload_session_id=upload_session.id,
+                route_key=upload_session.route_key,
+            ),
+            error_code="storage/file-not-found",
+            reason="file_not_found",
+        )
         raise _error(
             "storage/file-not-found",
             "The file was not found.",
             status.HTTP_404_NOT_FOUND,
         )
 
+    context = StorageOperationContext(
+        source_app_id=file_row.source_app_id,
+        actor_id=upload_session.created_by,
+        owner_id=file_row.owner_id,
+        file_id=file_row.id,
+        upload_session_id=upload_session.id,
+        route_key=upload_session.route_key,
+    )
+
     # Deleted rows are loaded above only so a stale session resolves to a clear
     # 404 rather than a confusing not-found-by-id. Completing one would revive
     # it -- flipping status back to ready and handing out a URL while deleted_at
     # stays populated -- so a deleted file is terminal for this session.
     if file_row.deleted_at is not None:
+        _log_completion_rejected(
+            context,
+            error_code="storage/file-not-found",
+            reason="file_deleted",
+        )
         raise _error(
             "storage/file-not-found",
             "The file was not found.",
@@ -190,6 +298,11 @@ async def complete_upload(
     if now > upload_session.expires_at:
         await session_repository.mark_status(upload_session, status="expired", updated_at=now)
         await db.commit()
+        _log_completion_rejected(
+            context,
+            error_code="storage/upload-expired",
+            reason="upload_expired",
+        )
         raise _error(
             "storage/upload-expired",
             "The upload session has expired.",
@@ -197,31 +310,77 @@ async def complete_upload(
         )
 
     route = UPLOAD_ROUTES[upload_session.route_key]
-    head = await provider.head_object(HeadObjectInput(bucket=file_row.bucket, object_key=file_row.object_key))
+    try:
+        head = await observe_provider_call(
+            "head_object",
+            context,
+            lambda: provider.head_object(HeadObjectInput(bucket=file_row.bucket, object_key=file_row.object_key)),
+        )
+    except AppHTTPException:
+        _log_completion_rejected(
+            context,
+            error_code="storage/provider-error",
+            reason="provider_error",
+        )
+        raise
     if not head.exists:
         await session_repository.mark_status(upload_session, status="failed", updated_at=now)
         await file_repository.mark_status(file_row, status="failed", updated_at=now)
+        await record_audit_event(
+            db,
+            context,
+            owner_type=file_row.owner_type,
+            action="file.verification_failed",
+            outcome="failed",
+            error_code="storage/upload-incomplete",
+            created_at=now,
+        )
         await db.commit()
+        _log_completion_rejected(
+            context,
+            error_code="storage/upload-incomplete",
+            reason="object_missing",
+        )
         raise _error(
             "storage/upload-incomplete",
             "The uploaded object was not found.",
             status.HTTP_409_CONFLICT,
         )
 
-    verified = (
-        head.content_length == upload_session.declared_size_bytes
-        and head.content_type == upload_session.declared_content_type
-        and head.content_type in route.allowed_content_types
-        and head.content_length is not None
-        and 0 < head.content_length <= route.max_size_bytes
+    rejection_reason = _verification_rejection_reason(
+        content_length=head.content_length,
+        content_type=head.content_type,
+        declared_size_bytes=upload_session.declared_size_bytes,
+        declared_content_type=upload_session.declared_content_type,
+        route=route,
     )
-    if not verified:
+    if rejection_reason is not None:
         try:
-            await provider.delete_object(DeleteObjectInput(bucket=file_row.bucket, object_key=file_row.object_key))
+            await observe_provider_call(
+                "delete_object",
+                context,
+                lambda: provider.delete_object(
+                    DeleteObjectInput(bucket=file_row.bucket, object_key=file_row.object_key)
+                ),
+            )
         finally:
             await session_repository.mark_status(upload_session, status="failed", updated_at=now)
             await file_repository.mark_status(file_row, status="failed", updated_at=now)
+            await record_audit_event(
+                db,
+                context,
+                owner_type=file_row.owner_type,
+                action="file.verification_failed",
+                outcome="failed",
+                error_code="storage/upload-verification-failed",
+                created_at=now,
+            )
             await db.commit()
+            _log_completion_rejected(
+                context,
+                error_code="storage/upload-verification-failed",
+                reason=rejection_reason,
+            )
         raise _error(
             "storage/upload-verification-failed",
             "The uploaded object did not match the signed declaration.",
@@ -235,4 +394,27 @@ async def complete_upload(
         completed_at=now,
     )
     await file_repository.mark_status(file_row, status="ready", updated_at=now)
+    await record_audit_event(
+        db,
+        context,
+        owner_type=file_row.owner_type,
+        action="file.ready",
+        outcome="succeeded",
+        error_code=None,
+        created_at=now,
+    )
+    log_storage_event(
+        "storage.completion_verified",
+        context,
+        error_code=None,
+        metric_name="completions_verified",
+        metric_value=1,
+    )
+    log_storage_event(
+        "storage.bytes_uploaded",
+        context,
+        error_code=None,
+        metric_name="bytes_uploaded",
+        metric_value=file_row.size_bytes,
+    )
     return serialize_file(file_row, request.app.state.settings)

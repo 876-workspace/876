@@ -44,6 +44,20 @@ class UploadSessionRepository:
             statement = statement.with_for_update()
         return (await self.db.scalars(statement)).first()
 
+    async def latest_by_file_ids(self, file_ids: list[str]) -> dict[str, UploadSession]:
+        if not file_ids:
+            return {}
+        statement = (
+            select(UploadSession)
+            .where(UploadSession.file_id.in_(file_ids))
+            .order_by(UploadSession.file_id, UploadSession.created_at.desc(), UploadSession.id.desc())
+        )
+        rows = (await self.db.scalars(statement)).all()
+        latest: dict[str, UploadSession] = {}
+        for row in rows:
+            latest.setdefault(row.file_id, row)
+        return latest
+
     async def mark_status(
         self,
         row: UploadSession,
