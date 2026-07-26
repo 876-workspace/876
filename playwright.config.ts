@@ -60,7 +60,7 @@ export default defineConfig({
     {
       name: 'Console',
       command:
-        'pnpm --filter @876/console exec next dev --turbopack --port 3002',
+        'pnpm --filter @876/console build:sw && pnpm --filter @876/console exec next dev --turbopack --port 3002',
       url: 'http://127.0.0.1:3002/access-denied',
       env: {
         ...process.env,
@@ -86,7 +86,7 @@ export default defineConfig({
     {
       name: 'Couriers',
       command:
-        'pnpm --filter @876/couriers exec next dev --turbopack --port 3003',
+        'pnpm --filter @876/couriers build:sw && pnpm --filter @876/couriers exec next dev --turbopack --port 3003',
       url: 'http://127.0.0.1:3003/no-access',
       env: {
         ...process.env,
