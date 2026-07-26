@@ -62,9 +62,11 @@ describe('client exhaustive method coverage', () => {
   it.each(ALL_CODES)(
     'files.retrieve maps %s without httpStatus',
     async (code) => {
-      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-        Response.json({ error: { code, message: 'x' } }, { status: 400 })
-      )
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(
+          Response.json({ error: { code, message: 'x' } }, { status: 400 })
+        )
       const client = create876StorageClient({
         baseUrl: 'https://s.test',
         internalKey: 'k',
@@ -76,78 +78,74 @@ describe('client exhaustive method coverage', () => {
     }
   )
 
-  it.each(ALL_CODES)(
-    'uploads.create maps %s',
-    async (code) => {
-      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+  it.each(ALL_CODES)('uploads.create maps %s', async (code) => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
         Response.json({ error: { code, message: 'm' } }, { status: 400 })
       )
-      const client = create876StorageClient({
-        baseUrl: 'https://s.test',
-        internalKey: 'k',
-        fetch: fetchMock,
-      })
-      const result = await client.uploads.create({
-        route_key: 'organization.primaryLogo',
-        owner_type: 'organization',
-        owner_id: 'o',
-        actor_user_id: 'u',
-        source_app_id: 'a',
-        file_name: 'f',
-        content_type: 'image/png',
-        size_bytes: 1,
-      })
-      expect(result.error?.code).toBe(code)
-    }
-  )
+    const client = create876StorageClient({
+      baseUrl: 'https://s.test',
+      internalKey: 'k',
+      fetch: fetchMock,
+    })
+    const result = await client.uploads.create({
+      route_key: 'organization.primaryLogo',
+      owner_type: 'organization',
+      owner_id: 'o',
+      actor_user_id: 'u',
+      source_app_id: 'a',
+      file_name: 'f',
+      content_type: 'image/png',
+      size_bytes: 1,
+    })
+    expect(result.error?.code).toBe(code)
+  })
 
-  it.each(ALL_CODES)(
-    'files.delete maps %s',
-    async (code) => {
-      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+  it.each(ALL_CODES)('files.delete maps %s', async (code) => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
         Response.json({ error: { code, message: 'm' } }, { status: 400 })
       )
-      const client = create876StorageClient({
-        baseUrl: 'https://s.test',
-        internalKey: 'k',
-        fetch: fetchMock,
-      })
-      const result = await client.files.delete('file_x')
-      expect(result.error?.code).toBe(code)
-    }
-  )
+    const client = create876StorageClient({
+      baseUrl: 'https://s.test',
+      internalKey: 'k',
+      fetch: fetchMock,
+    })
+    const result = await client.files.delete('file_x')
+    expect(result.error?.code).toBe(code)
+  })
 
-  it.each(ALL_CODES)(
-    'files.createReadUrl maps %s',
-    async (code) => {
-      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+  it.each(ALL_CODES)('files.createReadUrl maps %s', async (code) => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
         Response.json({ error: { code, message: 'm' } }, { status: 400 })
       )
-      const client = create876StorageClient({
-        baseUrl: 'https://s.test',
-        internalKey: 'k',
-        fetch: fetchMock,
-      })
-      const result = await client.files.createReadUrl('file_x')
-      expect(result.error?.code).toBe(code)
-    }
-  )
+    const client = create876StorageClient({
+      baseUrl: 'https://s.test',
+      internalKey: 'k',
+      fetch: fetchMock,
+    })
+    const result = await client.files.createReadUrl('file_x')
+    expect(result.error?.code).toBe(code)
+  })
 
-  it.each(ALL_CODES)(
-    'uploads.complete maps %s',
-    async (code) => {
-      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+  it.each(ALL_CODES)('uploads.complete maps %s', async (code) => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
         Response.json({ error: { code, message: 'm' } }, { status: 400 })
       )
-      const client = create876StorageClient({
-        baseUrl: 'https://s.test',
-        internalKey: 'k',
-        fetch: fetchMock,
-      })
-      const result = await client.uploads.complete('upl_x')
-      expect(result.error?.code).toBe(code)
-    }
-  )
+    const client = create876StorageClient({
+      baseUrl: 'https://s.test',
+      internalKey: 'k',
+      fetch: fetchMock,
+    })
+    const result = await client.uploads.complete('upl_x')
+    expect(result.error?.code).toBe(code)
+  })
 
   it('rejects ready public file with empty string url', async () => {
     const fetchMock = vi
@@ -163,9 +161,11 @@ describe('client exhaustive method coverage', () => {
   })
 
   it('rejects upload session with GET method', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ ...session(), method: 'GET' }, { status: 201 })
-    )
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        Response.json({ ...session(), method: 'GET' }, { status: 201 })
+      )
     const client = create876StorageClient({
       baseUrl: 'https://s.test',
       internalKey: 'k',

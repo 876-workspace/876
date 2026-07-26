@@ -24,13 +24,7 @@ function base(overrides: Record<string, unknown> = {}) {
   }
 }
 
-const STATUSES = [
-  'pending',
-  'uploaded',
-  'ready',
-  'failed',
-  'deleted',
-] as const
+const STATUSES = ['pending', 'uploaded', 'ready', 'failed', 'deleted'] as const
 const AUDIENCES = ['private', 'organization', 'app', 'public'] as const
 const CATEGORIES = ['library', 'attachment', 'system'] as const
 

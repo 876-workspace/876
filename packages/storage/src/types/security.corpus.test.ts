@@ -82,12 +82,12 @@ describe('security corpus on storage schemas', () => {
   )
 
   it('rejects file ids that look like path traversal', () => {
-    expect(
-      fileSchema.safeParse(baseFile({ id: '../file_01' })).success
-    ).toBe(false)
-    expect(
-      fileSchema.safeParse(baseFile({ id: 'file_../../x' })).success
-    ).toBe(true) // starts with file_ — still ok at schema layer
+    expect(fileSchema.safeParse(baseFile({ id: '../file_01' })).success).toBe(
+      false
+    )
+    expect(fileSchema.safeParse(baseFile({ id: 'file_../../x' })).success).toBe(
+      true
+    ) // starts with file_ — still ok at schema layer
   })
 
   it('rejects upload session ids without upl_ prefix even if evil-looking', () => {
@@ -109,7 +109,8 @@ describe('security corpus on storage schemas', () => {
     Object.assign(payload, { __proto__: { admin: true } })
     // strictObject should not allow unknown keys; __proto__ assignment is special
     expect(
-      fileSchema.safeParse({ ...baseFile(), constructor: { name: 'x' } }).success
+      fileSchema.safeParse({ ...baseFile(), constructor: { name: 'x' } })
+        .success
     ).toBe(false)
   })
 })
