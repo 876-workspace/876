@@ -895,7 +895,7 @@ describe('customer mutations', () => {
     })
 
     expect(result.error).toBeTruthy()
-    expect(result.status).toBe(500)
+    expect((result as { status?: number }).status).toBe(500)
     expect(contact.findFirst).not.toHaveBeenCalled()
     expect(contact.create).not.toHaveBeenCalled()
   })
@@ -912,7 +912,7 @@ describe('customer mutations', () => {
       primaryContact: { userId: 'usr_owner', firstName: 'Ada' },
     })
 
-    expect(result.status).toBe(409)
+    expect((result as { status?: number }).status).toBe(409)
     // Race path returns without calling syncPrimaryContact.
     expect(contact.create).not.toHaveBeenCalled()
   })
