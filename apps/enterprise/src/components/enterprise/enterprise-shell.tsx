@@ -50,7 +50,7 @@ export async function EnterpriseShell({
       />
 
       <SidebarInset className="bg-876-canvas flex h-svh min-h-0 flex-col overflow-hidden">
-        <header className="876-topbar border-876-surface-border dark:bg-876-canvas z-20 flex h-16 shrink-0 items-center gap-3 border-b pr-4 pl-3 backdrop-blur-md sm:pr-6 lg:pr-8 dark:shadow-none dark:backdrop-blur-none">
+        <header className="876-topbar border-876-surface-border dark:bg-876-canvas z-20 flex h-16 shrink-0 items-center gap-3 border-b-0 pr-4 pl-3 backdrop-blur-md sm:pr-6 lg:pr-8 dark:shadow-none dark:backdrop-blur-none">
           <SidebarTrigger />
           <span className="text-sm font-medium text-[#202124] dark:text-white">
             {organization.name ?? organization.slug}
