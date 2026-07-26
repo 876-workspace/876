@@ -50,7 +50,7 @@ function renderUpload(
   )
 }
 
-function pngFile(name = 'logo.png', bytes: Uint8Array | string = 'logo') {
+function pngFile(name = 'logo.png', bytes: BlobPart = 'logo') {
   return new File([bytes], name, { type: 'image/png' })
 }
 
