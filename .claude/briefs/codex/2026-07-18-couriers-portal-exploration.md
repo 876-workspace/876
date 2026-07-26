@@ -19,7 +19,7 @@ We are about to build the consumer-facing customer portal for `apps/couriers` (t
 
 ## Scope bounds
 
-In scope: `apps/couriers`, `apps/api` (only the domains named above), `packages/sdk`, `packages/core` (only auth/session helpers used by couriers). Out of scope: `apps/console`, `apps/enterprise`, `apps/876` internals, `apps/docs`, `apps/billing` UI (only note its client if couriers imports it), `node_modules` except `src/lib/db/generated` for model shapes.
+In scope: `apps/couriers`, `apps/api` (only the domains named above), `packages/sdk`, `packages/core` (only auth/session helpers used by couriers). Out of scope: `apps/console`, `apps/enterprise`, `apps/876` internals, `apps/billing` UI (only note its client if couriers imports it), `node_modules` except `src/lib/db/generated` for model shapes.
 
 ## Return shape (mandatory)
 

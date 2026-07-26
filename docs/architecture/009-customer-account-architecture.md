@@ -951,8 +951,7 @@ Adding a new identification type checklist:
 1. Add entry to `IDENTIFICATION_TYPES` with pattern + `disclosure_app_slugs`.
 2. Extend DB check constraint / migration.
 3. Extend tests for mask, validate, disclose allow/deny.
-4. Update OpenAPI (`pnpm sync:openapi`).
-5. Document which product apps may disclose.
+4. Document which product apps may disclose.
 
 ---
 

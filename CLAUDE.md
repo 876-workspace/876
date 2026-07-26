@@ -95,7 +95,6 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 
 ## Required Context
 
-- Read `apps/docs/content/docs/index.mdx` at session start when working on documentation.
 - Read `.claude/rules/performance.md` (index — open only the relevant category file(s)), `.claude/rules/types.md`, `.claude/rules/code-style.md`, and `.claude/rules/data-fetching.md` before editing app code.
 - Read `.claude/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.claude/rules/app-layout.md` before scaffolding or editing any page in Console, Enterprise, Couriers, Billing, or a new sidebar-style app (page containers, toolbars, list status filters, list/detail/settings patterns, forms-vs-dialogs, back-links, button labels/colors). These do not apply to `@876/app` (consumer), which has its own layout.
@@ -236,8 +235,6 @@ Per memory: do **not** add Claude/AI co-author attribution to commits.
 
 ## Docs
 
-- SDK documentation lives under `apps/docs/content/docs/` and is rendered by `@876/docs`.
-- API method references in the docs app use `apps/docs/openapi.json`; regenerate it with `pnpm sync:openapi` when API contracts change.
 - Package-local notes stay in package `README.md` files.
 
 ## Research & Best Practices

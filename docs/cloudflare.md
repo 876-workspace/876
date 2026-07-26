@@ -19,8 +19,6 @@ Neon Postgres databases.
 | `876-couriers`     | `@876/couriers`    | `apps/couriers`    | OpenNext Worker                                |
 | `876-widgets-api`  | `@876/widgets-api` | `apps/widgets-api` | OpenNext Worker                                |
 
-`@876/docs` is **not** deployed to Cloudflare.
-
 **Hostname strategy:** `*.workers.dev` script names above, with custom domains
 (`api.876.app`, etc.) added as needed.
 
