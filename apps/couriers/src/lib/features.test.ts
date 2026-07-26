@@ -122,6 +122,7 @@ describe('getFeatures', () => {
       })
 
       expect(result).toEqual({
+        storageOrgLogoUpload: false,
         uiFeatures: expectedUiFeatures,
         enabledWidgetIds: [],
       })
@@ -134,6 +135,53 @@ describe('getFeatures', () => {
       })
     }
   )
+
+  it('enables organization logo uploads only when its flag is present', async () => {
+    mocks.evaluate.mockResolvedValue(
+      createEvaluationResult(['couriers_storage_org_logo_upload'])
+    )
+
+    const result = await getFeatures({
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+
+    expect(result).toEqual({
+      storageOrgLogoUpload: true,
+      uiFeatures: {
+        searchBar: false,
+        themeSwitcher: false,
+        globalAdd: false,
+        appSwitcher: false,
+        orgSwitcher: false,
+        chat: false,
+      },
+      enabledWidgetIds: [],
+    })
+    expect(mocks.evaluate).toHaveBeenCalledWith({
+      appSlug: '876-couriers',
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+  })
+
+  it('does not enable logo uploads for a similarly named unrelated flag', async () => {
+    mocks.evaluate.mockResolvedValue(
+      createEvaluationResult([
+        'couriers_storage',
+        'couriers_storage_org_logo',
+        'storage_org_logo_upload',
+        'platform_storage_org_logo_upload',
+      ])
+    )
+
+    const result = await getFeatures({
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+
+    expect(result.storageOrgLogoUpload).toBe(false)
+  })
 
   it('keeps the notepad widget enabled when every existing widget flag is present', async () => {
     const evaluation = createEvaluationResult([
@@ -150,6 +198,7 @@ describe('getFeatures', () => {
     })
 
     expect(result).toEqual({
+      storageOrgLogoUpload: false,
       uiFeatures: {
         searchBar: false,
         themeSwitcher: false,
@@ -182,6 +231,7 @@ describe('getFeatures', () => {
     })
 
     expect(result).toEqual({
+      storageOrgLogoUpload: false,
       uiFeatures: {
         searchBar: false,
         themeSwitcher: false,
@@ -224,6 +274,7 @@ describe('getFeatures', () => {
       })
 
       expect(result).toEqual({
+        storageOrgLogoUpload: false,
         uiFeatures: {
           searchBar: false,
           themeSwitcher: false,
