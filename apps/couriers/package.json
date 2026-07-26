@@ -7,7 +7,7 @@
     "dev": "prisma migrate deploy && pnpm build:sw && next dev --turbopack --port 3003",
     "build:sw": "node ../../scripts/build-serwist.mjs",
     "build": "opennextjs-cloudflare build",
-    "build:next": "pnpm build:sw && next build",
+    "build:next": "pnpm build:sw && NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start --port ${PORT:-3003}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",

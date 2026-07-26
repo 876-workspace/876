@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack --port 3001",
     "build": "opennextjs-cloudflare build",
-    "build:next": "next build",
+    "build:next": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start --port ${PORT:-3001}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
