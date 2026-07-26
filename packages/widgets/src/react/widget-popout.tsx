@@ -65,9 +65,7 @@ const FLOATING_CARD_CHROME = [
   // Same elevated surface step in both themes — `dark:bg-sidebar` sat too
   // close to the dark canvas, visually collapsing the card gaps/padding.
   'rounded-2xl border border-876-surface-border bg-876-surface',
-  // Drop shadow is light-mode only — dark mode relies on border/ring separation.
-  'shadow-[0_16px_48px_rgba(0,0,0,0.14),0_2px_12px_rgba(0,0,0,0.06)]',
-  'dark:shadow-none',
+  'shadow-none',
   'ring-1 ring-black/5 dark:ring-white/10',
 ] as const
 
@@ -548,9 +546,7 @@ function Panel({
               isMobile
                 ? [
                     'border-876-surface-border bg-876-surface bottom-0 border',
-                    // Drop shadow is light-mode only — dark mode relies on border.
-                    'rounded-t-2xl shadow-[0_-8px_40px_rgba(0,0,0,0.12)]',
-                    'dark:shadow-none',
+                    'rounded-t-2xl shadow-none',
                   ]
                 : FLOATING_CARD_CHROME,
             ],
