@@ -6,6 +6,9 @@
   "compatibility_flags": ["nodejs_compat"],
   "containers": [
     {
+      // Cloudflare rejects a Container application name that starts with a
+      // digit, so this cannot default to the Worker name (`876-billing-api`).
+      "name": "billing-api-876",
       "class_name": "BillingApiContainer",
       "image": "./Dockerfile",
       "max_instances": 3,
