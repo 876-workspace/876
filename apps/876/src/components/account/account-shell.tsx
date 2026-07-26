@@ -151,7 +151,7 @@ export function AccountShell({
   return (
     <SidebarProvider>
       <div className="hidden md:contents">
-        <Sidebar className="border-sidebar-border bg-sidebar">
+        <Sidebar className="border-sidebar-border/50 bg-sidebar">
           <SidebarHeader className="px-5 pt-5 pb-0">
             <Link href="/app" className="flex items-center gap-3">
               <span className="flex size-7 items-center justify-center rounded-xl bg-[linear-gradient(135deg,var(--palette-primary),var(--palette-secondary))] text-[0.625rem] font-bold tracking-[-0.04em] text-white shadow-[0_8px_20px_color-mix(in_oklab,var(--palette-primary)_16%,transparent)]">
@@ -177,7 +177,7 @@ export function AccountShell({
       </div>
 
       <SidebarInset className="bg-876-canvas min-h-dvh">
-        <header className="border-876-surface-border bg-876-surface/70 sticky top-0 z-20 flex h-16 items-center gap-3 border-b px-4 backdrop-blur-md sm:px-6 lg:px-8">
+        <header className="border-876-surface-border bg-876-surface/70 sticky top-0 z-20 flex h-16 items-center gap-3 border-b-0 px-4 backdrop-blur-md sm:px-6 lg:px-8">
           <div className="md:hidden">
             <MobileNavDropdown groups={mobileGroups} isActive={isActivePath} />
           </div>
