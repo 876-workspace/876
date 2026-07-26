@@ -171,6 +171,18 @@ async def complete_upload(
             "The file was not found.",
             status.HTTP_404_NOT_FOUND,
         )
+
+    # Deleted rows are loaded above only so a stale session resolves to a clear
+    # 404 rather than a confusing not-found-by-id. Completing one would revive
+    # it -- flipping status back to ready and handing out a URL while deleted_at
+    # stays populated -- so a deleted file is terminal for this session.
+    if file_row.deleted_at is not None:
+        raise _error(
+            "storage/file-not-found",
+            "The file was not found.",
+            status.HTTP_404_NOT_FOUND,
+        )
+
     if upload_session.status == "completed":
         return serialize_file(file_row, request.app.state.settings)
 

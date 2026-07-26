@@ -44,6 +44,7 @@ def upgrade() -> None:
         sa.Column("deleted_at", sa.BigInteger(), nullable=True),
         sa.Column("deleted_by", sa.String(length=255), nullable=True),
         sa.Column("deletion_reason", sa.String(length=1024), nullable=True),
+        sa.Column("purged_at", sa.BigInteger(), nullable=True),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_files")),
         sa.UniqueConstraint("object_key", name=op.f("uq_files_object_key")),
     )
