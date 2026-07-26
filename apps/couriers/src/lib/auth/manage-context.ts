@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { cache } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
@@ -24,7 +25,25 @@ export const getManageContext = cache(async function getManageContext(
     userId: user.id,
     status: 'active',
   })
-  if (membershipsResult.error) return null
+  if (membershipsResult.error) {
+    // Returning null is indistinguishable from "this user belongs to no org",
+    // which routes a fully provisioned member to onboarding. Report the cause.
+    Sentry.captureMessage(
+      'Platform outage: auth.getRoutingMemberships failed',
+      {
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: {
+          call: 'auth.getRoutingMemberships',
+          errorCode: membershipsResult.error.code ?? null,
+          errorMessage: membershipsResult.error.message ?? null,
+          consequence:
+            'Manage context resolves to null, so the member is routed to onboarding.',
+        },
+      }
+    )
+    return null
+  }
 
   const memberships = membershipsResult.data.data
   const organizations = memberships
@@ -110,6 +129,26 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgId,
     COURIERS_APP_SLUG
   )
+  if (accessResult.error) {
+    // 'none' is also the legitimate answer for an org that was never
+    // provisioned, so an outage silently revokes access for a subscribed org.
+    Sentry.captureMessage(
+      'Platform outage: orgs.subscriptions.retrieveBySlug failed',
+      {
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: {
+          call: 'orgs.subscriptions.retrieveBySlug',
+          errorCode: accessResult.error.code ?? null,
+          errorMessage: accessResult.error.message ?? null,
+          appSlug: COURIERS_APP_SLUG,
+          consequence:
+            "Access status falls back to 'none', so a subscribed org is treated as unprovisioned.",
+        },
+      }
+    )
+  }
+
   const accessStatus: AppAccessStatus = accessResult.error
     ? 'none'
     : ((accessResult.data?.status as AppAccessStatus) ?? 'none')

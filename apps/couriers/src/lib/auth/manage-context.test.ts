@@ -11,6 +11,11 @@ const mocks = vi.hoisted(() => ({
   getRoutingMemberships: vi.fn(),
   retrieveByOrgId: vi.fn(),
   retrieveSubscriptionBySlug: vi.fn(),
+  captureMessage: vi.fn(),
+}))
+
+vi.mock('@sentry/nextjs', () => ({
+  captureMessage: mocks.captureMessage,
 }))
 
 vi.mock('react', async (importOriginal) => {
@@ -173,6 +178,68 @@ describe('getManageContext', () => {
     })
     expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+  })
+
+  it('reports the failing call when memberships fail', async () => {
+    mocks.getRoutingMemberships.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'provider/unavailable',
+        message: 'Routing memberships are temporarily unavailable.',
+      },
+    })
+
+    await getManageContext()
+
+    expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
+    expect(mocks.captureMessage).toHaveBeenCalledWith(
+      'Platform outage: auth.getRoutingMemberships failed',
+      expect.objectContaining({
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: expect.objectContaining({
+          call: 'auth.getRoutingMemberships',
+          errorCode: 'provider/unavailable',
+          errorMessage: 'Routing memberships are temporarily unavailable.',
+        }),
+      })
+    )
+  })
+
+  it('does not report when memberships resolve', async () => {
+    mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+
+    await getManageContext('island-logistics')
+
+    expect(mocks.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('reports when the subscription lookup fails and access degrades to none', async () => {
+    mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'admin/unauthorized',
+        message: 'An internal key is required.',
+      },
+    })
+
+    const result = await getManageContext('island-logistics')
+
+    expect(result?.accessStatus).toBe('none')
+    expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
+    expect(mocks.captureMessage).toHaveBeenCalledWith(
+      'Platform outage: orgs.subscriptions.retrieveBySlug failed',
+      expect.objectContaining({
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: expect.objectContaining({
+          call: 'orgs.subscriptions.retrieveBySlug',
+          errorCode: 'admin/unauthorized',
+          errorMessage: 'An internal key is required.',
+        }),
+      })
+    )
   })
 
   it('resolves an exact active slug to the complete management context', async () => {
