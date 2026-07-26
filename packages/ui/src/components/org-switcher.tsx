@@ -19,6 +19,7 @@ export type OrgSwitcherOrg = {
   name: string | null
   slug: string
   role?: string | null
+  logoUrl?: string | null
 }
 
 /**
@@ -50,7 +51,7 @@ export function OrgSwitcher({
           className
         )}
       >
-        <OrgAvatar name={currentName} size="sm" />
+        <OrgAvatar name={currentName} src={current.logoUrl} size="sm" />
         <span className="text-foreground max-w-36 truncate">{currentName}</span>
         <ChevronDown
           aria-hidden="true"
@@ -60,7 +61,7 @@ export function OrgSwitcher({
 
       <DropdownMenuContent align="start" sideOffset={8} className="w-72">
         <div className="flex items-start gap-3 px-2 py-2">
-          <OrgAvatar name={currentName} size="md" />
+          <OrgAvatar name={currentName} src={current.logoUrl} size="md" />
           <div className="min-w-0 flex-1">
             <span className="text-foreground block text-sm font-semibold break-words">
               {currentName}
@@ -95,7 +96,7 @@ export function OrgSwitcher({
                 if (!isCurrent) void onSelect(org)
               }}
             >
-              <OrgAvatar name={displayName} size="sm" />
+              <OrgAvatar name={displayName} src={org.logoUrl} size="sm" />
               <span className="min-w-0 flex-1 truncate">{displayName}</span>
               {isCurrent ? (
                 <CheckIcon aria-hidden="true" className="ml-auto size-4" />

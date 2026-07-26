@@ -64,6 +64,7 @@ def _serialize_organization(row: Any) -> OrganizationResponse:
         doing_business_as=getattr(row, "doing_business_as", None),
         slug=row.slug,
         status=row.status,
+        logo_file_id=getattr(row, "logo_file_id", None),
         logo_url=row.logo_url,
         industry=getattr(row, "industry", None),
         business_type=getattr(row, "business_type", None),
@@ -234,6 +235,7 @@ def _apply_org_profile_fields(
         update_data["name"] = body.name.strip()
     for field in (
         "short_name",
+        "logo_file_id",
         "logo_url",
         "primary_phone",
         "primary_email",

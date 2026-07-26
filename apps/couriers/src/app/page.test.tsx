@@ -42,12 +42,14 @@ function createManageContext(
     orgId: 'organization_island_123',
     orgName: 'Island Logistics',
     orgSlug: 'island-logistics',
+    orgLogoUrl: null,
     organizations: [
       {
         id: 'organization_island_123',
         name: 'Island Logistics',
         slug: 'island-logistics',
         role: 'owner',
+        logoUrl: null,
       },
     ],
     tenant: null,

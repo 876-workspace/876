@@ -55,7 +55,11 @@ export async function CouriersShell({
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
       <AppShellSidebarArea>
-        <CouriersSidebar basePath={basePath} tenantName={tenantName} />
+        <CouriersSidebar
+          basePath={basePath}
+          tenantName={tenantName}
+          logoUrl={currentOrg.logoUrl}
+        />
       </AppShellSidebarArea>
 
       <AppShellContent>

@@ -269,6 +269,7 @@ class RoutingOrganization(BaseModel):
     name: str | None = Field(default=None, description="The name of the organization.")
     slug: str = Field(description="URL-safe slug for the organization.")
     status: str = Field(description="The organization status.")
+    logo_url: str | None = Field(default=None, description="The organization's rendered logo URL.")
 
 
 class RoutingMembership(BaseModel):

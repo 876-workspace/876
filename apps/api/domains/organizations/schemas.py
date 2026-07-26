@@ -55,6 +55,10 @@ class OrganizationResponse(BaseModel):
         default=None,
         description="URL of the organization's logo image.",
     )
+    logo_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the organization's logo.",
+    )
     # Contact
     primary_phone: str | None = Field(default=None, description="Primary phone number.")
     primary_email: str | None = Field(default=None, description="Primary contact email address.")
@@ -114,6 +118,7 @@ class OrganizationResponse(BaseModel):
                     "short_name": "Acme",
                     "slug": "acme-corp",
                     "status": "active",
+                    "logo_file_id": None,
                     "logo_url": None,
                     "primary_phone": "+1-876-555-0100",
                     "primary_email": "hello@acme.com",
@@ -254,6 +259,10 @@ class OrgProfileUpdate(BaseModel):
     logo_url: str | None = Field(
         default=None,
         description="URL of the organization's logo image. Set to null to clear it.",
+    )
+    logo_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the organization's logo. Set to null to clear it.",
     )
     # Contact
     primary_phone: str | None = Field(default=None, description="Primary phone number.")
