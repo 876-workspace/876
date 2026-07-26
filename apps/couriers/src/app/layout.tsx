@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import Script from 'next/script'
 import type { ReactNode } from 'react'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
@@ -22,14 +23,25 @@ const COURIERS_URL =
 
 export const metadata: Metadata = {
   metadataBase: new URL(COURIERS_URL),
+  applicationName: '876 Couriers',
   title: { default: '876 Couriers', template: '%s | 876 Couriers' },
   description: 'Courier management powered by 876.',
   robots: { index: false, follow: false },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: '876 Couriers',
+  },
+  formatDetection: { telephone: false },
+  icons: {
+    apple: '/pwa/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#1f4f82',
 }
 
 export default async function RootLayout({
@@ -55,6 +67,12 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <Script id="register-serwist" strategy="beforeInteractive">
+          {`if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' });
+window.addEventListener('online', () => window.location.reload());`}
+        </Script>
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider
           analyticsUser={sessionUser}

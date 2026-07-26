@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import Script from 'next/script'
 import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
 import { ThemeProvider } from './providers'
 import './globals.css'
 
-const APP_NAME = 'console'
+const APP_NAME = '876 Console'
 const APP_DESCRIPTION =
   'Operations and management console for the 876 platform.'
 
@@ -29,6 +30,15 @@ export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s | ${APP_NAME}` },
   description: APP_DESCRIPTION,
   robots: { index: false, follow: false },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: APP_NAME,
+  },
+  formatDetection: { telephone: false },
+  icons: {
+    apple: '/pwa/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -44,6 +54,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <Script id="register-serwist" strategy="beforeInteractive">
+          {`if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' });
+window.addEventListener('online', () => window.location.reload());`}
+        </Script>
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>{children}</ThemeProvider>
         <Toaster />
