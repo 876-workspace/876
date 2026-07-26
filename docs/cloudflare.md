@@ -78,6 +78,15 @@ esbuild before every build, injecting the precache manifest and revision via
 `/sw.js`. Precaching covers the offline fallback rather than the full Next asset
 manifest (that is only known after `next build`); runtime caching is unchanged.
 
+Console and Couriers use the same static-asset architecture through the shared
+`scripts/build-serwist.mjs` and `scripts/serwist-shell-worker.ts` build
+subsystem. Their `build:next` scripts compile an app-namespaced `/sw.js` before
+OpenNext collects static assets, and their root layouts register it at scope
+`/`. These authenticated apps deliberately cache only `/_next/static/**` plus
+their static offline page and install icons. HTML, RSC, API, auth, tenant image,
+and cross-origin responses are network-only so user or tenant data never enters
+Cache Storage.
+
 The general rule stands: anything needing a Node built-in or a bundler belongs
 in a build script, never in a route.
 
@@ -281,12 +290,12 @@ step must run OpenNext — plain `next build` only writes `.next/` and the
 deploy fails. Each Worker app's `pnpm run build` (and `cf:build`) therefore
 runs `opennextjs-cloudflare build`. Prefer these dashboard values:
 
-| Setting           | Value                              |
-| ----------------- | ---------------------------------- |
-| Build command     | `pnpm run build` (or `cf:build`)   |
-| Deploy command    | `npx opennextjs-cloudflare deploy` |
-| Root directory    | `/apps/<app>` (see table below)    |
-| Build watch paths | `apps/<app>/*`, `packages/*`       |
+| Setting           | Value                                                                  |
+| ----------------- | ---------------------------------------------------------------------- |
+| Build command     | `pnpm run build` (or `cf:build`)                                       |
+| Deploy command    | `npx opennextjs-cloudflare deploy`                                     |
+| Root directory    | `/apps/<app>` (see table below)                                        |
+| Build watch paths | `apps/<app>/*`, `packages/*`; add `scripts/*` for Console and Couriers |
 
 `npx wrangler deploy` also works once `.open-next/` exists; prefer
 `opennextjs-cloudflare deploy` so incremental cache wiring stays intact.
