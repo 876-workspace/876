@@ -25,7 +25,7 @@ export function CouriersSidebar({
   logoUrl?: string | null
 }) {
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar">
+    <Sidebar collapsible="icon" className="border-sidebar-border/50 bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href={basePath}
