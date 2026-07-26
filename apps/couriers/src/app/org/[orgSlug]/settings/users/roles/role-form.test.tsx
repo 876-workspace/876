@@ -6,6 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { RoleView } from '@/types/role'
 
+// The permission matrix renders many controls and re-renders per interaction,
+// so these exceed the default 5s under parallel-worker contention even though
+// they pass comfortably in isolation.
+vi.setConfig({ testTimeout: 20000 })
+
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
   refresh: vi.fn(),
@@ -56,7 +61,7 @@ describe('RoleForm', () => {
   })
 
   it('creates a custom role with matrix permissions then returns to the list', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
 
     render(<RoleForm orgSlug="island-logistics" />)
 
@@ -83,7 +88,7 @@ describe('RoleForm', () => {
   })
 
   it('locks default roles: fields disabled, no Save/Delete, no client calls', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
 
     render(
       <RoleForm
@@ -115,7 +120,7 @@ describe('RoleForm', () => {
   })
 
   it('shows service errors inline and does not navigate away', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     mocks.create.mockResolvedValue({
       data: null,
       error: {

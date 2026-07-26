@@ -6,9 +6,14 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { PermissionMatrix } from './permission-matrix'
 
+// The matrix renders many controls and re-renders per interaction, so these
+// exceed the default 5s under parallel-worker contention even though they pass
+// comfortably in isolation.
+vi.setConfig({ testTimeout: 20000 })
+
 describe('PermissionMatrix', () => {
   it('grants every key for a module when Full is checked', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onChange = vi.fn()
 
     render(<PermissionMatrix value={[]} onChange={onChange} />)
@@ -27,7 +32,7 @@ describe('PermissionMatrix', () => {
   })
 
   it('adds a single action key without wiping other selections', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onChange = vi.fn()
 
     render(<PermissionMatrix value={['packages.view']} onChange={onChange} />)
@@ -39,7 +44,7 @@ describe('PermissionMatrix', () => {
   })
 
   it('clears a module when Full is unchecked from a fully selected state', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onChange = vi.fn()
 
     render(
@@ -63,7 +68,7 @@ describe('PermissionMatrix', () => {
   })
 
   it('exposes extras (import/export) and writes the extra permission key', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onChange = vi.fn()
 
     render(<PermissionMatrix value={[]} onChange={onChange} />)
@@ -75,7 +80,7 @@ describe('PermissionMatrix', () => {
   })
 
   it('does not fire onChange for read-only matrices', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onChange = vi.fn()
 
     render(
