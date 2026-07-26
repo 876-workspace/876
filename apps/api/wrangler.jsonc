@@ -6,6 +6,9 @@
   "compatibility_flags": ["nodejs_compat"],
   "containers": [
     {
+      // Cloudflare rejects a Container application name that starts with a
+      // digit, so this cannot default to the Worker name (`876-api`).
+      "name": "api-876",
       "class_name": "ApiContainer",
       "image": "./Dockerfile",
       // Raise after traffic validation; Containers are billed per instance-time.
