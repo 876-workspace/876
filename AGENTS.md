@@ -64,6 +64,7 @@ python -m ruff check .
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.agents/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.agents/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).
+- Read `.agents/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
 - For Next.js routing/rendering/config/metadata/proxy changes, read the matching local guide in `node_modules/next/dist/docs/` first.
 
 ## Boundaries
