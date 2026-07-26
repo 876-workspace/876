@@ -85,7 +85,7 @@ pnpm check                        # format + lint + typecheck + test (run before
 
 ## Cloudflare Deployment
 
-Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). `@876/api` (FastAPI/Python) cannot run on Cloudflare — deploy it separately on Railway, Fly.io, or Render.
+Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). FastAPI services deploy as **Cloudflare Containers** using a Dockerfile and Worker front door.
 
 **Adapter:** `@opennextjs/cloudflare` v1.20+ (installed in all four Next.js apps). Do NOT use the deprecated `@cloudflare/next-on-pages`.
 

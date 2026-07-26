@@ -17,7 +17,7 @@ const geistSans = Geist({
 })
 
 // `??` only falls back on null/undefined — an env var set to an empty string
-// (as Railway does for an unset-but-declared variable) slips through and makes
+// (as some deployment environments do for an unset-but-declared variable) slips through and makes
 // `new URL('')` throw at render, crashing every route. Trim + `||` so empty or
 // whitespace-only values fall back to the local default.
 const ORG_URL =

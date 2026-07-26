@@ -180,12 +180,6 @@ pnpm --filter @876/storage-api db:migrate
 
 Migrations run in **CI**, never in the Worker and never in the Cloudflare build.
 
-> Note: `apps/billing-api`'s Cloudflare deploy job runs only `wrangler deploy`
-> and has **no** migration step — its `alembic upgrade head` lives solely in
-> `railway.toml`, which is dual-run only during cutover. Do not copy that job
-> shape. The storage-api job must run migrations explicitly, or its schema will
-> silently never advance.
-
 ## Retention and cleanup
 
 R2 objects are reclaimed by the storage-api cleanup job, not inline at delete
