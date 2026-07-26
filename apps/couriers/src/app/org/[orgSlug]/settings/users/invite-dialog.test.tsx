@@ -4,6 +4,11 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+// The permission matrix renders many controls and re-renders per interaction,
+// so these exceed the default 5s under parallel-worker contention even though
+// they pass comfortably in isolation.
+vi.setConfig({ testTimeout: 20000 })
+
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
   createInvite: vi.fn(),
@@ -38,7 +43,7 @@ describe('InviteDialog', () => {
   })
 
   it('trims the email, posts the selected role, closes, and refreshes on success', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onOpenChange = vi.fn()
 
     render(
@@ -67,7 +72,7 @@ describe('InviteDialog', () => {
   })
 
   it('surfaces invite errors and keeps the dialog open without refreshing', async () => {
-    const user = userEvent.setup()
+    const user = userEvent.setup({ delay: null })
     const onOpenChange = vi.fn()
     mocks.createInvite.mockResolvedValue({
       data: null,
