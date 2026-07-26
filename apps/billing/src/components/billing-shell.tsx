@@ -55,7 +55,7 @@ export async function Shell({
         />
       </AppShellSidebarArea>
       <AppShellContent>
-        <AppShellHeader>
+        <AppShellHeader className="border-b-0">
           <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">

@@ -66,7 +66,7 @@ export async function ConsoleShell({
       </AppShellSidebarArea>
 
       <AppShellContent>
-        <AppShellHeader>
+        <AppShellHeader className="border-b-0">
           <div className="flex items-center gap-2 md:hidden">
             <ConsoleMobileNav />
             <Link
