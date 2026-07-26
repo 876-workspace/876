@@ -31,6 +31,15 @@ def test_health_does_not_require_internal_key() -> None:
     assert response.json()["status"] == "ok"
 
 
+def test_request_id_is_preserved_on_response() -> None:
+    app = create_app(Settings(environment="test", internal_key=""))
+    with TestClient(app) as client:
+        response = client.get("/health", headers={"x-request-id": "req_health_test"})
+
+    assert response.status_code == 200
+    assert response.headers["x-request-id"] == "req_health_test"
+
+
 def test_ready_is_not_ready_when_database_is_missing() -> None:
     app = create_app(Settings(environment="test", database_url="", internal_key=""))
     with TestClient(app) as client:
