@@ -14,9 +14,11 @@ from api.v1 import router as api_v1_router
 from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.logging import configure_logging, get_logger
+from core.middleware import RequestLoggingMiddleware
 from core.openapi import SWAGGER_UI_PARAMETERS, custom_generate_unique_id, setup_openapi
 from db.session import lifespan as db_lifespan
 from domains.health.router import router as health_router
+from domains.maintenance.router import router as maintenance_router
 from providers.base import ObjectStorageProvider
 
 logger = get_logger(__name__)
@@ -58,6 +60,7 @@ def create_app(
     )
     app.state.settings = active_settings
     app.state.storage_provider = provider
+    app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=active_settings.cors_origins,
@@ -108,6 +111,7 @@ def create_app(
         )
 
     app.include_router(health_router)
+    app.include_router(maintenance_router)
     app.include_router(api_v1_router)
     setup_openapi(app)
     return app

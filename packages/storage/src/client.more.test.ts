@@ -91,9 +91,9 @@ describe('create876StorageClient additional contracts', () => {
   })
 
   it('rejects a ready public file without a stable url from the service', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json(createFile({ url: null }))
-    )
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json(createFile({ url: null })))
     const client = create876StorageClient({
       baseUrl: 'https://storage.example.test',
       internalKey: 'secret',

@@ -86,7 +86,7 @@ class FileRepository:
         row.updated_at = deleted_at
         await self.db.flush()
 
-    async def list_reclaimable(self, *, limit: int = 100) -> list[File]:
+    async def list_reclaimable(self, *, limit: int = 100, lock: bool = False) -> list[File]:
         """Soft-deleted files whose R2 object has not been reclaimed yet.
 
         `status == "deleted"` is the terminal marker set once the object is
@@ -100,9 +100,11 @@ class FileRepository:
             .order_by(File.deleted_at)
             .limit(limit)
         )
+        if lock:
+            stmt = stmt.with_for_update(skip_locked=True)
         return list((await self.db.scalars(stmt)).all())
 
-    async def list_abandoned(self, *, before: int, limit: int = 100) -> list[File]:
+    async def list_abandoned(self, *, before: int, limit: int = 100, lock: bool = False) -> list[File]:
         """Files whose bytes may exist in R2 but which never became ready.
 
         A signed upload that is never completed leaves an object with no live
@@ -118,6 +120,8 @@ class FileRepository:
             .order_by(File.updated_at)
             .limit(limit)
         )
+        if lock:
+            stmt = stmt.with_for_update(skip_locked=True)
         return list((await self.db.scalars(stmt)).all())
 
     async def mark_purged(self, row: File, *, purged_at: int) -> File:

@@ -67,6 +67,9 @@ describe('@876/storage public module surface', () => {
       'delete',
       'retrieve',
     ])
-    expect(Object.keys(client.uploads).toSorted()).toEqual(['complete', 'create'])
+    expect(Object.keys(client.uploads).toSorted()).toEqual([
+      'complete',
+      'create',
+    ])
   })
 })

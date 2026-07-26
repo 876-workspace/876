@@ -8,7 +8,7 @@ from typing import cast
 
 from sqlalchemy import Table, UniqueConstraint
 
-from db.models import File, UploadSession
+from db.models import AuditEvent, File, UploadSession
 
 
 def test_files_model_has_soft_delete_columns() -> None:
@@ -77,3 +77,28 @@ def test_migration_does_not_create_visibility_column() -> None:
 def test_files_default_category_and_audience_match_architecture() -> None:
     assert File.category.default.arg == "attachment"
     assert File.audience.default.arg == "private"
+
+
+def test_audit_event_model_has_operational_columns() -> None:
+    assert set(AuditEvent.__table__.columns.keys()) == {
+        "id",
+        "actor_id",
+        "source_app_id",
+        "owner_type",
+        "owner_id",
+        "file_id",
+        "upload_session_id",
+        "request_id",
+        "action",
+        "outcome",
+        "error_code",
+        "created_at",
+    }
+
+
+def test_audit_migration_is_guarded_and_append_only() -> None:
+    migration = Path("migrations/versions/202607260001_create_storage_audit_events.py").read_text()
+
+    assert 'if "audit_events" in sa.inspect(bind).get_table_names()' in migration
+    assert 'op.create_table(\n        "audit_events"' in migration
+    assert "ForeignKeyConstraint" not in migration

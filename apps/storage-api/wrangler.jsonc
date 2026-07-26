@@ -25,6 +25,10 @@
       "new_sqlite_classes": ["StorageApiContainer"],
     },
   ],
+  // Daily at 03:17 UTC. Reclamation is deliberately low urgency.
+  "triggers": {
+    "crons": ["17 3 * * *"],
+  },
   "vars": {
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",
