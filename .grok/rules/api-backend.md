@@ -40,7 +40,7 @@ Read this before editing `apps/api`, API contracts, OpenAPI docs, provider integ
 - Cursor pagination uses `starting_after` / `ending_before` with item IDs and repository cursor helpers.
 - App-owned timestamps are Unix seconds.
 - SDK/API boundaries use `{ data, error }` envelopes where the client package owns transport results.
-- Changing API contracts usually requires updating `packages/admin/src/client.ts` or `packages/sdk/src/client.ts`, tests, and `apps/docs/openapi.json` via `pnpm sync:openapi`.
+- Changing API contracts usually requires updating `packages/admin/src/client.ts` or `packages/sdk/src/client.ts` and their tests.
 
 ## Tests And Checks
 

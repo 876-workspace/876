@@ -129,7 +129,6 @@ Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) 
 
 ## Required Context
 
-- Read `apps/docs/content/docs/index.mdx` at session start when working on documentation.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
 - Read `.agents/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
@@ -250,8 +249,6 @@ Co-Authored-By: (the agent model's name and attribution byline)
 
 ## Docs
 
-- SDK documentation lives under `apps/docs/content/docs/` and is rendered by `@876/docs`.
-- API method references in the docs app use `apps/docs/openapi.json`; regenerate it with `pnpm sync:openapi` when API contracts change.
 - Package-local notes stay in package `README.md` files.
 
 ## Research & Best Practices

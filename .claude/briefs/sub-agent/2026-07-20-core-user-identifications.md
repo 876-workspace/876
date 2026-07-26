@@ -22,7 +22,6 @@ patterns closely — match them exactly.
   migration wiring, seeds if applicable, tests)
 - `packages/admin/**` (new nested resource methods + types + tests)
 - `packages/core/src/platform/**` (platform-client methods + types)
-- `apps/docs/openapi.json` via `pnpm sync:openapi`
 
 Do NOT touch `apps/billing`, `apps/couriers`, `packages/sdk`, or any
 `.claude/rules` file. Do NOT commit — the orchestrator commits.
@@ -145,7 +144,6 @@ verify}` with typed params/results in the admin package's house type
 - `pnpm --filter @876/admin test` and `pnpm --filter @876/admin typecheck` (or
   the package's actual script names — check package.json), same for
   `@876/core`.
-- `pnpm sync:openapi` and include the regenerated `apps/docs/openapi.json`.
 
 ## Return shape
 

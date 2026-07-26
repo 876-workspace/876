@@ -24,7 +24,7 @@ paraphrase nothing — quote exact signatures.
 `apps/widgets-api`, `packages/sdk`, `packages/admin`, `packages/billing`,
 `packages/core`, root config (`pnpm-workspace.yaml`, `turbo.json`).
 
-**Out of scope:** `apps/876`, `apps/enterprise`, `apps/docs`, `apps/billing`
+**Out of scope:** `apps/876`, `apps/enterprise`, `apps/billing`
 (Next.js app) except where it demonstrates a pattern asked for below. Ignore
 all `node_modules/`, `.next/`, `.open-next/`, `**/generated/**`, `.venv/`.
 
