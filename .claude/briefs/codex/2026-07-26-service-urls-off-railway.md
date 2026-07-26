@@ -21,7 +21,7 @@ subdomain is `raheemforschool.workers.dev` — confirmed by the already-live
 A second, related defect: `apps/console/src/lib/billing/index.ts` (lines 8, 19)
 and `apps/couriers/src/lib/finance/client.ts` (line 11) read
 `process.env.BILLING_API_URL`, but **no wrangler config defines that var**. It
-must point at the `876-billing-api` Container Worker, which is a *different*
+must point at the `876-billing-api` Container Worker, which is a _different_
 service from the existing `BILLING_URL` (that one points at `876-billing`, the
 Next.js billing app). So `BILLING_API_URL` must be added, not renamed.
 
@@ -43,7 +43,9 @@ other app. Railway file/doc removal is a separate phase and must not be done her
 ```
 "API_URL": "https://876-api-production-e78f.up.railway.app"
 ```
+
 becomes
+
 ```
 "API_URL": "https://876-api.raheemforschool.workers.dev"
 ```
