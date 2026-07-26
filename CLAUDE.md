@@ -109,7 +109,7 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 
 ## Sub-Agent Rules
 
-- **Never run sub-agents (Codex, `agy`, `opencode`, Command Code, or any agent) in the background.** Always run them in the foreground so you can monitor output, catch errors, and verify results inline. Background sub-agents are forbidden unless explicitly authorized in writing by the user.
+- **Background execution is authorized** (user, 2026-07-26: _"run codex in the background always going further"_, refined to _"in the background only if they make sense, you make that decision"_). This supersedes the previous foreground-only requirement, which permitted exactly this written exception. Use judgement: background genuinely long-running work (a Codex run, a CI poll) and keep quick checks in the foreground. Either way you must still read and verify the output — a delegation you never inspect is not delegation.
 - **Read `.claude/rules/cli.md` before spawning any sub-agent or CLI.** It is the canonical routing rule for which model handles which task class:
   - **Code exploration/research** → a Sonnet sub-agent at high reasoning depth, briefed with the exact question, why it's needed, and the expected return shape (file:line citations, exact shapes) — this is the highest-token category, so a shallow one-line brief undermines the whole point of delegating it.
   - **Advanced/critical implementation** → an Opus sub-agent at high reasoning depth.
