@@ -704,6 +704,22 @@ def ensure_org_business_identity_columns(conn: Connection) -> None:
             exec_isolated(conn, f"organizations.{name}", f"ALTER TABLE organizations ADD COLUMN {column}")
 
 
+def ensure_organizations_logo_file_id_column(conn: Connection) -> None:
+    """Add the canonical Storage file reference to existing organizations."""
+    inspector: Any = sa_inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "organizations" not in tables:
+        return
+    columns = {column["name"] for column in inspector.get_columns("organizations")}
+    if "logo_file_id" in columns:
+        return
+    exec_isolated(
+        conn,
+        "organizations.logo_file_id",
+        "ALTER TABLE organizations ADD COLUMN logo_file_id VARCHAR",
+    )
+
+
 def ensure_invite_source_app_column(conn: Connection) -> None:
     """Add the source_app_id column to an existing invite_tokens table."""
     inspector: Any = sa_inspect(conn)
