@@ -38,6 +38,42 @@ def provider(monkeypatch: pytest.MonkeyPatch) -> tuple[R2ObjectStorageProvider, 
     return R2ObjectStorageProvider(make_settings()), client
 
 
+@pytest.mark.parametrize(
+    ("access_key", "secret_key", "expected"),
+    [
+        ("", "secret", "R2_ACCESS_KEY_ID"),
+        ("AKIA_TEST", "", "R2_SECRET_ACCESS_KEY"),
+        ("", "", "R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY"),
+    ],
+)
+def test_missing_credentials_fail_at_construction(
+    monkeypatch: pytest.MonkeyPatch,
+    access_key: str,
+    secret_key: str,
+    expected: str,
+) -> None:
+    """boto3 signs with empty credentials, producing URLs that always 400 at R2.
+
+    Failing here keeps the cause legible instead of surfacing as an opaque
+    browser-side upload rejection.
+    """
+    boto3 = MagicMock()
+    monkeypatch.setattr("providers.r2.boto3", boto3)
+
+    with pytest.raises(ValueError) as excinfo:
+        R2ObjectStorageProvider(
+            Settings(
+                r2_access_key_id=access_key,
+                r2_secret_access_key=secret_key,
+                r2_endpoint="https://account.r2.cloudflarestorage.com",
+                environment="test",
+            )
+        )
+
+    assert str(excinfo.value) == f"R2 is not configured; missing: {expected}."
+    assert boto3.client.call_count == 0
+
+
 def test_empty_endpoint_is_passed_as_none(monkeypatch: pytest.MonkeyPatch) -> None:
     client = MagicMock()
     boto3 = MagicMock()

@@ -29,6 +29,33 @@ const PHASE_LABELS: Record<Exclude<UploadPhase, 'idle'>, string> = {
   verifying: 'Verifying…',
 }
 
+/** Turns a storage-provider PUT rejection into a message that names the cause. */
+async function describeUploadFailure(response: Response): Promise<string> {
+  // R2 answers with an XML error document; its code is the only detail that
+  // distinguishes a misconfigured deployment from an expired session.
+  let providerCode = ''
+  try {
+    providerCode =
+      /<Code>([^<]+)<\/Code>/.exec(await response.text())?.[1] ?? ''
+  } catch {
+    providerCode = ''
+  }
+
+  if (providerCode)
+    console.error(
+      `Organization logo upload rejected: HTTP ${response.status} ${providerCode}`
+    )
+
+  if (response.status === 403 || providerCode === 'AccessDenied')
+    return 'The upload link has expired. Try again.'
+  if (response.status === 413 || providerCode === 'EntityTooLarge')
+    return 'The image is larger than the storage service accepts.'
+  if (response.status === 400)
+    return `The storage service rejected the upload (${providerCode || 'HTTP 400'}). This is a server configuration problem, not a problem with your image.`
+
+  return `The image could not be uploaded (HTTP ${response.status}). Please try again.`
+}
+
 function validateLogo(file: File): string | null {
   if (!ALLOWED_LOGO_TYPES.has(file.type))
     return 'Choose a PNG, JPEG, or WebP image.'
@@ -99,13 +126,17 @@ export function OrganizationLogoUpload({
         body: file,
       })
     } catch {
-      setError('The image could not be uploaded. Please try again.')
+      setError(
+        'The image could not be uploaded — the storage service is unreachable. Check your connection and try again.'
+      )
       setPhase('idle')
       return
     }
 
     if (!uploadResponse.ok) {
-      setError('The image could not be uploaded. Please try again.')
+      // The storage provider answers this PUT directly, so its status is the
+      // only signal we get. Without it every failure reads identically.
+      setError(await describeUploadFailure(uploadResponse))
       setPhase('idle')
       return
     }

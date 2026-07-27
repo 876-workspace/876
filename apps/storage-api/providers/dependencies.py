@@ -14,6 +14,9 @@ def get_provider(request: Request) -> ObjectStorageProvider:
         try:
             provider = R2ObjectStorageProvider(request.app.state.settings)
         except Exception as exc:
+            # A configuration failure names only env vars, never a credential
+            # value, so its message is safe to log and is the whole diagnosis.
+            misconfigured = isinstance(exc, ValueError)
             log_storage_event(
                 "storage.provider_error",
                 StorageOperationContext(
@@ -30,6 +33,7 @@ def get_provider(request: Request) -> ObjectStorageProvider:
                 metric_value=1,
                 provider_operation="initialize",
                 provider_error_type=type(exc).__name__,
+                provider_error_detail=str(exc) if misconfigured else None,
             )
             raise provider_error() from None
         request.app.state.storage_provider = provider

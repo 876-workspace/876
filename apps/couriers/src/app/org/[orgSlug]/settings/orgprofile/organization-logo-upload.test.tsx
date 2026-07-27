@@ -196,7 +196,7 @@ describe('OrganizationLogoUpload', () => {
 
       expect(
         await screen.findByText(
-          'The image could not be uploaded. Please try again.'
+          'The image could not be uploaded (HTTP 500). Please try again.'
         )
       ).toBeVisible()
       expect(container.querySelector('img')).toHaveAttribute('src', oldLogoUrl)
@@ -221,10 +221,58 @@ describe('OrganizationLogoUpload', () => {
 
       expect(
         await screen.findByText(
-          'The image could not be uploaded. Please try again.'
+          'The image could not be uploaded — the storage service is unreachable. Check your connection and try again.'
         )
       ).toBeVisible()
       expect(container.querySelector('img')).toHaveAttribute('src', oldLogoUrl)
+      expect(mocks.refresh).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      {
+        name: 'names a misconfigured provider on a signature rejection',
+        status: 400,
+        body: '<?xml version="1.0" encoding="UTF-8"?><Error><Code>InvalidArgument</Code><Message>Credential access key has length 0, should be 32</Message></Error>',
+        expected:
+          'The storage service rejected the upload (InvalidArgument). This is a server configuration problem, not a problem with your image.',
+      },
+      {
+        name: 'reports an expired link on a denied upload',
+        status: 403,
+        body: '<Error><Code>AccessDenied</Code></Error>',
+        expected: 'The upload link has expired. Try again.',
+      },
+      {
+        name: 'reports a size rejection from the provider',
+        status: 413,
+        body: '<Error><Code>EntityTooLarge</Code></Error>',
+        expected: 'The image is larger than the storage service accepts.',
+      },
+      {
+        name: 'falls back to the status when the body carries no code',
+        status: 400,
+        body: '',
+        expected:
+          'The storage service rejected the upload (HTTP 400). This is a server configuration problem, not a problem with your image.',
+      },
+    ])('$name', async ({ status, body, expected }) => {
+      mocks.request.mockResolvedValueOnce({
+        data: uploadSession,
+        error: null,
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(new Response(body, { status }))
+      )
+      const { container } = renderUpload()
+
+      fireEvent.change(screen.getByLabelText('Organization logo'), {
+        target: { files: [pngFile()] },
+      })
+
+      expect(await screen.findByText(expected)).toBeVisible()
+      expect(container.querySelector('img')).toHaveAttribute('src', oldLogoUrl)
+      expect(mocks.request).toHaveBeenCalledTimes(1)
       expect(mocks.refresh).not.toHaveBeenCalled()
     })
 
@@ -357,7 +405,7 @@ describe('OrganizationLogoUpload', () => {
       resolveStart({ data: uploadSession, error: null })
 
       await screen.findByText(
-        'The image could not be uploaded. Please try again.'
+        'The image could not be uploaded (HTTP 500). Please try again.'
       )
     })
 

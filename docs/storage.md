@@ -141,6 +141,13 @@ deployed values are Worker secrets:
 npx wrangler secret put R2_SECRET_ACCESS_KEY --name 876-storage-api
 ```
 
+If `R2_ACCESS_KEY_ID` or `R2_SECRET_ACCESS_KEY` is empty, the service **fails
+closed**: opening an upload returns `storage/provider-error` (502) and logs
+`provider_error_detail` naming the missing variables. It deliberately does not
+sign with empty credentials — that produced a valid-looking upload URL whose
+every browser `PUT` was rejected by R2 with an opaque `400 InvalidArgument`,
+surfacing to the user as a generic "upload failed" with nothing in our logs.
+
 `STORAGE_INTERNAL_KEY` is the service key callers present as `x-internal-key`.
 When it is empty the service rejects every authenticated request, matching core
 `apps/api`'s `AdminDep` posture — an unset key fails closed, never open.
