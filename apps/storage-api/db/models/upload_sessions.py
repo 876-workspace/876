@@ -21,6 +21,7 @@ class UploadSession(Base):
     declared_size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
     expires_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     completed_at: Mapped[int | None] = mapped_column(BigInteger)
+    reservation_released_at: Mapped[int | None] = mapped_column(BigInteger)
     created_by: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import File
@@ -29,6 +29,7 @@ class FileRepository:
         created_by: str,
         created_at: int,
         updated_at: int,
+        quota_org_id: str | None = None,
     ) -> File:
         row = File(
             id=id,
@@ -47,6 +48,7 @@ class FileRepository:
             size_bytes=size_bytes,
             status=status,
             created_by=created_by,
+            quota_org_id=quota_org_id,
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -124,8 +126,68 @@ class FileRepository:
             stmt = stmt.with_for_update(skip_locked=True)
         return list((await self.db.scalars(stmt)).all())
 
+    async def list_for_admin(
+        self,
+        *,
+        owner_type: str | None = None,
+        owner_id: str | None = None,
+        created_by: str | None = None,
+        source_app_id: str | None = None,
+        purpose: str | None = None,
+        category: str | None = None,
+        status: str | None = None,
+        quota_org_id: str | None = None,
+        include_deleted: bool = False,
+        limit: int = 25,
+        starting_after: str | None = None,
+    ) -> list[File]:
+        """Files matching an administrator's filters, newest first.
+
+        Deleted rows are excluded unless asked for, so a Console list cannot
+        show a tombstone by accident -- `.claude/rules/deletions.md` requires an
+        explicit opt-in.
+        """
+        statement = select(File)
+        if not include_deleted:
+            statement = statement.where(File.deleted_at.is_(None))
+        for column, value in (
+            (File.owner_type, owner_type),
+            (File.owner_id, owner_id),
+            (File.created_by, created_by),
+            (File.source_app_id, source_app_id),
+            (File.purpose, purpose),
+            (File.category, category),
+            (File.status, status),
+            (File.quota_org_id, quota_org_id),
+        ):
+            if value is not None:
+                statement = statement.where(column == value)
+        if starting_after is not None:
+            statement = statement.where(File.id > starting_after)
+        statement = statement.order_by(File.created_at.desc(), File.id.desc()).limit(limit)
+        return list((await self.db.scalars(statement)).all())
+
     async def mark_purged(self, row: File, *, purged_at: int) -> File:
         row.purged_at = purged_at
         row.updated_at = purged_at
         await self.db.flush()
         return row
+
+    async def claim_quota_release(self, row: File, *, released_at: int) -> bool:
+        """Claim the right to return this file's bytes to its quota subjects.
+
+        Decrementing twice would hand the owner free storage, so the claim is a
+        conditional UPDATE and only the caller that wins it may decrement.
+        """
+        claimed_id = await self.db.scalar(
+            update(File)
+            .where(File.id == row.id)
+            .where(File.quota_released_at.is_(None))
+            .values(quota_released_at=released_at)
+            .returning(File.id)
+        )
+        if claimed_id is None:
+            return False
+
+        await self.db.refresh(row)
+        return True

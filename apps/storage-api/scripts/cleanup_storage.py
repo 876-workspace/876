@@ -20,7 +20,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from core.config import get_settings
 from db.session import make_engine
-from domains.maintenance.reclamation import reclaim_objects
+from domains.maintenance.reclamation import (
+    reclaim_objects,
+    release_expired_reservations,
+    repair_usage_drift,
+)
 from providers.r2 import R2ObjectStorageProvider
 
 
@@ -31,12 +35,25 @@ async def run(*, apply: bool, limit: int) -> int:
     provider = R2ObjectStorageProvider(settings)
 
     async with session_factory() as db:
+        now = int(time.time())
         result = await reclaim_objects(
             db,
             provider,
             apply=apply,
             limit=limit,
-            now=int(time.time()),
+            now=now,
+        )
+        reservations = await release_expired_reservations(
+            db,
+            apply=apply,
+            limit=limit,
+            now=now,
+        )
+        drift = await repair_usage_drift(
+            db,
+            apply=apply,
+            limit=limit,
+            now=now,
         )
         if apply:
             await db.commit()
@@ -45,7 +62,18 @@ async def run(*, apply: bool, limit: int) -> int:
 
     mode = "reclaimed" if apply else "would reclaim"
     print(f"{mode}: {result.soft_deleted} soft-deleted, {result.abandoned} abandoned")
-    if not apply:
+    release_mode = "released" if apply else "would release"
+    print(
+        f"{release_mode}: {reservations.sessions} expired reservation(s), "
+        f"{reservations.bytes_released} byte(s)"
+    )
+    if apply:
+        print(
+            f"usage drift: {drift.repaired} of {drift.subjects} subject(s) repaired, "
+            f"{drift.delta_bytes} byte(s) net"
+        )
+    else:
+        print(f"usage drift: would recompute {drift.subjects} subject(s)")
         print("dry run — pass --apply to delete objects")
     return result.total
 
