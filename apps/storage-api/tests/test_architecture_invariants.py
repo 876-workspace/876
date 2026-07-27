@@ -60,7 +60,7 @@ def test_object_key_never_includes_client_filename(storage_harness: StorageHarne
 
     with sqlite3.connect(storage_harness.database_path) as connection:
         object_key, original_name = connection.execute(
-            "SELECT object_key, original_name FROM files WHERE id = ?",
+            "SELECT object_key, original_name FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
 
@@ -76,7 +76,7 @@ def test_public_assets_use_assets_bucket_not_files_bucket(storage_harness: Stora
 
     with sqlite3.connect(storage_harness.database_path) as connection:
         bucket, audience = connection.execute(
-            "SELECT bucket, audience FROM files WHERE id = ?",
+            "SELECT bucket, audience FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
 
@@ -119,7 +119,7 @@ def test_size_mismatch_deletes_object_before_marking_ready(
     assert ("assets-test", OBJECT_KEY) not in storage_harness.provider.objects
     with sqlite3.connect(storage_harness.database_path) as connection:
         status = connection.execute(
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()[0]
     assert status == "failed"

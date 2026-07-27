@@ -10,11 +10,11 @@ if TYPE_CHECKING:
 
 
 class UploadSession(Base):
-    __tablename__ = "upload_sessions"
-    __table_args__ = (Index("ix_upload_sessions_status", "status"),)
+    __tablename__ = "storage_upload_sessions"
+    __table_args__ = (Index("ix_storage_upload_sessions_status", "status"),)
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
-    file_id: Mapped[str] = mapped_column(ForeignKey("files.id", ondelete="CASCADE"), nullable=False, index=True)
+    file_id: Mapped[str] = mapped_column(ForeignKey("storage_files.id", ondelete="CASCADE"), nullable=False, index=True)
     route_key: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     declared_content_type: Mapped[str] = mapped_column(String(255), nullable=False)
