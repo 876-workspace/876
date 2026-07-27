@@ -92,6 +92,26 @@ design. Each app-local `src/lib/db/index.ts` therefore exports `prisma` as a
 Proxy that constructs the client on first property access. Keep it that way when
 adding a datastore to a new app.
 
+**2c. No database client shared between requests.** `@prisma/adapter-neon` opens
+a Neon **WebSocket pool**, and a socket on workerd belongs to the request that
+opened it. Caching the client in module scope — the ordinary Node/HMR pattern —
+means the second request served by a warm isolate reuses that socket and gets
+`Cannot perform I/O on behalf of a different request`. Worse, the adapter
+reports that on the pool instead of rejecting the in-flight query, so the query
+promise never settles, the runtime cancels the invocation as a hang, and the
+page fails with **Error 1101** without a single application error being raised.
+
+Each `src/lib/db/index.ts` therefore resolves its client through
+`createRequestScopedResolver` from `@876/core/db`: one client per request on
+workerd (held in a `WeakMap` keyed by the request's `ExecutionContext`), one
+client per process under Node. The same module supplies `createQueryGuard`,
+which bounds every query and reports failures — the pending timer keeps the
+invocation alive long enough for the rejection to reach Sentry and an error
+boundary, instead of the runtime killing it silently.
+
+When you add a datastore to a new app, wire both. Do not reintroduce a
+module-level `let client`.
+
 **3. Worker size.** Free plan caps a Worker at 3 MiB; every Next.js app exceeds
 that. **Workers Paid is required** (it also gates Containers, so both FastAPI
 services need it too).
