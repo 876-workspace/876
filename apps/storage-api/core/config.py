@@ -24,6 +24,17 @@ class Settings(BaseSettings):
     r2_endpoint: str = Field(default="", validation_alias="R2_ENDPOINT")
     r2_assets_base_url: str = Field(default="", validation_alias="R2_ASSETS_BASE_URL")
     upload_ttl_seconds: int = Field(default=600, validation_alias="STORAGE_UPLOAD_TTL_SECONDS")
+    default_org_limit_bytes: int = Field(
+        default=5_368_709_120,
+        ge=0,
+        validation_alias="STORAGE_DEFAULT_ORG_LIMIT_BYTES",
+    )
+    near_limit_percent: int = Field(
+        default=80,
+        ge=0,
+        le=100,
+        validation_alias="STORAGE_NEAR_LIMIT_PERCENT",
+    )
     deletion_mode: Literal["soft", "hard"] = Field(default="soft", validation_alias="DELETION_MODE")
     environment: str = Field(default="production", validation_alias="ENVIRONMENT")
     log_level: str = Field(default="info", validation_alias="LOG_LEVEL")

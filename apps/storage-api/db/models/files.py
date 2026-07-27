@@ -19,6 +19,8 @@ class File(Base):
         Index("ix_storage_files_source_purpose", "source_app_id", "purpose"),
         Index("ix_storage_files_status", "status"),
         Index("ix_storage_files_audience", "audience"),
+        Index("ix_storage_files_quota_org", "quota_org_id"),
+        Index("ix_storage_files_created_by", "created_by"),
     )
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
@@ -37,6 +39,8 @@ class File(Base):
     size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     created_by: Mapped[str] = mapped_column(String(255), nullable=False)
+    quota_org_id: Mapped[str | None] = mapped_column(String(255))
+    quota_released_at: Mapped[int | None] = mapped_column(BigInteger)
     created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     deleted_at: Mapped[int | None] = mapped_column(BigInteger)
