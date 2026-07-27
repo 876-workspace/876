@@ -21,3 +21,19 @@ def provider_error() -> AppHTTPException:
         message="The storage provider could not complete the request.",
         http_status_code=status.HTTP_502_BAD_GATEWAY,
     )
+
+
+def quota_exceeded(message: str) -> AppHTTPException:
+    return AppHTTPException(
+        code="storage/quota-exceeded",
+        message=message,
+        http_status_code=status.HTTP_409_CONFLICT,
+    )
+
+
+def quota_suspended() -> AppHTTPException:
+    return AppHTTPException(
+        code="storage/quota-suspended",
+        message="Storage uploads for this subject are suspended.",
+        http_status_code=status.HTTP_403_FORBIDDEN,
+    )
