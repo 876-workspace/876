@@ -4,7 +4,15 @@ import type { StorageClientOptions } from './types/common'
 
 const storageBaseUrlEnvKeys = ['STORAGE_API_URL'] as const
 
-/** Builds the runtime shared by every Storage resource factory. */
+/**
+ * Builds the runtime environment shared by every Storage resource factory.
+ *
+ * Resolves the service base URL from explicit options or environment (`STORAGE_API_URL`),
+ * defaulting to `http://localhost:4005`.
+ *
+ * @param options - Storage client initialization options.
+ * @returns The constructed `StorageRuntime` object.
+ */
 export function buildStorageRuntime(options: StorageClientOptions) {
   const configured = resolveClientBaseUrl(
     options.baseUrl,
@@ -19,5 +27,5 @@ export function buildStorageRuntime(options: StorageClientOptions) {
   }
 }
 
-/** The bound runtime each Storage resource factory closes over. */
+/** The bound runtime context closed over by Storage resource factories. */
 export type StorageRuntime = ReturnType<typeof buildStorageRuntime>
