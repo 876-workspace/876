@@ -9,6 +9,10 @@ class UploadCreate(BaseModel):
     owner_id: str = Field(description="Opaque identifier for the owning entity.")
     actor_user_id: str = Field(description="Opaque identifier for the authorized actor.")
     source_app_id: str = Field(description="Opaque identifier for the calling app.")
+    quota_org_id: str | None = Field(
+        default=None,
+        description="Opaque organization identifier whose pool also applies.",
+    )
     file_name: str = Field(description="Original filename retained as metadata only.")
     content_type: str = Field(description="Declared media type.")
     size_bytes: int = Field(description="Declared byte size.")
