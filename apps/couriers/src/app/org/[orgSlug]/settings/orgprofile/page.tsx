@@ -6,7 +6,6 @@ import { getManageContext } from '@/lib/auth/manage-context'
 import { getFeatures } from '@/lib/features'
 import { buildSections } from './field-spec'
 import { ProfileForm, type ProfileFormValues } from './profile-form'
-import { SectionNav } from './section-nav'
 
 export const metadata = { title: 'Organization profile — Settings' }
 
@@ -86,29 +85,25 @@ export default async function ProfileSettingsPage({
   const sections = buildSections(parishes)
 
   return (
-    <div className="flex min-h-full items-start">
-      <SectionNav sections={sections} />
+    <Page>
+      <PageBreadcrumb
+        href={`/org/${orgSlug}/settings`}
+        label="Settings"
+        className="mb-4"
+      />
 
-      <Page className="min-w-0 flex-1">
-        <PageBreadcrumb
-          href={`/org/${orgSlug}/settings`}
-          label="Settings"
-          className="mb-4"
-        />
+      <PageHeader className="mb-6">
+        <PageTitle>Organization profile</PageTitle>
+      </PageHeader>
 
-        <PageHeader className="mb-6">
-          <PageTitle>Organization profile</PageTitle>
-        </PageHeader>
-
-        <ProfileForm
-          orgSlug={orgSlug}
-          canEdit={canEdit}
-          logoUrl={profile.logo_url}
-          logoUploadEnabled={features.storageOrgLogoUpload}
-          initial={initial}
-          sections={sections}
-        />
-      </Page>
-    </div>
+      <ProfileForm
+        orgSlug={orgSlug}
+        canEdit={canEdit}
+        logoUrl={profile.logo_url}
+        logoUploadEnabled={features.storageOrgLogoUpload}
+        initial={initial}
+        sections={sections}
+      />
+    </Page>
   )
 }

@@ -75,7 +75,7 @@ function ProfileSection({
   return (
     <section
       id={`section-${section.id}`}
-      className="border-876-surface-border scroll-mt-4 border-t pt-12 first:border-t-0 first:pt-0"
+      className="scroll-mt-4"
     >
       <h2 className="876-section-title mb-3.5">{section.title}</h2>
 
@@ -118,7 +118,7 @@ export function ProfileSections({
   logo,
 }: SectionsProps) {
   return (
-    <div className="flex max-w-4xl flex-col">
+    <div className="flex max-w-4xl flex-col gap-8">
       {sections.map((section) => (
         <ProfileSection
           key={section.id}
