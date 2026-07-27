@@ -16,6 +16,7 @@ from tests.conftest import InMemoryObjectStorageProvider
 
 def test_generate_id_uses_stable_prefixes() -> None:
     assert generate_id("file").startswith("file_")
+    assert generate_id("storage_quota").startswith("squota_")
     assert generate_id("upload_session").startswith("upl_")
     assert generate_id("version").startswith("ver_")
 
@@ -34,7 +35,12 @@ def test_generate_id_rejects_unknown_entity_type() -> None:
 
 
 def test_entity_prefixes_are_complete_for_current_entities() -> None:
-    assert set(ENTITY_PREFIXES) == {"file", "upload_session", "version"}
+    assert set(ENTITY_PREFIXES) == {
+        "file",
+        "storage_quota",
+        "upload_session",
+        "version",
+    }
 
 
 def test_secret_matches_is_constant_time_equal() -> None:
