@@ -2,6 +2,7 @@ import secrets
 
 ENTITY_PREFIXES = {
     "file": "file",
+    "storage_quota": "squota",
     "upload_session": "upl",
     "version": "ver",
 }
