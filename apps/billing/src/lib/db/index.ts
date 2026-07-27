@@ -1,6 +1,12 @@
 import 'server-only'
 
 import { PrismaNeon } from '@prisma/adapter-neon'
+import {
+  createQueryGuard,
+  createRequestScopedResolver,
+  type QueryFailure,
+} from '@876/core/db'
+import * as Sentry from '@sentry/nextjs'
 
 import { generateId, ID_PREFIXES, type EntityType } from '@/lib/id'
 
@@ -54,6 +60,36 @@ export type {
   TaxRate,
 } from './generated/prisma/client'
 
+/**
+ * Reports a database failure with the consequence spelled out, so a hung or
+ * refused query is attributable in Sentry instead of arriving as a bare
+ * Cloudflare 1101 with no application error attached.
+ */
+function reportDbFailure(
+  error: unknown,
+  failure: Partial<QueryFailure> & { stage: 'pool' | 'query' }
+): void {
+  Sentry.captureException(error, {
+    level: 'error',
+    tags: {
+      category: 'db',
+      db_stage: failure.stage,
+      db_failure: failure.crossRequestIo
+        ? 'cross_request_io'
+        : failure.timedOut
+          ? 'timeout'
+          : 'error',
+    },
+    extra: {
+      model: failure.model ?? null,
+      operation: failure.operation ?? null,
+      consequence: failure.crossRequestIo
+        ? 'A Neon pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
+        : 'The request fails instead of rendering.',
+    },
+  })
+}
+
 function createPrisma() {
   const rawConnectionString = process.env.BILLING_DATABASE_URL
   if (!rawConnectionString) {
@@ -66,24 +102,41 @@ function createPrisma() {
     /([?&]sslmode=)(require|prefer|verify-ca)\b/,
     '$1verify-full'
   )
-  const adapter = new PrismaNeon({ connectionString })
+  const adapter = new PrismaNeon(
+    { connectionString },
+    {
+      // Neon surfaces connection-level failures on the pool rather than
+      // rejecting the in-flight query. Unhandled, that is exactly how a broken
+      // connection becomes a Worker that hangs with nothing reported.
+      onPoolError: (error) => reportDbFailure(error, { stage: 'pool' }),
+    }
+  )
 
-  return new PrismaClient({ adapter }).$extends({
-    query: {
-      $allModels: {
-        async $allOperations({ model, operation, args, query }) {
-          assertLegacyBillingWriteAllowed(operation)
-          if (operation === 'create') {
-            const data = (args as { data: Record<string, unknown> }).data
-            if (model in ID_PREFIXES && !data.id) {
-              data.id = generateId(model as EntityType)
+  return new PrismaClient({ adapter })
+    .$extends({
+      query: {
+        $allModels: {
+          async $allOperations({ model, operation, args, query }) {
+            assertLegacyBillingWriteAllowed(operation)
+            if (operation === 'create') {
+              const data = (args as { data: Record<string, unknown> }).data
+              if (model in ID_PREFIXES && !data.id) {
+                data.id = generateId(model as EntityType)
+              }
             }
-          }
-          return query(args)
+            return query(args)
+          },
         },
       },
-    },
-  })
+    })
+    .$extends({
+      query: {
+        $allOperations: createQueryGuard({
+          onFailure: (error, failure) =>
+            reportDbFailure(error, { ...failure, stage: 'query' }),
+        }),
+      },
+    })
 }
 
 type Prisma = ReturnType<typeof createPrisma>
@@ -99,24 +152,31 @@ const globalForPrisma = globalThis as unknown as {
   prismaClientConstructor?: typeof PrismaClient
 }
 
-let client: Prisma | undefined
-
-function resolvePrisma(): Prisma {
-  if (client) return client
-
-  client =
-    globalForPrisma.prisma &&
+const resolvePrisma = createRequestScopedResolver<Prisma>({
+  create: createPrisma,
+  adoptProcessClient: () =>
     globalForPrisma.prismaClientConstructor === PrismaClient
       ? globalForPrisma.prisma
-      : createPrisma()
-
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prisma = client
-    globalForPrisma.prismaClientConstructor = PrismaClient
-  }
-
-  return client
-}
+      : undefined,
+  storeProcessClient: (client) => {
+    if (process.env.NODE_ENV !== 'production') {
+      globalForPrisma.prisma = client
+      globalForPrisma.prismaClientConstructor = PrismaClient
+    }
+  },
+  onMissingScope: () =>
+    Sentry.captureMessage(
+      'Billing DB: no Cloudflare request scope on workerd',
+      {
+        level: 'error',
+        tags: { category: 'db', db_failure: 'missing_request_scope' },
+        extra: {
+          consequence:
+            "OpenNext's request-context symbol did not resolve, so per-request client scoping is off. Queries fall back to a throwaway client per access.",
+        },
+      }
+    ),
+})
 
 /**
  * Only `@/lib/service` may query Billing's local database directly.
@@ -125,6 +185,11 @@ function resolvePrisma(): Prisma {
  * imports every route module to collect page data, so eager construction made
  * the connection string a build-time requirement — and the Cloudflare build
  * environment has no `BILLING_DATABASE_URL`, only the Worker runtime does.
+ *
+ * On Cloudflare Workers the client is also scoped to the in-flight request:
+ * the Neon pool's socket belongs to the request that opened it, and reusing it
+ * from the next request on the same isolate hangs the Worker. See
+ * `@876/core/db`.
  */
 export const prisma = new Proxy({} as Prisma, {
   get(_target, property) {
