@@ -126,6 +126,47 @@ class FileRepository:
             stmt = stmt.with_for_update(skip_locked=True)
         return list((await self.db.scalars(stmt)).all())
 
+    async def list_for_admin(
+        self,
+        *,
+        owner_type: str | None = None,
+        owner_id: str | None = None,
+        created_by: str | None = None,
+        source_app_id: str | None = None,
+        purpose: str | None = None,
+        category: str | None = None,
+        status: str | None = None,
+        quota_org_id: str | None = None,
+        include_deleted: bool = False,
+        limit: int = 25,
+        starting_after: str | None = None,
+    ) -> list[File]:
+        """Files matching an administrator's filters, newest first.
+
+        Deleted rows are excluded unless asked for, so a Console list cannot
+        show a tombstone by accident -- `.claude/rules/deletions.md` requires an
+        explicit opt-in.
+        """
+        statement = select(File)
+        if not include_deleted:
+            statement = statement.where(File.deleted_at.is_(None))
+        for column, value in (
+            (File.owner_type, owner_type),
+            (File.owner_id, owner_id),
+            (File.created_by, created_by),
+            (File.source_app_id, source_app_id),
+            (File.purpose, purpose),
+            (File.category, category),
+            (File.status, status),
+            (File.quota_org_id, quota_org_id),
+        ):
+            if value is not None:
+                statement = statement.where(column == value)
+        if starting_after is not None:
+            statement = statement.where(File.id > starting_after)
+        statement = statement.order_by(File.created_at.desc(), File.id.desc()).limit(limit)
+        return list((await self.db.scalars(statement)).all())
+
     async def mark_purged(self, row: File, *, purged_at: int) -> File:
         row.purged_at = purged_at
         row.updated_at = purged_at
