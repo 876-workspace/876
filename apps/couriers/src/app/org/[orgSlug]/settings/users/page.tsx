@@ -78,6 +78,7 @@ export default async function UsersSettingsPage({
       userId: member.userId,
       name: fullName || identity?.email || member.userId,
       email: identity?.email ?? null,
+      phone: identity?.phone_number ?? null,
       avatar: identity?.avatar ?? null,
       roleId: member.roleId,
       roleName: member.roleName,

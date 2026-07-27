@@ -20,6 +20,7 @@ export type PlatformUser = {
   first_name: string | null
   last_name: string | null
   avatar: string | null
+  phone_number?: string | null
   role: string | null
   permissions: string[] | null
   status: string | null

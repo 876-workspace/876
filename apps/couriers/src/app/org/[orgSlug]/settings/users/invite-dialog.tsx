@@ -90,7 +90,11 @@ export function InviteDialog({ open, onOpenChange, orgSlug, roles }: Props) {
               required
             >
               <SelectTrigger id="invite-role" className="w-full">
-                <SelectValue placeholder="Select role" />
+                <SelectValue placeholder="Select role">
+                  {(val) =>
+                    roles.find((role) => role.id === val)?.name ?? 'Select role'
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role) => (

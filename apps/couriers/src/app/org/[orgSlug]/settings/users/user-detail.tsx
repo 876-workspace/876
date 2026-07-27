@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@876/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
-import { Activity, TriangleAlertIcon, XIcon } from '@876/ui/icons'
+import { Activity, Mail, Phone, TriangleAlertIcon, XIcon } from '@876/ui/icons'
 import {
   Select,
   SelectContent,
@@ -30,7 +30,6 @@ import { client } from '@/lib/client'
 import type { TeamMemberRow, TeamRoleOption } from '@/types/team'
 
 import { memberInitials } from './member-initials'
-import { UserPermissionsSummary } from './user-permissions-summary'
 
 /** In-panel tab chrome matching RouteTabs line look. */
 const detailTabTriggerClass =
@@ -82,7 +81,6 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
     })
   }
 
-  const role = roles.find((candidate) => candidate.id === row.roleId)
   const isActive = row.status === 'active'
 
   return (
@@ -102,9 +100,20 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
               {isActive ? 'Active' : 'Inactive'}
             </Badge>
           </div>
-          <p className="text-muted-foreground mt-0.5 truncate text-sm">
-            {row.email ?? 'No email available'}
-          </p>
+          <div className="text-muted-foreground mt-1 space-y-0.5 text-xs sm:text-sm">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <Mail className="size-3.5 shrink-0" />
+              <span className="truncate">
+                {row.email ?? 'No email available'}
+              </span>
+            </div>
+            {row.phone ? (
+              <div className="flex min-w-0 items-center gap-1.5">
+                <Phone className="size-3.5 shrink-0" />
+                <span className="truncate">{row.phone}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <Button
@@ -126,10 +135,6 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
               Overview
               <TabUnderline />
             </TabsTrigger>
-            <TabsTrigger value="permissions" className={detailTabTriggerClass}>
-              Permissions
-              <TabUnderline />
-            </TabsTrigger>
             <TabsTrigger value="activity" className={detailTabTriggerClass}>
               Activity
               <TabUnderline />
@@ -147,6 +152,22 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
 
           <div className="space-y-4">
             <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
+              <span className="text-muted-foreground text-sm">Email</span>
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Mail className="text-muted-foreground size-4 shrink-0" />
+                <span>{row.email ?? 'No email available'}</span>
+              </div>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
+              <span className="text-muted-foreground text-sm">Phone</span>
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Phone className="text-muted-foreground size-4 shrink-0" />
+                <span>{row.phone ?? 'No phone available'}</span>
+              </div>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
               <span className="text-muted-foreground text-sm">Role</span>
               <Select
                 value={row.roleId}
@@ -154,7 +175,11 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
                 onValueChange={(value) => value && update({ roleId: value })}
               >
                 <SelectTrigger className="w-full max-w-xs">
-                  <SelectValue />
+                  <SelectValue>
+                    {(val) =>
+                      roles.find((option) => option.id === val)?.name ?? val
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {roles.map((option) => (
@@ -196,10 +221,6 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
               Remove
             </Button>
           </div>
-        </TabsContent>
-
-        <TabsContent value="permissions" className="mt-0 p-5">
-          <UserPermissionsSummary role={role} />
         </TabsContent>
 
         <TabsContent value="activity" className="mt-0 p-5">

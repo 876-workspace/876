@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { Mail } from '@876/ui/icons'
 
 import type { TeamMemberRow, TeamRoleOption } from '@/types/team'
 
@@ -104,8 +105,9 @@ function UserCell({ row }: { row: TeamMemberRow }) {
       </Avatar>
       <div className="min-w-0">
         <div className="truncate font-medium">{row.name}</div>
-        <div className="text-muted-foreground truncate text-xs">
-          {row.email ?? row.userId}
+        <div className="text-muted-foreground flex items-center gap-1 truncate text-xs">
+          <Mail className="size-3 shrink-0" />
+          <span className="truncate">{row.email ?? row.userId}</span>
         </div>
       </div>
     </div>

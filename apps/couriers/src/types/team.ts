@@ -56,6 +56,7 @@ export type TeamMemberRow = {
   userId: string
   name: string
   email: string | null
+  phone?: string | null
   avatar: string | null
   roleId: string
   roleName: string
