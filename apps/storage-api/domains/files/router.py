@@ -13,6 +13,7 @@ from db.session import get_db
 from domains.files import docs
 from domains.files.schemas import FileDeleteResponse, FileResponse, ReadUrlRequest, ReadUrlResponse
 from domains.files.serialization import public_asset_url, serialize_file
+from domains.uploads.quota import release_file_usage
 from providers.base import CreateReadUrlInput
 from providers.dependencies import StorageProviderDep
 
@@ -55,6 +56,12 @@ async def delete_file(
     )
     now = int(time.time())
     deletion_mode = request.app.state.settings.deletion_mode
+
+    # Only a ready file was ever counted, and the release has to happen before
+    # a hard delete removes the row the byte count is read from.
+    if row.status == "ready":
+        await release_file_usage(db, file_row=row, context=context, now=now)
+
     await repository.delete(
         row,
         deletion_mode=deletion_mode,
