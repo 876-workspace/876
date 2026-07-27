@@ -24,3 +24,10 @@ RETRIEVE_FILE_DESCRIPTION = "Returns active file metadata. Soft-deleted files ar
 RETRIEVE_FILE_RESPONSES: dict[int | str, dict[str, Any]] = {
     status.HTTP_404_NOT_FOUND: {"model": ErrorEnvelope, "description": "File not found."},
 }
+
+LIST_FILES_SUMMARY = "List files for administration"
+LIST_FILES_DESCRIPTION = (
+    "Returns files filtered by owner, uploader, source app, purpose, category, or status. "
+    "Soft-deleted rows are excluded unless include_deleted is set."
+)
+LIST_FILES_RESPONSES: dict[int | str, dict[str, Any]] = {}
