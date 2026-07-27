@@ -5,7 +5,10 @@ from db.models.base import Base
 
 
 class AuditEvent(Base):
-    __tablename__ = "audit_events"
+    # Prefixed because Storage shares a database server with the core identity
+    # API in development, and core already owns an `audit_events` table with an
+    # entirely different shape. An unprefixed name silently resolves to theirs.
+    __tablename__ = "storage_audit_events"
     __table_args__ = (
         Index("ix_storage_audit_events_action_created_at", "action", "created_at"),
         Index("ix_storage_audit_events_created_at", "created_at"),
