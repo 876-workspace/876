@@ -513,6 +513,31 @@ class UsageRepository:
             for user_id in sorted(user_ids)
         ]
 
+    async def list_stale_subjects(
+        self,
+        *,
+        limit: int,
+    ) -> list[QuotaSubject]:
+        """Subjects whose counters were recomputed least recently.
+
+        Counters are a cache maintained by increments and decrements, so they
+        can drift. Recomputing the oldest first means every subject is verified
+        on a rotation rather than only the ones someone thought to check.
+        """
+        rows = (
+            await self.db.execute(
+                select(StorageUsage.subject_type, StorageUsage.subject_id)
+                .order_by(
+                    StorageUsage.recomputed_at.is_not(None),
+                    StorageUsage.recomputed_at,
+                    StorageUsage.subject_type,
+                    StorageUsage.subject_id,
+                )
+                .limit(limit)
+            )
+        ).all()
+        return [(subject_type, subject_id) for subject_type, subject_id in rows]
+
     async def _refresh(self, rows: Sequence[StorageUsage]) -> None:
         for row in rows:
             await self.db.refresh(row)

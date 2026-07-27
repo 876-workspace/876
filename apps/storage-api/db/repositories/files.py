@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import File
@@ -131,3 +131,22 @@ class FileRepository:
         row.updated_at = purged_at
         await self.db.flush()
         return row
+
+    async def claim_quota_release(self, row: File, *, released_at: int) -> bool:
+        """Claim the right to return this file's bytes to its quota subjects.
+
+        Decrementing twice would hand the owner free storage, so the claim is a
+        conditional UPDATE and only the caller that wins it may decrement.
+        """
+        claimed_id = await self.db.scalar(
+            update(File)
+            .where(File.id == row.id)
+            .where(File.quota_released_at.is_(None))
+            .values(quota_released_at=released_at)
+            .returning(File.id)
+        )
+        if claimed_id is None:
+            return False
+
+        await self.db.refresh(row)
+        return True
