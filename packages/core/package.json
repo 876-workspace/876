@@ -47,6 +47,10 @@
       "types": "./src/client/index.ts",
       "default": "./src/client/index.ts"
     },
+    "./db": {
+      "types": "./src/db/worker-client.ts",
+      "default": "./src/db/worker-client.ts"
+    },
     "./platform": {
       "types": "./src/platform/index.ts",
       "default": "./src/platform/index.ts"
