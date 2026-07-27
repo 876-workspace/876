@@ -34,7 +34,13 @@ const runtimeCaching: RuntimeCaching[] = [
     }),
   },
   {
-    matcher: () => true,
+    // Same-origin only. A catch-all routes cross-origin loads — R2 logo
+    // images, Sentry, any CDN — through the worker too, and NetworkOnly
+    // turns a transient fetch failure into a hard `no-response` error. The
+    // offline fallback only covers documents, so an image fails outright and
+    // renders as a broken-image icon that survives reloads. Unmatched
+    // requests skip the worker and let the browser fetch them normally.
+    matcher: ({ sameOrigin }) => sameOrigin,
     method: 'GET',
     handler: new NetworkOnly(),
   },
