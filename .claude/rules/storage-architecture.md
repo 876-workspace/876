@@ -233,4 +233,163 @@ tree rather than assuming any of it already exists.
 
 Not built, and not to be built without an explicit decision: Drive explorer,
 folders, tags, versions beyond replacement, sharing links, OCR, malware
-scanning, multipart uploads, quotas, and the UploadThing migration.
+scanning, multipart uploads, and the UploadThing migration.
+
+## Quotas and attribution
+
+Read this before adding any upload path, delete path, or usage-display feature.
+
+### Fixed vocabulary
+
+| Term              | Meaning                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Quota subject** | The entity a limit applies to: an organization, or a user.                                                             |
+| **Quota**         | The enforced limit for one subject (`limit_bytes`).                                                                    |
+| **Usage**         | `bytes_used` (verified `ready` files) + `bytes_reserved` (open upload sessions). Both columns live in `storage_usage`. |
+| **Pool**          | An organization's `limit_bytes`; every file in the org draws from it.                                                  |
+| **Member cap**    | An optional per-user `limit_bytes` _within_ an org. Additional constraint, never a replacement for the pool.           |
+| **Owner**         | The quota-bearing entity of a file (`storage_files.owner_type` / `owner_id`). **Usage counts against the owner.**      |
+| **Uploader**      | The user who performed the upload (`storage_files.created_by`). **Recorded for visibility only — never billed.**       |
+
+Never call a member cap a "pool". Never call `created_by` a quota. Never
+present "uploaded by" figures as if they were quota consumption — `created_by`
+is attribution; usage is ownership.
+
+### Owner vs uploader
+
+An org logo has `owner_type='organization'`, `owner_id=<org>`, and
+`created_by=<uploader>`. Its bytes hit the **org pool**; the uploader's member
+cap is unaffected. Console can still display who uploaded it.
+
+A user's own file (`owner_type='user'`, `owner_id=<user>`, `quota_org_id=<org>`)
+counts against **both** the member cap (if set) and the org pool. The smaller
+limit wins.
+
+### Admission rule
+
+An upload is admitted only when **every applicable subject has headroom**:
+
+```
+subjects(file) =
+    [(owner_type, owner_id)]
+  + [('organization', quota_org_id)]  if quota_org_id is set and owner_type != 'organization'
+
+admitted  ⟺  ∀ s ∈ subjects:  bytes_used(s) + bytes_reserved(s) + declared_size
+                               ≤ limit_bytes(s)        (null limit_bytes = unlimited)
+```
+
+Both platform models use the same two dials:
+
+| Model           | org `limit_bytes` | org `default_user_limit_bytes` |
+| --------------- | ----------------- | ------------------------------ |
+| Pooled only     | e.g. 5 GiB        | `NULL`                         |
+| Per-user quotas | org pool          | per-user cap                   |
+
+### Reservation protocol
+
+**On `POST /v1/uploads`, inside one transaction, before signing anything:**
+
+1. Resolve applicable subjects.
+2. `INSERT … ON CONFLICT DO NOTHING` + `SELECT … FOR UPDATE` on each subject's
+   `storage_usage` row, ordered by `(subject_type, subject_id)` to prevent
+   deadlocks.
+3. Resolve each subject's quota; if none exists, create one with
+   `source='default'` (see below).
+4. Enforce `min(route.max_size_bytes, quota.max_file_bytes)` as the per-file
+   ceiling → 413 on excess.
+5. If any subject fails the admission inequality → **no file row, no session
+   row, no signed URL** → 409 `storage/quota-exceeded`.
+6. Otherwise `bytes_reserved += declared_size` for every subject, then create
+   the file + session and sign the URL.
+
+**A read-without-lock on the counter is wrong.** Two concurrent admissions must
+serialize on the `FOR UPDATE`.
+
+**On verified completion:**
+
+```
+bytes_reserved -= session.declared_size_bytes
+bytes_used     += head.content_length          # verified size, not declared
+files_count    += 1
+session.reservation_released_at = now()
+```
+
+**On every terminal failure** (object missing, verification failed, expired,
+provider error):
+
+```
+bytes_reserved -= session.declared_size_bytes
+session.reservation_released_at = now()
+```
+
+**Exactly-once guard.** Every release path must execute:
+
+```sql
+UPDATE storage_upload_sessions
+   SET reservation_released_at = :now
+ WHERE id = :id AND reservation_released_at IS NULL
+```
+
+and decrement only when that `UPDATE` affected a row. A double release silently
+grants free storage.
+
+**On expiry.** The maintenance sweep releases sessions where `expires_at < now`,
+`status IN ('created','failed','expired')`, and `reservation_released_at IS
+NULL`.
+
+**Never let a counter go negative.** Clamp in SQL
+(`GREATEST(bytes_used - :n, 0)`) and log `storage.usage.underflow` at warning
+when the clamp fires.
+
+### Fail to default on a missing quota row
+
+If Storage has no quota row for a subject: **create one with `source='default'`
+and `limit_bytes = settings.default_org_limit_bytes`**, then enforce normally.
+Log `storage.quota.missing_entitlement` at warning.
+
+This is neither fail-open nor fail-closed. Failing closed blocks a paying
+customer because of an infrastructure lag; failing open makes quotas
+unenforceable. The platform default enforces a real limit and makes the gap
+visible in logs.
+
+For `owner_type='platform'`, `limit_bytes` is `NULL` (unlimited).
+
+### Delete releases quota immediately
+
+A soft delete (and a hard delete) must:
+
+```
+bytes_used  -= size_bytes    (guarded by quota_released_at IS NULL)
+files_count -= 1
+storage_files.quota_released_at = now()
+```
+
+Use the same `WHERE quota_released_at IS NULL` guard as the reservation guard.
+The bytes are reclaimed from R2 asynchronously by the existing sweep; the quota
+is freed the moment the delete is recorded so the user sees the space back
+immediately.
+
+### Do not (quotas)
+
+- Do not read the usage counter without holding `SELECT … FOR UPDATE` on the
+  row — a racy read followed by a conditional insert is not admission control.
+- Do not let a client supply `limit_bytes`, `quota_org_id` for an org-owned
+  file, `source`, or `entitlement_version`.
+- Do not write quota overrides directly to the Storage database — overrides live
+  in the identity API (`organization_storage_settings`) and are delivered via
+  the outbox. A direct write will be clobbered on the next delivery.
+- Do not display `created_by` aggregates as quota consumption — they are
+  attribution only.
+- Do not present `bytes_reserved` alone as \"used\" — effective usage is
+  `bytes_used + bytes_reserved`.
+- Do not let a counter go negative; clamp and log `storage.usage.underflow`.
+- Do not skip the `quota_released_at` guard on delete — a double decrement is
+  free storage.
+
+### Entitlement delivery
+
+Overrides and plan values live in `apps/api` and are delivered to Storage
+through the `storage_entitlement_outbox` and its asyncio worker. Storage is a
+**pure follower with a single writer** — the outbox. See
+`.claude/rules/platform-services.md` for the key tiers and hardening. See
+`docs/storage-quotas.md` for the operational runbook.
