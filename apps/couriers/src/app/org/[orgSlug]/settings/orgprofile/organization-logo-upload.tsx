@@ -140,7 +140,7 @@ export function OrganizationLogoUpload({
   return (
     <div>
       <div
-        className="border-input flex min-h-24 items-center gap-4 rounded-md border border-dashed p-3"
+        className="flex items-center gap-4"
         aria-disabled={disabled}
         onDragOver={(event) => {
           event.preventDefault()
