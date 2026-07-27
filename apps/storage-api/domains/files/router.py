@@ -1,18 +1,20 @@
 import time
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.audit import record_audit_event
 from core.errors import AppHTTPException
 from core.observability import StorageOperationContext, log_storage_event, observe_provider_call
+from core.responses import ListObject
 from db.repositories.files import FileRepository
 from db.repositories.upload_sessions import UploadSessionRepository
 from db.session import get_db
 from domains.files import docs
 from domains.files.schemas import FileDeleteResponse, FileResponse, ReadUrlRequest, ReadUrlResponse
 from domains.files.serialization import public_asset_url, serialize_file
+from domains.uploads.quota import release_file_usage
 from providers.base import CreateReadUrlInput
 from providers.dependencies import StorageProviderDep
 
@@ -55,6 +57,12 @@ async def delete_file(
     )
     now = int(time.time())
     deletion_mode = request.app.state.settings.deletion_mode
+
+    # Only a ready file was ever counted, and the release has to happen before
+    # a hard delete removes the row the byte count is read from.
+    if row.status == "ready":
+        await release_file_usage(db, file_row=row, context=context, now=now)
+
     await repository.delete(
         row,
         deletion_mode=deletion_mode,
@@ -137,3 +145,50 @@ async def retrieve_file(
     if row is None:
         raise _not_found()
     return serialize_file(row, request.app.state.settings)
+
+
+@router.get(
+    "",
+    response_model=ListObject[FileResponse],
+    status_code=status.HTTP_200_OK,
+    summary=docs.LIST_FILES_SUMMARY,
+    description=docs.LIST_FILES_DESCRIPTION,
+    responses=docs.LIST_FILES_RESPONSES,
+)
+async def list_files(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    owner_type: Annotated[Literal["organization", "user", "platform"] | None, Query()] = None,
+    owner_id: Annotated[str | None, Query()] = None,
+    created_by: Annotated[str | None, Query()] = None,
+    source_app_id: Annotated[str | None, Query()] = None,
+    purpose: Annotated[str | None, Query()] = None,
+    category: Annotated[Literal["library", "attachment", "system"] | None, Query()] = None,
+    file_status: Annotated[
+        Literal["pending", "uploaded", "ready", "failed", "deleted"] | None, Query(alias="status")
+    ] = None,
+    quota_org_id: Annotated[str | None, Query()] = None,
+    include_deleted: Annotated[bool, Query()] = False,
+    limit: Annotated[int, Query(ge=1, le=100)] = 25,
+    starting_after: Annotated[str | None, Query()] = None,
+) -> ListObject[FileResponse]:
+    rows = await FileRepository(db).list_for_admin(
+        owner_type=owner_type,
+        owner_id=owner_id,
+        created_by=created_by,
+        source_app_id=source_app_id,
+        purpose=purpose,
+        category=category,
+        status=file_status,
+        quota_org_id=quota_org_id,
+        include_deleted=include_deleted,
+        limit=limit + 1,
+        starting_after=starting_after,
+    )
+    has_more = len(rows) > limit
+    settings = request.app.state.settings
+    return ListObject[FileResponse](
+        data=[serialize_file(row, settings) for row in rows[:limit]],
+        has_more=has_more,
+        url="/v1/files",
+    )

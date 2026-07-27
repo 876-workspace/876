@@ -199,6 +199,11 @@ def test_purge_writes_audit_and_two_consecutive_sweeps_are_idempotent(
         "reclaimed": 1,
         "soft_deleted": 1,
         "abandoned": 0,
+        "reservations_released": 0,
+        "reservation_bytes_released": 0,
+        "usage_subjects_checked": 1,
+        "usage_subjects_repaired": 0,
+        "usage_drift_bytes": 0,
     }
     assert second.status_code == 200
     assert second.json() == {
@@ -206,6 +211,11 @@ def test_purge_writes_audit_and_two_consecutive_sweeps_are_idempotent(
         "reclaimed": 0,
         "soft_deleted": 0,
         "abandoned": 0,
+        "reservations_released": 0,
+        "reservation_bytes_released": 0,
+        "usage_subjects_checked": 1,
+        "usage_subjects_repaired": 0,
+        "usage_drift_bytes": 0,
     }
     assert storage_harness.provider.delete_calls == [DeleteObjectInput(bucket="assets-test", object_key=OBJECT_KEY)]
     assert output.count("storage.object_reclaimed") == 1

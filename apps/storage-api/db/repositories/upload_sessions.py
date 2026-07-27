@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import UploadSession
@@ -71,3 +71,50 @@ class UploadSessionRepository:
         row.completed_at = completed_at
         await self.db.flush()
         return row
+
+    async def list_expired_reservations(
+        self,
+        *,
+        before: int,
+        limit: int = 100,
+        lock: bool = False,
+    ) -> list[UploadSession]:
+        """Sessions past their TTL that still hold reserved bytes.
+
+        A signed upload the browser never completed holds its reservation until
+        something releases it. Nothing else will: the completion endpoint is the
+        only other release path and it is never called for these.
+        """
+        stmt = (
+            select(UploadSession)
+            .where(UploadSession.expires_at < before)
+            .where(UploadSession.reservation_released_at.is_(None))
+            .where(UploadSession.status != "completed")
+            .order_by(UploadSession.expires_at)
+            .limit(limit)
+        )
+        if lock:
+            stmt = stmt.with_for_update(skip_locked=True)
+        return list((await self.db.scalars(stmt)).all())
+
+    async def claim_reservation_release(
+        self,
+        row: UploadSession,
+        *,
+        released_at: int,
+    ) -> bool:
+        claimed_id = await self.db.scalar(
+            update(UploadSession)
+            .where(UploadSession.id == row.id)
+            .where(UploadSession.reservation_released_at.is_(None))
+            .values(
+                reservation_released_at=released_at,
+                updated_at=released_at,
+            )
+            .returning(UploadSession.id)
+        )
+        if claimed_id is None:
+            return False
+
+        await self.db.refresh(row)
+        return True
