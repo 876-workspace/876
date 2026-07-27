@@ -10,6 +10,7 @@ from core.config import Settings
 from core.errors import AppHTTPException, quota_exceeded, quota_suspended
 from core.observability import StorageOperationContext, log_storage_event
 from db.models import File, StorageQuota, UploadSession
+from db.repositories.files import FileRepository
 from db.repositories.quotas import QuotaRepository
 from db.repositories.upload_sessions import UploadSessionRepository
 from db.repositories.usage import QuotaSubject, UsageRepository
@@ -192,6 +193,80 @@ async def finalize_reservation(
             updated_at=now,
         )
 
+    _log_underflows(
+        context,
+        underflows,
+        released_bytes=upload_session.declared_size_bytes,
+    )
+
+    return True
+
+
+async def release_file_usage(
+    db: AsyncSession,
+    *,
+    file_row: File,
+    context: StorageOperationContext,
+    now: int,
+) -> bool:
+    """Return a stored file's bytes to its quota subjects, at most once.
+
+    Called when a file stops counting -- a delete, soft or hard. The space is
+    freed the moment the delete is recorded rather than when the object is
+    actually reclaimed from R2, because a user who deletes a file expects the
+    room back immediately; the sweep catches up with the bytes later.
+    """
+    claimed = await FileRepository(db).claim_quota_release(file_row, released_at=now)
+    if not claimed:
+        return False
+
+    subjects = quota_subjects(
+        owner_type=file_row.owner_type,
+        owner_id=file_row.owner_id,
+        quota_org_id=file_row.quota_org_id,
+    )
+    usage_repository = UsageRepository(db)
+    usage_rows = await usage_repository.lock_for_update(subjects, updated_at=now)
+    underflows = await usage_repository.release_usage(
+        usage_rows,
+        used_bytes=file_row.size_bytes,
+        files_count=1,
+        updated_at=now,
+    )
+    _log_underflows(context, underflows, released_bytes=file_row.size_bytes)
+
+    return True
+
+
+async def release_expired_reservation(
+    db: AsyncSession,
+    *,
+    upload_session: UploadSession,
+    file_row: File,
+    context: StorageOperationContext,
+    now: int,
+) -> bool:
+    """Release the bytes an abandoned upload session is still holding.
+
+    A signed upload the browser never completed would otherwise hold its
+    reservation forever, permanently shrinking the pool it was drawn from.
+    """
+    return await finalize_reservation(
+        db,
+        upload_session=upload_session,
+        file_row=file_row,
+        context=context,
+        now=now,
+        verified_size_bytes=None,
+    )
+
+
+def _log_underflows(
+    context: StorageOperationContext,
+    underflows: list[QuotaSubject],
+    *,
+    released_bytes: int,
+) -> None:
     for subject_type, subject_id in underflows:
         log_storage_event(
             "storage.usage.underflow",
@@ -200,10 +275,8 @@ async def finalize_reservation(
             level="warning",
             subject_type=subject_type,
             subject_id=subject_id,
-            released_bytes=upload_session.declared_size_bytes,
+            released_bytes=released_bytes,
         )
-
-    return True
 
 
 async def _resolve_quotas(
