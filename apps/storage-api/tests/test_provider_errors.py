@@ -91,7 +91,8 @@ def test_verification_failure_still_marks_failed_if_delete_also_fails(
     assert response.status_code in {422, 502}
     with sqlite3.connect(storage_harness.database_path) as connection:
         statuses = connection.execute(
-            "SELECT status FROM files WHERE id = ? UNION ALL SELECT status FROM upload_sessions WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?"
+            " UNION ALL SELECT status FROM storage_upload_sessions WHERE id = ?",
             ("file_01TESTFILE", "upl_01TESTSESSION"),
         ).fetchall()
     # When delete raises, finally still marks failed then re-raises or returns verification error.

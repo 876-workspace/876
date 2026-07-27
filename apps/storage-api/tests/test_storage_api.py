@@ -141,7 +141,7 @@ def test_open_upload_session_returns_exact_signed_contract(storage_harness: Stor
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "pending"
@@ -149,7 +149,7 @@ def test_open_upload_session_returns_exact_signed_contract(storage_harness: Stor
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM upload_sessions WHERE id = ?",
+            "SELECT status FROM storage_upload_sessions WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         == "created"
@@ -220,7 +220,7 @@ def test_completion_marks_missing_object_failed(storage_harness: StorageHarness)
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "failed"
@@ -228,7 +228,7 @@ def test_completion_marks_missing_object_failed(storage_harness: StorageHarness)
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM upload_sessions WHERE id = ?",
+            "SELECT status FROM storage_upload_sessions WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         == "failed"
@@ -258,7 +258,7 @@ def test_completion_deletes_size_mismatch_and_marks_file_failed(storage_harness:
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "failed"
@@ -291,7 +291,7 @@ def test_expired_session_is_persisted_without_calling_provider(
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM upload_sessions WHERE id = ?",
+            "SELECT status FROM storage_upload_sessions WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         == "expired"
@@ -336,7 +336,7 @@ def test_private_read_url_is_signed_with_requested_expiry(storage_harness: Stora
     assert completed.status_code == 200
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET audience = ?, bucket = ? WHERE id = ?",
+            "UPDATE storage_files SET audience = ?, bucket = ? WHERE id = ?",
             ("private", "files-test", "file_01TESTFILE"),
         )
         connection.commit()
@@ -381,7 +381,7 @@ def test_soft_delete_hides_file_from_retrieve(storage_harness: StorageHarness) -
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "deleted"
@@ -389,7 +389,7 @@ def test_soft_delete_hides_file_from_retrieve(storage_harness: StorageHarness) -
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT deleted_at FROM files WHERE id = ?",
+            "SELECT deleted_at FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == NOW

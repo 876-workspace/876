@@ -125,7 +125,7 @@ def test_read_url_default_expires_in_is_used_for_private_files(
     complete_logo(storage_harness)
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET audience = ?, bucket = ? WHERE id = ?",
+            "UPDATE storage_files SET audience = ?, bucket = ? WHERE id = ?",
             ("organization", "files-test", "file_01TESTFILE"),
         )
         connection.commit()
@@ -147,7 +147,7 @@ def test_app_audience_uses_signed_read_url(storage_harness: StorageHarness) -> N
     complete_logo(storage_harness)
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET audience = ?, bucket = ? WHERE id = ?",
+            "UPDATE storage_files SET audience = ?, bucket = ? WHERE id = ?",
             ("app", "files-test", "file_01TESTFILE"),
         )
         connection.commit()
@@ -182,7 +182,7 @@ def test_soft_delete_does_not_delete_r2_object(storage_harness: StorageHarness) 
     assert storage_harness.provider.delete_calls == []
     assert database_value(
         storage_harness.database_path,
-        "SELECT deleted_at FROM files WHERE id = ?",
+        "SELECT deleted_at FROM storage_files WHERE id = ?",
         ("file_01TESTFILE",),
     ) == NOW
 
@@ -224,7 +224,7 @@ def test_hard_delete_cascades_upload_sessions(
         with sqlite3.connect(database_path) as connection:
             connection.execute("PRAGMA foreign_keys=ON")
             sessions_before = connection.execute(
-                "SELECT COUNT(*) FROM upload_sessions WHERE file_id = ?",
+                "SELECT COUNT(*) FROM storage_upload_sessions WHERE file_id = ?",
                 ("file_01TESTFILE",),
             ).fetchone()[0]
         assert sessions_before == 1
@@ -236,11 +236,11 @@ def test_hard_delete_cascades_upload_sessions(
         with sqlite3.connect(database_path) as connection:
             connection.execute("PRAGMA foreign_keys=ON")
             file_count = connection.execute(
-                "SELECT COUNT(*) FROM files WHERE id = ?",
+                "SELECT COUNT(*) FROM storage_files WHERE id = ?",
                 ("file_01TESTFILE",),
             ).fetchone()[0]
             session_count = connection.execute(
-                "SELECT COUNT(*) FROM upload_sessions WHERE file_id = ?",
+                "SELECT COUNT(*) FROM storage_upload_sessions WHERE file_id = ?",
                 ("file_01TESTFILE",),
             ).fetchone()[0]
         assert file_count == 0

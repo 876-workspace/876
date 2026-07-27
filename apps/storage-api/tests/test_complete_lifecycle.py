@@ -29,7 +29,7 @@ def test_failed_session_cannot_be_completed_after_missing_object(
     assert first.status_code == 409
     assert database_value(
         storage_harness.database_path,
-        "SELECT status FROM upload_sessions WHERE id = ?",
+        "SELECT status FROM storage_upload_sessions WHERE id = ?",
         ("upl_01TESTSESSION",),
     ) == "failed"
 
@@ -45,7 +45,7 @@ def test_failed_session_cannot_be_completed_after_missing_object(
     # If it re-verifies successfully, file becomes ready — document actual behavior.
     session_status = database_value(
         storage_harness.database_path,
-        "SELECT status FROM upload_sessions WHERE id = ?",
+        "SELECT status FROM storage_upload_sessions WHERE id = ?",
         ("upl_01TESTSESSION",),
     )
     assert session_status in {"failed", "completed"}
@@ -70,7 +70,7 @@ def test_expired_session_cannot_complete_even_if_object_exists(
     assert storage_harness.provider.head_calls == []
     assert database_value(
         storage_harness.database_path,
-        "SELECT status FROM files WHERE id = ?",
+        "SELECT status FROM storage_files WHERE id = ?",
         ("file_01TESTFILE",),
     ) == "pending"
 
@@ -82,7 +82,7 @@ def test_complete_with_soft_deleted_file_still_loads_file_row(
     assert open_upload(storage_harness).status_code == 201
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET deleted_at = ?, status = ? WHERE id = ?",
+            "UPDATE storage_files SET deleted_at = ?, status = ? WHERE id = ?",
             (NOW, "deleted", "file_01TESTFILE"),
         )
         connection.commit()
@@ -107,7 +107,7 @@ def test_complete_when_file_row_hard_deleted_returns_file_not_found(
     # Simulate orphan session after file row disappeared (FK off for fixture only).
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute("PRAGMA foreign_keys=OFF")
-        connection.execute("DELETE FROM files WHERE id = ?", ("file_01TESTFILE",))
+        connection.execute("DELETE FROM storage_files WHERE id = ?", ("file_01TESTFILE",))
         connection.commit()
 
     response = storage_harness.client.post(
@@ -141,7 +141,7 @@ def test_verification_rejects_disallowed_content_type_from_head(
     assert storage_harness.provider.delete_calls
     assert database_value(
         storage_harness.database_path,
-        "SELECT status FROM files WHERE id = ?",
+        "SELECT status FROM storage_files WHERE id = ?",
         ("file_01TESTFILE",),
     ) == "failed"
 
@@ -151,7 +151,7 @@ def test_verification_rejects_zero_length_object(storage_harness: StorageHarness
     # Force declared size to match head of 0 via direct DB + object
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE upload_sessions SET declared_size_bytes = 0 WHERE id = ?",
+            "UPDATE storage_upload_sessions SET declared_size_bytes = 0 WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         connection.commit()
@@ -176,7 +176,7 @@ def test_soft_delete_sets_status_deleted_and_tombstone_fields(
 
     with sqlite3.connect(storage_harness.database_path) as connection:
         row = connection.execute(
-            "SELECT status, deleted_at, deleted_by, deletion_reason FROM files WHERE id = ?",
+            "SELECT status, deleted_at, deleted_by, deletion_reason FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
 
@@ -215,7 +215,7 @@ def test_read_url_provider_error_is_surfaced(storage_harness: StorageHarness) ->
     )
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET audience = ?, bucket = ? WHERE id = ?",
+            "UPDATE storage_files SET audience = ?, bucket = ? WHERE id = ?",
             ("private", "files-test", "file_01TESTFILE"),
         )
         connection.commit()
