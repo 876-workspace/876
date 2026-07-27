@@ -67,7 +67,7 @@ def test_head_mismatch_deletes_and_fails(
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "failed"
@@ -75,7 +75,7 @@ def test_head_mismatch_deletes_and_fails(
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM upload_sessions WHERE id = ?",
+            "SELECT status FROM storage_upload_sessions WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         == "failed"

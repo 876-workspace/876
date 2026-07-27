@@ -17,7 +17,7 @@ def test_pending_file_row_matches_route_and_request(storage_harness: StorageHarn
             SELECT id, owner_type, owner_id, source_app_id, purpose, category, audience,
                    provider, bucket, object_key, version_id, original_name, content_type,
                    size_bytes, status, created_by, created_at, updated_at, deleted_at
-            FROM files WHERE id = ?
+            FROM storage_files WHERE id = ?
             """,
             ("file_01TESTFILE",),
         ).fetchone()
@@ -53,7 +53,7 @@ def test_upload_session_row_matches_declaration(storage_harness: StorageHarness)
             """
             SELECT id, file_id, route_key, status, declared_content_type, declared_size_bytes,
                    expires_at, completed_at, created_by, created_at, updated_at
-            FROM upload_sessions WHERE id = ?
+            FROM storage_upload_sessions WHERE id = ?
             """,
             ("upl_01TESTSESSION",),
         ).fetchone()
@@ -83,7 +83,7 @@ def test_jpeg_upload_persists_content_type(storage_harness: StorageHarness) -> N
     )
     with sqlite3.connect(storage_harness.database_path) as connection:
         content_type, name, size = connection.execute(
-            "SELECT content_type, original_name, size_bytes FROM files WHERE id = ?",
+            "SELECT content_type, original_name, size_bytes FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
     assert content_type == "image/jpeg"

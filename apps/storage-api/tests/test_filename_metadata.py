@@ -35,7 +35,7 @@ def test_filename_never_leaks_into_object_key(
 
     with sqlite3.connect(storage_harness.database_path) as connection:
         original_name, object_key = connection.execute(
-            "SELECT original_name, object_key FROM files WHERE id = ?",
+            "SELECT original_name, object_key FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
 

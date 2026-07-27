@@ -74,7 +74,7 @@ def test_client_cannot_choose_category_audience_or_object_key(
 
     with sqlite3.connect(storage_harness.database_path) as connection:
         row = connection.execute(
-            "SELECT category, audience, object_key, purpose, bucket FROM files WHERE id = ?",
+            "SELECT category, audience, object_key, purpose, bucket FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
 
@@ -93,7 +93,7 @@ def test_filename_is_metadata_only_and_not_in_object_key(storage_harness: Storag
 
     with sqlite3.connect(storage_harness.database_path) as connection:
         original_name, object_key = connection.execute(
-            "SELECT original_name, object_key FROM files WHERE id = ?",
+            "SELECT original_name, object_key FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         ).fetchone()
 
@@ -125,7 +125,7 @@ def test_completion_rejects_content_type_mismatch(storage_harness: StorageHarnes
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "failed"
@@ -198,7 +198,7 @@ def test_complete_sets_completed_at_and_ready_status(storage_harness: StorageHar
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT completed_at FROM upload_sessions WHERE id = ?",
+            "SELECT completed_at FROM storage_upload_sessions WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         == NOW
@@ -206,7 +206,7 @@ def test_complete_sets_completed_at_and_ready_status(storage_harness: StorageHar
     assert (
         database_value(
             storage_harness.database_path,
-            "SELECT status FROM files WHERE id = ?",
+            "SELECT status FROM storage_files WHERE id = ?",
             ("file_01TESTFILE",),
         )
         == "ready"

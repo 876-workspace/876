@@ -33,7 +33,7 @@ def test_files_object_key_is_unique() -> None:
 
 def test_upload_sessions_reference_files_with_cascade_delete() -> None:
     fks = list(UploadSession.__table__.foreign_keys)
-    matching = [fk for fk in fks if fk.column.table.name == "files" and fk.parent.name == "file_id"]
+    matching = [fk for fk in fks if fk.column.table.name == "storage_files" and fk.parent.name == "file_id"]
     assert matching
     assert any(fk.ondelete == "CASCADE" for fk in matching)
 
@@ -42,7 +42,7 @@ def test_files_owner_category_index_supports_drive_browse() -> None:
     index_cols = {
         str(index.name): tuple(col.name for col in index.columns) for index in cast(Table, File.__table__).indexes
     }
-    assert index_cols["ix_files_owner_category"] == ("owner_type", "owner_id", "category")
+    assert index_cols["ix_storage_files_owner_category"] == ("owner_type", "owner_id", "category")
     assert "ix_files_owner" not in index_cols
 
 
@@ -105,3 +105,21 @@ def test_audit_table_name_is_prefixed_against_core_collision() -> None:
     audit insert fails at runtime while the migration reports success.
     """
     assert AuditEvent.__tablename__ == "storage_audit_events"
+
+
+def test_namespace_migration_renames_tables_without_dropping_data() -> None:
+    migration = Path("migrations/versions/202607270002_namespace_storage_tables.py").read_text()
+
+    # A create-and-copy would silently strand every existing row.
+    assert "op.create_table" not in migration
+    assert "op.drop_table" not in migration
+    assert "op.rename_table(old, new)" in migration
+    assert '("files", "storage_files")' in migration
+    assert '("upload_sessions", "storage_upload_sessions")' in migration
+
+
+def test_storage_table_names_are_prefixed_against_core_collision() -> None:
+    """Postgres namespaces tables and indexes together, so both need the prefix."""
+    assert File.__tablename__ == "storage_files"
+    assert UploadSession.__tablename__ == "storage_upload_sessions"
+    assert all(str(index.name).startswith("ix_storage_files_") for index in cast(Table, File.__table__).indexes)
