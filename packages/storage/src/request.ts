@@ -9,10 +9,13 @@ import {
   type StorageResult,
 } from './types/common'
 
-/** A single Storage API request. */
+/** Internal options initializing a Storage API request. */
 interface StorageRequestInit {
+  /** HTTP method (`GET`, `POST`, `DELETE`, etc.). */
   method: ClientHttpMethod
+  /** Target API endpoint path relative to the Storage base URL. */
   path: string
+  /** Optional JSON request payload body. */
   body?: unknown
 }
 
@@ -26,7 +29,18 @@ const providerError = {
   message: 'The Storage service could not complete the request.',
 } as const satisfies AppError
 
-/** Sends an authenticated request and validates the Storage response. */
+/**
+ * Sends an authenticated request to the Storage service and validates the response.
+ *
+ * Automatically attaches `x-internal-key` and optional `x-request-id` headers.
+ * Catches network errors and schema validation failures, returning standardized
+ * `AppError` values inside a `StorageResult<T>` envelope instead of throwing.
+ *
+ * @param runtime - Runtime configuration closed over by resource methods.
+ * @param init - Request details (method, path, body).
+ * @param responseSchema - Zod schema used to validate the response payload.
+ * @returns A Promise resolving to a `StorageResult<T>` envelope.
+ */
 export async function storageRequest<T>(
   runtime: StorageRuntime,
   init: StorageRequestInit,
