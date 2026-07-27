@@ -22,7 +22,9 @@ CREATE_UPLOAD_SUMMARY = "Open an upload session"
 CREATE_UPLOAD_DESCRIPTION = "Creates pending file metadata and returns a presigned R2 PUT bound to size and media type."
 CREATE_UPLOAD_RESPONSES: dict[int | str, dict[str, Any]] = {
     status.HTTP_400_BAD_REQUEST: {"model": ErrorEnvelope, "description": "Invalid owner or request."},
+    status.HTTP_403_FORBIDDEN: {"model": ErrorEnvelope, "description": "Storage uploads are suspended."},
     status.HTTP_404_NOT_FOUND: {"model": ErrorEnvelope, "description": "Upload route not found."},
+    status.HTTP_409_CONFLICT: {"model": ErrorEnvelope, "description": "The applicable storage quota is full."},
     status.HTTP_413_CONTENT_TOO_LARGE: {"model": ErrorEnvelope, "description": "File is too large."},
     status.HTTP_415_UNSUPPORTED_MEDIA_TYPE: {"model": ErrorEnvelope, "description": "Media type is not allowed."},
     status.HTTP_502_BAD_GATEWAY: {"model": ErrorEnvelope, "description": "Storage provider failure."},

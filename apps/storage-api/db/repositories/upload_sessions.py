@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import UploadSession
@@ -71,3 +71,25 @@ class UploadSessionRepository:
         row.completed_at = completed_at
         await self.db.flush()
         return row
+
+    async def claim_reservation_release(
+        self,
+        row: UploadSession,
+        *,
+        released_at: int,
+    ) -> bool:
+        claimed_id = await self.db.scalar(
+            update(UploadSession)
+            .where(UploadSession.id == row.id)
+            .where(UploadSession.reservation_released_at.is_(None))
+            .values(
+                reservation_released_at=released_at,
+                updated_at=released_at,
+            )
+            .returning(UploadSession.id)
+        )
+        if claimed_id is None:
+            return False
+
+        await self.db.refresh(row)
+        return True
