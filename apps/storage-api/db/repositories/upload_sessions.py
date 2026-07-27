@@ -72,6 +72,31 @@ class UploadSessionRepository:
         await self.db.flush()
         return row
 
+    async def list_expired_reservations(
+        self,
+        *,
+        before: int,
+        limit: int = 100,
+        lock: bool = False,
+    ) -> list[UploadSession]:
+        """Sessions past their TTL that still hold reserved bytes.
+
+        A signed upload the browser never completed holds its reservation until
+        something releases it. Nothing else will: the completion endpoint is the
+        only other release path and it is never called for these.
+        """
+        stmt = (
+            select(UploadSession)
+            .where(UploadSession.expires_at < before)
+            .where(UploadSession.reservation_released_at.is_(None))
+            .where(UploadSession.status != "completed")
+            .order_by(UploadSession.expires_at)
+            .limit(limit)
+        )
+        if lock:
+            stmt = stmt.with_for_update(skip_locked=True)
+        return list((await self.db.scalars(stmt)).all())
+
     async def claim_reservation_release(
         self,
         row: UploadSession,
