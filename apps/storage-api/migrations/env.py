@@ -15,6 +15,10 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 target_metadata = Base.metadata
 
+# Storage can share a Postgres instance with other 876 services, so its
+# revision pointer must not land in the default `alembic_version` table.
+VERSION_TABLE = "storage_alembic_version"
+
 
 def include_object(
     _object: object,
@@ -41,6 +45,7 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
         include_object=include_object,
+        version_table=VERSION_TABLE,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -52,6 +57,7 @@ def run_sync_migrations(connection: Connection) -> None:
         target_metadata=target_metadata,
         compare_type=True,
         include_object=include_object,
+        version_table=VERSION_TABLE,
     )
     with context.begin_transaction():
         context.run_migrations()
