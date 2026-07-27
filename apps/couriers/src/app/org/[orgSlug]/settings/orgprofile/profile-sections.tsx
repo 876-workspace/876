@@ -73,10 +73,7 @@ function ProfileSection({
   const hasLogo = section.blocks.some((block) => block.kind === 'logo')
 
   return (
-    <section
-      id={`section-${section.id}`}
-      className="scroll-mt-4"
-    >
+    <section id={`section-${section.id}`} className="scroll-mt-4">
       <h2 className="876-section-title mb-3.5">{section.title}</h2>
 
       <div className="876-card flex flex-col gap-6 p-6">
