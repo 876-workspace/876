@@ -23,6 +23,20 @@ from providers.base import (
 
 class R2ObjectStorageProvider(ObjectStorageProvider):
     def __init__(self, settings: Settings) -> None:
+        # boto3 happily signs with empty credentials, so a missing key yields a
+        # presigned URL that every browser PUT rejects with an opaque R2 400.
+        # Fail at construction instead, where the cause is still legible.
+        missing = [
+            name
+            for name, value in (
+                ("R2_ACCESS_KEY_ID", settings.r2_access_key_id),
+                ("R2_SECRET_ACCESS_KEY", settings.r2_secret_access_key),
+            )
+            if not value
+        ]
+        if missing:
+            raise ValueError(f"R2 is not configured; missing: {', '.join(missing)}.")
+
         self._client: Any = boto3.client(
             "s3",
             aws_access_key_id=settings.r2_access_key_id,
