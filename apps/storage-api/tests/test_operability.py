@@ -23,7 +23,7 @@ def _audit_rows(database_path: Path) -> list[tuple[Any, ...]]:
             SELECT actor_id, source_app_id, owner_type, owner_id, file_id,
                    upload_session_id, request_id, action, outcome, error_code,
                    created_at
-              FROM audit_events
+              FROM storage_audit_events
              ORDER BY rowid
             """
         ).fetchall()
