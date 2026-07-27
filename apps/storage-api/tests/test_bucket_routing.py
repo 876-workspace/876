@@ -37,11 +37,11 @@ def test_non_public_audience_would_use_files_bucket_if_routed(
     # Manually mark ready private in files-test bucket
     with sqlite3.connect(storage_harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET status = 'ready', audience = 'private', bucket = ? WHERE id = ?",
+            "UPDATE storage_files SET status = 'ready', audience = 'private', bucket = ? WHERE id = ?",
             ("files-test", "file_01TESTFILE"),
         )
         connection.execute(
-            "UPDATE upload_sessions SET status = 'completed' WHERE id = ?",
+            "UPDATE storage_upload_sessions SET status = 'completed' WHERE id = ?",
             ("upl_01TESTSESSION",),
         )
         connection.commit()

@@ -31,7 +31,7 @@ def _ready_public(harness: StorageHarness) -> None:
 def _set_audience(harness: StorageHarness, audience: str, bucket: str = "files-test") -> None:
     with sqlite3.connect(harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET audience = ?, bucket = ? WHERE id = ?",
+            "UPDATE storage_files SET audience = ?, bucket = ? WHERE id = ?",
             (audience, bucket if audience != "public" else "assets-test", "file_01TESTFILE"),
         )
         connection.commit()
@@ -40,7 +40,7 @@ def _set_audience(harness: StorageHarness, audience: str, bucket: str = "files-t
 def _set_status(harness: StorageHarness, status: str) -> None:
     with sqlite3.connect(harness.database_path) as connection:
         connection.execute(
-            "UPDATE files SET status = ? WHERE id = ?",
+            "UPDATE storage_files SET status = ? WHERE id = ?",
             (status, "file_01TESTFILE"),
         )
         connection.commit()
@@ -90,7 +90,7 @@ def test_non_ready_statuses_404(storage_harness: StorageHarness, status: str) ->
     if status == "deleted":
         with sqlite3.connect(storage_harness.database_path) as connection:
             connection.execute(
-                "UPDATE files SET status = ?, deleted_at = ? WHERE id = ?",
+                "UPDATE storage_files SET status = ?, deleted_at = ? WHERE id = ?",
                 (status, NOW, "file_01TESTFILE"),
             )
             connection.commit()

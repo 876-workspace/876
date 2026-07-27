@@ -10,15 +10,15 @@ if TYPE_CHECKING:
 
 
 class File(Base):
-    __tablename__ = "files"
+    __tablename__ = "storage_files"
     __table_args__ = (
         # Drive browses an owner's files filtered by category, so the browse
         # predicate is indexed alongside the owner. A leftmost prefix of this
         # index still serves owner-only lookups.
-        Index("ix_files_owner_category", "owner_type", "owner_id", "category"),
-        Index("ix_files_source_purpose", "source_app_id", "purpose"),
-        Index("ix_files_status", "status"),
-        Index("ix_files_audience", "audience"),
+        Index("ix_storage_files_owner_category", "owner_type", "owner_id", "category"),
+        Index("ix_storage_files_source_purpose", "source_app_id", "purpose"),
+        Index("ix_storage_files_status", "status"),
+        Index("ix_storage_files_audience", "audience"),
     )
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
