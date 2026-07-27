@@ -29,6 +29,7 @@ class FileRepository:
         created_by: str,
         created_at: int,
         updated_at: int,
+        quota_org_id: str | None = None,
     ) -> File:
         row = File(
             id=id,
@@ -47,6 +48,7 @@ class FileRepository:
             size_bytes=size_bytes,
             status=status,
             created_by=created_by,
+            quota_org_id=quota_org_id,
             created_at=created_at,
             updated_at=updated_at,
         )
