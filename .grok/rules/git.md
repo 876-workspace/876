@@ -205,6 +205,27 @@ prove the merged result is green.
 
 ## Merge Strategies
 
+### Merge commit subjects
+
+GitHub's default merge subject — `Merge pull request #76 from owner/branch` —
+says nothing about what changed. Every merge commit must read as a real commit
+message.
+
+Use the PR title with the PR number appended, and name the merged branch in the
+body:
+
+```bash
+gh pr merge <n> --merge \
+  --subject "feat(storage-api): reject an upload that would exceed a storage quota (#74)" \
+  --body "Merges feat/storage-quota-enforcement."
+```
+
+The trailing `(#74)` keeps GitHub's auto-link to the pull request, so nothing is
+lost by dropping the default wording. This applies to phase merges into an
+integration branch and to the final merge into `main` alike — `git log
+--first-parent main` should read as a list of features, not a list of branch
+names.
+
 - **Merge commit**: When preserving complete history is important.
 - **Squash and merge**: When cleaning up messy commit history in PRs.
 - **Rebase and merge**: When maintaining linear history.
