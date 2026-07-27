@@ -33,19 +33,14 @@ def test_files_object_key_is_unique() -> None:
 
 def test_upload_sessions_reference_files_with_cascade_delete() -> None:
     fks = list(UploadSession.__table__.foreign_keys)
-    matching = [
-        fk
-        for fk in fks
-        if fk.column.table.name == "files" and fk.parent.name == "file_id"
-    ]
+    matching = [fk for fk in fks if fk.column.table.name == "files" and fk.parent.name == "file_id"]
     assert matching
     assert any(fk.ondelete == "CASCADE" for fk in matching)
 
 
 def test_files_owner_category_index_supports_drive_browse() -> None:
     index_cols = {
-        str(index.name): tuple(col.name for col in index.columns)
-        for index in cast(Table, File.__table__).indexes
+        str(index.name): tuple(col.name for col in index.columns) for index in cast(Table, File.__table__).indexes
     }
     assert index_cols["ix_files_owner_category"] == ("owner_type", "owner_id", "category")
     assert "ix_files_owner" not in index_cols
@@ -62,7 +57,7 @@ def test_migration_creates_expected_indexes() -> None:
     ):
         assert index_name in migration
     # Owner-only index was replaced so Drive can filter by category in the same scan.
-    assert "ix_files_owner\"" not in migration
+    assert 'ix_files_owner"' not in migration
     assert "ix_files_owner'" not in migration
 
 
@@ -97,8 +92,16 @@ def test_audit_event_model_has_operational_columns() -> None:
 
 
 def test_audit_migration_is_guarded_and_append_only() -> None:
-    migration = Path("migrations/versions/202607260001_create_storage_audit_events.py").read_text()
+    migration = Path("migrations/versions/202607270001_rename_storage_audit_events.py").read_text()
 
-    assert 'if "audit_events" in sa.inspect(bind).get_table_names()' in migration
-    assert 'op.create_table(\n        "audit_events"' in migration
+    assert "if TABLE in inspector.get_table_names()" in migration
     assert "ForeignKeyConstraint" not in migration
+
+
+def test_audit_table_name_is_prefixed_against_core_collision() -> None:
+    """Storage shares a database server with the core API, which owns `audit_events`.
+
+    An unprefixed name resolves to core's differently-shaped table, so every
+    audit insert fails at runtime while the migration reports success.
+    """
+    assert AuditEvent.__tablename__ == "storage_audit_events"
