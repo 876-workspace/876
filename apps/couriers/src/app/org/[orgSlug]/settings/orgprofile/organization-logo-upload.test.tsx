@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   refresh: vi.fn(),
   request: vi.fn(),
+  putDirectToStorage: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
@@ -16,6 +17,9 @@ vi.mock('next/navigation', () => ({
 }))
 vi.mock('@/lib/client/request', () => ({
   request: mocks.request,
+}))
+vi.mock('@/lib/client/upload', () => ({
+  putDirectToStorage: mocks.putDirectToStorage,
 }))
 
 import { OrganizationLogoUpload } from './organization-logo-upload'
@@ -116,10 +120,11 @@ describe('OrganizationLogoUpload', () => {
         data: uploadSession,
         error: null,
       })
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response(null, { status: 500 }))
-      )
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: false,
+        status: 500,
+        body: '',
+      })
       renderUpload()
 
       const file = new File(['logo'], name, { type })
@@ -184,10 +189,11 @@ describe('OrganizationLogoUpload', () => {
         data: uploadSession,
         error: null,
       })
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response(null, { status: 500 }))
-      )
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: false,
+        status: 500,
+        body: '',
+      })
       const { container } = renderUpload()
 
       fireEvent.change(screen.getByLabelText('Organization logo'), {
@@ -209,9 +215,8 @@ describe('OrganizationLogoUpload', () => {
         data: uploadSession,
         error: null,
       })
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+      mocks.putDirectToStorage.mockRejectedValue(
+        new TypeError('Failed to fetch')
       )
       const { container } = renderUpload()
 
@@ -260,10 +265,11 @@ describe('OrganizationLogoUpload', () => {
         data: uploadSession,
         error: null,
       })
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response(body, { status }))
-      )
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: false,
+        status,
+        body,
+      })
       const { container } = renderUpload()
 
       fireEvent.change(screen.getByLabelText('Organization logo'), {
@@ -277,8 +283,6 @@ describe('OrganizationLogoUpload', () => {
     })
 
     it('keeps the existing logo when start fails', async () => {
-      const r2Fetch = vi.fn()
-      vi.stubGlobal('fetch', r2Fetch)
       mocks.request.mockResolvedValueOnce({
         data: null,
         error: {
@@ -297,7 +301,7 @@ describe('OrganizationLogoUpload', () => {
       ).toBeVisible()
       expect(container.querySelector('img')).toHaveAttribute('src', oldLogoUrl)
       expect(mocks.refresh).not.toHaveBeenCalled()
-      expect(r2Fetch).not.toHaveBeenCalled()
+      expect(mocks.putDirectToStorage).not.toHaveBeenCalled()
       expect(mocks.request).toHaveBeenCalledTimes(1)
     })
 
@@ -312,10 +316,11 @@ describe('OrganizationLogoUpload', () => {
               'The uploaded file could not be verified. Please try again.',
           },
         })
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response(null, { status: 200 }))
-      )
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: '',
+      })
       const { container } = renderUpload()
 
       fireEvent.change(screen.getByLabelText('Organization logo'), {
@@ -345,10 +350,11 @@ describe('OrganizationLogoUpload', () => {
           },
           error: null,
         })
-      const r2Fetch = vi
-        .fn()
-        .mockResolvedValue(new Response(null, { status: 200 }))
-      vi.stubGlobal('fetch', r2Fetch)
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: '',
+      })
       const { container } = renderUpload()
 
       const file = pngFile()
@@ -360,10 +366,12 @@ describe('OrganizationLogoUpload', () => {
           newLogoUrl
         )
       )
-      expect(r2Fetch).toHaveBeenCalledWith(uploadSession.upload_url, {
+      expect(mocks.putDirectToStorage).toHaveBeenCalledWith({
+        url: uploadSession.upload_url,
         method: 'PUT',
         headers: uploadSession.headers,
-        body: file,
+        file,
+        onProgress: expect.any(Function),
       })
       expect(mocks.request).toHaveBeenNthCalledWith(
         2,
@@ -388,10 +396,11 @@ describe('OrganizationLogoUpload', () => {
           })
       )
       // Fail the R2 step so the test can finish cleanly after start resolves
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response(null, { status: 500 }))
-      )
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: false,
+        status: 500,
+        body: '',
+      })
       renderUpload()
 
       fireEvent.change(screen.getByLabelText('Organization logo'), {
@@ -421,10 +430,11 @@ describe('OrganizationLogoUpload', () => {
           },
           error: null,
         })
-      const r2Fetch = vi
-        .fn()
-        .mockResolvedValue(new Response(null, { status: 200 }))
-      vi.stubGlobal('fetch', r2Fetch)
+      mocks.putDirectToStorage.mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: '',
+      })
       const { container } = renderUpload()
 
       const file = pngFile()
@@ -442,7 +452,7 @@ describe('OrganizationLogoUpload', () => {
           newLogoUrl
         )
       )
-      expect(r2Fetch).toHaveBeenCalledTimes(1)
+      expect(mocks.putDirectToStorage).toHaveBeenCalledTimes(1)
       expect(mocks.refresh).toHaveBeenCalledTimes(1)
     })
   })
