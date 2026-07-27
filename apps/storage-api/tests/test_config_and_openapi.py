@@ -24,6 +24,13 @@ def test_is_production_property() -> None:
     assert Settings(environment="development").is_production is False
 
 
+def test_quota_settings_have_safe_platform_defaults() -> None:
+    settings = Settings()
+
+    assert settings.default_org_limit_bytes == 5_368_709_120
+    assert settings.near_limit_percent == 80
+
+
 def test_openapi_documents_upload_and_file_routes(storage_harness: StorageHarness) -> None:
     response = storage_harness.client.get("/openapi.json")
 
