@@ -15,6 +15,7 @@ from db.session import get_db
 from domains.files.schemas import FileResponse
 from domains.files.serialization import serialize_file
 from domains.uploads import docs
+from domains.uploads.quota import admit_upload, finalize_reservation
 from domains.uploads.routes import UPLOAD_ROUTES, UploadRoute
 from domains.uploads.schemas import UploadComplete, UploadCreate, UploadSessionResponse
 from providers.base import CreateUploadUrlInput, DeleteObjectInput, HeadObjectInput
@@ -54,7 +55,13 @@ def _validate_upload(body: UploadCreate) -> UploadRoute:
             "The file exceeds the size allowed for this upload.",
             status.HTTP_413_CONTENT_TOO_LARGE,
         )
-    if not all(OPAQUE_ID_PATTERN.fullmatch(value) for value in (body.owner_id, body.actor_user_id, body.source_app_id)):
+    opaque_ids = (
+        body.owner_id,
+        body.actor_user_id,
+        body.source_app_id,
+        *([body.quota_org_id] if body.quota_org_id is not None else []),
+    )
+    if not all(OPAQUE_ID_PATTERN.fullmatch(value) for value in opaque_ids):
         raise _error(
             "storage/invalid-request",
             "The request contains an invalid opaque identifier.",
@@ -121,6 +128,22 @@ async def create_upload(
     settings = request.app.state.settings
     now = int(time.time())
     expires_at = now + settings.upload_ttl_seconds
+    admission_context = StorageOperationContext(
+        source_app_id=body.source_app_id,
+        actor_id=body.actor_user_id,
+        owner_id=body.owner_id,
+        file_id=None,
+        upload_session_id=None,
+        route_key=route.key,
+    )
+    admission = await admit_upload(
+        db,
+        body=body,
+        route=route,
+        settings=settings,
+        context=admission_context,
+        now=now,
+    )
     file_id = generate_id("file")
     session_id = generate_id("upload_session")
     version_id = generate_id("version")
@@ -150,6 +173,7 @@ async def create_upload(
         created_by=body.actor_user_id,
         created_at=now,
         updated_at=now,
+        quota_org_id=admission.quota_org_id,
     )
     upload_session = await UploadSessionRepository(db).create(
         id=session_id,
@@ -280,6 +304,15 @@ async def complete_upload(
     # it -- flipping status back to ready and handing out a URL while deleted_at
     # stays populated -- so a deleted file is terminal for this session.
     if file_row.deleted_at is not None:
+        await finalize_reservation(
+            db,
+            upload_session=upload_session,
+            file_row=file_row,
+            context=context,
+            now=int(time.time()),
+            verified_size_bytes=None,
+        )
+        await db.commit()
         _log_completion_rejected(
             context,
             error_code="storage/file-not-found",
@@ -293,10 +326,48 @@ async def complete_upload(
 
     if upload_session.status == "completed":
         return serialize_file(file_row, request.app.state.settings)
+    if upload_session.status == "expired":
+        await finalize_reservation(
+            db,
+            upload_session=upload_session,
+            file_row=file_row,
+            context=context,
+            now=int(time.time()),
+            verified_size_bytes=None,
+        )
+        await db.commit()
+        raise _error(
+            "storage/upload-expired",
+            "The upload session has expired.",
+            status.HTTP_410_GONE,
+        )
+    if upload_session.status == "failed":
+        await finalize_reservation(
+            db,
+            upload_session=upload_session,
+            file_row=file_row,
+            context=context,
+            now=int(time.time()),
+            verified_size_bytes=None,
+        )
+        await db.commit()
+        raise _error(
+            "storage/upload-incomplete",
+            "The upload session has already failed.",
+            status.HTTP_409_CONFLICT,
+        )
 
     now = int(time.time())
     if now > upload_session.expires_at:
         await session_repository.mark_status(upload_session, status="expired", updated_at=now)
+        await finalize_reservation(
+            db,
+            upload_session=upload_session,
+            file_row=file_row,
+            context=context,
+            now=now,
+            verified_size_bytes=None,
+        )
         await db.commit()
         _log_completion_rejected(
             context,
@@ -317,6 +388,26 @@ async def complete_upload(
             lambda: provider.head_object(HeadObjectInput(bucket=file_row.bucket, object_key=file_row.object_key)),
         )
     except AppHTTPException:
+        await session_repository.mark_status(upload_session, status="failed", updated_at=now)
+        await file_repository.mark_status(file_row, status="failed", updated_at=now)
+        await finalize_reservation(
+            db,
+            upload_session=upload_session,
+            file_row=file_row,
+            context=context,
+            now=now,
+            verified_size_bytes=None,
+        )
+        await record_audit_event(
+            db,
+            context,
+            owner_type=file_row.owner_type,
+            action="file.verification_failed",
+            outcome="failed",
+            error_code="storage/provider-error",
+            created_at=now,
+        )
+        await db.commit()
         _log_completion_rejected(
             context,
             error_code="storage/provider-error",
@@ -326,6 +417,14 @@ async def complete_upload(
     if not head.exists:
         await session_repository.mark_status(upload_session, status="failed", updated_at=now)
         await file_repository.mark_status(file_row, status="failed", updated_at=now)
+        await finalize_reservation(
+            db,
+            upload_session=upload_session,
+            file_row=file_row,
+            context=context,
+            now=now,
+            verified_size_bytes=None,
+        )
         await record_audit_event(
             db,
             context,
@@ -366,6 +465,14 @@ async def complete_upload(
         finally:
             await session_repository.mark_status(upload_session, status="failed", updated_at=now)
             await file_repository.mark_status(file_row, status="failed", updated_at=now)
+            await finalize_reservation(
+                db,
+                upload_session=upload_session,
+                file_row=file_row,
+                context=context,
+                now=now,
+                verified_size_bytes=None,
+            )
             await record_audit_event(
                 db,
                 context,
@@ -387,12 +494,31 @@ async def complete_upload(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
         )
 
+    if head.content_length is None:
+        raise RuntimeError("Verified upload is missing its content length.")
+
+    reservation_committed = await finalize_reservation(
+        db,
+        upload_session=upload_session,
+        file_row=file_row,
+        context=context,
+        now=now,
+        verified_size_bytes=head.content_length,
+    )
+    if not reservation_committed:
+        raise _error(
+            "storage/upload-incomplete",
+            "The upload reservation has already been released.",
+            status.HTTP_409_CONFLICT,
+        )
+
     await session_repository.mark_status(
         upload_session,
         status="completed",
         updated_at=now,
         completed_at=now,
     )
+    file_row.size_bytes = head.content_length
     await file_repository.mark_status(file_row, status="ready", updated_at=now)
     await record_audit_event(
         db,
