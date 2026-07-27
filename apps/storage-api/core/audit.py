@@ -43,4 +43,8 @@ async def record_audit_event(
             level="error",
             audit_action=action,
             audit_error_type=type(exc).__name__,
+            # The type alone cannot distinguish a missing table from a bad
+            # column, which is the difference between a migration gap and a
+            # model bug. Audit rows carry no secrets, so the message is safe.
+            audit_error_detail=str(exc)[:500],
         )
