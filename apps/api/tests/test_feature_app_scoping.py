@@ -237,3 +237,167 @@ async def test_widget_parent_global_kill_switch_cannot_be_overridden(
     )
 
     assert result == []
+
+
+@pytest.mark.asyncio
+async def test_couriers_widget_disabled_app_scoped_is_withheld(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = SimpleNamespace(id="app_couriers", slug="876-couriers", app_kind="product")
+    platform = SimpleNamespace(
+        id="platform_widgets",
+        slug="platform_widgets",
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        app_id=None,
+        parent_feature_id=None,
+    )
+    platform_notepad = SimpleNamespace(
+        id="platform_widgets_notepad",
+        slug="platform_widgets_notepad",
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        app_id=None,
+        parent_feature_id=platform.id,
+    )
+    couriers = SimpleNamespace(
+        id="couriers_widgets",
+        slug="couriers_widgets",
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        app_id=app.id,
+        parent_feature_id=None,
+    )
+    couriers_notepad = SimpleNamespace(
+        id="couriers_widgets_notepad",
+        slug="couriers_widgets_notepad",
+        enabled=False,
+        default_value=True,
+        tags=["widget"],
+        app_id=app.id,
+        parent_feature_id=couriers.id,
+    )
+
+    class Features:
+        async def list_evaluation_features(self, app_id: str) -> list[Any]:
+            return [platform, platform_notepad, couriers, couriers_notepad]
+
+        async def list_plan_module_feature_ids(self, organization_id: str, app_id: str) -> set[str]:
+            return set()
+
+        async def list_module_feature_ids(self, app_id: str) -> set[str]:
+            return set()
+
+        async def list_org_features(self, organization_id: str) -> list[Any]:
+            return []
+
+        async def list_user_features(self, user_id: str) -> list[Any]:
+            return []
+
+    async def fake_get_app(self: AppRepository, app_slug: str) -> Any:
+        return app
+
+    monkeypatch.setattr(AppRepository, "get_by_slug", fake_get_app)
+    service = FeatureService(cast(Any, object()))
+    service.features = cast(Any, Features())
+
+    # Disabled app-scoped -> couriers_notepad MUST NOT appear in evaluation result
+    disabled_result = await service.evaluate(
+        FeatureEvaluationContext(
+            user_id="usr_couriers",
+            organization_id="org_couriers",
+            app_slug="876-couriers",
+        )
+    )
+    assert disabled_result == [platform, platform_notepad, couriers]
+
+    # Inverse: Enabled app-scoped -> couriers_notepad MUST appear in evaluation result
+    couriers_notepad.enabled = True
+    enabled_result = await service.evaluate(
+        FeatureEvaluationContext(
+            user_id="usr_couriers",
+            organization_id="org_couriers",
+            app_slug="876-couriers",
+        )
+    )
+    assert enabled_result == [platform, platform_notepad, couriers, couriers_notepad]
+
+
+@pytest.mark.asyncio
+async def test_couriers_widget_disabled_kill_switch_cannot_be_overridden_by_org_grant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = SimpleNamespace(id="app_couriers", slug="876-couriers", app_kind="product")
+    platform = SimpleNamespace(
+        id="platform_widgets",
+        slug="platform_widgets",
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        app_id=None,
+        parent_feature_id=None,
+    )
+    platform_notepad = SimpleNamespace(
+        id="platform_widgets_notepad",
+        slug="platform_widgets_notepad",
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        app_id=None,
+        parent_feature_id=platform.id,
+    )
+    couriers = SimpleNamespace(
+        id="couriers_widgets",
+        slug="couriers_widgets",
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        app_id=app.id,
+        parent_feature_id=None,
+    )
+    couriers_notepad = SimpleNamespace(
+        id="couriers_widgets_notepad",
+        slug="couriers_widgets_notepad",
+        enabled=False,
+        default_value=True,
+        tags=["widget"],
+        app_id=app.id,
+        parent_feature_id=couriers.id,
+    )
+
+    class Features:
+        async def list_evaluation_features(self, app_id: str) -> list[Any]:
+            return [platform, platform_notepad, couriers, couriers_notepad]
+
+        async def list_plan_module_feature_ids(self, organization_id: str, app_id: str) -> set[str]:
+            return set()
+
+        async def list_module_feature_ids(self, app_id: str) -> set[str]:
+            return set()
+
+        async def list_org_features(self, organization_id: str) -> list[Any]:
+            return [SimpleNamespace(feature_id=couriers_notepad.id, status="enabled")]
+
+        async def list_user_features(self, user_id: str) -> list[Any]:
+            return []
+
+    async def fake_get_app(self: AppRepository, app_slug: str) -> Any:
+        return app
+
+    monkeypatch.setattr(AppRepository, "get_by_slug", fake_get_app)
+    service = FeatureService(cast(Any, object()))
+    service.features = cast(Any, Features())
+
+    # Org grant enabled status MUST NOT override enabled=False kill switch
+    result = await service.evaluate(
+        FeatureEvaluationContext(
+            user_id="usr_couriers",
+            organization_id="org_couriers",
+            app_slug="876-couriers",
+        )
+    )
+    assert result == [platform, platform_notepad, couriers]
+
