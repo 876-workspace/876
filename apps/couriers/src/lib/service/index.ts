@@ -8,6 +8,8 @@ import { packages } from './packages'
 import { warehouses } from './warehouses'
 import { roles } from './roles'
 import { team } from './team'
+import { modules } from './modules'
+import { preferences } from './preferences'
 
 export const service = {
   branches,
@@ -18,4 +20,6 @@ export const service = {
   warehouses,
   roles,
   team,
+  modules,
+  preferences,
 }
