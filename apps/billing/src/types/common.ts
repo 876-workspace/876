@@ -25,3 +25,11 @@ export const optionalShortTextSchema = z
   .optional()
 
 export const unixTimestampSchema = z.number().int().nonnegative()
+
+/** Badge variants a status may map to. Mirrors `@876/ui/badge`'s variants. */
+export type StatusVariant =
+  | 'secondary'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'destructive'
