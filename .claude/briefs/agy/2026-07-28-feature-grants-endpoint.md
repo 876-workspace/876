@@ -38,13 +38,13 @@ The API exposes overrides only from the principal's side:
 - `GET /features/organizations/{organization_id}/features`
 - `GET /features/users/{user_id}/features`
 
-There is no way to ask "who has an override on *this* flag?". Console's access
+There is no way to ask "who has an override on _this_ flag?". Console's access
 UI therefore does the only thing it can: it lists **every organization and
 every user in the platform**, then checks each one for a grant. That is the
 concrete defect you are removing. It does not scale, and it buries the two or
 three principals that actually carry an override under hundreds that do not.
 
-The new Console UI shows *only* real overrides, with a search box to add one.
+The new Console UI shows _only_ real overrides, with a search box to add one.
 It needs exactly one endpoint. That endpoint is your goal.
 
 ## 3. Shape of the work
@@ -72,7 +72,7 @@ does not live in the router.
 `GET /features/{feature_id}/grants`, `AdminDep`.
 
 **Placement matters and is easy to get wrong.** `router.py` already has
-`GET /features/evaluate` declared *before* `GET /features/{feature_id}` — that
+`GET /features/evaluate` declared _before_ `GET /features/{feature_id}` — that
 ordering is deliberate, because FastAPI matches in declaration order and
 `/features/evaluate` would otherwise be swallowed by `/features/{feature_id}`.
 Your route has a literal suffix so it is not ambiguous, but keep it adjacent to
@@ -141,7 +141,7 @@ project venv: `.venv/bin/python`.
    489 passing before you started; you must not reduce that number.
 2. `.venv/bin/python -m mypy . tests` — `Success: no issues found`.
 3. `.venv/bin/python -m ruff check .` — `All checks passed!`.
-4. **Your tests fail without your fix.** After they pass, *temporarily* revert
+4. **Your tests fail without your fix.** After they pass, _temporarily_ revert
    your `repositories`/`services` change, re-run your new tests, and confirm
    they now **fail**. Restore, re-run, confirm green. **Paste both outputs in
    your report.** A test that passes with the feature removed is not a test —
