@@ -2,13 +2,29 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 
 import { apiError } from '@876/core/api'
 
+export type WidgetHost =
+  | 'console'
+  | 'billing'
+  | 'couriers'
+  | 'enterprise'
+  | '876'
+
+const KNOWN_WIDGET_HOSTS: readonly string[] = [
+  'console',
+  'billing',
+  'couriers',
+  'enterprise',
+  '876',
+]
+
 export type ServiceAuth =
   | {
       actorUserId: string
       isAdmin: boolean
+      sourceHost: WidgetHost | null
       response: null
     }
-  | { actorUserId: null; isAdmin: false; response: Response }
+  | { actorUserId: null; isAdmin: false; sourceHost: null; response: Response }
 
 function matchesKey(presented: string, expected: string) {
   const a = createHash('sha256').update(presented).digest()
@@ -30,6 +46,7 @@ export function requireWidgetsService(
     return {
       actorUserId: null,
       isAdmin: false,
+      sourceHost: null,
       response: apiError('Widgets API is not configured.', { status: 503 }),
     }
 
@@ -38,6 +55,7 @@ export function requireWidgetsService(
     return {
       actorUserId: null,
       isAdmin: false,
+      sourceHost: null,
       response: apiError('Unauthorized.', { status: 401 }),
     }
 
@@ -46,6 +64,7 @@ export function requireWidgetsService(
     return {
       actorUserId: null,
       isAdmin: false,
+      sourceHost: null,
       response: apiError('Missing actor identity.', { status: 400 }),
     }
 
@@ -55,10 +74,17 @@ export function requireWidgetsService(
     return {
       actorUserId: null,
       isAdmin: false,
+      sourceHost: null,
       response: apiError('Widget administrator access is required.', {
         status: 403,
       }),
     }
 
-  return { actorUserId, isAdmin, response: null }
+  const rawHost = request.headers.get('x-876-widget-host')?.trim()
+  const sourceHost =
+    rawHost && KNOWN_WIDGET_HOSTS.includes(rawHost)
+      ? (rawHost as WidgetHost)
+      : null
+
+  return { actorUserId, isAdmin, sourceHost, response: null }
 }

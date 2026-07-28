@@ -1,3 +1,5 @@
+import type { WidgetHost } from '../catalog'
+
 export type WidgetsClientResult<T> =
   | { data: T; error: null }
   | { data: null; error: { code?: string; message: string } }
@@ -6,6 +8,7 @@ export type CreateWidgetsClientOptions = {
   baseUrl?: string
   serviceKey?: string
   fetch?: typeof fetch
+  host?: WidgetHost
 }
 
 export type Actor = {
@@ -19,11 +22,14 @@ export function resolveConfig(options: CreateWidgetsClientOptions) {
     ''
   ).replace(/\/$/, '')
   const serviceKey = options.serviceKey ?? process.env.WIDGETS_SERVICE_KEY ?? ''
+  const host =
+    options.host ?? (process.env.WIDGETS_HOST as WidgetHost | undefined)
 
   return {
     baseUrl,
     serviceKey,
     fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
+    host,
   }
 }
 
@@ -65,6 +71,7 @@ export async function requestJson<T>(
         'x-internal-key': config.serviceKey,
         'x-876-actor-user-id': actor.userId,
         ...(init.role === 'admin' ? { 'x-876-widget-role': 'admin' } : {}),
+        ...(config.host ? { 'x-876-widget-host': config.host } : {}),
       },
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
       cache: 'no-store',

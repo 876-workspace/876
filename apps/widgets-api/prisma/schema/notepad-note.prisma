@@ -11,6 +11,9 @@ model NotepadNote {
   updatedAt       Int     @map("updated_at")
   /// Convex document id from the one-time migration; unique when present.
   legacyConvexId  String? @unique @map("legacy_convex_id")
+  /// Widget host the note was created in (@876/widgets WidgetHost). Null for
+  /// rows written before attribution existed.
+  sourceHost      String? @map("source_host")
 
   collection NotepadCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
 
