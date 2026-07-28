@@ -1,5 +1,7 @@
 import type { WidgetMetadata } from '@876/widgets'
 
+import { WidgetStatCards } from './widget-stat-cards'
+
 const HOST_LABELS = {
   console: 'Console',
   billing: '876 Billing',
@@ -11,22 +13,7 @@ const HOST_LABELS = {
 export function WidgetOverview({ widget }: { widget: WidgetMetadata }) {
   return (
     <div className="max-w-4xl space-y-6">
-      <section>
-        <div className="mb-3">
-          <h2 className="font-semibold">Usage</h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Activity insights will populate here when widget analytics are
-            connected.
-          </p>
-        </div>
-        <div className="876-card overflow-hidden">
-          <dl className="divide-876-surface-border divide-y">
-            <UsageRow label="Active accounts" period="Last 30 days" />
-            <UsageRow label="Widget opens" period="Last 30 days" />
-            <UsageRow label="Content records" period="Current total" />
-          </dl>
-        </div>
-      </section>
+      <WidgetStatCards widget={widget} />
 
       <section>
         <h2 className="mb-3 font-semibold">Definition</h2>
@@ -62,20 +49,6 @@ export function WidgetOverview({ widget }: { widget: WidgetMetadata }) {
           </dl>
         </div>
       </section>
-    </div>
-  )
-}
-
-function UsageRow({ label, period }: { label: string; period: string }) {
-  return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_8rem_12rem]">
-      <dt className="font-medium">{label}</dt>
-      <dd className="text-muted-foreground hidden text-sm sm:block">
-        {period}
-      </dd>
-      <dd className="text-muted-foreground text-right text-sm">
-        Not connected
-      </dd>
     </div>
   )
 }
