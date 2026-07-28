@@ -49,6 +49,7 @@ function createRow(
     pinned: boolean
     createdAt: number
     updatedAt: number
+    sourceHost: string | null
   }> = {}
 ) {
   return {
@@ -61,6 +62,7 @@ function createRow(
     pinned: false,
     createdAt: 1_720_000_000,
     updatedAt: 1_720_000_050,
+    sourceHost: null as string | null,
     ...overrides,
   }
 }
@@ -95,12 +97,13 @@ describe('Notepad notes service', () => {
   })
 
   describe('createNote', () => {
-    it('when title and owner are valid, then persists a trimmed note and returns the resource', async () => {
+    it('when title, owner, and sourceHost are valid, then persists a trimmed note and returns the resource', async () => {
       const row = createRow({
         id: 'wnote_generated_01',
         title: 'Customer call notes',
         createdAt: 1_720_100_000,
         updatedAt: 1_720_100_000,
+        sourceHost: 'couriers',
       })
       prismaRef.current!.notepadNote.create.mockResolvedValue(row)
 
@@ -110,6 +113,7 @@ describe('Notepad notes service', () => {
         body: 'Follow up with the Kingston logistics team',
         color: 'pink',
         pinned: true,
+        sourceHost: 'couriers',
       })
 
       expect(result.error).toBeNull()
@@ -124,6 +128,7 @@ describe('Notepad notes service', () => {
         pinned: false,
         created_at: 1_720_100_000,
         updated_at: 1_720_100_000,
+        source_host: 'couriers',
       })
       expect(prismaRef.current!.notepadNote.create).toHaveBeenCalledTimes(1)
       expect(prismaRef.current!.notepadNote.create).toHaveBeenCalledWith({
@@ -137,6 +142,41 @@ describe('Notepad notes service', () => {
           pinned: true,
           createdAt: 1_720_100_000,
           updatedAt: 1_720_100_000,
+          sourceHost: 'couriers',
+        },
+      })
+    })
+
+    it('when sourceHost is omitted, then persists null for sourceHost', async () => {
+      const row = createRow({
+        id: 'wnote_generated_01',
+        title: 'Defaults',
+        createdAt: 1_720_100_000,
+        updatedAt: 1_720_100_000,
+        sourceHost: null,
+      })
+      prismaRef.current!.notepadNote.create.mockResolvedValue(row)
+
+      const result = await createNote({
+        ownerAccountId: 'user_alejandra',
+        title: 'Defaults',
+        body: '',
+      })
+
+      expect(result.error).toBeNull()
+      expect(result.data?.source_host).toBeNull()
+      expect(prismaRef.current!.notepadNote.create).toHaveBeenCalledWith({
+        data: {
+          id: 'wnote_generated_01',
+          ownerAccountId: 'user_alejandra',
+          collectionId: null,
+          title: 'Defaults',
+          body: '',
+          color: 'yellow',
+          pinned: false,
+          createdAt: 1_720_100_000,
+          updatedAt: 1_720_100_000,
+          sourceHost: null,
         },
       })
     })
