@@ -78,16 +78,15 @@ export function PrincipalSearch({
   const trimmed = query.trim()
 
   useEffect(() => {
-    if (trimmed.length < MIN_QUERY_LENGTH) {
-      setResults([])
-      setSearching(false)
-      setError(null)
-      return
-    }
+    // Nothing is cleared here: state set synchronously in an effect body
+    // cascades an extra render. Below-threshold queries are handled by
+    // deriving the displayed values instead, so stale results simply never
+    // reach the panel.
+    if (trimmed.length < MIN_QUERY_LENGTH) return
 
     let cancelled = false
-    setSearching(true)
     const timer = setTimeout(async () => {
+      setSearching(true)
       if (kind === 'user') {
         const { data, error: searchError } = await client.users.search(trimmed)
         if (cancelled) return
@@ -134,9 +133,14 @@ export function PrincipalSearch({
     return () => document.removeEventListener('pointerdown', onPointerDown)
   }, [open])
 
-  const visible = results.filter((entry) => !excludeIds.includes(entry.id))
-  const showPanel =
-    open && (trimmed.length >= MIN_QUERY_LENGTH || error !== null)
+  // Derived, not stored: a query below the threshold shows nothing regardless
+  // of what the last completed search left behind.
+  const ready = trimmed.length >= MIN_QUERY_LENGTH
+  const matches = ready ? results : []
+  const activeError = ready ? error : null
+  const busy = ready && searching
+  const visible = matches.filter((entry) => !excludeIds.includes(entry.id))
+  const showPanel = open && ready
 
   function choose(principal: Principal) {
     onSelect(principal)
@@ -178,27 +182,29 @@ export function PrincipalSearch({
           role="listbox"
           className="876-card absolute z-50 mt-1 max-h-72 w-full overflow-y-auto p-1 shadow-lg"
         >
-          {searching && (
+          {busy && (
             <p className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-sm">
               <Spinner className="size-3.5" />
               Searching
             </p>
           )}
 
-          {!searching && error && (
-            <p className="text-destructive px-3 py-2.5 text-sm">{error}</p>
+          {!busy && activeError && (
+            <p className="text-destructive px-3 py-2.5 text-sm">
+              {activeError}
+            </p>
           )}
 
-          {!searching && !error && visible.length === 0 && (
+          {!busy && !activeError && visible.length === 0 && (
             <p className="text-muted-foreground px-3 py-2.5 text-sm">
-              {results.length > 0
+              {matches.length > 0
                 ? 'Everyone matching already has an override.'
                 : 'No matches.'}
             </p>
           )}
 
-          {!searching &&
-            !error &&
+          {!busy &&
+            !activeError &&
             visible.map((principal) => (
               <button
                 key={principal.id}
