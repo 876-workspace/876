@@ -1,7 +1,7 @@
 import { Page } from '@876/ui/page'
 
 import { SettingsCard } from './settings-card'
-import { SETTINGS_GROUPS } from './settings-groups'
+import { SETTINGS_NAV } from './settings-groups'
 
 export default async function SettingsPage({
   params,
@@ -15,8 +15,8 @@ export default async function SettingsPage({
       <h1 className="mb-5 text-center text-xl font-semibold">Settings</h1>
 
       <div className="grid items-start gap-6 sm:grid-cols-2 lg:max-w-5xl lg:grid-cols-3">
-        {SETTINGS_GROUPS.map((group) => (
-          <SettingsCard key={group.title} group={group} orgSlug={orgSlug} />
+        {SETTINGS_NAV.map((group) => (
+          <SettingsCard key={group.key} group={group} orgSlug={orgSlug} />
         ))}
       </div>
     </Page>

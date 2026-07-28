@@ -3,6 +3,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
+
 import SettingsPage from './page'
 
 async function renderPage() {
@@ -27,42 +29,60 @@ describe('Couriers settings page', () => {
     ).toEqual([
       'Organization',
       'Users & roles',
-      'Setup & configuration',
+      'Modules',
+      'Customer portal',
+      'Rates & taxes',
+      'Customization',
+      'Communication',
+      'Automation & developer',
       'Billing',
     ])
   })
 
-  it('links only the built pages, to their correct routes', async () => {
+  it('drops the removed user preferences item', async () => {
     await renderPage()
 
-    expect(
-      screen.getAllByRole('link').map((link) => ({
-        title: link.textContent,
-        href: link.getAttribute('href'),
-      }))
-    ).toEqual([
-      { title: 'Profile', href: '/org/island-logistics/settings/orgprofile' },
-      { title: 'Users', href: '/org/island-logistics/settings/users' },
-      { title: 'Roles', href: '/org/island-logistics/settings/users/roles' },
-      { title: 'General', href: '/org/island-logistics/settings/general' },
-      {
-        title: 'Notifications',
-        href: '/org/island-logistics/settings/notifications',
-      },
-      { title: 'Billing', href: '/org/island-logistics/settings/billing' },
-    ])
+    expect(screen.queryByText('User preferences')).not.toBeInTheDocument()
   })
 
-  it('shows not-yet-built items as non-clickable, not broken links', async () => {
+  it('renders a module preferences link for every catalog module', async () => {
     await renderPage()
 
-    expect(screen.getByText('Branding')).toBeVisible()
-    expect(screen.getByText('User preferences')).toBeVisible()
+    const expected = COURIERS_MODULE_CATALOG.filter(
+      (module) => module.key !== 'general'
+    ).map((module) => ({
+      title: module.label,
+      href: `/org/island-logistics/settings/modules/${module.key}`,
+    }))
+
+    const rendered = expected.map((item) => ({
+      title: item.title,
+      href: screen.getByRole('link', { name: item.title }).getAttribute('href'),
+    }))
+
+    expect(rendered).toEqual(expected)
+  })
+
+  it('links locations and branches, the page settings readiness points at', async () => {
+    await renderPage()
+
     expect(
-      screen.queryByRole('link', { name: 'Branding' })
-    ).not.toBeInTheDocument()
+      screen
+        .getByRole('link', { name: 'Locations & branches' })
+        .getAttribute('href')
+    ).toBe('/org/island-logistics/settings/branches')
+  })
+
+  it('gives every rendered item a real destination, never a dead link', async () => {
+    await renderPage()
+
+    const hrefs = screen
+      .getAllByRole('link')
+      .map((link) => link.getAttribute('href'))
+
+    expect(hrefs.length).toBeGreaterThan(0)
     expect(
-      screen.queryByRole('link', { name: 'User preferences' })
-    ).not.toBeInTheDocument()
+      hrefs.every((href) => href?.startsWith('/org/island-logistics/'))
+    ).toBe(true)
   })
 })
