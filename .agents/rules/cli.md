@@ -12,17 +12,17 @@ for the background-execution rule.
 This inventory exists so a session knows what it can reach **without spending
 turns probing**. Trust it; re-verify only if a command actually fails.
 
-| Tool                    | Command                                    | Auth state            | Notes                                                                                                                                                                                                                                                       |
-| ----------------------- | ------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Codex**               | `codex exec -m gpt-5.6-sol`                | ready                 | The model id is **`gpt-5.6-sol`**. `~/.codex/config.toml` sets `approval_policy = "never"`, `sandbox_mode = "danger-full-access"`, and marks `/workspaces/876` trusted, so `--dangerously-bypass-approvals-and-sandbox` runs unattended.                    |
-| **opencode**            | `opencode run -m deepseek/deepseek-v4-pro` | ready                 | Trivial/mechanical tier. See below.                                                                                                                                                                                                                         |
-| **Command Code**        | `command-code -p --yolo`                   | ready                 | Alternative to opencode, same tier.                                                                                                                                                                                                                         |
-| **agy** (Antigravity)   | `agy`                                      | ready                 | Docs-only tier, Sonnet 4.6 Thinking.                                                                                                                                                                                                                        |
-| **Cloudflare Wrangler** | `npx wrangler`                             | **authenticated**     | OAuth as `raheemforschool@gmail.com`, account `b033115f2e5e7382047b69539b971105`. Scopes include `workers:write`, `workers_scripts:write`, `workers_kv:write`, `workers_routes:write`. Can deploy Workers, read/set secrets, and `wrangler tail` live logs. |
-| **GitHub CLI**          | `gh`                                       | **authenticated**     | Account `876-workspace`, scopes `repo`, `workflow`, `read:org`, `gist`. Can open/merge PRs, dispatch workflows, read Actions logs.                                                                                                                          |
-| **Sentry**              | `sentry`                                   | **authenticated**     | v0.38.0 at `~/.local/bin/sentry`, org **`efesto`** (Efesto-Technologies), team `efesto-technologies`. Token auto-refreshes.                                                                                                                                 |
-| ~~sentry-cli~~          | `sentry-cli`                               | **NOT authenticated** | v3.6.2 at `/usr/local/bin/sentry-cli`, **no auth token**. This is a _different, unusable_ binary — always use `sentry`, never `sentry-cli`.                                                                                                                 |
-| **Docker**              | —                                          | **UNAVAILABLE**       | No binary, no daemon. This is why Cloudflare **Container** services (`876-api`, `876-billing-api`, `876-storage-api`) cannot be deployed locally — their image build must run in GitHub Actions.                                                            |
+| Tool                    | Command                                    | Auth state            | Notes                                                                                                                                                                                                                                                                |
+| ----------------------- | ------------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Codex**               | `codex exec -m gpt-5.6-sol`                | ready                 | The model id is **`gpt-5.6-sol`**. `~/.codex/config.toml` sets `approval_policy = "never"`, `sandbox_mode = "danger-full-access"`, and marks `/workspaces/876` trusted, so `--dangerously-bypass-approvals-and-sandbox` runs unattended.                             |
+| **opencode**            | `opencode run -m deepseek/deepseek-v4-pro` | ready                 | Trivial/mechanical tier. See below.                                                                                                                                                                                                                                  |
+| **Command Code**        | `command-code -p --yolo`                   | ready                 | Alternative to opencode, same tier.                                                                                                                                                                                                                                  |
+| **agy** (Antigravity)   | `agy`                                      | ready                 | **Effectively unlimited usage** — its plan has no practical cap, so prefer it for any high-volume non-critical work. Capable but literal: it needs step-by-step instructions with a worked example, and its output must always be reviewed. Models via `agy models`. |
+| **Cloudflare Wrangler** | `npx wrangler`                             | **authenticated**     | OAuth as `raheemforschool@gmail.com`, account `b033115f2e5e7382047b69539b971105`. Scopes include `workers:write`, `workers_scripts:write`, `workers_kv:write`, `workers_routes:write`. Can deploy Workers, read/set secrets, and `wrangler tail` live logs.          |
+| **GitHub CLI**          | `gh`                                       | **authenticated**     | Account `876-workspace`, scopes `repo`, `workflow`, `read:org`, `gist`. Can open/merge PRs, dispatch workflows, read Actions logs.                                                                                                                                   |
+| **Sentry**              | `sentry`                                   | **authenticated**     | v0.38.0 at `~/.local/bin/sentry`, org **`efesto`** (Efesto-Technologies), team `efesto-technologies`. Token auto-refreshes.                                                                                                                                          |
+| ~~sentry-cli~~          | `sentry-cli`                               | **NOT authenticated** | v3.6.2 at `/usr/local/bin/sentry-cli`, **no auth token**. This is a _different, unusable_ binary — always use `sentry`, never `sentry-cli`.                                                                                                                          |
+| **Docker**              | —                                          | **UNAVAILABLE**       | No binary, no daemon. This is why Cloudflare **Container** services (`876-api`, `876-billing-api`, `876-storage-api`) cannot be deployed locally — their image build must run in GitHub Actions.                                                                     |
 
 **MCP servers** (`.mcp.json`, repo root): `sentry` — HTTP, `https://mcp.sentry.dev/mcp`.
 
@@ -111,11 +111,51 @@ See the root `CLAUDE.md` "Sub-Agent Delegation (Codex)" section for the
 `codex exec` invocation. Codex remains the default for non-trivial
 well-scoped implementation chunks that don't need Opus/Fable-level judgment.
 
-## `agy` (Antigravity) — docs, unchanged
+## `agy` (Antigravity) — unlimited-capacity tier for non-critical work
 
-See root `CLAUDE.md` "Antigravity (`agy`) Delegation". Model:
-`Claude Sonnet 4.6 (Thinking)`. Reserved for documentation and Markdown work;
-does not commit.
+**Antigravity usage is effectively unlimited** under its current plan, so it is the
+default tool for any high-volume work that does not need to be correct on the first
+try: documentation, Markdown, placeholder scaffolding, mechanical file generation,
+and bulk repetitive edits.
+
+The trade-off is that it follows instructions literally rather than inferring
+intent. A brief that would be enough for Codex is not enough for `agy`. Give it:
+
+- the exact template or example output, verbatim;
+- a numbered table of every file to produce and every value that changes per file;
+- an explicit list of files it must **not** touch;
+- the verification commands to run before reporting done.
+
+**You must always review its output yourself.** Delegating to `agy` and committing
+the result unread is not delegation.
+
+### Invocation
+
+```bash
+agy --model=<model> --effort=<low|medium|high> --dangerously-skip-permissions \
+  --print "<task prompt>"
+```
+
+**Flag order matters.** `--print` (alias `-p` / `--prompt`) takes the prompt as its
+value, so it must come **last**, immediately before the prompt string. Writing
+`agy --print --model=X "<prompt>"` makes `agy` treat the model name as the prompt
+and silently answer the wrong question — it exits 0 and writes nothing.
+
+Note the `=` in `--model=` and `--effort=`; use that form.
+
+### Models
+
+Run `agy models` for the live list. As of July 2026 it offers:
+
+| Model                                                                  | Use for                                                                  |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `gemini-3.1-pro-high`                                                  | The default for delegated work — docs, scaffolding, bulk edits.          |
+| `gemini-3.6-flash-high` / `-medium` / `-low`                           | Trivial mechanical passes where speed matters more than care.            |
+| `gemini-3.5-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.6.                                            |
+| `gemini-3.1-pro-low`                                                   | Cheap pro-tier pass.                                                     |
+| `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` | Available, but route Claude-model work through the `Agent` tool instead. |
+
+`agy` does not commit. The orchestrating agent stages and commits its output.
 
 ## `opencode` — trivial/mechanical work and docs, DeepSeek V4
 
