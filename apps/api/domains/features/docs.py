@@ -17,12 +17,27 @@ _ADMIN: dict = {
     },
 }
 
+LIST_FEATURE_GRANTS_SUMMARY = "List feature overrides"
+LIST_FEATURE_GRANTS_DESCRIPTION = """
+Returns all organization and user overrides attached to a specific feature flag, with identity details. **Admin only**.
+
+This endpoint returns complete override lists without pagination (`has_more` is always `false`).
+"""
+LIST_FEATURE_GRANTS_RESPONSES: dict = {
+    status.HTTP_404_NOT_FOUND: {
+        "model": ErrorEnvelope,
+        "description": "Feature not found.",
+    },
+    **_ADMIN,
+}
+
 LIST_FEATURES_DESCRIPTION = """
 Returns a paginated list of all feature flags. **Admin only**.
 
 Feature flags are created and managed directly via the API; PostHog is the provider catalog.
 """
 LIST_FEATURES_RESPONSES: dict = {**_ADMIN}
+
 
 RETRIEVE_FEATURE_DESCRIPTION = "Returns a single feature flag by ID. **Admin only**."
 RETRIEVE_FEATURE_RESPONSES: dict = {
