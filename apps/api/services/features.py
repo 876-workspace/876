@@ -101,6 +101,14 @@ class FeatureService:
     async def retrieve_feature(self, feature_id: str) -> Feature:
         return await self.require_feature(feature_id)
 
+    async def list_feature_grants(
+        self, feature_id: str
+    ) -> tuple[Feature, list[OrgFeature], list[UserFeature]]:
+        feature = await self.require_feature(feature_id)
+        org_grants = await self.features.list_org_grants_for_feature(feature_id)
+        user_grants = await self.features.list_user_grants_for_feature(feature_id)
+        return feature, org_grants, user_grants
+
     async def list_features(
         self,
         *,
@@ -172,6 +180,9 @@ class FeatureService:
         if enabled is not None:
             feature.enabled = enabled
             provider_update["default_enabled"] = enabled
+            tags = getattr(feature, "tags", None) or []
+            if "widget" in tags and default_value is None:
+                feature.default_value = enabled
         if app_id_set:
             app = await self.require_app(app_id) if app_id else None
             self._validate_feature_app(feature.slug, app)
@@ -444,7 +455,7 @@ class FeatureService:
         decisions: dict[str, bool] = {}
         for feature in features:
             if "widget" in feature.tags:
-                decisions[feature.id] = feature.default_value
+                decisions[feature.id] = bool(feature.enabled and feature.default_value)
             elif uses_plan and feature.app_id is not None:
                 root_id = root_feature_id(feature)
                 decisions[feature.id] = (

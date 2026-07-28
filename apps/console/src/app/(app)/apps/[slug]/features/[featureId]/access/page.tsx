@@ -1,11 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminApp, AdminOrganization, AdminUser } from '@876/admin'
 
+import { FeatureAccessBoard } from '@/components/access/feature-access-board'
+import { loadGrants, toAccessFlag } from '@/components/access/to-access-flag'
 import { $876 } from '@/lib/876'
-import { CONSOLE_APP_SLUG } from '@/lib/console-app'
-import { service } from '@/lib/service'
-import { FeatureEntitlementsManager } from '../../../../../features/[id]/entitlements/feature-entitlements-manager'
 import { resolveFeature } from '../../../../../features/[id]/_data'
 import { resolveApp } from '../../../_data'
 
@@ -33,97 +31,32 @@ export default async function AppFeatureAccessPage({ params }: Props) {
   ])
   if (!app || !feature || feature.app_id !== app.id) notFound()
 
-  const [organizations, users] = await Promise.all([
-    listOrganizationsForApp(app),
-    listUsersForApp(app),
-  ])
+  // Children AND with this flag, so they belong on the same screen.
+  const siblingsResult = await $876.features.list({ limit: 100, appId: app.id })
+  const children = (siblingsResult.data?.data ?? []).filter(
+    (entry) => entry.parent_feature_id === feature.id
+  )
 
-  const [orgGrantResults, userGrantResults] = await Promise.all([
-    Promise.all(
-      organizations.map((organization) =>
-        $876.features.orgs.list(organization.id)
-      )
-    ),
-    Promise.all(users.map((user) => $876.users.listFeatures(user.id))),
-  ])
-
-  const orgRows = organizations.map((organization, index) => ({
-    organization,
-    grant:
-      orgGrantResults[index].data?.data.find(
-        (grant) => grant.feature_id === feature.id
-      ) ?? null,
-  }))
-  const userRows = users.map((user, index) => ({
-    user,
-    grant:
-      userGrantResults[index].data?.data.find(
-        (grant) => grant.feature_id === feature.id
-      ) ?? null,
-  }))
+  const family = [feature, ...children]
+  const grantsById = await loadGrants(family, (id) =>
+    $876.features.retrieveGrants(id)
+  )
 
   return (
-    <FeatureEntitlementsManager
-      feature={feature}
-      apps={[app]}
-      orgRows={orgRows}
-      userRows={userRows}
+    <FeatureAccessBoard
+      scopes={[
+        {
+          key: app.slug,
+          label: app.name,
+          logoUrl: app.logo_url ?? null,
+          flags: [
+            toAccessFlag(feature, grantsById.get(feature.id) ?? null, false),
+            ...children.map((child) =>
+              toAccessFlag(child, grantsById.get(child.id) ?? null, true)
+            ),
+          ],
+        },
+      ]}
     />
   )
-}
-
-async function listOrganizationsForApp(
-  app: AdminApp
-): Promise<AdminOrganization[]> {
-  const subscriptionsResult = await $876.apps.subscriptions.list(app.id)
-  if (subscriptionsResult.error) return []
-
-  const organizationIds = [
-    ...new Set(
-      subscriptionsResult.data
-        .filter((subscription) => subscription.status === 'active')
-        .map((subscription) => subscription.organization_id)
-    ),
-  ]
-
-  const organizationResults = await Promise.all(
-    organizationIds.map((organizationId) => $876.orgs.retrieve(organizationId))
-  )
-
-  return organizationResults
-    .map((result) => (result.error ? null : result.data))
-    .filter((organization): organization is AdminOrganization =>
-      Boolean(organization)
-    )
-}
-
-async function listUsersForApp(app: AdminApp): Promise<AdminUser[]> {
-  if (app.slug === CONSOLE_APP_SLUG) {
-    const members = await service.team.list()
-    const activeMembers = members.filter((member) => member.status === 'active')
-    const userResults = await Promise.all(
-      activeMembers.map((member) => $876.users.retrieve(member.userId))
-    )
-
-    return userResults
-      .map((result) => (result.error ? null : result.data))
-      .filter((user): user is AdminUser => Boolean(user))
-  }
-
-  const usersResult = await $876.users.list({ limit: 100, status: 'active' })
-  if (usersResult.error) return []
-
-  const users = usersResult.data.data
-  const appResults = await Promise.all(
-    users.map((user) => $876.users.listApps(user.id))
-  )
-
-  return users.filter((user, index) => {
-    const result = appResults[index]
-    if (result.error) return false
-
-    return result.data.data.some(
-      (userApp) => userApp.id === app.id || userApp.slug === app.slug
-    )
-  })
 }

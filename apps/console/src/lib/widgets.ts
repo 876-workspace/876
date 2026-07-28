@@ -7,9 +7,11 @@ import { createWidgetsAdminClient } from '@876/widgets/server/admin'
 export const $widgets = createWidgetsClient({
   baseUrl: process.env.WIDGETS_API_URL,
   serviceKey: process.env.WIDGETS_SERVICE_KEY,
+  host: 'console',
 })
 
 export const $widgetsAdmin = createWidgetsAdminClient({
   baseUrl: process.env.WIDGETS_API_URL,
   serviceKey: process.env.WIDGETS_SERVICE_KEY,
+  host: 'console',
 })
