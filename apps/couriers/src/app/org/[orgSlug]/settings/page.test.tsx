@@ -29,7 +29,8 @@ describe('Couriers settings page', () => {
     ).toEqual([
       'Organization',
       'Users & roles',
-      'Modules',
+      'Core & setup',
+      'Operations & fulfillment',
       'Customer portal',
       'Rates & taxes',
       'Customization',
@@ -43,6 +44,36 @@ describe('Couriers settings page', () => {
     await renderPage()
 
     expect(screen.queryByText('User preferences')).not.toBeInTheDocument()
+  })
+
+  it('uses the unified cyan header pill and aligns item text with its labels', async () => {
+    await renderPage()
+
+    const headings = screen.getAllByRole('heading', { level: 2 })
+
+    expect(headings).toHaveLength(10)
+    expect(
+      headings.every(
+        (heading) =>
+          heading.classList.contains('flex') &&
+          heading.classList.contains('flex-row') &&
+          heading.classList.contains('items-center') &&
+          heading.classList.contains('gap-2') &&
+          heading.classList.contains('rounded-xl') &&
+          heading.classList.contains('bg-cyan-500/10') &&
+          heading.classList.contains('px-4') &&
+          heading.classList.contains('py-2') &&
+          heading.classList.contains('mb-4') &&
+          heading.classList.contains('font-semibold') &&
+          heading.classList.contains('text-slate-900')
+      )
+    ).toBe(true)
+
+    expect(
+      screen
+        .getByRole('link', { name: 'Profile' })
+        .classList.contains('pl-10')
+    ).toBe(true)
   })
 
   it('renders a module preferences link for every catalog module', async () => {

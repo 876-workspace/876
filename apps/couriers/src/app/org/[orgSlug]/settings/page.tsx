@@ -10,9 +10,9 @@ export default async function SettingsPage({
 }) {
   const { orgSlug } = await params
 
-  // Group settings categories into stacked vertical columns to eliminate height imbalances.
+  // Stack settings cards across 3 visual columns to eliminate height imbalances.
   const column1Keys = new Set(['organization', 'users'])
-  const column2Keys = new Set(['modules', 'portal'])
+  const column2Keys = new Set(['modules_core', 'modules_ops', 'portal'])
   const column3Keys = new Set([
     'rates',
     'customization',

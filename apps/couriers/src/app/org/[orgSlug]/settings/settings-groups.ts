@@ -3,16 +3,20 @@ import type { SettingsNavItem } from '@876/settings/types'
 
 import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
 
-/**
- * Preference pages for every module in the catalog, so the settings menu and the
- * module catalog cannot drift. Each one renders through the shared
- * `/settings/modules/[moduleKey]` route rather than a hand-written page.
- *
- * `general` is excluded here and listed first by hand, because it is app-wide
- * rather than a feature area an org would think of as a module.
- */
-const modulePreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
-  (module) => module.key !== 'general'
+const coreModuleKeys = new Set(['customers', 'items', 'packages', 'pre_alerts'])
+
+const corePreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
+  (module) => coreModuleKeys.has(module.key)
+).map((module) => ({
+  title: module.label,
+  href: `/settings/modules/${module.key}`,
+  status: 'available',
+  permission: `${module.key}.view`,
+  module: module.key,
+}))
+
+const opsPreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
+  (module) => module.key !== 'general' && !coreModuleKeys.has(module.key)
 ).map((module) => ({
   title: module.label,
   href: `/settings/modules/${module.key}`,
@@ -62,13 +66,19 @@ export const SETTINGS_NAV = defineSettingsNav([
     ],
   },
   {
-    key: 'modules',
-    title: 'Modules',
-    icon: 'modules',
+    key: 'modules_core',
+    title: 'Core & setup',
+    icon: 'modules_core',
     items: [
       { title: 'General', href: '/settings/general', status: 'available' },
-      ...modulePreferenceItems,
+      ...corePreferenceItems,
     ],
+  },
+  {
+    key: 'modules_ops',
+    title: 'Operations & fulfillment',
+    icon: 'modules_ops',
+    items: [...opsPreferenceItems],
   },
   {
     key: 'portal',
