@@ -67,8 +67,56 @@ group; **child flags** (`<app>_<group>_<child>`) gate individual members.
 4. Flags created ad hoc in the Console features UI must still follow this key
    format — the format is the contract, not the creation path.
 
+## Managing flags in Console
+
+**An admin must never need the PostHog dashboard to work with a flag.** Every
+concept the provider exposes has a Console control; if one does not, that is a
+gap to close in Console, not a reason to send someone to PostHog.
+
+### The targeting model, in precedence order
+
+```
+feature.enabled   global kill switch — off here means off everywhere
+      ↓
+app scope         which app the key belongs to (platform_… = every app)
+      ↓
+OrgFeature        forces the flag on/off for a whole organization
+      ↓
+UserFeature       forces it for one user; wins over the organization
+```
+
+An override can never revive a disabled flag: `resolve()` ANDs
+`feature.enabled` into the result regardless of any grant. Parent/child ANDs on
+top of that — a child is live only when its master is too.
+
+Per-user-per-app targeting needs no new concept: grant the **app-scoped** key
+(`console_widgets_notepad`) to target one app, or the **platform** key
+(`platform_widgets_notepad`) to target every app at once.
+
+### Access UI rules
+
+- **Group by app, not by flag key.** An admin reasons in terms of "is Notepad
+  on in Couriers?", and a flat list of slugs forces them to decode a prefix to
+  answer that. One accordion section per app, plus an "All apps" section for
+  `platform_*` keys. Children render nested under their master.
+- **Never enumerate every user or organization.** Show only the principals that
+  actually carry an override, and add new ones through a search box
+  (`PrincipalSearch`). Listing the whole directory so the admin can hunt for one
+  row does not scale and buries the two or three overrides that exist.
+- **One toggle must not stand in for several flags.** A shared widget has a
+  platform key plus one key per app; showing a single switch makes it
+  impossible to tell what was just changed. Show every flag that applies.
+- Targeting lives in a side sheet next to the flag it belongs to, so the
+  precedence hint ("off here means off everywhere") sits where the decision is
+  made rather than in a legend elsewhere on the page.
+
+Components: `apps/console/src/components/access/` —
+`feature-access-board.tsx`, `flag-targeting-sheet.tsx`, `principal-search.tsx`.
+
 ## Do not
 
+- Do not build a flag surface that requires visiting PostHog to finish the job.
+- Do not list every user or organization to let an admin pick one.
 - Do not create or evaluate a flag key without an app (or `platform_`) prefix.
 - Do not evaluate flags client-side or expose PostHog keys to the browser.
 - Do not encode team names, ticket numbers, or dates into keys.
