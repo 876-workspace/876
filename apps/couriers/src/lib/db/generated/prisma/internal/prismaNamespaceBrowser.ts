@@ -65,6 +65,8 @@ export const ModelName = {
   CourierCustomerProfile: 'CourierCustomerProfile',
   Mailbox: 'Mailbox',
   Manifest: 'Manifest',
+  OrganizationModule: 'OrganizationModule',
+  ModulePreference: 'ModulePreference',
   PackageCategory: 'PackageCategory',
   Package: 'Package',
   PackageDocument: 'PackageDocument',
@@ -294,6 +296,38 @@ export const ManifestScalarFieldEnum = {
 
 export type ManifestScalarFieldEnum =
   (typeof ManifestScalarFieldEnum)[keyof typeof ManifestScalarFieldEnum]
+
+export const OrganizationModuleScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  module: 'module',
+  isEnabled: 'isEnabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type OrganizationModuleScalarFieldEnum =
+  (typeof OrganizationModuleScalarFieldEnum)[keyof typeof OrganizationModuleScalarFieldEnum]
+
+export const ModulePreferenceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  module: 'module',
+  key: 'key',
+  valueType: 'valueType',
+  stringValue: 'stringValue',
+  integerValue: 'integerValue',
+  decimalValue: 'decimalValue',
+  booleanValue: 'booleanValue',
+  referenceNamespace: 'referenceNamespace',
+  referenceKey: 'referenceKey',
+  updatedBy: 'updatedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type ModulePreferenceScalarFieldEnum =
+  (typeof ModulePreferenceScalarFieldEnum)[keyof typeof ModulePreferenceScalarFieldEnum]
 
 export const PackageCategoryScalarFieldEnum = {
   id: 'id',

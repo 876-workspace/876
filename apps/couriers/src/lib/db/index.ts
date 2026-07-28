@@ -26,7 +26,11 @@ export type {
   Role,
   TeamMember,
   TeamMemberStatus,
+  OrganizationModule,
+  ModulePreference,
 } from './generated/prisma/client'
+
+export type { Prisma } from './generated/prisma/client'
 
 function assignGeneratedId(model: string, data: Record<string, unknown>): void {
   if (model in COURIERS_ID_PREFIXES && !data.id)

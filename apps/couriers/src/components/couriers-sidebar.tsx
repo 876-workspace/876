@@ -93,6 +93,7 @@ export function CouriersSidebar({
               title="Settings"
               icon={Settings}
               color="var(--couriers-primary)"
+              iconClassName="size-4"
             />
           </div>
         </nav>

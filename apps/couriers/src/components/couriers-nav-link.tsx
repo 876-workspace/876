@@ -21,11 +21,13 @@ export function CouriersNavLink({
   title,
   icon: Icon,
   color,
+  iconClassName,
 }: {
   href: string
   title: string
   icon: IconComponent
   color?: string
+  iconClassName?: string
 }) {
   const pathname = usePathname()
   const { isMobile, state } = useSidebar()
@@ -44,7 +46,10 @@ export function CouriersNavLink({
     >
       <Icon
         aria-hidden="true"
-        className="size-[1.125rem] shrink-0 transition-colors"
+        className={cn(
+          'size-[1.125rem] shrink-0 transition-colors',
+          iconClassName
+        )}
         style={color ? { color } : undefined}
       />
       <span className="truncate group-data-[collapsible=icon]:hidden">
