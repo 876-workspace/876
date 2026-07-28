@@ -12,6 +12,7 @@ import {
   type NotepadNote,
   type NoteWriteParams,
 } from '../types/notes'
+import { notepadStatsSchema, type NotepadStats } from '../types/stats'
 import {
   requestJson,
   resolveConfig,
@@ -75,6 +76,20 @@ export function createWidgetsAdminClient(
             return parsed.success ? parsed.data : null
           }
         ) as Promise<WidgetsClientResult<DeletedNote>>
+      },
+    },
+
+    stats: {
+      notepad(actor: Actor) {
+        return requestJson(
+          config,
+          actor,
+          { method: 'GET', path: '/api/v1/admin/stats/notepad', role: 'admin' },
+          (data) => {
+            const parsed = notepadStatsSchema.safeParse(data)
+            return parsed.success ? parsed.data : null
+          }
+        ) as Promise<WidgetsClientResult<NotepadStats>>
       },
     },
   }

@@ -22,5 +22,6 @@ export function serializeNote(row: NotepadNote): NotepadNoteResource {
     pinned: row.pinned,
     created_at: row.createdAt,
     updated_at: row.updatedAt,
+    source_host: row.sourceHost ?? null,
   }
 }

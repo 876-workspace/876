@@ -77,6 +77,7 @@ describe('requireWidgetsService', () => {
     expect(auth.response).toBeNull()
     expect(auth.actorUserId).toBe('user_alejandra')
     expect(auth.isAdmin).toBe(false)
+    expect(auth.sourceHost).toBeNull()
   })
 
   it('when admin role header is present, then marks the caller as admin', () => {
@@ -92,5 +93,43 @@ describe('requireWidgetsService', () => {
     expect(auth.response).toBeNull()
     expect(auth.actorUserId).toBe('user_console_admin')
     expect(auth.isAdmin).toBe(true)
+  })
+
+  it('when valid x-876-widget-host header is present, then yields sourceHost', () => {
+    const auth = requireWidgetsService(
+      request({
+        'x-internal-key': 'widgets_service_test_key_32chars!!',
+        'x-876-actor-user-id': 'user_alejandra',
+        'x-876-widget-host': 'billing',
+      })
+    )
+
+    expect(auth.response).toBeNull()
+    expect(auth.sourceHost).toBe('billing')
+  })
+
+  it('when unknown x-876-widget-host header value is provided, then yields sourceHost null', () => {
+    const auth = requireWidgetsService(
+      request({
+        'x-internal-key': 'widgets_service_test_key_32chars!!',
+        'x-876-actor-user-id': 'user_alejandra',
+        'x-876-widget-host': 'evil',
+      })
+    )
+
+    expect(auth.response).toBeNull()
+    expect(auth.sourceHost).toBeNull()
+  })
+
+  it('when x-876-widget-host header is missing, then yields sourceHost null', () => {
+    const auth = requireWidgetsService(
+      request({
+        'x-internal-key': 'widgets_service_test_key_32chars!!',
+        'x-876-actor-user-id': 'user_alejandra',
+      })
+    )
+
+    expect(auth.response).toBeNull()
+    expect(auth.sourceHost).toBeNull()
   })
 })

@@ -47,6 +47,7 @@ export type NotepadNoteMinAggregateOutputType = {
   createdAt: number | null
   updatedAt: number | null
   legacyConvexId: string | null
+  sourceHost: string | null
 }
 
 export type NotepadNoteMaxAggregateOutputType = {
@@ -60,6 +61,7 @@ export type NotepadNoteMaxAggregateOutputType = {
   createdAt: number | null
   updatedAt: number | null
   legacyConvexId: string | null
+  sourceHost: string | null
 }
 
 export type NotepadNoteCountAggregateOutputType = {
@@ -73,6 +75,7 @@ export type NotepadNoteCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   legacyConvexId: number
+  sourceHost: number
   _all: number
 }
 
@@ -97,6 +100,7 @@ export type NotepadNoteMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   legacyConvexId?: true
+  sourceHost?: true
 }
 
 export type NotepadNoteMaxAggregateInputType = {
@@ -110,6 +114,7 @@ export type NotepadNoteMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   legacyConvexId?: true
+  sourceHost?: true
 }
 
 export type NotepadNoteCountAggregateInputType = {
@@ -123,6 +128,7 @@ export type NotepadNoteCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   legacyConvexId?: true
+  sourceHost?: true
   _all?: true
 }
 
@@ -230,6 +236,7 @@ export type NotepadNoteGroupByOutputType = {
   createdAt: number
   updatedAt: number
   legacyConvexId: string | null
+  sourceHost: string | null
   _count: NotepadNoteCountAggregateOutputType | null
   _avg: NotepadNoteAvgAggregateOutputType | null
   _sum: NotepadNoteSumAggregateOutputType | null
@@ -264,6 +271,7 @@ export type NotepadNoteWhereInput = {
   createdAt?: Prisma.IntFilter<'NotepadNote'> | number
   updatedAt?: Prisma.IntFilter<'NotepadNote'> | number
   legacyConvexId?: Prisma.StringNullableFilter<'NotepadNote'> | string | null
+  sourceHost?: Prisma.StringNullableFilter<'NotepadNote'> | string | null
   collection?: Prisma.XOR<
     Prisma.NotepadCollectionNullableScalarRelationFilter,
     Prisma.NotepadCollectionWhereInput
@@ -281,6 +289,7 @@ export type NotepadNoteOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   legacyConvexId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceHost?: Prisma.SortOrderInput | Prisma.SortOrder
   collection?: Prisma.NotepadCollectionOrderByWithRelationInput
 }
 
@@ -299,6 +308,7 @@ export type NotepadNoteWhereUniqueInput = Prisma.AtLeast<
     pinned?: Prisma.BoolFilter<'NotepadNote'> | boolean
     createdAt?: Prisma.IntFilter<'NotepadNote'> | number
     updatedAt?: Prisma.IntFilter<'NotepadNote'> | number
+    sourceHost?: Prisma.StringNullableFilter<'NotepadNote'> | string | null
     collection?: Prisma.XOR<
       Prisma.NotepadCollectionNullableScalarRelationFilter,
       Prisma.NotepadCollectionWhereInput
@@ -318,6 +328,7 @@ export type NotepadNoteOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   legacyConvexId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceHost?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.NotepadNoteCountOrderByAggregateInput
   _avg?: Prisma.NotepadNoteAvgOrderByAggregateInput
   _max?: Prisma.NotepadNoteMaxOrderByAggregateInput
@@ -352,6 +363,10 @@ export type NotepadNoteScalarWhereWithAggregatesInput = {
     | Prisma.StringNullableWithAggregatesFilter<'NotepadNote'>
     | string
     | null
+  sourceHost?:
+    | Prisma.StringNullableWithAggregatesFilter<'NotepadNote'>
+    | string
+    | null
 }
 
 export type NotepadNoteCreateInput = {
@@ -364,6 +379,7 @@ export type NotepadNoteCreateInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  sourceHost?: string | null
   collection?: Prisma.NotepadCollectionCreateNestedOneWithoutNotesInput
 }
 
@@ -378,6 +394,7 @@ export type NotepadNoteUncheckedCreateInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  sourceHost?: string | null
 }
 
 export type NotepadNoteUpdateInput = {
@@ -393,6 +410,7 @@ export type NotepadNoteUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   collection?: Prisma.NotepadCollectionUpdateOneWithoutNotesNestedInput
 }
 
@@ -410,6 +428,7 @@ export type NotepadNoteUncheckedUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type NotepadNoteCreateManyInput = {
@@ -423,6 +442,7 @@ export type NotepadNoteCreateManyInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  sourceHost?: string | null
 }
 
 export type NotepadNoteUpdateManyMutationInput = {
@@ -438,6 +458,7 @@ export type NotepadNoteUpdateManyMutationInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type NotepadNoteUncheckedUpdateManyInput = {
@@ -454,6 +475,7 @@ export type NotepadNoteUncheckedUpdateManyInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type NotepadNoteListRelationFilter = {
@@ -477,6 +499,7 @@ export type NotepadNoteCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   legacyConvexId?: Prisma.SortOrder
+  sourceHost?: Prisma.SortOrder
 }
 
 export type NotepadNoteAvgOrderByAggregateInput = {
@@ -495,6 +518,7 @@ export type NotepadNoteMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   legacyConvexId?: Prisma.SortOrder
+  sourceHost?: Prisma.SortOrder
 }
 
 export type NotepadNoteMinOrderByAggregateInput = {
@@ -508,6 +532,7 @@ export type NotepadNoteMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   legacyConvexId?: Prisma.SortOrder
+  sourceHost?: Prisma.SortOrder
 }
 
 export type NotepadNoteSumOrderByAggregateInput = {
@@ -639,6 +664,7 @@ export type NotepadNoteCreateWithoutCollectionInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  sourceHost?: string | null
 }
 
 export type NotepadNoteUncheckedCreateWithoutCollectionInput = {
@@ -651,6 +677,7 @@ export type NotepadNoteUncheckedCreateWithoutCollectionInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  sourceHost?: string | null
 }
 
 export type NotepadNoteCreateOrConnectWithoutCollectionInput = {
@@ -714,6 +741,7 @@ export type NotepadNoteScalarWhereInput = {
   createdAt?: Prisma.IntFilter<'NotepadNote'> | number
   updatedAt?: Prisma.IntFilter<'NotepadNote'> | number
   legacyConvexId?: Prisma.StringNullableFilter<'NotepadNote'> | string | null
+  sourceHost?: Prisma.StringNullableFilter<'NotepadNote'> | string | null
 }
 
 export type NotepadNoteCreateManyCollectionInput = {
@@ -726,6 +754,7 @@ export type NotepadNoteCreateManyCollectionInput = {
   createdAt: number
   updatedAt: number
   legacyConvexId?: string | null
+  sourceHost?: string | null
 }
 
 export type NotepadNoteUpdateWithoutCollectionInput = {
@@ -741,6 +770,7 @@ export type NotepadNoteUpdateWithoutCollectionInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type NotepadNoteUncheckedUpdateWithoutCollectionInput = {
@@ -756,6 +786,7 @@ export type NotepadNoteUncheckedUpdateWithoutCollectionInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type NotepadNoteUncheckedUpdateManyWithoutCollectionInput = {
@@ -771,6 +802,7 @@ export type NotepadNoteUncheckedUpdateManyWithoutCollectionInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
+  sourceHost?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type NotepadNoteSelect<
@@ -788,6 +820,7 @@ export type NotepadNoteSelect<
     createdAt?: boolean
     updatedAt?: boolean
     legacyConvexId?: boolean
+    sourceHost?: boolean
     collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
   },
   ExtArgs['result']['notepadNote']
@@ -808,6 +841,7 @@ export type NotepadNoteSelectCreateManyAndReturn<
     createdAt?: boolean
     updatedAt?: boolean
     legacyConvexId?: boolean
+    sourceHost?: boolean
     collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
   },
   ExtArgs['result']['notepadNote']
@@ -828,6 +862,7 @@ export type NotepadNoteSelectUpdateManyAndReturn<
     createdAt?: boolean
     updatedAt?: boolean
     legacyConvexId?: boolean
+    sourceHost?: boolean
     collection?: boolean | Prisma.NotepadNote$collectionArgs<ExtArgs>
   },
   ExtArgs['result']['notepadNote']
@@ -844,6 +879,7 @@ export type NotepadNoteSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   legacyConvexId?: boolean
+  sourceHost?: boolean
 }
 
 export type NotepadNoteOmit<
@@ -859,7 +895,8 @@ export type NotepadNoteOmit<
   | 'pinned'
   | 'createdAt'
   | 'updatedAt'
-  | 'legacyConvexId',
+  | 'legacyConvexId'
+  | 'sourceHost',
   ExtArgs['result']['notepadNote']
 >
 export type NotepadNoteInclude<
@@ -904,6 +941,11 @@ export type $NotepadNotePayload<
        * Convex document id from the one-time migration; unique when present.
        */
       legacyConvexId: string | null
+      /**
+       * Widget host the note was created in (@876/widgets WidgetHost). Null for
+       * rows written before attribution existed.
+       */
+      sourceHost: string | null
     },
     ExtArgs['result']['notepadNote']
   >
@@ -1522,6 +1564,7 @@ export interface NotepadNoteFieldRefs {
   readonly createdAt: Prisma.FieldRef<'NotepadNote', 'Int'>
   readonly updatedAt: Prisma.FieldRef<'NotepadNote', 'Int'>
   readonly legacyConvexId: Prisma.FieldRef<'NotepadNote', 'String'>
+  readonly sourceHost: Prisma.FieldRef<'NotepadNote', 'String'>
 }
 
 // Custom InputTypes

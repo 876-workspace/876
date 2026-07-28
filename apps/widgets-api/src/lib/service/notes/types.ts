@@ -23,6 +23,7 @@ export type NotepadNoteResource = {
   pinned: boolean
   created_at: number
   updated_at: number
+  source_host: string | null
 }
 
 export type NoteList = {

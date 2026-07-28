@@ -10,14 +10,17 @@ from db.session import get_db
 from domains.features.schemas import (
     FeatureCreate,
     FeatureDeleted,
+    FeatureGrantsResponse,
     FeatureResponse,
     FeatureUpdate,
     OrgFeatureDeleted,
     OrgFeatureGrant,
+    OrgFeatureGrantItem,
     OrgFeatureResponse,
     OrgFeatureUpdate,
     UserFeatureDeleted,
     UserFeatureGrant,
+    UserFeatureGrantItem,
     UserFeatureResponse,
     UserFeatureUpdate,
 )
@@ -79,6 +82,40 @@ def _serialize_org_feature(row: Any) -> OrgFeatureResponse:
         status=row.status,
         note=row.note,
         synced_at=row.synced_at,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
+def _serialize_org_feature_grant_item(row: Any) -> OrgFeatureGrantItem:
+    return OrgFeatureGrantItem(
+        id=row.id,
+        organization_id=row.organization_id,
+        feature_id=row.feature_id,
+        slug=row.feature.slug,
+        status=row.status,
+        note=row.note,
+        organization_name=row.organization.name if row.organization else None,
+        organization_slug=row.organization.slug if row.organization else "",
+        organization_logo_url=row.organization.logo_url if row.organization else None,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
+def _serialize_user_feature_grant_item(row: Any) -> UserFeatureGrantItem:
+    return UserFeatureGrantItem(
+        id=row.id,
+        user_id=row.user_id,
+        feature_id=row.feature_id,
+        slug=row.feature.slug,
+        status=row.status,
+        note=row.note,
+        user_email=row.user.email if row.user else "",
+        user_first_name=row.user.first_name if row.user else "",
+        user_last_name=row.user.last_name if row.user else "",
+        user_username=row.user.username if row.user else None,
+        user_avatar=row.user.avatar if row.user else None,
         created_at=row.created_at,
         updated_at=row.updated_at,
     )
@@ -218,6 +255,35 @@ async def retrieve_feature(
 ) -> FeatureResponse:
     feature = await FeatureService(db).retrieve_feature(feature_id)
     return _serialize_feature(feature)
+
+
+@router.get(
+    "/{feature_id}/grants",
+    response_model=FeatureGrantsResponse,
+    status_code=status.HTTP_200_OK,
+    summary=docs.LIST_FEATURE_GRANTS_SUMMARY,
+    description=docs.LIST_FEATURE_GRANTS_DESCRIPTION,
+    responses=docs.LIST_FEATURE_GRANTS_RESPONSES,
+)
+async def list_feature_grants(
+    feature_id: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> FeatureGrantsResponse:
+    feature, org_grants, user_grants = await FeatureService(db).list_feature_grants(feature_id)
+    return FeatureGrantsResponse(
+        feature_id=feature.id,
+        organizations=ListObject[OrgFeatureGrantItem](
+            data=[_serialize_org_feature_grant_item(row) for row in org_grants],
+            has_more=False,
+            url=f"/features/{feature_id}/grants",
+        ),
+        users=ListObject[UserFeatureGrantItem](
+            data=[_serialize_user_feature_grant_item(row) for row in user_grants],
+            has_more=False,
+            url=f"/features/{feature_id}/grants",
+        ),
+    )
 
 
 @router.patch(

@@ -53,11 +53,32 @@ export default async function WidgetsPage({
   const visibleWidgets = consoleWidgetCatalog.filter(
     (widget) => distribution === 'all' || widget.distribution === distribution
   )
-  const rows: WidgetTableRow[] = visibleWidgets.map((widget) => {
+
+  // The global switch is pinned to the top of the list and is deliberately
+  // exempt from the distribution filter — it governs every widget regardless
+  // of which subset is on screen.
+  const masterRow: WidgetTableRow = {
+    kind: 'master',
+    id: CONSOLE_WIDGETS_FEATURE_SLUG,
+    name: 'All widgets',
+    description: 'Global switch for every widget in Console.',
+    apps: ['Console'],
+    feature: allWidgetsFeature
+      ? {
+          id: allWidgetsFeature.id,
+          name: allWidgetsFeature.name,
+          enabled: allWidgetsFeature.enabled,
+        }
+      : null,
+    missingFeatureSlug: allWidgetsFeature ? null : CONSOLE_WIDGETS_FEATURE_SLUG,
+  }
+
+  const widgetRows: WidgetTableRow[] = visibleWidgets.map((widget) => {
     const statusSlug = getConsoleWidgetStatusFeatureSlug(widget)
     const feature = statusSlug ? features.get(statusSlug) : undefined
 
     return {
+      kind: 'widget',
       id: widget.id,
       name: widget.name,
       description: widget.description,
@@ -89,22 +110,13 @@ export default async function WidgetsPage({
             paramKey="distribution"
           />
         }
-        description="Manage reusable widgets, their app availability, and their account-owned data."
+        primaryLabel="Add"
+        primaryHref="/widgets/new"
+        primaryVariant="info"
         refresh
       />
 
-      <WidgetsTable
-        data={rows}
-        allWidgetsFeature={
-          allWidgetsFeature
-            ? {
-                id: allWidgetsFeature.id,
-                name: allWidgetsFeature.name,
-                enabled: allWidgetsFeature.enabled,
-              }
-            : null
-        }
-      />
+      <WidgetsTable data={[masterRow, ...widgetRows]} />
     </Page>
   )
 }
