@@ -27,6 +27,7 @@ describe('Widgets API /api/v1/notes', () => {
     mocks.requireWidgetsService.mockReturnValue({
       actorUserId: 'user_alejandra',
       isAdmin: false,
+      sourceHost: 'console',
       response: null,
     })
   })
@@ -64,6 +65,7 @@ describe('Widgets API /api/v1/notes', () => {
       mocks.requireWidgetsService.mockReturnValue({
         actorUserId: null,
         isAdmin: false,
+        sourceHost: null,
         response: Response.json({ error: 'Unauthorized.' }, { status: 401 }),
       })
 
@@ -89,6 +91,7 @@ describe('Widgets API /api/v1/notes', () => {
           pinned: false,
           created_at: 1,
           updated_at: 1,
+          source_host: 'console',
         },
         error: null,
       })
@@ -114,6 +117,7 @@ describe('Widgets API /api/v1/notes', () => {
         body: 'World',
         color: 'pink',
         pinned: undefined,
+        sourceHost: 'console',
       })
     })
 

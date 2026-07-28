@@ -48,7 +48,7 @@ describe('retrieveNotepadStats', () => {
     const thirtyDaysAgo = nowSeconds - 30 * 24 * 60 * 60
 
     prismaRef
-      .current!.notepadNote.count// notes (total)
+      .current!.notepadNote.count // notes (total)
       .mockResolvedValueOnce(120)
       // pinned_notes
       .mockResolvedValueOnce(15)
@@ -60,7 +60,7 @@ describe('retrieveNotepadStats', () => {
       .mockResolvedValueOnce(55)
 
     prismaRef
-      .current!.notepadNote.groupBy// accounts (all distinct)
+      .current!.notepadNote.groupBy // accounts (all distinct)
       .mockResolvedValueOnce([
         { ownerAccountId: 'user_a' },
         { ownerAccountId: 'user_b' },
