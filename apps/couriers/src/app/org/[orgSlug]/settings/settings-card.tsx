@@ -16,22 +16,32 @@ import {
   UsersIcon,
 } from '@876/ui/icons'
 
-import { SectionHeaderPill } from './section-header-pill'
+import {
+  SectionHeaderPill,
+  type SectionHeaderTone,
+} from './section-header-pill'
 
 type SectionIcon = ComponentType<SVGProps<SVGSVGElement>>
 
-const GROUP_ICONS: Record<string, SectionIcon> = {
-  organization: BuildingOffice2Icon,
-  users: UsersIcon,
-  modules_core: Squares2X2Icon,
-  modules_ops: QueueListIcon,
-  portal: GlobeAltIcon,
-  rates: ChartBarIcon,
-  customization: PaintBrushIcon,
-  communication: EnvelopeIcon,
-  automation: CommandLineIcon,
-  billing: CreditCardIcon,
+type SectionStyle = {
+  Icon: SectionIcon
+  tone: SectionHeaderTone
 }
+
+const GROUP_STYLES: Record<string, SectionStyle> = {
+  organization: { Icon: BuildingOffice2Icon, tone: 'sky' },
+  users: { Icon: UsersIcon, tone: 'cyan' },
+  modules_core: { Icon: Squares2X2Icon, tone: 'blue' },
+  modules_ops: { Icon: QueueListIcon, tone: 'teal' },
+  portal: { Icon: GlobeAltIcon, tone: 'sky' },
+  rates: { Icon: ChartBarIcon, tone: 'cyan' },
+  customization: { Icon: PaintBrushIcon, tone: 'blue' },
+  communication: { Icon: EnvelopeIcon, tone: 'teal' },
+  automation: { Icon: CommandLineIcon, tone: 'sky' },
+  billing: { Icon: CreditCardIcon, tone: 'cyan' },
+}
+
+const FALLBACK_STYLE: SectionStyle = { Icon: Cog6ToothIcon, tone: 'blue' }
 
 type SettingsCardProps = {
   group: SettingsNavGroup
@@ -39,11 +49,11 @@ type SettingsCardProps = {
 }
 
 export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
-  const Icon = GROUP_ICONS[group.icon] ?? Cog6ToothIcon
+  const { Icon, tone } = GROUP_STYLES[group.icon] ?? FALLBACK_STYLE
 
   return (
     <section className="876-card p-4 transition-shadow hover:shadow-sm">
-      <SectionHeaderPill Icon={Icon} title={group.title} />
+      <SectionHeaderPill Icon={Icon} title={group.title} tone={tone} />
 
       <ul className="space-y-1">
         {group.items.map((item) => (

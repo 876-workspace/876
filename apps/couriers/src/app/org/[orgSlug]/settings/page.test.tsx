@@ -46,10 +46,15 @@ describe('Couriers settings page', () => {
     expect(screen.queryByText('User preferences')).not.toBeInTheDocument()
   })
 
-  it('uses the unified cyan header pill and aligns item text with its labels', async () => {
+  it('uses unified colored header pills and aligns item text with their labels', async () => {
     await renderPage()
 
     const headings = screen.getAllByRole('heading', { level: 2 })
+    const headerBackgrounds = headings.flatMap((heading) =>
+      Array.from(heading.classList).filter((className) =>
+        /^bg-(blue|cyan|sky|teal)-100$/.test(className)
+      )
+    )
 
     expect(headings).toHaveLength(10)
     expect(
@@ -60,7 +65,6 @@ describe('Couriers settings page', () => {
           heading.classList.contains('items-center') &&
           heading.classList.contains('gap-2') &&
           heading.classList.contains('rounded-xl') &&
-          heading.classList.contains('bg-cyan-500/10') &&
           heading.classList.contains('px-4') &&
           heading.classList.contains('py-2') &&
           heading.classList.contains('mb-4') &&
@@ -68,6 +72,8 @@ describe('Couriers settings page', () => {
           heading.classList.contains('text-slate-900')
       )
     ).toBe(true)
+    expect(headerBackgrounds).toHaveLength(headings.length)
+    expect(new Set(headerBackgrounds).size).toBeGreaterThan(1)
 
     expect(
       screen
