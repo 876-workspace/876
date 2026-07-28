@@ -349,7 +349,6 @@ export type SoftBadgeTone =
   | 'slate'
   | 'purple'
   | 'rose'
-
 ;<SoftBadge tone="emerald">Active</SoftBadge>
 ```
 
