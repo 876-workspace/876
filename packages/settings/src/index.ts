@@ -8,6 +8,7 @@ export {
   defineSettingsNav,
   filterSettingsNav,
   resolveSettingsHref,
+  settingsNavSections,
 } from './nav/registry'
 export { decodePreference, encodePreference } from './preferences/encode'
 export type {

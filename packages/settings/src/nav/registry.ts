@@ -51,6 +51,27 @@ export function filterSettingsNav(
   })
 }
 
+/**
+ * Groups a nav into its declared sections, preserving declaration order for both
+ * sections and the groups inside them. Groups without a section are returned
+ * first under an empty section label.
+ */
+export function settingsNavSections(
+  nav: SettingsNav
+): { section: string; groups: SettingsNavGroup[] }[] {
+  const sections: { section: string; groups: SettingsNavGroup[] }[] = []
+
+  for (const group of nav) {
+    const label = group.section ?? ''
+    const existing = sections.find((entry) => entry.section === label)
+
+    if (existing) existing.groups.push(group)
+    else sections.push({ section: label, groups: [group] })
+  }
+
+  return sections
+}
+
 export function resolveSettingsHref(
   orgSlug: string,
   item: SettingsNavItem
