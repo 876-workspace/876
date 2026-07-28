@@ -7,6 +7,7 @@ import { DetailChromeGate } from '@/components/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import {
   DetailHeader,
+  DetailHeaderNotice,
   DetailHeaderTop,
   DetailHeaderMain,
   DetailHeaderActions,
@@ -53,16 +54,28 @@ export default async function OrganizationDetailLayout({
   return (
     <div>
       {org.deleted_at && (
-        <div className="border-b border-red-400/30 bg-red-500/10 px-4 py-2.5 sm:px-6 lg:px-8">
-          <p className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
-            <Trash className="size-4 shrink-0" />
-            This organization was deleted on {formatDate(org.deleted_at)}. The
-            record is retained and visible to Console admins only.
-          </p>
-        </div>
+        <DetailHeaderNotice>
+          <Trash className="size-4 shrink-0" />
+          This organization was deleted on {formatDate(org.deleted_at)}. The
+          record is retained and visible to Console admins only.
+        </DetailHeaderNotice>
       )}
       <DetailChromeGate>
-        <DetailHeader>
+        <DetailHeader
+          condensedTitle={
+            <>
+              <OrgLogo
+                name={org.name}
+                src={org.logo_url}
+                size="sm"
+                className="size-6 shrink-0 text-[0.625rem]"
+              />
+              <span className="truncate text-sm font-semibold">
+                {org.name ?? org.slug}
+              </span>
+            </>
+          }
+        >
           <DetailHeaderTop>
             <DetailHeaderMain>
               <OrgLogo
