@@ -16,6 +16,7 @@ function createNote() {
     pinned: false,
     created_at: 100,
     updated_at: 200,
+    source_host: null,
   }
 }
 
