@@ -8,6 +8,7 @@ type MockTx = {
 
 const mocks = vi.hoisted(() => ({
   ensureDefaults: vi.fn(),
+  ensureDefaultBranch: vi.fn(),
   transaction: vi.fn(),
 }))
 
@@ -27,6 +28,10 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('../roles', () => ({
   roles: { ensureDefaults: mocks.ensureDefaults },
+}))
+
+vi.mock('../branches', () => ({
+  branches: { ensureDefault: mocks.ensureDefaultBranch },
 }))
 
 import { create } from './create'
@@ -112,6 +117,44 @@ describe('service.tenants.create', () => {
     expect(mocks.ensureDefaults).toHaveBeenCalledWith('ten_rocketship', tx)
     expect(tx.role.findUnique).not.toHaveBeenCalled()
     expect(tx.teamMember.create).not.toHaveBeenCalled()
+  })
+
+  it('seeds the default branch from the organization address in the same transaction', async () => {
+    const address = {
+      street1: '1 Knutsford Blvd',
+      city: 'Kingston',
+      parish: 'Saint Andrew',
+      country: 'JM',
+    }
+
+    await create({
+      orgId: 'org_123',
+      name: 'Rocketship Couriers',
+      slug: 'rocketship',
+      address,
+    })
+
+    expect(mocks.ensureDefaultBranch).toHaveBeenCalledTimes(1)
+    expect(mocks.ensureDefaultBranch).toHaveBeenCalledWith(
+      'ten_rocketship',
+      address,
+      tx
+    )
+  })
+
+  it('seeds no branch when the caller supplies no organization address', async () => {
+    await create({
+      orgId: 'org_123',
+      name: 'Rocketship Couriers',
+      slug: 'rocketship',
+    })
+
+    expect(mocks.ensureDefaultBranch).toHaveBeenCalledTimes(1)
+    expect(mocks.ensureDefaultBranch).toHaveBeenCalledWith(
+      'ten_rocketship',
+      null,
+      tx
+    )
   })
 
   it('grants the owner the Admin team role when ownerUserId is provided', async () => {
