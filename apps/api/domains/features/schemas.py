@@ -2,6 +2,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from core.responses import ListObject
+
 
 class FeatureResponse(BaseModel):
     object: Literal["feature"] = Field(
@@ -285,3 +287,93 @@ class OrgFeatureDeleted(BaseModel):
     object: Literal["org_feature"] = "org_feature"
     id: str = Field(description="Unique identifier of the deleted organization feature grant.")
     deleted: Literal[True] = True
+
+
+class OrgFeatureGrantItem(BaseModel):
+    object: Literal["org_feature_grant"] = Field(
+        default="org_feature_grant",
+        description="String representing the object's type. Always 'org_feature_grant'.",
+    )
+    id: str = Field(description="Unique identifier for the organization feature grant.")
+    organization_id: str = Field(description="Unique identifier for the organization.")
+    feature_id: str = Field(description="Unique identifier for the feature.")
+    slug: str = Field(description="Slug of the feature.")
+    status: str = Field(
+        description="The feature grant status for this organization.",
+        examples=["enabled", "disabled"],
+    )
+    note: str | None = Field(
+        default=None,
+        description="Optional note explaining the reason for this grant.",
+    )
+    organization_name: str | None = Field(
+        default=None,
+        description="Human-readable name of the organization.",
+    )
+    organization_slug: str = Field(description="URL-safe unique identifier for the organization.")
+    organization_logo_url: str | None = Field(
+        default=None,
+        description="URL of the organization's logo.",
+    )
+    created_at: int = Field(
+        description="Time at which the grant was created. Measured in seconds since the Unix epoch."
+    )
+    updated_at: int = Field(
+        description="Time at which the grant was last updated. Measured in seconds since the Unix epoch."
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserFeatureGrantItem(BaseModel):
+    object: Literal["user_feature_grant"] = Field(
+        default="user_feature_grant",
+        description="String representing the object's type. Always 'user_feature_grant'.",
+    )
+    id: str = Field(description="Unique identifier for the user feature grant.")
+    user_id: str = Field(description="Unique identifier for the user.")
+    feature_id: str = Field(description="Unique identifier for the feature.")
+    slug: str = Field(description="Slug of the feature.")
+    status: str = Field(
+        description="The feature grant status for this user.",
+        examples=["enabled", "disabled"],
+    )
+    note: str | None = Field(
+        default=None,
+        description="Optional note explaining the reason for this grant.",
+    )
+    user_email: str = Field(description="Email address of the user.")
+    user_first_name: str = Field(description="First name of the user.")
+    user_last_name: str = Field(description="Last name of the user.")
+    user_username: str | None = Field(
+        default=None,
+        description="Username of the user.",
+    )
+    user_avatar: str | None = Field(
+        default=None,
+        description="Avatar URL of the user.",
+    )
+    created_at: int = Field(
+        description="Time at which the grant was created. Measured in seconds since the Unix epoch."
+    )
+    updated_at: int = Field(
+        description="Time at which the grant was last updated. Measured in seconds since the Unix epoch."
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FeatureGrantsResponse(BaseModel):
+    object: Literal["feature_grants"] = Field(
+        default="feature_grants",
+        description="String representing the object's type. Always 'feature_grants'.",
+    )
+    feature_id: str = Field(description="Unique identifier for the feature.")
+    organizations: ListObject[OrgFeatureGrantItem] = Field(
+        description="List of organization feature grants with organization identity details."
+    )
+    users: ListObject[UserFeatureGrantItem] = Field(
+        description="List of user feature grants with user identity details."
+    )
+
+    model_config = ConfigDict(from_attributes=True)

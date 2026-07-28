@@ -2,7 +2,7 @@ import time
 from typing import Any
 
 from sqlalchemy import and_, any_, func, literal, or_, select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql.elements import ColumnElement
 
 from core.id import generate_id
@@ -260,6 +260,24 @@ class FeatureRepository(BaseRepository):
             OrgFeature.feature_id == feature_id,
         )
         await self.db.execute(stmt)
+
+    async def list_org_grants_for_feature(self, feature_id: str) -> list[OrgFeature]:
+        stmt = (
+            select(OrgFeature)
+            .where(OrgFeature.feature_id == feature_id)
+            .options(selectinload(OrgFeature.organization), selectinload(OrgFeature.feature))
+            .order_by(OrgFeature.created_at.desc(), OrgFeature.id.desc())
+        )
+        return list((await self.db.scalars(stmt)).all())
+
+    async def list_user_grants_for_feature(self, feature_id: str) -> list[UserFeature]:
+        stmt = (
+            select(UserFeature)
+            .where(UserFeature.feature_id == feature_id)
+            .options(selectinload(UserFeature.user), selectinload(UserFeature.feature))
+            .order_by(UserFeature.created_at.desc(), UserFeature.id.desc())
+        )
+        return list((await self.db.scalars(stmt)).all())
 
     async def list_evaluation_features(self, app_id: str | None = None) -> list[Feature]:
         filters: list[ColumnElement[bool]] = [Feature.archived_at.is_(None)]
