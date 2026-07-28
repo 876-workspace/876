@@ -15,6 +15,7 @@ const sampleNote = {
   pinned: false,
   created_at: 100,
   updated_at: 200,
+  source_host: null,
 }
 
 describe('createWidgetsClient', () => {
@@ -65,6 +66,7 @@ describe('createWidgetsClient', () => {
     const client = createWidgetsClient({
       baseUrl: 'https://widgets.876.test',
       serviceKey: 'sk_widgets_test',
+      host: 'couriers',
       fetch: fetchMock as unknown as typeof fetch,
     })
 
@@ -85,6 +87,7 @@ describe('createWidgetsClient', () => {
       'content-type': 'application/json',
       'x-internal-key': 'sk_widgets_test',
       'x-876-actor-user-id': 'user_alejandra',
+      'x-876-widget-host': 'couriers',
     })
   })
 
