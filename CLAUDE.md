@@ -106,6 +106,7 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 - Read `.claude/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
 - Read `.claude/rules/customer-architecture.md` before modeling, storing, importing, linking, or disclosing customer, customer-profile, account-linkage, or sensitive-identifier (TRN/passport) data in any app (fixed terminology + the identity/relationship/app-profile layering).
 - Read `.claude/rules/git.md` before committing, branching, or opening a PR (Conventional Commits, atomic-commit granularity, no AI commit attribution, branch from `main`).
+- Read `.claude/rules/phased-implementation.md` before starting any feature that spans more than two or three pull requests (phase breakdown, the integration-branch flow, mandatory Haiku sub-agent Linear tracking, and the verification traps).
 - For Next.js routing/rendering/config/metadata/proxy changes, read the matching local guide in `node_modules/next/dist/docs/` first.
 
 ## Sub-Agent Rules
