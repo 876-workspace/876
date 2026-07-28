@@ -11,19 +11,28 @@ import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
  * `general` is excluded here and listed first by hand, because it is app-wide
  * rather than a feature area an org would think of as a module.
  */
-const modulePreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
-  (module) => module.key !== 'general'
-).map((module) => ({
-  title: module.label,
-  href: `/settings/modules/${module.key}`,
-  status: 'available',
-  permission: `${module.key}.view`,
-  module: module.key,
-}))
+function moduleItems(keys: readonly string[]): SettingsNavItem[] {
+  return keys.map((key) => {
+    const module = COURIERS_MODULE_CATALOG.find(
+      (candidate) => candidate.key === key
+    )
+    if (!module)
+      throw new Error(`Unknown courier module in settings nav: ${key}`)
+
+    return {
+      title: module.label,
+      href: `/settings/modules/${module.key}`,
+      status: 'available',
+      permission: `${module.key}.view`,
+      module: module.key,
+    }
+  })
+}
 
 export const SETTINGS_NAV = defineSettingsNav([
   {
     key: 'organization',
+    section: 'Organization',
     title: 'Organization',
     icon: 'organization',
     items: [
@@ -44,6 +53,7 @@ export const SETTINGS_NAV = defineSettingsNav([
   },
   {
     key: 'users',
+    section: 'Organization',
     title: 'Users & roles',
     icon: 'users',
     items: [
@@ -62,16 +72,38 @@ export const SETTINGS_NAV = defineSettingsNav([
     ],
   },
   {
-    key: 'modules',
-    title: 'Modules',
+    key: 'module-operations',
+    section: 'Modules',
+    title: 'Operations',
+    icon: 'operations',
+    items: moduleItems([
+      'packages',
+      'pre_alerts',
+      'warehouse',
+      'manifests',
+      'deliveries',
+    ]),
+  },
+  {
+    key: 'module-commerce',
+    section: 'Modules',
+    title: 'Commerce',
+    icon: 'commerce',
+    items: moduleItems(['customers', 'items', 'invoices', 'payments']),
+  },
+  {
+    key: 'module-preferences',
+    section: 'Modules',
+    title: 'Preferences',
     icon: 'modules',
     items: [
       { title: 'General', href: '/settings/general', status: 'available' },
-      ...modulePreferenceItems,
+      ...moduleItems(['portal']),
     ],
   },
   {
     key: 'portal',
+    section: 'Organization',
     title: 'Customer portal',
     icon: 'portal',
     items: [
@@ -94,6 +126,7 @@ export const SETTINGS_NAV = defineSettingsNav([
   },
   {
     key: 'rates',
+    section: 'Organization',
     title: 'Rates & taxes',
     icon: 'rates',
     items: [
@@ -113,6 +146,7 @@ export const SETTINGS_NAV = defineSettingsNav([
   },
   {
     key: 'customization',
+    section: 'Organization',
     title: 'Customization',
     icon: 'customization',
     items: [
@@ -140,6 +174,7 @@ export const SETTINGS_NAV = defineSettingsNav([
   },
   {
     key: 'communication',
+    section: 'Organization',
     title: 'Communication',
     icon: 'communication',
     items: [
@@ -162,6 +197,7 @@ export const SETTINGS_NAV = defineSettingsNav([
   },
   {
     key: 'automation',
+    section: 'Organization',
     title: 'Automation & developer',
     icon: 'automation',
     items: [
@@ -189,6 +225,7 @@ export const SETTINGS_NAV = defineSettingsNav([
   },
   {
     key: 'billing',
+    section: 'Organization',
     title: 'Billing',
     icon: 'billing',
     items: [

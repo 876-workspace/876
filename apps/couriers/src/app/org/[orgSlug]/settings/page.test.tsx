@@ -28,15 +28,32 @@ describe('Couriers settings page', () => {
       screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
     ).toEqual([
       'Organization',
+      'Organization',
       'Users & roles',
-      'Modules',
       'Customer portal',
       'Rates & taxes',
       'Customization',
       'Communication',
       'Automation & developer',
       'Billing',
+      'Modules',
+      'Operations',
+      'Commerce',
+      'Preferences',
     ])
+  })
+
+  it('splits the groups into sections so no card dwarfs its row', async () => {
+    await renderPage()
+
+    // Every module card carries a comparable number of items; the eleven-module
+    // list is deliberately not one oversized card beside two-item cards.
+    const sectionHeadings = screen
+      .getAllByRole('heading', { level: 2 })
+      .map((h) => h.textContent)
+
+    expect(sectionHeadings).toContain('Modules')
+    expect(sectionHeadings.filter((t) => t === 'Organization')).toHaveLength(2)
   })
 
   it('drops the removed user preferences item', async () => {

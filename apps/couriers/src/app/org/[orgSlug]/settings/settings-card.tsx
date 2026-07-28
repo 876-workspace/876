@@ -10,13 +10,15 @@ import {
   CreditCardIcon,
   EnvelopeIcon,
   GlobeAltIcon,
+  QueueListIcon,
   Squares2X2Icon,
   UsersIcon,
 } from '@876/ui/icons'
 
 type GroupStyle = {
   Icon: ComponentType<SVGProps<SVGSVGElement>>
-  tileClass: string
+  /** Tinted header band — the card's accent. */
+  headerClass: string
   iconClass: string
 }
 
@@ -28,54 +30,64 @@ type GroupStyle = {
 const GROUP_STYLES: Record<string, GroupStyle> = {
   organization: {
     Icon: BuildingOffice2Icon,
-    tileClass: 'bg-blue-500/10',
+    headerClass: 'bg-blue-500/8 dark:bg-blue-500/12',
     iconClass: 'text-blue-600 dark:text-blue-400',
   },
   users: {
     Icon: UsersIcon,
-    tileClass: 'bg-violet-500/10',
+    headerClass: 'bg-violet-500/8 dark:bg-violet-500/12',
     iconClass: 'text-violet-600 dark:text-violet-400',
   },
   modules: {
     Icon: Squares2X2Icon,
-    tileClass: 'bg-amber-500/10',
+    headerClass: 'bg-amber-500/8 dark:bg-amber-500/12',
     iconClass: 'text-amber-600 dark:text-amber-400',
   },
   portal: {
     Icon: GlobeAltIcon,
-    tileClass: 'bg-sky-500/10',
+    headerClass: 'bg-sky-500/8 dark:bg-sky-500/12',
     iconClass: 'text-sky-600 dark:text-sky-400',
   },
   rates: {
     Icon: ChartBarIcon,
-    tileClass: 'bg-teal-500/10',
+    headerClass: 'bg-teal-500/8 dark:bg-teal-500/12',
     iconClass: 'text-teal-600 dark:text-teal-400',
   },
   customization: {
     Icon: Cog6ToothIcon,
-    tileClass: 'bg-slate-500/10',
+    headerClass: 'bg-slate-500/8 dark:bg-slate-500/12',
     iconClass: 'text-slate-600 dark:text-slate-400',
   },
   communication: {
     Icon: EnvelopeIcon,
-    tileClass: 'bg-indigo-500/10',
+    headerClass: 'bg-indigo-500/8 dark:bg-indigo-500/12',
     iconClass: 'text-indigo-600 dark:text-indigo-400',
   },
   automation: {
     Icon: CommandLineIcon,
-    tileClass: 'bg-orange-500/10',
+    headerClass: 'bg-orange-500/8 dark:bg-orange-500/12',
     iconClass: 'text-orange-600 dark:text-orange-400',
+  },
+  operations: {
+    Icon: QueueListIcon,
+    headerClass: 'bg-cyan-500/8 dark:bg-cyan-500/12',
+    iconClass: 'text-cyan-600 dark:text-cyan-400',
+  },
+  commerce: {
+    Icon: ChartBarIcon,
+    headerClass: 'bg-emerald-500/8 dark:bg-emerald-500/12',
+    iconClass: 'text-emerald-600 dark:text-emerald-400',
   },
   billing: {
     Icon: CreditCardIcon,
-    tileClass: 'bg-rose-500/10',
+    headerClass: 'bg-rose-500/8 dark:bg-rose-500/12',
     iconClass: 'text-rose-600 dark:text-rose-400',
   },
 }
 
 const FALLBACK_STYLE: GroupStyle = {
   Icon: Cog6ToothIcon,
-  tileClass: 'bg-muted',
+  headerClass: 'bg-muted',
   iconClass: 'text-muted-foreground',
 }
 
@@ -85,20 +97,18 @@ type SettingsCardProps = {
 }
 
 export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
-  const { Icon, tileClass, iconClass } =
+  const { Icon, headerClass, iconClass } =
     GROUP_STYLES[group.icon] ?? FALLBACK_STYLE
 
   return (
-    <section className="876-card p-5 transition-shadow hover:shadow-sm">
-      <div className="mb-4 flex items-center gap-3 border-b pb-4">
-        <span
-          className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${tileClass}`}
-        >
-          <Icon className={`size-5 ${iconClass}`} />
-        </span>
+    <section className="876-card flex h-full flex-col overflow-hidden p-0 transition-shadow hover:shadow-sm">
+      <div
+        className={`flex items-center gap-2.5 border-b px-5 py-3.5 ${headerClass}`}
+      >
+        <Icon className={`size-[18px] shrink-0 ${iconClass}`} />
         <h2 className="text-[15px] font-semibold">{group.title}</h2>
       </div>
-      <ul className="space-y-0.5">
+      <ul className="flex-1 space-y-0.5 p-4">
         {group.items.map((item) =>
           item.href ? (
             <li key={item.title}>
