@@ -262,6 +262,8 @@ export type TenantWhereInput = {
   cashSessions?: Prisma.CashSessionListRelationFilter
   customerIdTypes?: Prisma.CustomerIdTypeListRelationFilter
   customerDocuments?: Prisma.CustomerDocumentListRelationFilter
+  organizationModules?: Prisma.OrganizationModuleListRelationFilter
+  modulePreferences?: Prisma.ModulePreferenceListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -287,6 +289,8 @@ export type TenantOrderByWithRelationInput = {
   cashSessions?: Prisma.CashSessionOrderByRelationAggregateInput
   customerIdTypes?: Prisma.CustomerIdTypeOrderByRelationAggregateInput
   customerDocuments?: Prisma.CustomerDocumentOrderByRelationAggregateInput
+  organizationModules?: Prisma.OrganizationModuleOrderByRelationAggregateInput
+  modulePreferences?: Prisma.ModulePreferenceOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<
@@ -316,6 +320,8 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<
     cashSessions?: Prisma.CashSessionListRelationFilter
     customerIdTypes?: Prisma.CustomerIdTypeListRelationFilter
     customerDocuments?: Prisma.CustomerDocumentListRelationFilter
+    organizationModules?: Prisma.OrganizationModuleListRelationFilter
+    modulePreferences?: Prisma.ModulePreferenceListRelationFilter
   },
   'id' | 'orgId' | 'slug'
 >
@@ -382,6 +388,8 @@ export type TenantCreateInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -407,6 +415,8 @@ export type TenantUncheckedCreateInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -437,6 +447,8 @@ export type TenantUpdateInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -467,6 +479,8 @@ export type TenantUncheckedUpdateInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -723,6 +737,58 @@ export type TenantUpdateOneRequiredWithoutManifestsNestedInput = {
   >
 }
 
+export type TenantCreateNestedOneWithoutOrganizationModulesInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutOrganizationModulesInput,
+    Prisma.TenantUncheckedCreateWithoutOrganizationModulesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOrganizationModulesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutOrganizationModulesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutOrganizationModulesInput,
+    Prisma.TenantUncheckedCreateWithoutOrganizationModulesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOrganizationModulesInput
+  upsert?: Prisma.TenantUpsertWithoutOrganizationModulesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.TenantUpdateToOneWithWhereWithoutOrganizationModulesInput,
+      Prisma.TenantUpdateWithoutOrganizationModulesInput
+    >,
+    Prisma.TenantUncheckedUpdateWithoutOrganizationModulesInput
+  >
+}
+
+export type TenantCreateNestedOneWithoutModulePreferencesInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutModulePreferencesInput,
+    Prisma.TenantUncheckedCreateWithoutModulePreferencesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutModulePreferencesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutModulePreferencesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutModulePreferencesInput,
+    Prisma.TenantUncheckedCreateWithoutModulePreferencesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutModulePreferencesInput
+  upsert?: Prisma.TenantUpsertWithoutModulePreferencesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.TenantUpdateToOneWithWhereWithoutModulePreferencesInput,
+      Prisma.TenantUpdateWithoutModulePreferencesInput
+    >,
+    Prisma.TenantUncheckedUpdateWithoutModulePreferencesInput
+  >
+}
+
 export type TenantCreateNestedOneWithoutPackageCategoriesInput = {
   create?: Prisma.XOR<
     Prisma.TenantCreateWithoutPackageCategoriesInput,
@@ -959,6 +1025,8 @@ export type TenantCreateWithoutCashSessionsInput = {
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCashSessionsInput = {
@@ -983,6 +1051,8 @@ export type TenantUncheckedCreateWithoutCashSessionsInput = {
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCashSessionsInput = {
@@ -1040,6 +1110,8 @@ export type TenantUpdateWithoutCashSessionsInput = {
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCashSessionsInput = {
@@ -1069,6 +1141,8 @@ export type TenantUncheckedUpdateWithoutCashSessionsInput = {
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutBranchesInput = {
@@ -1093,6 +1167,8 @@ export type TenantCreateWithoutBranchesInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutBranchesInput = {
@@ -1117,6 +1193,8 @@ export type TenantUncheckedCreateWithoutBranchesInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutBranchesInput = {
@@ -1174,6 +1252,8 @@ export type TenantUpdateWithoutBranchesInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutBranchesInput = {
@@ -1203,6 +1283,8 @@ export type TenantUncheckedUpdateWithoutBranchesInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCustomerIdTypesInput = {
@@ -1227,6 +1309,8 @@ export type TenantCreateWithoutCustomerIdTypesInput = {
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCustomerIdTypesInput = {
@@ -1251,6 +1335,8 @@ export type TenantUncheckedCreateWithoutCustomerIdTypesInput = {
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCustomerIdTypesInput = {
@@ -1308,6 +1394,8 @@ export type TenantUpdateWithoutCustomerIdTypesInput = {
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCustomerIdTypesInput = {
@@ -1337,6 +1425,8 @@ export type TenantUncheckedUpdateWithoutCustomerIdTypesInput = {
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCustomerDocumentsInput = {
@@ -1361,6 +1451,8 @@ export type TenantCreateWithoutCustomerDocumentsInput = {
   manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCustomerDocumentsInput = {
@@ -1385,6 +1477,8 @@ export type TenantUncheckedCreateWithoutCustomerDocumentsInput = {
   manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCustomerDocumentsInput = {
@@ -1442,6 +1536,8 @@ export type TenantUpdateWithoutCustomerDocumentsInput = {
   manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCustomerDocumentsInput = {
@@ -1471,6 +1567,8 @@ export type TenantUncheckedUpdateWithoutCustomerDocumentsInput = {
   manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCustomersInput = {
@@ -1495,6 +1593,8 @@ export type TenantCreateWithoutCustomersInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCustomersInput = {
@@ -1519,6 +1619,8 @@ export type TenantUncheckedCreateWithoutCustomersInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCustomersInput = {
@@ -1576,6 +1678,8 @@ export type TenantUpdateWithoutCustomersInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCustomersInput = {
@@ -1605,6 +1709,8 @@ export type TenantUncheckedUpdateWithoutCustomersInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutManifestsInput = {
@@ -1629,6 +1735,8 @@ export type TenantCreateWithoutManifestsInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutManifestsInput = {
@@ -1653,6 +1761,8 @@ export type TenantUncheckedCreateWithoutManifestsInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutManifestsInput = {
@@ -1710,6 +1820,8 @@ export type TenantUpdateWithoutManifestsInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutManifestsInput = {
@@ -1739,6 +1851,292 @@ export type TenantUncheckedUpdateWithoutManifestsInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutOrganizationModulesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutOrganizationModulesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutOrganizationModulesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutOrganizationModulesInput,
+    Prisma.TenantUncheckedCreateWithoutOrganizationModulesInput
+  >
+}
+
+export type TenantUpsertWithoutOrganizationModulesInput = {
+  update: Prisma.XOR<
+    Prisma.TenantUpdateWithoutOrganizationModulesInput,
+    Prisma.TenantUncheckedUpdateWithoutOrganizationModulesInput
+  >
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutOrganizationModulesInput,
+    Prisma.TenantUncheckedCreateWithoutOrganizationModulesInput
+  >
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutOrganizationModulesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<
+    Prisma.TenantUpdateWithoutOrganizationModulesInput,
+    Prisma.TenantUncheckedUpdateWithoutOrganizationModulesInput
+  >
+}
+
+export type TenantUpdateWithoutOrganizationModulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutOrganizationModulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutModulePreferencesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutModulePreferencesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutModulePreferencesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutModulePreferencesInput,
+    Prisma.TenantUncheckedCreateWithoutModulePreferencesInput
+  >
+}
+
+export type TenantUpsertWithoutModulePreferencesInput = {
+  update: Prisma.XOR<
+    Prisma.TenantUpdateWithoutModulePreferencesInput,
+    Prisma.TenantUncheckedUpdateWithoutModulePreferencesInput
+  >
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutModulePreferencesInput,
+    Prisma.TenantUncheckedCreateWithoutModulePreferencesInput
+  >
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutModulePreferencesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<
+    Prisma.TenantUpdateWithoutModulePreferencesInput,
+    Prisma.TenantUncheckedUpdateWithoutModulePreferencesInput
+  >
+}
+
+export type TenantUpdateWithoutModulePreferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutModulePreferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPackageCategoriesInput = {
@@ -1763,6 +2161,8 @@ export type TenantCreateWithoutPackageCategoriesInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPackageCategoriesInput = {
@@ -1787,6 +2187,8 @@ export type TenantUncheckedCreateWithoutPackageCategoriesInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPackageCategoriesInput = {
@@ -1844,6 +2246,8 @@ export type TenantUpdateWithoutPackageCategoriesInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPackageCategoriesInput = {
@@ -1873,6 +2277,8 @@ export type TenantUncheckedUpdateWithoutPackageCategoriesInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPackagesInput = {
@@ -1897,6 +2303,8 @@ export type TenantCreateWithoutPackagesInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutPackagesInput = {
@@ -1921,6 +2329,8 @@ export type TenantUncheckedCreateWithoutPackagesInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutPackagesInput = {
@@ -1978,6 +2388,8 @@ export type TenantUpdateWithoutPackagesInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutPackagesInput = {
@@ -2007,6 +2419,8 @@ export type TenantUncheckedUpdateWithoutPackagesInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutDomainsInput = {
@@ -2031,6 +2445,8 @@ export type TenantCreateWithoutDomainsInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutDomainsInput = {
@@ -2055,6 +2471,8 @@ export type TenantUncheckedCreateWithoutDomainsInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutDomainsInput = {
@@ -2112,6 +2530,8 @@ export type TenantUpdateWithoutDomainsInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutDomainsInput = {
@@ -2141,6 +2561,8 @@ export type TenantUncheckedUpdateWithoutDomainsInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutStaffPositionsInput = {
@@ -2165,6 +2587,8 @@ export type TenantCreateWithoutStaffPositionsInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutStaffPositionsInput = {
@@ -2189,6 +2613,8 @@ export type TenantUncheckedCreateWithoutStaffPositionsInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutStaffPositionsInput = {
@@ -2246,6 +2672,8 @@ export type TenantUpdateWithoutStaffPositionsInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutStaffPositionsInput = {
@@ -2275,6 +2703,8 @@ export type TenantUncheckedUpdateWithoutStaffPositionsInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutStaffMembersInput = {
@@ -2299,6 +2729,8 @@ export type TenantCreateWithoutStaffMembersInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutStaffMembersInput = {
@@ -2323,6 +2755,8 @@ export type TenantUncheckedCreateWithoutStaffMembersInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutStaffMembersInput = {
@@ -2380,6 +2814,8 @@ export type TenantUpdateWithoutStaffMembersInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutStaffMembersInput = {
@@ -2409,6 +2845,8 @@ export type TenantUncheckedUpdateWithoutStaffMembersInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRolesInput = {
@@ -2433,6 +2871,8 @@ export type TenantCreateWithoutRolesInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRolesInput = {
@@ -2457,6 +2897,8 @@ export type TenantUncheckedCreateWithoutRolesInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRolesInput = {
@@ -2514,6 +2956,8 @@ export type TenantUpdateWithoutRolesInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRolesInput = {
@@ -2543,6 +2987,8 @@ export type TenantUncheckedUpdateWithoutRolesInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTeamMembersInput = {
@@ -2567,6 +3013,8 @@ export type TenantCreateWithoutTeamMembersInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTeamMembersInput = {
@@ -2591,6 +3039,8 @@ export type TenantUncheckedCreateWithoutTeamMembersInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTeamMembersInput = {
@@ -2648,6 +3098,8 @@ export type TenantUpdateWithoutTeamMembersInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTeamMembersInput = {
@@ -2677,6 +3129,8 @@ export type TenantUncheckedUpdateWithoutTeamMembersInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutWarehousesInput = {
@@ -2701,6 +3155,8 @@ export type TenantCreateWithoutWarehousesInput = {
   cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWarehousesInput = {
@@ -2725,6 +3181,8 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWarehousesInput = {
@@ -2782,6 +3240,8 @@ export type TenantUpdateWithoutWarehousesInput = {
   cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWarehousesInput = {
@@ -2811,6 +3271,8 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
   customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
   customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 /**
@@ -2832,6 +3294,8 @@ export type TenantCountOutputType = {
   cashSessions: number
   customerIdTypes: number
   customerDocuments: number
+  organizationModules: number
+  modulePreferences: number
 }
 
 export type TenantCountOutputTypeSelect<
@@ -2852,6 +3316,10 @@ export type TenantCountOutputTypeSelect<
   cashSessions?: boolean | TenantCountOutputTypeCountCashSessionsArgs
   customerIdTypes?: boolean | TenantCountOutputTypeCountCustomerIdTypesArgs
   customerDocuments?: boolean | TenantCountOutputTypeCountCustomerDocumentsArgs
+  organizationModules?:
+    | boolean
+    | TenantCountOutputTypeCountOrganizationModulesArgs
+  modulePreferences?: boolean | TenantCountOutputTypeCountModulePreferencesArgs
 }
 
 /**
@@ -3007,6 +3475,26 @@ export type TenantCountOutputTypeCountCustomerDocumentsArgs<
   where?: Prisma.CustomerDocumentWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountOrganizationModulesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.OrganizationModuleWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountModulePreferencesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.ModulePreferenceWhereInput
+}
+
 export type TenantSelect<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
@@ -3034,6 +3522,10 @@ export type TenantSelect<
     cashSessions?: boolean | Prisma.Tenant$cashSessionsArgs<ExtArgs>
     customerIdTypes?: boolean | Prisma.Tenant$customerIdTypesArgs<ExtArgs>
     customerDocuments?: boolean | Prisma.Tenant$customerDocumentsArgs<ExtArgs>
+    organizationModules?:
+      | boolean
+      | Prisma.Tenant$organizationModulesArgs<ExtArgs>
+    modulePreferences?: boolean | Prisma.Tenant$modulePreferencesArgs<ExtArgs>
     _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['tenant']
@@ -3116,6 +3608,8 @@ export type TenantInclude<
   cashSessions?: boolean | Prisma.Tenant$cashSessionsArgs<ExtArgs>
   customerIdTypes?: boolean | Prisma.Tenant$customerIdTypesArgs<ExtArgs>
   customerDocuments?: boolean | Prisma.Tenant$customerDocumentsArgs<ExtArgs>
+  organizationModules?: boolean | Prisma.Tenant$organizationModulesArgs<ExtArgs>
+  modulePreferences?: boolean | Prisma.Tenant$modulePreferencesArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<
@@ -3147,6 +3641,8 @@ export type $TenantPayload<
     cashSessions: Prisma.$CashSessionPayload<ExtArgs>[]
     customerIdTypes: Prisma.$CustomerIdTypePayload<ExtArgs>[]
     customerDocuments: Prisma.$CustomerDocumentPayload<ExtArgs>[]
+    organizationModules: Prisma.$OrganizationModulePayload<ExtArgs>[]
+    modulePreferences: Prisma.$ModulePreferencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
@@ -3860,6 +4356,32 @@ export interface Prisma__TenantClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$CustomerDocumentPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
+  organizationModules<
+    T extends Prisma.Tenant$organizationModulesArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Tenant$organizationModulesArgs<ExtArgs>>
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$OrganizationModulePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
+  modulePreferences<
+    T extends Prisma.Tenant$modulePreferencesArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.Tenant$modulePreferencesArgs<ExtArgs>>
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$ModulePreferencePayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -4787,6 +5309,68 @@ export type Tenant$customerDocumentsArgs<
   distinct?:
     | Prisma.CustomerDocumentScalarFieldEnum
     | Prisma.CustomerDocumentScalarFieldEnum[]
+}
+
+/**
+ * Tenant.organizationModules
+ */
+export type Tenant$organizationModulesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the OrganizationModule
+   */
+  select?: Prisma.OrganizationModuleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OrganizationModule
+   */
+  omit?: Prisma.OrganizationModuleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrganizationModuleInclude<ExtArgs> | null
+  where?: Prisma.OrganizationModuleWhereInput
+  orderBy?:
+    | Prisma.OrganizationModuleOrderByWithRelationInput
+    | Prisma.OrganizationModuleOrderByWithRelationInput[]
+  cursor?: Prisma.OrganizationModuleWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?:
+    | Prisma.OrganizationModuleScalarFieldEnum
+    | Prisma.OrganizationModuleScalarFieldEnum[]
+}
+
+/**
+ * Tenant.modulePreferences
+ */
+export type Tenant$modulePreferencesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the ModulePreference
+   */
+  select?: Prisma.ModulePreferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ModulePreference
+   */
+  omit?: Prisma.ModulePreferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ModulePreferenceInclude<ExtArgs> | null
+  where?: Prisma.ModulePreferenceWhereInput
+  orderBy?:
+    | Prisma.ModulePreferenceOrderByWithRelationInput
+    | Prisma.ModulePreferenceOrderByWithRelationInput[]
+  cursor?: Prisma.ModulePreferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?:
+    | Prisma.ModulePreferenceScalarFieldEnum
+    | Prisma.ModulePreferenceScalarFieldEnum[]
 }
 
 /**
