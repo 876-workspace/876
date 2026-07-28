@@ -22,6 +22,7 @@ export const notepadNoteSchema = z.object({
   pinned: z.boolean(),
   created_at: z.number(),
   updated_at: z.number(),
+  source_host: z.string().nullable(),
 })
 
 export type NotepadNote = z.infer<typeof notepadNoteSchema>

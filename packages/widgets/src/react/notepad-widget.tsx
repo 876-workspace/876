@@ -48,6 +48,9 @@ function pendingAsNote(pending: PendingEntry): NotepadNote {
     body: pending.body,
     color: pending.color,
     pinned: pending.pinned,
+    // A pending entry has not reached the server, so it has no attributed
+    // host yet; the server stamps one from the authenticated request.
+    source_host: null,
     created_at: pending.updated_at,
     updated_at: pending.updated_at,
   }
