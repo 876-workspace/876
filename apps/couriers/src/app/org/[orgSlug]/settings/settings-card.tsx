@@ -52,16 +52,16 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
   const { Icon, tone } = GROUP_STYLES[group.icon] ?? FALLBACK_STYLE
 
   return (
-    <section className="876-card p-4 transition-shadow hover:shadow-sm">
+    <section className="876-card overflow-hidden transition-shadow hover:shadow-sm">
       <SectionHeaderPill Icon={Icon} title={group.title} tone={tone} />
 
-      <ul className="space-y-1">
+      <ul className="space-y-1 px-4 pb-4">
         {group.items.map((item) => (
           <li key={item.title}>
             {item.href ? (
               <Link
                 href={`/org/${orgSlug}${item.href}`}
-                className="group/item hover:bg-muted flex items-center justify-between rounded-md py-2 pr-2.5 pl-10 text-sm transition-colors"
+                className="group/item hover:bg-muted flex items-center justify-between rounded-md py-2 pr-2.5 pl-6 text-sm transition-colors"
               >
                 <span className="text-foreground/90 group-hover/item:text-foreground">
                   {item.title}
@@ -69,7 +69,7 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
                 <ChevronRightIcon className="text-muted-foreground size-4 -translate-x-1 opacity-0 transition-all group-hover/item:translate-x-0 group-hover/item:opacity-100" />
               </Link>
             ) : (
-              <span className="text-muted-foreground/45 block py-2 pr-2.5 pl-10 text-sm">
+              <span className="text-muted-foreground/45 block py-2 pr-2.5 pl-6 text-sm">
                 {item.title}
               </span>
             )}

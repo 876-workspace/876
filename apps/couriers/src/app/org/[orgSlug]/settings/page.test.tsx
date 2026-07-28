@@ -46,13 +46,13 @@ describe('Couriers settings page', () => {
     expect(screen.queryByText('User preferences')).not.toBeInTheDocument()
   })
 
-  it('uses unified colored header pills and aligns item text with their labels', async () => {
+  it('uses light card-top header bands and aligns item text with their labels', async () => {
     await renderPage()
 
     const headings = screen.getAllByRole('heading', { level: 2 })
     const headerBackgrounds = headings.flatMap((heading) =>
       Array.from(heading.classList).filter((className) =>
-        /^bg-(blue|cyan|sky|teal)-100$/.test(className)
+        /^bg-(blue|cyan|sky|teal)-100\/80$/.test(className)
       )
     )
 
@@ -64,10 +64,12 @@ describe('Couriers settings page', () => {
           heading.classList.contains('flex-row') &&
           heading.classList.contains('items-center') &&
           heading.classList.contains('gap-2') &&
-          heading.classList.contains('rounded-xl') &&
+          heading.classList.contains('min-h-12') &&
+          heading.classList.contains('w-full') &&
+          heading.classList.contains('border-b') &&
           heading.classList.contains('px-4') &&
-          heading.classList.contains('py-2') &&
-          heading.classList.contains('mb-4') &&
+          heading.classList.contains('py-3') &&
+          heading.classList.contains('mb-2') &&
           heading.classList.contains('font-semibold') &&
           heading.classList.contains('text-slate-900')
       )
@@ -76,9 +78,7 @@ describe('Couriers settings page', () => {
     expect(new Set(headerBackgrounds).size).toBeGreaterThan(1)
 
     expect(
-      screen
-        .getByRole('link', { name: 'Profile' })
-        .classList.contains('pl-10')
+      screen.getByRole('link', { name: 'Profile' }).classList.contains('pl-6')
     ).toBe(true)
   })
 
