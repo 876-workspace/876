@@ -41,7 +41,7 @@ const columns: ColumnDef<RowData, unknown>[] = [
       const org = row.original._org
       if (!org) return <span className="text-muted-foreground text-sm">—</span>
       return (
-        <span className="flex items-center gap-2.5 text-sm">
+        <span className="text-muted-foreground flex items-center gap-2.5 text-sm">
           <OrgLogo name={org.name ?? org.slug} src={org.logo_url} size="sm" />
           <span className="truncate">{org.name ?? org.slug}</span>
         </span>

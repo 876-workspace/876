@@ -10,6 +10,7 @@ import { DetailChromeGate } from '@/components/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 import {
   DetailHeader,
+  DetailHeaderNotice,
   DetailHeaderTop,
   DetailHeaderMain,
   DetailHeaderActions,
@@ -78,16 +79,28 @@ export default async function UserDetailLayout({ children, params }: Props) {
   return (
     <div>
       {user.deleted_at && (
-        <div className="border-b border-red-400/30 bg-red-500/10 px-4 py-2.5 sm:px-6 lg:px-8">
-          <p className="flex items-center gap-2 text-sm text-red-700 dark:text-red-400">
-            <Trash className="size-4 shrink-0" />
-            This user was deleted on {formatDate(user.deleted_at)}. The record
-            is retained and visible to Console admins only.
-          </p>
-        </div>
+        <DetailHeaderNotice>
+          <Trash className="size-4 shrink-0" />
+          This user was deleted on {formatDate(user.deleted_at)}. The record is
+          retained and visible to Console admins only.
+        </DetailHeaderNotice>
       )}
       <DetailChromeGate>
-        <DetailHeader>
+        <DetailHeader
+          condensedTitle={
+            <>
+              <Avatar size="sm" className="size-6 shrink-0 text-[0.625rem]">
+                {user.avatar && (
+                  <AvatarImage src={user.avatar} alt={displayName} />
+                )}
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+              <span className="truncate text-sm font-semibold">
+                {displayName}
+              </span>
+            </>
+          }
+        >
           <DetailHeaderTop>
             <DetailHeaderMain>
               <FlagStripe

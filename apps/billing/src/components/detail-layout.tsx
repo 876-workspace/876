@@ -86,7 +86,7 @@ export function DetailLayout({
             ) : null}
           </DetailHeaderTop>
         ) : (
-          <div className="px-4 pt-3 pb-2 sm:px-6 sm:pt-4 lg:px-8">
+          <div className="px-4 pt-3 pb-2 sm:px-5 sm:pt-4 lg:px-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
                 <h1 className={cn('876-page-title truncate', titleClassName)}>

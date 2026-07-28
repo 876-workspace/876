@@ -4,9 +4,11 @@ import * as React from 'react'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
 import { formatMoney } from '@/lib/format'
+import { documentStatusVariant } from '@/lib/status'
 
 type Props = {
   emptyState?: React.ReactNode
@@ -60,9 +62,11 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
       id: 'status',
       header: 'Status',
       cell: ({ row }) => (
-        <span className="text-xs capitalize">
-          {row.original.status.toLowerCase()}
-        </span>
+        <Badge variant={documentStatusVariant(row.original.status)}>
+          <span className="capitalize">
+            {row.original.status.toLowerCase().replace(/_/g, ' ')}
+          </span>
+        </Badge>
       ),
     },
   ]

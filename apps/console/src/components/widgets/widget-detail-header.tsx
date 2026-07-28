@@ -33,24 +33,39 @@ export async function WidgetDetailHeader({
     : null
 
   return (
-    <DetailHeader>
-      <DetailHeaderTop className="px-4 pt-5 sm:px-6 lg:px-8">
+    <DetailHeader
+      condensedTitle={
+        <>
+          <WidgetCatalogIcon
+            visual={widget.visual}
+            className="size-6 rounded-md"
+            iconClassName="size-3.5"
+          />
+          <span className="truncate text-sm font-semibold">{widget.name}</span>
+        </>
+      }
+    >
+      <DetailHeaderTop>
         <DetailHeaderMain>
           <WidgetCatalogIcon
             visual={widget.visual}
-            className="mt-0.5 size-12 rounded-xl"
+            className="size-12 rounded-xl"
             iconClassName="size-6"
           />
           <div className="min-w-0">
             <h1 className="876-page-title">{widget.name}</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
+            {/* Capped to a readable measure — unbounded, the description ran
+                the full column width and read as a wall of grey. */}
+            <p className="text-muted-foreground mt-1 line-clamp-2 max-w-3xl text-sm">
               {widget.description}
             </p>
           </div>
         </DetailHeaderMain>
         <DetailHeaderActions>
-          <div className="border-876-surface-border bg-876-surface flex items-center gap-3 rounded-md border px-3 py-2">
-            <span className="text-sm font-medium">Enabled</span>
+          <div className="border-876-surface-border bg-876-surface flex items-center gap-3 rounded-lg border px-3 py-2">
+            <span className="text-muted-foreground text-sm font-medium">
+              Enabled
+            </span>
             {feature ? (
               <WidgetFeatureToggle feature={feature} />
             ) : (
