@@ -78,8 +78,8 @@ export default async function TeamMemberLayout({ children, params }: Props) {
   return (
     <div>
       <DetailChromeGate>
-        <DetailHeader className="border-876-surface-border border-b sm:static sm:z-auto">
-          <DetailHeaderTop className="px-4 pt-4 pb-4 sm:px-6 lg:px-8">
+        <DetailHeader className="sm:static sm:z-auto">
+          <DetailHeaderTop>
             <DetailHeaderMain className="gap-3.5">
               <Avatar className="ring-876-surface size-11 shrink-0 shadow-sm ring-2">
                 {identity?.avatar && (
