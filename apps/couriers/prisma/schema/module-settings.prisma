@@ -1,0 +1,47 @@
+/// Per-organization enablement of a settings module (deliveries, items, …).
+/// A missing row means "use the catalog's enabledByDefault" — absence is not "off".
+model OrganizationModule {
+  id        String  @id @default(cuid())
+  tenantId  String  @map("tenant_id")
+  /// Module key from the couriers module catalog. Matches a permission-catalog module key.
+  module    String
+  isEnabled Boolean @default(true) @map("is_enabled")
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, module], name: "organization_modules_tenant_id_module_key")
+  @@index([tenantId], name: "organization_modules_tenant_id_idx")
+  @@map("organization_modules")
+}
+
+/// One stored preference value for one module, for one organization.
+/// A missing row means "use the catalog default" — never write rows for defaults.
+/// Typed value columns mirror the platform provisioning property model so both
+/// layers speak the same value vocabulary; exactly one is non-null per row
+/// (except `reference`, which uses namespace + key together).
+model ModulePreference {
+  id                 String   @id @default(cuid())
+  tenantId           String   @map("tenant_id")
+  module             String
+  key                String
+  valueType          String   @map("value_type")
+  stringValue        String?  @map("string_value")
+  integerValue       Int?     @map("integer_value")
+  /// Decimal carried as a string end-to-end so money and rate values never lose precision.
+  decimalValue       String?  @map("decimal_value")
+  booleanValue       Boolean? @map("boolean_value")
+  referenceNamespace String?  @map("reference_namespace")
+  referenceKey       String?  @map("reference_key")
+  /// Opaque 876 user id of the last editor. No cross-database foreign key.
+  updatedBy          String?  @map("updated_by")
+  createdAt          Int      @map("created_at")
+  updatedAt          Int      @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, module, key], name: "module_preferences_tenant_id_module_key_key")
+  @@index([tenantId, module], name: "module_preferences_tenant_id_module_idx")
+  @@map("module_preferences")
+}
