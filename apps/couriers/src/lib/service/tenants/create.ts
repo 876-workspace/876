@@ -2,7 +2,9 @@ import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { prisma, type Tenant } from '@/lib/db'
 import type { ServiceResult } from '@/types/api'
+import type { DefaultBranchAddress } from '@/types/branch'
 import { ok, err } from '../result'
+import { branches } from '../branches'
 import { roles } from '../roles'
 
 export async function create(params: {
@@ -10,6 +12,12 @@ export async function create(params: {
   name: string
   slug: string
   ownerUserId?: string
+  /**
+   * The organization's registered address, resolved by the caller from the core
+   * org profile. Seeds the tenant's default pickup branch so a single-location
+   * courier has one without filling in a form. Omit it and no branch is seeded.
+   */
+  address?: DefaultBranchAddress | null
 }): ServiceResult<Pick<Tenant, 'id'>> {
   try {
     const now = nowUnixSeconds()
@@ -37,6 +45,8 @@ export async function create(params: {
       })
 
       await roles.ensureDefaults(created.id, tx)
+
+      await branches.ensureDefault(created.id, params.address ?? null, tx)
 
       if (params.ownerUserId) {
         const adminRole = await tx.role.findUnique({
