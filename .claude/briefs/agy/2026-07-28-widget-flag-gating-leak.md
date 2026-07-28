@@ -116,7 +116,7 @@ genuinely still AND-ed for this branch in the final `resolve()`.
 
 **H4 — `parent_feature_id` drift.** Children must AND with their master. If
 `couriers_widgets_notepad.parent_feature_id` is NULL, the master toggle stops
-governing the child *in evaluation*. (`isWidgetEnabled` would still require
+governing the child _in evaluation_. (`isWidgetEnabled` would still require
 the master slug to be present, so state clearly whether this can leak on its
 own or only in combination.)
 

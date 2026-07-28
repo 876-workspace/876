@@ -75,6 +75,11 @@ export const updateSubscription = (
     { method: 'PATCH', body: JSON.stringify(body) }
   )
 
+export const search = (query: string) =>
+  request<AdminOrganization[]>(
+    `/api/organizations/search?q=${encodeURIComponent(query)}`
+  )
+
 export const orgs = {
   create,
   update,
@@ -85,4 +90,5 @@ export const orgs = {
   createInvite,
   revokeInvite,
   updateSubscription,
+  search,
 }
