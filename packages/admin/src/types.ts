@@ -662,6 +662,48 @@ export type AdminOrgFeature = {
   updated_at: number
 }
 
+/** An organization override, carrying the identity needed to render it. */
+export type AdminOrgFeatureGrantItem = {
+  object: 'org_feature_grant'
+  id: string
+  organization_id: string
+  feature_id: string
+  slug: string
+  status: string
+  note: string | null
+  organization_name: string | null
+  organization_slug: string
+  organization_logo_url: string | null
+  created_at: number
+  updated_at: number
+}
+
+/** A user override, carrying the identity needed to render it. */
+export type AdminUserFeatureGrantItem = {
+  object: 'user_feature_grant'
+  id: string
+  user_id: string
+  feature_id: string
+  slug: string
+  status: string
+  note: string | null
+  user_email: string
+  user_first_name: string
+  user_last_name: string
+  user_username: string | null
+  user_avatar: string | null
+  created_at: number
+  updated_at: number
+}
+
+/** Every override attached to one feature. Not paginated — `has_more` is always false. */
+export type AdminFeatureGrants = {
+  object: 'feature_grants'
+  feature_id: string
+  organizations: AdminListResponse<AdminOrgFeatureGrantItem>
+  users: AdminListResponse<AdminUserFeatureGrantItem>
+}
+
 export type AdminOrgFeatureGrantParams = {
   feature_id: string
   enabled?: boolean
