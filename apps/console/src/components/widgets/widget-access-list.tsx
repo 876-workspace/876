@@ -1,4 +1,4 @@
-import type { AdminFeature, AdminFeatureGrants } from '@876/admin'
+import type { AdminFeature } from '@876/admin'
 import {
   getWidgetPlatformFeatureKeys,
   WIDGET_HOST_APP_SLUGS,
@@ -11,6 +11,7 @@ import {
   type AccessFlag,
   type AccessScope,
 } from '@/components/access/feature-access-board'
+import { loadGrants, toAccessFlag } from '@/components/access/to-access-flag'
 import { $876 } from '@/lib/876'
 
 const HOST_LABELS: Record<WidgetHost, string> = {
@@ -19,39 +20,6 @@ const HOST_LABELS: Record<WidgetHost, string> = {
   couriers: '876 Couriers',
   enterprise: '876 Enterprise',
   '876': '876',
-}
-
-function toFlag(
-  feature: AdminFeature,
-  grants: AdminFeatureGrants | null,
-  child: boolean
-): AccessFlag {
-  return {
-    id: feature.id,
-    slug: feature.slug,
-    name: feature.name,
-    enabled: feature.enabled,
-    child,
-    orgOverrides: (grants?.organizations.data ?? []).map((grant) => ({
-      id: grant.organization_id,
-      name: grant.organization_name ?? grant.organization_slug,
-      detail: grant.organization_slug,
-      avatarUrl: grant.organization_logo_url,
-      enabled: grant.status === 'enabled',
-    })),
-    userOverrides: (grants?.users.data ?? []).map((grant) => ({
-      id: grant.user_id,
-      name:
-        [grant.user_first_name, grant.user_last_name]
-          .filter(Boolean)
-          .join(' ') ||
-        grant.user_username ||
-        grant.user_email,
-      detail: grant.user_email,
-      avatarUrl: grant.user_avatar,
-      enabled: grant.status === 'enabled',
-    })),
-  }
 }
 
 /**
@@ -111,25 +79,20 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
       .map((slug) => bySlug.get(slug))
       .filter((feature): feature is AdminFeature => feature !== undefined)
   )
-  const grantsById = new Map(
-    await Promise.all(
-      resolved.map(async (feature) => {
-        const { data } = await $876.features.retrieveGrants(feature.id)
-        return [feature.id, data] as const
-      })
-    )
+  const grantsById = await loadGrants(resolved, (id) =>
+    $876.features.retrieveGrants(id)
   )
 
   const scopes: AccessScope[] = scopeSpecs.map((spec) => {
     const flags: AccessFlag[] = []
     const master = bySlug.get(spec.parent)
     if (master)
-      flags.push(toFlag(master, grantsById.get(master.id) ?? null, false))
+      flags.push(toAccessFlag(master, grantsById.get(master.id) ?? null, false))
 
     const widgetFlag = bySlug.get(spec.widgetKey)
     if (widgetFlag)
       flags.push(
-        toFlag(widgetFlag, grantsById.get(widgetFlag.id) ?? null, true)
+        toAccessFlag(widgetFlag, grantsById.get(widgetFlag.id) ?? null, true)
       )
 
     return {
