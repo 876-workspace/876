@@ -730,6 +730,7 @@ export const NotepadNoteScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   legacyConvexId: 'legacyConvexId',
+  sourceHost: 'sourceHost',
 } as const
 
 export type NotepadNoteScalarFieldEnum =
