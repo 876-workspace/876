@@ -56,9 +56,9 @@ Instead, hand-add exactly one entry to the `apps/couriers:` importer block's
 existing style of its sibling `@876/*` workspace entries:
 
 ```yaml
-      '@876/settings':
-        specifier: workspace:*
-        version: link:../../packages/settings
+'@876/settings':
+  specifier: workspace:*
+  version: link:../../packages/settings
 ```
 
 Then verify with `pnpm install --frozen-lockfile`. If it prints

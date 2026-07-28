@@ -350,7 +350,7 @@ export type SoftBadgeTone =
   | 'purple'
   | 'rose'
 
-<SoftBadge tone="emerald">Active</SoftBadge>
+;<SoftBadge tone="emerald">Active</SoftBadge>
 ```
 
 - Pick a tone by semantic meaning, not visual preference: `emerald` for a
