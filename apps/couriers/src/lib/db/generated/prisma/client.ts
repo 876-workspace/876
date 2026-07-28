@@ -140,6 +140,21 @@ export type Mailbox = Prisma.MailboxModel
  */
 export type Manifest = Prisma.ManifestModel
 /**
+ * Model OrganizationModule
+ * Per-organization enablement of a settings module (deliveries, items, …).
+ * A missing row means "use the catalog's enabledByDefault" — absence is not "off".
+ */
+export type OrganizationModule = Prisma.OrganizationModuleModel
+/**
+ * Model ModulePreference
+ * One stored preference value for one module, for one organization.
+ * A missing row means "use the catalog default" — never write rows for defaults.
+ * Typed value columns mirror the platform provisioning property model so both
+ * layers speak the same value vocabulary; exactly one is non-null per row
+ * (except `reference`, which uses namespace + key together).
+ */
+export type ModulePreference = Prisma.ModulePreferenceModel
+/**
  * Model PackageCategory
  * Classification categories for packages — used for filtering, reporting, and display.
  * System categories have tenantId = null and are available to all tenants.
