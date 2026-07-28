@@ -65,6 +65,19 @@ export const branchSearchParamsSchema = z.strictObject({
 })
 export type BranchSearchParams = z.input<typeof branchSearchParamsSchema>
 
+/**
+ * The organization address a default branch is seeded from. Sourced from the core
+ * organization profile, so every field is optional there and may be absent here.
+ */
+export interface DefaultBranchAddress {
+  street1?: string | null
+  street2?: string | null
+  city?: string | null
+  parish?: string | null
+  country?: string | null
+  phone?: string | null
+}
+
 export const deletedBranchSchema = z.object({
   id: z.string(),
   deleted: z.literal(true),
