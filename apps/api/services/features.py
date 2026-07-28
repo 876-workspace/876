@@ -101,6 +101,14 @@ class FeatureService:
     async def retrieve_feature(self, feature_id: str) -> Feature:
         return await self.require_feature(feature_id)
 
+    async def list_feature_grants(
+        self, feature_id: str
+    ) -> tuple[Feature, list[OrgFeature], list[UserFeature]]:
+        feature = await self.require_feature(feature_id)
+        org_grants = await self.features.list_org_grants_for_feature(feature_id)
+        user_grants = await self.features.list_user_grants_for_feature(feature_id)
+        return feature, org_grants, user_grants
+
     async def list_features(
         self,
         *,
