@@ -1,4 +1,5 @@
 export interface CouriersFeatures {
+  storageOrgLogoUpload: boolean
   uiFeatures: {
     searchBar: boolean
     themeSwitcher: boolean

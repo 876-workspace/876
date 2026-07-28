@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     color: typeof color === 'string' ? color : undefined,
     pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
     collectionId,
+    sourceHost: auth.sourceHost,
   })
   return serviceResponse(result)
 }

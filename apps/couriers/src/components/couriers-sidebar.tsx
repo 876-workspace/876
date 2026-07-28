@@ -6,6 +6,7 @@ import { couriersNav } from './couriers-nav-config'
 import { CouriersNavDropdown } from './couriers-nav-dropdown'
 import { CouriersNavLink } from './couriers-nav-link'
 import { Settings } from '@876/ui/icons'
+import { OrgAvatar } from '@876/ui/org-avatar'
 import {
   Sidebar,
   SidebarContent,
@@ -17,20 +18,25 @@ import {
 export function CouriersSidebar({
   basePath,
   tenantName,
+  logoUrl,
 }: {
   basePath: string
   tenantName: string
+  logoUrl?: string | null
 }) {
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border bg-sidebar">
+    <Sidebar collapsible="icon" className="border-sidebar-border/50 bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href={basePath}
           className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
         >
-          <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border text-xs font-bold">
-            C
-          </span>
+          <OrgAvatar
+            name={tenantName}
+            src={logoUrl}
+            size="md"
+            className="size-8 rounded-xl"
+          />
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="block truncate text-lg leading-6 font-medium tracking-[-0.02em] text-[#202124] dark:text-white">
               {tenantName}
@@ -87,6 +93,7 @@ export function CouriersSidebar({
               title="Settings"
               icon={Settings}
               color="var(--couriers-primary)"
+              iconClassName="size-4"
             />
           </div>
         </nav>

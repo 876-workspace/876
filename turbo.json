@@ -5,6 +5,10 @@
     "CODESPACE_NAME",
     "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN"
   ],
+  "globalDependencies": [
+    "scripts/build-serwist.mjs",
+    "scripts/serwist-shell-worker.ts"
+  ],
   "tasks": {
     "dev": {
       "cache": false,

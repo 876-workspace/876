@@ -20,7 +20,7 @@ def test_environment_check_reports_names_without_secret_values() -> None:
 
 def test_environment_check_accepts_shadow_writer_mode() -> None:
     settings = Settings(
-        identity_api_url="http://876-api.railway.internal",
+        identity_api_url="https://identity-api.example.com",
         identity_api_key="configured",
         database_url="postgresql://example.invalid/billing",
         internal_key="configured",

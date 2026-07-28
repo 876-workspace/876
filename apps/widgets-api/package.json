@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "prisma migrate deploy && prisma generate && next dev --turbopack --port 3005",
     "build": "opennextjs-cloudflare build",
-    "build:next": "next build",
+    "build:next": "NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start -H :: --port ${PORT:-3005}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
@@ -28,6 +28,7 @@
     "@prisma/adapter-neon": "7.7.0",
     "@prisma/adapter-pg": "7.7.0",
     "@prisma/client": "7.7.0",
+    "@sentry/nextjs": "10.56.0",
     "next": "16.2.6",
     "pg": "8.13.1",
     "server-only": "0.0.1",

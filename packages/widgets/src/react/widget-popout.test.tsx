@@ -149,9 +149,8 @@ describe('Widget popout panel', () => {
       '[data-slot="widget-panel"]'
     ) as HTMLElement
     expect(panel.style.width).toBe('720px')
-    // edge 8*2 + rail 48 + gap 8 = 72
-    // edge 16*2 + rail 48 + gap 8 = 88
-    expect(panel.style.maxWidth).toBe('calc(100vw - 88px)')
+    // edge 16*2 + rail 48 + gap 16 = 96
+    expect(panel.style.maxWidth).toBe('calc(100vw - 96px)')
     expect(panel.getAttribute('data-can-dock')).toBe('false')
   })
 
@@ -234,8 +233,8 @@ describe('Widget popout panel', () => {
     const panel = document.querySelector(
       '[data-slot="widget-panel"]'
     ) as HTMLElement
-    // edge 16 + rail 48 + gap 8 = 72
-    expect(panel.style.right).toBe('72px')
+    // edge 16 + rail 48 + gap 16 = 80
+    expect(panel.style.right).toBe('80px')
     expect(panel.style.top).toBe('84px')
     expect(panel.style.bottom).toBe('20px')
     expect(panel.getAttribute('data-presentation')).toBe('popout')

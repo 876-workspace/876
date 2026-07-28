@@ -423,6 +423,8 @@ export const ModelName = {
   CourierCustomerProfile: 'CourierCustomerProfile',
   Mailbox: 'Mailbox',
   Manifest: 'Manifest',
+  OrganizationModule: 'OrganizationModule',
+  ModulePreference: 'ModulePreference',
   PackageCategory: 'PackageCategory',
   Package: 'Package',
   PackageDocument: 'PackageDocument',
@@ -468,6 +470,8 @@ export type TypeMap<
       | 'courierCustomerProfile'
       | 'mailbox'
       | 'manifest'
+      | 'organizationModule'
+      | 'modulePreference'
       | 'packageCategory'
       | 'package'
       | 'packageDocument'
@@ -1315,6 +1319,158 @@ export type TypeMap<
           args: Prisma.ManifestCountArgs<ExtArgs>
           result:
             | runtime.Types.Utils.Optional<Prisma.ManifestCountAggregateOutputType>
+            | number
+        }
+      }
+    }
+    OrganizationModule: {
+      payload: Prisma.$OrganizationModulePayload<ExtArgs>
+      fields: Prisma.OrganizationModuleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrganizationModuleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrganizationModuleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>
+        }
+        findFirst: {
+          args: Prisma.OrganizationModuleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrganizationModuleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>
+        }
+        findMany: {
+          args: Prisma.OrganizationModuleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>[]
+        }
+        create: {
+          args: Prisma.OrganizationModuleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>
+        }
+        createMany: {
+          args: Prisma.OrganizationModuleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrganizationModuleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>[]
+        }
+        delete: {
+          args: Prisma.OrganizationModuleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>
+        }
+        update: {
+          args: Prisma.OrganizationModuleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>
+        }
+        deleteMany: {
+          args: Prisma.OrganizationModuleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrganizationModuleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrganizationModuleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>[]
+        }
+        upsert: {
+          args: Prisma.OrganizationModuleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrganizationModulePayload>
+        }
+        aggregate: {
+          args: Prisma.OrganizationModuleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrganizationModule>
+        }
+        groupBy: {
+          args: Prisma.OrganizationModuleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrganizationModuleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrganizationModuleCountArgs<ExtArgs>
+          result:
+            | runtime.Types.Utils.Optional<Prisma.OrganizationModuleCountAggregateOutputType>
+            | number
+        }
+      }
+    }
+    ModulePreference: {
+      payload: Prisma.$ModulePreferencePayload<ExtArgs>
+      fields: Prisma.ModulePreferenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ModulePreferenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ModulePreferenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>
+        }
+        findFirst: {
+          args: Prisma.ModulePreferenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ModulePreferenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>
+        }
+        findMany: {
+          args: Prisma.ModulePreferenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>[]
+        }
+        create: {
+          args: Prisma.ModulePreferenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>
+        }
+        createMany: {
+          args: Prisma.ModulePreferenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ModulePreferenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>[]
+        }
+        delete: {
+          args: Prisma.ModulePreferenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>
+        }
+        update: {
+          args: Prisma.ModulePreferenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>
+        }
+        deleteMany: {
+          args: Prisma.ModulePreferenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ModulePreferenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ModulePreferenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>[]
+        }
+        upsert: {
+          args: Prisma.ModulePreferenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModulePreferencePayload>
+        }
+        aggregate: {
+          args: Prisma.ModulePreferenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateModulePreference>
+        }
+        groupBy: {
+          args: Prisma.ModulePreferenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModulePreferenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ModulePreferenceCountArgs<ExtArgs>
+          result:
+            | runtime.Types.Utils.Optional<Prisma.ModulePreferenceCountAggregateOutputType>
             | number
         }
       }
@@ -2470,6 +2626,38 @@ export const ManifestScalarFieldEnum = {
 export type ManifestScalarFieldEnum =
   (typeof ManifestScalarFieldEnum)[keyof typeof ManifestScalarFieldEnum]
 
+export const OrganizationModuleScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  module: 'module',
+  isEnabled: 'isEnabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type OrganizationModuleScalarFieldEnum =
+  (typeof OrganizationModuleScalarFieldEnum)[keyof typeof OrganizationModuleScalarFieldEnum]
+
+export const ModulePreferenceScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  module: 'module',
+  key: 'key',
+  valueType: 'valueType',
+  stringValue: 'stringValue',
+  integerValue: 'integerValue',
+  decimalValue: 'decimalValue',
+  booleanValue: 'booleanValue',
+  referenceNamespace: 'referenceNamespace',
+  referenceKey: 'referenceKey',
+  updatedBy: 'updatedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type ModulePreferenceScalarFieldEnum =
+  (typeof ModulePreferenceScalarFieldEnum)[keyof typeof ModulePreferenceScalarFieldEnum]
+
 export const PackageCategoryScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3026,6 +3214,8 @@ export type GlobalOmitConfig = {
   courierCustomerProfile?: Prisma.CourierCustomerProfileOmit
   mailbox?: Prisma.MailboxOmit
   manifest?: Prisma.ManifestOmit
+  organizationModule?: Prisma.OrganizationModuleOmit
+  modulePreference?: Prisma.ModulePreferenceOmit
   packageCategory?: Prisma.PackageCategoryOmit
   package?: Prisma.PackageOmit
   packageDocument?: Prisma.PackageDocumentOmit

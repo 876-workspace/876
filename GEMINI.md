@@ -85,7 +85,7 @@ pnpm check                        # format + lint + typecheck + test (run before
 
 ## Cloudflare Deployment
 
-Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). `@876/api` (FastAPI/Python) cannot run on Cloudflare — deploy it separately on Railway, Fly.io, or Render.
+Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). FastAPI services deploy as **Cloudflare Containers** using a Dockerfile and Worker front door.
 
 **Adapter:** `@opennextjs/cloudflare` v1.20+ (installed in all four Next.js apps). Do NOT use the deprecated `@cloudflare/next-on-pages`.
 
@@ -129,8 +129,8 @@ Rule files live in `.claude/rules/` (the canonical copy Claude Code loads from) 
 
 ## Required Context
 
-- Read `apps/docs/content/docs/index.mdx` at session start when working on documentation.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
+- Read `.agents/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.agents/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
@@ -249,8 +249,6 @@ Co-Authored-By: (the agent model's name and attribution byline)
 
 ## Docs
 
-- SDK documentation lives under `apps/docs/content/docs/` and is rendered by `@876/docs`.
-- API method references in the docs app use `apps/docs/openapi.json`; regenerate it with `pnpm sync:openapi` when API contracts change.
 - Package-local notes stay in package `README.md` files.
 
 ## Research & Best Practices

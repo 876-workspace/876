@@ -14,6 +14,7 @@ function createRow(
     pinned: boolean
     createdAt: number
     updatedAt: number
+    sourceHost: string | null
   }> = {}
 ) {
   return {
@@ -27,6 +28,7 @@ function createRow(
     createdAt: 1_720_000_000,
     updatedAt: 1_720_000_100,
     legacyConvexId: null,
+    sourceHost: null as string | null,
     ...overrides,
   }
 }
@@ -46,7 +48,20 @@ describe('serializeNote', () => {
       pinned: false,
       created_at: 1_720_000_000,
       updated_at: 1_720_000_100,
+      source_host: null,
     })
+  })
+
+  it('when sourceHost is set, then round-trips source_host', () => {
+    expect(
+      serializeNote(createRow({ sourceHost: 'couriers' })).source_host
+    ).toBe('couriers')
+  })
+
+  it('when sourceHost is null, then serializes source_host as null', () => {
+    expect(
+      serializeNote(createRow({ sourceHost: null })).source_host
+    ).toBeNull()
   })
 
   it('when collectionId is set, then serializes collection_id', () => {

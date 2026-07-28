@@ -67,6 +67,7 @@ describe('browserNotes host client', () => {
         pinned: false,
         created_at: 10,
         updated_at: 10,
+        source_host: null,
       }
       fetchMock.mockResolvedValue(
         jsonResponse({ data: note, error: null }, 201)
@@ -106,6 +107,7 @@ describe('browserNotes host client', () => {
         pinned: true,
         created_at: 1,
         updated_at: 2,
+        source_host: null,
       }
       fetchMock.mockResolvedValue(jsonResponse({ data: note, error: null }))
 

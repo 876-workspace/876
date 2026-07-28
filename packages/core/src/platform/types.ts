@@ -36,6 +36,7 @@ export type PlatformRoutingMembership = {
     name: string | null
     slug: string
     status: string
+    logo_url: string | null
   }
 }
 
@@ -59,6 +60,7 @@ export type PlatformOrganization = {
   name: string | null
   slug: string
   status: string
+  logo_file_id: string | null
   logo_url: string | null
   timezone: string | null
   language: string | null
@@ -83,6 +85,7 @@ export type PlatformOrganizationProfile = {
   doing_business_as: string | null
   slug: string
   status: string
+  logo_file_id: string | null
   logo_url: string | null
   industry: string | null
   business_type: string | null
@@ -127,6 +130,7 @@ export type PlatformOrgProfileUpdateParams = {
   primary_contact_user_id?: string | null
   timezone?: string | null
   language?: string | null
+  logo_file_id?: string | null
   logo_url?: string | null
   primary_phone?: string | null
   primary_email?: string | null

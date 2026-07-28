@@ -11,6 +11,11 @@ const mocks = vi.hoisted(() => ({
   getRoutingMemberships: vi.fn(),
   retrieveByOrgId: vi.fn(),
   retrieveSubscriptionBySlug: vi.fn(),
+  captureMessage: vi.fn(),
+}))
+
+vi.mock('@sentry/nextjs', () => ({
+  captureMessage: mocks.captureMessage,
 }))
 
 vi.mock('react', async (importOriginal) => {
@@ -75,6 +80,7 @@ function createMembership(
       name: 'Island Logistics',
       slug: 'island-logistics',
       status: 'active',
+      logo_url: null,
     },
     ...overrides,
   }
@@ -125,6 +131,7 @@ describe('getManageContext', () => {
               name: 'Island Logistics',
               slug: 'island-logistics',
               status: 'active',
+              logo_url: null,
             },
           },
         ],
@@ -173,6 +180,68 @@ describe('getManageContext', () => {
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
+  it('reports the failing call when memberships fail', async () => {
+    mocks.getRoutingMemberships.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'provider/unavailable',
+        message: 'Routing memberships are temporarily unavailable.',
+      },
+    })
+
+    await getManageContext()
+
+    expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
+    expect(mocks.captureMessage).toHaveBeenCalledWith(
+      'Platform outage: auth.getRoutingMemberships failed',
+      expect.objectContaining({
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: expect.objectContaining({
+          call: 'auth.getRoutingMemberships',
+          errorCode: 'provider/unavailable',
+          errorMessage: 'Routing memberships are temporarily unavailable.',
+        }),
+      })
+    )
+  })
+
+  it('does not report when memberships resolve', async () => {
+    mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+
+    await getManageContext('island-logistics')
+
+    expect(mocks.captureMessage).not.toHaveBeenCalled()
+  })
+
+  it('reports when the subscription lookup fails and access degrades to none', async () => {
+    mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'admin/unauthorized',
+        message: 'An internal key is required.',
+      },
+    })
+
+    const result = await getManageContext('island-logistics')
+
+    expect(result?.accessStatus).toBe('none')
+    expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
+    expect(mocks.captureMessage).toHaveBeenCalledWith(
+      'Platform outage: orgs.subscriptions.retrieveBySlug failed',
+      expect.objectContaining({
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: expect.objectContaining({
+          call: 'orgs.subscriptions.retrieveBySlug',
+          errorCode: 'admin/unauthorized',
+          errorMessage: 'An internal key is required.',
+        }),
+      })
+    )
+  })
+
   it('resolves an exact active slug to the complete management context', async () => {
     const tenant = createTenant()
     mocks.retrieveByOrgId.mockResolvedValue(tenant)
@@ -184,12 +253,14 @@ describe('getManageContext', () => {
       orgId: 'organization_island_123',
       orgName: 'Island Logistics',
       orgSlug: 'island-logistics',
+      orgLogoUrl: null,
       organizations: [
         {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
           role: 'owner',
+          logoUrl: null,
         },
       ],
       tenant,
@@ -235,6 +306,7 @@ describe('getManageContext', () => {
         name: 'Archived Couriers',
         slug: 'archived-couriers',
         status: 'archived',
+        logo_url: null,
       },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
@@ -272,6 +344,7 @@ describe('getManageContext', () => {
         name: 'Cookie Freight',
         slug: 'cookie-freight',
         status: 'active',
+        logo_url: null,
       },
     })
     const slugMembership = createMembership({
@@ -282,6 +355,7 @@ describe('getManageContext', () => {
         name: 'Slug Express',
         slug: 'slug-express',
         status: 'active',
+        logo_url: null,
       },
     })
     const session = createSession({
@@ -311,18 +385,21 @@ describe('getManageContext', () => {
       orgId: 'organization_slug_123',
       orgName: 'Slug Express',
       orgSlug: 'slug-express',
+      orgLogoUrl: null,
       organizations: [
         {
           id: 'organization_cookie_123',
           name: 'Cookie Freight',
           slug: 'cookie-freight',
           role: 'admin',
+          logoUrl: null,
         },
         {
           id: 'organization_slug_123',
           name: 'Slug Express',
           slug: 'slug-express',
           role: 'member',
+          logoUrl: null,
         },
       ],
       tenant,
@@ -357,12 +434,14 @@ describe('getManageContext', () => {
       orgId: 'organization_island_123',
       orgName: 'Island Logistics',
       orgSlug: 'island-logistics',
+      orgLogoUrl: null,
       organizations: [
         {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
           role: 'owner',
+          logoUrl: null,
         },
       ],
       tenant,
@@ -406,6 +485,7 @@ describe('getManageContext', () => {
         name: 'Portland Freight',
         slug: 'portland-freight',
         status: 'active',
+        logo_url: null,
       },
     })
     const secondMembership = createMembership({
@@ -416,6 +496,7 @@ describe('getManageContext', () => {
         name: 'Montego Express',
         slug: 'montego-express',
         status: 'active',
+        logo_url: null,
       },
     })
     const tenant = createTenant({
@@ -439,18 +520,21 @@ describe('getManageContext', () => {
       orgId: 'organization_montego_123',
       orgName: 'Montego Express',
       orgSlug: 'montego-express',
+      orgLogoUrl: null,
       organizations: [
         {
           id: 'organization_portland_123',
           name: 'Portland Freight',
           slug: 'portland-freight',
           role: 'admin',
+          logoUrl: null,
         },
         {
           id: 'organization_montego_123',
           name: 'Montego Express',
           slug: 'montego-express',
           role: 'owner',
+          logoUrl: null,
         },
       ],
       tenant,
@@ -482,6 +566,7 @@ describe('getManageContext', () => {
         name: 'Portland Freight',
         slug: 'portland-freight',
         status: 'active',
+        logo_url: null,
       },
     })
     const secondMembership = createMembership({
@@ -492,6 +577,7 @@ describe('getManageContext', () => {
         name: 'Montego Express',
         slug: 'montego-express',
         status: 'active',
+        logo_url: null,
       },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
@@ -506,18 +592,21 @@ describe('getManageContext', () => {
       orgId: 'organization_portland_123',
       orgName: 'Portland Freight',
       orgSlug: 'portland-freight',
+      orgLogoUrl: null,
       organizations: [
         {
           id: 'organization_portland_123',
           name: 'Portland Freight',
           slug: 'portland-freight',
           role: 'admin',
+          logoUrl: null,
         },
         {
           id: 'organization_montego_123',
           name: 'Montego Express',
           slug: 'montego-express',
           role: 'member',
+          logoUrl: null,
         },
       ],
       tenant: null,
@@ -547,6 +636,7 @@ describe('getManageContext', () => {
         name: 'Archived Couriers',
         slug: 'archived-couriers',
         status: 'archived',
+        logo_url: null,
       },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
@@ -571,6 +661,7 @@ describe('getManageContext', () => {
         name: 'Inactive Membership Logistics',
         slug: 'inactive-membership-logistics',
         status: 'active',
+        logo_url: null,
       },
     })
     const archivedOrgMembership = createMembership({
@@ -581,6 +672,7 @@ describe('getManageContext', () => {
         name: 'Archived Logistics',
         slug: 'archived-logistics',
         status: 'archived',
+        logo_url: null,
       },
     })
     const session = createSession({
@@ -605,12 +697,14 @@ describe('getManageContext', () => {
       orgId: 'organization_island_123',
       orgName: 'Island Logistics',
       orgSlug: 'island-logistics',
+      orgLogoUrl: null,
       organizations: [
         {
           id: 'organization_island_123',
           name: 'Island Logistics',
           slug: 'island-logistics',
           role: 'owner',
+          logoUrl: null,
         },
       ],
       tenant: null,
@@ -644,12 +738,14 @@ describe('getManageContext', () => {
         orgId: 'organization_island_123',
         orgName: 'Island Logistics',
         orgSlug: 'island-logistics',
+        orgLogoUrl: null,
         organizations: [
           {
             id: 'organization_island_123',
             name: 'Island Logistics',
             slug: 'island-logistics',
             role: 'owner',
+            logoUrl: null,
           },
         ],
         tenant: null,
@@ -663,4 +759,138 @@ describe('getManageContext', () => {
       )
     }
   )
+
+  describe('organization logo threading', () => {
+    const logoUrl = 'https://assets.876.test/island-logistics.png'
+
+    it('threads the selected org logo into orgLogoUrl and the org list', async () => {
+      const tenant = createTenant()
+      mocks.getRoutingMemberships.mockResolvedValue({
+        data: {
+          data: [
+            createMembership({
+              organization: {
+                id: 'organization_island_123',
+                name: 'Island Logistics',
+                slug: 'island-logistics',
+                status: 'active',
+                logo_url: logoUrl,
+              },
+            }),
+          ],
+        },
+        error: null,
+      })
+      mocks.retrieveByOrgId.mockResolvedValue(tenant)
+
+      const result = await getManageContext('island-logistics')
+
+      expect(result).toEqual({
+        userId: 'user_kingston_123',
+        orgId: 'organization_island_123',
+        orgName: 'Island Logistics',
+        orgSlug: 'island-logistics',
+        orgLogoUrl: logoUrl,
+        organizations: [
+          {
+            id: 'organization_island_123',
+            name: 'Island Logistics',
+            slug: 'island-logistics',
+            role: 'owner',
+            logoUrl,
+          },
+        ],
+        tenant,
+        role: 'owner',
+        accessStatus: 'active',
+      })
+    })
+
+    it('keeps each membership logo distinct in the switcher list', async () => {
+      const islandLogo = 'https://assets.876.test/island.png'
+      const montegoLogo = 'https://assets.876.test/montego.png'
+      const tenant = createTenant()
+      mocks.getRoutingMemberships.mockResolvedValue({
+        data: {
+          data: [
+            createMembership({
+              organization: {
+                id: 'organization_island_123',
+                name: 'Island Logistics',
+                slug: 'island-logistics',
+                status: 'active',
+                logo_url: islandLogo,
+              },
+            }),
+            createMembership({
+              id: 'membership_montego_123',
+              role: 'admin',
+              organization: {
+                id: 'organization_montego_123',
+                name: 'Montego Express',
+                slug: 'montego-express',
+                status: 'active',
+                logo_url: montegoLogo,
+              },
+            }),
+          ],
+        },
+        error: null,
+      })
+      mocks.retrieveByOrgId.mockResolvedValue(tenant)
+
+      const result = await getManageContext('montego-express')
+
+      expect(result?.orgLogoUrl).toBe(montegoLogo)
+      expect(result?.organizations).toEqual([
+        {
+          id: 'organization_island_123',
+          name: 'Island Logistics',
+          slug: 'island-logistics',
+          role: 'owner',
+          logoUrl: islandLogo,
+        },
+        {
+          id: 'organization_montego_123',
+          name: 'Montego Express',
+          slug: 'montego-express',
+          role: 'admin',
+          logoUrl: montegoLogo,
+        },
+      ])
+    })
+
+    it('threads the sealed-org logo on the no-slug fast path', async () => {
+      const session = createSession({
+        user: {
+          id: 'user_kingston_123',
+          email: 'althea@islandlogistics.test',
+          orgId: 'organization_island_123',
+        },
+      })
+      mocks.getAuthSession.mockResolvedValue(session)
+      mocks.getRoutingMemberships.mockResolvedValue({
+        data: {
+          data: [
+            createMembership({
+              organization: {
+                id: 'organization_island_123',
+                name: 'Island Logistics',
+                slug: 'island-logistics',
+                status: 'active',
+                logo_url: logoUrl,
+              },
+            }),
+          ],
+        },
+        error: null,
+      })
+      mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+
+      const result = await getManageContext()
+
+      expect(result?.orgLogoUrl).toBe(logoUrl)
+      expect(result?.organizations[0]?.logoUrl).toBe(logoUrl)
+    })
+  })
 })

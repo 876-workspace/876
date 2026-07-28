@@ -40,7 +40,7 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ## Cloudflare Deployment
 
-Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). FastAPI services (`@876/api`, `@876/billing-api`) deploy as **Cloudflare Containers** (Dockerfile + Worker front door). See `docs/cloudflare.md` for the full layout; Railway remains dual-run only during cutover (`docs/railway.md`).
+Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). FastAPI services (`@876/api`, `@876/billing-api`) deploy as **Cloudflare Containers** (Dockerfile + Worker front door). See `docs/cloudflare.md` for the full layout.
 
 **Adapter:** `@opennextjs/cloudflare` v1.20+ (installed in all four Next.js apps). Do NOT use the deprecated `@cloudflare/next-on-pages`.
 
@@ -95,7 +95,6 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 
 ## Required Context
 
-- Read `apps/docs/content/docs/index.mdx` at session start when working on documentation.
 - Read `.claude/rules/performance.md` (index — open only the relevant category file(s)), `.claude/rules/types.md`, `.claude/rules/code-style.md`, and `.claude/rules/data-fetching.md` before editing app code.
 - Read `.claude/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.claude/rules/app-layout.md` before scaffolding or editing any page in Console, Enterprise, Couriers, Billing, or a new sidebar-style app (page containers, toolbars, list status filters, list/detail/settings patterns, forms-vs-dialogs, back-links, button labels/colors). These do not apply to `@876/app` (consumer), which has its own layout.
@@ -103,13 +102,15 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 - Read `.claude/rules/api-access.md` before writing any data-fetching code in `apps/876` or `apps/console`.
 - Read `.claude/rules/sdk-conventions.md` before adding or changing any client/data-access method in `@876/sdk`, `@876/admin`, or app data-fetching code (covers the `$876.<resource>.<verb>()` surface, client tiers, and the auth-tier gating rule).
 - Read `.claude/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).
+- Read `.claude/rules/module-settings.md` before adding, storing, reading, or rendering any organization-level setting or preference in any SaaS app (the provisioning/modules/preferences layering, the `@876/settings` contract, app-local storage, defaults-are-never-stored, RSC-serializable settings nav). A module is org-controlled usage; a feature flag is platform-controlled rollout — do not confuse them.
+- Read `.claude/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
 - Read `.claude/rules/customer-architecture.md` before modeling, storing, importing, linking, or disclosing customer, customer-profile, account-linkage, or sensitive-identifier (TRN/passport) data in any app (fixed terminology + the identity/relationship/app-profile layering).
 - Read `.claude/rules/git.md` before committing, branching, or opening a PR (Conventional Commits, atomic-commit granularity, no AI commit attribution, branch from `main`).
 - For Next.js routing/rendering/config/metadata/proxy changes, read the matching local guide in `node_modules/next/dist/docs/` first.
 
 ## Sub-Agent Rules
 
-- **Never run sub-agents (Codex, `agy`, `opencode`, Command Code, or any agent) in the background.** Always run them in the foreground so you can monitor output, catch errors, and verify results inline. Background sub-agents are forbidden unless explicitly authorized in writing by the user.
+- **Background execution is authorized** (user, 2026-07-26: _"run codex in the background always going further"_, refined to _"in the background only if they make sense, you make that decision"_). This supersedes the previous foreground-only requirement, which permitted exactly this written exception. Use judgement: background genuinely long-running work (a Codex run, a CI poll) and keep quick checks in the foreground. Either way you must still read and verify the output — a delegation you never inspect is not delegation.
 - **Read `.claude/rules/cli.md` before spawning any sub-agent or CLI.** It is the canonical routing rule for which model handles which task class:
   - **Code exploration/research** → a Sonnet sub-agent at high reasoning depth, briefed with the exact question, why it's needed, and the expected return shape (file:line citations, exact shapes) — this is the highest-token category, so a shallow one-line brief undermines the whole point of delegating it.
   - **Advanced/critical implementation** → an Opus sub-agent at high reasoning depth.
@@ -235,8 +236,6 @@ Per memory: do **not** add Claude/AI co-author attribution to commits.
 
 ## Docs
 
-- SDK documentation lives under `apps/docs/content/docs/` and is rendered by `@876/docs`.
-- API method references in the docs app use `apps/docs/openapi.json`; regenerate it with `pnpm sync:openapi` when API contracts change.
 - Package-local notes stay in package `README.md` files.
 
 ## Research & Best Practices

@@ -170,6 +170,11 @@ FEATURE_SEEDS_BY_APP: dict[str, list[FeatureSeed]] = {
             "description": "Organization switcher in the top nav.",
         },
         {
+            "slug": "couriers_storage_org_logo_upload",
+            "name": "Organization logo upload",
+            "description": "Allows organization owners and admins to upload organization logos.",
+        },
+        {
             "slug": "couriers_operations",
             "name": "Operations",
             "description": "Master switch for Couriers operations areas.",

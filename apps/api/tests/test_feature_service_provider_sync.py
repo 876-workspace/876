@@ -99,3 +99,45 @@ async def test_update_syncs_posthog_before_flushing_local_state(
     db.refresh.assert_awaited_once_with(feature)
     assert result.enabled is False
     assert result.provider_metadata == {"active": False}
+
+
+@pytest.mark.asyncio
+async def test_update_widget_feature_syncs_default_value_when_enabled_changes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    feature = SimpleNamespace(
+        provider="posthog",
+        provider_feature_id="757983",
+        provider_metadata={"active": True},
+        enabled=True,
+        default_value=True,
+        tags=["widget"],
+        synced_at=0,
+        updated_at=0,
+    )
+    db = SimpleNamespace(flush=AsyncMock(), refresh=AsyncMock())
+    provider = SimpleNamespace(
+        update=AsyncMock(
+            return_value=SimpleNamespace(metadata={"active": False})
+        )
+    )
+    service = FeatureService(cast(Any, db))
+    monkeypatch.setattr(
+        service,
+        "require_feature",
+        AsyncMock(return_value=feature),
+    )
+    monkeypatch.setattr(
+        features_module,
+        "get_feature_flag_provider",
+        lambda: provider,
+    )
+
+    result = await service.update_feature(
+        "ftr_widget",
+        **_update_arguments(enabled=False),
+    )
+
+    assert result.enabled is False
+    assert result.default_value is False
+

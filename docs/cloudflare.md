@@ -4,9 +4,6 @@ Deploy the **876 monorepo** on [Cloudflare](https://developers.cloudflare.com/) 
 Workers (Next.js via OpenNext) and Containers (FastAPI), against the existing
 Neon Postgres databases.
 
-This replaces the Railway layout in [`docs/railway.md`](./railway.md). Keep Railway
-warm only during dual-run cutover.
-
 ---
 
 ## Architecture
@@ -22,12 +19,10 @@ warm only during dual-run cutover.
 | `876-couriers`     | `@876/couriers`    | `apps/couriers`    | OpenNext Worker                                |
 | `876-widgets-api`  | `@876/widgets-api` | `apps/widgets-api` | OpenNext Worker                                |
 
-`@876/docs` is **not** deployed to Cloudflare.
+**Hostname strategy:** `*.workers.dev` script names above, with custom domains
+(`api.876.app`, etc.) added as needed.
 
-**Hostname strategy (phase 1):** `*.workers.dev` script names above. Custom
-domains (`api.876.app`, etc.) come after dual-run is healthy.
-
-**Databases:** Neon (already production). Do not put Postgres on Railway.
+**Databases:** Neon (already production).
 
 | Neon endpoint       | Used by            | Env var                  |
 | ------------------- | ------------------ | ------------------------ |
@@ -78,6 +73,15 @@ esbuild before every build, injecting the precache manifest and revision via
 `/sw.js`. Precaching covers the offline fallback rather than the full Next asset
 manifest (that is only known after `next build`); runtime caching is unchanged.
 
+Console and Couriers use the same static-asset architecture through the shared
+`scripts/build-serwist.mjs` and `scripts/serwist-shell-worker.ts` build
+subsystem. Their `build:next` scripts compile an app-namespaced `/sw.js` before
+OpenNext collects static assets, and their root layouts register it at scope
+`/`. These authenticated apps deliberately cache only `/_next/static/**` plus
+their static offline page and install icons. HTML, RSC, API, auth, tenant image,
+and cross-origin responses are network-only so user or tenant data never enters
+Cache Storage.
+
 The general rule stands: anything needing a Node built-in or a bundler belongs
 in a build script, never in a route.
 
@@ -87,6 +91,26 @@ string a build requirement — and the Cloudflare builder has no database URL, b
 design. Each app-local `src/lib/db/index.ts` therefore exports `prisma` as a
 Proxy that constructs the client on first property access. Keep it that way when
 adding a datastore to a new app.
+
+**2c. No database client shared between requests.** `@prisma/adapter-neon` opens
+a Neon **WebSocket pool**, and a socket on workerd belongs to the request that
+opened it. Caching the client in module scope — the ordinary Node/HMR pattern —
+means the second request served by a warm isolate reuses that socket and gets
+`Cannot perform I/O on behalf of a different request`. Worse, the adapter
+reports that on the pool instead of rejecting the in-flight query, so the query
+promise never settles, the runtime cancels the invocation as a hang, and the
+page fails with **Error 1101** without a single application error being raised.
+
+Each `src/lib/db/index.ts` therefore resolves its client through
+`createRequestScopedResolver` from `@876/core/db`: one client per request on
+workerd (held in a `WeakMap` keyed by the request's `ExecutionContext`), one
+client per process under Node. The same module supplies `createQueryGuard`,
+which bounds every query and reports failures — the pending timer keeps the
+invocation alive long enough for the rejection to reach Sentry and an error
+boundary, instead of the runtime killing it silently.
+
+When you add a datastore to a new app, wire both. Do not reintroduce a
+module-level `let client`.
 
 **3. Worker size.** Free plan caps a Worker at 3 MiB; every Next.js app exceeds
 that. **Workers Paid is required** (it also gates Containers, so both FastAPI
@@ -141,7 +165,7 @@ Continue using `next dev`. Optionally call `initOpenNextCloudflareForDev()` from
 `@opennextjs/cloudflare` in `next.config.ts` when you need local bindings.
 
 Migrations (`prisma migrate deploy`) run in **CI before deploy**, not inside the
-Worker (there is no Railway-style `preDeployCommand` shell).
+Worker.
 
 ---
 
@@ -171,19 +195,13 @@ Health: `GET /health` on the Worker URL (proxied into the container).
 
 ## Secrets and env vars
 
-### Do not migrate from Railway
+### URL values
 
-Any `RAILWAY_*` key, plus `HOSTNAME=::` (Railway IPv6 private bind).
-
-### Replace URL values on cutover
-
-| Pattern                | Action                                           |
-| ---------------------- | ------------------------------------------------ |
-| `*.railway.internal`   | Service bindings or public `*.workers.dev` HTTPS |
-| `*.up.railway.app`     | New Worker/Container URL                         |
-| `CORS_ALLOWED_ORIGINS` | Rebuild list of all CF public origins            |
-| `BILLING_OAUTH_ISSUER` | Public `876-api` workers.dev (or custom) URL     |
-| `NEXT_PUBLIC_*_URL`    | Matching public CF hostnames                     |
+| Variable               | Value                                         |
+| ---------------------- | --------------------------------------------- |
+| `CORS_ALLOWED_ORIGINS` | List of all Cloudflare public origins         |
+| `BILLING_OAUTH_ISSUER` | Public `876-api` workers.dev (or custom) URL  |
+| `NEXT_PUBLIC_*_URL`    | Matching public Cloudflare application origin |
 
 ### Shared secrets (must match across services)
 
@@ -194,18 +212,7 @@ Any `RAILWAY_*` key, plus `HOSTNAME=::` (Railway IPv6 private bind).
 | `WIDGETS_SERVICE_KEY`                              | widgets-api + every host that calls it                                          |
 | `BILLING_INTERNAL_KEY`                             | console + billing                                                               |
 
-### Transfer helper
-
-```bash
-chmod +x scripts/transfer-railway-secrets-to-cf.sh
-./scripts/transfer-railway-secrets-to-cf.sh 876-api 876-api
-./scripts/transfer-railway-secrets-to-cf.sh "876 console" 876-console
-./scripts/transfer-railway-secrets-to-cf.sh 876-billing 876-billing
-./scripts/transfer-railway-secrets-to-cf.sh "876 couriers" 876-couriers
-./scripts/transfer-railway-secrets-to-cf.sh 876-widgets-api 876-widgets-api
-```
-
-The script refuses to copy the known weak `API_INTERNAL_KEY` placeholder. Generate:
+Generate a strong `API_INTERNAL_KEY`:
 
 ```bash
 openssl rand -hex 32
@@ -215,7 +222,20 @@ openssl rand -hex 32
 
 ### Production key inventory (names only)
 
-Snapshot from Railway production (2026-07-23). Values are **not** stored in git.
+Values are **not** stored in git.
+
+Verify the runtime secret bindings for every Worker, or one Worker at a time:
+
+```bash
+pnpm check:worker-secrets
+pnpm check:worker-secrets 876-couriers
+```
+
+The checker calls `wrangler secret list`, which returns names and types only;
+it never reads or prints secret values. A missing `API_INTERNAL_KEY` can look
+like an application access problem because `AdminDep` calls return 401. In
+Couriers, affected users are routed to onboarding and see
+`Setup is unavailable.` rather than an obvious authentication error.
 
 **876-api:** `API_INTERNAL_KEY`, `COOKIE_SECURE`, `CORS_ALLOWED_ORIGINS`,
 `DATABASE_URL`, `ENVIRONMENT`, `IS_PRODUCTION`, `LOG_LEVEL`, `POSTHOG_*`,
@@ -228,36 +248,20 @@ Snapshot from Railway production (2026-07-23). Values are **not** stored in git.
 `NEXT_PUBLIC_*`, `WIDGETS_*`.
 
 **876 couriers:** `API_876_KEY`, `API_INTERNAL_KEY`, `API_URL`, `BILLING_URL`,
-`DATABASE_URL`, `NEXT_PUBLIC_*`, `WIDGETS_*`, `WORKOS_COOKIE_PASSWORD`.
+`DATABASE_URL`, `NEXT_PUBLIC_*`, `STORAGE_INTERNAL_KEY`, `WIDGETS_*`,
+`WORKOS_COOKIE_PASSWORD`.
 
-**876-widgets-api:** `WIDGETS_DATABASE_URL`, `WIDGETS_SERVICE_KEY` only
-(drop `HOSTNAME` / `PORT` Railway hacks).
+**876-widgets-api:** `WIDGETS_DATABASE_URL`, `WIDGETS_SERVICE_KEY` only.
 
 ---
 
 ## Inter-service networking
 
-Railway private DNS (`http://876-api.railway.internal`) has no CF equivalent.
-
-| Caller → callee   | Phase 1 (workers.dev)                                                    | Later                            |
+| Caller → callee   | Current                                                                  | Later                            |
 | ----------------- | ------------------------------------------------------------------------ | -------------------------------- |
 | UI → `876-api`    | `https://876-api.<subdomain>.workers.dev` + `API_INTERNAL_KEY` / app key | Custom domain + optional mTLS    |
 | UI → widgets-api  | Public workers.dev + `WIDGETS_SERVICE_KEY`                               | Worker **service binding**       |
 | Console → billing | Public billing Worker URL                                                | Service binding or custom domain |
-
----
-
-## Cutover order
-
-1. Upgrade the Cloudflare account to **Workers Paid** (gates Worker size and
-   Containers — nothing below deploys without it).
-2. Deploy `876-widgets-api` → smoke `/api/health`.
-3. Deploy `876-api` Container → smoke `/health`.
-4. Deploy `876-billing-api` shadow (`BILLING_WRITER=none`).
-5. Deploy console, billing UI, couriers; point env at CF API/widgets.
-6. Deploy app, enterprise, docs.
-7. Dual-run 48–72h; flip any remaining DNS/custom domains.
-8. Decommission Railway services; archive `railway.toml` usage.
 
 ---
 
@@ -281,12 +285,12 @@ step must run OpenNext — plain `next build` only writes `.next/` and the
 deploy fails. Each Worker app's `pnpm run build` (and `cf:build`) therefore
 runs `opennextjs-cloudflare build`. Prefer these dashboard values:
 
-| Setting           | Value                              |
-| ----------------- | ---------------------------------- |
-| Build command     | `pnpm run build` (or `cf:build`)   |
-| Deploy command    | `npx opennextjs-cloudflare deploy` |
-| Root directory    | `/apps/<app>` (see table below)    |
-| Build watch paths | `apps/<app>/*`, `packages/*`       |
+| Setting           | Value                                                                  |
+| ----------------- | ---------------------------------------------------------------------- |
+| Build command     | `pnpm run build` (or `cf:build`)                                       |
+| Deploy command    | `npx opennextjs-cloudflare deploy`                                     |
+| Root directory    | `/apps/<app>` (see table below)                                        |
+| Build watch paths | `apps/<app>/*`, `packages/*`; add `scripts/*` for Console and Couriers |
 
 `npx wrangler deploy` also works once `.open-next/` exists; prefer
 `opennextjs-cloudflare deploy` so incremental cache wiring stays intact.
@@ -311,10 +315,15 @@ whole workspace from the repo root even though the root directory is one app.
 runtime secrets, and `NEXT_PUBLIC_*` values are inlined at build time. Set per
 Worker:
 
-| Worker           | Build variables                                                              |
-| ---------------- | ---------------------------------------------------------------------------- |
-| all Next.js apps | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` |
-| `876-console`    | plus `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_876_API_KEY`                    |
+| Worker           | Build variables                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| all Next.js apps | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`, `NEXT_PUBLIC_SENTRY_DSN` |
+| `876-console`    | plus `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_876_API_KEY`                                              |
+
+`NEXT_PUBLIC_SENTRY_DSN` must be configured here as a Workers Builds build
+variable for browser-side error capture. Next.js inlines `NEXT_PUBLIC_*` values
+during the build, and runtime Worker vars from `wrangler.jsonc` are not visible
+to that build.
 
 **Workers Builds does not run migrations.** `prisma migrate deploy` stays in
 GitHub Actions, which already holds the database URLs. Keep migrations additive
@@ -346,13 +355,12 @@ Only build-time (`NEXT_PUBLIC_*`) values and migration URLs belong in GitHub.
 Every runtime secret is set with `wrangler secret put` and read from the Worker
 environment — CI never sees them.
 
-- Never commit `.dev.vars` or exported Railway env files.
+- Never commit `.dev.vars` or exported environment files.
 
 ---
 
 ## Related docs
 
-- [`docs/railway.md`](./railway.md) — legacy Railway layout (source of env keys)
 - [`docs/billing-api-cutover.md`](./billing-api-cutover.md) — `BILLING_WRITER` handoff
 - [OpenNext Cloudflare](https://opennext.js.org/cloudflare)
 - [Cloudflare Containers](https://developers.cloudflare.com/containers/)

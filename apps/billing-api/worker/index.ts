@@ -5,9 +5,31 @@ import { Container, getContainer } from '@cloudflare/containers'
  * Keep BILLING_WRITER=none until the finance cutover runbook flips ownership.
  * See docs/cloudflare.md and docs/billing-api-cutover.md.
  */
-export class BillingApiContainer extends Container {
+export class BillingApiContainer extends Container<Env> {
   defaultPort = 4004
   sleepAfter = '15m'
+
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env)
+    // Without this the container starts with an empty environment — no
+    // BILLING_DATABASE_URL, no keys — so every data route fails while /health
+    // still answers.
+    this.envVars = toContainerEnv(env)
+  }
+}
+
+/**
+ * Copies the Worker's string-valued vars and secrets into the container
+ * environment. Bindings are objects, not strings, and are skipped.
+ */
+function toContainerEnv(env: Env): Record<string, string> {
+  const forwarded: Record<string, string> = {}
+
+  for (const [key, value] of Object.entries(env)) {
+    if (typeof value === 'string') forwarded[key] = value
+  }
+
+  return forwarded
 }
 
 export default {

@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { cache } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { isWidgetEnabled, notepadWidgetMetadata } from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
@@ -73,12 +74,23 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       userId,
       organizationId,
     })
-  if (evaluateError || !evaluateResult)
+  if (evaluateError || !evaluateResult) {
+    Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: {
+        call: 'features.evaluate',
+        errorCode: evaluateError?.code ?? null,
+        errorMessage: evaluateError?.message ?? null,
+        appSlug: BILLING_APP_SLUG,
+      },
+    })
     return {
       uiFeatures: DEFAULT_UI_FEATURES,
       productFeatures: DEFAULT_PRODUCT_FEATURES,
       widgets: { notepad: false },
     }
+  }
 
   const enabledSlugs = new Set(
     evaluateResult.data.map((feature) => feature.slug)

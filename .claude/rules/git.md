@@ -81,7 +81,9 @@ Before committing, analyze each changed file:
 ## Branching
 
 - **Naming**: `feature/short-description`, `fix/short-description`, `refactor/short-description`, `docs/description`.
-- **Base Branch**: Always branch from and target `main`.
+- **Base Branch**: Branch from and target `main` — except for a phase of
+  multi-phase work, which branches from and targets its feature
+  integration branch instead (see "Feature Integration Branches" below).
 - **Best Practices**:
   1.  When creating a new branch, always ask the user if it should be based on the current branch (whichever we're on) or `main`.
   2.  Create new branch from updated `main` (or chosen base).
@@ -128,12 +130,101 @@ Closes #[issue number]
 1. Keep PRs focused and reasonably sized (< 400 lines when possible).
 2. Request reviews from relevant team members.
 3. Respond to all review comments.
-4. Squash commits if needed to keep history clean.
+4. Squash commits if needed to keep history clean — but never when the PR
+   targets a feature integration branch, whose whole purpose is to carry
+   every commit through to the final `main` PR.
 5. Ensure CI/CD passes before merging.
-6. Delete branch after merging.
+6. Delete branch after merging — unless another PR is stacked on it.
 7. **Always auto-check the same PR for merge conflicts immediately after submitting it.** After creating (or updating) a PR, verify it is mergeable against the base branch — e.g. `gh pr view <number> --json mergeable,mergeStateStatus` (poll until GitHub finishes computing `mergeable`, since it is briefly `UNKNOWN`). If it reports `CONFLICTING`, surface the conflicting files and resolve them (merge the latest base branch in and fix conflicts) before considering the PR ready.
 
+## Feature Integration Branches (multi-phase work)
+
+Read this before starting any feature large enough to span more than two or
+three pull requests.
+
+Small, self-contained changes branch from `main` and target `main`, exactly as
+described above. **A multi-phase feature does not.** It gets its own long-lived
+integration branch — an "alt main" — that collects every phase, and only that
+branch opens a pull request against `main`.
+
+```
+main
+ └── develop                        ← feature integration branch ("alt main")
+      ├── feat/<feature>-schema     ← phase 1, PR → develop
+      ├── feat/<feature>-enforce    ← phase 2, PR → develop
+      ├── feat/<feature>-admin-api  ← phase 3, PR → develop
+      └── docs/<feature>            ← docs, PR → develop
+                                       then ONE PR: develop → main
+```
+
+### The rules
+
+1. **Cut the integration branch from an up-to-date `main`** and push it before
+   any phase work starts. Name it `develop` when it is the standing integration
+   branch, or `feature/<name>` when the work is scoped to one feature and the
+   branch retires with it.
+2. **Every phase is its own branch and its own PR targeting the integration
+   branch — never `main`.** Phases stay small enough to review on their own.
+3. **Merge each phase into the integration branch as it goes green**, one by
+   one, in dependency order. Do not wait and merge them all at the end; a phase
+   that has been reviewed and passes should land so the next one builds on it.
+4. **Do not open the `main` PR until the feature is actually complete.** The
+   integration branch is where a half-finished feature is allowed to live.
+   `main` only ever receives whole, working features.
+5. **Merge with merge commits, never squash.** The point of the integration
+   branch is that the final `main` PR carries every individual commit from
+   every phase, so the history reads as the real sequence of work rather than
+   one opaque blob.
+6. **Do not delete a phase branch while another phase is stacked on it.**
+   Deleting a parent branch closes or orphans its children.
+
+### Stacked phases
+
+When phase 2 genuinely depends on phase 1's code, branch it from phase 1 and
+target its PR at phase 1's branch, not at the integration branch. The diff then
+shows only phase 2's work. When phase 1 merges, retarget phase 2 onto the
+integration branch:
+
+```bash
+gh api -X PATCH repos/<owner>/<repo>/pulls/<n> -f base=develop
+```
+
+(`gh pr edit --base` trips a Projects-classic GraphQL deprecation on this repo;
+the REST call above is the working form.)
+
+### The final `main` PR
+
+One pull request, integration branch → `main`, whose description explains the
+**whole feature** rather than the last phase: what it does, the design decisions
+behind it, and how it was verified. Treat it as the document someone reads a
+year later to understand why the feature is shaped the way it is.
+
+Verify the integration branch itself before opening it — check out the merged
+branch and run the full verification commands there. Green phase PRs do not
+prove the merged result is green.
+
 ## Merge Strategies
+
+### Merge commit subjects
+
+GitHub's default merge subject — `Merge pull request #76 from owner/branch` —
+says nothing about what changed. Every merge commit must read as a real commit
+message.
+
+Use the PR title with the PR number appended, and name the merged branch in the
+body:
+
+```bash
+gh pr merge <n> --merge \
+  --subject "feat(storage-api): reject an upload that would exceed a storage quota (#74)" \
+  --body "Merges feat/storage-quota-enforcement."
+```
+
+The trailing `(#74)` keeps GitHub's auto-link to the pull request, so nothing is
+lost by dropping the default wording. This applies to phase merges into an
+integration branch and to the final merge into `main` alike — `git log
+--first-parent main` should read as a list of features, not a list of branch
+names.
 
 - **Merge commit**: When preserving complete history is important.
 - **Squash and merge**: When cleaning up messy commit history in PRs.
@@ -145,6 +236,8 @@ Closes #[issue number]
 
 1. Run `git status` to identify **all** changes: modified, added, deleted, and **untracked** files.
 2. **Always keep formatting changes.** Never discard, stash away, or leave uncommitted formatting-only diffs — including churn in generated files (e.g. a regenerated Prisma client). Commit them in their own `style(<scope>): ...` commit, separate from functional changes.
+   - **If the formatting churn would blur a focused PR, give it its own branch and PR.** A separate commit is the default; a separate PR is required once the formatting diff touches files the PR is not otherwise about, or is large enough that a reviewer has to hunt for the real change. Consistency matters, but not at the cost of an unreviewable diff — the reviewer of a five-file bug fix should not be paging through a reformatted lockfile.
+   - **Environment-induced churn is not a formatting change and must not be committed.** A `pnpm-lock.yaml` that a sandbox regenerated with different peer resolution (dropped optional/platform deps, collapsed `resolution:` blocks) is noise that can break CI on other platforms. Tell it apart from real formatting by running the repo's formatter over the file: if the diff collapses to near-zero, it was formatting and the formatted result is what to commit; if thousands of lines of dependency entries remain, revert it. Only commit a lockfile when dependencies genuinely changed.
 3. **Run `pnpm format` and `pnpm lint`.** These commands must be run once before starting the commit process to ensure all changed files follow project standards. Re-run them if files are modified during the commit/fixing process.
 4. Run test suite when appropriate for the change. Do not run `pnpm build` unless the user asks for a build, the change affects build behavior, or debugging requires it.
 5. If the change introduces a new subsystem, workflow, public API, or durable operational behavior, add or update the matching project documentation in the same logical change set or in a clearly paired documentation commit.

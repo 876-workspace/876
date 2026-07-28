@@ -16,7 +16,9 @@
   ],
   // Non-secret service URLs. Secrets are set with `wrangler secret put`.
   "vars": {
-    "API_URL": "https://876-api-production-e78f.up.railway.app",
+    "API_URL": "https://876-api.raheemforschool.workers.dev",
+    "SENTRY_DSN": "https://3ee6b0b5285a3eb3a8808baab081b620@o4507681618591744.ingest.us.sentry.io/4511802776420352",
+    "NEXT_PUBLIC_SENTRY_DSN": "https://3ee6b0b5285a3eb3a8808baab081b620@o4507681618591744.ingest.us.sentry.io/4511802776420352",
   },
   "observability": {
     "enabled": true,

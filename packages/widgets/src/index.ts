@@ -29,3 +29,4 @@ export type {
   DeletedCollection,
   NotepadCollection,
 } from './types/collections'
+export type { NotepadStats } from './types/stats'

@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "prisma migrate deploy && next dev --turbopack --port 3002",
+    "dev": "prisma migrate deploy && pnpm build:sw && next dev --turbopack --port 3002",
+    "build:sw": "node ../../scripts/build-serwist.mjs",
     "build": "opennextjs-cloudflare build",
-    "build:next": "next build",
+    "build:next": "pnpm build:sw && NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start --port ${PORT:-3002}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",

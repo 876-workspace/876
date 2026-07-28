@@ -8,6 +8,7 @@ import type {
   AdminFeature,
   AdminFeatureCreateParams,
   AdminFeatureEvaluateParams,
+  AdminFeatureGrants,
   AdminFeatureSearchParams,
   AdminFeatureUpdateParams,
   AdminListResponse,
@@ -70,6 +71,21 @@ export function createAdminFeaturesResource(runtime: AdminRuntime) {
       return adminRequest<AdminFeature>(runtime, {
         method: 'GET',
         path: `/features/${featureId}`,
+      })
+    },
+
+    /**
+     * Retrieves every organization and user override attached to one feature.
+     *
+     * @param featureId - The feature to read overrides for.
+     * @returns A Promise resolving to the grants for that feature.
+     *
+     * @see /features/{feature_id}/grants
+     */
+    retrieveGrants(featureId: string) {
+      return adminRequest<AdminFeatureGrants>(runtime, {
+        method: 'GET',
+        path: `/features/${featureId}/grants`,
       })
     },
 

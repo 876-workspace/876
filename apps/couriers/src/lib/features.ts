@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { cache } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { isWidgetEnabled, notepadWidgetMetadata } from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
@@ -13,6 +14,7 @@ const COURIERS_GLOBAL_ADD_SLUG = 'couriers_global_add'
 const COURIERS_APP_SWITCHER_SLUG = 'couriers_app_switcher'
 const COURIERS_ORG_SWITCHER_SLUG = 'couriers_org_switcher'
 const COURIERS_CHAT_SLUG = 'couriers_chat'
+const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers_storage_org_logo_upload'
 const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   searchBar: false,
   themeSwitcher: false,
@@ -22,6 +24,7 @@ const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   chat: false,
 }
 const DISABLED_FEATURES: CouriersFeatures = {
+  storageOrgLogoUpload: false,
   uiFeatures: DEFAULT_UI_FEATURES,
   enabledWidgetIds: [],
 }
@@ -43,7 +46,19 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     userId,
     organizationId,
   })
-  if (error || !data) return DISABLED_FEATURES
+  if (error || !data) {
+    Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: {
+        call: 'features.evaluate',
+        errorCode: error?.code ?? null,
+        errorMessage: error?.message ?? null,
+        appSlug: COURIERS_APP_SLUG,
+      },
+    })
+    return DISABLED_FEATURES
+  }
 
   const enabledSlugs = new Set(data.data.map((feature) => feature.slug))
   const enabledWidgetIds = isWidgetEnabled(
@@ -55,6 +70,9 @@ const getCachedFeatures = cache(async function getCachedFeatures(
     : []
 
   return {
+    storageOrgLogoUpload: enabledSlugs.has(
+      COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG
+    ),
     uiFeatures: {
       searchBar: enabledSlugs.has(COURIERS_SEARCH_BAR_SLUG),
       themeSwitcher: enabledSlugs.has(COURIERS_THEME_SWITCHER_SLUG),

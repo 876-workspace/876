@@ -388,7 +388,39 @@ text is what this rule constrains).
 
 ---
 
-## 12. Applying this to a new app
+## 12. Table cell hierarchy
+
+Every data table uses the same three-tier weight/colour scale. A row must
+have exactly **one** tier-1 cell; if two cells read as equally important,
+the hierarchy is broken and the eye has nowhere to land.
+
+| Tier | What it is                                                                 | Classes                             |
+| ---- | -------------------------------------------------------------------------- | ----------------------------------- |
+| 1    | **Row subject** — the identifier the row is about (usually the link)       | `font-medium` (+ `hover:` on links) |
+| 2    | **Supporting values** — amounts, counts, other data the user compares      | inherited `text-foreground`         |
+| 3    | **Metadata** — dates, slugs/IDs, kinds/types, "last used", plain-text refs | `text-muted-foreground`             |
+
+Additional rules:
+
+- **Status is always a `<Badge>`**, never bare text with a colour or size
+  tweak. A status column styled as `text-xs capitalize` in one table and a
+  badge in the next is the single most common source of drift.
+- **A plain-text reference to another entity is tier 3**, not tier 2. Only a
+  reference the user can click is tier 2 — clickable is the signal that it
+  matters. (Console's Apps table: `Name` is tier 1, `Organization` is a
+  plain-text reference and therefore muted.)
+- **Numbers use `tabular-nums`** so columns align digit-for-digit, and money
+  columns are right-aligned.
+- **Secondary line under a tier-1 cell** (email under a name, slug under a
+  title) is `text-muted-foreground text-xs` — it is not a second tier-1.
+- **Empty values** render an em dash in `text-muted-foreground`, never a
+  blank cell.
+- Do not reach for `font-semibold` in a body cell; tier 1 is `font-medium`.
+  `font-semibold` belongs to headings, not rows.
+
+---
+
+## 13. Applying this to a new app
 
 When scaffolding a new sidebar-style app (see `.claude/rules/new-app-guide.md`
 for the integration side), copy the shell/sidebar/toolbar/breadcrumb/status-

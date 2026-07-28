@@ -55,11 +55,15 @@ export async function CouriersShell({
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
       <AppShellSidebarArea>
-        <CouriersSidebar basePath={basePath} tenantName={tenantName} />
+        <CouriersSidebar
+          basePath={basePath}
+          tenantName={tenantName}
+          logoUrl={currentOrg.logoUrl}
+        />
       </AppShellSidebarArea>
 
       <AppShellContent>
-        <AppShellHeader className="dark:bg-876-canvas h-16 backdrop-blur-md dark:shadow-none dark:backdrop-blur-none">
+        <AppShellHeader className="dark:bg-876-canvas h-16 border-b-0 backdrop-blur-md dark:shadow-none dark:backdrop-blur-none">
           <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center md:flex">

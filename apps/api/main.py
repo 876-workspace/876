@@ -35,6 +35,7 @@ from db.migrate import (
     ensure_indexes,
     ensure_invite_source_app_column,
     ensure_org_business_identity_columns,
+    ensure_organizations_logo_file_id_column,
     ensure_organizations_stripe_customer_id,
     ensure_provisioning_v1_cutover,
     ensure_subscription_lifecycle_columns,
@@ -74,6 +75,7 @@ async def _seed_identity_tables(engine: object) -> None:
         await conn.run_sync(ensure_indexes)
         await conn.run_sync(ensure_organizations_stripe_customer_id)
         await conn.run_sync(ensure_org_business_identity_columns)
+        await conn.run_sync(ensure_organizations_logo_file_id_column)
         await conn.run_sync(ensure_user_profile_country_column)
         await conn.run_sync(
             lambda c: Base.metadata.create_all(
@@ -623,7 +625,8 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
     """
 
     return (
-        BootstrapStep("identity_tables", 1, _seed_identity_tables),
+        # Revision 2 adds organizations.logo_file_id.
+        BootstrapStep("identity_tables", 2, _seed_identity_tables),
         BootstrapStep("platform_apps", 1, _seed_platform_apps),
         BootstrapStep("geo_regions", 1, _seed_geo_regions),
         BootstrapStep("provisioning", 1, _ensure_provisioning_tables),
@@ -642,7 +645,8 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("plan_module_tables", 1, ensure_plan_module_tables),
         BootstrapStep("platform_products", 1, _seed_platform_products),
         BootstrapStep("subscription_items", 1, _ensure_subscription_items_table),
-        BootstrapStep("feature_catalog", 1, seed_all_features, required=False),
+        # Revision 2 adds the couriers_storage_org_logo_upload flag.
+        BootstrapStep("feature_catalog", 2, seed_all_features, required=False),
         BootstrapStep("platform_plan_modules", 1, seed_platform_plan_modules),
         BootstrapStep("billing_plan_assignments", 1, backfill_billing_plan_assignments),
         BootstrapStep("org_access_backfill", 1, _backfill_org_access),

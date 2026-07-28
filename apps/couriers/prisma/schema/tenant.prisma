@@ -22,6 +22,8 @@ model Tenant {
   cashSessions      CashSession[]
   customerIdTypes   CustomerIdType[]
   customerDocuments CustomerDocument[]
+  organizationModules OrganizationModule[]
+  modulePreferences   ModulePreference[]
 
   @@map("tenants")
 }

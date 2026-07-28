@@ -8,10 +8,14 @@ const eslintConfig = defineConfig([
   globalIgnores([
     '.next/**',
     '.netlify/**',
+    '.open-next/**',
+    '.wrangler/**',
     'coverage/**',
     'out/**',
     'build/**',
     'next-env.d.ts',
+    'public/sw.js',
+    'public/sw.js.map',
   ]),
 ])
 

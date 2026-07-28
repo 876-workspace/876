@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { unwrapOptional, unwrapResult } from '@876/admin'
+import * as Sentry from '@sentry/nextjs'
 
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
 
@@ -188,6 +189,18 @@ export async function getEnabledEnterpriseFeatureSlugs(
     organizationId,
     appSlug: ENTERPRISE_APP_SLUG,
   })
+  if (result.error)
+    Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
+      level: 'error',
+      tags: { category: 'feature_flags' },
+      extra: {
+        call: 'features.evaluate',
+        errorCode: result.error.code,
+        errorMessage: result.error.message,
+        appSlug: ENTERPRISE_APP_SLUG,
+      },
+    })
+
   const features = unwrapResult(result, 'enterprise features').data
   return new Set(features.map((f) => f.slug))
 }

@@ -45,6 +45,7 @@ def _org(**overrides: Any) -> Any:
         "doing_business_as": None,
         "slug": "efesto",
         "status": "active",
+        "logo_file_id": None,
         "logo_url": None,
         "industry": "Information Technology and Services",
         "business_type": "corporation",
@@ -141,6 +142,7 @@ async def test_active_member_reads_profile(monkeypatch: Any) -> None:
     assert body["name"] == "Efesto Technologies, Inc."
     assert body["tax_id"] == "36-5026563"
     assert body["city"] == "Middletown"
+    assert body["logo_file_id"] is None
 
 
 async def test_read_profile_requires_session(monkeypatch: Any) -> None:
@@ -234,6 +236,102 @@ async def test_owner_updates_profile(monkeypatch: Any) -> None:
 
     assert resp.status_code == 200
     assert captured["tax_id"] == "99-9999999"
+
+
+async def test_owner_updates_logo_storage_reference_and_rendered_url(monkeypatch: Any) -> None:
+    app, captured = _profile_app(monkeypatch, caller_membership=_membership(role="owner"), org=_org())
+
+    async with _client(app) as client:
+        resp = await client.patch(
+            "/organizations/org_test/profile",
+            json={
+                "logo_file_id": "file_logo_123",
+                "logo_url": "https://assets.876.test/logo.png",
+            },
+        )
+
+    assert resp.status_code == 200
+    assert captured["logo_file_id"] == "file_logo_123"
+    assert captured["logo_url"] == "https://assets.876.test/logo.png"
+    assert resp.json()["data"]["logo_file_id"] == "file_logo_123"
+    assert resp.json()["data"]["logo_url"] == "https://assets.876.test/logo.png"
+
+
+async def test_admin_updates_logo_storage_reference_and_rendered_url(monkeypatch: Any) -> None:
+    app, captured = _profile_app(monkeypatch, caller_membership=_membership(role="admin"), org=_org())
+
+    async with _client(app) as client:
+        resp = await client.patch(
+            "/organizations/org_test/profile",
+            json={
+                "logo_file_id": "file_admin_logo",
+                "logo_url": "https://assets.876.test/admin-logo.png",
+            },
+        )
+
+    assert resp.status_code == 200
+    assert captured["logo_file_id"] == "file_admin_logo"
+    assert captured["logo_url"] == "https://assets.876.test/admin-logo.png"
+
+
+async def test_member_cannot_update_logo_fields(monkeypatch: Any) -> None:
+    app, captured = _profile_app(monkeypatch, caller_membership=_membership(role="member"), org=_org())
+
+    async with _client(app) as client:
+        resp = await client.patch(
+            "/organizations/org_test/profile",
+            json={
+                "logo_file_id": "file_hijack",
+                "logo_url": "https://evil.example/logo.png",
+            },
+        )
+
+    assert resp.status_code == 403
+    assert resp.json()["error"]["code"] == "auth/forbidden"
+    assert captured == {}
+
+
+async def test_owner_can_clear_logo_file_id_and_url(monkeypatch: Any) -> None:
+    app, captured = _profile_app(
+        monkeypatch,
+        caller_membership=_membership(role="owner"),
+        org=_org(
+            logo_file_id="file_existing",
+            logo_url="https://assets.876.test/existing.png",
+        ),
+    )
+
+    async with _client(app) as client:
+        resp = await client.patch(
+            "/organizations/org_test/profile",
+            json={"logo_file_id": None, "logo_url": None},
+        )
+
+    assert resp.status_code == 200
+    assert captured["logo_file_id"] is None
+    assert captured["logo_url"] is None
+    body = resp.json()["data"]
+    assert body["logo_file_id"] is None
+    assert body["logo_url"] is None
+
+
+async def test_read_profile_returns_existing_logo_fields(monkeypatch: Any) -> None:
+    app, _ = _profile_app(
+        monkeypatch,
+        caller_membership=_membership(role="member"),
+        org=_org(
+            logo_file_id="file_logo_ready",
+            logo_url="https://assets.876.test/ready.png",
+        ),
+    )
+
+    async with _client(app) as client:
+        resp = await client.get("/organizations/org_test/profile")
+
+    assert resp.status_code == 200
+    body = resp.json()["data"]
+    assert body["logo_file_id"] == "file_logo_ready"
+    assert body["logo_url"] == "https://assets.876.test/ready.png"
 
 
 async def test_member_cannot_update_profile(monkeypatch: Any) -> None:

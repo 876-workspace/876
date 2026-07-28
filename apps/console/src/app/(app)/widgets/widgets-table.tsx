@@ -5,23 +5,44 @@ import { useRouter } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { WidgetVisual } from '@876/widgets'
 import { DataTable } from '@876/ui/data-table'
-import { ChevronRight } from '@876/ui/icons'
+import { ChevronRight, LayoutGrid } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
 
-import { CONSOLE_WIDGETS_FEATURE_SLUG } from '@/components/widgets/widget-catalog'
 import { WidgetCatalogIcon } from '@/components/widgets/widget-catalog-icon'
 import { WidgetFeatureToggle } from '@/components/widgets/widget-feature-toggle'
 
-export interface WidgetTableRow {
+export interface WidgetFeatureSummary {
   id: string
   name: string
-  description: string
-  detailHref: string
-  visual: WidgetVisual
-  apps: 'all' | string[]
-  feature: { id: string; name: string; enabled: boolean } | null
-  missingFeatureSlug: string | null
+  enabled: boolean
 }
+
+/**
+ * The global switch shares the table with the widgets it governs instead of
+ * sitting in a card header above it, so it reads as part of the same list and
+ * its toggle lines up under the same Status column as every widget's.
+ */
+export type WidgetTableRow =
+  | {
+      kind: 'master'
+      id: string
+      name: string
+      description: string
+      apps: string[]
+      feature: WidgetFeatureSummary | null
+      missingFeatureSlug: string | null
+    }
+  | {
+      kind: 'widget'
+      id: string
+      name: string
+      description: string
+      detailHref: string
+      visual: WidgetVisual
+      apps: 'all' | string[]
+      feature: WidgetFeatureSummary | null
+      missingFeatureSlug: string | null
+    }
 
 const APP_PILL_COLORS: Record<string, string> = {
   All: 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-400/25 dark:bg-indigo-400/10 dark:text-indigo-300',
@@ -41,7 +62,14 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
     size: 64,
     enableSorting: false,
     header: () => <span className="sr-only">Widget icon</span>,
-    cell: ({ row }) => <WidgetCatalogIcon visual={row.original.visual} />,
+    cell: ({ row }) =>
+      row.original.kind === 'master' ? (
+        <span className="border-876-surface-border bg-876-surface text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg border shadow-xs">
+          <LayoutGrid className="size-5" />
+        </span>
+      ) : (
+        <WidgetCatalogIcon visual={row.original.visual} />
+      ),
   },
   {
     accessorKey: 'name',
@@ -49,13 +77,19 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
     header: 'Widget',
     cell: ({ row }) => (
       <div className="max-w-80">
-        <Link
-          href={row.original.detailHref}
-          className="hover:text-primary inline-block max-w-72 truncate font-medium"
-          onClick={(event) => event.stopPropagation()}
-        >
-          {row.original.name}
-        </Link>
+        {row.original.kind === 'master' ? (
+          <span className="inline-block max-w-72 truncate font-medium">
+            {row.original.name}
+          </span>
+        ) : (
+          <Link
+            href={row.original.detailHref}
+            className="hover:text-primary inline-block max-w-72 truncate font-medium"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {row.original.name}
+          </Link>
+        )}
         <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-5">
           {row.original.description}
         </p>
@@ -106,44 +140,27 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
     size: 44,
     enableSorting: false,
     header: () => <span className="sr-only">Open</span>,
-    cell: () => <ChevronRight className="text-muted-foreground size-4" />,
+    cell: ({ row }) =>
+      row.original.kind === 'widget' ? (
+        <ChevronRight className="text-muted-foreground size-4" />
+      ) : null,
   },
 ]
 
-export function WidgetsTable({
-  data,
-  allWidgetsFeature,
-}: {
-  data: WidgetTableRow[]
-  allWidgetsFeature: {
-    id: string
-    name: string
-    enabled: boolean
-  } | null
-}) {
+export function WidgetsTable({ data }: { data: WidgetTableRow[] }) {
   const router = useRouter()
 
   return (
     <div className="876-card overflow-hidden">
-      <div className="876-header-row border-876-surface-border flex items-center justify-between gap-4 border-b px-5 py-3.5">
-        <div>
-          <p className="text-sm font-medium">All</p>
-          <p className="text-muted-foreground mt-0.5 text-xs">
-            Global switch for every widget in Console.
-          </p>
-        </div>
-        {allWidgetsFeature ? (
-          <WidgetFeatureToggle feature={allWidgetsFeature} />
-        ) : (
-          <span className="text-muted-foreground font-mono text-xs">
-            Missing: {CONSOLE_WIDGETS_FEATURE_SLUG}
-          </span>
-        )}
-      </div>
       <DataTable
         columns={columns}
         data={data}
-        onRowClick={(widget) => router.push(widget.detailHref)}
+        rowClassName={(row) =>
+          row.kind === 'master' ? 'bg-muted/30 hover:bg-muted/40' : ''
+        }
+        onRowClick={(row) => {
+          if (row.kind === 'widget') router.push(row.detailHref)
+        }}
       />
     </div>
   )
