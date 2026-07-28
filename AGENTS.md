@@ -63,6 +63,8 @@ python -m ruff check .
 - Read `.agents/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.agents/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).
 - Read `.agents/rules/storage-architecture.md` before storing, uploading, referencing, serving, or listing any file (876 Storage vs 876 Drive, the category/audience classification, server-generated object keys, upload flow).
+- Read `.agents/rules/module-settings.md` before adding, storing, reading, or rendering any organization-level setting or preference in any SaaS app (the provisioning/modules/preferences layering, the `@876/settings` contract, app-local storage, defaults-are-never-stored, RSC-serializable settings nav). A module is org-controlled usage; a feature flag is platform-controlled rollout — do not confuse them.
+- Read `.agents/rules/phased-implementation.md` before starting any feature that spans more than two or three pull requests (phase breakdown, the integration-branch flow, mandatory Haiku sub-agent Linear tracking, and the verification traps).
 - For Next.js routing/rendering/config/metadata/proxy changes, read the matching local guide in `node_modules/next/dist/docs/` first.
 
 ## Boundaries

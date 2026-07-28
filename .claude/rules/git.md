@@ -140,7 +140,9 @@ Closes #[issue number]
 ## Feature Integration Branches (multi-phase work)
 
 Read this before starting any feature large enough to span more than two or
-three pull requests.
+three pull requests. See `.claude/rules/phased-implementation.md` for how such a feature
+is broken into phases, tracked in Linear, delegated, and verified — this section
+covers only the git mechanics.
 
 Small, self-contained changes branch from `main` and target `main`, exactly as
 described above. **A multi-phase feature does not.** It gets its own long-lived
