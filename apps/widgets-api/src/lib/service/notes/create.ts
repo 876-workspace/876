@@ -13,6 +13,7 @@ export async function createNote(params: {
   color?: NoteColor
   pinned?: boolean
   collectionId?: string | null
+  sourceHost?: string | null
 }): Promise<ServiceResult<NotepadNoteResource>> {
   const validation = validateEntryText(params.title, params.body)
   if (validation) return validation
@@ -39,6 +40,7 @@ export async function createNote(params: {
       pinned: params.pinned ?? false,
       createdAt: now,
       updatedAt: now,
+      sourceHost: params.sourceHost ?? null,
     },
   })
 
