@@ -8,10 +8,8 @@ import 'server-only'
 import { create876AdminClient } from '@876/admin'
 
 const $876 = create876AdminClient({
-  platform: {
-    internalKey: process.env.API_INTERNAL_KEY,
-    apiKey: process.env.API_876_KEY,
-  },
+  internalKey: process.env.API_INTERNAL_KEY,
+  apiKey: process.env.API_876_KEY,
   billing: {
     baseUrl: process.env.BILLING_API_URL,
     internalKey: process.env.BILLING_INTERNAL_KEY,
@@ -23,19 +21,19 @@ const $876 = create876AdminClient({
   },
 })
 
-const { data, error } = await $876.auth.admin.createUser({
+const { data, error } = await $876.users.create({
   email: 'user@example.com',
   first_name: 'Yoda',
   last_name: 'Jedi',
 })
 
 await $876.billing.subscriptions.ensure(params)
-await $876.widgets.admin.notes.list({ userId })
+await $876.widgets.notes.list({ userId })
 ```
 
-User authentication lifecycle operations live under `$876.auth.admin`.
-Platform profile, contact, address, feature, and application records remain
-under `$876.users` because they are not authentication-provider operations.
+The client factory defines the privilege tier. Resources therefore keep the
+same `$876.resource.verb()` shape: `$876.users.create()`,
+`$876.memberships.list()`, and `$876.organizations.retrieve()`.
 
 Every owned service keeps its implementation in its existing package. This
 package only composes those clients under the single branded root; it does not
