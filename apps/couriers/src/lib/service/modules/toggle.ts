@@ -16,9 +16,9 @@ export async function toggle(
 ): ServiceResult<{ module: string; isEnabled: boolean }> {
   if (!isCourierModuleKey(params.module)) return err('Unknown module.', 404)
 
-  const module = findModule(COURIERS_MODULE_CATALOG, params.module)
-  if (!module) return err('Unknown module.', 404)
-  if (!params.isEnabled && !module.optional)
+  const moduleDefinition = findModule(COURIERS_MODULE_CATALOG, params.module)
+  if (!moduleDefinition) return err('Unknown module.', 404)
+  if (!params.isEnabled && !moduleDefinition.optional)
     return err('That module cannot be turned off.', 409)
 
   const now = nowUnixSeconds()
@@ -27,12 +27,12 @@ export async function toggle(
     where: {
       organization_modules_tenant_id_module_key: {
         tenantId: params.tenantId,
-        module: module.key,
+        module: moduleDefinition.key,
       },
     },
     create: {
       tenantId: params.tenantId,
-      module: module.key,
+      module: moduleDefinition.key,
       isEnabled: params.isEnabled,
       createdAt: now,
       updatedAt: now,

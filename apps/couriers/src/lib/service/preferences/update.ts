@@ -21,27 +21,27 @@ import { toStoredPreferenceRow } from './retrieve'
 export async function update(
   params: ModulePreferenceUpdateParams
 ): ServiceResult<ResolvedModulePreferences> {
-  const module = findModule(COURIERS_MODULE_CATALOG, params.module)
-  if (!module) return err('Unknown module.', 404)
+  const moduleDefinition = findModule(COURIERS_MODULE_CATALOG, params.module)
+  if (!moduleDefinition) return err('Unknown module.', 404)
 
-  const parsed = moduleUpdateSchema(module).safeParse(params.values)
+  const parsed = moduleUpdateSchema(moduleDefinition).safeParse(params.values)
   if (!parsed.success)
     return err(parsed.error.issues[0]?.message ?? 'Invalid preference.', 400)
 
   const parsedValues = parsed.data as Record<string, PreferenceValue>
   const currentRows = await prisma.modulePreference.findMany({
-    where: { tenantId: params.tenantId, module: module.key },
+    where: { tenantId: params.tenantId, module: moduleDefinition.key },
   })
   const current = resolveModulePreferences(
-    module,
+    moduleDefinition,
     currentRows.map(toStoredPreferenceRow)
   )
-  const diff = diffPreferences(module, current, parsedValues)
+  const diff = diffPreferences(moduleDefinition, current, parsedValues)
   const now = nowUnixSeconds()
 
   const rowsAfterWrite = await prisma.$transaction(async (tx) => {
     for (const [key, value] of Object.entries(parsedValues)) {
-      const preference = module.preferences.find(
+      const preference = moduleDefinition.preferences.find(
         (candidate) => candidate.key === key
       )
       if (!preference || !Object.is(value, preference.default)) continue
@@ -49,14 +49,14 @@ export async function update(
       await tx.modulePreference.deleteMany({
         where: {
           tenantId: params.tenantId,
-          module: module.key,
+          module: moduleDefinition.key,
           key,
         },
       })
     }
 
     for (const row of diff) {
-      const preference = module.preferences.find(
+      const preference = moduleDefinition.preferences.find(
         (candidate) => candidate.key === row.key
       )
       if (!preference) continue
@@ -65,7 +65,7 @@ export async function update(
       const where = {
         module_preferences_tenant_id_module_key_key: {
           tenantId: params.tenantId,
-          module: module.key,
+          module: moduleDefinition.key,
           key: row.key,
         },
       }
@@ -86,7 +86,7 @@ export async function update(
         where,
         create: {
           tenantId: params.tenantId,
-          module: module.key,
+          module: moduleDefinition.key,
           key: row.key,
           ...values,
           createdAt: now,
@@ -96,11 +96,14 @@ export async function update(
     }
 
     return tx.modulePreference.findMany({
-      where: { tenantId: params.tenantId, module: module.key },
+      where: { tenantId: params.tenantId, module: moduleDefinition.key },
     })
   })
 
   return ok(
-    resolveModulePreferences(module, rowsAfterWrite.map(toStoredPreferenceRow))
+    resolveModulePreferences(
+      moduleDefinition,
+      rowsAfterWrite.map(toStoredPreferenceRow)
+    )
   )
 }
