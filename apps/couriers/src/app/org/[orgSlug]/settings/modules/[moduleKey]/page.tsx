@@ -8,9 +8,9 @@ type Props = { params: Promise<{ orgSlug: string; moduleKey: string }> }
 
 export async function generateMetadata({ params }: Props) {
   const { moduleKey } = await params
-  const module = findModule(COURIERS_MODULE_CATALOG, moduleKey)
+  const moduleDefinition = findModule(COURIERS_MODULE_CATALOG, moduleKey)
 
-  return { title: `${module?.label ?? 'Module'} — Settings` }
+  return { title: `${moduleDefinition?.label ?? 'Module'} — Settings` }
 }
 
 /**
@@ -20,8 +20,8 @@ export async function generateMetadata({ params }: Props) {
 export default async function ModuleSettingsPage({ params }: Props) {
   const { orgSlug, moduleKey } = await params
 
-  const module = findModule(COURIERS_MODULE_CATALOG, moduleKey)
-  if (!module) notFound()
+  const moduleDefinition = findModule(COURIERS_MODULE_CATALOG, moduleKey)
+  if (!moduleDefinition) notFound()
 
   return (
     <Page>
@@ -32,7 +32,7 @@ export default async function ModuleSettingsPage({ params }: Props) {
       />
 
       <PageHeader className="mb-8">
-        <PageTitle>{module.label}</PageTitle>
+        <PageTitle>{moduleDefinition.label}</PageTitle>
       </PageHeader>
 
       <div className="876-empty-dashed max-w-2xl">Coming soon.</div>

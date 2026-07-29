@@ -107,8 +107,8 @@ describe('couriers module catalog', () => {
   })
 
   it('stores every decimal default as a string', () => {
-    for (const module of COURIERS_MODULE_CATALOG) {
-      for (const preference of module.preferences) {
+    for (const moduleDefinition of COURIERS_MODULE_CATALOG) {
+      for (const preference of moduleDefinition.preferences) {
         if (preference.type === 'decimal')
           expect(typeof preference.default).toBe('string')
       }

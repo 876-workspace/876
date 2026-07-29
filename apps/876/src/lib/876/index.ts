@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 
 /**
  * Server-only 876 SDK client (`$876`) for first-party, API-key-tier calls.

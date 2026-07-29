@@ -8,9 +8,7 @@ import { create876ServerClient } from '@876/client/server'
  * use the narrow client in `@/lib/876/platform-client`.
  */
 export const $876 = create876ServerClient({
-  platform: {
-    apiKey: process.env.BILLING_API_876_KEY,
-  },
+  apiKey: process.env.BILLING_API_876_KEY,
   widgets: {
     baseUrl: process.env.WIDGETS_API_URL,
     serviceKey: process.env.WIDGETS_SERVICE_KEY,

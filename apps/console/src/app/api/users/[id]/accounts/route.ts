@@ -16,7 +16,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await context.params
-  const { data, error } = await $876.auth.admin.listUserAccounts(id)
+  const { data, error } = await $876.users.listAccounts(id)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to load accounts.' },

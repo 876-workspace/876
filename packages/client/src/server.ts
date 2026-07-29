@@ -14,9 +14,7 @@ import {
   type CreateWidgetsClientOptions,
 } from '@876/widgets/server'
 
-export type ServerClientOptions = {
-  /** Core 876 API configuration for app-key or delegated session calls. */
-  platform?: PlatformClientOptions
+export type ServerClientOptions = PlatformClientOptions & {
   /** Storage service configuration. */
   storage?: StorageClientOptions
   /** Cross-application Billing configuration. */
@@ -33,11 +31,17 @@ export type ServerClientOptions = {
  * the ordinary platform namespaces.
  */
 export function create876ServerClient(options: ServerClientOptions = {}) {
+  const {
+    storage: storageOptions,
+    billing: billingOptions,
+    widgets: widgetsOptions,
+    ...platformOptions
+  } = options
   return {
-    ...createPlatformClient(options.platform),
-    storage: create876StorageClient(options.storage),
-    billing: create876BillingIntegrationClient(options.billing),
-    widgets: createWidgetsClient(options.widgets),
+    ...createPlatformClient(platformOptions),
+    storage: create876StorageClient(storageOptions),
+    billing: create876BillingIntegrationClient(billingOptions),
+    widgets: createWidgetsClient(widgetsOptions),
   }
 }
 

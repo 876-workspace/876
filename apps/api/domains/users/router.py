@@ -48,6 +48,7 @@ from domains.users.schemas import (
     ConsumerProfileDeleteResponse,
     ConsumerProfileResponse,
     ConsumerProfileUpdate,
+    CurrentUserResponse,
     EnsuredUserResponse,
     ReservedUsernameCreate,
     ReservedUsernameDeleteResponse,
@@ -264,6 +265,22 @@ async def _require_session_user_id(principal: SessionDep) -> str:
         message="No active session.",
         http_status_code=status.HTTP_401_UNAUTHORIZED,
     )
+
+
+@router.get(
+    "/me",
+    response_model=CurrentUserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve the current user",
+    description="Returns the signed-in user's own account identity and lifecycle state.",
+)
+async def retrieve_current_user(
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> CurrentUserResponse:
+    user_id = await _require_session_user_id(principal)
+    user = await _require_user(db, user_id)
+    return CurrentUserResponse.model_validate(user)
 
 
 async def _get_profile(db: AsyncSession, user_id: str) -> UserProfile | None:

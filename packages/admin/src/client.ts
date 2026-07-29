@@ -45,9 +45,7 @@ import { createAdminBillingAccountsResource } from './resources/billing-accounts
 import { createAdminSubscriptionsResource } from './resources/subscriptions'
 import type { AdminPlatformClientOptions } from './types'
 
-export type Admin876ClientOptions = {
-  /** Core platform administration configuration. */
-  platform?: AdminPlatformClientOptions
+export type Admin876ClientOptions = AdminPlatformClientOptions & {
   /** Billing administration and cross-application integration configuration. */
   billing?: BillingAdminClientOptions & BillingIntegrationClientOptions
   /** Storage service configuration. */
@@ -57,52 +55,61 @@ export type Admin876ClientOptions = {
 }
 
 export function create876AdminClient(options: Admin876ClientOptions = {}) {
-  const runtime = buildAdminRuntime(options.platform ?? {})
-  const userResources = createAdminUsersResource(runtime)
+  const runtime = buildAdminRuntime(options)
+  const { identifications, ...users } = createAdminUsersResource(runtime)
   const {
-    create: createUser,
-    list: listUsers,
-    retrieve: getUserById,
-    retrieveByWorkosId: getUserByWorkosId,
-    retrieveByUsername: getUserByUsername,
-    update: updateUserById,
-    delete: deleteUser,
-    purge: purgeUser,
-    ban: banUser,
-    unban: unbanUser,
-    listAccounts: listUserAccounts,
-    unlinkAccount: unlinkUserAccount,
-    revokeSessions: revokeUserSessions,
-    ...users
-  } = userResources
+    features: appFeatures,
+    subscriptions: appSubscriptions,
+    ...apps
+  } = createAdminAppsResource(runtime)
+  const { orgs: organizationFeatures, ...features } =
+    createAdminFeaturesResource(runtime)
+  const {
+    locations,
+    contacts,
+    departments,
+    employees,
+    subscriptions: organizationSubscriptions,
+    permissions,
+    roles,
+    members: organizationMembers,
+    appAssignments,
+    listMemberships: _listMemberships,
+    createMembership: _createMembership,
+    listInvites,
+    createInvite,
+    revokeInvite,
+    ...organizations
+  } = createAdminOrgsResource(runtime)
+  const subscriptions = createAdminSubscriptionsResource(runtime)
   const billing = create876BillingAdminClient(options.billing)
   const widgets = createWidgetsClient(options.widgets)
 
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
     users,
-    auth: {
-      ...createAdminAuthResource(runtime),
-      admin: {
-        createUser,
-        listUsers,
-        getUserById,
-        getUserByWorkosId,
-        getUserByUsername,
-        updateUserById,
-        deleteUser,
-        purgeUser,
-        banUser,
-        unbanUser,
-        listUserAccounts,
-        unlinkUserAccount,
-        revokeUserSessions,
-      },
-    },
-    apps: createAdminAppsResource(runtime),
-    features: createAdminFeaturesResource(runtime),
+    identifications,
+    auth: createAdminAuthResource(runtime),
+    apps,
+    appFeatures,
+    appSubscriptions,
+    features,
+    organizationFeatures,
     apiKeys: createAdminApiKeysResource(runtime),
-    orgs: createAdminOrgsResource(runtime),
+    organizations,
+    locations,
+    contacts,
+    departments,
+    employees,
+    permissions,
+    roles,
+    organizationMembers,
+    appAssignments,
+    invites: {
+      list: listInvites,
+      create: createInvite,
+      revoke: revokeInvite,
+    },
     prices: createAdminPricesResource(runtime),
     products: createAdminProductsResource(runtime),
     onboarding: createAdminOnboardingResource(runtime),
@@ -112,16 +119,21 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     addresses: createAdminAddressesResource(runtime),
     reservedUsernames: createAdminReservedUsernamesResource(runtime),
     billingAccounts: createAdminBillingAccountsResource(runtime),
-    subscriptions: createAdminSubscriptionsResource(runtime),
+    subscriptions: {
+      ...subscriptions,
+      provision: organizationSubscriptions.provision,
+      updateForOrganizationApp: organizationSubscriptions.update,
+      listForOrganization: organizationSubscriptions.list,
+      retrieveForOrganizationApp: organizationSubscriptions.retrieve,
+      retrieveBySlug: organizationSubscriptions.retrieveBySlug,
+      listByOrganizations: organizationSubscriptions.listByOrgs,
+    },
     storage: create876StorageClient(options.storage),
     billing: {
       ...billing,
       integration: create876BillingIntegrationClient(options.billing),
     },
-    widgets: {
-      ...widgets,
-      admin: createWidgetsAdminClient(options.widgets),
-    },
+    widgets: { ...widgets, ...createWidgetsAdminClient(options.widgets) },
   }
 }
 

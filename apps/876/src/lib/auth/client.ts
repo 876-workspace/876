@@ -1,6 +1,6 @@
 'use client'
 
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { track } from '@/lib/analytics/track'

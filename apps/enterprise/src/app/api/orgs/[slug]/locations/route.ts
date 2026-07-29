@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { AdminOrgLocationCreateParams } from '@876/admin'
+import type { OrgLocationCreateParams } from '@876/sdk'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -23,12 +23,12 @@ const LOCATION_FIELDS = [
   'country_code',
   'postal_code',
   'timezone',
-] as const satisfies readonly (keyof AdminOrgLocationCreateParams)[]
+] as const satisfies readonly (keyof OrgLocationCreateParams)[]
 
 function pickLocationFields(
   body: Record<string, unknown>
-): Partial<AdminOrgLocationCreateParams> {
-  const params: Partial<AdminOrgLocationCreateParams> = {}
+): Partial<OrgLocationCreateParams> {
+  const params: Partial<OrgLocationCreateParams> = {}
   for (const field of LOCATION_FIELDS) {
     if (field in body) params[field] = body[field] as never
   }
@@ -36,7 +36,7 @@ function pickLocationFields(
   return params
 }
 
-/** Creates a location. Pure transport over `$876.orgs.locations.create`. */
+/** Creates a location. Pure transport over `$876.locations.create`. */
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
@@ -55,8 +55,8 @@ export async function POST(
     return apiJson({ error: 'A name is required.' }, { status: 400 })
   }
 
-  const client = await getAdminClient()
-  const { data, error } = await client.orgs.locations.create(
+  const client = await get876ServerClient()
+  const { data, error } = await client.locations.create(
     auth.membership.organization.id,
     { ...pickLocationFields(body ?? {}), name }
   )

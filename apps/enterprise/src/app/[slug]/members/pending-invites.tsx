@@ -4,7 +4,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import type { AdminInviteToken } from '@876/admin'
+import type { InviteToken } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -17,7 +17,7 @@ export function PendingInvites({
   invites,
 }: {
   slug: string
-  invites: AdminInviteToken[]
+  invites: InviteToken[]
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -26,7 +26,7 @@ export function PendingInvites({
     if (isPending) return
 
     startTransition(async () => {
-      const { error } = await client.orgs.invites.revoke(slug, inviteId)
+      const { error } = await client.invites.revoke(slug, inviteId)
       if (error) {
         toast.error(error.message)
         return
@@ -37,7 +37,7 @@ export function PendingInvites({
     })
   }
 
-  const columns: ColumnDef<AdminInviteToken, unknown>[] = [
+  const columns: ColumnDef<InviteToken, unknown>[] = [
     {
       id: 'email',
       header: 'Email',

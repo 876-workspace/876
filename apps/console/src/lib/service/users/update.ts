@@ -22,7 +22,7 @@ export async function update(
     if (!check.ok) return err(check.error, check.status)
   }
 
-  const { data, error } = await $876.auth.admin.updateUserById(id, body)
+  const { data, error } = await $876.users.update(id, body)
   if (error || !data) return err(error?.message ?? 'Failed to update user.')
 
   return ok(data)

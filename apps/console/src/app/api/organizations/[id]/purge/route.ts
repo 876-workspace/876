@@ -25,7 +25,9 @@ export async function DELETE(
 
   const { id } = await context.params
 
-  const { data, error } = await $876.orgs.purge(id, { deletedBy: caller.id })
+  const { data, error } = await $876.organizations.purge(id, {
+    deletedBy: caller.id,
+  })
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to purge organization.' },

@@ -36,7 +36,7 @@ export default async function AppFeatureDetailPage({ params }: Props) {
 
   const featureGroup = findFeatureGroupByMasterSlug(feature.slug)
   const { data: appFeaturesData } = featureGroup
-    ? await $876.apps.features.list(app.id, { limit: 100 })
+    ? await $876.appFeatures.list(app.id, { limit: 100 })
     : { data: null }
   const childFeatures =
     appFeaturesData?.data.filter((childFeature) =>

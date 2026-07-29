@@ -32,11 +32,17 @@ import {
   sdk876OrgMemberMeSchema,
   sdk876OrgMemberRoleUpdateParamsSchema,
   sdk876OrgMemberSchema,
+  sdk876DeletedOrgMemberSchema,
   sdk876OrgRoleCreateParamsSchema,
   sdk876OrgRoleListSchema,
   sdk876OrgRoleSchema,
   sdk876OrgRoleUpdateParamsSchema,
   sdk876PermissionCatalogSchema,
+  sdk876InviteTokenCreateParamsSchema,
+  sdk876InviteTokenListSchema,
+  sdk876InviteTokenSchema,
+  sdk876SubscriptionListSchema,
+  sdk876SubscriptionSchema,
 } from '../types/orgs.ts'
 import type {
   DeletedEmployeeProfile,
@@ -66,6 +72,7 @@ import type {
   AppAssignmentList,
   DeletedOrgRole,
   OrgMember,
+  DeletedOrgMember,
   OrgMemberList,
   OrgMemberMe,
   OrgMemberRoleUpdateParams,
@@ -74,12 +81,17 @@ import type {
   OrgRoleList,
   OrgRoleUpdateParams,
   PermissionCatalog,
+  InviteToken,
+  InviteTokenCreateParams,
+  InviteTokenList,
+  Subscription,
+  SubscriptionList,
 } from '../types/orgs.ts'
 import { validateParams } from '../validation.ts'
 
 /**
- * `$876.orgs.*` — org-self-scoped organization structure for product apps
- * (Enterprise, Couriers, future apps).
+ * Self-scoped organization resources composed as `$876.organizations.*`,
+ * `$876.locations.*`, `$876.contacts.*`, and other resource-first roots.
  *
  * Every method targets the caller's OWN organization: the backing session-tier
  * endpoints require an active membership in `orgId` (mutations require the
@@ -800,6 +812,103 @@ export function createOrgsResource(runtime: SdkRuntime) {
           `/organizations/${orgId}/members/${membershipId}`,
           validation.data,
           sdk876OrgMemberSchema,
+          requestOptions
+        )
+      },
+
+      delete(
+        orgId: string,
+        membershipId: string,
+        requestOptions?: RequestOptions
+      ): Promise<Result<DeletedOrgMember>> {
+        return sendAuthRequest(
+          runtime,
+          'DELETE',
+          `/organizations/${orgId}/members/${membershipId}`,
+          undefined,
+          sdk876DeletedOrgMemberSchema,
+          requestOptions
+        )
+      },
+    },
+
+    invites: {
+      list(
+        orgId: string,
+        requestOptions?: RequestOptions
+      ): Promise<Result<InviteTokenList>> {
+        return sendAuthRequest(
+          runtime,
+          'GET',
+          `/organizations/${orgId}/invites`,
+          undefined,
+          sdk876InviteTokenListSchema,
+          requestOptions
+        )
+      },
+
+      create(
+        orgId: string,
+        params: InviteTokenCreateParams,
+        requestOptions?: RequestOptions
+      ): Promise<Result<InviteToken>> {
+        const validation = validateParams(
+          sdk876InviteTokenCreateParamsSchema,
+          params
+        )
+        if (validation.error) return Promise.resolve(validation)
+        return sendAuthRequest(
+          runtime,
+          'POST',
+          `/organizations/${orgId}/invites`,
+          validation.data,
+          sdk876InviteTokenSchema,
+          requestOptions
+        )
+      },
+
+      revoke(
+        orgId: string,
+        inviteId: string,
+        requestOptions?: RequestOptions
+      ): Promise<Result<InviteToken>> {
+        return sendAuthRequest(
+          runtime,
+          'DELETE',
+          `/organizations/${orgId}/invites/${inviteId}`,
+          undefined,
+          sdk876InviteTokenSchema,
+          requestOptions
+        )
+      },
+    },
+
+    subscriptions: {
+      list(
+        orgId: string,
+        requestOptions?: RequestOptions
+      ): Promise<Result<SubscriptionList>> {
+        return sendAuthRequest(
+          runtime,
+          'GET',
+          `/organizations/${orgId}/subscriptions`,
+          undefined,
+          sdk876SubscriptionListSchema,
+          requestOptions
+        )
+      },
+
+      retrieveBySlug(
+        orgId: string,
+        appSlug: string,
+        requestOptions?: RequestOptions
+      ): Promise<Result<Subscription>> {
+        return sendAuthRequest(
+          runtime,
+          'GET',
+          `/organizations/${orgId}/subscriptions/by-slug/${appSlug}`,
+          undefined,
+          sdk876SubscriptionSchema,
           requestOptions
         )
       },

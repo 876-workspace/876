@@ -527,7 +527,7 @@ describe('Console browser resource clients', () => {
     expect(apiKeys.apiKeys.delete).toBe(apiKeys.del)
     expect(apps.apps.delete).toBe(apps.remove)
     expect(features.features.delete).toBe(features.del)
-    expect(orgs.orgs.delete).toBe(orgs.del)
+    expect(orgs.organizations.delete).toBe(orgs.del)
     expect(reservedUsernames.reservedUsernames.delete).toBe(
       reservedUsernames.del
     )

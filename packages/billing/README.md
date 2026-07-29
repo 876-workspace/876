@@ -41,9 +41,7 @@ import 'server-only'
 import { create876AdminClient } from '@876/admin'
 
 export const $876 = create876AdminClient({
-  platform: {
-    internalKey: process.env.API_INTERNAL_KEY,
-  },
+  internalKey: process.env.API_INTERNAL_KEY,
   billing: {
     baseUrl: process.env.BILLING_API_URL,
     internalKey: process.env.BILLING_INTERNAL_KEY,

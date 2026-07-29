@@ -6,7 +6,7 @@ import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-/** Creates an organization. Pure transport over `$876.orgs.create`. */
+/** Creates an organization. Pure transport over `$876.organizations.create`. */
 export async function POST(request: NextRequest): Promise<Response> {
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.orgs.create({
+  const { data, error } = await $876.organizations.create({
     name: body.name,
     short_name: body.short_name,
     slug: body.slug,

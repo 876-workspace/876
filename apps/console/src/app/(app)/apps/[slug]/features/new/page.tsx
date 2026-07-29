@@ -32,7 +32,7 @@ export default async function NewAppFeaturePage({
   const featureGroup = FEATURE_GROUPS.find((entry) => entry.id === group)
   const parentFeature = featureGroup
     ? (
-        await $876.apps.features.list(app.id, {
+        await $876.appFeatures.list(app.id, {
           limit: 100,
         })
       ).data?.data.find((feature) => feature.slug === featureGroup.masterSlug)

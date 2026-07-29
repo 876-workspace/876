@@ -783,7 +783,10 @@ repo = UserRepository(db)  # where db is injected via Depends(get_db)
 
 2. **`server-only` guard** — `@876/admin`'s entry file starts with `import 'server-only'`, making any Client Component import a build-time error. Type-only imports (for type inference) are erased and remain safe.
 
-3. **Same pattern, different tier** — both SDK and admin use the same resource-factory pattern: a factory function receives a runtime object and returns a namespaced object of methods.
+3. **Factory determines privilege** — both ordinary and admin clients use
+   `$876.resource.verb()`. The admin factory exposes privileged verbs while the
+   ordinary factory omits them. Deeper nesting is reserved for genuine
+   subsystems such as `$876.storage.buckets.*`.
 
 ---
 
@@ -797,6 +800,14 @@ import { buildAdminRuntime } from './runtime'
 
 export function create876AdminClient(options: Admin876ClientOptions = {}) {
   const runtime = buildAdminRuntime(options)
+  const {
+    locations,
+    contacts,
+    members: organizationMembers,
+    invites,
+    ...organizations
+  } = createAdminOrgsResource(runtime)
+
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
     users: createAdminUsersResource(runtime),
@@ -804,9 +815,13 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     apps: createAdminAppsResource(runtime),
     features: createAdminFeaturesResource(runtime),
     apiKeys: createAdminApiKeysResource(runtime),
-    orgs: createAdminOrgsResource(runtime),
-    products: createAdminProductsResource(runtime),
+    organizations,
+    locations,
+    contacts,
+    organizationMembers,
     memberships: createAdminMembershipsResource(runtime),
+    invites,
+    products: createAdminProductsResource(runtime),
     addresses: createAdminAddressesResource(runtime),
     reservedUsernames: createAdminReservedUsernamesResource(runtime),
     billingAccounts: createAdminBillingAccountsResource(runtime),
@@ -859,25 +874,26 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
 }
 ```
 
-### Nested Namespace Pattern (Orgs Example)
+### Resource-First Organization Pattern
 
-Admin client uses nested objects for organizational sub-resources:
+Organization resources branch directly from the branded client root:
 
 ```typescript
-$876.orgs.locations.create(orgId, params)     // POST /organizations/{org_id}/locations
-$876.orgs.locations.list(orgId)               // GET  /organizations/{org_id}/locations
-$876.orgs.locations.retrieve(orgId, locId)    // GET  /organizations/{org_id}/locations/{loc_id}
-$876.orgs.locations.update(orgId, locId, p)   // PATCH /organizations/{org_id}/locations/{loc_id}
-$876.orgs.locations.delete(orgId, locId)      // DELETE /organizations/{org_id}/locations/{loc_id}
+$876.organizations.retrieve(orgId)
+$876.locations.create(orgId, params)
+$876.locations.list(orgId)
+$876.locations.retrieve(orgId, locationId)
+$876.locations.update(orgId, locationId, params)
+$876.locations.delete(orgId, locationId)
 
-$876.orgs.contacts.*     // Same CRUD pattern
-$876.orgs.departments.*  // Same CRUD pattern
-$876.orgs.employees.*    // Same CRUD pattern
-$876.orgs.roles.*        // Same CRUD pattern
-$876.orgs.members.*      // Same CRUD pattern
-$876.orgs.appAssignments.* // Same CRUD pattern
-$876.orgs.subscriptions.* // Provision, update, list, retrieve, batch
-$876.orgs.permissions.retrieve()  // GET /organizations/permissions/catalog
+$876.contacts.*              // Same CRUD pattern
+$876.departments.*           // Same CRUD pattern
+$876.employees.*             // Same CRUD pattern
+$876.roles.*                 // Same CRUD pattern
+$876.organizationMembers.*   // Same CRUD pattern
+$876.appAssignments.*        // Same CRUD pattern
+$876.subscriptions.*         // Organization and global subscription verbs
+$876.permissions.retrieve()  // GET /organizations/permissions/catalog
 ```
 
 ### Admin Type Definitions (TypeScript-first)
@@ -1035,9 +1051,13 @@ export function create876Client(options: ClientOptions = {}) {
   const runtime = {
     baseUrl: resolveApiBaseUrl(parsed.baseUrl),
     apiKey: parsed.apiKey,
+    accessToken: parsed.accessToken,
     fetch: parsed.fetch ?? globalThis.fetch.bind(globalThis),
     credentials: parsed.credentials,
   }
+
+  const { memberships, ...users } = createUsersResource(runtime)
+  const { locations, contacts, ...organizations } = createOrgsResource(runtime)
 
   return {
     auth: createAuthResource(runtime), // $876.auth.*
@@ -1045,8 +1065,11 @@ export function create876Client(options: ClientOptions = {}) {
     apps: createAppsResource(runtime), // $876.apps.*
     oauthGrants: createOAuthGrantsResource(runtime), // $876.oauthGrants.*
     auditEvents: createAuditEventsResource(runtime), // $876.auditEvents.*
-    orgs: createOrgsResource(runtime), // $876.orgs.*
-    users: createUsersResource(runtime), // $876.users.*
+    users, // $876.users.*
+    memberships, // $876.memberships.*
+    organizations, // $876.organizations.*
+    locations, // $876.locations.*
+    contacts, // $876.contacts.*
   }
 }
 ```

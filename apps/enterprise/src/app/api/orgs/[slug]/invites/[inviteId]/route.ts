@@ -1,10 +1,10 @@
 import { apiJson } from '@876/core/api'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-/** Revokes a pending invite. Pure transport over `$876.orgs.revokeInvite`. */
+/** Revokes a pending invite. Pure transport over `$876.invites.revoke`. */
 export async function DELETE(
   _request: Request,
   context: { params: Promise<{ slug: string; inviteId: string }> }
@@ -14,8 +14,8 @@ export async function DELETE(
   const auth = await authorizeOrgRequest(slug, 'members:invite')
   if (auth.response) return auth.response
 
-  const client = await getAdminClient()
-  const { data, error } = await client.orgs.revokeInvite(
+  const client = await get876ServerClient()
+  const { data, error } = await client.invites.revoke(
     auth.membership.organization.id,
     inviteId
   )

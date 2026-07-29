@@ -1,12 +1,12 @@
 import Link from 'next/link'
 
-import type { AdminOrganization } from '@876/admin'
+import type { Organization } from '@876/sdk'
 import { buttonVariants } from '@876/ui/button'
 import { Pencil } from '@876/ui/icons'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import {
   hasOrgPermission,
   requireOrgPermission,
@@ -28,8 +28,10 @@ export default async function OrganizationDetailsPage({
     'org:read'
   )
 
-  const client = await getAdminClient()
-  const orgResult = await client.orgs.retrieve(membership.organization.id)
+  const client = await get876ServerClient()
+  const orgResult = await client.organizations.retrieve(
+    membership.organization.id
+  )
 
   const canManage = hasOrgPermission(membership, 'org:update')
 
@@ -70,7 +72,7 @@ export default async function OrganizationDetailsPage({
                 <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
                   {section.fields.map((field) => {
                     const value =
-                      (orgResult.data[field.key as keyof AdminOrganization] as
+                      (orgResult.data[field.key as keyof Organization] as
                         | string
                         | null) ?? ''
                     return (

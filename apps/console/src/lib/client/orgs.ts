@@ -80,15 +80,21 @@ export const search = (query: string) =>
     `/api/organizations/search?q=${encodeURIComponent(query)}`
   )
 
-export const orgs = {
+export const organizations = {
   create,
   update,
   del,
   delete: del,
   purge,
-  listInvites,
-  createInvite,
-  revokeInvite,
-  updateSubscription,
   search,
+}
+
+export const invites = {
+  list: listInvites,
+  create: createInvite,
+  revoke: revokeInvite,
+}
+
+export const subscriptions = {
+  updateForOrganizationApp: updateSubscription,
 }

@@ -8,6 +8,7 @@ import { createOAuthGrantsResource } from './resources/oauth-grants.ts'
 import { createOrgsResource } from './resources/orgs.ts'
 import { createUsersResource } from './resources/users.ts'
 import { createProductsResource } from './resources/products.ts'
+import { createFeaturesResource } from './resources/features.ts'
 import type { ClientOptions } from './types/api.ts'
 import { auth876ClientOptionsSchema } from './types/api.ts'
 
@@ -37,8 +38,7 @@ function resolveApiBaseUrl(baseUrl?: string): string {
  * `@876/admin` so it never reaches consumer bundles.
  *
  * @param options - Optional client configuration (`apiKey`, `fetch`, `credentials`).
- * @returns A namespaced client. `$876.auth.*` is implemented; `$876.users.*`
- * and `$876.orgs.*` are reserved for future SDK resource namespaces.
+ * @returns A resource-first client whose privilege is fixed by this factory.
  *
  * @example
  * ```typescript
@@ -53,6 +53,7 @@ export function create876Client(options: ClientOptions = {}) {
   const runtime = {
     baseUrl: resolveApiBaseUrl(parsed.baseUrl),
     apiKey: parsed.apiKey,
+    accessToken: parsed.accessToken,
     fetch: parsed.fetch ?? globalThis.fetch.bind(globalThis),
     credentials: parsed.credentials,
   }
@@ -67,6 +68,20 @@ export function create876Client(options: ClientOptions = {}) {
     fetch: runtime.fetch,
     configured: Boolean(oauthConfig) && Boolean(runtime.baseUrl),
   })
+  const { memberships, ...users } = createUsersResource(runtime)
+  const {
+    locations,
+    contacts,
+    departments,
+    employees,
+    permissions,
+    roles,
+    members: organizationMembers,
+    appAssignments,
+    invites,
+    subscriptions,
+    ...organizations
+  } = createOrgsResource(runtime)
 
   return {
     /** Authentication methods (login, register, social login, session, OTP, …). */
@@ -88,18 +103,30 @@ export function create876Client(options: ClientOptions = {}) {
      */
     oauthGrants: createOAuthGrantsResource(runtime),
     auditEvents: createAuditEventsResource(runtime),
+    features: createFeaturesResource(runtime),
     /**
      * Org-self-scoped organization structure (locations, departments, employee
      * profiles). Session tier — every method targets the caller's own org and
      * is authorized by org membership on the API.
      */
-    orgs: createOrgsResource(runtime),
-    users: createUsersResource(runtime),
+    users,
+    memberships,
+    organizations,
+    locations,
+    contacts,
+    departments,
+    employees,
+    permissions,
+    roles,
+    organizationMembers,
+    appAssignments,
+    invites,
+    subscriptions,
     products: createProductsResource(runtime),
   }
 }
 
-/** The namespaced 876 platform client returned by {@link create876Client}. */
+/** The resource-first 876 platform client returned by {@link create876Client}. */
 export type SDK876Client = ReturnType<typeof create876Client>
 
 /** The auth namespace of the {@link SDK876Client}; used as the `client` in auth-ui. */

@@ -159,6 +159,30 @@ describe('create876Client', () => {
     })
   })
 
+  it('adds the delegated bearer header when an access token is configured', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ data: sessionPayload, error: null }),
+    })
+    const $876 = create876Client({
+      apiKey: '876_app_secret_test_123',
+      accessToken: 'session_access_token',
+      fetch: fetchMock,
+    })
+
+    await $876.auth.login(loginParams)
+
+    expect(fetchMock).toHaveBeenCalledWith('http://localhost:4000/auth/login', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer session_access_token',
+        'Content-Type': 'application/json',
+        'X-876-API-Key': '876_app_secret_test_123',
+      },
+      credentials: 'include',
+      body: JSON.stringify(loginParams),
+    })
+  })
+
   it('uses an explicit base URL when configured', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       json: () => Promise.resolve({ data: sessionPayload, error: null }),

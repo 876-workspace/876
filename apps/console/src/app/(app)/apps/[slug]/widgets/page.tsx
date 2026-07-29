@@ -40,7 +40,7 @@ export default async function AppWidgetsPage({
       )
     : []
 
-  const result = await $876.apps.features.list(app.id, {
+  const result = await $876.appFeatures.list(app.id, {
     limit: 100,
     includeTag: 'widget',
   })

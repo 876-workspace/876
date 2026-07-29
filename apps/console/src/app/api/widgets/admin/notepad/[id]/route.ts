@@ -21,7 +21,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.widgets.admin.notes.update(
+  const result = await $876.widgets.notes.update(
     { userId: access.sessionUser.id },
     id,
     {
@@ -47,7 +47,7 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $876.widgets.admin.notes.delete(
+  const result = await $876.widgets.notes.delete(
     { userId: access.sessionUser.id },
     id
   )

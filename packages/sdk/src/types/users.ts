@@ -5,6 +5,46 @@ import type { Result } from './api.ts'
 const nonEmptyString = z.string().trim().min(1)
 const nullableString = z.string().nullable()
 
+export const sdk876CurrentUserSchema = z.strictObject({
+  object: z.literal('user'),
+  id: nonEmptyString,
+  email: nonEmptyString,
+  username: nullableString,
+  email_verified: z.boolean(),
+  first_name: z.string(),
+  last_name: z.string(),
+  middle_name: nullableString,
+  avatar: nullableString,
+  status: z.string(),
+  banned: z.boolean(),
+  created_at: z.number(),
+  updated_at: z.number(),
+})
+
+export const sdk876RoutingOrganizationSchema = z.strictObject({
+  id: nonEmptyString,
+  name: nullableString,
+  slug: nonEmptyString,
+  status: z.string(),
+  logo_url: nullableString,
+})
+
+export const sdk876RoutingMembershipSchema = z.strictObject({
+  id: nonEmptyString,
+  role: z.string(),
+  status: z.string(),
+  permissions: z.array(z.string()),
+  organization: sdk876RoutingOrganizationSchema,
+})
+
+export const sdk876RoutingMembershipListSchema = z.strictObject({
+  object: z.literal('list'),
+  data: z.array(sdk876RoutingMembershipSchema),
+  has_more: z.boolean(),
+  url: z.string(),
+  total_count: z.number().int().nullable().optional(),
+})
+
 export const sdk876GenderSchema = z.enum(['male', 'female', 'other'])
 
 export const sdk876ConsumerProfileSchema = z.strictObject({
@@ -136,6 +176,14 @@ export const sdk876DeletedConsumerContactSchema = z.strictObject({
 })
 
 export type Gender = z.infer<typeof sdk876GenderSchema>
+export type CurrentUser = z.infer<typeof sdk876CurrentUserSchema>
+export type RoutingOrganization = z.infer<
+  typeof sdk876RoutingOrganizationSchema
+>
+export type RoutingMembership = z.infer<typeof sdk876RoutingMembershipSchema>
+export type RoutingMembershipList = z.infer<
+  typeof sdk876RoutingMembershipListSchema
+>
 export type ConsumerProfile = z.infer<typeof sdk876ConsumerProfileSchema>
 export type ConsumerProfileUpdateParams = z.input<
   typeof sdk876ConsumerProfileUpdateParamsSchema
@@ -171,6 +219,8 @@ export type DeletedConsumerContact = z.infer<
 >
 
 export type ConsumerProfileResult = Result<ConsumerProfile>
+export type CurrentUserResult = Result<CurrentUser>
+export type RoutingMembershipListResult = Result<RoutingMembershipList>
 export type ConsumerAddressResult = Result<ConsumerAddress>
 export type ConsumerAddressListResult = Result<ConsumerAddressList>
 export type DeletedConsumerAddressResult = Result<DeletedConsumerAddress>

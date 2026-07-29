@@ -1,4 +1,10 @@
-import { orgs } from './orgs'
+import {
+  contacts,
+  invites,
+  locations,
+  organizationMembers,
+  organizations,
+} from './orgs'
 
 /**
  * Typed browser client for client-initiated mutations. Each resource maps to a
@@ -7,8 +13,18 @@ import { orgs } from './orgs'
  * is mutations only.
  */
 export const client = {
-  orgs,
+  organizations,
+  locations,
+  contacts,
+  invites,
+  organizationMembers,
 }
 
-export { orgs } from './orgs'
+export {
+  contacts,
+  invites,
+  locations,
+  organizationMembers,
+  organizations,
+} from './orgs'
 export type { ClientResult } from '@/types/api'

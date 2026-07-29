@@ -1,15 +1,9 @@
+import type { SubscriptionStatus } from '@876/billing/admin'
 import { apiSuccess } from '@876/core/api'
 import { $876 } from '@/lib/876'
 import { mirrorCoreProductPrices } from '@/lib/billing/mirror'
 
-const INTERVAL_BY_CORE: Record<string, 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'> = {
-  day: 'DAY',
-  week: 'WEEK',
-  month: 'MONTH',
-  year: 'YEAR',
-}
-
-function billingStatusFromCore(status: string): any {
+function billingStatusFromCore(status: string): SubscriptionStatus {
   switch (status) {
     case 'trialing':
       return 'TRIALING'
@@ -28,10 +22,10 @@ function billingStatusFromCore(status: string): any {
 
 export async function GET() {
   const { data: subs } = await $876.subscriptions.list({ limit: 100 })
-  const results = []
+  const results: Array<{ id: string; logs: string[] }> = []
 
   for (const subscription of subs?.data || []) {
-    let logs: string[] = []
+    const logs: string[] = []
     try {
       if (subscription.items.length === 0) {
         logs.push('no items')
@@ -40,7 +34,7 @@ export async function GET() {
 
       const productIds = [
         ...new Set(
-          subscription.items.flatMap((item: any) =>
+          subscription.items.flatMap((item) =>
             item.product_id ? [item.product_id] : []
           )
         ),
@@ -50,7 +44,9 @@ export async function GET() {
         continue
       }
 
-      const orgPromise = $876.orgs.retrieve(subscription.organization_id)
+      const orgPromise = $876.organizations.retrieve(
+        subscription.organization_id
+      )
       const productPromises = productIds.map((productId: string) =>
         $876.products.retrieve(productId)
       )
@@ -60,17 +56,17 @@ export async function GET() {
       ])
 
       const referencedPriceIds = new Set(
-        subscription.items.map((item: any) => item.price_id)
+        subscription.items.map((item) => item.price_id)
       )
       const catalogResults = await Promise.all(
-        productResults.map(async (productResult: any) => {
+        productResults.map(async (productResult) => {
           if (!productResult.data) {
             logs.push(
               'product retrieve failed: ' + productResult.error?.message
             )
             return false
           }
-          const prices = productResult.data.prices.filter((price: any) =>
+          const prices = productResult.data.prices.filter((price) =>
             referencedPriceIds.has(price.id)
           )
           if (prices.length === 0) {
@@ -101,7 +97,7 @@ export async function GET() {
         externalReference: subscription.id,
         sourceAppId: subscription.app_id,
         customerId: ensuredCustomer.data.id,
-        items: subscription.items.map((item: any) => ({
+        items: subscription.items.map((item) => ({
           priceEntitlementReferenceId: item.price_id,
           quantity: item.quantity,
         })),
@@ -116,8 +112,10 @@ export async function GET() {
       } else {
         logs.push('success')
       }
-    } catch (e: any) {
-      logs.push('exception: ' + e.message)
+    } catch (error: unknown) {
+      logs.push(
+        `exception: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
     results.push({ id: subscription.id, logs })
   }

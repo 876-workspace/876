@@ -7,7 +7,7 @@ import { Plus } from '@876/ui/icons'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import {
   hasOrgPermission,
   requireOrgPermission,
@@ -29,10 +29,8 @@ export default async function OrganizationContactsPage({
 
   const canManage = hasOrgPermission(membership, 'org:update')
 
-  const client = await getAdminClient()
-  const contactsResult = await client.orgs.contacts.list(
-    membership.organization.id
-  )
+  const client = await get876ServerClient()
+  const contactsResult = await client.contacts.list(membership.organization.id)
   const contacts = contactsResult.data?.data ?? []
 
   return (

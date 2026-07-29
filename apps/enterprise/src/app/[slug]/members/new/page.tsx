@@ -1,7 +1,7 @@
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { InviteForm } from './invite-form'
@@ -19,8 +19,8 @@ export default async function InviteMemberPage({
     'members:invite'
   )
 
-  const client = await getAdminClient()
-  const rolesResult = await client.orgs.roles.list(membership.organization.id)
+  const client = await get876ServerClient()
+  const rolesResult = await client.roles.list(membership.organization.id)
   if (rolesResult.error) {
     return (
       <Page>

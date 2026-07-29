@@ -11,9 +11,7 @@ import { headers } from 'next/headers'
  * client in `@/lib/876/platform-client`.
  */
 export const $876 = create876ServerClient({
-  platform: {
-    apiKey: process.env.API_876_KEY,
-  },
+  apiKey: process.env.API_876_KEY,
   storage: {
     internalKey: process.env.STORAGE_INTERNAL_KEY,
   },
@@ -33,9 +31,7 @@ export async function get876Client() {
   const requestId = (await headers()).get('x-request-id') ?? undefined
 
   return create876ServerClient({
-    platform: {
-      apiKey: process.env.API_876_KEY,
-    },
+    apiKey: process.env.API_876_KEY,
     storage: {
       internalKey: process.env.STORAGE_INTERNAL_KEY,
     },

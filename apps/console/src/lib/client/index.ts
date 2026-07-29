@@ -4,7 +4,7 @@ import { billing } from './billing'
 import { billingIntegrations } from './billing-integrations'
 import { features } from './features'
 import { financeProvisioning } from './finance-provisioning'
-import { orgs } from './orgs'
+import { invites, organizations, subscriptions } from './orgs'
 import { onboarding } from './onboarding'
 import { modules } from './modules'
 import { prices } from './prices'
@@ -23,7 +23,9 @@ export const client = {
   billingIntegrations,
   features,
   financeProvisioning,
-  orgs,
+  organizations,
+  invites,
+  subscriptions,
   onboarding,
   modules,
   prices,
@@ -42,7 +44,7 @@ export { billing } from './billing'
 export { billingIntegrations } from './billing-integrations'
 export { features } from './features'
 export { financeProvisioning } from './finance-provisioning'
-export { orgs } from './orgs'
+export { invites, organizations, subscriptions } from './orgs'
 export { onboarding } from './onboarding'
 export { modules } from './modules'
 export { prices } from './prices'

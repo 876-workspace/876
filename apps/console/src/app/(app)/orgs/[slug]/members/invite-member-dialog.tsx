@@ -57,7 +57,7 @@ export function InviteMemberDialog({ orgId }: Props) {
       return
     }
     startTransition(async () => {
-      const { data, error } = await client.orgs.createInvite(orgId, {
+      const { data, error } = await client.invites.create(orgId, {
         email: email.trim(),
         role,
       })

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import type { AdminOrgContact, AdminOrgContactCreateParams } from '@876/admin'
+import type { OrgContact, OrgContactCreateParams } from '@876/sdk'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,7 +32,7 @@ export function ContactForm({
   members,
 }: {
   slug: string
-  contact?: AdminOrgContact
+  contact?: OrgContact
   members: MemberOption[]
 }) {
   const router = useRouter()
@@ -61,7 +61,7 @@ export function ContactForm({
     event.preventDefault()
     if (isPending) return
 
-    const params: AdminOrgContactCreateParams = {
+    const params: OrgContactCreateParams = {
       first_name: firstName.trim(),
       user_id: userId || null,
       last_name: opt(lastName),
@@ -76,8 +76,8 @@ export function ContactForm({
 
     startTransition(async () => {
       const result = isEdit
-        ? await client.orgs.contacts.update(slug, contact.id, params)
-        : await client.orgs.contacts.create(slug, params)
+        ? await client.contacts.update(slug, contact.id, params)
+        : await client.contacts.create(slug, params)
 
       if (result.error) {
         toast.error(result.error.message)
@@ -94,7 +94,7 @@ export function ContactForm({
     if (isPending || !isEdit) return
 
     startTransition(async () => {
-      const { error } = await client.orgs.contacts.delete(slug, contact.id)
+      const { error } = await client.contacts.delete(slug, contact.id)
       if (error) {
         toast.error(error.message)
         return

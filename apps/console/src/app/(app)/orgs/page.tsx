@@ -57,7 +57,7 @@ export default async function OrganizationsPage({ searchParams }: Props) {
   let hasMore = false
 
   if (isSearching) {
-    const result = await $876.orgs.search({
+    const result = await $876.organizations.search({
       query: q!,
       limit: 50,
       status: orgStatus,
@@ -65,7 +65,7 @@ export default async function OrganizationsPage({ searchParams }: Props) {
     if (result.error) throw new Error(result.error.message)
     orgs = result.data.data
   } else {
-    const result = await $876.orgs.list({
+    const result = await $876.organizations.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,
@@ -79,7 +79,7 @@ export default async function OrganizationsPage({ searchParams }: Props) {
   const orgIds = orgs.map((o) => o.id)
   const subscriptionsMap: Record<string, AdminSubscription[]> = {}
   if (orgIds.length > 0) {
-    const accessResult = await $876.orgs.subscriptions.listByOrgs(orgIds)
+    const accessResult = await $876.subscriptions.listByOrganizations(orgIds)
     if (!accessResult.error) {
       for (const row of accessResult.data.data) {
         if (!subscriptionsMap[row.organization_id])

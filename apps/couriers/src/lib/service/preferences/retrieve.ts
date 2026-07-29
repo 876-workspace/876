@@ -26,10 +26,10 @@ export function toStoredPreferenceRow(
 }
 
 export async function retrieve(params: ModulePreferenceListParams) {
-  const module = params.module
+  const moduleDefinition = params.module
     ? findModule(COURIERS_MODULE_CATALOG, params.module)
     : undefined
-  if (params.module && !module) return null
+  if (params.module && !moduleDefinition) return null
 
   const storedRows = await prisma.modulePreference.findMany({
     where: {
@@ -39,7 +39,7 @@ export async function retrieve(params: ModulePreferenceListParams) {
   })
   const rows = storedRows.map(toStoredPreferenceRow)
 
-  if (module) return resolveModulePreferences(module, rows)
+  if (moduleDefinition) return resolveModulePreferences(moduleDefinition, rows)
 
   return resolveCatalogPreferences(COURIERS_MODULE_CATALOG, rows)
 }

@@ -147,6 +147,26 @@ class EnsuredUserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CurrentUserResponse(BaseModel):
+    """The signed-in user's own account identity and lifecycle state."""
+
+    object: Literal["user"] = "user"
+    id: str
+    email: str
+    username: str | None = None
+    email_verified: bool
+    first_name: str
+    last_name: str
+    middle_name: str | None = None
+    avatar: str | None = None
+    status: str
+    banned: bool
+    created_at: int
+    updated_at: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserDeleteResponse(BaseModel):
     object: Literal["user"] = "user"
     id: str
@@ -563,12 +583,8 @@ class UserIdentificationDisclosureResponse(BaseModel):
         description="String representing the object's type. Always 'user_identification_disclosure'.",
     )
     type: str = Field(description="Identification type key.")
-    value: str = Field(
-        description="The full, unmasked identification value. Only ever returned by this endpoint."
-    )
-    country_code: str | None = Field(
-        default=None, description="ISO 3166-1 alpha-2 country code, if applicable."
-    )
+    value: str = Field(description="The full, unmasked identification value. Only ever returned by this endpoint.")
+    country_code: str | None = Field(default=None, description="ISO 3166-1 alpha-2 country code, if applicable.")
     verified: bool = Field(description="Whether this identification has been verified.")
     disclosed_at: int = Field(description="Unix timestamp when this disclosure was made and audit-logged.")
 

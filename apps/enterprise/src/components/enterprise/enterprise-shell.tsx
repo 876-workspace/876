@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@876/ui/sidebar'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import {
   EnterpriseSidebar,
   type EnterpriseSidebarUser,
@@ -67,21 +67,25 @@ async function buildAppsSlot(
   orgId: string,
   orgSlug: string
 ): Promise<ReactNode> {
-  const client = await getAdminClient()
-  const result = await client.apps.list({ organizationId: orgId, limit: 50 })
+  const client = await get876ServerClient()
+  const result = await client.subscriptions.list(orgId)
   // Navigation degrades to an empty group on failure — never crash the shell.
-  const apps = (result.data?.data ?? []).filter(
-    (app) => app.status === 'active'
+  const subscriptions = (result.data?.data ?? []).filter(
+    (subscription) =>
+      subscription.status === 'active' &&
+      subscription.app_slug &&
+      subscription.app_name &&
+      subscription.app_kind !== 'internal'
   )
 
   return (
     <EnterpriseAppsGroup orgSlug={orgSlug}>
-      {apps.map((app) => (
+      {subscriptions.map((subscription) => (
         <EnterpriseAppNavLink
-          key={app.id}
-          href={`/${orgSlug}/apps/${app.slug}`}
-          title={app.name}
-          logoUrl={app.logo_url}
+          key={subscription.id}
+          href={`/${orgSlug}/apps/${subscription.app_slug}`}
+          title={subscription.app_name ?? subscription.app_slug ?? 'App'}
+          logoUrl={subscription.app_logo_url}
         />
       ))}
     </EnterpriseAppsGroup>

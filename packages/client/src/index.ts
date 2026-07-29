@@ -8,9 +8,7 @@ import {
 } from '@876/sdk'
 import { browserCollections, browserNotes } from '@876/widgets/browser'
 
-export type ClientOptions = {
-  /** Core 876 API, authentication, and OAuth configuration. */
-  platform?: PlatformClientOptions
+export type ClientOptions = PlatformClientOptions & {
   /** Tenant-scoped Billing configuration. */
   billing?: BillingClientOptions
 }
@@ -33,9 +31,10 @@ const widgets = {
  * Server-only services are composed by `@876/client/server`.
  */
 export function create876Client(options: ClientOptions = {}) {
+  const { billing: billingOptions, ...platformOptions } = options
   return {
-    ...createPlatformClient(options.platform),
-    billing: createBillingClient(options.billing),
+    ...createPlatformClient(platformOptions),
+    billing: createBillingClient(billingOptions),
     widgets,
   }
 }

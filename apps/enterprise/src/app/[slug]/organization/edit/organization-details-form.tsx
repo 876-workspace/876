@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { toast } from 'sonner'
 
-import type { AdminOrganization } from '@876/admin'
+import type { Organization } from '@876/sdk'
 import type { OrganizationSelfUpdateParams } from '@876/sdk'
 import type { IconComponent } from '@876/ui/icons'
 import { Button } from '@876/ui/button'
@@ -17,10 +17,10 @@ import { client } from '@/lib/client'
 import { ALL_KEYS, SECTIONS } from '../organization-sections'
 import type { FieldKey } from '../organization-sections'
 
-function toFormValues(org: AdminOrganization): Record<FieldKey, string> {
+function toFormValues(org: Organization): Record<FieldKey, string> {
   const values = {} as Record<FieldKey, string>
   for (const key of ALL_KEYS) {
-    values[key] = (org[key as keyof AdminOrganization] as string | null) ?? ''
+    values[key] = (org[key as keyof Organization] as string | null) ?? ''
   }
   return values
 }
@@ -52,7 +52,7 @@ export function OrganizationDetailsForm({
   org,
   slug,
 }: {
-  org: AdminOrganization
+  org: Organization
   slug: string
 }) {
   const router = useRouter()
@@ -80,7 +80,7 @@ export function OrganizationDetailsForm({
     }
 
     startTransition(async () => {
-      const { error } = await client.orgs.updateDetails(slug, params)
+      const { error } = await client.organizations.update(slug, params)
       if (error) {
         toast.error(error.message)
         return
