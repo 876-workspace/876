@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { AnalyticsEvent } from '@/lib/analytics/events'
+import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { resolveOrg } from './_data'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -17,5 +19,10 @@ export default async function OrganizationOverviewPage({ params }: Props) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  return null
+  return (
+    <TrackMCEventOnMount
+      event={AnalyticsEvent.OrgDetailViewed}
+      properties={{ org_id: org.id }}
+    />
+  )
 }

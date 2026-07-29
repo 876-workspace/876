@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { AnalyticsEvent } from '@/lib/analytics/events'
+import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { resolveUser } from './_data'
 
 type Props = { params: Promise<{ username: string }> }
@@ -19,5 +21,10 @@ export default async function UserOverviewPage({ params }: Props) {
   const user = await resolveUser(username)
   if (!user) notFound()
 
-  return null
+  return (
+    <TrackMCEventOnMount
+      event={AnalyticsEvent.UserDetailViewed}
+      properties={{ viewed_user_id: user.id }}
+    />
+  )
 }
