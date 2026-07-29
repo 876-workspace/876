@@ -40,10 +40,12 @@ export function ModulesManager({
   appId,
   initialModules,
   features,
+  canManage = true,
 }: {
   appId: string
   initialModules: AdminApplicationModule[]
   features: FeatureOption[]
+  canManage?: boolean
 }) {
   const [modules, setModules] = useState(initialModules)
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
@@ -111,18 +113,22 @@ export function ModulesManager({
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="876-eyebrow">Product structure</p>
+          <p className="876-eyebrow">
+            {canManage ? 'Product structure' : 'Platform structure'}
+          </p>
           <h1 className="876-page-title mt-1">Modules</h1>
         </div>
-        <Button
-          size="sm"
-          onClick={() => {
-            setEditingId('new')
-            setDraft(emptyDraft)
-          }}
-        >
-          <Plus className="size-4" /> Add
-        </Button>
+        {canManage && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditingId('new')
+              setDraft(emptyDraft)
+            }}
+          >
+            <Plus className="size-4" /> Add
+          </Button>
+        )}
       </div>
 
       <div className="876-card overflow-hidden">
@@ -133,7 +139,9 @@ export function ModulesManager({
               <TableHead>Key</TableHead>
               <TableHead>Rollout flag</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              {canManage && (
+                <TableHead className="text-right">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -158,39 +166,43 @@ export function ModulesManager({
                     {module.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      aria-label={`Edit ${module.name}`}
-                      size="icon-sm"
-                      variant="ghost"
-                      onClick={() => edit(module)}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      aria-label={`Archive ${module.name}`}
-                      size="icon-sm"
-                      variant="ghost"
-                      disabled={module.status === 'archived' || isPending}
-                      onClick={() =>
-                        startTransition(async () => {
-                          const result = await client.modules.archive(module.id)
-                          if (!result.error)
-                            setModules((current) =>
-                              current.map((item) =>
-                                item.id === module.id
-                                  ? { ...item, status: 'archived' }
-                                  : item
-                              )
+                {canManage && (
+                  <TableCell>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        aria-label={`Edit ${module.name}`}
+                        size="icon-sm"
+                        variant="ghost"
+                        onClick={() => edit(module)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        aria-label={`Archive ${module.name}`}
+                        size="icon-sm"
+                        variant="ghost"
+                        disabled={module.status === 'archived' || isPending}
+                        onClick={() =>
+                          startTransition(async () => {
+                            const result = await client.modules.archive(
+                              module.id
                             )
-                        })
-                      }
-                    >
-                      <Trash className="size-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+                            if (!result.error)
+                              setModules((current) =>
+                                current.map((item) =>
+                                  item.id === module.id
+                                    ? { ...item, status: 'archived' }
+                                    : item
+                                )
+                              )
+                          })
+                        }
+                      >
+                        <Trash className="size-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

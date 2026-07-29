@@ -11,9 +11,12 @@ export default async function AppModulesPage({ params }: Props) {
   const app = await resolveApp(slug)
   if (!app || !['product', 'platform'].includes(app.app_kind)) notFound()
 
+  const canManage = app.app_kind === 'product'
   const [modulesResult, featuresResult] = await Promise.all([
     $876.modules.list(app.id, { includeArchived: true }),
-    $876.features.list({ appId: app.id, rootOnly: true, limit: 100 }),
+    canManage
+      ? $876.features.list({ appId: app.id, rootOnly: true, limit: 100 })
+      : Promise.resolve({ data: null, error: null }),
   ])
   if (modulesResult.error) throw new Error(modulesResult.error.message)
   if (featuresResult.error) throw new Error(featuresResult.error.message)
@@ -22,6 +25,7 @@ export default async function AppModulesPage({ params }: Props) {
     <ModulesManager
       appId={app.id}
       initialModules={modulesResult.data?.data ?? []}
+      canManage={canManage}
       features={(featuresResult.data?.data ?? []).map((feature) => ({
         id: feature.id,
         name: feature.name,
