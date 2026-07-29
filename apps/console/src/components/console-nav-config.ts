@@ -2,12 +2,11 @@ import {
   BarChart3,
   Building2,
   ClipboardList,
-  CreditCard,
+  Database,
   KeyRound,
   LayoutDashboard,
   Settings,
   StickyNote,
-  Terminal,
   Users,
   Waves,
 } from '@876/ui/icons'
@@ -28,26 +27,16 @@ export type ConsoleNavItem = {
   children?: ConsoleNavChild[]
 }
 
-/**
- * A labelled group of sidebar items.
- * When `label` is an empty string the group heading is suppressed.
- */
 export type ConsoleNavGroup = {
-  label: string
   items: ConsoleNavItem[]
 }
 
-/**
- * Main Console navigation groups rendered in the scrollable sidebar
- * content area. Settings is rendered separately at the bottom.
- */
+/** Unlabelled Console navigation groups rendered in sidebar order. */
 export const consoleNav: ConsoleNavGroup[] = [
-  // ── Core — no visible group heading ────────────────────────────────────────
   {
-    label: '',
     items: [
       {
-        title: 'Dashboard',
+        title: 'Dashboards',
         href: '/',
         icon: BarChart3,
         color: 'var(--876-blue)',
@@ -64,6 +53,10 @@ export const consoleNav: ConsoleNavGroup[] = [
         icon: Building2,
         color: 'var(--876-gold)',
       },
+    ],
+  },
+  {
+    items: [
       {
         title: 'Apps',
         href: '/apps',
@@ -78,40 +71,36 @@ export const consoleNav: ConsoleNavGroup[] = [
         ],
       },
       {
-        title: 'Billing',
-        href: '/billing',
-        icon: CreditCard,
-        color: 'var(--876-green)',
-      },
-      {
         title: 'Widgets',
         href: '/widgets',
         icon: StickyNote,
         color: 'var(--876-gold)',
       },
       {
-        title: 'Sessions',
-        href: '/sessions',
-        icon: Terminal,
+        title: 'Storage',
+        href: '/storage',
+        icon: Database,
         color: 'var(--876-blue)',
       },
+    ],
+  },
+  {
+    items: [
       {
-        title: 'Audit Log',
-        href: '/audit-log',
+        title: 'Reports',
+        href: '/reports',
         icon: ClipboardList,
         color: 'var(--876-gold)',
+      },
+      {
+        title: 'Settings',
+        href: '/settings',
+        icon: Settings,
+        color: 'var(--876-blue)',
       },
     ],
   },
 ]
-
-/** Settings item rendered pinned at the bottom of the sidebar above the user menu. */
-export const consoleSettingsItem: ConsoleNavItem = {
-  title: 'Settings',
-  href: '/settings',
-  icon: Settings,
-  color: 'var(--876-blue)',
-}
 
 /** Settings sub-sections used on the /settings overview page. */
 export const SETTINGS_SECTIONS = [

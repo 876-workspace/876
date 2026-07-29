@@ -23,7 +23,6 @@ import {
 
 import {
   consoleNav,
-  consoleSettingsItem,
   type ConsoleNavChild,
   type ConsoleNavItem,
 } from './console-nav-config'
@@ -108,15 +107,9 @@ export function ConsoleMobileNav() {
           >
             {consoleNav.map((group) => (
               <div
-                key={group.label || group.items[0]?.title}
+                key={group.items[0]?.title}
                 className="flex flex-col gap-1.5"
               >
-                {group.label ? (
-                  <div className="px-3 text-[0.6875rem] leading-4 font-medium tracking-[0.04em] text-[#80868b] uppercase dark:text-white/40">
-                    {group.label}
-                  </div>
-                ) : null}
-
                 <div className="flex flex-col gap-1">
                   {group.items.map((item) =>
                     item.children?.length ? (
@@ -140,15 +133,6 @@ export function ConsoleMobileNav() {
             ))}
           </Accordion>
         </nav>
-
-        {/* Settings pinned at the bottom, mirroring the desktop sidebar */}
-        <div className="border-876-surface-border border-t px-3 py-3">
-          <ConsoleMobileNavLink
-            item={consoleSettingsItem}
-            pathname={pathname}
-            onNavigate={() => setOpen(false)}
-          />
-        </div>
       </SheetContent>
     </Sheet>
   )

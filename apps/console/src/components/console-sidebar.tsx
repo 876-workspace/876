@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-import { consoleNav, consoleSettingsItem } from './console-nav-config'
+import { consoleNav } from './console-nav-config'
 import { ConsoleNavDropdown } from './console-nav-dropdown'
 import { ConsoleNavLink } from './console-nav-link'
 import { Logo } from '@876/ui/logo'
@@ -10,7 +10,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
 } from '@876/ui/sidebar'
 
@@ -39,15 +38,7 @@ export function ConsoleSidebar() {
           className="flex flex-1 flex-col gap-4"
         >
           {consoleNav.map((group) => (
-            <SidebarGroup
-              key={group.label || group.items[0]?.title}
-              className="gap-1.5 p-0"
-            >
-              {group.label ? (
-                <SidebarGroupLabel className="h-auto px-3 text-[0.6875rem] font-medium tracking-[0.04em] text-[#80868b] uppercase dark:text-white/40">
-                  {group.label}
-                </SidebarGroupLabel>
-              ) : null}
+            <SidebarGroup key={group.items[0]?.title} className="gap-1.5 p-0">
               <div className="flex flex-col gap-1">
                 {group.items.map((item) =>
                   item.children?.length ? (
@@ -65,16 +56,6 @@ export function ConsoleSidebar() {
               </div>
             </SidebarGroup>
           ))}
-
-          {/* Settings pinned at the bottom of the nav */}
-          <div className="mt-auto">
-            <ConsoleNavLink
-              href={consoleSettingsItem.href}
-              title={consoleSettingsItem.title}
-              icon={consoleSettingsItem.icon}
-              color={consoleSettingsItem.color}
-            />
-          </div>
         </nav>
       </SidebarContent>
     </Sidebar>
