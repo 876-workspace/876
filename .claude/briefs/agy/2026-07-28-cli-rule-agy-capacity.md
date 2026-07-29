@@ -10,10 +10,10 @@ The two files are near-identical mirrors of each other. **Both must end up with 
 same content changes**, except that any relative rule links inside each file keep
 that file's own prefix (see "Mirror rule" at the end).
 
-| File to edit                | Prefix used by its internal links |
-| --------------------------- | --------------------------------- |
-| `.claude/rules/cli.md`      | `.claude/rules/`                  |
-| `.agents/rules/cli.md`      | `.agents/rules/`                  |
+| File to edit           | Prefix used by its internal links |
+| ---------------------- | --------------------------------- |
+| `.claude/rules/cli.md` | `.claude/rules/`                  |
+| `.agents/rules/cli.md` | `.agents/rules/`                  |
 
 **Never create or edit `.grok/rules/cli.md`.** That file must not exist. Do not
 create it.
@@ -81,12 +81,12 @@ Note the `=` in `--model=` and `--effort=`; use that form.
 
 Run `agy models` for the live list. As of July 2026 it offers:
 
-| Model                                                            | Use for                                                         |
-| ---------------------------------------------------------------- | --------------------------------------------------------------- |
-| `gemini-3.1-pro-high`                                            | The default for delegated work — docs, scaffolding, bulk edits. |
-| `gemini-3.6-flash-high` / `-medium` / `-low`                     | Trivial mechanical passes where speed matters more than care.   |
-| `gemini-3.5-flash-high` / `-medium` / `-low`                     | Older flash tier; prefer 3.6.                                   |
-| `gemini-3.1-pro-low`                                             | Cheap pro-tier pass.                                            |
+| Model                                                                  | Use for                                                                  |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `gemini-3.1-pro-high`                                                  | The default for delegated work — docs, scaffolding, bulk edits.          |
+| `gemini-3.6-flash-high` / `-medium` / `-low`                           | Trivial mechanical passes where speed matters more than care.            |
+| `gemini-3.5-flash-high` / `-medium` / `-low`                           | Older flash tier; prefer 3.6.                                            |
+| `gemini-3.1-pro-low`                                                   | Cheap pro-tier pass.                                                     |
 | `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, `gpt-oss-120b-medium` | Available, but route Claude-model work through the `Agent` tool instead. |
 
 `agy` does not commit. The orchestrating agent stages and commits its output.
