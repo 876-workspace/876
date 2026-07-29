@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import Script from 'next/script'
 import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
 import { ThemeProvider } from './providers'
+import { ServiceWorkerRegistration } from './service-worker-registration'
 import './globals.css'
 
 const APP_NAME = '876 Console'
@@ -54,14 +54,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <head>
-        <Script id="register-serwist" strategy="beforeInteractive">
-          {`if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' });
-window.addEventListener('online', () => window.location.reload());`}
-        </Script>
-      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>{children}</ThemeProvider>
+        <ServiceWorkerRegistration />
         <Toaster />
       </body>
     </html>

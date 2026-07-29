@@ -60,11 +60,7 @@ vi.mock('@876/ui/topbar-search', () => ({
   },
 }))
 
-import {
-  consoleNav,
-  consoleSettingsItem,
-  SETTINGS_SECTIONS,
-} from './console-nav-config'
+import { consoleNav, SETTINGS_SECTIONS } from './console-nav-config'
 import { TopbarSearch } from './topbar-search'
 
 function createExpectedSearchItems(): TopbarSearchItem[] {
@@ -85,13 +81,8 @@ function createExpectedSearchItems(): TopbarSearchItem[] {
         }))
       )
     ),
-    {
-      group: 'Settings',
-      title: consoleSettingsItem.title,
-      href: consoleSettingsItem.href,
-    },
     ...SETTINGS_SECTIONS.map((section) => ({
-      group: consoleSettingsItem.title,
+      group: 'Settings',
       title: section.title,
       href: section.href,
     })),
@@ -116,9 +107,9 @@ describe('Console TopbarSearch', () => {
       items: expectedItems,
       onNavigate: expect.any(Function),
     })
-    expect(props.items.find((item) => item.title === 'Dashboard')).toEqual({
+    expect(props.items.find((item) => item.title === 'Dashboards')).toEqual({
       group: 'Navigation',
-      title: 'Dashboard',
+      title: 'Dashboards',
       href: '/',
     })
     expect(props.items.find((item) => item.title === 'Users')).toEqual({
@@ -128,10 +119,10 @@ describe('Console TopbarSearch', () => {
     })
     expect(
       props.items.find(
-        (item) => item.group === 'Settings' && item.title === 'Settings'
+        (item) => item.group === 'Navigation' && item.title === 'Settings'
       )
     ).toEqual({
-      group: 'Settings',
+      group: 'Navigation',
       title: 'Settings',
       href: '/settings',
     })
@@ -143,7 +134,7 @@ describe('Console TopbarSearch', () => {
     render(<TopbarSearch />)
     await user.click(screen.getByRole('button', { name: 'Search...⌘K' }))
 
-    await user.click(await screen.findByRole('option', { name: 'Dashboard' }))
+    await user.click(await screen.findByRole('option', { name: 'Dashboards' }))
 
     await waitFor(() => {
       expect(

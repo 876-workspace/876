@@ -66,6 +66,7 @@ export default defineConfig({
         ...process.env,
         CONSOLE_DATABASE_URL:
           process.env.CONSOLE_DATABASE_URL ?? UNREACHABLE_DATABASE_URL,
+        NEXT_PUBLIC_PWA_TEST: '1',
       },
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

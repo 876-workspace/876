@@ -7,11 +7,7 @@ import {
   type TopbarSearchItem,
 } from '@876/ui/topbar-search'
 
-import {
-  consoleNav,
-  consoleSettingsItem,
-  SETTINGS_SECTIONS,
-} from './console-nav-config'
+import { consoleNav, SETTINGS_SECTIONS } from './console-nav-config'
 
 export function TopbarSearch() {
   const router = useRouter()
@@ -41,13 +37,8 @@ const CONSOLE_SEARCH_ITEMS: TopbarSearchItem[] = [
       }))
     )
   ),
-  {
-    group: 'Settings',
-    title: consoleSettingsItem.title,
-    href: consoleSettingsItem.href,
-  },
   ...SETTINGS_SECTIONS.map((section) => ({
-    group: consoleSettingsItem.title,
+    group: 'Settings',
     title: section.title,
     href: section.href,
   })),

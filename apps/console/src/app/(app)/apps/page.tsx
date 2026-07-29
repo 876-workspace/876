@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import type { AdminApp, AdminAppStatus, AdminOrganization } from '@876/admin'
+import type { AdminApp, AdminAppStatus } from '@876/admin'
 import { LayoutDashboard } from '@876/ui/icons'
 import {
   Empty,
@@ -97,17 +97,6 @@ export default async function AppsPage({ searchParams }: Props) {
       )
     : allApps
 
-  const orgIds = [
-    ...new Set(apps.map((a) => a.organization_id).filter(Boolean) as string[]),
-  ]
-  const orgMap = new Map<string, AdminOrganization>()
-  await Promise.all(
-    orgIds.map(async (id) => {
-      const { data: org } = await $876.orgs.retrieve(id)
-      if (org) orgMap.set(id, org)
-    })
-  )
-
   return (
     <Page>
       <ResourceToolbar
@@ -148,13 +137,7 @@ export default async function AppsPage({ searchParams }: Props) {
           </EmptyHeader>
         </Empty>
       ) : (
-        <AppsTable
-          data={apps}
-          orgMap={Object.fromEntries(orgMap)}
-          hasMore={false}
-          firstId={null}
-          lastId={null}
-        />
+        <AppsTable data={apps} hasMore={false} firstId={null} lastId={null} />
       )}
     </Page>
   )
