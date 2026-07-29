@@ -53,12 +53,12 @@ describe('Couriers settings page', () => {
     const cards = headings.map((heading) => heading.closest('section'))
     const headerBackgrounds = headings.flatMap((heading) =>
       Array.from(heading.classList).filter((className) =>
-        /^bg-(blue|cyan|sky|teal)-100!$/.test(className)
+        /^bg-(violet|indigo|slate|purple)-50!$/.test(className)
       )
     )
     const darkHeaderBackgrounds = headings.flatMap((heading) =>
       Array.from(heading.classList).filter((className) =>
-        /^dark:bg-(blue|cyan|sky|teal)-400\/20!$/.test(className)
+        /^dark:bg-(violet|indigo|slate|purple)-400\/10!$/.test(className)
       )
     )
 
