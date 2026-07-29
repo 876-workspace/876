@@ -40,6 +40,12 @@ const REQUIRED_SECRETS = {
     'SESSION_COOKIE_SECRET',
     'WIDGETS_SERVICE_KEY',
   ],
+  '876-billing-api': [
+    'BILLING_API_876_KEY',
+    'BILLING_DATABASE_URL',
+    'BILLING_INTERNAL_KEY',
+    'CORS_ALLOWED_ORIGINS',
+  ],
   '876-couriers': [
     'API_876_KEY',
     'API_INTERNAL_KEY',

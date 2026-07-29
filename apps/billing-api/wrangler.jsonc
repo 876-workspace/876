@@ -35,6 +35,10 @@
     "crons": ["*/5 * * * *"],
   },
   "vars": {
+    "API_URL": "https://876-api.raheemforschool.workers.dev",
+    // Bump this only when existing primary containers must restart to pick up
+    // changed Worker vars or secrets.
+    "BILLING_API_PRIMARY_INSTANCE": "primary-20260729",
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",
     "PORT": "4004",
