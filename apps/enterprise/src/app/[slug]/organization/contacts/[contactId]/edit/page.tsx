@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 
-import { isNotFoundError } from '@876/admin'
+import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { ContactForm } from '../../contact-form'
@@ -25,10 +25,10 @@ export default async function EditContactPage({
   )
 
   const orgId = membership.organization.id
-  const client = await getAdminClient()
+  const client = await get876ServerClient()
   const [contactResult, membersResult] = await Promise.all([
-    client.orgs.contacts.retrieve(orgId, contactId),
-    client.orgs.members.list(orgId, { limit: 100 }),
+    client.contacts.retrieve(orgId, contactId),
+    client.organizationMembers.list(orgId),
   ])
 
   if (isNotFoundError(contactResult.error)) notFound()

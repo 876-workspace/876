@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import type { AdminOrgLocation, AdminOrgLocationCreateParams } from '@876/admin'
+import type { OrgLocation, OrgLocationCreateParams } from '@876/sdk'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +28,7 @@ export function LocationForm({
   location,
 }: {
   slug: string
-  location?: AdminOrgLocation
+  location?: OrgLocation
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -59,7 +59,7 @@ export function LocationForm({
     event.preventDefault()
     if (isPending) return
 
-    const params: AdminOrgLocationCreateParams = {
+    const params: OrgLocationCreateParams = {
       name: name.trim(),
       code: opt(code),
       type,
@@ -77,8 +77,8 @@ export function LocationForm({
 
     startTransition(async () => {
       const result = isEdit
-        ? await client.orgs.locations.update(slug, location.id, params)
-        : await client.orgs.locations.create(slug, params)
+        ? await client.locations.update(slug, location.id, params)
+        : await client.locations.create(slug, params)
 
       if (result.error) {
         toast.error(result.error.message)
@@ -95,7 +95,7 @@ export function LocationForm({
     if (isPending || !isEdit) return
 
     startTransition(async () => {
-      const { error } = await client.orgs.locations.delete(slug, location.id)
+      const { error } = await client.locations.delete(slug, location.id)
       if (error) {
         toast.error(error.message)
         return

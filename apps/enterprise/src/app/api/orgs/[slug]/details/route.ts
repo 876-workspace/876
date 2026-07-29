@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { AdminOrganizationUpdateParams } from '@876/admin'
+import type { OrganizationSelfUpdateParams } from '@876/sdk'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { findActiveOrgMembership, hasOrgPermission } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -43,9 +43,9 @@ const EDITABLE_FIELDS = [
   'currency_code',
   'timezone',
   'language',
-] as const satisfies readonly (keyof AdminOrganizationUpdateParams)[]
+] as const satisfies readonly (keyof OrganizationSelfUpdateParams)[]
 
-/** Updates the current org's company details. Pure transport over `$876.orgs.update`. */
+/** Updates the current org's company details. Pure transport over `$876.organizations.update`. */
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
@@ -81,15 +81,15 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const updates: AdminOrganizationUpdateParams = {}
+  const updates: OrganizationSelfUpdateParams = {}
   for (const field of EDITABLE_FIELDS) {
     if (field in body) {
       updates[field] = body[field] as never
     }
   }
 
-  const client = await getAdminClient()
-  const { data, error } = await client.orgs.update(
+  const client = await get876ServerClient()
+  const { data, error } = await client.organizations.update(
     membership.organization.id,
     updates
   )

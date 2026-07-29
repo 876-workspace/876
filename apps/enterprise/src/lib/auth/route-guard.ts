@@ -14,8 +14,8 @@ type OrgRequestAuth =
 /**
  * Shared route-handler authorization for org-scoped mutations: resolves the
  * session, the caller's active membership in `slug`, and checks `permission`.
- * The admin client these handlers call bypasses the API's own permission
- * enforcement, so this check is the sole authorization gate.
+ * The API independently enforces the same delegated-session permission; this
+ * early check keeps route-handler responses deterministic for the UI.
  */
 export async function authorizeOrgRequest(
   slug: string,

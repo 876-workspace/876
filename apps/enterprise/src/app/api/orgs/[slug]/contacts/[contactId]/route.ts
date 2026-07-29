@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { AdminOrgContactUpdateParams } from '@876/admin'
+import type { OrgContactUpdateParams } from '@876/sdk'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -19,9 +19,9 @@ const CONTACT_FIELDS = [
   'phone',
   'mobile',
   'notes',
-] as const satisfies readonly (keyof AdminOrgContactUpdateParams)[]
+] as const satisfies readonly (keyof OrgContactUpdateParams)[]
 
-/** Updates a contact. Pure transport over `$876.orgs.contacts.update`. */
+/** Updates a contact. Pure transport over `$876.contacts.update`. */
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ slug: string; contactId: string }> }
@@ -39,13 +39,13 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const updates: AdminOrgContactUpdateParams = {}
+  const updates: OrgContactUpdateParams = {}
   for (const field of CONTACT_FIELDS) {
     if (field in body) updates[field] = body[field] as never
   }
 
-  const client = await getAdminClient()
-  const { data, error } = await client.orgs.contacts.update(
+  const client = await get876ServerClient()
+  const { data, error } = await client.contacts.update(
     auth.membership.organization.id,
     contactId,
     updates
@@ -60,7 +60,7 @@ export async function PATCH(
   return apiJson({ data })
 }
 
-/** Soft-deletes a contact. Pure transport over `$876.orgs.contacts.delete`. */
+/** Soft-deletes a contact. Pure transport over `$876.contacts.delete`. */
 export async function DELETE(
   _request: Request,
   context: { params: Promise<{ slug: string; contactId: string }> }
@@ -70,8 +70,8 @@ export async function DELETE(
   const auth = await authorizeOrgRequest(slug, 'org:update')
   if (auth.response) return auth.response
 
-  const client = await getAdminClient()
-  const { data, error } = await client.orgs.contacts.delete(
+  const client = await get876ServerClient()
+  const { data, error } = await client.contacts.delete(
     auth.membership.organization.id,
     contactId
   )

@@ -792,12 +792,12 @@ importers:
 
   apps/enterprise:
     dependencies:
-      '@876/admin':
-        specifier: workspace:*
-        version: link:../../packages/admin
       '@876/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core

@@ -3,12 +3,12 @@ import 'server-only'
 import { redirect } from 'next/navigation'
 
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
-import { unwrapOptional, unwrapResult } from '@876/admin'
+import { unwrapOptional, unwrapResult } from '@876/core/client/lookup'
 import * as Sentry from '@sentry/nextjs'
 
+import { get876ServerClient } from '@/lib/876/server'
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
 
-import { getAdminClient } from './admin-client'
 import { consumerUrl } from './app-urls'
 import { getAuthSession, isSignedSession } from './session'
 
@@ -72,16 +72,14 @@ export async function requireOrgPermission(
 export async function findAuthRoutingUser(
   userId: string
 ): Promise<AuthRoutingUser | null> {
-  const client = await getAdminClient()
-  const result = looksLikeWorkosUserId(userId)
-    ? await client.auth.admin.getUserByWorkosId(userId)
-    : await client.auth.admin.getUserById(userId)
+  const $876 = await get876ServerClient()
+  const result = await $876.users.retrieve()
 
   // Distinguish a real "user not found" (safe to treat as no account) from a
   // transient/server error, which throws rather than silently denying access.
   const row = unwrapOptional(result, 'auth routing user')
   if (!row) return null
-  if (!row.id || !row.email) return null
+  if (!row.id || row.id !== userId || !row.email) return null
   return {
     id: row.id,
     status: row.status ?? 'active',
@@ -91,10 +89,6 @@ export async function findAuthRoutingUser(
     email: row.email,
     avatar: row.avatar ?? null,
   }
-}
-
-function looksLikeWorkosUserId(userId: string): boolean {
-  return /^user_[0-9A-HJKMNP-TV-Z]{26}$/.test(userId)
 }
 
 export async function requireActiveUser(
@@ -114,7 +108,7 @@ export async function requireOrgMembership(
   const user = await findAuthRoutingUser(userId)
   if (!user) redirect(consumerUrl('/app'))
 
-  const membership = await findActiveMembershipBySlug(user.id, slug)
+  const membership = await findActiveMembershipBySlug(slug)
   if (!membership) redirect(`/no-access?slug=${encodeURIComponent(slug)}`)
 
   return { user, membership }
@@ -133,17 +127,14 @@ export async function findActiveOrgMembership(
   const user = await findAuthRoutingUser(sessionUserId)
   if (!user) return null
 
-  return findActiveMembershipBySlug(user.id, slug)
+  return findActiveMembershipBySlug(slug)
 }
 
 async function findActiveMembershipBySlug(
-  userId: string,
   slug: string
 ): Promise<ActiveMembership | null> {
-  const client = await getAdminClient()
-  const result = await client.auth.getRoutingMemberships({
-    userId,
-    orgSlug: slug,
+  const $876 = await get876ServerClient()
+  const result = await $876.memberships.list({
     status: 'active',
   })
   // An empty list is the legitimate "no membership"; an error envelope is a real
@@ -152,12 +143,9 @@ async function findActiveMembershipBySlug(
   return memberships.find((m) => m.organization.slug === slug) ?? null
 }
 
-export async function resolvePrimaryOrganizationPath(
-  userId: string
-): Promise<string | null> {
-  const client = await getAdminClient()
-  const result = await client.auth.getRoutingMemberships({
-    userId,
+export async function resolvePrimaryOrganizationPath(): Promise<string | null> {
+  const $876 = await get876ServerClient()
+  const result = await $876.memberships.list({
     status: 'active',
   })
   const memberships = unwrapResult(result, 'routing memberships').data
@@ -172,10 +160,8 @@ export async function resolvePrimaryOrganizationPath(
   return first ? `/${first.organization.slug}/profile` : null
 }
 
-export async function resolveHomePathForUser(
-  user: AuthRoutingUser
-): Promise<string> {
-  const orgPath = await resolvePrimaryOrganizationPath(user.id)
+export async function resolveHomePathForUser(): Promise<string> {
+  const orgPath = await resolvePrimaryOrganizationPath()
   if (orgPath) return orgPath
 
   return '/no-access'
@@ -184,8 +170,8 @@ export async function resolveHomePathForUser(
 export async function getEnabledEnterpriseFeatureSlugs(
   organizationId?: string
 ): Promise<Set<string>> {
-  const client = await getAdminClient()
-  const result = await client.features.evaluate({
+  const $876 = await get876ServerClient()
+  const result = await $876.features.evaluate({
     organizationId,
     appSlug: ENTERPRISE_APP_SLUG,
   })
