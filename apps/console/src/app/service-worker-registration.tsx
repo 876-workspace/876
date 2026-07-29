@@ -7,7 +7,11 @@ export function ServiceWorkerRegistration() {
     const reloadWhenBackOnline = () => window.location.reload()
     window.addEventListener('online', reloadWhenBackOnline)
 
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+    const shouldRegister =
+      process.env.NODE_ENV === 'production' ||
+      process.env.NEXT_PUBLIC_PWA_TEST === '1'
+
+    if ('serviceWorker' in navigator && shouldRegister) {
       void navigator.serviceWorker.register('/sw.js', { scope: '/' })
     } else if ('serviceWorker' in navigator) {
       // A development service worker can serve client chunks from an earlier
