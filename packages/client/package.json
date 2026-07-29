@@ -1,0 +1,36 @@
+{
+  "name": "@876/client",
+  "version": "0.1.0",
+  "description": "Unified JavaScript client for the 876 ecosystem.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": false,
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@876/billing": "workspace:*",
+    "@876/sdk": "workspace:*",
+    "@876/storage": "workspace:*",
+    "@876/widgets": "workspace:*",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.5"
+  }
+}
