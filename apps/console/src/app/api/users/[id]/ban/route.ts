@@ -21,7 +21,7 @@ export async function POST(
   } | null
   const reason = body && typeof body.reason === 'string' ? body.reason : null
 
-  const { data, error } = await $876.users.ban(id, { reason })
+  const { data, error } = await $876.auth.admin.banUser(id, { reason })
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to ban user.' },

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@876/ui/button'
 
-import { $billingIntegration } from '@/lib/billing'
+import { $876 } from '@/lib/876'
 import { resolveOrg } from '../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -22,7 +22,7 @@ export default async function OrganizationBillingCustomersPage({
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const { data, error } = await $billingIntegration.customers.list(org.id)
+  const { data, error } = await $876.billing.integration.customers.list(org.id)
 
   return (
     <div className="space-y-5">

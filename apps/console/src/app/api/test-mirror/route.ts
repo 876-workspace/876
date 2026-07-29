@@ -1,6 +1,5 @@
 import { apiSuccess } from '@876/core/api'
 import { $876 } from '@/lib/876'
-import { $billing } from '@/lib/billing'
 import { mirrorCoreProductPrices } from '@/lib/billing/mirror'
 
 const INTERVAL_BY_CORE: Record<string, 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'> = {
@@ -88,7 +87,7 @@ export async function GET() {
       }
 
       const customerName = org.data?.name ?? subscription.organization_id
-      const ensuredCustomer = await $billing.customers.ensure({
+      const ensuredCustomer = await $876.billing.customers.ensure({
         organizationId: subscription.organization_id,
         name: customerName,
       })
@@ -98,7 +97,7 @@ export async function GET() {
         continue
       }
 
-      const ensuredSubscription = await $billing.subscriptions.ensure({
+      const ensuredSubscription = await $876.billing.subscriptions.ensure({
         externalReference: subscription.id,
         sourceAppId: subscription.app_id,
         customerId: ensuredCustomer.data.id,

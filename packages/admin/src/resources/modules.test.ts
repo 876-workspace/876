@@ -18,9 +18,11 @@ describe('admin modules resource', () => {
       })
     )
     const $876 = create876AdminClient({
-      baseUrl: 'https://api.test',
-      internalKey: 'test-internal-key',
-      fetch: fetchMock,
+      platform: {
+        baseUrl: 'https://api.test',
+        internalKey: 'test-internal-key',
+        fetch: fetchMock,
+      },
     })
 
     await $876.modules.list('rap_billing', { includeArchived: true })
@@ -39,9 +41,11 @@ describe('admin modules resource', () => {
       })
     )
     const $876 = create876AdminClient({
-      baseUrl: 'https://api.test',
-      internalKey: 'test-internal-key',
-      fetch: fetchMock,
+      platform: {
+        baseUrl: 'https://api.test',
+        internalKey: 'test-internal-key',
+        fetch: fetchMock,
+      },
     })
 
     await $876.products.replaceModules('prd_test', {

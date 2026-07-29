@@ -63,7 +63,7 @@ export default async function UsersPage({ searchParams }: Props) {
     if (result.error) throw new Error(result.error.message)
     users = result.data.data
   } else {
-    const result = await $876.users.list({
+    const result = await $876.auth.admin.listUsers({
       limit: 25,
       startingAfter: after,
       endingBefore: before,

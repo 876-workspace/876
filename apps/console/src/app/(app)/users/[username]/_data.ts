@@ -11,8 +11,10 @@ import { $876 } from '@/lib/876'
  */
 export const resolveUser = cache(async (username: string) => {
   const result = username.startsWith('user_')
-    ? await $876.users.retrieve(username, { includeDeleted: true })
-    : await $876.users.retrieveByUsername(username, { includeDeleted: true })
+    ? await $876.auth.admin.getUserById(username, { includeDeleted: true })
+    : await $876.auth.admin.getUserByUsername(username, {
+        includeDeleted: true,
+      })
   if (result.error) return null
   return result.data
 })

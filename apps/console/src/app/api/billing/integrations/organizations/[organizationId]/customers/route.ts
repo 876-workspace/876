@@ -1,8 +1,8 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
+import { createConsole876Client } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { getBillingIntegrationClient } from '@/lib/billing'
 
 export const runtime = 'nodejs'
 
@@ -19,8 +19,8 @@ export async function POST(request: NextRequest, context: Context) {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
-  const billingIntegration = getBillingIntegrationClient(requestId)
-  const { data, error } = await billingIntegration.customers.create(
+  const $876 = createConsole876Client(requestId)
+  const { data, error } = await $876.billing.integration.customers.create(
     organizationId,
     body,
     { idempotencyKey: `console:${requestId}` }

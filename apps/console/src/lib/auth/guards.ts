@@ -44,7 +44,7 @@ export async function findConsoleAccess(
 async function findBootstrapSuperAdminAccess(
   userId: string
 ): Promise<Access | null> {
-  const { data } = await $876.users.retrieve(userId)
+  const { data } = await $876.auth.admin.getUserById(userId)
   const email = data?.email?.trim().toLowerCase()
   if (!email || !BOOTSTRAP_SUPER_ADMIN_EMAILS.has(email)) return null
 
@@ -69,7 +69,7 @@ async function hydrateDisplay(
     banned: false,
   }
   try {
-    const { data } = await $876.users.retrieve(access.id)
+    const { data } = await $876.auth.admin.getUserById(access.id)
     if (!data) return base
     return {
       ...base,

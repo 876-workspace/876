@@ -1,7 +1,7 @@
 import { apiError, apiJson } from '@876/core/api'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { $widgetsAdmin } from '@/lib/widgets'
+import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -21,7 +21,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $widgetsAdmin.notes.update(
+  const result = await $876.widgets.admin.notes.update(
     { userId: access.sessionUser.id },
     id,
     {
@@ -47,7 +47,7 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $widgetsAdmin.notes.delete(
+  const result = await $876.widgets.admin.notes.delete(
     { userId: access.sessionUser.id },
     id
   )

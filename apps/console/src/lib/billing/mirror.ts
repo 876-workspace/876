@@ -11,7 +11,6 @@ import type { CustomerEnsureParams } from '@876/billing/admin'
 import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 
 import { $876 } from '@/lib/876'
-import { $billing } from '@/lib/billing'
 
 /**
  * One-way Console -> Billing mirror. Core stays the entitlement source of
@@ -51,7 +50,7 @@ async function resolveOrgPrimaryContact(
     contactUserId = owner.user_id
   }
 
-  const user = await $876.users.retrieve(contactUserId)
+  const user = await $876.auth.admin.getUserById(contactUserId)
   if (!user.data) return { userId: contactUserId }
 
   return {
@@ -135,7 +134,7 @@ export async function mirrorCoreProductPrices(
 ): Promise<boolean> {
   if (!product.app_id) return false
 
-  const ensuredProduct = await $billing.products.ensure({
+  const ensuredProduct = await $876.billing.products.ensure({
     sourceAppId: product.app_id,
     slug: product.app_slug ?? product.app_id,
     name: product.app_name ?? product.app_slug ?? product.app_id,
@@ -164,7 +163,7 @@ export async function mirrorCoreProductPrices(
     }
 
     const { intervalUnit, intervalCount } = cadence
-    const ensuredPlan = await $billing.plans.ensure({
+    const ensuredPlan = await $876.billing.plans.ensure({
       productId: ensuredProduct.data.id,
       entitlementReferenceId: product.id,
       code: product.slug,
@@ -185,7 +184,7 @@ export async function mirrorCoreProductPrices(
       continue
     }
 
-    const ensuredPrice = await $billing.prices.ensure({
+    const ensuredPrice = await $876.billing.prices.ensure({
       planId: ensuredPlan.data.id,
       entitlementReferenceId: price.id,
       nickname: price.nickname ?? price.name ?? null,
@@ -265,7 +264,7 @@ export async function mirrorCoreSubscription(
   const legalName = org.data?.name ?? subscription.organization_id
   const contact = await resolveOrgPrimaryContact(org.data)
 
-  const ensuredCustomer = await $billing.customers.ensure({
+  const ensuredCustomer = await $876.billing.customers.ensure({
     organizationId: subscription.organization_id,
     customerType: 'CORE_ORGANIZATION',
     customerKind: 'BUSINESS',
@@ -286,7 +285,7 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const ensuredSubscription = await $billing.subscriptions.ensure({
+  const ensuredSubscription = await $876.billing.subscriptions.ensure({
     externalReference: subscription.id,
     sourceAppId: subscription.app_id,
     customerId: ensuredCustomer.data.id,

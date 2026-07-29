@@ -15,7 +15,10 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/billing": "workspace:*",
     "@876/core": "workspace:*",
+    "@876/storage": "workspace:*",
+    "@876/widgets": "workspace:*",
     "server-only": "0.0.1",
     "zod": "4.4.3"
   },
