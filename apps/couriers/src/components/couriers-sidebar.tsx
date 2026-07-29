@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { couriersNav } from './couriers-nav-config'
 import { CouriersNavDropdown } from './couriers-nav-dropdown'
 import { CouriersNavLink } from './couriers-nav-link'
-import { Settings } from '@876/ui/icons'
 import { OrgAvatar } from '@876/ui/org-avatar'
 import {
   Sidebar,
@@ -64,7 +63,7 @@ export function CouriersSidebar({
                 {group.items.map((item) => {
                   const joinedItem = {
                     ...item,
-                    href: basePath + item.href,
+                    href: item.href === '#' ? item.href : basePath + item.href,
                     children: item.children?.map((child) => ({
                       ...child,
                       href: basePath + child.href,
@@ -86,16 +85,6 @@ export function CouriersSidebar({
               </div>
             </SidebarGroup>
           ))}
-
-          <div className="mt-auto">
-            <CouriersNavLink
-              href={`${basePath}/settings`}
-              title="Settings"
-              icon={Settings}
-              color="var(--couriers-primary)"
-              iconClassName="size-4"
-            />
-          </div>
         </nav>
       </SidebarContent>
     </Sidebar>

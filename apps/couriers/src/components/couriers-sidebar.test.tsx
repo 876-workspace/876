@@ -94,3 +94,34 @@ describe('CouriersSidebar organization logo', () => {
     expect(screen.getByText('Montego Express')).toBeInTheDocument()
   })
 })
+
+describe('CouriersSidebar navigation', () => {
+  it('renders the grouped navigation without visible group labels', () => {
+    renderSidebar({
+      basePath: '/org/island-logistics',
+      tenantName: 'Island Logistics',
+    })
+
+    expect(screen.queryByRole('group')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Warehouse' })).toHaveAttribute(
+      'href',
+      '/org/island-logistics/warehouse'
+    )
+    expect(screen.getByRole('link', { name: 'Deliveries' })).toHaveAttribute(
+      'href',
+      '/org/island-logistics/deliveries'
+    )
+    expect(screen.getByRole('link', { name: 'Documents' })).toHaveAttribute(
+      'href',
+      '/org/island-logistics/documents'
+    )
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/org/island-logistics/settings'
+    )
+    expect(screen.getByRole('button', { name: 'Transactions' })).toBeVisible()
+    expect(
+      screen.queryByRole('link', { name: 'Transactions' })
+    ).not.toBeInTheDocument()
+  })
+})

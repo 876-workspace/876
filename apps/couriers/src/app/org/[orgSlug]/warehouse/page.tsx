@@ -4,6 +4,8 @@ import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 
+export const metadata = { title: 'Warehouse' }
+
 export default function WarehousePage() {
   return (
     <Page>

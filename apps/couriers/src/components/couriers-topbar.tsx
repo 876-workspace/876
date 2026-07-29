@@ -13,7 +13,6 @@ import { couriersNav } from './couriers-nav-config'
 import { request } from '@/lib/client/request'
 
 const SETTINGS_SEARCH_ITEMS = [
-  { title: 'Settings', href: '/settings' },
   { title: 'General', href: '/settings/general' },
   { title: 'Billing', href: '/settings/billing' },
   { title: 'Notifications', href: '/settings/notifications' },

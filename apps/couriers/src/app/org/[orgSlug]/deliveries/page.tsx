@@ -73,7 +73,7 @@ export default async function DeliveriesPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/packages/deliveries/new`}
+        primaryHref={`/org/${orgSlug}/deliveries/new`}
         primaryVariant="info"
         refresh
         dropdownActions={[

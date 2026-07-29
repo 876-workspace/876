@@ -1,8 +1,12 @@
 import {
+  BuildingOffice2Icon,
   ChartBarIcon,
   ClipboardDocumentListIcon,
   CreditCardIcon,
+  DocumentTextIcon,
+  GlobeAltIcon,
   LayoutList,
+  Settings,
   Squares2X2Icon,
   UsersIcon,
 } from '@876/ui/icons'
@@ -48,6 +52,11 @@ export const couriersNav: CouriersNavGroup[] = [
         icon: UsersIcon,
         color: 'var(--876-green)',
       },
+    ],
+  },
+  {
+    label: '',
+    items: [
       {
         title: 'Packages',
         href: '/packages',
@@ -55,13 +64,11 @@ export const couriersNav: CouriersNavGroup[] = [
         color: 'var(--876-gold)',
         children: [
           { title: 'Pre-alerts', href: '/packages/pre-alerts' },
-          { title: 'Warehouse', href: '/packages/warehouse' },
           { title: 'Manifests', href: '/packages/manifest' },
-          { title: 'Deliveries', href: '/packages/deliveries' },
         ],
       },
       {
-        title: 'Billing',
+        title: 'Transactions',
         href: '#',
         icon: CreditCardIcon,
         color: 'var(--876-purple)',
@@ -71,10 +78,39 @@ export const couriersNav: CouriersNavGroup[] = [
         ],
       },
       {
+        title: 'Deliveries',
+        href: '/deliveries',
+        icon: GlobeAltIcon,
+        color: 'var(--876-blue)',
+      },
+      {
+        title: 'Warehouse',
+        href: '/warehouse',
+        icon: BuildingOffice2Icon,
+        color: 'var(--876-orange)',
+      },
+    ],
+  },
+  {
+    label: '',
+    items: [
+      {
         title: 'Reports',
         href: '/reports',
         icon: Squares2X2Icon,
         color: 'var(--876-blue)',
+      },
+      {
+        title: 'Documents',
+        href: '/documents',
+        icon: DocumentTextIcon,
+        color: 'var(--876-green)',
+      },
+      {
+        title: 'Settings',
+        href: '/settings',
+        icon: Settings,
+        color: 'var(--couriers-primary)',
       },
     ],
   },
