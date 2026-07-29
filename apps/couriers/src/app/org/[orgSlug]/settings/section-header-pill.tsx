@@ -12,23 +12,23 @@ const TONE_STYLES: Record<SectionHeaderTone, { header: string; icon: string }> =
   {
     blue: {
       header:
-        'border-blue-200! bg-blue-100! dark:border-blue-300/25! dark:bg-blue-400/20!',
-      icon: 'text-blue-600 dark:text-blue-300',
+        'border-violet-100! bg-violet-50! dark:border-violet-300/15! dark:bg-violet-400/10!',
+      icon: 'text-violet-500 dark:text-violet-400',
     },
     cyan: {
       header:
-        'border-cyan-200! bg-cyan-100! dark:border-cyan-300/25! dark:bg-cyan-400/20!',
-      icon: 'text-cyan-600 dark:text-cyan-300',
+        'border-indigo-100! bg-indigo-50! dark:border-indigo-300/15! dark:bg-indigo-400/10!',
+      icon: 'text-indigo-500 dark:text-indigo-400',
     },
     sky: {
       header:
-        'border-sky-200! bg-sky-100! dark:border-sky-300/25! dark:bg-sky-400/20!',
-      icon: 'text-sky-600 dark:text-sky-300',
+        'border-slate-200! bg-slate-50! dark:border-slate-300/15! dark:bg-slate-400/10!',
+      icon: 'text-slate-500 dark:text-slate-400',
     },
     teal: {
       header:
-        'border-teal-200! bg-teal-100! dark:border-teal-300/25! dark:bg-teal-400/20!',
-      icon: 'text-teal-600 dark:text-teal-300',
+        'border-purple-100! bg-purple-50! dark:border-purple-300/15! dark:bg-purple-400/10!',
+      icon: 'text-purple-500 dark:text-purple-400',
     },
   }
 
