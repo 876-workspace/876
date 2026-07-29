@@ -46,6 +46,7 @@ export const auth876ClientOptionsSchema = z.strictObject({
     z.string().trim().startsWith('876_app_secret_').optional()
   ),
   baseUrl: optionalNonEmptyStringSchema,
+  accessToken: optionalNonEmptyStringSchema,
   fetch: auth876FetchSchema.optional(),
   credentials: auth876CredentialsSchema.default('include'),
   oauth: auth876OAuthOptionsSchema.optional(),
@@ -107,6 +108,7 @@ export type AuthCredentials = z.infer<typeof auth876CredentialsSchema>
  *
  * @property apiKey - Optional app API key. Keys must start with `876_app_secret_`.
  * @property baseUrl - Optional API base URL. Defaults to env, local dev, or the deployed API URL.
+ * @property accessToken - Optional signed-in user's access token for delegated server-side requests.
  * @property fetch - Optional fetch implementation (defaults to globalThis.fetch).
  * @property credentials - Optional credentials mode for fetch requests (defaults to `include`).
  * @property oauth - Optional OAuth/OIDC config enabling the `$876.oauth.*` namespace.

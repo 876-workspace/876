@@ -368,6 +368,99 @@ export const sdk876OrgMemberRoleUpdateParamsSchema = z.strictObject({
   role: z.string().trim().min(1).max(64),
 })
 
+export const sdk876DeletedOrgMemberSchema = deletedObjectSchema(
+  'organization_member'
+)
+
+// ── Invites ──────────────────────────────────────────────────────────────────
+
+export const sdk876InviteTokenSchema = z.strictObject({
+  object: z.literal('invite_token'),
+  id: z.string(),
+  organization_id: z.string(),
+  email: z.string(),
+  role: z.string(),
+  status: z.string(),
+  expires_at: z.number(),
+  source_app_id: z.string().nullable(),
+  created_at: z.number(),
+})
+
+export const sdk876InviteTokenListSchema = apiListSchema(
+  sdk876InviteTokenSchema
+)
+
+export const sdk876InviteTokenCreateParamsSchema = z.strictObject({
+  email: z.email(),
+  role: z.string().trim().min(1).optional(),
+  source_app_id: z.string().trim().min(1).optional(),
+  source_app_slug: z.string().trim().min(1).optional(),
+})
+
+// ── Subscriptions ────────────────────────────────────────────────────────────
+
+export const sdk876SubscriptionItemSchema = z.strictObject({
+  object: z.literal('subscription_item'),
+  id: z.string(),
+  price_id: z.string(),
+  product_id: z.string().nullable(),
+  product_slug: z.string().nullable(),
+  product_name: z.string().nullable(),
+  quantity: z.number(),
+  billing_thresholds: z.record(z.string(), z.unknown()).nullable(),
+  metadata: z.record(z.string(), z.unknown()).nullable(),
+})
+
+export const sdk876SubscriptionSchema = z.strictObject({
+  object: z.literal('subscription'),
+  id: z.string(),
+  billing_account_id: z.string().nullable(),
+  organization_id: z.string(),
+  app_id: z.string(),
+  app_slug: z.string().nullable(),
+  app_name: z.string().nullable(),
+  app_logo_url: z.string().nullable(),
+  app_kind: z.string().nullable(),
+  status: z.enum([
+    'incomplete',
+    'incomplete_expired',
+    'trialing',
+    'active',
+    'past_due',
+    'canceled',
+    'unpaid',
+    'paused',
+    'blocked',
+  ]),
+  provider_status: z.string().nullable(),
+  status_reason: z.string().nullable(),
+  finance_lifecycle_version: z.number(),
+  collection_method: z.string(),
+  billing_cycle_anchor: z.number().nullable(),
+  items: z.array(sdk876SubscriptionItemSchema),
+  current_period_start: z.number().nullable(),
+  current_period_end: z.number().nullable(),
+  cancel_at: z.number().nullable(),
+  cancel_at_period_end: z.boolean(),
+  canceled_at: z.number().nullable(),
+  ended_at: z.number().nullable(),
+  pause_collection: z.record(z.string(), z.unknown()).nullable(),
+  trial_start: z.number().nullable(),
+  trial_end: z.number().nullable(),
+  start_date: z.number().nullable(),
+  default_payment_method_id: z.string().nullable(),
+  latest_invoice_id: z.string().nullable(),
+  pending_update: z.record(z.string(), z.unknown()).nullable(),
+  schedule_id: z.string().nullable(),
+  metadata: z.record(z.string(), z.unknown()).nullable(),
+  created_at: z.number(),
+  updated_at: z.number(),
+})
+
+export const sdk876SubscriptionListSchema = apiListSchema(
+  sdk876SubscriptionSchema
+)
+
 // ── App assignments ───────────────────────────────────────────────────────────
 
 export const sdk876AppAssignmentSchema = z.strictObject({
@@ -464,6 +557,17 @@ export type OrgMemberMe = z.infer<typeof sdk876OrgMemberMeSchema>
 export type OrgMemberRoleUpdateParams = z.infer<
   typeof sdk876OrgMemberRoleUpdateParamsSchema
 >
+export type DeletedOrgMember = z.infer<typeof sdk876DeletedOrgMemberSchema>
+
+export type InviteToken = z.infer<typeof sdk876InviteTokenSchema>
+export type InviteTokenList = z.infer<typeof sdk876InviteTokenListSchema>
+export type InviteTokenCreateParams = z.infer<
+  typeof sdk876InviteTokenCreateParamsSchema
+>
+
+export type SubscriptionItem = z.infer<typeof sdk876SubscriptionItemSchema>
+export type Subscription = z.infer<typeof sdk876SubscriptionSchema>
+export type SubscriptionList = z.infer<typeof sdk876SubscriptionListSchema>
 
 export type AppAssignment = z.infer<typeof sdk876AppAssignmentSchema>
 export type AppAssignmentList = z.infer<typeof sdk876AppAssignmentListSchema>

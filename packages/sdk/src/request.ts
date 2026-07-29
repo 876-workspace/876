@@ -10,6 +10,7 @@ import { auth876ResultSchema } from './types/api.ts'
 export type SdkRuntime = {
   baseUrl: string | undefined
   apiKey: string | undefined
+  accessToken: string | undefined
   fetch: typeof fetch
   credentials: RequestCredentials
 }
@@ -87,6 +88,8 @@ function getAuthHeaders(
   const headers: Record<string, string> = {}
 
   if (runtime.apiKey) headers['X-876-API-Key'] = runtime.apiKey
+  if (runtime.accessToken)
+    headers.Authorization = `Bearer ${runtime.accessToken}`
   if (options?.requestId) headers['x-request-id'] = options.requestId
 
   return headers
