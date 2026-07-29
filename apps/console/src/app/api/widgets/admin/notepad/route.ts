@@ -1,7 +1,7 @@
 import { apiError, apiJson } from '@876/core/api'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { $widgetsAdmin } from '@/lib/widgets'
+import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (access.response) return access.response
 
   const url = new URL(request.url)
-  const result = await $widgetsAdmin.notes.list(
+  const result = await $876.widgets.admin.notes.list(
     { userId: access.sessionUser.id },
     {
       ownerAccountId: url.searchParams.get('owner_account_id') ?? undefined,

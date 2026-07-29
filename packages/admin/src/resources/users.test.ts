@@ -26,9 +26,11 @@ describe('admin users resource', () => {
       })
     )
     const $876 = create876AdminClient({
-      baseUrl: 'https://api.test',
-      internalKey: 'test-internal-key',
-      fetch: fetchMock,
+      platform: {
+        baseUrl: 'https://api.test',
+        internalKey: 'test-internal-key',
+        fetch: fetchMock,
+      },
     })
 
     await $876.users.updateFeature('user_test', 'feat_test', {
@@ -70,9 +72,11 @@ describe('admin users resource', () => {
         })
       )
       const $876 = create876AdminClient({
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
+        platform: {
+          baseUrl: 'https://api.test',
+          internalKey: 'test-internal-key',
+          fetch: fetchMock,
+        },
       })
 
       const result = await $876.users.identifications.list('user_test')
@@ -101,9 +105,11 @@ describe('admin users resource', () => {
         })
       )
       const $876 = create876AdminClient({
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
+        platform: {
+          baseUrl: 'https://api.test',
+          internalKey: 'test-internal-key',
+          fetch: fetchMock,
+        },
       })
 
       await $876.users.identifications.create('user_test', {
@@ -137,9 +143,11 @@ describe('admin users resource', () => {
         })
       )
       const $876 = create876AdminClient({
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
+        platform: {
+          baseUrl: 'https://api.test',
+          internalKey: 'test-internal-key',
+          fetch: fetchMock,
+        },
       })
 
       await $876.users.identifications.update('user_test', 'trn', {
@@ -164,9 +172,11 @@ describe('admin users resource', () => {
         })
       )
       const $876 = create876AdminClient({
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
+        platform: {
+          baseUrl: 'https://api.test',
+          internalKey: 'test-internal-key',
+          fetch: fetchMock,
+        },
       })
 
       const result = await $876.users.identifications.delete('user_test', 'trn')
@@ -190,9 +200,11 @@ describe('admin users resource', () => {
         })
       )
       const $876 = create876AdminClient({
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
+        platform: {
+          baseUrl: 'https://api.test',
+          internalKey: 'test-internal-key',
+          fetch: fetchMock,
+        },
       })
 
       const result = await $876.users.identifications.disclose(
@@ -236,9 +248,11 @@ describe('admin users resource', () => {
         })
       )
       const $876 = create876AdminClient({
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
+        platform: {
+          baseUrl: 'https://api.test',
+          internalKey: 'test-internal-key',
+          fetch: fetchMock,
+        },
       })
 
       await $876.users.identifications.verify('user_test', 'trn', {

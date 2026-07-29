@@ -7,7 +7,7 @@
 
 import { resolve876ApiBaseUrl } from '@876/core/client'
 
-import type { Admin876ClientOptions } from './types'
+import type { AdminPlatformClientOptions } from './types'
 
 /** Env var precedence for the admin tier before the shared default fallback. */
 const adminBaseUrlEnvKeys = [
@@ -23,7 +23,7 @@ function resolveBaseUrl(baseUrl?: string): string {
 }
 
 /** Builds the per-client runtime shared by every admin resource factory. */
-export function buildAdminRuntime(options: Admin876ClientOptions) {
+export function buildAdminRuntime(options: AdminPlatformClientOptions) {
   return {
     baseUrl: resolveBaseUrl(options.baseUrl),
     internalKey: options.internalKey,

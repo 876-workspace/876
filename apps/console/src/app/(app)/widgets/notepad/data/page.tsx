@@ -2,7 +2,6 @@ import { WIDGET_HOST_APP_SLUGS, type WidgetHost } from '@876/widgets'
 
 import { $876 } from '@/lib/876'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { $widgetsAdmin } from '@/lib/widgets'
 
 import { NotesSplit, type AdminNoteRow } from './notes-split'
 
@@ -32,7 +31,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
   if (!isSignedSession(session)) return null
 
   const actor = { userId: session.user.id }
-  const notesResult = await $widgetsAdmin.notes.list(actor, {
+  const notesResult = await $876.widgets.admin.notes.list(actor, {
     ownerAccountId: owner || undefined,
     limit: 50,
   })
@@ -45,7 +44,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
     (
       await Promise.all(
         ownerIds.map(async (id) => {
-          const { data } = await $876.users.retrieve(id)
+          const { data } = await $876.auth.admin.getUserById(id)
           return [id, data] as const
         })
       )

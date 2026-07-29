@@ -14,7 +14,8 @@ export async function create(
 ): ServiceResult<AdminUser & { warning?: string }> {
   const { organization_name, ...userParams } = params
 
-  const { data: user, error: userError } = await $876.users.create(userParams)
+  const { data: user, error: userError } =
+    await $876.auth.admin.createUser(userParams)
   if (userError || !user) {
     return err(userError?.message ?? 'Failed to create user.')
   }

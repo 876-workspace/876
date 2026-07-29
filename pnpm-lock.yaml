@@ -954,9 +954,18 @@ importers:
 
   packages/admin:
     dependencies:
+      '@876/billing':
+        specifier: workspace:*
+        version: link:../billing
       '@876/core':
         specifier: workspace:*
         version: link:../core
+      '@876/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@876/widgets':
+        specifier: workspace:*
+        version: link:../widgets
       server-only:
         specifier: 0.0.1
         version: 0.0.1

@@ -17,7 +17,7 @@ export async function POST(
 
   const { id } = await context.params
 
-  const { data, error } = await $876.users.unban(id)
+  const { data, error } = await $876.auth.admin.unbanUser(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to unban user.' },

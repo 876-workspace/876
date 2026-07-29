@@ -16,7 +16,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, accountId } = await context.params
-  const { data, error } = await $876.users.unlinkAccount(id, accountId)
+  const { data, error } = await $876.auth.admin.unlinkUserAccount(id, accountId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to unlink account.' },

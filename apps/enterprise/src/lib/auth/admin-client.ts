@@ -18,8 +18,10 @@ export async function getAdminClient() {
   const requestId = (await headers()).get('x-request-id') ?? undefined
 
   return create876AdminClient({
-    internalKey: process.env.API_INTERNAL_KEY,
-    apiKey: process.env.API_876_KEY,
-    requestId,
+    platform: {
+      internalKey: process.env.API_INTERNAL_KEY,
+      apiKey: process.env.API_876_KEY,
+      requestId,
+    },
   })
 }

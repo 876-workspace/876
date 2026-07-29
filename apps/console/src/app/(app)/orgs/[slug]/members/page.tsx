@@ -28,7 +28,7 @@ export default async function OrganizationMembersPage({ params }: Props) {
 
   // Fetch user details for each member in parallel.
   const userResults = await Promise.all(
-    memberships.map((m) => $876.users.retrieve(m.user_id))
+    memberships.map((m) => $876.auth.admin.getUserById(m.user_id))
   )
   const usersById: Record<string, AdminUser> = {}
   for (const r of userResults) {

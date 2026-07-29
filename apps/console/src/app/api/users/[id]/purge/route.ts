@@ -25,7 +25,9 @@ export async function DELETE(
 
   const { id } = await context.params
 
-  const { data, error } = await $876.users.purge(id, { deletedBy: caller.id })
+  const { data, error } = await $876.auth.admin.purgeUser(id, {
+    deletedBy: caller.id,
+  })
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to purge user.' },

@@ -12,7 +12,7 @@ import {
   CardAction,
 } from '@876/ui/card'
 import { Button } from '@876/ui/button'
-import { $billing } from '@/lib/billing'
+import { $876 } from '@/lib/876'
 import {
   Table,
   TableBody,
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await $billing.stats.apps.retrieve(sourceAppId)
+    const result = await $876.billing.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',

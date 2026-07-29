@@ -10,6 +10,21 @@
  * @module @876/admin/client
  */
 
+import {
+  create876AdminClient as create876BillingAdminClient,
+  type AdminClientOptions as BillingAdminClientOptions,
+} from '@876/billing/admin'
+import {
+  create876BillingIntegrationClient,
+  type IntegrationClientOptions as BillingIntegrationClientOptions,
+} from '@876/billing/integration'
+import { create876StorageClient, type StorageClientOptions } from '@876/storage'
+import {
+  createWidgetsClient,
+  type CreateWidgetsClientOptions,
+} from '@876/widgets/server'
+import { createWidgetsAdminClient } from '@876/widgets/server/admin'
+
 import { buildAdminRuntime } from './runtime'
 import { createAdminAddressesResource } from './resources/addresses'
 import { createAdminApiKeysResource } from './resources/api-keys'
@@ -28,15 +43,62 @@ import { createAdminReservedUsernamesResource } from './resources/reserved-usern
 import { createAdminUsersResource } from './resources/users'
 import { createAdminBillingAccountsResource } from './resources/billing-accounts'
 import { createAdminSubscriptionsResource } from './resources/subscriptions'
-import type { Admin876ClientOptions } from './types'
+import type { AdminPlatformClientOptions } from './types'
+
+export type Admin876ClientOptions = {
+  /** Core platform administration configuration. */
+  platform?: AdminPlatformClientOptions
+  /** Billing administration and cross-application integration configuration. */
+  billing?: BillingAdminClientOptions & BillingIntegrationClientOptions
+  /** Storage service configuration. */
+  storage?: StorageClientOptions
+  /** Widgets member and administration configuration. */
+  widgets?: CreateWidgetsClientOptions
+}
 
 export function create876AdminClient(options: Admin876ClientOptions = {}) {
-  const runtime = buildAdminRuntime(options)
+  const runtime = buildAdminRuntime(options.platform ?? {})
+  const userResources = createAdminUsersResource(runtime)
+  const {
+    create: createUser,
+    list: listUsers,
+    retrieve: getUserById,
+    retrieveByWorkosId: getUserByWorkosId,
+    retrieveByUsername: getUserByUsername,
+    update: updateUserById,
+    delete: deleteUser,
+    purge: purgeUser,
+    ban: banUser,
+    unban: unbanUser,
+    listAccounts: listUserAccounts,
+    unlinkAccount: unlinkUserAccount,
+    revokeSessions: revokeUserSessions,
+    ...users
+  } = userResources
+  const billing = create876BillingAdminClient(options.billing)
+  const widgets = createWidgetsClient(options.widgets)
 
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
-    users: createAdminUsersResource(runtime),
-    auth: createAdminAuthResource(runtime),
+    users,
+    auth: {
+      ...createAdminAuthResource(runtime),
+      admin: {
+        createUser,
+        listUsers,
+        getUserById,
+        getUserByWorkosId,
+        getUserByUsername,
+        updateUserById,
+        deleteUser,
+        purgeUser,
+        banUser,
+        unbanUser,
+        listUserAccounts,
+        unlinkUserAccount,
+        revokeUserSessions,
+      },
+    },
     apps: createAdminAppsResource(runtime),
     features: createAdminFeaturesResource(runtime),
     apiKeys: createAdminApiKeysResource(runtime),
@@ -51,6 +113,15 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     reservedUsernames: createAdminReservedUsernamesResource(runtime),
     billingAccounts: createAdminBillingAccountsResource(runtime),
     subscriptions: createAdminSubscriptionsResource(runtime),
+    storage: create876StorageClient(options.storage),
+    billing: {
+      ...billing,
+      integration: create876BillingIntegrationClient(options.billing),
+    },
+    widgets: {
+      ...widgets,
+      admin: createWidgetsAdminClient(options.widgets),
+    },
   }
 }
 

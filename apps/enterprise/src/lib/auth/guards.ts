@@ -74,8 +74,8 @@ export async function findAuthRoutingUser(
 ): Promise<AuthRoutingUser | null> {
   const client = await getAdminClient()
   const result = looksLikeWorkosUserId(userId)
-    ? await client.users.retrieveByWorkosId(userId)
-    : await client.users.retrieve(userId)
+    ? await client.auth.admin.getUserByWorkosId(userId)
+    : await client.auth.admin.getUserById(userId)
 
   // Distinguish a real "user not found" (safe to treat as no account) from a
   // transient/server error, which throws rather than silently denying access.
