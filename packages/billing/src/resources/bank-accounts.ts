@@ -16,7 +16,7 @@ import type {
   RequestOptions,
 } from '../types'
 
-/** `$billing.bankAccounts.*` - tenant-owned financial accounts. */
+/** `$876.billing.bankAccounts.*` - tenant-owned financial accounts. */
 export function createBankAccountsResource(runtime: Runtime) {
   return {
     list(options?: RequestOptions) {

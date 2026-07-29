@@ -49,7 +49,7 @@ import type {
   UpcomingInvoice,
 } from '../types'
 
-/** `$billing.subscriptions.*` — tenant-scoped subscription operations. */
+/** `$876.billing.subscriptions.*` — tenant-scoped subscription operations. */
 export function createSubscriptionsResource(runtime: Runtime) {
   const action = (
     subscriptionId: string,

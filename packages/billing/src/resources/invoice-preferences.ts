@@ -13,7 +13,7 @@ import type {
   RequestOptions,
 } from '../types'
 
-/** `$billing.invoicePreferences.*` — tenant invoice policy operations. */
+/** `$876.billing.invoicePreferences.*` — tenant invoice policy operations. */
 export function createInvoicePreferencesResource(runtime: Runtime) {
   return {
     /** Retrieves the workspace invoice and late-fee policy. */

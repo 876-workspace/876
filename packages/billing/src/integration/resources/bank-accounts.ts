@@ -3,7 +3,7 @@ import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
 import type { BillingBankAccountList } from '../types'
 
-/** `$billing.bankAccounts.list` — shared deposit choices for connected apps. */
+/** `$876.billing.bankAccounts.list` — shared deposit choices for connected apps. */
 export function createIntegrationBankAccountsResource(
   runtime: IntegrationRuntime
 ) {

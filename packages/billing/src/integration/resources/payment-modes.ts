@@ -3,7 +3,7 @@ import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
 import type { BillingPaymentModeList } from '../types'
 
-/** `$billing.paymentModes.list` — shared payment choices for connected apps. */
+/** `$876.billing.paymentModes.list` — shared payment choices for connected apps. */
 export function createIntegrationPaymentModesResource(
   runtime: IntegrationRuntime
 ) {

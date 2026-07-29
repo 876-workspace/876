@@ -4,7 +4,7 @@ import type { CourierCustomerProfile, Mailbox, Tenant } from '@/lib/db'
 import type { PortalCustomerEnsureParams } from '@/types/portal'
 
 const mocks = vi.hoisted(() => ({
-  getFinanceClient: vi.fn(),
+  get876Client: vi.fn(),
   ensureSharedCoreUserCustomer: vi.fn(),
   retrieveByTenantAndUser: vi.fn(),
   customerProfileEnsure: vi.fn(),
@@ -12,8 +12,8 @@ const mocks = vi.hoisted(() => ({
   listMailboxes: vi.fn(),
 }))
 
-vi.mock('@/lib/finance/client', () => ({
-  getFinanceClient: mocks.getFinanceClient,
+vi.mock('@/lib/876', () => ({
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/finance/customers', () => ({
   ensureSharedCoreUserCustomer: mocks.ensureSharedCoreUserCustomer,
@@ -95,8 +95,8 @@ function createParams(
 }
 
 function expectBillingEnsureCall(params: PortalCustomerEnsureParams) {
-  expect(mocks.getFinanceClient).toHaveBeenCalledTimes(1)
-  expect(mocks.getFinanceClient).toHaveBeenCalledWith()
+  expect(mocks.get876Client).toHaveBeenCalledTimes(1)
+  expect(mocks.get876Client).toHaveBeenCalledWith()
   expect(mocks.ensureSharedCoreUserCustomer).toHaveBeenCalledTimes(1)
   expect(mocks.ensureSharedCoreUserCustomer).toHaveBeenCalledWith(
     financeClient,
@@ -116,7 +116,7 @@ describe('ensurePortalCustomer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    mocks.getFinanceClient.mockResolvedValue(financeClient)
+    mocks.get876Client.mockResolvedValue({ billing: financeClient })
     mocks.ensureSharedCoreUserCustomer.mockResolvedValue({
       data: { id: 'blcus_kimani' },
       error: null,
@@ -156,7 +156,7 @@ describe('ensurePortalCustomer', () => {
       tenantId: 'ten_rocketship',
       customerId: 'cprof_kimani',
     })
-    expect(mocks.getFinanceClient).not.toHaveBeenCalled()
+    expect(mocks.get876Client).not.toHaveBeenCalled()
     expect(mocks.ensureSharedCoreUserCustomer).not.toHaveBeenCalled()
     expect(mocks.allocate).not.toHaveBeenCalled()
     expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()
@@ -477,7 +477,7 @@ describe('ensurePortalCustomer', () => {
       tenantId: 'ten_rocketship',
       customerId: 'cprof_kimani',
     })
-    expect(mocks.getFinanceClient).not.toHaveBeenCalled()
+    expect(mocks.get876Client).not.toHaveBeenCalled()
     expect(mocks.ensureSharedCoreUserCustomer).not.toHaveBeenCalled()
     expect(mocks.allocate).not.toHaveBeenCalled()
     expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()

@@ -1,7 +1,7 @@
 import 'server-only'
 
+import { get876Client } from '@/lib/876'
 import type { CourierCustomerProfile } from '@/lib/db'
-import { getFinanceClient } from '@/lib/finance/client'
 import { ensureSharedCoreUserCustomer } from '@/lib/finance/customers'
 import { service } from '@/lib/service'
 import { errFrom, ok } from '@/lib/service/result'
@@ -19,9 +19,9 @@ export async function ensurePortalCustomer(
   )
   if (existing) return withPrimaryMailbox(existing)
 
-  const finance = await getFinanceClient()
+  const $876 = await get876Client()
   const billingCustomer = await ensureSharedCoreUserCustomer(
-    finance,
+    $876.billing,
     params.tenant.orgId,
     {
       id: params.userId,

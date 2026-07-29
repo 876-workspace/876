@@ -353,6 +353,9 @@ importers:
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -671,6 +674,9 @@ importers:
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -680,9 +686,6 @@ importers:
       '@876/settings':
         specifier: workspace:*
         version: link:../../packages/settings
-      '@876/storage':
-        specifier: workspace:*
-        version: link:../../packages/storage
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui

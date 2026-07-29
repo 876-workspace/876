@@ -21,7 +21,7 @@ function collectionPath(organizationId: string): string {
   return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/customers`
 }
 
-/** `$billing.customers.*` — organization-scoped customer integrations. */
+/** `$876.billing.customers.*` — organization-scoped customer integrations. */
 export function createIntegrationCustomersResource(
   runtime: IntegrationRuntime
 ) {

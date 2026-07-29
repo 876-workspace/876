@@ -3,7 +3,7 @@ import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
 import type { Ensured, SubscriptionEnsureParams } from '../types'
 
-/** `$billing.subscriptions.*` — secret-service subscription synchronization. */
+/** `$876.billing.subscriptions.*` — secret-service subscription synchronization. */
 export function createAdminSubscriptionsResource(runtime: AdminRuntime) {
   return {
     /** Idempotently ensures a core commercial agreement in Billing. */
