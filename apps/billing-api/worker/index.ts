@@ -53,7 +53,10 @@ export default {
       )
     }
 
-    const container = getContainer(env.BILLING_API_CONTAINER, 'primary')
+    const container = getContainer(
+      env.BILLING_API_CONTAINER,
+      env.BILLING_API_PRIMARY_INSTANCE ?? 'primary'
+    )
     return container.fetch(request)
   },
 
@@ -78,5 +81,6 @@ export default {
 
 interface Env {
   BILLING_API_CONTAINER: DurableObjectNamespace<BillingApiContainer>
+  BILLING_API_PRIMARY_INSTANCE?: string
   ENVIRONMENT?: string
 }
