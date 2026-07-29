@@ -274,11 +274,11 @@ Couriers, affected users are routed to onboarding and see
 
 Two systems share the job, and they must not overlap:
 
-| System                        | Owns                                                               | Trigger                     |
-| ----------------------------- | ------------------------------------------------------------------ | --------------------------- |
-| **Cloudflare Workers Builds** | Build + deploy of the six OpenNext Workers                         | Push to `main` (git-linked) |
-| **GitHub Actions**            | The two Container services (need Docker) + `prisma migrate deploy` | Push to `main`              |
-| GitHub Actions (manual)       | OpenNext deploys as a fallback when Workers Builds is unavailable  | `workflow_dispatch`         |
+| System                        | Owns                                                          | Trigger                     |
+| ----------------------------- | ------------------------------------------------------------- | --------------------------- |
+| **Cloudflare Workers Builds** | Build + deploy of all OpenNext Workers and Container services | Push to `main` (git-linked) |
+| **GitHub Actions**            | Storage API schema migrations                                 | Matching push to `main`     |
+| GitHub Actions (manual)       | Migrations and deploys when an explicit fallback is needed    | `workflow_dispatch`         |
 
 ### Cloudflare Workers Builds settings
 
@@ -330,28 +330,28 @@ variable for browser-side error capture. Next.js inlines `NEXT_PUBLIC_*` values
 during the build, and runtime Worker vars from `wrangler.jsonc` are not visible
 to that build.
 
-**Workers Builds does not run migrations.** `prisma migrate deploy` stays in
-GitHub Actions, which already holds the database URLs. Keep migrations additive
-so a Workers Build that lands before the migration job does not break.
+**Workers Builds does not run migrations.** The Storage API migration stays in
+GitHub Actions, which holds its database URL. Other datastore migrations run
+through an explicit manual dispatch. Keep migrations additive so a Workers
+Build that lands before its migration job does not break.
 
 ### GitHub Actions
 
 `.github/workflows/deploy-cloudflare.yml`:
 
-- **Path-filtered.** A Console change does not rebuild the API container. A
-  change under `packages/**` or to the lockfile fans out to every app.
-- **Ordered.** `widgets-api` and `api` deploy first; the UI Workers depend on
-  them, so a failed data-plane deploy stops the UIs from shipping against it.
-- **Migrations run on push** (`prisma migrate deploy`), never inside the Worker.
-- **OpenNext deploy steps are `workflow_dispatch`-only** so pushes do not deploy
-  each Worker twice (once here, once from Workers Builds).
+- **Path-filtered on push.** Only a Storage API change runs its migration.
+- **Ordered on manual deploys.** Data-plane Workers run before dependent UIs.
+- **Migrations never run inside a Worker.** Storage migrations run on matching
+  pushes; the other datastore migrations require an explicit manual deploy.
+- **Every deploy step is `workflow_dispatch`-only** so pushes do not deploy a
+  Worker twice.
 - Shared toolchain setup lives in `.github/actions/setup`.
 
 ### Required GitHub configuration
 
 | Kind     | Name                                                                                                              |
 | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| Secret   | `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit + Containers), `CLOUDFLARE_ACCOUNT_ID`                               |
+| Secret   | `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit + Containers), `CLOUDFLARE_ACCOUNT_ID` (manual deploys only)         |
 | Secret   | `WIDGETS_DATABASE_URL`, `CONSOLE_DATABASE_URL`, `BILLING_DATABASE_URL`, `COURIERS_DATABASE_URL` (migrations only) |
 | Secret   | `NEXT_PUBLIC_876_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`                                                              |
 | Variable | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`                                      |
