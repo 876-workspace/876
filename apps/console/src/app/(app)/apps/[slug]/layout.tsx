@@ -1,39 +1,23 @@
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { cn } from '@876/core/utils'
+import { Badge } from '@876/ui/badge'
 import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 import { Link2 } from '@876/ui/icons'
 
-import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
+import { RouteTabs } from '@876/ui/route-tabs'
 import {
   DetailHeader,
   DetailHeaderTop,
   DetailHeaderMain,
-  DetailHeaderActions,
   DetailHeaderTabs,
 } from '@876/ui/detail-header'
 import { resolveApp } from './_data'
-import { AppActions } from './app-actions'
+import { getAppTabs } from './app-detail-tabs'
 
 type Props = {
   children: ReactNode
   params: Promise<{ slug: string }>
-}
-
-function getStatusDotColor(status: string) {
-  switch (status) {
-    case 'active':
-      return 'bg-emerald-500'
-    case 'suspended':
-      return 'bg-amber-500'
-    case 'inactive':
-      return 'bg-slate-400'
-    case 'banned':
-      return 'bg-red-500'
-    default:
-      return 'bg-muted-foreground'
-  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -49,21 +33,7 @@ export default async function AppDetailLayout({ children, params }: Props) {
   if (!app) notFound()
 
   const base = `/apps/${slug}`
-  const tabs: DetailTab[] = [
-    { label: 'Overview', href: base, exact: true },
-    ...(app.app_kind === 'product'
-      ? [
-          { label: 'Plans', href: `${base}/plans` },
-          { label: 'Modules', href: `${base}/modules` },
-          { label: 'Subscribers', href: `${base}/subscribers` },
-        ]
-      : []),
-    { label: 'Feature Flags', href: `${base}/features` },
-    { label: 'Widgets', href: `${base}/widgets` },
-    { label: 'API Keys', href: `${base}/api-keys` },
-    { label: 'Provisioning', href: `${base}/provisioning` },
-    { label: 'Settings', href: `${base}/settings` },
-  ]
+  const tabs = getAppTabs(app.app_kind, base)
 
   return (
     <div>
@@ -71,7 +41,6 @@ export default async function AppDetailLayout({ children, params }: Props) {
         <DetailHeaderTop>
           <DetailHeaderMain className="min-w-0 flex-1">
             <div className="min-w-0 flex-1">
-              <div className="876-eyebrow mb-1">{app.app_kind}</div>
               <div className="mb-1.5 flex items-center gap-3">
                 <AppLogo name={app.name} src={app.logo_url} size="md" />
                 <div className="min-w-0">
@@ -79,15 +48,14 @@ export default async function AppDetailLayout({ children, params }: Props) {
                     <h1 className="876-page-title text-foreground truncate">
                       {app.name}
                     </h1>
-                    <div className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
-                      <span
-                        className={cn(
-                          'size-2 rounded-full',
-                          getStatusDotColor(app.status)
-                        )}
-                      />
-                      <span className="capitalize">{app.status}</span>
-                    </div>
+                    <Badge
+                      variant={
+                        app.status === 'active' ? 'success' : 'secondary'
+                      }
+                      className="capitalize"
+                    >
+                      {app.status}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -115,10 +83,6 @@ export default async function AppDetailLayout({ children, params }: Props) {
               </div>
             </div>
           </DetailHeaderMain>
-
-          <DetailHeaderActions>
-            <AppActions app={app} />
-          </DetailHeaderActions>
         </DetailHeaderTop>
 
         <DetailHeaderTabs>

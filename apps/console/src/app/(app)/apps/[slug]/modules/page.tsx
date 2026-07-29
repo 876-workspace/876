@@ -9,7 +9,7 @@ type Props = { params: Promise<{ slug: string }> }
 export default async function AppModulesPage({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
-  if (!app || app.app_kind !== 'product') notFound()
+  if (!app || !['product', 'platform'].includes(app.app_kind)) notFound()
 
   const [modulesResult, featuresResult] = await Promise.all([
     $876.modules.list(app.id, { includeArchived: true }),

@@ -73,6 +73,8 @@ export default async function AppOverviewPage({ params }: Props) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
+  if (app.app_kind !== 'product') return null
+
   const billingStats = await retrieveBillingStats(app.id)
   const stats = [
     {
@@ -133,55 +135,45 @@ export default async function AppOverviewPage({ params }: Props) {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          {app.app_kind === 'product' ? (
-            <Card className="876-card bg-[var(--876-surface)] ring-0">
-              <CardHeader>
-                <CardTitle>Recent subscriptions</CardTitle>
-                <CardDescription>
-                  Latest subscriptions across all plans
-                </CardDescription>
-                <CardAction>
-                  <Button variant="ghost" size="sm" disabled>
-                    View all
-                    <ArrowRight className="ml-2 size-4" />
-                  </Button>
-                </CardAction>
-              </CardHeader>
-              <CardContent className="px-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent">
-                      <TableHead className="pl-6">Customer</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Plan
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        Started
-                      </TableHead>
-                      <TableHead className="pr-6 text-right">MRR</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-muted-foreground h-24 text-center"
-                      >
-                        No recent subscriptions
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="876-card flex h-64 items-center justify-center">
-              <span className="text-muted-foreground text-sm">
-                No active subscriptions for this app type.
-              </span>
-            </div>
-          )}
+          <Card className="876-card bg-[var(--876-surface)] ring-0">
+            <CardHeader>
+              <CardTitle>Recent subscriptions</CardTitle>
+              <CardDescription>
+                Latest subscriptions across all plans
+              </CardDescription>
+              <CardAction>
+                <Button variant="ghost" size="sm" disabled>
+                  View all
+                  <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="px-0">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="pl-6">Customer</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Plan</TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      Started
+                    </TableHead>
+                    <TableHead className="pr-6 text-right">MRR</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-muted-foreground h-24 text-center"
+                    >
+                      No recent subscriptions
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
         <aside aria-label="Additional info" className="lg:col-span-1">
           <div className="876-card flex h-64 items-center justify-center">
