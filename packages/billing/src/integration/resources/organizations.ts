@@ -3,7 +3,7 @@ import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
 import type { BillingOrganization } from '../types'
 
-/** `$billing.organizations.*` — Billing workspace integration operations. */
+/** `$876.billing.organizations.*` — Billing workspace integration operations. */
 export function createIntegrationOrganizationsResource(
   runtime: IntegrationRuntime
 ) {

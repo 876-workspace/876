@@ -12,7 +12,7 @@ function collectionPath(organizationId: string): string {
   return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/payments`
 }
 
-/** `$billing.payments.*` — shared finance payment integrations. */
+/** `$876.billing.payments.*` — shared finance payment integrations. */
 export function createIntegrationPaymentsResource(runtime: IntegrationRuntime) {
   return {
     list(organizationId: string) {

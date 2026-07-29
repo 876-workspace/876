@@ -17,7 +17,7 @@ import type {
   RequestOptions,
 } from '../types'
 
-/** `$billing.payments.*` - received money and invoice allocations. */
+/** `$876.billing.payments.*` - received money and invoice allocations. */
 export function createPaymentsResource(runtime: Runtime) {
   return {
     list(options?: RequestOptions) {

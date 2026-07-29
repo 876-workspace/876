@@ -11,7 +11,7 @@ import {
 } from '../types/files'
 
 /**
- * `$storage.files.*` — file metadata and delivery operations.
+ * `$876.storage.files.*` — file metadata and delivery operations.
  *
  * Files are canonical metadata records created by completing an upload session.
  * Every file carries server-assigned classifications (`category` and `audience`)
@@ -42,7 +42,7 @@ export function createFilesResource(runtime: StorageRuntime) {
      * @see /v1/files/{file_id}
      *
      * @example
-     * const { data: file, error } = await $storage.files.retrieve(fileId)
+     * const { data: file, error } = await $876.storage.files.retrieve(fileId)
      * if (error) return storageErrorResponse(error)
      *
      * console.log(file.id, file.status, file.url)
@@ -86,7 +86,7 @@ export function createFilesResource(runtime: StorageRuntime) {
      * @see /v1/files/{file_id}/read-url
      *
      * @example
-     * const { data: readUrl, error } = await $storage.files.createReadUrl(fileId, {
+     * const { data: readUrl, error } = await $876.storage.files.createReadUrl(fileId, {
      *   expires_in: 900,
      * })
      * if (error) return storageErrorResponse(error)
@@ -124,7 +124,7 @@ export function createFilesResource(runtime: StorageRuntime) {
      * @see /v1/files/{file_id}
      *
      * @example
-     * const { data: tombstone, error } = await $storage.files.delete(fileId)
+     * const { data: tombstone, error } = await $876.storage.files.delete(fileId)
      * if (error) return storageErrorResponse(error)
      *
      * console.log(tombstone.id, tombstone.deleted) // true

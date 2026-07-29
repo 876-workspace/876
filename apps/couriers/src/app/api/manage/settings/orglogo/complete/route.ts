@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getError } from '@/lib/errors'
-import { $storage } from '@/lib/storage'
+import { $876 } from '@/lib/876'
 import { organizationLogoUploadCompleteSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       { status: 403, code: 'auth/forbidden' }
     )
 
-  const result = await $storage.uploads.complete(parsed.data.id)
+  const result = await $876.storage.uploads.complete(parsed.data.id)
   if (result.error) return storageErrorResponse(result.error)
 
   const file = result.data

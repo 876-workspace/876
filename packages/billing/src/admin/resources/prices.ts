@@ -3,7 +3,7 @@ import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
 import type { Ensured, PriceEnsureParams } from '../types'
 
-/** `$billing.prices.*` — secret-service price synchronization. */
+/** `$876.billing.prices.*` — secret-service price synchronization. */
 export function createAdminPricesResource(runtime: AdminRuntime) {
   return {
     /** Idempotently ensures a core price as an immutable Billing price. */

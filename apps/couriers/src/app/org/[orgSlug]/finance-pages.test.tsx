@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
-  getFinanceClient: vi.fn(),
+  get876Client: vi.fn(),
   listProfiles: vi.fn(),
   listCustomers: vi.fn(),
   listItems: vi.fn(),
@@ -14,8 +14,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/finance/client', () => ({
-  getFinanceClient: mocks.getFinanceClient,
+vi.mock('@/lib/876', () => ({
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/service', () => ({
   service: { customerProfiles: { list: mocks.listProfiles } },
@@ -53,9 +53,11 @@ function listResult<T>(data: T[], hasMore = false) {
 describe('Couriers finance-backed pages', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue(context)
-    mocks.getFinanceClient.mockResolvedValue({
-      customers: { list: mocks.listCustomers },
-      items: { list: mocks.listItems },
+    mocks.get876Client.mockResolvedValue({
+      billing: {
+        customers: { list: mocks.listCustomers },
+        items: { list: mocks.listItems },
+      },
     })
     mocks.listProfiles.mockResolvedValue([])
   })

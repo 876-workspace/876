@@ -3,7 +3,7 @@ import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
 import type { Ensured, ProductEnsureParams } from '../types'
 
-/** `$billing.products.*` — secret-service product synchronization. */
+/** `$876.billing.products.*` — secret-service product synchronization. */
 export function createAdminProductsResource(runtime: AdminRuntime) {
   return {
     /** Idempotently ensures a core application has a Billing product. */

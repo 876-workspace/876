@@ -9,7 +9,7 @@ import type {
   RequestOptions,
 } from '../types'
 
-/** `$billing.invoices.*` — tenant-scoped invoice operations. */
+/** `$876.billing.invoices.*` — tenant-scoped invoice operations. */
 export function createInvoicesResource(runtime: Runtime) {
   return {
     /** Creates a draft invoice in the active Billing workspace. */

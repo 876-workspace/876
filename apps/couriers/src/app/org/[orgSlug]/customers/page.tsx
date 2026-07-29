@@ -4,8 +4,8 @@ import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 import { StatusFilterHeading } from '@/components/status-filter-heading'
+import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getFinanceClient } from '@/lib/finance/client'
 import { service } from '@/lib/service'
 import { customerStatusSchema } from '@/types/customer'
 
@@ -50,9 +50,9 @@ export default async function CustomersPage({ params, searchParams }: Props) {
     profile.billingCustomerId ? [profile.billingCustomerId] : []
   )
 
-  const finance = await getFinanceClient()
+  const $876 = await get876Client()
   const registry = billingCustomerIds.length
-    ? await finance.customers.list(ctx.orgId, {
+    ? await $876.billing.customers.list(ctx.orgId, {
         limit: 100,
         ids: billingCustomerIds,
       })

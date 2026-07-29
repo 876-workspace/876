@@ -1,8 +1,8 @@
 /**
  * `@876/storage` — typed server-only client for the 876 Storage service.
  *
- * Initialize it once per app as a module-level singleton (`src/lib/storage.ts`)
- * and call it from server components and route handlers.
+ * Product applications receive this client through the unified
+ * `@876/client/server` composition root and call `$876.storage.*`.
  *
  * The client authenticates with `STORAGE_INTERNAL_KEY` via the `x-internal-key`
  * header. That credential mints signed upload and read URLs, so the module is
@@ -18,17 +18,17 @@
  * object itself.
  *
  * @example
- * // src/lib/storage.ts — one singleton per app
+ * // src/lib/876/index.ts — one singleton per app
  * import 'server-only'
- * import { create876StorageClient } from '@876/storage'
+ * import { create876ServerClient } from '@876/client/server'
  *
- * export const $storage = create876StorageClient({
- *   internalKey: process.env.STORAGE_INTERNAL_KEY,
+ * export const $876 = create876ServerClient({
+ *   storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
  * })
  *
  * @example
  * // Step 1 — your route handler, after authorizing the actor:
- * const { data: session, error } = await $storage.uploads.create({
+ * const { data: session, error } = await $876.storage.uploads.create({
  *   route_key: 'organization.primaryLogo',
  *   owner_type: 'organization',
  *   owner_id: ctx.orgId,
@@ -49,7 +49,7 @@
  *
  * // Step 3 — your route handler again:
  * const { data: file, error: completeError } =
- *   await $storage.uploads.complete(session.id)
+ *   await $876.storage.uploads.complete(session.id)
  * if (completeError) return storageErrorResponse(completeError)
  *
  * // file.status === 'ready'; file.url is set only for public files.

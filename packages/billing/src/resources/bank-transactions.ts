@@ -23,7 +23,7 @@ function transactionPath(accountId: string, transactionId?: string) {
     : accountPath
 }
 
-/** `$billing.bankTransactions.*` - manual account credits and debits. */
+/** `$876.billing.bankTransactions.*` - manual account credits and debits. */
 export function createBankTransactionsResource(runtime: Runtime) {
   return {
     list(accountId: string, options?: RequestOptions) {

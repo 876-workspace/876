@@ -61,7 +61,7 @@ const AppBillingStatsListSchema = z.strictObject({
   data: z.array(AppBillingStatsSchema),
 })
 
-/** `$billing.stats.*` — secret-service Billing reporting. */
+/** `$876.billing.stats.*` — secret-service Billing reporting. */
 export function createAdminStatsResource(runtime: AdminRuntime) {
   return {
     apps: {

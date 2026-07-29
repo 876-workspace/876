@@ -19,7 +19,7 @@ function collectionPath(organizationId: string): string {
   return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/items`
 }
 
-/** `$billing.items.*` — shared finance catalog integrations. */
+/** `$876.billing.items.*` — shared finance catalog integrations. */
 export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
   return {
     list(organizationId: string, params: BillingItemListParams = {}) {
