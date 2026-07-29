@@ -55,6 +55,7 @@ Instead, hand-add exactly one entry to the `apps/couriers:` importer block's
 `dependencies:` section in `pnpm-lock.yaml`, in alphabetical order, matching the
 existing style of its sibling `@876/*` workspace entries:
 
+<!-- prettier-ignore -->
 ```yaml
       '@876/settings':
         specifier: workspace:*
