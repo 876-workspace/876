@@ -37,6 +37,7 @@ from domains.organizations.router import _require_org_membership, _require_org_p
 from domains.organizations.schemas import (
     AppAssignmentCreate,
     AppAssignmentResponse,
+    OrganizationMemberDeleteResponse,
     OrganizationMemberMeResponse,
     OrganizationMemberResponse,
     OrganizationMemberRoleUpdate,
@@ -458,6 +459,79 @@ async def update_org_member_role(
         role=new_role.name,
     )
     return _serialize_member(membership, membership.user)
+
+
+@router.delete(
+    "/{org_id}/members/{membership_id}",
+    response_model=OrganizationMemberDeleteResponse,
+    summary="Remove an organization member",
+    description=(
+        "Removes a member from the caller's organization. Requires "
+        "`members:manage`; callers cannot remove themselves, only owners may "
+        "remove owners, and the final active owner is protected."
+    ),
+)
+async def delete_org_member(
+    org_id: str,
+    membership_id: str,
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> OrganizationMemberDeleteResponse:
+    await _require_org_permission(db, org_id, principal, "members:manage")
+
+    repo = MembershipRepository(db)
+    membership = await repo.get_by_id(membership_id)
+    if membership is None or membership.organization_id != org_id:
+        raise AppHTTPException(
+            code="membership/not-found",
+            message="No membership exists with the provided identifier.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+    if not principal.internal and membership.user_id == principal.user_id:
+        raise AppHTTPException(
+            code="membership/self-removal-forbidden",
+            message="You cannot remove yourself from the organization.",
+            http_status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if membership.role == OWNER_ROLE_NAME:
+        if not principal.internal:
+            caller = await repo.get_by_org_and_user(org_id, principal.user_id or "")
+            if caller is None or caller.role != OWNER_ROLE_NAME:
+                raise AppHTTPException(
+                    code="role/owner-required",
+                    message="Only an owner can remove an owner.",
+                    http_status_code=status.HTTP_403_FORBIDDEN,
+                )
+        other_owner = (
+            await db.scalars(
+                select(Membership).where(
+                    Membership.organization_id == org_id,
+                    Membership.role == OWNER_ROLE_NAME,
+                    Membership.status == "active",
+                    Membership.id != membership_id,
+                )
+            )
+        ).first()
+        if other_owner is None:
+            raise AppHTTPException(
+                code="role/last-owner",
+                message="An organization must keep at least one owner.",
+                http_status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+    await repo.delete(
+        membership_id,
+        deleted_by=principal.user_id,
+        reason="Removed through organization member management.",
+    )
+    logger.info(
+        "organizations.member.delete",
+        organization_id=org_id,
+        membership_id=membership_id,
+        user_id=membership.user_id,
+    )
+    return OrganizationMemberDeleteResponse(id=membership_id)
 
 
 # ── App assignments ──────────────────────────────────────────────────────────

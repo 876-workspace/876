@@ -896,16 +896,20 @@ async def create_organization_membership(
     response_model=ListObject[InviteTokenResponse],
     status_code=status.HTTP_200_OK,
     summary="List organization invites",
-    description="Returns pending and historical invite tokens for an organization. **Admin only**.",
+    description=(
+        "Returns pending and historical invite tokens for an organization. "
+        "Requires the caller's `members:invite` permission."
+    ),
 )
 async def list_organization_invites(
     organization_id: str,
-    _admin: AdminDep,
+    principal: SessionDep,
     db: Annotated[AsyncSession, Depends(get_db)],
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     starting_after: str | None = None,
     ending_before: str | None = None,
 ) -> ListObject[InviteTokenResponse]:
+    await _require_org_permission(db, organization_id, principal, "members:invite")
     org = await OrganizationRepository(db).get_by_id(organization_id)
     if not org:
         raise AppHTTPException(
@@ -933,17 +937,19 @@ async def list_organization_invites(
     status_code=status.HTTP_201_CREATED,
     summary="Create organization invite",
     description=(
-        "Creates an invite token for the given email address. **Admin only**. "
+        "Creates an invite token for the given email address. Requires the "
+        "caller's `members:invite` permission. "
         "The returned token can be embedded in an invite link sent to the invitee. "
         "Email delivery is handled separately."
     ),
 )
 async def create_organization_invite(
     organization_id: str,
-    _admin: AdminDep,
+    principal: SessionDep,
     body: InviteTokenCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> InviteTokenResponse:
+    await _require_org_permission(db, organization_id, principal, "members:invite")
     org = await OrganizationRepository(db).get_by_id(organization_id)
     if not org:
         raise AppHTTPException(
@@ -995,14 +1001,15 @@ async def create_organization_invite(
     response_model=InviteTokenResponse,
     status_code=status.HTTP_200_OK,
     summary="Revoke organization invite",
-    description="Revokes a pending invite token. **Admin only**.",
+    description=("Revokes a pending invite token. Requires the caller's `members:invite` permission."),
 )
 async def revoke_organization_invite(
     organization_id: str,
     invite_id: str,
-    _admin: AdminDep,
+    principal: SessionDep,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> InviteTokenResponse:
+    await _require_org_permission(db, organization_id, principal, "members:invite")
     repo = InviteTokenRepository(db)
     invite = await repo.get_by_id(invite_id)
     if not invite or invite.organization_id != organization_id:

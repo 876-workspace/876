@@ -3,9 +3,11 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.errors import AppHTTPException
 from core.logging import get_logger
 from core.responses import ListObject
-from core.security import AdminDep
+from core.security import AdminDep, SessionDep
+from db.repositories.memberships import MembershipRepository
 from db.session import get_db
 from domains.features.schemas import (
     FeatureCreate,
@@ -237,6 +239,59 @@ async def evaluate_features(
         data=[_serialize_feature(row) for row in rows],
         has_more=False,
         url="/features/evaluate",
+    )
+
+
+@router.get(
+    "/evaluate/me",
+    response_model=ListObject[FeatureResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Evaluate features for the current user",
+    description=(
+        "Evaluates app features for the signed-in user and, when supplied, an organization they actively belong to."
+    ),
+)
+async def evaluate_my_features(
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    organization_id: Annotated[str | None, Query(alias="organizationId")] = None,
+    app_slug: Annotated[str | None, Query(alias="appSlug")] = None,
+) -> ListObject[FeatureResponse]:
+    if not principal.user_id:
+        raise AppHTTPException(
+            code="auth/no-session",
+            message="No active session.",
+            http_status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    if organization_id:
+        membership = await MembershipRepository(db).get_by_org_and_user(organization_id, principal.user_id)
+        if not membership or membership.status != "active":
+            raise AppHTTPException(
+                code="auth/forbidden",
+                message="Forbidden.",
+                http_status_code=status.HTTP_403_FORBIDDEN,
+            )
+
+    if not principal.internal and not principal.app_id:
+        raise AppHTTPException(
+            code="auth/forbidden",
+            message="Forbidden.",
+            http_status_code=status.HTTP_403_FORBIDDEN,
+        )
+
+    rows = await FeatureService(db).evaluate(
+        FeatureEvaluationContext(
+            user_id=principal.user_id,
+            organization_id=organization_id,
+            app_id=None if principal.internal else principal.app_id,
+            app_slug=app_slug,
+        )
+    )
+    return ListObject[FeatureResponse](
+        data=[_serialize_feature(row) for row in rows],
+        has_more=False,
+        url="/features/evaluate/me",
     )
 
 

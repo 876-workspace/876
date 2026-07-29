@@ -432,6 +432,61 @@ async def test_member_role_update_rejects_unknown_role_name(monkeypatch: Any) ->
     assert resp.json()["error"]["code"] == "role/not-found"
 
 
+async def test_admin_removes_plain_member(monkeypatch: Any) -> None:
+    target = _membership(role="member", id="mbr_target", user_id="usr_target")
+    deleted: dict[str, Any] = {}
+
+    async def fake_get_by_id(self: MembershipRepository, membership_id: str) -> Any:
+        return target
+
+    async def fake_delete(
+        self: MembershipRepository,
+        membership_id: str,
+        deleted_by: str | None = None,
+        reason: str | None = None,
+    ) -> bool:
+        deleted.update(
+            {
+                "id": membership_id,
+                "deleted_by": deleted_by,
+                "reason": reason,
+            }
+        )
+        return True
+
+    monkeypatch.setattr(MembershipRepository, "get_by_id", fake_get_by_id)
+    monkeypatch.setattr(MembershipRepository, "delete", fake_delete)
+    app, _ = _access_app(monkeypatch, caller_membership=_membership(role="admin"))
+
+    async with _client(app) as client:
+        resp = await client.delete("/organizations/org_test/members/mbr_target")
+
+    assert resp.status_code == 200
+    assert resp.json()["data"] == {
+        "object": "organization_member",
+        "id": "mbr_target",
+        "deleted": True,
+    }
+    assert deleted["id"] == "mbr_target"
+    assert deleted["deleted_by"] == "usr_test"
+
+
+async def test_member_cannot_remove_self(monkeypatch: Any) -> None:
+    target = _membership(role="admin", id="mbr_test", user_id="usr_test")
+
+    async def fake_get_by_id(self: MembershipRepository, membership_id: str) -> Any:
+        return target
+
+    monkeypatch.setattr(MembershipRepository, "get_by_id", fake_get_by_id)
+    app, _ = _access_app(monkeypatch, caller_membership=target)
+
+    async with _client(app) as client:
+        resp = await client.delete("/organizations/org_test/members/mbr_test")
+
+    assert resp.status_code == 400
+    assert resp.json()["error"]["code"] == "membership/self-removal-forbidden"
+
+
 # ── App assignments ──────────────────────────────────────────────────────────
 
 
