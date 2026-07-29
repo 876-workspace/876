@@ -17,11 +17,9 @@ describe('admin onboarding resource', () => {
         jsonResponse({ object: 'onboarding_session', id: 'obs_test' })
       )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
     const body = {
       country_code: 'JM',
@@ -48,11 +46,9 @@ describe('admin onboarding resource', () => {
         jsonResponse({ object: 'onboarding_catalog', schema_version: 1 })
       )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
 
     await $876.onboarding.retrieveCatalog('organization', 'global', 'JM')

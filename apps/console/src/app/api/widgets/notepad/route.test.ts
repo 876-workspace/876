@@ -10,8 +10,8 @@ vi.mock('@/lib/widgets-auth', () => ({
   requireNotepadMember: mocks.requireNotepadMember,
 }))
 
-vi.mock('@/lib/876', () => ({
-  $876: {
+vi.mock('@/lib/876/member', () => ({
+  $876Member: {
     widgets: {
       notes: {
         list: mocks.list,

@@ -30,7 +30,7 @@ export async function WidgetStatCards({ widget }: { widget: WidgetMetadata }) {
   const session = await getAuthSession()
   if (!isSignedSession(session)) return null
 
-  const { data, error } = await $876.widgets.admin.stats.notepad({
+  const { data, error } = await $876.widgets.stats.notepad({
     userId: session.user.id,
   })
   if (error || !data) {

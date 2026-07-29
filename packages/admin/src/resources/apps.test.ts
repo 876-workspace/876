@@ -17,11 +17,9 @@ describe('admin provisioning resource', () => {
         jsonResponse({ object: 'provisioning_note', id: 'note/1' })
       )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
 
     await $876.provisioning.notes.delete('application', 'app/one', 'note/1')
@@ -40,11 +38,9 @@ describe('admin provisioning resource', () => {
       })
     )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
     const body = {
       manifest_version: 1 as const,
@@ -85,11 +81,9 @@ describe('admin provisioning resource', () => {
         jsonResponse({ object: 'provisioning_run', id: 'run/1' })
       )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
 
     await $876.provisioning.runs.list({

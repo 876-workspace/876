@@ -21,11 +21,9 @@ describe('admin auth resource', () => {
       })
     )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
 
     await $876.auth.getRoutingMemberships({ userId: 'user_123' })
@@ -36,7 +34,7 @@ describe('admin auth resource', () => {
     )
   })
 
-  it('exposes user lifecycle methods only through auth.admin', async () => {
+  it('exposes user lifecycle methods directly through users', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
         object: 'user',
@@ -44,14 +42,12 @@ describe('admin auth resource', () => {
       })
     )
     const $876 = create876AdminClient({
-      platform: {
-        baseUrl: 'https://api.test',
-        internalKey: 'test-internal-key',
-        fetch: fetchMock,
-      },
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
     })
 
-    await $876.auth.admin.createUser({
+    await $876.users.create({
       email: 'yoda@example.com',
       first_name: 'Yoda',
       last_name: 'Jedi',
@@ -61,7 +57,9 @@ describe('admin auth resource', () => {
       'https://api.test/users',
       expect.objectContaining({ method: 'POST' })
     )
-    expect('create' in $876.users).toBe(false)
-    expect('retrieve' in $876.users).toBe(false)
+    expect('create' in $876.users).toBe(true)
+    expect('retrieve' in $876.users).toBe(true)
+    expect('admin' in $876.auth).toBe(false)
+    expect('orgs' in $876).toBe(false)
   })
 })

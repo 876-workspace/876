@@ -16,7 +16,7 @@ export async function DELETE(
   if (response) return response
 
   const { id } = await context.params
-  const { data, error } = await $876.auth.admin.revokeUserSessions(id)
+  const { data, error } = await $876.users.revokeSessions(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to revoke sessions.' },

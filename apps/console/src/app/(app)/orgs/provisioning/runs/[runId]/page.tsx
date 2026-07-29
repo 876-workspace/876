@@ -30,7 +30,7 @@ export default async function ProvisioningRunPage({ params }: Props) {
   const run = result.data
   const [appResult, organizationResult] = await Promise.all([
     $876.apps.retrieve(run.app_id),
-    $876.orgs.retrieve(run.organization_id),
+    $876.organizations.retrieve(run.organization_id),
   ])
   const app = appResult.data
   const organization = organizationResult.data

@@ -21,7 +21,7 @@ export default async function AppSubscribersPage({ params }: Props) {
   if (!app || app.app_kind !== 'product') notFound()
 
   const [subscriptionsResult, productsResult] = await Promise.all([
-    $876.apps.subscriptions.list(app.id),
+    $876.appSubscriptions.list(app.id),
     $876.products.list({ appId: app.id, status: 'active' }),
   ])
   const subscriptions = subscriptionsResult.data ?? []
@@ -38,7 +38,7 @@ export default async function AppSubscribersPage({ params }: Props) {
   const orgMap = new Map<string, AdminOrganization>()
   await Promise.all(
     orgIds.map(async (id) => {
-      const { data: org } = await $876.orgs.retrieve(id)
+      const { data: org } = await $876.organizations.retrieve(id)
       if (org) orgMap.set(id, org)
     })
   )

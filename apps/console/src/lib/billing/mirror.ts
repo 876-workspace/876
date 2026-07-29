@@ -50,7 +50,7 @@ async function resolveOrgPrimaryContact(
     contactUserId = owner.user_id
   }
 
-  const user = await $876.auth.admin.getUserById(contactUserId)
+  const user = await $876.users.retrieve(contactUserId)
   if (!user.data) return { userId: contactUserId }
 
   return {
@@ -228,7 +228,7 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const orgPromise = $876.orgs.retrieve(subscription.organization_id)
+  const orgPromise = $876.organizations.retrieve(subscription.organization_id)
   const productPromises = productIds.map((productId) =>
     $876.products.retrieve(productId)
   )
@@ -368,7 +368,7 @@ export async function reconcileBillingMirror() {
   let hasMore = true
   while (hasMore) {
     try {
-      const orgResult = await $876.orgs.list({
+      const orgResult = await $876.organizations.list({
         limit: 100,
         startingAfter,
       })
@@ -383,7 +383,8 @@ export async function reconcileBillingMirror() {
 
       for (const org of orgResult.data.data) {
         try {
-          const subscriptionResult = await $876.orgs.subscriptions.list(org.id)
+          const subscriptionResult =
+            await $876.subscriptions.listForOrganization(org.id)
           if (subscriptionResult.error) {
             failures += 1
             console.error(

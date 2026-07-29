@@ -13,7 +13,7 @@ import {
   AUTH_RETURN_TO_COOKIE,
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 

@@ -31,7 +31,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
   if (!isSignedSession(session)) return null
 
   const actor = { userId: session.user.id }
-  const notesResult = await $876.widgets.admin.notes.list(actor, {
+  const notesResult = await $876.widgets.notes.list(actor, {
     ownerAccountId: owner || undefined,
     limit: 50,
   })
@@ -44,7 +44,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
     (
       await Promise.all(
         ownerIds.map(async (id) => {
-          const { data } = await $876.auth.admin.getUserById(id)
+          const { data } = await $876.users.retrieve(id)
           return [id, data] as const
         })
       )

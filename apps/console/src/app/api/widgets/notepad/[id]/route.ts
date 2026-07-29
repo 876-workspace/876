@@ -2,7 +2,7 @@ import { apiError, apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 
 import { requireNotepadMember } from '@/lib/widgets-auth'
-import { $876 } from '@/lib/876'
+import { $876Member } from '@/lib/876/member'
 
 export const runtime = 'nodejs'
 
@@ -22,7 +22,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.widgets.notes.update(
+  const result = await $876Member.widgets.notes.update(
     { userId: access.userId },
     id,
     {
@@ -54,7 +54,10 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $876.widgets.notes.delete({ userId: access.userId }, id)
+  const result = await $876Member.widgets.notes.delete(
+    { userId: access.userId },
+    id
+  )
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,

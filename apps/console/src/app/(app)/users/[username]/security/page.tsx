@@ -23,7 +23,7 @@ export default async function SecurityPage({ params }: Props) {
   if (!user) notFound()
 
   // Fetch linked accounts server-side
-  const accountsResult = await $876.auth.admin.listUserAccounts(user.id)
+  const accountsResult = await $876.users.listAccounts(user.id)
   const accounts = accountsResult.error ? [] : accountsResult.data.data
 
   return (

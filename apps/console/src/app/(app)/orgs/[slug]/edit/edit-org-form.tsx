@@ -107,7 +107,7 @@ export function EditOrgForm({ org }: Props) {
   function handleSubmit() {
     setError(null)
     startTransition(async () => {
-      const { data, error } = await client.orgs.update(org.id, {
+      const { data, error } = await client.organizations.update(org.id, {
         name: name.trim() || null,
         short_name: shortName.trim() || null,
         slug: slug.trim() || undefined,

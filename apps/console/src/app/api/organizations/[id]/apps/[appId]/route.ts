@@ -48,11 +48,15 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await $876.orgs.subscriptions.update(orgId, appId, {
-    status: body?.status as 'active' | 'blocked' | undefined,
-    price_id: body?.price_id,
-    cancel_at_period_end: body?.cancel_at_period_end,
-  })
+  const { data, error } = await $876.subscriptions.updateForOrganizationApp(
+    orgId,
+    appId,
+    {
+      status: body?.status as 'active' | 'blocked' | undefined,
+      price_id: body?.price_id,
+      cancel_at_period_end: body?.cancel_at_period_end,
+    }
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update subscription.' },

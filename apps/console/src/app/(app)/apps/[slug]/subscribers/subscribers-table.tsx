@@ -49,7 +49,7 @@ function PriceCell({
     const previous = priceId
     setPriceId(value)
     setLoading(true)
-    const { error } = await client.orgs.updateSubscription(
+    const { error } = await client.subscriptions.updateForOrganizationApp(
       record.organization_id,
       record.app_id,
       { price_id: value }
@@ -92,7 +92,7 @@ function StatusCell({ record }: { record: AdminSubscription }) {
     const next = status === 'active' ? 'blocked' : 'active'
     setStatus(next)
     setLoading(true)
-    const { error } = await client.orgs.updateSubscription(
+    const { error } = await client.subscriptions.updateForOrganizationApp(
       record.organization_id,
       record.app_id,
       { status: next }

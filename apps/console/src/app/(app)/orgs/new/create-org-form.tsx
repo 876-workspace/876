@@ -129,7 +129,7 @@ export function CreateOrgForm() {
     }
     setError(null)
     startTransition(async () => {
-      const { data, error } = await client.orgs.create({
+      const { data, error } = await client.organizations.create({
         name: name.trim(),
         short_name: shortName.trim() || null,
         slug: slug.trim() || null,
