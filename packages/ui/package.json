@@ -30,49 +30,9 @@
       "types": "./src/auth/provider-icons.tsx",
       "default": "./src/auth/provider-icons.tsx"
     },
-    "./icons/apple": {
-      "types": "./src/icons/apple.tsx",
-      "default": "./src/icons/apple.tsx"
-    },
-    "./icons/google": {
-      "types": "./src/icons/google.tsx",
-      "default": "./src/icons/google.tsx"
-    },
-    "./icons/microsoft": {
-      "types": "./src/icons/microsoft.tsx",
-      "default": "./src/icons/microsoft.tsx"
-    },
-    "./icons/slack": {
-      "types": "./src/icons/slack.tsx",
-      "default": "./src/icons/slack.tsx"
-    },
-    "./icons/google-meet": {
-      "types": "./src/icons/google-meet.tsx",
-      "default": "./src/icons/google-meet.tsx"
-    },
-    "./icons/google-calendar": {
-      "types": "./src/icons/google-calendar.tsx",
-      "default": "./src/icons/google-calendar.tsx"
-    },
-    "./icons/google-maps": {
-      "types": "./src/icons/google-maps.tsx",
-      "default": "./src/icons/google-maps.tsx"
-    },
-    "./icons/google-play": {
-      "types": "./src/icons/google-play.tsx",
-      "default": "./src/icons/google-play.tsx"
-    },
-    "./icons/google-drive": {
-      "types": "./src/icons/google-drive.tsx",
-      "default": "./src/icons/google-drive.tsx"
-    },
-    "./icons/microsoft-teams": {
-      "types": "./src/icons/microsoft-teams.tsx",
-      "default": "./src/icons/microsoft-teams.tsx"
-    },
-    "./icons/gmail": {
-      "types": "./src/icons/gmail.tsx",
-      "default": "./src/icons/gmail.tsx"
+    "./logos/*": {
+      "types": "./src/logos/*.tsx",
+      "default": "./src/logos/*.tsx"
     },
     "./*": {
       "types": "./src/components/*.tsx",
