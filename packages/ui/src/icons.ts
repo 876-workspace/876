@@ -69,6 +69,9 @@ import {
   UserIcon,
   UserPlusIcon,
   UsersIcon,
+  AdjustmentsHorizontalIcon,
+  PaintBrushIcon,
+  WrenchScrewdriverIcon,
   WindowIcon,
   XCircleIcon,
   XMarkIcon,
@@ -136,6 +139,9 @@ export {
   Squares2X2Icon,
   SunIcon,
   TableCellsIcon,
+  AdjustmentsHorizontalIcon,
+  PaintBrushIcon,
+  WrenchScrewdriverIcon,
   UserIcon,
   UserPlusIcon,
   UsersIcon,
@@ -143,6 +149,8 @@ export {
   XCircleIcon,
   XMarkIcon,
 }
+
+export const PaintBrush = PaintBrushIcon
 
 export const Activity = BoltIcon
 export const AppWindow = WindowIcon
