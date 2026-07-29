@@ -1,1 +1,1 @@
-export { Microsoft as MicrosoftOutlook } from '@876/ui/icons/microsoft'
+export { MicrosoftOutlook } from '@876/ui/logos/microsoft-outlook'

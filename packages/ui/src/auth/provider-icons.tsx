@@ -1,8 +1,8 @@
 import type { ComponentType, SVGProps } from 'react'
 
-import { Apple } from '../icons/apple'
-import { Google } from '../icons/google'
-import { Microsoft } from '../icons/microsoft'
+import { Apple } from '../logos/apple'
+import { Google } from '../logos/google'
+import { Microsoft } from '../logos/microsoft'
 import type { SocialProvider } from './types'
 
 export { Apple, Google, Microsoft }

@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react'
 
-export const Microsoft = (props: SVGProps<SVGSVGElement>) => (
+export const MicrosoftOutlook = (props: SVGProps<SVGSVGElement>) => (
   <svg {...props} viewBox="60 90.4 570.02 539.67">
     <defs>
       <linearGradient
