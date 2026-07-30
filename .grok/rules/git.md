@@ -137,6 +137,29 @@ Closes #[issue number]
 6. Delete branch after merging — unless another PR is stacked on it.
 7. **Always auto-check the same PR for merge conflicts immediately after submitting it.** After creating (or updating) a PR, verify it is mergeable against the base branch — e.g. `gh pr view <number> --json mergeable,mergeStateStatus` (poll until GitHub finishes computing `mergeable`, since it is briefly `UNKNOWN`). If it reports `CONFLICTING`, surface the conflicting files and resolve them (merge the latest base branch in and fix conflicts) before considering the PR ready.
 
+### Automated Code Review Gate
+
+Every pull request must pass its configured AI code-review bots before it can
+merge. A green test suite does not replace this review gate.
+
+1. Wait for each configured AI reviewer (for example Codex or Copilot) to
+   finish reviewing the latest pushed commit.
+2. Inspect top-level comments, submitted reviews, and every inline review
+   thread. Use a thread-aware GitHub query when resolution or outdated state
+   matters; a flat comment list is not sufficient.
+3. Classify every bot finding as:
+   - **Actionable** — the current branch still contains the reported defect.
+   - **Already addressed** — a later commit demonstrably fixed it.
+   - **Not applicable** — the suggestion is a false positive or conflicts with
+     the intended contract.
+4. Fix every actionable finding, add or update regression coverage, and rerun
+   the relevant checks. Push the fix and wait for review/checks of the new head
+   commit when the change materially affects the reviewed code.
+5. Record the evidence for findings that are already addressed or not
+   applicable. Do not silently dismiss bot feedback.
+6. Do not merge while an AI review is pending or while any actionable bot
+   finding remains unresolved.
+
 ## Feature Integration Branches (multi-phase work)
 
 Read this before starting any feature large enough to span more than two or
