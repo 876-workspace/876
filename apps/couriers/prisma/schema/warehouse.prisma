@@ -4,6 +4,7 @@
 model Warehouse {
   id         String  @id @default(cuid())
   tenantId   String  @map("tenant_id")
+  addressId  String? @unique @map("address_id")
   name       String
   street1    String  @map("street_1")
   street2    String? @map("street_2")
@@ -16,6 +17,7 @@ model Warehouse {
   updatedAt  Int     @map("updated_at")
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  address   Address?   @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
   manifests Manifest[]
 
   @@unique([tenantId, name], name: "warehouses_tenant_id_name_key")
