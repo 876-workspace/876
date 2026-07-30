@@ -56,13 +56,13 @@ export default async function BranchesSettingsPage({ params }: Props) {
                   )}
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {[branch.street1, branch.street2, branch.city, branch.parish]
+                  {[branch.address?.line1, branch.address?.line2, branch.address?.city, branch.address?.regionName]
                     .filter(Boolean)
                     .join(', ')}
                 </p>
               </div>
               <span className="text-muted-foreground text-xs">
-                {branch.country}
+                {branch.address?.countryCode ?? branch.country}
               </span>
             </li>
           ))}
