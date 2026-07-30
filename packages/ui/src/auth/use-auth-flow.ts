@@ -6,7 +6,7 @@
  * @module @876/ui/auth/use-auth-flow
  */
 
-import { useCallback, useReducer } from 'react'
+import { useCallback, useReducer, useRef } from 'react'
 import { createAuthError, type SdkAuthErrorCode } from '@876/sdk'
 
 import { useAuthUI } from './context'
@@ -146,6 +146,15 @@ export function useAuthFlow() {
     notice: null,
   })
 
+  /**
+   * Captures the async function that triggered the most recent
+   * email-verification challenge. The verify-email step's "Resend code" button
+   * calls this so the exact same operation is re-executed — which causes WorkOS
+   * to issue a new pending token — without needing the original form params in
+   * reducer state.
+   */
+  const resendVerifyCodeRef = useRef<(() => Promise<void>) | null>(null)
+
   const succeed = useCallback(
     (user: User, kind: 'sign_in_succeeded' | 'sign_up_succeeded') => {
       emit({ type: kind, user })
@@ -184,7 +193,10 @@ export function useAuthFlow() {
    * page; otherwise falls back to the in-card verify step.
    */
   const handleEmailVerificationChallenge = useCallback(
-    (challenge: { email: string; pendingAuthenticationToken?: string }) => {
+    (
+      challenge: { email: string; pendingAuthenticationToken?: string },
+      resendFn?: () => Promise<void>
+    ) => {
       emit({
         type: 'email_verification_required',
         email: challenge.email,
@@ -197,6 +209,9 @@ export function useAuthFlow() {
       // Host took over (persisted + navigating away): skip the in-card step so
       // the verify card never flashes before the redirect resolves.
       if (handledByHost) return
+
+      // Capture the callback so "Resend code" can re-run the same call.
+      if (resendFn) resendVerifyCodeRef.current = resendFn
 
       dispatch({
         type: 'challenge',
@@ -287,10 +302,16 @@ export function useAuthFlow() {
         }
 
         if (result.data.object === 'auth_event') {
-          handleEmailVerificationChallenge({
-            email: result.data.email ?? state.identifier,
-            pendingAuthenticationToken: result.data.pendingAuthenticationToken,
-          })
+          handleEmailVerificationChallenge(
+            {
+              email: result.data.email ?? state.identifier,
+              pendingAuthenticationToken: result.data.pendingAuthenticationToken,
+            },
+            () =>
+              client
+                .login({ identifier: state.identifier, password })
+                .then(() => undefined)
+          )
           return
         }
 
@@ -362,10 +383,21 @@ export function useAuthFlow() {
         }
 
         if (result.data.object === 'auth_event') {
-          handleEmailVerificationChallenge({
-            email: result.data.email ?? params.email,
-            pendingAuthenticationToken: result.data.pendingAuthenticationToken,
-          })
+          handleEmailVerificationChallenge(
+            {
+              email: result.data.email ?? params.email,
+              pendingAuthenticationToken: result.data.pendingAuthenticationToken,
+            },
+            () =>
+              client
+                .register({
+                  email: params.email,
+                  password: params.password,
+                  firstName: params.firstName,
+                  lastName: params.lastName,
+                })
+                .then(() => undefined)
+          )
           return
         }
 
@@ -443,10 +475,22 @@ export function useAuthFlow() {
         }
 
         if (result.data.object === 'auth_event') {
-          handleEmailVerificationChallenge({
-            email: result.data.email ?? params.email,
-            pendingAuthenticationToken: result.data.pendingAuthenticationToken,
-          })
+          handleEmailVerificationChallenge(
+            {
+              email: result.data.email ?? params.email,
+              pendingAuthenticationToken: result.data.pendingAuthenticationToken,
+            },
+            () =>
+              client
+                .registerBusiness({
+                  email: params.email,
+                  password: params.password,
+                  firstName: params.firstName,
+                  lastName: params.lastName,
+                  organizationName: params.organizationName,
+                })
+                .then(() => undefined)
+          )
           return
         }
 
@@ -689,8 +733,31 @@ export function useAuthFlow() {
 
   const backToEmail = useCallback(() => {
     dispatch({ type: 'reset_to_email' })
+    resendVerifyCodeRef.current = null
     emit({ type: 'step_changed', step: 'email' })
   }, [emit])
+
+  /**
+   * Re-runs the auth call that originally triggered the email-verification
+   * challenge. WorkOS issues a new pending_authentication_token and sends
+   * another verification email to the same address.
+   *
+   * Only safe to call from the verify-email step (where resendVerifyCodeRef
+   * is guaranteed to be populated). Dispatches notice on error.
+   */
+  const resendVerifyCode = useCallback(async () => {
+    const fn = resendVerifyCodeRef.current
+    if (!fn) return
+    dispatch({ type: 'submit_start' })
+    try {
+      await fn()
+      // fn re-invokes the original submit which will call
+      // handleEmailVerificationChallenge again, updating the pendingToken in
+      // state and showing the verify-email step again.
+    } catch {
+      reportUnexpectedError()
+    }
+  }, [reportUnexpectedError])
 
   return {
     state,
@@ -701,6 +768,7 @@ export function useAuthFlow() {
       submitProfile,
       submitBusinessProfile,
       submitVerifyCode,
+      resendVerifyCode,
       sendMagicOtp,
       submitMagicOtp,
       recover,

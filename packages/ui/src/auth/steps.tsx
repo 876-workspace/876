@@ -265,7 +265,7 @@ export function OtpStep({
     if (kind === 'magic') {
       void flow.actions.sendMagicOtp(flow.state.identifier || flow.state.email)
     } else {
-      void flow.actions.submitEmail(flow.state.identifier)
+      void flow.actions.resendVerifyCode()
     }
   }, [flow, kind])
 
