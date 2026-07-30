@@ -10,7 +10,7 @@ import {
 } from '@876/ui/auth'
 
 import { APP_NAME } from '@/lib/app-name'
-import { authClient } from '@/lib/auth/client'
+import { manageAuthClient } from '@/lib/auth/client'
 
 export function BusinessOnboarding() {
   return (
@@ -18,7 +18,7 @@ export function BusinessOnboarding() {
       <AuthProvider
         config={{
           mode: 'business-onboarding',
-          client: authClient.auth,
+          client: manageAuthClient.auth,
           appName: APP_NAME,
           onSuccess: () => {
             window.location.assign('/auth/complete?returnTo=/')

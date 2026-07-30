@@ -48,6 +48,44 @@ class WorkOSClient:
             logger.error("workos.request_error", method="POST", path=path, latency_ms=elapsed_ms, exc_info=True)
             raise
 
+    async def _post_auth(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
+        """Like _post() but re-raises httpx.HTTPStatusError without converting it.
+
+        Auth endpoints (e.g. authenticate_with_password) can receive 4xx
+        responses that carry auth-flow data (pending_authentication_token,
+        email, etc.) rather than hard errors.  The adapter's _handle_http_error
+        needs the raw httpx exception to read that payload and return an
+        AuthEvent.  Using _post() here would discard the token via
+        normalize_workos_error before the adapter ever sees it.
+        """
+        start = time.perf_counter()
+        try:
+            resp = await self._client.post(path, json={k: v for k, v in payload.items() if v is not None})
+            resp.raise_for_status()
+            return cast(dict[str, Any], resp.json())
+        except httpx.HTTPStatusError as exc:
+            elapsed_ms = (time.perf_counter() - start) * 1000
+            status = exc.response.status_code
+            if status >= 500:
+                logger.error(
+                    "workos.request_failed",
+                    method="POST",
+                    path=path,
+                    status=status,
+                    latency_ms=elapsed_ms,
+                    exc_info=True,
+                )
+            else:
+                logger.warning("workos.request_failed", method="POST", path=path, status=status, latency_ms=elapsed_ms)
+            # Re-raise the raw httpx error so the adapter can inspect the
+            # response body (pending_authentication_token, etc.) before deciding
+            # whether this is an auth-flow event or a hard error.
+            raise
+        except httpx.HTTPError:
+            elapsed_ms = (time.perf_counter() - start) * 1000
+            logger.error("workos.request_error", method="POST", path=path, latency_ms=elapsed_ms, exc_info=True)
+            raise
+
     async def _get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         start = time.perf_counter()
         try:
@@ -109,7 +147,7 @@ class WorkOSClient:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> dict[str, Any]:
-        return await self._post(
+        return await self._post_auth(
             "/user_management/authenticate",
             {
                 "grant_type": "password",
@@ -131,7 +169,7 @@ class WorkOSClient:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> dict[str, Any]:
-        return await self._post(
+        return await self._post_auth(
             "/user_management/authenticate",
             {
                 "grant_type": "authorization_code",
@@ -151,7 +189,7 @@ class WorkOSClient:
         client_id: str,
         organization_id: str | None = None,
     ) -> dict[str, Any]:
-        return await self._post(
+        return await self._post_auth(
             "/user_management/authenticate",
             {
                 "grant_type": "refresh_token",
@@ -168,7 +206,7 @@ class WorkOSClient:
         pending_authentication_token: str,
         client_id: str,
     ) -> dict[str, Any]:
-        return await self._post(
+        return await self._post_auth(
             "/user_management/authenticate",
             {
                 "grant_type": "urn:workos:oauth:grant-type:email-verification:code",
@@ -186,7 +224,7 @@ class WorkOSClient:
         client_id: str,
         link_authorization_code: str | None = None,
     ) -> dict[str, Any]:
-        return await self._post(
+        return await self._post_auth(
             "/user_management/authenticate",
             {
                 "grant_type": "urn:workos:oauth:grant-type:magic-auth:code",

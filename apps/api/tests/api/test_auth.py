@@ -621,6 +621,52 @@ async def test_register_business_rejects_unproven_adoption_before_creating_organ
     assert FakeWorkOSClient.deleted_organization_ids == []
 
 
+@pytest.mark.asyncio
+async def test_register_business_returns_auth_event_when_email_verification_required(
+    client, monkeypatch
+) -> None:
+    """register_business must not compensate (delete org) when WorkOS requires email
+    verification after a fresh sign-up. It should commit the org/membership with
+    status='invited' and return a 200 auth_event so the UI can show the verify step."""
+
+    async def require_verification(self, email, password, client_id, ip_address=None, user_agent=None):
+        request = httpx.Request("POST", "https://api.workos.com")
+        response = httpx.Response(
+            400,
+            json={
+                "code": "email_verification_required",
+                "email": email,
+                "pending_authentication_token": "biz_pending_token",
+            },
+            request=request,
+        )
+        raise httpx.HTTPStatusError("Verification required", request=request, response=response)
+
+    captured = _patch_business_registration(monkeypatch)
+    monkeypatch.setattr(FakeWorkOSClient, "authenticate_with_password", require_verification)
+
+    async with AsyncClient(transport=client, base_url="http://testserver") as ac:
+        response = await ac.post(
+            "/auth/register-business",
+            json={
+                "email": "newbiz@example.com",
+                "password": "password123",
+                "firstName": "Jane",
+                "lastName": "Doe",
+                "organizationName": "New Biz Co",
+            },
+        )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["error"] is None
+    assert body["data"]["type"] == "email_verification_required"
+    assert body["data"]["pendingAuthenticationToken"] == "biz_pending_token"
+    # Org was created and NOT compensated (deleted)
+    assert FakeWorkOSClient.organization_external_ids == [captured["organization"].id]
+    assert FakeWorkOSClient.deleted_organization_ids == []
+
+
 def _patch_business_registration(monkeypatch, *, taken_slugs: set[str] | None = None):
     captured: dict[str, Organization] = {}
 
