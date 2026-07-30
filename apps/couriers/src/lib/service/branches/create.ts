@@ -9,17 +9,25 @@ import type { ServiceResult } from '@/types/api'
 
 import { isUniqueConstraintError } from '../prisma-errors'
 import { ok, err } from '../result'
+import { service } from '../index'
 
 export async function create(
   tenantId: string,
   params: BranchCreateParams
-): ServiceResult<Branch> {
+): ServiceResult<any> {
   const parsed = branchCreateParamsSchema.safeParse(params)
   if (!parsed.success)
     return err(parsed.error.issues[0]?.message ?? 'Invalid branch.', 400)
 
   const input = parsed.data
   const now = nowUnixSeconds()
+
+  // Pre-validate address before creating branch transaction
+  const addressResult = await service.addresses.create(tenantId, input.address)
+  if (!addressResult.success) {
+    return addressResult
+  }
+  const address = addressResult.data
 
   try {
     const branch = await prisma.$transaction(async (tx) => {
@@ -38,25 +46,31 @@ export async function create(
         data: {
           tenantId,
           name: input.name,
-          street1: input.street1,
-          street2: input.street2 ?? null,
-          city: input.city,
-          parish: input.parish ?? null,
-          country: input.country ?? 'JM',
           phone: input.phone ?? null,
           isDefault,
           isActive: input.isActive ?? true,
           settings: (input.settings ?? undefined) as
             | Prisma.InputJsonObject
             | undefined,
+          addressId: address.id,
+          // Dual-write legacy postal columns (to be removed in PR 8)
+          street1: address.line1,
+          street2: address.line2,
+          city: address.city,
+          parish: address.regionName,
+          country: address.countryCode,
           createdAt: now,
           updatedAt: now,
         },
+        include: { address: true }
       })
     })
 
     return ok(branch)
   } catch (error) {
+    // If branch creation fails, cleanup the created address
+    await service.addresses.delete(tenantId, address.id).catch(() => {})
+
     if (isUniqueConstraintError(error))
       return err('A branch with that name already exists.', 409)
 

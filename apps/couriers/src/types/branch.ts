@@ -1,18 +1,16 @@
 import * as z from 'zod'
+import { addressViewSchema, addressFieldsSchema } from './address'
 
 export const branchViewSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
+  addressId: z.string(),
   name: z.string(),
-  street1: z.string(),
-  street2: z.string().nullable(),
-  city: z.string(),
-  parish: z.string().nullable(),
-  country: z.string(),
   phone: z.string().nullable(),
   isDefault: z.boolean(),
   isActive: z.boolean(),
   settings: z.record(z.string(), z.unknown()).nullable(),
+  address: addressViewSchema,
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 })
@@ -20,29 +18,21 @@ export type BranchView = z.infer<typeof branchViewSchema>
 
 export const branchCreateParamsSchema = z.strictObject({
   name: z.string().min(1),
-  street1: z.string().min(1),
-  street2: z.string().optional(),
-  city: z.string().min(1),
-  parish: z.string().optional(),
-  country: z.string().optional(),
   phone: z.string().optional(),
   isDefault: z.boolean().optional(),
   isActive: z.boolean().optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
+  address: addressFieldsSchema,
 })
 export type BranchCreateParams = z.input<typeof branchCreateParamsSchema>
 
 export const branchUpdateParamsSchema = z.strictObject({
   name: z.string().min(1).optional(),
-  street1: z.string().min(1).optional(),
-  street2: z.string().optional(),
-  city: z.string().min(1).optional(),
-  parish: z.string().optional(),
-  country: z.string().optional(),
   phone: z.string().optional(),
   isDefault: z.boolean().optional(),
   isActive: z.boolean().optional(),
   settings: z.record(z.string(), z.unknown()).optional(),
+  address: addressFieldsSchema.partial().optional(),
 })
 export type BranchUpdateParams = z.input<typeof branchUpdateParamsSchema>
 
@@ -70,10 +60,11 @@ export type BranchSearchParams = z.input<typeof branchSearchParamsSchema>
  * organization profile, so every field is optional there and may be absent here.
  */
 export interface DefaultBranchAddress {
-  street1?: string | null
+  line1?: string | null
   street2?: string | null
   city?: string | null
-  parish?: string | null
+  region?: string | null
+  regionId?: string | null
   country?: string | null
   phone?: string | null
 }

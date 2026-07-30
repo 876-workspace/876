@@ -9,5 +9,6 @@ export function list(params: BranchListParams & { tenantId: string }) {
     },
     orderBy: [{ isDefault: 'desc' }, { name: 'asc' }, { id: 'asc' }],
     take: params.limit,
+    include: { address: true },
   })
 }
