@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   const results = []
 
   for (const invite of parsed.data.invites) {
-    const result = await platform.orgs.invites.create(ctx.orgId, {
+    const result = await platform.invites.create(ctx.orgId, {
       email: invite.email,
       role: invite.role,
       sourceAppSlug: COURIERS_APP_SLUG,

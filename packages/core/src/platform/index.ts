@@ -18,10 +18,9 @@
  * imported from browser code.
  *
  * This module is pure composition — runtime/transport live in `./runtime.ts`
- * and `./request.ts`, types live in `./types.ts`, and each namespace
- * (`provisioning`, `auth`, `geo`, `features`, `memberships`, `onboarding`,
- * `orgs`, `users`) is its own factory module under `./resources/`, mirroring
- * `@876/admin`'s `src/resources/*.ts` layering.
+ * and `./request.ts`, types live in `./types.ts`, and internal resource
+ * factories live under `./resources/`. The public surface is flattened to
+ * `$876.resource.verb()`; only genuine subsystems retain deeper nesting.
  *
  * @module @876/core/platform
  */
@@ -44,23 +43,34 @@ export * from './types'
  * Creates the server-only platform bootstrap client.
  *
  * @example
- * const platform = create876PlatformClient({ apiKey: process.env.API_876_KEY })
- * const memberships = await platform.auth.getRoutingMemberships({ userId })
+ * const $876 = create876PlatformClient({ apiKey: process.env.API_876_KEY })
+ * const memberships = await $876.memberships.listRouting({ userId })
  */
 export function create876PlatformClient(
   options: Platform876ClientOptions = {}
 ) {
   const runtime = buildPlatformRuntime(options)
+  const { getRoutingMemberships } = createPlatformAuthResource(runtime)
+  const { listRegions } = createPlatformGeoResource(runtime)
+  const memberships = createPlatformMembershipsResource(runtime)
+  const { identifications, ...users } = createPlatformUsersResource(runtime)
+  const { invites, subscriptions, ...organizations } =
+    createPlatformOrgsResource(runtime)
 
   return {
     provisioning: createPlatformProvisioningResource(runtime),
-    auth: createPlatformAuthResource(runtime),
-    geo: createPlatformGeoResource(runtime),
     features: createPlatformFeaturesResource(runtime),
-    memberships: createPlatformMembershipsResource(runtime),
+    memberships: {
+      ...memberships,
+      listRouting: getRoutingMemberships,
+    },
     onboarding: createPlatformOnboardingResource(runtime),
-    orgs: createPlatformOrgsResource(runtime),
-    users: createPlatformUsersResource(runtime),
+    organizations,
+    invites,
+    subscriptions,
+    regions: { list: listRegions },
+    users,
+    identifications,
   }
 }
 

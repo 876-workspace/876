@@ -71,7 +71,7 @@ export async function PATCH(request: NextRequest) {
     )
 
   const platform = await getPlatformClient()
-  const result = await platform.orgs.updateProfile(
+  const result = await platform.organizations.updateProfile(
     ctx.orgId,
     fields as PlatformOrgProfileUpdateParams
   )

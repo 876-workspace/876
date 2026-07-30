@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   if (!role) return apiJson({ error: 'Role not found.' }, { status: 404 })
 
   const platform = await getPlatformClient()
-  const result = await platform.orgs.invites.create(ctx.orgId, {
+  const result = await platform.invites.create(ctx.orgId, {
     email: parsed.data.email,
     role: role.systemKey === 'admin' ? 'admin' : 'member',
     sourceAppSlug: COURIERS_APP_SLUG,

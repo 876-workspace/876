@@ -100,7 +100,7 @@ describe('POST /api/auth/switch-org', () => {
     })
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPlatformClient.mockResolvedValue({
-      auth: { getRoutingMemberships: mocks.getRoutingMemberships },
+      memberships: { listRouting: mocks.getRoutingMemberships },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
       data: { data: [createMembership()] },

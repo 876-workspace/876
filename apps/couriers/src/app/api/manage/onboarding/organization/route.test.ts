@@ -45,8 +45,8 @@ describe('Couriers onboarding organization route', () => {
     mocks.isSignedSession.mockReturnValue(true)
     mocks.cookies.mockResolvedValue({ delete: mocks.cookieDelete })
     mocks.getPlatformClient.mockResolvedValue({
-      auth: { getRoutingMemberships: mocks.getRoutingMemberships },
-      orgs: { create: mocks.createOrganization },
+      memberships: { listRouting: mocks.getRoutingMemberships },
+      organizations: { create: mocks.createOrganization },
       onboarding: { replaceAnswers: mocks.replaceAnswers },
     })
     mocks.getRoutingMemberships.mockResolvedValue({

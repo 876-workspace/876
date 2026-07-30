@@ -2,7 +2,7 @@ import { platformRequest } from '../request'
 import type { PlatformRuntime } from '../runtime'
 import type { PlatformRegion } from '../types'
 
-/** `platform.geo.*` — public reference geography data. */
+/** Region transport composed as `$876.regions.list()`. */
 export function createPlatformGeoResource(runtime: PlatformRuntime) {
   return {
     /** Lists the regions (parishes/states) for a country, e.g. `JM`. */

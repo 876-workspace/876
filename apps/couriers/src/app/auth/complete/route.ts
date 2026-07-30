@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const ctx = await getManageContext()
   if (!ctx) {
     const platform = await getPlatformClient()
-    const memberships = await platform.auth.getRoutingMemberships({
+    const memberships = await platform.memberships.listRouting({
       userId: session.user.id,
     })
     if (memberships.error) redirect('/no-access')

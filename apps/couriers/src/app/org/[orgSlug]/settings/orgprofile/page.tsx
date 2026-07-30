@@ -26,8 +26,8 @@ export default async function ProfileSettingsPage({
 
   const platform = await getPlatformClient()
   const [result, regionsResult, features] = await Promise.all([
-    platform.orgs.retrieveProfile(ctx.orgId),
-    platform.geo.listRegions('JM'),
+    platform.organizations.retrieveProfile(ctx.orgId),
+    platform.regions.list('JM'),
     getFeatures({ userId: ctx.userId, organizationId: ctx.orgId }),
   ])
 

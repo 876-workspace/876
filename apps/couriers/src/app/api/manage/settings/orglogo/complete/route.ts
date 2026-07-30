@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     })
 
   const platform = await getPlatformClient()
-  const profileResult = await platform.orgs.updateProfile(ctx.orgId, {
+  const profileResult = await platform.organizations.updateProfile(ctx.orgId, {
     logo_file_id: file.id,
     logo_url: file.url,
   })
