@@ -51,8 +51,8 @@ from db.repositories.products import ProductRepository
 from db.session import AsyncSessionLocal
 from db.session import lifespan as db_lifespan
 from services.billing_customer_dispatch import run_billing_sync_worker
-from services.bootstrap import BootstrapStep
-from services.geo_seeds import seed_geo_catalog, run_bootstrap
+from services.bootstrap import BootstrapStep, run_bootstrap
+from services.geo_seeds import seed_geo_catalog
 from services.feature_seeds import seed_all_features
 from services.finance_provisioning_dispatch import run_finance_provisioning_worker
 from services.plan_seeds import (
