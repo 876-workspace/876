@@ -3,11 +3,6 @@ model Branch {
   tenantId  String  @map("tenant_id")
   addressId String? @unique @map("address_id")
   name      String
-  street1   String  @map("street_1")
-  street2   String? @map("street_2")
-  city      String
-  parish    String?
-  country   String  @default("JM")
   phone     String?
   isDefault Boolean @default(false) @map("is_default")
   isActive  Boolean @default(true) @map("is_active")

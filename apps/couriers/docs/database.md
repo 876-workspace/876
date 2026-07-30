@@ -33,8 +33,16 @@ never joins directly to the Billing database.
 | Tenant routing          | `tenants`, `domains`                                                                                                  |
 | Customer operations     | `courier_customer_profiles`, `customer_addresses`, `contacts`, `customer_id_types`, `customer_documents`, `mailboxes` |
 | Shipping                | `packages`, `package_documents`, `package_notes`, `package_categories`, `sellers`, `carriers`, `manifests`            |
-| Locations and workforce | `warehouses`, `branches`, `staff_positions`, `staff_members`                                                          |
+| Locations and workforce | `addresses`, `warehouses`, `branches`, `staff_positions`, `staff_members`                                             |
 | Cash-shift operations   | `cash_sessions`, `cash_session_payments`                                                                              |
+
+## Address entity architecture
+
+Courier operational addresses (`Branch`, `Warehouse`, `CustomerAddress`) are stored in the app-local `addresses` table.
+- **Data ownership**: Addresses belong to `apps/couriers/prisma/schema/address.prisma`. Core identity remains authoritative for org legal addresses; Billing is authoritative for customer financial addresses.
+- **Entity independence**: `Branch`, `Warehouse`, and `CourierCustomerProfile` remain independent operational entities. Addresses link via relational `addressId` foreign keys.
+- **Neutral regional terminology**: Addresses use `regionCode` and `regionName`. The UI presents region labels based on country (e.g. Parish for Jamaica `JM`, State for United States `US`).
+- **Canonical geography**: Core API (`@876/api`) is authoritative for enabled countries and regions via a versioned Caribbean catalog (`apps/api/data/geo/caribbean.json`).
 
 The customer profile contains courier-specific facts such as home branch, TRN,
 commercial-account classification, and enrollment status. It intentionally

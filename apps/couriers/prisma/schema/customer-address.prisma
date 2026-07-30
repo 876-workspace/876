@@ -15,12 +15,6 @@ model CustomerAddress {
   addressId  String?             @map("address_id")
   type       CustomerAddressType @default(DELIVERY)
   label      String?
-  street1    String?             @map("street_1")
-  street2    String?             @map("street_2")
-  city       String?
-  parish     String?
-  country    String?             @default("JM")
-  postalCode String?             @map("postal_code")
   isDefault  Boolean             @default(false) @map("is_default")
   createdAt  Int                 @map("created_at")
   updatedAt  Int                 @map("updated_at")
