@@ -9,7 +9,7 @@ import type {
   PlatformSubscription,
 } from '../types'
 
-/** `platform.orgs.*` — org bootstrap, identity profile, invites, subscriptions. */
+/** Organization transports composed into resource-first client roots. */
 export function createPlatformOrgsResource(runtime: PlatformRuntime) {
   return {
     /** Creates an organization owned by an existing user (org bootstrap). */

@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
     )
 
   const platform = await getPlatformClient()
-  const memberships = await platform.auth.getRoutingMemberships({
+  const memberships = await platform.memberships.listRouting({
     userId: session.user.id,
   })
   if (memberships.error)
     return apiJson({ error: 'Failed to verify workspace.' }, { status: 500 })
   let organizationId = memberships.data.data[0]?.organization.id
   if (!organizationId) {
-    const organization = await platform.orgs.create({
+    const organization = await platform.organizations.create({
       ownerUserId: session.user.id,
       name: parsed.data.name,
     })

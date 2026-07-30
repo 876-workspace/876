@@ -55,7 +55,7 @@ describe('Couriers organization logo upload completion route', () => {
     mocks.getManageContext.mockResolvedValue(context('owner'))
     mocks.complete.mockResolvedValue({ data: readyFile, error: null })
     mocks.getPlatformClient.mockResolvedValue({
-      orgs: { updateProfile: mocks.updateProfile },
+      organizations: { updateProfile: mocks.updateProfile },
     })
     mocks.updateProfile.mockResolvedValue({
       data: { object: 'organization', id: 'org_context' },

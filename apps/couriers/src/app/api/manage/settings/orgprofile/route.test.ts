@@ -32,7 +32,7 @@ describe('Couriers organization profile route', () => {
     vi.clearAllMocks()
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.getPlatformClient.mockResolvedValue({
-      orgs: { updateProfile: mocks.updateProfile },
+      organizations: { updateProfile: mocks.updateProfile },
     })
     mocks.updateProfile.mockResolvedValue({
       data: { object: 'organization', id: 'org_123', name: 'Island Logistics' },

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     })
 
   const platform = await getPlatformClient()
-  const membershipsResult = await platform.auth.getRoutingMemberships({
+  const membershipsResult = await platform.memberships.listRouting({
     userId: session.user.id,
     status: 'active',
   })

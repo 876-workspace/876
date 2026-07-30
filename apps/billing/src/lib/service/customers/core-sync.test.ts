@@ -64,7 +64,7 @@ function platform(options?: {
         }
       ),
     },
-    orgs: {
+    organizations: {
       retrieveProfile: vi.fn().mockResolvedValue(
         options?.profile ?? {
           data: {
@@ -221,7 +221,7 @@ describe('resolveOrgParty', () => {
       email: 'ap@efesto.test',
       phone: '+18765550000',
     })
-    expect(client.orgs.retrieve).not.toHaveBeenCalled()
+    expect(client.organizations.retrieve).not.toHaveBeenCalled()
   })
 
   it('falls back to the basic org record when the profile is unavailable', async () => {
@@ -237,7 +237,7 @@ describe('resolveOrgParty', () => {
       email: null,
       phone: null,
     })
-    expect(client.orgs.retrieve).toHaveBeenCalledWith('org_1')
+    expect(client.organizations.retrieve).toHaveBeenCalledWith('org_1')
   })
 
   it('returns null when neither profile nor org can be resolved', async () => {
@@ -543,7 +543,7 @@ describe('backfillOrgOwnerContacts', () => {
             error: null,
           }),
       },
-      orgs: {
+      organizations: {
         retrieveProfile: vi.fn().mockResolvedValue({
           data: {
             name: 'Co',

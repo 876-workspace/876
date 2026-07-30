@@ -57,7 +57,7 @@ export default async function UsersSettingsPage({
   const [members, roleViews, invitesResult] = await Promise.all([
     service.team.list(ctx.tenant.id, { status }),
     service.roles.list(ctx.tenant.id),
-    platform.orgs.invites.list(ctx.orgId),
+    platform.invites.list(ctx.orgId),
   ])
 
   const identities = await Promise.all(

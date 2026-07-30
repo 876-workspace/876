@@ -27,7 +27,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   const { inviteId } = await context.params
   const platform = await getPlatformClient()
-  const result = await platform.orgs.invites.revoke(ctx.orgId, inviteId)
+  const result = await platform.invites.revoke(ctx.orgId, inviteId)
   if (result.error)
     return apiJson(
       { error: result.error.message },

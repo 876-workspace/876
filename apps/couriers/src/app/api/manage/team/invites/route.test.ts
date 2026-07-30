@@ -57,7 +57,7 @@ describe('Couriers team invite route', () => {
       systemKey: 'admin',
     })
     mocks.getPlatformClient.mockResolvedValue({
-      orgs: { invites: { create: mocks.createInvite } },
+      invites: { create: mocks.createInvite },
     })
     mocks.createInvite.mockResolvedValue({
       data: {

@@ -21,7 +21,7 @@ export const getManageContext = cache(async function getManageContext(
   const platform = await getPlatformClient()
 
   // Resolve org and role via getRoutingMemberships for both SSO and email paths.
-  const membershipsResult = await platform.auth.getRoutingMemberships({
+  const membershipsResult = await platform.memberships.listRouting({
     userId: user.id,
     status: 'active',
   })
@@ -125,7 +125,7 @@ export const getManageContext = cache(async function getManageContext(
 
   if (!resolvedOrgId) return null
 
-  const accessResult = await platform.orgs.subscriptions.retrieveBySlug(
+  const accessResult = await platform.subscriptions.retrieveBySlug(
     resolvedOrgId,
     COURIERS_APP_SLUG
   )

@@ -101,7 +101,7 @@ export function createUploadsResource(runtime: StorageRuntime) {
      * if (error) return storageErrorResponse(error)
      * if (file.owner_id !== ctx.orgId) return forbidden()
      *
-     * await platform.orgs.updateProfile(ctx.orgId, {
+     * await platform.organizations.updateProfile(ctx.orgId, {
      *   logo_file_id: file.id,
      *   logo_url: file.url,
      * })

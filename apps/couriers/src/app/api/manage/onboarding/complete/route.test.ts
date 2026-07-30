@@ -38,7 +38,7 @@ describe('Couriers onboarding completion route', () => {
     })
     mocks.getPlatformClient.mockResolvedValue({
       onboarding: { submit: mocks.submit, retrieve: mocks.retrieve },
-      orgs: { subscriptions: { provision: mocks.provision } },
+      subscriptions: { provision: mocks.provision },
     })
     mocks.submit.mockResolvedValue({ data: {}, error: null })
     mocks.retrieve.mockResolvedValue({

@@ -27,7 +27,7 @@ export async function POST() {
   }
 
   const platform = await getPlatformClient()
-  const result = await platform.orgs.subscriptions.provision(ctx.orgId, {
+  const result = await platform.subscriptions.provision(ctx.orgId, {
     appSlug: COURIERS_APP_SLUG,
   })
 
