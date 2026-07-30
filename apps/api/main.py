@@ -51,7 +51,8 @@ from db.repositories.products import ProductRepository
 from db.session import AsyncSessionLocal
 from db.session import lifespan as db_lifespan
 from services.billing_customer_dispatch import run_billing_sync_worker
-from services.bootstrap import BootstrapStep, run_bootstrap
+from services.bootstrap import BootstrapStep
+from services.geo_seeds import seed_geo_catalog, run_bootstrap
 from services.feature_seeds import seed_all_features
 from services.finance_provisioning_dispatch import run_finance_provisioning_worker
 from services.plan_seeds import (
@@ -244,24 +245,7 @@ async def _seed_platform_apps(engine: object) -> None:
         await session.commit()
 
 
-_JM_PARISH_SEED = """
-INSERT INTO regions (id, country_code, code, name, type, is_enabled) VALUES
-    ('region_jm_01', 'JM', 'JM-01', 'Kingston',       'parish', true),
-    ('region_jm_02', 'JM', 'JM-02', 'St. Andrew',     'parish', true),
-    ('region_jm_03', 'JM', 'JM-03', 'St. Thomas',     'parish', true),
-    ('region_jm_04', 'JM', 'JM-04', 'Portland',       'parish', true),
-    ('region_jm_05', 'JM', 'JM-05', 'St. Mary',       'parish', true),
-    ('region_jm_06', 'JM', 'JM-06', 'St. Ann',        'parish', true),
-    ('region_jm_07', 'JM', 'JM-07', 'Trelawny',       'parish', true),
-    ('region_jm_08', 'JM', 'JM-08', 'St. James',      'parish', true),
-    ('region_jm_09', 'JM', 'JM-09', 'Hanover',        'parish', true),
-    ('region_jm_10', 'JM', 'JM-10', 'Westmoreland',   'parish', true),
-    ('region_jm_11', 'JM', 'JM-11', 'St. Elizabeth',  'parish', true),
-    ('region_jm_12', 'JM', 'JM-12', 'Manchester',     'parish', true),
-    ('region_jm_13', 'JM', 'JM-13', 'Clarendon',      'parish', true),
-    ('region_jm_14', 'JM', 'JM-14', 'St. Catherine',  'parish', true)
-ON CONFLICT (id) DO NOTHING;
-"""
+
 
 
 async def _seed_geo_regions(engine: object) -> None:
@@ -628,7 +612,7 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         # Revision 2 adds organizations.logo_file_id.
         BootstrapStep("identity_tables", 2, _seed_identity_tables),
         BootstrapStep("platform_apps", 1, _seed_platform_apps),
-        BootstrapStep("geo_regions", 1, _seed_geo_regions),
+        BootstrapStep("geo_regions", 2, seed_geo_catalog),
         BootstrapStep("provisioning", 1, _ensure_provisioning_tables),
         BootstrapStep("onboarding", 1, _ensure_onboarding_tables),
         BootstrapStep("audit_events", 1, _ensure_audit_events_table),
