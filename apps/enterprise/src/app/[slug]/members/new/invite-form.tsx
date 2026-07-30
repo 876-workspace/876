@@ -32,7 +32,7 @@ export function InviteForm({
     if (!email.trim() || isPending) return
 
     startTransition(async () => {
-      const { error } = await client.orgs.invites.create(slug, {
+      const { error } = await client.invites.create(slug, {
         email: email.trim(),
         ...(role ? { role } : {}),
       })

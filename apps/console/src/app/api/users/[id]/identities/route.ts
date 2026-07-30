@@ -25,7 +25,7 @@ export async function GET(
 
   const data = await Promise.all(
     memberships.data.data.map(async (membership) => {
-      const org = await $876.orgs.retrieve(membership.organization_id)
+      const org = await $876.organizations.retrieve(membership.organization_id)
       return { membership, org: org.error ? null : org.data }
     })
   )

@@ -50,7 +50,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
       limit: 50,
     }),
     $876.apps.list({ limit: 100 }),
-    $876.orgs.list({ limit: 100 }),
+    $876.organizations.list({ limit: 100 }),
   ])
   if (runsResult.error || !runsResult.data)
     throw new Error(

@@ -1,9 +1,9 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import type { AdminOrgContactCreateParams } from '@876/admin'
+import type { OrgContactCreateParams } from '@876/sdk'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -19,9 +19,9 @@ const CONTACT_FIELDS = [
   'phone',
   'mobile',
   'notes',
-] as const satisfies readonly (keyof AdminOrgContactCreateParams)[]
+] as const satisfies readonly (keyof OrgContactCreateParams)[]
 
-/** Creates a contact. Pure transport over `$876.orgs.contacts.create`. */
+/** Creates a contact. Pure transport over `$876.contacts.create`. */
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
@@ -41,13 +41,13 @@ export async function POST(
     return apiJson({ error: 'A first name is required.' }, { status: 400 })
   }
 
-  const params: Partial<AdminOrgContactCreateParams> = {}
+  const params: Partial<OrgContactCreateParams> = {}
   for (const field of CONTACT_FIELDS) {
     if (body && field in body) params[field] = body[field] as never
   }
 
-  const client = await getAdminClient()
-  const { data, error } = await client.orgs.contacts.create(
+  const client = await get876ServerClient()
+  const { data, error } = await client.contacts.create(
     auth.membership.organization.id,
     { ...params, first_name: firstName }
   )

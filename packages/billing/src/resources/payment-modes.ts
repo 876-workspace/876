@@ -16,7 +16,7 @@ import type {
   RequestOptions,
 } from '../types'
 
-/** `$billing.paymentModes.*` - tenant-configured ways to receive money. */
+/** `$876.billing.paymentModes.*` - tenant-configured ways to receive money. */
 export function createPaymentModesResource(runtime: Runtime) {
   return {
     list(options?: RequestOptions) {

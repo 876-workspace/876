@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 
-import type { AdminOrganization } from '@876/admin'
+import type { Organization } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Building2, ChevronRight, MapPin, Users } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 const DETAIL_PREVIEW_FIELDS: {
-  key: keyof AdminOrganization
+  key: keyof Organization
   label: string
 }[] = [
   { key: 'name', label: 'Legal name' },
@@ -37,11 +37,11 @@ export default async function OrganizationOverviewPage({
   )
 
   const orgId = membership.organization.id
-  const client = await getAdminClient()
+  const client = await get876ServerClient()
   const [orgResult, locationsResult, contactsResult] = await Promise.all([
-    client.orgs.retrieve(orgId),
-    client.orgs.locations.list(orgId),
-    client.orgs.contacts.list(orgId),
+    client.organizations.retrieve(orgId),
+    client.locations.list(orgId),
+    client.contacts.list(orgId),
   ])
 
   const locations = locationsResult.data?.data ?? []

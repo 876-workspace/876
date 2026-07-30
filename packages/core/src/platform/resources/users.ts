@@ -12,7 +12,7 @@ import type {
   PlatformUserIdentificationUpdateParams,
 } from '../types'
 
-/** `platform.users.*` — user bootstrap reads plus sensitive identifications. */
+/** User bootstrap reads and sensitive identification transports. */
 export function createPlatformUsersResource(runtime: PlatformRuntime) {
   return {
     /** Retrieves a user by 876 user id. */
@@ -40,7 +40,7 @@ export function createPlatformUsersResource(runtime: PlatformRuntime) {
     },
 
     /**
-     * `platform.users.identifications.*` — sensitive verified identifiers on
+     * `$876.identifications.*` — sensitive verified identifiers on
      * a user account (Jamaican TRN, passport, driver's license). Per
      * `.claude/rules/customer-architecture.md`, `list`/`create`/`update`/
      * `delete` only ever return the masked value; the full value is returned

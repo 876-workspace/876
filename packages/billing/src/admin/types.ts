@@ -32,7 +32,7 @@ export interface ProductEnsureParams {
 }
 
 export interface PlanEnsureParams {
-  /** Billing product ID returned by `$billing.products.ensure()`. */
+  /** Billing product ID returned by `$876.billing.products.ensure()`. */
   productId: string
   /** Opaque core plan-tier ID (`prd_...`). */
   entitlementReferenceId: string
@@ -46,7 +46,7 @@ export interface PlanEnsureParams {
 }
 
 export interface PriceEnsureParams {
-  /** Billing plan ID returned by `$billing.plans.ensure()`. */
+  /** Billing plan ID returned by `$876.billing.plans.ensure()`. */
   planId: string
   /** Opaque core price ID (`prc_...`). */
   entitlementReferenceId: string
@@ -149,7 +149,7 @@ export interface SubscriptionEnsureParams {
   /** Opaque core subscription ID (`sub_...`) used as the idempotency key. */
   externalReference: string
   sourceAppId?: string | null
-  /** Billing customer ID returned by `$billing.customers.ensure()`. */
+  /** Billing customer ID returned by `$876.billing.customers.ensure()`. */
   customerId: string
   items: Array<{
     /** Opaque core price ID resolved by Billing. */

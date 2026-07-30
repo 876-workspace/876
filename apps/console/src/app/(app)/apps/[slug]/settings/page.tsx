@@ -42,7 +42,7 @@ export default async function AppSettingsPage({ params }: Props) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const { data: orgList } = await $876.orgs.list({ limit: 100 })
+  const { data: orgList } = await $876.organizations.list({ limit: 100 })
   const orgs: OrgOption[] = (orgList?.data ?? []).map((org) => ({
     id: org.id,
     name: org.name ?? org.slug,
@@ -55,7 +55,9 @@ export default async function AppSettingsPage({ params }: Props) {
     app.organization_id &&
     !orgs.some((org) => org.id === app.organization_id)
   ) {
-    const { data: owningOrg } = await $876.orgs.retrieve(app.organization_id)
+    const { data: owningOrg } = await $876.organizations.retrieve(
+      app.organization_id
+    )
     orgs.unshift({
       id: app.organization_id,
       name: owningOrg?.name ?? owningOrg?.slug ?? app.organization_id,

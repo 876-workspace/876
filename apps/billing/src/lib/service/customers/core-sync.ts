@@ -76,7 +76,7 @@ export async function resolveOrgParty(
   platform: Platform876Client,
   organizationId: string
 ): Promise<ResolvedOrgParty | null> {
-  const profile = await platform.orgs.retrieveProfile(organizationId)
+  const profile = await platform.organizations.retrieveProfile(organizationId)
   if (profile.data)
     return {
       companyName: profile.data.name,
@@ -85,7 +85,7 @@ export async function resolveOrgParty(
       phone: profile.data.primary_phone,
     }
 
-  const org = await platform.orgs.retrieve(organizationId)
+  const org = await platform.organizations.retrieve(organizationId)
   if (!org.data) return null
 
   return {

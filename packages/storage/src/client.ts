@@ -6,9 +6,9 @@ import type { StorageClientOptions } from './types/common'
 /**
  * Creates the official server-only 876 Storage client.
  *
- * Initialize it **once per app** as a module-level singleton named `$storage`
- * (`src/lib/storage.ts`), the same way `$876` is initialized, then import it
- * directly at call sites. Do not wrap it in a factory or lazy `Proxy`.
+ * `@876/client/server` composes this owned transport under `$876.storage`.
+ * Product applications initialize that branded root once and import it
+ * directly at call sites. Do not wrap it in a lazy `Proxy`.
  *
  * The client authenticates with `STORAGE_INTERNAL_KEY`, a secret service
  * credential. Import it only from server components and route handlers — the
@@ -21,19 +21,19 @@ import type { StorageClientOptions } from './types/common'
  * @see /v1/files
  *
  * @example
- * // src/lib/storage.ts
+ * // src/lib/876/index.ts
  * import 'server-only'
- * import { create876StorageClient } from '@876/storage'
+ * import { create876ServerClient } from '@876/client/server'
  *
- * export const $storage = create876StorageClient({
- *   internalKey: process.env.STORAGE_INTERNAL_KEY,
+ * export const $876 = create876ServerClient({
+ *   storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
  * })
  *
  * @example
  * // In a route handler, after authorizing the actor:
- * import { $storage } from '@/lib/storage'
+ * import { $876 } from '@/lib/876'
  *
- * const { data, error } = await $storage.files.retrieve(fileId)
+ * const { data, error } = await $876.storage.files.retrieve(fileId)
  * if (error) return Response.json({ error }, { status: 502 })
  */
 export function create876StorageClient(options: StorageClientOptions = {}) {

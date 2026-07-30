@@ -20,7 +20,7 @@ function resourcePath(organizationId: string, invoiceId: string): string {
   return `${collectionPath(organizationId)}/${encodeURIComponent(invoiceId)}`
 }
 
-/** `$billing.invoices.*` — shared finance invoice integrations. */
+/** `$876.billing.invoices.*` — shared finance invoice integrations. */
 export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
   return {
     list(organizationId: string, params: BillingInvoiceListParams = {}) {

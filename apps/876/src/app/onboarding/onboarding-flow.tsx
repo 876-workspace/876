@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 import { AuthFlow, AuthPageShell, AuthProvider } from '@876/ui/auth'
 
 /**

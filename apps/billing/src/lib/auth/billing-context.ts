@@ -21,7 +21,7 @@ export const getContext = cache(
     if (!isSignedSession(session)) return null
 
     const platform = await getPlatformClient()
-    const membershipsResult = await platform.auth.getRoutingMemberships({
+    const membershipsResult = await platform.memberships.listRouting({
       userId: session.user.id,
       status: 'active',
     })
@@ -68,7 +68,7 @@ export const getContext = cache(
     if (!selectedMembership) return null
 
     const organizationId = selectedMembership.organization.id
-    const accessResult = await platform.orgs.subscriptions.retrieveBySlug(
+    const accessResult = await platform.subscriptions.retrieveBySlug(
       organizationId,
       BILLING_APP_SLUG
     )

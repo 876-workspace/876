@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { buttonVariants } from '@876/ui/button'
 import { ArrowRight, CreditCard, Users } from '@876/ui/icons'
 
-import { $billingIntegration } from '@/lib/billing'
+import { $876 } from '@/lib/876'
 import { resolveOrg } from '../_data'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -21,9 +21,8 @@ export default async function OrganizationBillingPage({ params }: Props) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const billingWorkspace = await $billingIntegration.organizations.retrieve(
-    org.id
-  )
+  const billingWorkspace =
+    await $876.billing.integration.organizations.retrieve(org.id)
 
   const base = `/orgs/${slug}/billing`
 

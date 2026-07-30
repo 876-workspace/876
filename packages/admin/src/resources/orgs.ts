@@ -42,7 +42,7 @@ import type {
   AdminSubscriptionStatus,
 } from '../types'
 
-/** `$876.orgs.*` — platform-wide organization administration. */
+/** Organization administration resources composed onto resource-first roots. */
 export function createAdminOrgsResource(runtime: AdminRuntime) {
   return {
     /**
@@ -284,7 +284,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     /**
-     * `$876.orgs.locations.*` — an organization's sites (HQ, branches, offices).
+     * `$876.locations.*` — an organization's sites (HQ, branches, offices).
      * Session-tier org routes; the admin tier's internal key bypasses the
      * membership guard.
      */
@@ -337,7 +337,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     /**
-     * `$876.orgs.contacts.*` — an organization's contact people. Contacts may
+     * `$876.contacts.*` — an organization's contact people. Contacts may
      * be linked to a platform member (`user_id`) or stand alone as external
      * (non-member) contacts.
      */
@@ -390,7 +390,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     /**
-     * `$876.orgs.departments.*` — an organization's departments (nested via
+     * `$876.departments.*` — an organization's departments (nested via
      * `parent_department_id`).
      */
     departments: {
@@ -442,7 +442,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     /**
-     * `$876.orgs.employees.*` — employment records (1:1 with memberships):
+     * `$876.employees.*` — employment records (1:1 with memberships):
      * job title, department, location, manager, SCIM enterprise fields.
      */
     employees: {

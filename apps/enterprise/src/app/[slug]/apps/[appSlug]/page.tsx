@@ -1,12 +1,12 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
-import type { AdminPrice, AdminSubscription } from '@876/admin'
+import type { Price, Subscription } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 export default async function OrganizationAppDetailPage({
@@ -22,8 +22,8 @@ export default async function OrganizationAppDetailPage({
     'apps:read'
   )
 
-  const client = await getAdminClient()
-  const subscriptionResult = await client.orgs.subscriptions.retrieveBySlug(
+  const client = await get876ServerClient()
+  const subscriptionResult = await client.subscriptions.retrieveBySlug(
     membership.organization.id,
     appSlug
   )
@@ -178,7 +178,7 @@ function AppMark({ name, logoUrl }: { name: string; logoUrl: string | null }) {
   )
 }
 
-function formatPeriod(subscription: AdminSubscription): string {
+function formatPeriod(subscription: Subscription): string {
   if (
     subscription.current_period_start === null ||
     subscription.current_period_end === null
@@ -197,12 +197,13 @@ function formatDate(unixSeconds: number): string {
   })
 }
 
-function formatPrices(prices: AdminPrice[]): string {
+function formatPrices(prices: Price[]): string {
   const active = prices.filter((price) => price.status === 'active')
   if (active.length === 0) return '—'
 
   return active
     .map((price) => {
+      if (price.unit_amount === null) return 'Custom'
       const amount = (price.unit_amount / 100).toLocaleString('en-US', {
         style: 'currency',
         currency: price.currency.toUpperCase(),

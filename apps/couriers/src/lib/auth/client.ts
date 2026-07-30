@@ -1,6 +1,6 @@
 'use client'
 
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 
 /** Consumer-realm auth bridge (/api/auth). */
 export const authClient = create876Client({ baseUrl: '/api' })

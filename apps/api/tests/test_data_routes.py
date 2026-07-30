@@ -342,7 +342,7 @@ async def test_organization_routes_require_session() -> None:
         "error": {
             "code": "auth/no-session",
             "message": "No active session.",
-        }
+        },
     }
 
 
@@ -386,45 +386,45 @@ async def test_internal_key_can_list_organizations(monkeypatch) -> None:
             "object": "list",
             "data": [
                 {
-                "object": "organization",
-                "id": "org_test",
-                "workos_organization_id": "workos_org_test",
-                "doing_business_as": None,
-                "industry": None,
-                "business_type": None,
-                "registration_number": None,
-                "trn": None,
-                "nis_number": None,
-                "gct_number": None,
-                "tax_id": None,
-                "incorporation_date": None,
-                "fax": None,
-                "primary_contact_user_id": None,
-                "timezone": None,
-                "language": None,
-                "name": "Acme Corp",
-                "short_name": None,
-                "slug": "acme-corp",
-                "status": "active",
-                "logo_file_id": None,
-                "logo_url": None,
-                "primary_phone": None,
-                "primary_email": None,
-                "website_url": None,
-                "support_url": None,
-                "address_line1": None,
-                "address_line2": None,
-                "city": None,
-                "region_id": None,
-                "country_code": None,
-                "currency_code": None,
-                "enrollment_completed_at": None,
-                "metadata": None,
-                "deleted_at": None,
-                "deleted_by": None,
-                "deletion_reason": None,
-                "created_at": 1700000000,
-                "updated_at": 1700000001,
+                    "object": "organization",
+                    "id": "org_test",
+                    "workos_organization_id": "workos_org_test",
+                    "doing_business_as": None,
+                    "industry": None,
+                    "business_type": None,
+                    "registration_number": None,
+                    "trn": None,
+                    "nis_number": None,
+                    "gct_number": None,
+                    "tax_id": None,
+                    "incorporation_date": None,
+                    "fax": None,
+                    "primary_contact_user_id": None,
+                    "timezone": None,
+                    "language": None,
+                    "name": "Acme Corp",
+                    "short_name": None,
+                    "slug": "acme-corp",
+                    "status": "active",
+                    "logo_file_id": None,
+                    "logo_url": None,
+                    "primary_phone": None,
+                    "primary_email": None,
+                    "website_url": None,
+                    "support_url": None,
+                    "address_line1": None,
+                    "address_line2": None,
+                    "city": None,
+                    "region_id": None,
+                    "country_code": None,
+                    "currency_code": None,
+                    "enrollment_completed_at": None,
+                    "metadata": None,
+                    "deleted_at": None,
+                    "deleted_by": None,
+                    "deletion_reason": None,
+                    "created_at": 1700000000,
+                    "updated_at": 1700000001,
                 }
             ],
             "has_more": False,
@@ -475,16 +475,16 @@ async def test_internal_key_can_list_memberships_with_filters(monkeypatch) -> No
             "object": "list",
             "data": [
                 {
-                "object": "membership",
-                "id": "mbr_test",
-                "organization_id": "org_test",
-                "user_id": "usr_test",
-                "workos_membership_id": "workos_mbr_test",
-                "role": "member",
-                "role_id": None,
-                "status": "active",
-                "created_at": 1700000010,
-                "updated_at": 1700000011,
+                    "object": "membership",
+                    "id": "mbr_test",
+                    "organization_id": "org_test",
+                    "user_id": "usr_test",
+                    "workos_membership_id": "workos_mbr_test",
+                    "role": "member",
+                    "role_id": None,
+                    "status": "active",
+                    "created_at": 1700000010,
+                    "updated_at": 1700000011,
                 }
             ],
             "has_more": False,
@@ -811,6 +811,76 @@ async def test_features_routes(monkeypatch) -> None:
         assert resp.status_code == 200
         assert resp.json()["data"]["consumer_default_enabled"] is True
         assert db_mock.commits == 1
+
+
+async def test_current_user_feature_evaluation_is_bound_to_token_app(monkeypatch) -> None:
+    captured_context: Any = None
+
+    async def fake_evaluate(self: FeatureService, context: Any) -> list[_FeatureRow]:
+        nonlocal captured_context
+        captured_context = context
+        return [_FeatureRow()]
+
+    async def fake_get_by_org_and_user(
+        self: MembershipRepository,
+        organization_id: str,
+        user_id: str,
+    ) -> Any:
+        assert organization_id == "org_test"
+        assert user_id == "usr_test"
+        return _MembershipRow()
+
+    monkeypatch.setattr(FeatureService, "evaluate", fake_evaluate)
+    monkeypatch.setattr(
+        MembershipRepository,
+        "get_by_org_and_user",
+        fake_get_by_org_and_user,
+    )
+    app = create_app(Settings(internal_key="test-internal-key"))
+
+    async def fake_db() -> AsyncIterator[MockDb]:
+        yield MockDb()
+
+    app.dependency_overrides[get_db] = fake_db
+    app.dependency_overrides[require_api_key] = lambda: True
+    app.dependency_overrides[require_session] = lambda: Principal(
+        user_id="usr_test",
+        app_id="app_enterprise",
+    )
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        resp = await client.get(
+            "/features/evaluate/me",
+            params={
+                "organizationId": "org_test",
+                "appSlug": "876-enterprise",
+            },
+        )
+
+    assert resp.status_code == 200
+    assert captured_context.user_id == "usr_test"
+    assert captured_context.organization_id == "org_test"
+    assert captured_context.app_id == "app_enterprise"
+    assert captured_context.app_slug == "876-enterprise"
+
+
+async def test_current_user_feature_evaluation_requires_token_app() -> None:
+    app = create_app(Settings(internal_key="test-internal-key"))
+
+    async def fake_db() -> AsyncIterator[MockDb]:
+        yield MockDb()
+
+    app.dependency_overrides[get_db] = fake_db
+    app.dependency_overrides[require_api_key] = lambda: True
+    app.dependency_overrides[require_session] = lambda: Principal(user_id="usr_test")
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        resp = await client.get("/features/evaluate/me")
+
+    assert resp.status_code == 403
+    assert resp.json()["error"]["code"] == "auth/forbidden"
 
 
 async def test_apps_routes(monkeypatch) -> None:
@@ -1830,33 +1900,33 @@ async def test_list_my_memberships_returns_only_session_users_rows() -> None:
             "object": "list",
             "data": [
                 {
-                "id": "mbr_test",
-                "role": "owner",
-                "status": "active",
-                "permissions": [
-                    "apps:assign",
-                    "apps:provision",
-                    "apps:read",
-                    "billing:manage",
-                    "billing:read",
-                    "members:invite",
-                    "members:manage",
-                    "members:read",
-                    "org:delete",
-                    "org:read",
-                    "org:update",
-                    "roles:manage",
-                    "roles:read",
-                    "structure:manage",
-                    "structure:read",
-                ],
-                "organization": {
-                    "id": "org_test",
-                    "name": "Acme Corp",
-                    "slug": "acme-corp",
+                    "id": "mbr_test",
+                    "role": "owner",
                     "status": "active",
-                    "logo_url": None,
-                },
+                    "permissions": [
+                        "apps:assign",
+                        "apps:provision",
+                        "apps:read",
+                        "billing:manage",
+                        "billing:read",
+                        "members:invite",
+                        "members:manage",
+                        "members:read",
+                        "org:delete",
+                        "org:read",
+                        "org:update",
+                        "roles:manage",
+                        "roles:read",
+                        "structure:manage",
+                        "structure:read",
+                    ],
+                    "organization": {
+                        "id": "org_test",
+                        "name": "Acme Corp",
+                        "slug": "acme-corp",
+                        "status": "active",
+                        "logo_url": None,
+                    },
                 }
             ],
             "has_more": False,
@@ -1865,6 +1935,36 @@ async def test_list_my_memberships_returns_only_session_users_rows() -> None:
         },
         "error": None,
     }
+
+
+async def test_retrieve_current_user_returns_only_self_scoped_identity(
+    monkeypatch: Any,
+) -> None:
+    async def fake_get_by_id(self: UserRepository, user_id: str) -> Any:
+        assert user_id == "usr_test"
+        return _UserRow()
+
+    monkeypatch.setattr(UserRepository, "get_by_id", fake_get_by_id)
+    app = create_app(Settings(internal_key="test-internal-key"))
+
+    async def fake_db() -> AsyncIterator[MockDb]:
+        yield MockDb()
+
+    app.dependency_overrides[get_db] = fake_db
+    app.dependency_overrides[require_api_key] = lambda: True
+    app.dependency_overrides[require_session] = lambda: Principal(user_id="usr_test")
+    transport = ASGITransport(app=app)
+
+    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+        resp = await client.get("/users/me")
+
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["id"] == "usr_test"
+    assert data["status"] == "active"
+    assert data["banned"] is False
+    assert "workos_user_id" not in data
+    assert "platform_role" not in data
 
 
 async def test_list_my_memberships_requires_session() -> None:

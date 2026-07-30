@@ -3,7 +3,7 @@ import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
 import type { Ensured, PlanEnsureParams } from '../types'
 
-/** `$billing.plans.*` — secret-service plan synchronization. */
+/** `$876.billing.plans.*` — secret-service plan synchronization. */
 export function createAdminPlansResource(runtime: AdminRuntime) {
   return {
     /** Idempotently ensures a core plan tier and cadence in Billing. */

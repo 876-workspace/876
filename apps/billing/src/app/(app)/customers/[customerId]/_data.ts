@@ -104,7 +104,7 @@ async function resolveOrgParty(
   const organizationId = customer.organizationId!
 
   const [orgResult, membersResult] = await Promise.all([
-    platform.orgs.retrieve(organizationId),
+    platform.organizations.retrieve(organizationId),
     platform.memberships.list({ organizationId, limit: 100 }),
   ])
 

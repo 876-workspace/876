@@ -57,6 +57,8 @@ python -m ruff check .
 
 ## Required Context
 
+- Read `.agents/rules/git.md` before creating branches, committing, pushing,
+  opening or updating pull requests, reviewing PR feedback, or merging.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.

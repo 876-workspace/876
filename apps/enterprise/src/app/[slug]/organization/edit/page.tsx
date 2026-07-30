@@ -1,7 +1,7 @@
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { OrganizationDetailsForm } from './organization-details-form'
@@ -19,8 +19,10 @@ export default async function OrganizationEditPage({
     'org:update'
   )
 
-  const client = await getAdminClient()
-  const orgResult = await client.orgs.retrieve(membership.organization.id)
+  const client = await get876ServerClient()
+  const orgResult = await client.organizations.retrieve(
+    membership.organization.id
+  )
 
   return (
     <Page>

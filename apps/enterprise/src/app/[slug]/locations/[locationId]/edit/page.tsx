@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 
-import { isNotFoundError } from '@876/admin'
+import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { LocationForm } from '../../location-form'
@@ -22,8 +22,8 @@ export default async function EditLocationPage({
     'structure:manage'
   )
 
-  const client = await getAdminClient()
-  const result = await client.orgs.locations.retrieve(
+  const client = await get876ServerClient()
+  const result = await client.locations.retrieve(
     membership.organization.id,
     locationId
   )

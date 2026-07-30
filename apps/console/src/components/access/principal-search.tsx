@@ -103,7 +103,8 @@ export function PrincipalSearch({
         return
       }
 
-      const { data, error: searchError } = await client.orgs.search(trimmed)
+      const { data, error: searchError } =
+        await client.organizations.search(trimmed)
       if (cancelled) return
 
       setSearching(false)

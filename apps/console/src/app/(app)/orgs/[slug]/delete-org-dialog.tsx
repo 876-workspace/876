@@ -30,7 +30,7 @@ export function DeleteOrgDialog({ open, onOpenChange, orgId, orgName }: Props) {
 
   function handleConfirm() {
     startTransition(async () => {
-      await client.orgs.delete(orgId)
+      await client.organizations.delete(orgId)
       onOpenChange(false)
       router.push('/orgs')
     })

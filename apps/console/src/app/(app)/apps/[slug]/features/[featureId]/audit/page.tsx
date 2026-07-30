@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Calendar, Flag, ShieldCheck } from '@876/ui/icons'
+import { Calendar, ShieldCheck } from '@876/ui/icons'
 import {
   Table,
   TableBody,

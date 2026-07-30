@@ -127,7 +127,7 @@ export default async function OnboardingPage() {
       }
     }
   } else {
-    const memberships = await platform.auth.getRoutingMemberships({
+    const memberships = await platform.memberships.listRouting({
       userId: session.user.id,
     })
 

@@ -46,13 +46,15 @@ export default async function SubscriptionDetailPage({ params }: Props) {
 
   if (!app || app.app_kind !== 'product') notFound()
 
-  const { data } = await $876.apps.subscriptions.list(app.id)
+  const { data } = await $876.appSubscriptions.list(app.id)
   const subscriptions = data ?? []
   const subscription = subscriptions.find((s) => s.id === subscriptionId)
 
   if (!subscription) notFound()
 
-  const { data: org } = await $876.orgs.retrieve(subscription.organization_id)
+  const { data: org } = await $876.organizations.retrieve(
+    subscription.organization_id
+  )
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">

@@ -1,13 +1,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import type { AdminApp, AdminSubscription } from '@876/admin'
+import type { Subscription } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 export default async function OrganizationAppsPage({
@@ -23,20 +23,13 @@ export default async function OrganizationAppsPage({
     'apps:read'
   )
 
-  const client = await getAdminClient()
-  const [subscriptionsResult, appsResult, productsResult] = await Promise.all([
-    client.orgs.subscriptions.list(membership.organization.id),
-    client.apps.list({ limit: 100 }),
+  const client = await get876ServerClient()
+  const [subscriptionsResult, productsResult] = await Promise.all([
+    client.subscriptions.list(membership.organization.id),
     client.products.list(),
   ])
-  const loadError =
-    subscriptionsResult.error ?? appsResult.error ?? productsResult.error
-  if (
-    loadError ||
-    !subscriptionsResult.data ||
-    !appsResult.data ||
-    !productsResult.data
-  ) {
+  const loadError = subscriptionsResult.error ?? productsResult.error
+  if (loadError || !subscriptionsResult.data || !productsResult.data) {
     return (
       <Page>
         <PageHeader>
@@ -51,21 +44,22 @@ export default async function OrganizationAppsPage({
     )
   }
 
-  const subscriptions = subscriptionsResult.data
-  const appsById = new Map(appsResult.data.data.map((app) => [app.id, app]))
+  const subscriptions = subscriptionsResult.data.data
   const productNamesById = new Map(
     productsResult.data.data.map((product) => [product.id, product.name])
   )
 
-  const provisioned = subscriptions
-    .map((subscription) => ({
-      subscription,
-      app: appsById.get(subscription.app_id) ?? null,
-    }))
-    .filter(
-      (entry): entry is { subscription: AdminSubscription; app: AdminApp } =>
-        entry.app !== null && entry.app.app_kind !== 'internal'
-    )
+  const provisioned = subscriptions.filter(
+    (
+      subscription
+    ): subscription is Subscription & {
+      app_slug: string
+      app_name: string
+    } =>
+      subscription.app_slug !== null &&
+      subscription.app_name !== null &&
+      subscription.app_kind !== 'internal'
+  )
 
   return (
     <Page>
@@ -81,14 +75,17 @@ export default async function OrganizationAppsPage({
         </Empty>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {provisioned.map(({ subscription, app }) => (
+          {provisioned.map((subscription) => (
             <Link
               key={subscription.id}
-              href={`/${slug}/apps/${app.slug}`}
+              href={`/${slug}/apps/${subscription.app_slug}`}
               className="876-card hover:border-876-accent-fg/30 block p-5 transition-colors"
             >
               <div className="flex items-start justify-between gap-3">
-                <AppMark name={app.name} logoUrl={app.logo_url} />
+                <AppMark
+                  name={subscription.app_name}
+                  logoUrl={subscription.app_logo_url}
+                />
                 <Badge
                   variant={
                     subscription.status === 'active' ||
@@ -100,7 +97,9 @@ export default async function OrganizationAppsPage({
                   {subscription.status}
                 </Badge>
               </div>
-              <div className="mt-3 text-sm font-medium">{app.name}</div>
+              <div className="mt-3 text-sm font-medium">
+                {subscription.app_name}
+              </div>
               <div className="text-muted-foreground mt-0.5 truncate text-xs">
                 {planLabel(subscription, productNamesById)}
               </div>
@@ -134,7 +133,7 @@ function AppMark({ name, logoUrl }: { name: string; logoUrl: string | null }) {
 }
 
 function planLabel(
-  subscription: AdminSubscription,
+  subscription: Subscription,
   productNamesById: Map<string, string>
 ): string {
   const names = subscription.items

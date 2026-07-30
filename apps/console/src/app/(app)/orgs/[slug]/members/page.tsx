@@ -21,7 +21,8 @@ export default async function OrganizationMembersPage({ params }: Props) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const membershipsResult = await $876.orgs.listMemberships(org.id, {
+  const membershipsResult = await $876.memberships.list({
+    organizationId: org.id,
     limit: 50,
   })
   const memberships: AdminMembership[] = membershipsResult.data?.data ?? []
@@ -35,7 +36,7 @@ export default async function OrganizationMembersPage({ params }: Props) {
     if (r.data) usersById[r.data.id] = r.data
   }
 
-  const invitesResult = await $876.orgs.listInvites(org.id)
+  const invitesResult = await $876.invites.list(org.id)
   const invites = invitesResult.data?.data ?? []
 
   return (

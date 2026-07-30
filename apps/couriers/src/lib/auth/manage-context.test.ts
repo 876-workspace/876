@@ -112,11 +112,9 @@ describe('getManageContext', () => {
     })
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPlatformClient.mockResolvedValue({
-      auth: { getRoutingMemberships: mocks.getRoutingMemberships },
-      orgs: {
-        subscriptions: {
-          retrieveBySlug: mocks.retrieveSubscriptionBySlug,
-        },
+      memberships: { listRouting: mocks.getRoutingMemberships },
+      subscriptions: {
+        retrieveBySlug: mocks.retrieveSubscriptionBySlug,
       },
     })
     mocks.getRoutingMemberships.mockResolvedValue({

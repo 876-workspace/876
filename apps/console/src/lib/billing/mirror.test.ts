@@ -23,21 +23,18 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/876', () => ({
   $876: {
-    orgs: { retrieve: mocks.orgRetrieve },
+    organizations: { retrieve: mocks.orgRetrieve },
     products: { retrieve: mocks.productRetrieve },
     subscriptions: { retrieve: mocks.subscriptionRetrieve },
     memberships: { list: mocks.membershipsList },
     users: { retrieve: mocks.usersRetrieve },
-  },
-}))
-
-vi.mock('@/lib/billing', () => ({
-  $billing: {
-    products: { ensure: mocks.productEnsure },
-    plans: { ensure: mocks.planEnsure },
-    prices: { ensure: mocks.priceEnsure },
-    customers: { ensure: mocks.customerEnsure },
-    subscriptions: { ensure: mocks.subscriptionEnsure },
+    billing: {
+      products: { ensure: mocks.productEnsure },
+      plans: { ensure: mocks.planEnsure },
+      prices: { ensure: mocks.priceEnsure },
+      customers: { ensure: mocks.customerEnsure },
+      subscriptions: { ensure: mocks.subscriptionEnsure },
+    },
   },
 }))
 

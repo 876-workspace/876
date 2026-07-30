@@ -75,7 +75,7 @@ describe('admin users resource', () => {
         fetch: fetchMock,
       })
 
-      const result = await $876.users.identifications.list('user_test')
+      const result = await $876.identifications.list('user_test')
 
       expect(fetchMock).toHaveBeenCalledWith(
         'https://api.test/users/user_test/identifications',
@@ -106,7 +106,7 @@ describe('admin users resource', () => {
         fetch: fetchMock,
       })
 
-      await $876.users.identifications.create('user_test', {
+      await $876.identifications.create('user_test', {
         type: 'trn',
         value: '123-456-789',
       })
@@ -142,7 +142,7 @@ describe('admin users resource', () => {
         fetch: fetchMock,
       })
 
-      await $876.users.identifications.update('user_test', 'trn', {
+      await $876.identifications.update('user_test', 'trn', {
         value: '987654321',
       })
 
@@ -169,7 +169,7 @@ describe('admin users resource', () => {
         fetch: fetchMock,
       })
 
-      const result = await $876.users.identifications.delete('user_test', 'trn')
+      const result = await $876.identifications.delete('user_test', 'trn')
 
       expect(fetchMock).toHaveBeenCalledWith(
         'https://api.test/users/user_test/identifications/trn',
@@ -195,15 +195,11 @@ describe('admin users resource', () => {
         fetch: fetchMock,
       })
 
-      const result = await $876.users.identifications.disclose(
-        'user_test',
-        'trn',
-        {
-          organizationId: 'org_test',
-          appSlug: '876-couriers',
-          reason: 'JCA customs clearance',
-        }
-      )
+      const result = await $876.identifications.disclose('user_test', 'trn', {
+        organizationId: 'org_test',
+        appSlug: '876-couriers',
+        reason: 'JCA customs clearance',
+      })
 
       expect(fetchMock).toHaveBeenCalledWith(
         'https://api.test/users/user_test/identifications/trn/disclose',
@@ -241,7 +237,7 @@ describe('admin users resource', () => {
         fetch: fetchMock,
       })
 
-      await $876.users.identifications.verify('user_test', 'trn', {
+      await $876.identifications.verify('user_test', 'trn', {
         verifiedBy: 'admin_42',
       })
 

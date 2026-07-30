@@ -14,7 +14,7 @@ import type {
   RequestOptions,
 } from '../types'
 
-/** `$billing.customers.*` — tenant-scoped customer operations. */
+/** `$876.billing.customers.*` — tenant-scoped customer operations. */
 export function createCustomersResource(runtime: Runtime) {
   return {
     /** Creates a customer in the active Billing workspace. */

@@ -20,7 +20,7 @@ export async function create(
   }
 
   if (organization_name?.trim()) {
-    const { data: org, error: orgError } = await $876.orgs.create({
+    const { data: org, error: orgError } = await $876.organizations.create({
       name: organization_name.trim(),
     })
     if (orgError || !org) {

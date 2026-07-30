@@ -9,19 +9,19 @@ The SDK validates request parameters, sends fetch requests to the 876 API, valid
 Inside this monorepo:
 
 ```bash
-pnpm add @876/sdk --filter @876/app --workspace
+pnpm add @876/client --filter @876/app --workspace
 ```
 
 External consumers install the published package once it is released:
 
 ```bash
-pnpm add @876/sdk
+pnpm add @876/client
 ```
 
 ## Basic Auth Usage
 
 ```ts
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 
 const $876 = create876Client()
 

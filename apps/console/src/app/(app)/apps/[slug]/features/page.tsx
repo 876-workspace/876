@@ -35,7 +35,7 @@ export default async function AppFeaturesPage({ params, searchParams }: Props) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const featureResult = await $876.apps.features.list(app.id, {
+  const featureResult = await $876.appFeatures.list(app.id, {
     limit: 25,
     startingAfter: after,
     endingBefore: before,

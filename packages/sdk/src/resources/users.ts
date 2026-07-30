@@ -12,8 +12,10 @@ import {
   sdk876ConsumerContactUpdateParamsSchema,
   sdk876ConsumerProfileSchema,
   sdk876ConsumerProfileUpdateParamsSchema,
+  sdk876CurrentUserSchema,
   sdk876DeletedConsumerAddressSchema,
   sdk876DeletedConsumerContactSchema,
+  sdk876RoutingMembershipListSchema,
 } from '../types/users.ts'
 import type {
   ConsumerAddressCreateParams,
@@ -26,8 +28,10 @@ import type {
   ConsumerContactUpdateParams,
   ConsumerProfileResult,
   ConsumerProfileUpdateParams,
+  CurrentUserResult,
   DeletedConsumerAddressResult,
   DeletedConsumerContactResult,
+  RoutingMembershipListResult,
 } from '../types/users.ts'
 import { validateParams } from '../validation.ts'
 
@@ -66,6 +70,36 @@ export function createUsersResource(runtime: SdkRuntime) {
   }
 
   return {
+    retrieve(requestOptions?: RequestOptions): Promise<CurrentUserResult> {
+      return sendAuthRequest(
+        runtime,
+        'GET',
+        '/users/me',
+        undefined,
+        sdk876CurrentUserSchema,
+        requestOptions
+      )
+    },
+
+    memberships: {
+      list(
+        params?: { status?: string | undefined },
+        requestOptions?: RequestOptions
+      ): Promise<RoutingMembershipListResult> {
+        const query = new URLSearchParams()
+        if (params?.status) query.set('status', params.status)
+        const suffix = query.size > 0 ? `?${query.toString()}` : ''
+        return sendAuthRequest(
+          runtime,
+          'GET',
+          `/users/me/memberships${suffix}`,
+          undefined,
+          sdk876RoutingMembershipListSchema,
+          requestOptions
+        )
+      },
+    },
+
     profile: {
       retrieve(
         requestOptions?: RequestOptions

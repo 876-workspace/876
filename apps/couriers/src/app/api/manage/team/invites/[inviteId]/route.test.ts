@@ -39,7 +39,7 @@ describe('Couriers team invite revoke route', () => {
     vi.clearAllMocks()
     mocks.getManageContext.mockResolvedValue(ctx('owner'))
     mocks.getPlatformClient.mockResolvedValue({
-      orgs: { invites: { revoke: mocks.revokeInvite } },
+      invites: { revoke: mocks.revokeInvite },
     })
     mocks.revokeInvite.mockResolvedValue({
       data: { id: 'invite_123', status: 'revoked' },

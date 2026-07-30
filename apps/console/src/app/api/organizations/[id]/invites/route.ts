@@ -17,7 +17,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await params
-  const { data, error } = await $876.orgs.listInvites(id)
+  const { data, error } = await $876.invites.list(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to list invites.' },
@@ -45,7 +45,7 @@ export async function POST(
     return apiJson({ error: 'email is required.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.orgs.createInvite(id, {
+  const { data, error } = await $876.invites.create(id, {
     email: body.email,
     role: body.role,
   })

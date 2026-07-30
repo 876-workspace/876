@@ -25,7 +25,7 @@ vi.mock('@/lib/876', () => ({
       delete: mocks.userDelete,
       update: mocks.userUpdate,
     },
-    orgs: { create: mocks.orgCreate },
+    organizations: { create: mocks.orgCreate },
     memberships: { create: mocks.membershipCreate },
   },
 }))

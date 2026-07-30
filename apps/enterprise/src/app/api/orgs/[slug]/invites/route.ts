@@ -1,12 +1,12 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-/** Creates a member invite. Pure transport over `$876.orgs.createInvite`. */
+/** Creates a member invite. Pure transport over `$876.invites.create`. */
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
@@ -37,11 +37,11 @@ export async function POST(
     )
   }
 
-  const client = await getAdminClient()
+  const client = await get876ServerClient()
   const orgId = auth.membership.organization.id
 
   if (role) {
-    const rolesResult = await client.orgs.roles.list(orgId)
+    const rolesResult = await client.roles.list(orgId)
     const roles = rolesResult.data?.data ?? []
     if (!roles.some((r) => r.name === role)) {
       return apiJson(
@@ -51,7 +51,7 @@ export async function POST(
     }
   }
 
-  const { data, error } = await client.orgs.createInvite(orgId, {
+  const { data, error } = await client.invites.create(orgId, {
     email,
     ...(role ? { role } : {}),
   })

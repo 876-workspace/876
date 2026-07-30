@@ -9,14 +9,19 @@ import { $876 } from '@/lib/876'
  * each tab page dedupe to a single fetch per request.
  */
 export const resolveOrg = cache(async (slug: string) => {
-  const result = await $876.orgs.retrieveBySlug(slug, { includeDeleted: true })
+  const result = await $876.organizations.retrieveBySlug(slug, {
+    includeDeleted: true,
+  })
   if (result.error) return null
   return result.data
 })
 
 /** Cached membership list for an organization (id-keyed). */
 export const resolveOrgMembers = cache(async (orgId: string) => {
-  const result = await $876.orgs.listMemberships(orgId, { limit: 50 })
+  const result = await $876.memberships.list({
+    organizationId: orgId,
+    limit: 50,
+  })
   if (result.error) throw new Error(result.error.message)
   if (result.data?.has_more) {
     console.warn('[resolveOrgMembers] org has >50 members; list is truncated', {
@@ -27,7 +32,7 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
 })
 
 export const resolveOrgSubscriptions = cache(async (orgId: string) => {
-  const result = await $876.orgs.subscriptions.list(orgId)
+  const result = await $876.subscriptions.listForOrganization(orgId)
   if (result.error) throw new Error(result.error.message)
   return result.data
 })

@@ -213,6 +213,9 @@ importers:
       '@876/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -353,6 +356,9 @@ importers:
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -514,6 +520,9 @@ importers:
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -671,6 +680,9 @@ importers:
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -680,9 +692,6 @@ importers:
       '@876/settings':
         specifier: workspace:*
         version: link:../../packages/settings
-      '@876/storage':
-        specifier: workspace:*
-        version: link:../../packages/storage
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -783,12 +792,12 @@ importers:
 
   apps/enterprise:
     dependencies:
-      '@876/admin':
-        specifier: workspace:*
-        version: link:../../packages/admin
       '@876/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
+      '@876/client':
+        specifier: workspace:*
+        version: link:../../packages/client
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -951,9 +960,18 @@ importers:
 
   packages/admin:
     dependencies:
+      '@876/billing':
+        specifier: workspace:*
+        version: link:../billing
       '@876/core':
         specifier: workspace:*
         version: link:../core
+      '@876/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@876/widgets':
+        specifier: workspace:*
+        version: link:../widgets
       server-only:
         specifier: 0.0.1
         version: 0.0.1
@@ -1013,6 +1031,34 @@ importers:
       zod:
         specifier: 4.4.3
         version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: 25.6.2
+        version: 25.6.2
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.5
+        version: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.21.0)(yaml@2.9.0))
+
+  packages/client:
+    dependencies:
+      '@876/billing':
+        specifier: workspace:*
+        version: link:../billing
+      '@876/sdk':
+        specifier: workspace:*
+        version: link:../sdk
+      '@876/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@876/widgets':
+        specifier: workspace:*
+        version: link:../widgets
+      server-only:
+        specifier: 0.0.1
+        version: 0.0.1
     devDependencies:
       '@types/node':
         specifier: 25.6.2

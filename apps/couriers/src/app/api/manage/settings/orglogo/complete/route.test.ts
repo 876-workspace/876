@@ -7,8 +7,8 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
 }))
 
-vi.mock('@/lib/storage', () => ({
-  $storage: { uploads: { complete: mocks.complete } },
+vi.mock('@/lib/876', () => ({
+  $876: { storage: { uploads: { complete: mocks.complete } } },
 }))
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
@@ -55,7 +55,7 @@ describe('Couriers organization logo upload completion route', () => {
     mocks.getManageContext.mockResolvedValue(context('owner'))
     mocks.complete.mockResolvedValue({ data: readyFile, error: null })
     mocks.getPlatformClient.mockResolvedValue({
-      orgs: { updateProfile: mocks.updateProfile },
+      organizations: { updateProfile: mocks.updateProfile },
     })
     mocks.updateProfile.mockResolvedValue({
       data: { object: 'organization', id: 'org_context' },

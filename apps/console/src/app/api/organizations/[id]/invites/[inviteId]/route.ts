@@ -17,7 +17,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, inviteId } = await params
-  const { data, error } = await $876.orgs.revokeInvite(id, inviteId)
+  const { data, error } = await $876.invites.revoke(id, inviteId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to revoke invite.' },

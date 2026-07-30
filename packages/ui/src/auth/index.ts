@@ -9,7 +9,7 @@
  * @example
  * ```tsx
  * 'use client'
- * import { create876Client } from '@876/sdk'
+ * import { create876Client } from '@876/client'
  * import { AuthProvider, AuthFlow } from '@876/ui/auth'
  *
  * const $876 = create876Client({ baseUrl: '/api' })

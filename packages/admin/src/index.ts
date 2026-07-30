@@ -1,5 +1,5 @@
 /**
- * `@876/admin` — privileged API client for 876 admin applications.
+ * `@876/admin` — privileged API client used only by 876 Console.
  *
  * This package is intentionally separate from `@876/sdk` so consumer apps do
  * not import or bundle admin endpoint paths.
@@ -14,7 +14,7 @@
 import 'server-only'
 
 export { create876AdminClient } from './client'
-export type { Admin876Client } from './client'
+export type { Admin876Client, Admin876ClientOptions } from './client'
 export { isDeleted, isDefault, isExpired, isRevoked } from './helpers'
 export {
   AdminLookupError,
@@ -38,7 +38,7 @@ export type {
   AdminOnboardingValidationIssue,
 } from './resources/onboarding'
 export type {
-  Admin876ClientOptions,
+  AdminPlatformClientOptions,
   AdminAccount,
   AdminAuditEvent,
   AdminBillingAccount,

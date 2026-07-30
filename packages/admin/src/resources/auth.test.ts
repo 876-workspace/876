@@ -33,4 +33,33 @@ describe('admin auth resource', () => {
       expect.objectContaining({ method: 'GET' })
     )
   })
+
+  it('exposes user lifecycle methods directly through users', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        object: 'user',
+        id: 'user_123',
+      })
+    )
+    const $876 = create876AdminClient({
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
+    })
+
+    await $876.users.create({
+      email: 'yoda@example.com',
+      first_name: 'Yoda',
+      last_name: 'Jedi',
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.test/users',
+      expect.objectContaining({ method: 'POST' })
+    )
+    expect('create' in $876.users).toBe(true)
+    expect('retrieve' in $876.users).toBe(true)
+    expect('admin' in $876.auth).toBe(false)
+    expect('orgs' in $876).toBe(false)
+  })
 })

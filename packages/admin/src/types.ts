@@ -1399,7 +1399,7 @@ export type AdminResult<T> =
   | { data: T; error: null }
   | { data: null; error: { code: string; message: string } }
 
-export type Admin876ClientOptions = {
+export type AdminPlatformClientOptions = {
   /** Base URL of the 876 API. Defaults to env, local dev, or the deployed API URL. */
   baseUrl?: string
   /** Server-side admin key. Never expose this value to browser code. */

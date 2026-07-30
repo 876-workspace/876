@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -9,11 +9,10 @@ export const runtime = 'nodejs'
 const OWNER_ROLE = 'owner'
 
 /**
- * Changes a member's org role. Pure transport over `$876.orgs.members.update`.
+ * Changes a member's org role. Pure transport over `$876.organizationMembers.update`.
  *
- * The admin client bypasses the API's caller-role checks, so owner-role
- * transitions are re-enforced here: only an owner may grant or remove the
- * owner role. The API's data-based last-owner protection still applies.
+ * Owner-role transitions are checked here for a direct UI response and
+ * independently enforced by the delegated-session API.
  */
 export async function PATCH(
   request: NextRequest,
@@ -32,10 +31,10 @@ export async function PATCH(
     return apiJson({ error: 'A role is required.' }, { status: 400 })
   }
 
-  const client = await getAdminClient()
+  const client = await get876ServerClient()
   const orgId = auth.membership.organization.id
 
-  const membersResult = await client.orgs.members.list(orgId, { limit: 100 })
+  const membersResult = await client.organizationMembers.list(orgId)
   const members = membersResult.data?.data ?? []
   const target = members.find((member) => member.id === membershipId)
   if (!target) {
@@ -50,7 +49,7 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await client.orgs.members.update(
+  const { data, error } = await client.organizationMembers.update(
     orgId,
     membershipId,
     { role }
@@ -67,9 +66,8 @@ export async function PATCH(
 
 /**
  * Removes a member from the organization. Pure transport over
- * `$876.memberships.delete`, with the org-scoping, self-removal, and
- * owner/last-owner protections enforced here (the platform endpoint is
- * id-scoped and unprotected once the internal key is presented).
+ * `$876.organizationMembers.delete`, with org scoping, self-removal, and
+ * owner/last-owner protections enforced again by the delegated-session API.
  */
 export async function DELETE(
   _request: Request,
@@ -87,10 +85,10 @@ export async function DELETE(
     )
   }
 
-  const client = await getAdminClient()
+  const client = await get876ServerClient()
   const orgId = auth.membership.organization.id
 
-  const membersResult = await client.orgs.members.list(orgId, { limit: 100 })
+  const membersResult = await client.organizationMembers.list(orgId)
   const members = membersResult.data?.data ?? []
   const target = members.find((member) => member.id === membershipId)
   if (!target) {
@@ -119,7 +117,10 @@ export async function DELETE(
     }
   }
 
-  const { data, error } = await client.memberships.delete(membershipId)
+  const { data, error } = await client.organizationMembers.delete(
+    orgId,
+    membershipId
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to remove the member.' },

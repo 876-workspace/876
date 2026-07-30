@@ -30,7 +30,7 @@ export function PurgeOrgDialog({ open, onOpenChange, orgId, orgName }: Props) {
 
   function handleConfirm() {
     startTransition(async () => {
-      await client.orgs.purge(orgId)
+      await client.organizations.purge(orgId)
       onOpenChange(false)
       router.push('/orgs')
     })

@@ -23,7 +23,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.features.orgs.update(
+  const { data, error } = await $876.organizationFeatures.update(
     organizationId,
     featureId,
     body
@@ -46,7 +46,7 @@ export async function DELETE(
   if (response) return response
 
   const { organizationId, featureId } = await context.params
-  const { data, error } = await $876.features.orgs.revoke(
+  const { data, error } = await $876.organizationFeatures.revoke(
     organizationId,
     featureId
   )

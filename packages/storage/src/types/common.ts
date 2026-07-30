@@ -26,7 +26,7 @@ export const storageClientErrorCodeSchema = z.union([
 /** A machine-readable Storage service error code returned by backend responses. */
 export type StorageErrorCode = z.infer<typeof storageErrorCodeSchema>
 
-/** A machine-readable Storage client error code returned by `$storage` methods. */
+/** A machine-readable error code returned by `$876.storage` methods. */
 export type StorageClientErrorCode = z.infer<
   typeof storageClientErrorCodeSchema
 >

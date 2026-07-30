@@ -926,6 +926,12 @@ class OrganizationMemberMeResponse(OrganizationMemberResponse):
     permissions: list[str] = Field(description="Effective org permissions for the caller.")
 
 
+class OrganizationMemberDeleteResponse(BaseModel):
+    object: Literal["organization_member"] = "organization_member"
+    id: str
+    deleted: bool = True
+
+
 class OrganizationMemberRoleUpdate(BaseModel):
     role: str = Field(min_length=1, max_length=64, description="Org role name to assign (system or custom).")
 

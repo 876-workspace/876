@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-import type { AdminOrgMember } from '@876/admin'
+import type { OrgMember } from '@876/sdk'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,7 +51,7 @@ export function MembersTable({
   callerIsOwner,
 }: {
   slug: string
-  members: AdminOrgMember[]
+  members: OrgMember[]
   roles: RoleOption[]
   canManage: boolean
   callerMembershipId: string
@@ -59,15 +59,15 @@ export function MembersTable({
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [roleTarget, setRoleTarget] = useState<AdminOrgMember | null>(null)
+  const [roleTarget, setRoleTarget] = useState<OrgMember | null>(null)
   const [selectedRole, setSelectedRole] = useState('')
-  const [removeTarget, setRemoveTarget] = useState<AdminOrgMember | null>(null)
+  const [removeTarget, setRemoveTarget] = useState<OrgMember | null>(null)
 
   const roleDisplayNames = new Map(
     roles.map((role) => [role.name, role.display_name])
   )
 
-  function openRoleDialog(member: AdminOrgMember) {
+  function openRoleDialog(member: OrgMember) {
     setSelectedRole(member.role)
     setRoleTarget(member)
   }
@@ -76,9 +76,13 @@ export function MembersTable({
     if (!roleTarget || !selectedRole || isPending) return
 
     startTransition(async () => {
-      const { error } = await client.orgs.members.update(slug, roleTarget.id, {
-        role: selectedRole,
-      })
+      const { error } = await client.organizationMembers.update(
+        slug,
+        roleTarget.id,
+        {
+          role: selectedRole,
+        }
+      )
       if (error) {
         toast.error(error.message)
         return
@@ -94,7 +98,10 @@ export function MembersTable({
     if (!removeTarget || isPending) return
 
     startTransition(async () => {
-      const { error } = await client.orgs.members.delete(slug, removeTarget.id)
+      const { error } = await client.organizationMembers.delete(
+        slug,
+        removeTarget.id
+      )
       if (error) {
         toast.error(error.message)
         return
@@ -107,7 +114,7 @@ export function MembersTable({
   }
 
   // Owner-role transitions are owner-only; hide those actions from non-owners.
-  function canActOn(member: AdminOrgMember): boolean {
+  function canActOn(member: OrgMember): boolean {
     if (!canManage || member.id === callerMembershipId) return false
     if (member.role === 'owner' && !callerIsOwner) return false
 
@@ -118,7 +125,7 @@ export function MembersTable({
     (role) => callerIsOwner || role.name !== 'owner'
   )
 
-  const columns: ColumnDef<AdminOrgMember, unknown>[] = [
+  const columns: ColumnDef<OrgMember, unknown>[] = [
     {
       id: 'member',
       header: 'Member',

@@ -1,7 +1,7 @@
 'use client'
 
 import { createAuditEventMirror, createBrowserAnalytics } from '@876/analytics'
-import { create876Client } from '@876/sdk'
+import { create876Client } from '@876/client'
 
 import {
   EnterpriseAnalyticsEvent,

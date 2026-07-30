@@ -20,5 +20,5 @@ export default async function RootPage() {
 
   if (!user) redirect(consumerUrl('/app'))
 
-  redirect(await resolveHomePathForUser(user))
+  redirect(await resolveHomePathForUser())
 }

@@ -10,8 +10,8 @@ import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 import { StatusFilterHeading } from '@/components/status-filter-heading'
+import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getFinanceClient } from '@/lib/finance/client'
 
 import { ItemsTable } from './items-table'
 
@@ -37,8 +37,8 @@ export default async function ItemsPage({ params, searchParams }: Props) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
-  const finance = await getFinanceClient()
-  const items = await finance.items.list(ctx.orgId, {
+  const $876 = await get876Client()
+  const items = await $876.billing.items.list(ctx.orgId, {
     active: activeFilter,
   })
 

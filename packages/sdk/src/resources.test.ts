@@ -118,7 +118,7 @@ describe('$876.apps', () => {
 
     expect(result).toEqual({ data: listPayload, error: null })
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/apps?organizationId=org_4XmK9wQr&limit=25&status=active',
+      '/api/apps?limit=25&organizationId=org_4XmK9wQr&status=active',
       expect.objectContaining({ method: 'GET' })
     )
   })

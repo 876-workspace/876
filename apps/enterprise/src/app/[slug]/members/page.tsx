@@ -6,7 +6,7 @@ import { UserPlus } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/enterprise/error-state'
-import { getAdminClient } from '@/lib/auth/admin-client'
+import { get876ServerClient } from '@/lib/876/server'
 import {
   hasOrgPermission,
   requireOrgPermission,
@@ -33,11 +33,11 @@ export default async function OrganizationMembersPage({
   const canManage = hasOrgPermission(membership, 'members:manage')
 
   const orgId = membership.organization.id
-  const client = await getAdminClient()
+  const client = await get876ServerClient()
   const [membersResult, rolesResult, invitesResult] = await Promise.all([
-    client.orgs.members.list(orgId, { limit: 100 }),
-    client.orgs.roles.list(orgId),
-    canInvite ? client.orgs.listInvites(orgId) : Promise.resolve(null),
+    client.organizationMembers.list(orgId),
+    client.roles.list(orgId),
+    canInvite ? client.invites.list(orgId) : Promise.resolve(null),
   ])
   const loadError = membersResult.error ?? rolesResult.error
   const members = membersResult.data?.data ?? []

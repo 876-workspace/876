@@ -8,7 +8,7 @@ import {
 } from '../types/uploads'
 
 /**
- * `$storage.uploads.*` — upload-session operations.
+ * `$876.storage.uploads.*` — upload-session operations.
  *
  * An upload is always three steps, and the middle one does not go through this
  * client:
@@ -42,7 +42,7 @@ export function createUploadsResource(runtime: StorageRuntime) {
      * @see /v1/uploads
      *
      * @example
-     * const { data, error } = await $storage.uploads.create({
+     * const { data, error } = await $876.storage.uploads.create({
      *   route_key: 'organization.primaryLogo',
      *   owner_type: 'organization',
      *   owner_id: ctx.orgId,
@@ -97,11 +97,11 @@ export function createUploadsResource(runtime: StorageRuntime) {
      * @see /v1/uploads/{session_id}/complete
      *
      * @example
-     * const { data: file, error } = await $storage.uploads.complete(sessionId)
+     * const { data: file, error } = await $876.storage.uploads.complete(sessionId)
      * if (error) return storageErrorResponse(error)
      * if (file.owner_id !== ctx.orgId) return forbidden()
      *
-     * await platform.orgs.updateProfile(ctx.orgId, {
+     * await platform.organizations.updateProfile(ctx.orgId, {
      *   logo_file_id: file.id,
      *   logo_url: file.url,
      * })
