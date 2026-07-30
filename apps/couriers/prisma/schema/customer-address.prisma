@@ -1,0 +1,36 @@
+enum CustomerAddressType {
+  HOME
+  WORK
+  DELIVERY
+  SHIPPING
+  BILLING
+  RETURN
+  OTHER
+}
+
+model CustomerAddress {
+  id         String              @id @default(cuid())
+  tenantId   String?             @map("tenant_id")
+  customerId String              @map("customer_id")
+  addressId  String?             @map("address_id")
+  type       CustomerAddressType @default(DELIVERY)
+  label      String?
+  street1    String?             @map("street_1")
+  street2    String?             @map("street_2")
+  city       String?
+  parish     String?
+  country    String?             @default("JM")
+  postalCode String?             @map("postal_code")
+  isDefault  Boolean             @default(false) @map("is_default")
+  createdAt  Int                 @map("created_at")
+  updatedAt  Int                 @map("updated_at")
+
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  address  Address?               @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
+
+  @@unique([customerId, addressId, type], name: "customer_addresses_customer_address_type_key")
+  @@index([tenantId], name: "customer_addresses_tenant_id_idx")
+  @@index([customerId], name: "customer_addresses_customer_id_idx")
+  @@index([addressId], name: "customer_addresses_address_id_idx")
+  @@map("customer_addresses")
+}
