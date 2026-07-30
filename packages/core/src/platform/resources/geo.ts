@@ -1,11 +1,15 @@
 import { platformRequest } from '../request'
 import type { PlatformRuntime } from '../runtime'
-import type { PlatformRegion } from '../types'
+import type { PlatformCountry, PlatformRegion } from '../types'
 
-/** Region transport composed as `$876.regions.list()`. */
 export function createPlatformGeoResource(runtime: PlatformRuntime) {
   return {
-    /** Lists the regions (parishes/states) for a country, e.g. `JM`. */
+    listCountries() {
+      return platformRequest<PlatformCountry[]>(runtime, {
+        method: 'GET',
+        path: '/geo/countries',
+      })
+    },
     listRegions(countryCode: string) {
       return platformRequest<PlatformRegion[]>(runtime, {
         method: 'GET',
