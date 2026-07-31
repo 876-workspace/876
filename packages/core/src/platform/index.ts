@@ -51,7 +51,7 @@ export function create876PlatformClient(
 ) {
   const runtime = buildPlatformRuntime(options)
   const { getRoutingMemberships } = createPlatformAuthResource(runtime)
-  const { listRegions } = createPlatformGeoResource(runtime)
+  const { listCountries, listRegions } = createPlatformGeoResource(runtime)
   const memberships = createPlatformMembershipsResource(runtime)
   const { identifications, ...users } = createPlatformUsersResource(runtime)
   const { invites, subscriptions, ...organizations } =
@@ -68,6 +68,7 @@ export function create876PlatformClient(
     organizations,
     invites,
     subscriptions,
+    countries: { list: listCountries },
     regions: { list: listRegions },
     users,
     identifications,
