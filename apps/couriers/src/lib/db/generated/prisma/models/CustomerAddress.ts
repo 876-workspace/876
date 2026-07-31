@@ -13,7 +13,8 @@ import type * as Prisma from '../internal/prismaNamespace.ts'
 
 /**
  * Model CustomerAddress
- * A customer-defined delivery destination (e.g. "Home", "Office").
+ * A customer's use of an address, in a particular role.
+ *
  * Platform 876 billing/shipping addresses are NOT duplicated here — they live
  * in the 876 identity API and are resolved via $876 at read time.
  */
@@ -40,14 +41,10 @@ export type CustomerAddressSumAggregateOutputType = {
 
 export type CustomerAddressMinAggregateOutputType = {
   id: string | null
+  tenantId: string | null
   customerId: string | null
-  label: string | null
-  street1: string | null
-  street2: string | null
-  city: string | null
-  parish: string | null
-  country: string | null
-  postalCode: string | null
+  addressId: string | null
+  type: $Enums.CustomerAddressType | null
   isDefault: boolean | null
   createdAt: number | null
   updatedAt: number | null
@@ -55,14 +52,10 @@ export type CustomerAddressMinAggregateOutputType = {
 
 export type CustomerAddressMaxAggregateOutputType = {
   id: string | null
+  tenantId: string | null
   customerId: string | null
-  label: string | null
-  street1: string | null
-  street2: string | null
-  city: string | null
-  parish: string | null
-  country: string | null
-  postalCode: string | null
+  addressId: string | null
+  type: $Enums.CustomerAddressType | null
   isDefault: boolean | null
   createdAt: number | null
   updatedAt: number | null
@@ -70,14 +63,10 @@ export type CustomerAddressMaxAggregateOutputType = {
 
 export type CustomerAddressCountAggregateOutputType = {
   id: number
+  tenantId: number
   customerId: number
-  label: number
-  street1: number
-  street2: number
-  city: number
-  parish: number
-  country: number
-  postalCode: number
+  addressId: number
+  type: number
   isDefault: number
   createdAt: number
   updatedAt: number
@@ -96,14 +85,10 @@ export type CustomerAddressSumAggregateInputType = {
 
 export type CustomerAddressMinAggregateInputType = {
   id?: true
+  tenantId?: true
   customerId?: true
-  label?: true
-  street1?: true
-  street2?: true
-  city?: true
-  parish?: true
-  country?: true
-  postalCode?: true
+  addressId?: true
+  type?: true
   isDefault?: true
   createdAt?: true
   updatedAt?: true
@@ -111,14 +96,10 @@ export type CustomerAddressMinAggregateInputType = {
 
 export type CustomerAddressMaxAggregateInputType = {
   id?: true
+  tenantId?: true
   customerId?: true
-  label?: true
-  street1?: true
-  street2?: true
-  city?: true
-  parish?: true
-  country?: true
-  postalCode?: true
+  addressId?: true
+  type?: true
   isDefault?: true
   createdAt?: true
   updatedAt?: true
@@ -126,14 +107,10 @@ export type CustomerAddressMaxAggregateInputType = {
 
 export type CustomerAddressCountAggregateInputType = {
   id?: true
+  tenantId?: true
   customerId?: true
-  label?: true
-  street1?: true
-  street2?: true
-  city?: true
-  parish?: true
-  country?: true
-  postalCode?: true
+  addressId?: true
+  type?: true
   isDefault?: true
   createdAt?: true
   updatedAt?: true
@@ -239,14 +216,10 @@ export type CustomerAddressGroupByArgs<
 
 export type CustomerAddressGroupByOutputType = {
   id: string
+  tenantId: string
   customerId: string
-  label: string | null
-  street1: string
-  street2: string | null
-  city: string
-  parish: string | null
-  country: string
-  postalCode: string | null
+  addressId: string
+  type: $Enums.CustomerAddressType
   isDefault: boolean
   createdAt: number
   updatedAt: number
@@ -277,14 +250,12 @@ export type CustomerAddressWhereInput = {
   OR?: Prisma.CustomerAddressWhereInput[]
   NOT?: Prisma.CustomerAddressWhereInput | Prisma.CustomerAddressWhereInput[]
   id?: Prisma.StringFilter<'CustomerAddress'> | string
+  tenantId?: Prisma.StringFilter<'CustomerAddress'> | string
   customerId?: Prisma.StringFilter<'CustomerAddress'> | string
-  label?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  street1?: Prisma.StringFilter<'CustomerAddress'> | string
-  street2?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  city?: Prisma.StringFilter<'CustomerAddress'> | string
-  parish?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  country?: Prisma.StringFilter<'CustomerAddress'> | string
-  postalCode?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
+  addressId?: Prisma.StringFilter<'CustomerAddress'> | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFilter<'CustomerAddress'>
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFilter<'CustomerAddress'> | boolean
   createdAt?: Prisma.IntFilter<'CustomerAddress'> | number
   updatedAt?: Prisma.IntFilter<'CustomerAddress'> | number
@@ -292,38 +263,38 @@ export type CustomerAddressWhereInput = {
     Prisma.CourierCustomerProfileScalarRelationFilter,
     Prisma.CourierCustomerProfileWhereInput
   >
+  address?: Prisma.XOR<
+    Prisma.AddressScalarRelationFilter,
+    Prisma.AddressWhereInput
+  >
 }
 
 export type CustomerAddressOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
-  label?: Prisma.SortOrderInput | Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrderInput | Prisma.SortOrder
-  city?: Prisma.SortOrder
-  parish?: Prisma.SortOrderInput | Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  addressId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CourierCustomerProfileOrderByWithRelationInput
+  address?: Prisma.AddressOrderByWithRelationInput
 }
 
 export type CustomerAddressWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string
+    customer_addresses_customer_address_type_key?: Prisma.CustomerAddressCustomer_addresses_customer_address_type_keyCompoundUniqueInput
     AND?: Prisma.CustomerAddressWhereInput | Prisma.CustomerAddressWhereInput[]
     OR?: Prisma.CustomerAddressWhereInput[]
     NOT?: Prisma.CustomerAddressWhereInput | Prisma.CustomerAddressWhereInput[]
+    tenantId?: Prisma.StringFilter<'CustomerAddress'> | string
     customerId?: Prisma.StringFilter<'CustomerAddress'> | string
-    label?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-    street1?: Prisma.StringFilter<'CustomerAddress'> | string
-    street2?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-    city?: Prisma.StringFilter<'CustomerAddress'> | string
-    parish?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-    country?: Prisma.StringFilter<'CustomerAddress'> | string
-    postalCode?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
+    addressId?: Prisma.StringFilter<'CustomerAddress'> | string
+    type?:
+      | Prisma.EnumCustomerAddressTypeFilter<'CustomerAddress'>
+      | $Enums.CustomerAddressType
     isDefault?: Prisma.BoolFilter<'CustomerAddress'> | boolean
     createdAt?: Prisma.IntFilter<'CustomerAddress'> | number
     updatedAt?: Prisma.IntFilter<'CustomerAddress'> | number
@@ -331,20 +302,20 @@ export type CustomerAddressWhereUniqueInput = Prisma.AtLeast<
       Prisma.CourierCustomerProfileScalarRelationFilter,
       Prisma.CourierCustomerProfileWhereInput
     >
+    address?: Prisma.XOR<
+      Prisma.AddressScalarRelationFilter,
+      Prisma.AddressWhereInput
+    >
   },
-  'id'
+  'id' | 'customer_addresses_customer_address_type_key'
 >
 
 export type CustomerAddressOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
-  label?: Prisma.SortOrderInput | Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrderInput | Prisma.SortOrder
-  city?: Prisma.SortOrder
-  parish?: Prisma.SortOrderInput | Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  addressId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -364,26 +335,12 @@ export type CustomerAddressScalarWhereWithAggregatesInput = {
     | Prisma.CustomerAddressScalarWhereWithAggregatesInput
     | Prisma.CustomerAddressScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
+  tenantId?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
   customerId?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
-  label?:
-    | Prisma.StringNullableWithAggregatesFilter<'CustomerAddress'>
-    | string
-    | null
-  street1?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
-  street2?:
-    | Prisma.StringNullableWithAggregatesFilter<'CustomerAddress'>
-    | string
-    | null
-  city?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
-  parish?:
-    | Prisma.StringNullableWithAggregatesFilter<'CustomerAddress'>
-    | string
-    | null
-  country?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
-  postalCode?:
-    | Prisma.StringNullableWithAggregatesFilter<'CustomerAddress'>
-    | string
-    | null
+  addressId?: Prisma.StringWithAggregatesFilter<'CustomerAddress'> | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeWithAggregatesFilter<'CustomerAddress'>
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolWithAggregatesFilter<'CustomerAddress'> | boolean
   createdAt?: Prisma.IntWithAggregatesFilter<'CustomerAddress'> | number
   updatedAt?: Prisma.IntWithAggregatesFilter<'CustomerAddress'> | number
@@ -391,29 +348,20 @@ export type CustomerAddressScalarWhereWithAggregatesInput = {
 
 export type CustomerAddressCreateInput = {
   id?: string
-  label?: string | null
-  street1: string
-  street2?: string | null
-  city: string
-  parish?: string | null
-  country?: string
-  postalCode?: string | null
+  type?: $Enums.CustomerAddressType
   isDefault?: boolean
   createdAt: number
   updatedAt: number
   customer: Prisma.CourierCustomerProfileCreateNestedOneWithoutAddressesInput
+  address: Prisma.AddressCreateNestedOneWithoutCustomerAddressesInput
 }
 
 export type CustomerAddressUncheckedCreateInput = {
   id?: string
+  tenantId: string
   customerId: string
-  label?: string | null
-  street1: string
-  street2?: string | null
-  city: string
-  parish?: string | null
-  country?: string
-  postalCode?: string | null
+  addressId: string
+  type?: $Enums.CustomerAddressType
   isDefault?: boolean
   createdAt: number
   updatedAt: number
@@ -421,29 +369,24 @@ export type CustomerAddressUncheckedCreateInput = {
 
 export type CustomerAddressUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   customer?: Prisma.CourierCustomerProfileUpdateOneRequiredWithoutAddressesNestedInput
+  address?: Prisma.AddressUpdateOneRequiredWithoutCustomerAddressesNestedInput
 }
 
 export type CustomerAddressUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -451,14 +394,10 @@ export type CustomerAddressUncheckedUpdateInput = {
 
 export type CustomerAddressCreateManyInput = {
   id?: string
+  tenantId: string
   customerId: string
-  label?: string | null
-  street1: string
-  street2?: string | null
-  city: string
-  parish?: string | null
-  country?: string
-  postalCode?: string | null
+  addressId: string
+  type?: $Enums.CustomerAddressType
   isDefault?: boolean
   createdAt: number
   updatedAt: number
@@ -466,13 +405,9 @@ export type CustomerAddressCreateManyInput = {
 
 export type CustomerAddressUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -480,72 +415,15 @@ export type CustomerAddressUpdateManyMutationInput = {
 
 export type CustomerAddressUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type CustomerAddressCountOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  customerId?: Prisma.SortOrder
-  label?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  parish?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
-  isDefault?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-}
-
-export type CustomerAddressAvgOrderByAggregateInput = {
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-}
-
-export type CustomerAddressMaxOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  customerId?: Prisma.SortOrder
-  label?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  parish?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
-  isDefault?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-}
-
-export type CustomerAddressMinOrderByAggregateInput = {
-  id?: Prisma.SortOrder
-  customerId?: Prisma.SortOrder
-  label?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  parish?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
-  isDefault?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-}
-
-export type CustomerAddressSumOrderByAggregateInput = {
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type CustomerAddressListRelationFilter = {
@@ -558,24 +436,168 @@ export type CustomerAddressOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
+export type CustomerAddressCustomer_addresses_customer_address_type_keyCompoundUniqueInput =
+  {
+    customerId: string
+    addressId: string
+    type: $Enums.CustomerAddressType
+  }
+
+export type CustomerAddressCountOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type CustomerAddressAvgOrderByAggregateInput = {
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
+export type CustomerAddressMaxOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
+export type CustomerAddressMinOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
+  type?: Prisma.SortOrder
+  isDefault?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+}
+
+export type CustomerAddressSumOrderByAggregateInput = {
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+}
+
+export type CustomerAddressCreateNestedManyWithoutAddressInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CustomerAddressCreateWithoutAddressInput,
+        Prisma.CustomerAddressUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.CustomerAddressCreateWithoutAddressInput[]
+    | Prisma.CustomerAddressUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput[]
+  createMany?: Prisma.CustomerAddressCreateManyAddressInputEnvelope
+  connect?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+}
+
+export type CustomerAddressUncheckedCreateNestedManyWithoutAddressInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CustomerAddressCreateWithoutAddressInput,
+        Prisma.CustomerAddressUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.CustomerAddressCreateWithoutAddressInput[]
+    | Prisma.CustomerAddressUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput[]
+  createMany?: Prisma.CustomerAddressCreateManyAddressInputEnvelope
+  connect?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+}
+
+export type CustomerAddressUpdateManyWithoutAddressNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CustomerAddressCreateWithoutAddressInput,
+        Prisma.CustomerAddressUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.CustomerAddressCreateWithoutAddressInput[]
+    | Prisma.CustomerAddressUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput[]
+  upsert?:
+    | Prisma.CustomerAddressUpsertWithWhereUniqueWithoutAddressInput
+    | Prisma.CustomerAddressUpsertWithWhereUniqueWithoutAddressInput[]
+  createMany?: Prisma.CustomerAddressCreateManyAddressInputEnvelope
+  set?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  disconnect?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  delete?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  connect?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  update?:
+    | Prisma.CustomerAddressUpdateWithWhereUniqueWithoutAddressInput
+    | Prisma.CustomerAddressUpdateWithWhereUniqueWithoutAddressInput[]
+  updateMany?:
+    | Prisma.CustomerAddressUpdateManyWithWhereWithoutAddressInput
+    | Prisma.CustomerAddressUpdateManyWithWhereWithoutAddressInput[]
+  deleteMany?:
+    | Prisma.CustomerAddressScalarWhereInput
+    | Prisma.CustomerAddressScalarWhereInput[]
+}
+
+export type CustomerAddressUncheckedUpdateManyWithoutAddressNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.CustomerAddressCreateWithoutAddressInput,
+        Prisma.CustomerAddressUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.CustomerAddressCreateWithoutAddressInput[]
+    | Prisma.CustomerAddressUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput
+    | Prisma.CustomerAddressCreateOrConnectWithoutAddressInput[]
+  upsert?:
+    | Prisma.CustomerAddressUpsertWithWhereUniqueWithoutAddressInput
+    | Prisma.CustomerAddressUpsertWithWhereUniqueWithoutAddressInput[]
+  createMany?: Prisma.CustomerAddressCreateManyAddressInputEnvelope
+  set?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  disconnect?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  delete?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  connect?:
+    | Prisma.CustomerAddressWhereUniqueInput
+    | Prisma.CustomerAddressWhereUniqueInput[]
+  update?:
+    | Prisma.CustomerAddressUpdateWithWhereUniqueWithoutAddressInput
+    | Prisma.CustomerAddressUpdateWithWhereUniqueWithoutAddressInput[]
+  updateMany?:
+    | Prisma.CustomerAddressUpdateManyWithWhereWithoutAddressInput
+    | Prisma.CustomerAddressUpdateManyWithWhereWithoutAddressInput[]
+  deleteMany?:
+    | Prisma.CustomerAddressScalarWhereInput
+    | Prisma.CustomerAddressScalarWhereInput[]
+}
+
+export type EnumCustomerAddressTypeFieldUpdateOperationsInput = {
+  set?: $Enums.CustomerAddressType
 }
 
 export type CustomerAddressCreateNestedManyWithoutCustomerInput = {
@@ -688,29 +710,100 @@ export type CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput = {
     | Prisma.CustomerAddressScalarWhereInput[]
 }
 
-export type CustomerAddressCreateWithoutCustomerInput = {
+export type CustomerAddressCreateWithoutAddressInput = {
   id?: string
-  label?: string | null
-  street1: string
-  street2?: string | null
-  city: string
-  parish?: string | null
-  country?: string
-  postalCode?: string | null
+  type?: $Enums.CustomerAddressType
+  isDefault?: boolean
+  createdAt: number
+  updatedAt: number
+  customer: Prisma.CourierCustomerProfileCreateNestedOneWithoutAddressesInput
+}
+
+export type CustomerAddressUncheckedCreateWithoutAddressInput = {
+  id?: string
+  customerId: string
+  type?: $Enums.CustomerAddressType
   isDefault?: boolean
   createdAt: number
   updatedAt: number
 }
 
+export type CustomerAddressCreateOrConnectWithoutAddressInput = {
+  where: Prisma.CustomerAddressWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CustomerAddressCreateWithoutAddressInput,
+    Prisma.CustomerAddressUncheckedCreateWithoutAddressInput
+  >
+}
+
+export type CustomerAddressCreateManyAddressInputEnvelope = {
+  data:
+    | Prisma.CustomerAddressCreateManyAddressInput
+    | Prisma.CustomerAddressCreateManyAddressInput[]
+  skipDuplicates?: boolean
+}
+
+export type CustomerAddressUpsertWithWhereUniqueWithoutAddressInput = {
+  where: Prisma.CustomerAddressWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.CustomerAddressUpdateWithoutAddressInput,
+    Prisma.CustomerAddressUncheckedUpdateWithoutAddressInput
+  >
+  create: Prisma.XOR<
+    Prisma.CustomerAddressCreateWithoutAddressInput,
+    Prisma.CustomerAddressUncheckedCreateWithoutAddressInput
+  >
+}
+
+export type CustomerAddressUpdateWithWhereUniqueWithoutAddressInput = {
+  where: Prisma.CustomerAddressWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.CustomerAddressUpdateWithoutAddressInput,
+    Prisma.CustomerAddressUncheckedUpdateWithoutAddressInput
+  >
+}
+
+export type CustomerAddressUpdateManyWithWhereWithoutAddressInput = {
+  where: Prisma.CustomerAddressScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.CustomerAddressUpdateManyMutationInput,
+    Prisma.CustomerAddressUncheckedUpdateManyWithoutAddressInput
+  >
+}
+
+export type CustomerAddressScalarWhereInput = {
+  AND?:
+    | Prisma.CustomerAddressScalarWhereInput
+    | Prisma.CustomerAddressScalarWhereInput[]
+  OR?: Prisma.CustomerAddressScalarWhereInput[]
+  NOT?:
+    | Prisma.CustomerAddressScalarWhereInput
+    | Prisma.CustomerAddressScalarWhereInput[]
+  id?: Prisma.StringFilter<'CustomerAddress'> | string
+  tenantId?: Prisma.StringFilter<'CustomerAddress'> | string
+  customerId?: Prisma.StringFilter<'CustomerAddress'> | string
+  addressId?: Prisma.StringFilter<'CustomerAddress'> | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFilter<'CustomerAddress'>
+    | $Enums.CustomerAddressType
+  isDefault?: Prisma.BoolFilter<'CustomerAddress'> | boolean
+  createdAt?: Prisma.IntFilter<'CustomerAddress'> | number
+  updatedAt?: Prisma.IntFilter<'CustomerAddress'> | number
+}
+
+export type CustomerAddressCreateWithoutCustomerInput = {
+  id?: string
+  type?: $Enums.CustomerAddressType
+  isDefault?: boolean
+  createdAt: number
+  updatedAt: number
+  address: Prisma.AddressCreateNestedOneWithoutCustomerAddressesInput
+}
+
 export type CustomerAddressUncheckedCreateWithoutCustomerInput = {
   id?: string
-  label?: string | null
-  street1: string
-  street2?: string | null
-  city: string
-  parish?: string | null
-  country?: string
-  postalCode?: string | null
+  addressId: string
+  type?: $Enums.CustomerAddressType
   isDefault?: boolean
   createdAt: number
   updatedAt: number
@@ -759,37 +852,52 @@ export type CustomerAddressUpdateManyWithWhereWithoutCustomerInput = {
   >
 }
 
-export type CustomerAddressScalarWhereInput = {
-  AND?:
-    | Prisma.CustomerAddressScalarWhereInput
-    | Prisma.CustomerAddressScalarWhereInput[]
-  OR?: Prisma.CustomerAddressScalarWhereInput[]
-  NOT?:
-    | Prisma.CustomerAddressScalarWhereInput
-    | Prisma.CustomerAddressScalarWhereInput[]
-  id?: Prisma.StringFilter<'CustomerAddress'> | string
-  customerId?: Prisma.StringFilter<'CustomerAddress'> | string
-  label?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  street1?: Prisma.StringFilter<'CustomerAddress'> | string
-  street2?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  city?: Prisma.StringFilter<'CustomerAddress'> | string
-  parish?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  country?: Prisma.StringFilter<'CustomerAddress'> | string
-  postalCode?: Prisma.StringNullableFilter<'CustomerAddress'> | string | null
-  isDefault?: Prisma.BoolFilter<'CustomerAddress'> | boolean
-  createdAt?: Prisma.IntFilter<'CustomerAddress'> | number
-  updatedAt?: Prisma.IntFilter<'CustomerAddress'> | number
+export type CustomerAddressCreateManyAddressInput = {
+  id?: string
+  customerId: string
+  type?: $Enums.CustomerAddressType
+  isDefault?: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export type CustomerAddressUpdateWithoutAddressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  customer?: Prisma.CourierCustomerProfileUpdateOneRequiredWithoutAddressesNestedInput
+}
+
+export type CustomerAddressUncheckedUpdateWithoutAddressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type CustomerAddressUncheckedUpdateManyWithoutAddressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
+  isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type CustomerAddressCreateManyCustomerInput = {
   id?: string
-  label?: string | null
-  street1: string
-  street2?: string | null
-  city: string
-  parish?: string | null
-  country?: string
-  postalCode?: string | null
+  addressId: string
+  type?: $Enums.CustomerAddressType
   isDefault?: boolean
   createdAt: number
   updatedAt: number
@@ -797,27 +905,21 @@ export type CustomerAddressCreateManyCustomerInput = {
 
 export type CustomerAddressUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  address?: Prisma.AddressUpdateOneRequiredWithoutCustomerAddressesNestedInput
 }
 
 export type CustomerAddressUncheckedUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -825,13 +927,10 @@ export type CustomerAddressUncheckedUpdateWithoutCustomerInput = {
 
 export type CustomerAddressUncheckedUpdateManyWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  label?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  parish?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?:
+    | Prisma.EnumCustomerAddressTypeFieldUpdateOperationsInput
+    | $Enums.CustomerAddressType
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -843,18 +942,15 @@ export type CustomerAddressSelect<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean
+    tenantId?: boolean
     customerId?: boolean
-    label?: boolean
-    street1?: boolean
-    street2?: boolean
-    city?: boolean
-    parish?: boolean
-    country?: boolean
-    postalCode?: boolean
+    addressId?: boolean
+    type?: boolean
     isDefault?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     customer?: boolean | Prisma.CourierCustomerProfileDefaultArgs<ExtArgs>
+    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['customerAddress']
 >
@@ -865,18 +961,15 @@ export type CustomerAddressSelectCreateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean
+    tenantId?: boolean
     customerId?: boolean
-    label?: boolean
-    street1?: boolean
-    street2?: boolean
-    city?: boolean
-    parish?: boolean
-    country?: boolean
-    postalCode?: boolean
+    addressId?: boolean
+    type?: boolean
     isDefault?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     customer?: boolean | Prisma.CourierCustomerProfileDefaultArgs<ExtArgs>
+    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['customerAddress']
 >
@@ -887,32 +980,25 @@ export type CustomerAddressSelectUpdateManyAndReturn<
 > = runtime.Types.Extensions.GetSelect<
   {
     id?: boolean
+    tenantId?: boolean
     customerId?: boolean
-    label?: boolean
-    street1?: boolean
-    street2?: boolean
-    city?: boolean
-    parish?: boolean
-    country?: boolean
-    postalCode?: boolean
+    addressId?: boolean
+    type?: boolean
     isDefault?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     customer?: boolean | Prisma.CourierCustomerProfileDefaultArgs<ExtArgs>
+    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['customerAddress']
 >
 
 export type CustomerAddressSelectScalar = {
   id?: boolean
+  tenantId?: boolean
   customerId?: boolean
-  label?: boolean
-  street1?: boolean
-  street2?: boolean
-  city?: boolean
-  parish?: boolean
-  country?: boolean
-  postalCode?: boolean
+  addressId?: boolean
+  type?: boolean
   isDefault?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -923,14 +1009,10 @@ export type CustomerAddressOmit<
     runtime.Types.Extensions.DefaultArgs,
 > = runtime.Types.Extensions.GetOmit<
   | 'id'
+  | 'tenantId'
   | 'customerId'
-  | 'label'
-  | 'street1'
-  | 'street2'
-  | 'city'
-  | 'parish'
-  | 'country'
-  | 'postalCode'
+  | 'addressId'
+  | 'type'
   | 'isDefault'
   | 'createdAt'
   | 'updatedAt',
@@ -941,18 +1023,21 @@ export type CustomerAddressInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   customer?: boolean | Prisma.CourierCustomerProfileDefaultArgs<ExtArgs>
+  address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }
 export type CustomerAddressIncludeCreateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
   customer?: boolean | Prisma.CourierCustomerProfileDefaultArgs<ExtArgs>
+  address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }
 export type CustomerAddressIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
   customer?: boolean | Prisma.CourierCustomerProfileDefaultArgs<ExtArgs>
+  address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }
 
 export type $CustomerAddressPayload<
@@ -962,21 +1047,15 @@ export type $CustomerAddressPayload<
   name: 'CustomerAddress'
   objects: {
     customer: Prisma.$CourierCustomerProfilePayload<ExtArgs>
+    address: Prisma.$AddressPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string
+      tenantId: string
       customerId: string
-      label: string | null
-      street1: string
-      street2: string | null
-      city: string
-      /**
-       * Jamaica uses parishes; other countries use state/province.
-       */
-      parish: string | null
-      country: string
-      postalCode: string | null
+      addressId: string
+      type: $Enums.CustomerAddressType
       isDefault: boolean
       createdAt: number
       updatedAt: number
@@ -1556,6 +1635,20 @@ export interface Prisma__CustomerAddressClient<
     ExtArgs,
     GlobalOmitOptions
   >
+  address<T extends Prisma.AddressDefaultArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.AddressDefaultArgs<ExtArgs>>
+  ): Prisma.Prisma__AddressClient<
+    | runtime.Types.Result.GetResult<
+        Prisma.$AddressPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >
+    | Null,
+    Null,
+    ExtArgs,
+    GlobalOmitOptions
+  >
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1599,14 +1692,10 @@ export interface Prisma__CustomerAddressClient<
  */
 export interface CustomerAddressFieldRefs {
   readonly id: Prisma.FieldRef<'CustomerAddress', 'String'>
+  readonly tenantId: Prisma.FieldRef<'CustomerAddress', 'String'>
   readonly customerId: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly label: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly street1: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly street2: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly city: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly parish: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly country: Prisma.FieldRef<'CustomerAddress', 'String'>
-  readonly postalCode: Prisma.FieldRef<'CustomerAddress', 'String'>
+  readonly addressId: Prisma.FieldRef<'CustomerAddress', 'String'>
+  readonly type: Prisma.FieldRef<'CustomerAddress', 'CustomerAddressType'>
   readonly isDefault: Prisma.FieldRef<'CustomerAddress', 'Boolean'>
   readonly createdAt: Prisma.FieldRef<'CustomerAddress', 'Int'>
   readonly updatedAt: Prisma.FieldRef<'CustomerAddress', 'Int'>

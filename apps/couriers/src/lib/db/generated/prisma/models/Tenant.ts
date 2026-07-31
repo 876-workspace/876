@@ -249,6 +249,7 @@ export type TenantWhereInput = {
   createdAt?: Prisma.IntFilter<'Tenant'> | number
   updatedAt?: Prisma.IntFilter<'Tenant'> | number
   domains?: Prisma.DomainListRelationFilter
+  addresses?: Prisma.AddressListRelationFilter
   customers?: Prisma.CourierCustomerProfileListRelationFilter
   packages?: Prisma.PackageListRelationFilter
   warehouses?: Prisma.WarehouseListRelationFilter
@@ -276,6 +277,7 @@ export type TenantOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   domains?: Prisma.DomainOrderByRelationAggregateInput
+  addresses?: Prisma.AddressOrderByRelationAggregateInput
   customers?: Prisma.CourierCustomerProfileOrderByRelationAggregateInput
   packages?: Prisma.PackageOrderByRelationAggregateInput
   warehouses?: Prisma.WarehouseOrderByRelationAggregateInput
@@ -307,6 +309,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<
     createdAt?: Prisma.IntFilter<'Tenant'> | number
     updatedAt?: Prisma.IntFilter<'Tenant'> | number
     domains?: Prisma.DomainListRelationFilter
+    addresses?: Prisma.AddressListRelationFilter
     customers?: Prisma.CourierCustomerProfileListRelationFilter
     packages?: Prisma.PackageListRelationFilter
     warehouses?: Prisma.WarehouseListRelationFilter
@@ -375,6 +378,7 @@ export type TenantCreateInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -402,6 +406,7 @@ export type TenantUncheckedCreateInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -434,6 +439,7 @@ export type TenantUpdateInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -466,6 +472,7 @@ export type TenantUncheckedUpdateInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -577,6 +584,32 @@ export type TenantMinOrderByAggregateInput = {
 export type TenantSumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type TenantCreateNestedOneWithoutAddressesInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutAddressesInput,
+    Prisma.TenantUncheckedCreateWithoutAddressesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAddressesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutAddressesNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.TenantCreateWithoutAddressesInput,
+    Prisma.TenantUncheckedCreateWithoutAddressesInput
+  >
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAddressesInput
+  upsert?: Prisma.TenantUpsertWithoutAddressesInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.TenantUpdateToOneWithWhereWithoutAddressesInput,
+      Prisma.TenantUpdateWithoutAddressesInput
+    >,
+    Prisma.TenantUncheckedUpdateWithoutAddressesInput
+  >
 }
 
 export type TenantCreateNestedOneWithoutCashSessionsInput = {
@@ -1003,6 +1036,152 @@ export type TenantUpdateOneRequiredWithoutWarehousesNestedInput = {
   >
 }
 
+export type TenantCreateWithoutAddressesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutAddressesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
+  staffPositions?: Prisma.StaffPositionUncheckedCreateNestedManyWithoutTenantInput
+  staffMembers?: Prisma.StaffMemberUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
+  manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutTenantInput
+  cashSessions?: Prisma.CashSessionUncheckedCreateNestedManyWithoutTenantInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedCreateNestedManyWithoutTenantInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutAddressesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutAddressesInput,
+    Prisma.TenantUncheckedCreateWithoutAddressesInput
+  >
+}
+
+export type TenantUpsertWithoutAddressesInput = {
+  update: Prisma.XOR<
+    Prisma.TenantUpdateWithoutAddressesInput,
+    Prisma.TenantUncheckedUpdateWithoutAddressesInput
+  >
+  create: Prisma.XOR<
+    Prisma.TenantCreateWithoutAddressesInput,
+    Prisma.TenantUncheckedCreateWithoutAddressesInput
+  >
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutAddressesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<
+    Prisma.TenantUpdateWithoutAddressesInput,
+    Prisma.TenantUncheckedUpdateWithoutAddressesInput
+  >
+}
+
+export type TenantUpdateWithoutAddressesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutAddressesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  status?:
+    | Prisma.EnumTenantStatusFieldUpdateOperationsInput
+    | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
+  staffPositions?: Prisma.StaffPositionUncheckedUpdateManyWithoutTenantNestedInput
+  staffMembers?: Prisma.StaffMemberUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
+  manifests?: Prisma.ManifestUncheckedUpdateManyWithoutTenantNestedInput
+  cashSessions?: Prisma.CashSessionUncheckedUpdateManyWithoutTenantNestedInput
+  customerIdTypes?: Prisma.CustomerIdTypeUncheckedUpdateManyWithoutTenantNestedInput
+  customerDocuments?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
+}
+
 export type TenantCreateWithoutCashSessionsInput = {
   id?: string
   orgId: string
@@ -1013,6 +1192,7 @@ export type TenantCreateWithoutCashSessionsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -1039,6 +1219,7 @@ export type TenantUncheckedCreateWithoutCashSessionsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -1098,6 +1279,7 @@ export type TenantUpdateWithoutCashSessionsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -1129,6 +1311,7 @@ export type TenantUncheckedUpdateWithoutCashSessionsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -1155,6 +1338,7 @@ export type TenantCreateWithoutBranchesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -1181,6 +1365,7 @@ export type TenantUncheckedCreateWithoutBranchesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -1240,6 +1425,7 @@ export type TenantUpdateWithoutBranchesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -1271,6 +1457,7 @@ export type TenantUncheckedUpdateWithoutBranchesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -1297,6 +1484,7 @@ export type TenantCreateWithoutCustomerIdTypesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -1323,6 +1511,7 @@ export type TenantUncheckedCreateWithoutCustomerIdTypesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -1382,6 +1571,7 @@ export type TenantUpdateWithoutCustomerIdTypesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -1413,6 +1603,7 @@ export type TenantUncheckedUpdateWithoutCustomerIdTypesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -1439,6 +1630,7 @@ export type TenantCreateWithoutCustomerDocumentsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -1465,6 +1657,7 @@ export type TenantUncheckedCreateWithoutCustomerDocumentsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -1524,6 +1717,7 @@ export type TenantUpdateWithoutCustomerDocumentsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -1555,6 +1749,7 @@ export type TenantUncheckedUpdateWithoutCustomerDocumentsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -1581,6 +1776,7 @@ export type TenantCreateWithoutCustomersInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
@@ -1607,6 +1803,7 @@ export type TenantUncheckedCreateWithoutCustomersInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
@@ -1666,6 +1863,7 @@ export type TenantUpdateWithoutCustomersInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
@@ -1697,6 +1895,7 @@ export type TenantUncheckedUpdateWithoutCustomersInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
@@ -1723,6 +1922,7 @@ export type TenantCreateWithoutManifestsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -1749,6 +1949,7 @@ export type TenantUncheckedCreateWithoutManifestsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -1808,6 +2009,7 @@ export type TenantUpdateWithoutManifestsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -1839,6 +2041,7 @@ export type TenantUncheckedUpdateWithoutManifestsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -1865,6 +2068,7 @@ export type TenantCreateWithoutOrganizationModulesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -1891,6 +2095,7 @@ export type TenantUncheckedCreateWithoutOrganizationModulesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -1950,6 +2155,7 @@ export type TenantUpdateWithoutOrganizationModulesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -1981,6 +2187,7 @@ export type TenantUncheckedUpdateWithoutOrganizationModulesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2007,6 +2214,7 @@ export type TenantCreateWithoutModulePreferencesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -2033,6 +2241,7 @@ export type TenantUncheckedCreateWithoutModulePreferencesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -2092,6 +2301,7 @@ export type TenantUpdateWithoutModulePreferencesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -2123,6 +2333,7 @@ export type TenantUncheckedUpdateWithoutModulePreferencesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2149,6 +2360,7 @@ export type TenantCreateWithoutPackageCategoriesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -2175,6 +2387,7 @@ export type TenantUncheckedCreateWithoutPackageCategoriesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -2234,6 +2447,7 @@ export type TenantUpdateWithoutPackageCategoriesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -2265,6 +2479,7 @@ export type TenantUncheckedUpdateWithoutPackageCategoriesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2291,6 +2506,7 @@ export type TenantCreateWithoutPackagesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
@@ -2317,6 +2533,7 @@ export type TenantUncheckedCreateWithoutPackagesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
@@ -2376,6 +2593,7 @@ export type TenantUpdateWithoutPackagesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
@@ -2407,6 +2625,7 @@ export type TenantUncheckedUpdateWithoutPackagesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
@@ -2432,6 +2651,7 @@ export type TenantCreateWithoutDomainsInput = {
   status?: $Enums.TenantStatus
   createdAt: number
   updatedAt: number
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -2458,6 +2678,7 @@ export type TenantUncheckedCreateWithoutDomainsInput = {
   status?: $Enums.TenantStatus
   createdAt: number
   updatedAt: number
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -2517,6 +2738,7 @@ export type TenantUpdateWithoutDomainsInput = {
     | $Enums.TenantStatus
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -2548,6 +2770,7 @@ export type TenantUncheckedUpdateWithoutDomainsInput = {
     | $Enums.TenantStatus
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2575,6 +2798,7 @@ export type TenantCreateWithoutStaffPositionsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -2601,6 +2825,7 @@ export type TenantUncheckedCreateWithoutStaffPositionsInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -2660,6 +2885,7 @@ export type TenantUpdateWithoutStaffPositionsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -2691,6 +2917,7 @@ export type TenantUncheckedUpdateWithoutStaffPositionsInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2717,6 +2944,7 @@ export type TenantCreateWithoutStaffMembersInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -2743,6 +2971,7 @@ export type TenantUncheckedCreateWithoutStaffMembersInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -2802,6 +3031,7 @@ export type TenantUpdateWithoutStaffMembersInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -2833,6 +3063,7 @@ export type TenantUncheckedUpdateWithoutStaffMembersInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2859,6 +3090,7 @@ export type TenantCreateWithoutRolesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -2885,6 +3117,7 @@ export type TenantUncheckedCreateWithoutRolesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -2944,6 +3177,7 @@ export type TenantUpdateWithoutRolesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -2975,6 +3209,7 @@ export type TenantUncheckedUpdateWithoutRolesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -3001,6 +3236,7 @@ export type TenantCreateWithoutTeamMembersInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
@@ -3027,6 +3263,7 @@ export type TenantUncheckedCreateWithoutTeamMembersInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
@@ -3086,6 +3323,7 @@ export type TenantUpdateWithoutTeamMembersInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
@@ -3117,6 +3355,7 @@ export type TenantUncheckedUpdateWithoutTeamMembersInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -3143,6 +3382,7 @@ export type TenantCreateWithoutWarehousesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
@@ -3169,6 +3409,7 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   createdAt: number
   updatedAt: number
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
   customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
   branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
@@ -3228,6 +3469,7 @@ export type TenantUpdateWithoutWarehousesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
@@ -3259,6 +3501,7 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
   customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
   branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
@@ -3281,6 +3524,7 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
 
 export type TenantCountOutputType = {
   domains: number
+  addresses: number
   customers: number
   packages: number
   warehouses: number
@@ -3303,6 +3547,7 @@ export type TenantCountOutputTypeSelect<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   domains?: boolean | TenantCountOutputTypeCountDomainsArgs
+  addresses?: boolean | TenantCountOutputTypeCountAddressesArgs
   customers?: boolean | TenantCountOutputTypeCountCustomersArgs
   packages?: boolean | TenantCountOutputTypeCountPackagesArgs
   warehouses?: boolean | TenantCountOutputTypeCountWarehousesArgs
@@ -3343,6 +3588,16 @@ export type TenantCountOutputTypeCountDomainsArgs<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.DomainWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountAddressesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.AddressWhereInput
 }
 
 /**
@@ -3509,6 +3764,7 @@ export type TenantSelect<
     createdAt?: boolean
     updatedAt?: boolean
     domains?: boolean | Prisma.Tenant$domainsArgs<ExtArgs>
+    addresses?: boolean | Prisma.Tenant$addressesArgs<ExtArgs>
     customers?: boolean | Prisma.Tenant$customersArgs<ExtArgs>
     packages?: boolean | Prisma.Tenant$packagesArgs<ExtArgs>
     warehouses?: boolean | Prisma.Tenant$warehousesArgs<ExtArgs>
@@ -3595,6 +3851,7 @@ export type TenantInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   domains?: boolean | Prisma.Tenant$domainsArgs<ExtArgs>
+  addresses?: boolean | Prisma.Tenant$addressesArgs<ExtArgs>
   customers?: boolean | Prisma.Tenant$customersArgs<ExtArgs>
   packages?: boolean | Prisma.Tenant$packagesArgs<ExtArgs>
   warehouses?: boolean | Prisma.Tenant$warehousesArgs<ExtArgs>
@@ -3628,6 +3885,7 @@ export type $TenantPayload<
   name: 'Tenant'
   objects: {
     domains: Prisma.$DomainPayload<ExtArgs>[]
+    addresses: Prisma.$AddressPayload<ExtArgs>[]
     customers: Prisma.$CourierCustomerProfilePayload<ExtArgs>[]
     packages: Prisma.$PackagePayload<ExtArgs>[]
     warehouses: Prisma.$WarehousePayload<ExtArgs>[]
@@ -4209,6 +4467,17 @@ export interface Prisma__TenantClient<
   ): Prisma.PrismaPromise<
     | runtime.Types.Result.GetResult<
         Prisma.$DomainPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
+  addresses<T extends Prisma.Tenant$addressesArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.Tenant$addressesArgs<ExtArgs>>
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$AddressPayload<ExtArgs>,
         T,
         'findMany',
         GlobalOmitOptions
@@ -4916,6 +5185,35 @@ export type Tenant$domainsArgs<
   take?: number
   skip?: number
   distinct?: Prisma.DomainScalarFieldEnum | Prisma.DomainScalarFieldEnum[]
+}
+
+/**
+ * Tenant.addresses
+ */
+export type Tenant$addressesArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the Address
+   */
+  select?: Prisma.AddressSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Address
+   */
+  omit?: Prisma.AddressOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AddressInclude<ExtArgs> | null
+  where?: Prisma.AddressWhereInput
+  orderBy?:
+    | Prisma.AddressOrderByWithRelationInput
+    | Prisma.AddressOrderByWithRelationInput[]
+  cursor?: Prisma.AddressWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AddressScalarFieldEnum | Prisma.AddressScalarFieldEnum[]
 }
 
 /**

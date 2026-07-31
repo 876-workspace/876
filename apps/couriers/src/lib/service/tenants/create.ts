@@ -22,6 +22,13 @@ export async function create(params: {
   try {
     const now = nowUnixSeconds()
 
+    // Resolved before the transaction opens: it performs a platform request,
+    // and holding a write transaction across a network call turns a slow geo
+    // catalog into database lock contention.
+    const branchAddress = await branches.resolveDefaultAddress(
+      params.address ?? null
+    )
+
     const tenant = await prisma.$transaction(async (tx) => {
       const created = await tx.tenant.create({
         data: {
@@ -46,7 +53,7 @@ export async function create(params: {
 
       await roles.ensureDefaults(created.id, tx)
 
-      await branches.ensureDefault(created.id, params.address ?? null, tx)
+      await branches.ensureDefault(created.id, branchAddress, tx)
 
       if (params.ownerUserId) {
         const adminRole = await tx.role.findUnique({

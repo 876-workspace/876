@@ -1199,14 +1199,6 @@ export type EnumShipmentModeFieldUpdateOperationsInput = {
   set?: $Enums.ShipmentMode
 }
 
-export type NullableFloatFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ManifestCreateNestedOneWithoutPackagesInput = {
   create?: Prisma.XOR<
     Prisma.ManifestCreateWithoutPackagesInput,

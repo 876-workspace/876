@@ -1,21 +1,21 @@
-/// A US receiving address owned by a tenant.
-/// Packages sent by customers are delivered here using the customer's mailbox number.
-/// A tenant may have multiple warehouses (e.g. a dedicated Amazon address).
+/// A receiving address owned by a tenant, typically in the US.
+///
+/// Packages sent by customers are delivered here using the customer's mailbox
+/// number. A tenant may have multiple warehouses (e.g. a dedicated Amazon
+/// address). Like a branch, a warehouse is an operational entity that has an
+/// address rather than being one — receiving, consolidation and manifest
+/// behaviour belong here.
 model Warehouse {
-  id         String  @id @default(cuid())
-  tenantId   String  @map("tenant_id")
-  name       String
-  street1    String  @map("street_1")
-  street2    String? @map("street_2")
-  city       String
-  state      String?
-  country    String  @default("US")
-  postalCode String? @map("postal_code")
-  isPrimary  Boolean @default(false) @map("is_primary")
-  createdAt  Int     @map("created_at")
-  updatedAt  Int     @map("updated_at")
+  id        String  @id @default(cuid())
+  tenantId  String  @map("tenant_id")
+  addressId String  @unique @map("address_id")
+  name      String
+  isPrimary Boolean @default(false) @map("is_primary")
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  address   Address    @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
   manifests Manifest[]
 
   @@unique([tenantId, name], name: "warehouses_tenant_id_name_key")

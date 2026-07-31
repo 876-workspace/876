@@ -13,9 +13,13 @@ import type * as Prisma from '../internal/prismaNamespace.ts'
 
 /**
  * Model Warehouse
- * A US receiving address owned by a tenant.
- * Packages sent by customers are delivered here using the customer's mailbox number.
- * A tenant may have multiple warehouses (e.g. a dedicated Amazon address).
+ * A receiving address owned by a tenant, typically in the US.
+ *
+ * Packages sent by customers are delivered here using the customer's mailbox
+ * number. A tenant may have multiple warehouses (e.g. a dedicated Amazon
+ * address). Like a branch, a warehouse is an operational entity that has an
+ * address rather than being one — receiving, consolidation and manifest
+ * behaviour belong here.
  */
 export type WarehouseModel =
   runtime.Types.Result.DefaultSelection<Prisma.$WarehousePayload>
@@ -41,13 +45,8 @@ export type WarehouseSumAggregateOutputType = {
 export type WarehouseMinAggregateOutputType = {
   id: string | null
   tenantId: string | null
+  addressId: string | null
   name: string | null
-  street1: string | null
-  street2: string | null
-  city: string | null
-  state: string | null
-  country: string | null
-  postalCode: string | null
   isPrimary: boolean | null
   createdAt: number | null
   updatedAt: number | null
@@ -56,13 +55,8 @@ export type WarehouseMinAggregateOutputType = {
 export type WarehouseMaxAggregateOutputType = {
   id: string | null
   tenantId: string | null
+  addressId: string | null
   name: string | null
-  street1: string | null
-  street2: string | null
-  city: string | null
-  state: string | null
-  country: string | null
-  postalCode: string | null
   isPrimary: boolean | null
   createdAt: number | null
   updatedAt: number | null
@@ -71,13 +65,8 @@ export type WarehouseMaxAggregateOutputType = {
 export type WarehouseCountAggregateOutputType = {
   id: number
   tenantId: number
+  addressId: number
   name: number
-  street1: number
-  street2: number
-  city: number
-  state: number
-  country: number
-  postalCode: number
   isPrimary: number
   createdAt: number
   updatedAt: number
@@ -97,13 +86,8 @@ export type WarehouseSumAggregateInputType = {
 export type WarehouseMinAggregateInputType = {
   id?: true
   tenantId?: true
+  addressId?: true
   name?: true
-  street1?: true
-  street2?: true
-  city?: true
-  state?: true
-  country?: true
-  postalCode?: true
   isPrimary?: true
   createdAt?: true
   updatedAt?: true
@@ -112,13 +96,8 @@ export type WarehouseMinAggregateInputType = {
 export type WarehouseMaxAggregateInputType = {
   id?: true
   tenantId?: true
+  addressId?: true
   name?: true
-  street1?: true
-  street2?: true
-  city?: true
-  state?: true
-  country?: true
-  postalCode?: true
   isPrimary?: true
   createdAt?: true
   updatedAt?: true
@@ -127,13 +106,8 @@ export type WarehouseMaxAggregateInputType = {
 export type WarehouseCountAggregateInputType = {
   id?: true
   tenantId?: true
+  addressId?: true
   name?: true
-  street1?: true
-  street2?: true
-  city?: true
-  state?: true
-  country?: true
-  postalCode?: true
   isPrimary?: true
   createdAt?: true
   updatedAt?: true
@@ -236,13 +210,8 @@ export type WarehouseGroupByArgs<
 export type WarehouseGroupByOutputType = {
   id: string
   tenantId: string
+  addressId: string
   name: string
-  street1: string
-  street2: string | null
-  city: string
-  state: string | null
-  country: string
-  postalCode: string | null
   isPrimary: boolean
   createdAt: number
   updatedAt: number
@@ -272,13 +241,8 @@ export type WarehouseWhereInput = {
   NOT?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
   id?: Prisma.StringFilter<'Warehouse'> | string
   tenantId?: Prisma.StringFilter<'Warehouse'> | string
+  addressId?: Prisma.StringFilter<'Warehouse'> | string
   name?: Prisma.StringFilter<'Warehouse'> | string
-  street1?: Prisma.StringFilter<'Warehouse'> | string
-  street2?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-  city?: Prisma.StringFilter<'Warehouse'> | string
-  state?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-  country?: Prisma.StringFilter<'Warehouse'> | string
-  postalCode?: Prisma.StringNullableFilter<'Warehouse'> | string | null
   isPrimary?: Prisma.BoolFilter<'Warehouse'> | boolean
   createdAt?: Prisma.IntFilter<'Warehouse'> | number
   updatedAt?: Prisma.IntFilter<'Warehouse'> | number
@@ -286,41 +250,36 @@ export type WarehouseWhereInput = {
     Prisma.TenantScalarRelationFilter,
     Prisma.TenantWhereInput
   >
+  address?: Prisma.XOR<
+    Prisma.AddressScalarRelationFilter,
+    Prisma.AddressWhereInput
+  >
   manifests?: Prisma.ManifestListRelationFilter
 }
 
 export type WarehouseOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrderInput | Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrderInput | Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   tenant?: Prisma.TenantOrderByWithRelationInput
+  address?: Prisma.AddressOrderByWithRelationInput
   manifests?: Prisma.ManifestOrderByRelationAggregateInput
 }
 
 export type WarehouseWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string
+    addressId?: string
     warehouses_tenant_id_name_key?: Prisma.WarehouseWarehouses_tenant_id_name_keyCompoundUniqueInput
     AND?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
     OR?: Prisma.WarehouseWhereInput[]
     NOT?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
     tenantId?: Prisma.StringFilter<'Warehouse'> | string
     name?: Prisma.StringFilter<'Warehouse'> | string
-    street1?: Prisma.StringFilter<'Warehouse'> | string
-    street2?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-    city?: Prisma.StringFilter<'Warehouse'> | string
-    state?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-    country?: Prisma.StringFilter<'Warehouse'> | string
-    postalCode?: Prisma.StringNullableFilter<'Warehouse'> | string | null
     isPrimary?: Prisma.BoolFilter<'Warehouse'> | boolean
     createdAt?: Prisma.IntFilter<'Warehouse'> | number
     updatedAt?: Prisma.IntFilter<'Warehouse'> | number
@@ -328,21 +287,20 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<
       Prisma.TenantScalarRelationFilter,
       Prisma.TenantWhereInput
     >
+    address?: Prisma.XOR<
+      Prisma.AddressScalarRelationFilter,
+      Prisma.AddressWhereInput
+    >
     manifests?: Prisma.ManifestListRelationFilter
   },
-  'id' | 'warehouses_tenant_id_name_key'
+  'id' | 'addressId' | 'warehouses_tenant_id_name_key'
 >
 
 export type WarehouseOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrderInput | Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrderInput | Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrderInput | Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -363,19 +321,8 @@ export type WarehouseScalarWhereWithAggregatesInput = {
     | Prisma.WarehouseScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
   tenantId?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
+  addressId?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
   name?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
-  street1?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
-  street2?:
-    | Prisma.StringNullableWithAggregatesFilter<'Warehouse'>
-    | string
-    | null
-  city?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
-  state?: Prisma.StringNullableWithAggregatesFilter<'Warehouse'> | string | null
-  country?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
-  postalCode?:
-    | Prisma.StringNullableWithAggregatesFilter<'Warehouse'>
-    | string
-    | null
   isPrimary?: Prisma.BoolWithAggregatesFilter<'Warehouse'> | boolean
   createdAt?: Prisma.IntWithAggregatesFilter<'Warehouse'> | number
   updatedAt?: Prisma.IntWithAggregatesFilter<'Warehouse'> | number
@@ -384,29 +331,19 @@ export type WarehouseScalarWhereWithAggregatesInput = {
 export type WarehouseCreateInput = {
   id?: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
+  address: Prisma.AddressCreateNestedOneWithoutWarehousesInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseUncheckedCreateInput = {
   id?: string
   tenantId: string
+  addressId: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
@@ -416,29 +353,19 @@ export type WarehouseUncheckedCreateInput = {
 export type WarehouseUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
+  address?: Prisma.AddressUpdateOneRequiredWithoutWarehousesNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -448,13 +375,8 @@ export type WarehouseUncheckedUpdateInput = {
 export type WarehouseCreateManyInput = {
   id?: string
   tenantId: string
+  addressId: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
@@ -463,12 +385,6 @@ export type WarehouseCreateManyInput = {
 export type WarehouseUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -477,21 +393,11 @@ export type WarehouseUpdateManyMutationInput = {
 export type WarehouseUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type WarehouseNullableScalarRelationFilter = {
-  is?: Prisma.WarehouseWhereInput | null
-  isNot?: Prisma.WarehouseWhereInput | null
 }
 
 export type WarehouseListRelationFilter = {
@@ -504,6 +410,11 @@ export type WarehouseOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type WarehouseNullableScalarRelationFilter = {
+  is?: Prisma.WarehouseWhereInput | null
+  isNot?: Prisma.WarehouseWhereInput | null
+}
+
 export type WarehouseWarehouses_tenant_id_name_keyCompoundUniqueInput = {
   tenantId: string
   name: string
@@ -512,13 +423,8 @@ export type WarehouseWarehouses_tenant_id_name_keyCompoundUniqueInput = {
 export type WarehouseCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -532,13 +438,8 @@ export type WarehouseAvgOrderByAggregateInput = {
 export type WarehouseMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -547,13 +448,8 @@ export type WarehouseMaxOrderByAggregateInput = {
 export type WarehouseMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
+  addressId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  street1?: Prisma.SortOrder
-  street2?: Prisma.SortOrder
-  city?: Prisma.SortOrder
-  state?: Prisma.SortOrder
-  country?: Prisma.SortOrder
-  postalCode?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -562,6 +458,108 @@ export type WarehouseMinOrderByAggregateInput = {
 export type WarehouseSumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type WarehouseCreateNestedManyWithoutAddressInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.WarehouseCreateWithoutAddressInput,
+        Prisma.WarehouseUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.WarehouseCreateWithoutAddressInput[]
+    | Prisma.WarehouseUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput[]
+  createMany?: Prisma.WarehouseCreateManyAddressInputEnvelope
+  connect?:
+    | Prisma.WarehouseWhereUniqueInput
+    | Prisma.WarehouseWhereUniqueInput[]
+}
+
+export type WarehouseUncheckedCreateNestedManyWithoutAddressInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.WarehouseCreateWithoutAddressInput,
+        Prisma.WarehouseUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.WarehouseCreateWithoutAddressInput[]
+    | Prisma.WarehouseUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput[]
+  createMany?: Prisma.WarehouseCreateManyAddressInputEnvelope
+  connect?:
+    | Prisma.WarehouseWhereUniqueInput
+    | Prisma.WarehouseWhereUniqueInput[]
+}
+
+export type WarehouseUpdateManyWithoutAddressNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.WarehouseCreateWithoutAddressInput,
+        Prisma.WarehouseUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.WarehouseCreateWithoutAddressInput[]
+    | Prisma.WarehouseUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput[]
+  upsert?:
+    | Prisma.WarehouseUpsertWithWhereUniqueWithoutAddressInput
+    | Prisma.WarehouseUpsertWithWhereUniqueWithoutAddressInput[]
+  createMany?: Prisma.WarehouseCreateManyAddressInputEnvelope
+  set?: Prisma.WarehouseWhereUniqueInput | Prisma.WarehouseWhereUniqueInput[]
+  disconnect?:
+    | Prisma.WarehouseWhereUniqueInput
+    | Prisma.WarehouseWhereUniqueInput[]
+  delete?: Prisma.WarehouseWhereUniqueInput | Prisma.WarehouseWhereUniqueInput[]
+  connect?:
+    | Prisma.WarehouseWhereUniqueInput
+    | Prisma.WarehouseWhereUniqueInput[]
+  update?:
+    | Prisma.WarehouseUpdateWithWhereUniqueWithoutAddressInput
+    | Prisma.WarehouseUpdateWithWhereUniqueWithoutAddressInput[]
+  updateMany?:
+    | Prisma.WarehouseUpdateManyWithWhereWithoutAddressInput
+    | Prisma.WarehouseUpdateManyWithWhereWithoutAddressInput[]
+  deleteMany?:
+    | Prisma.WarehouseScalarWhereInput
+    | Prisma.WarehouseScalarWhereInput[]
+}
+
+export type WarehouseUncheckedUpdateManyWithoutAddressNestedInput = {
+  create?:
+    | Prisma.XOR<
+        Prisma.WarehouseCreateWithoutAddressInput,
+        Prisma.WarehouseUncheckedCreateWithoutAddressInput
+      >
+    | Prisma.WarehouseCreateWithoutAddressInput[]
+    | Prisma.WarehouseUncheckedCreateWithoutAddressInput[]
+  connectOrCreate?:
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput
+    | Prisma.WarehouseCreateOrConnectWithoutAddressInput[]
+  upsert?:
+    | Prisma.WarehouseUpsertWithWhereUniqueWithoutAddressInput
+    | Prisma.WarehouseUpsertWithWhereUniqueWithoutAddressInput[]
+  createMany?: Prisma.WarehouseCreateManyAddressInputEnvelope
+  set?: Prisma.WarehouseWhereUniqueInput | Prisma.WarehouseWhereUniqueInput[]
+  disconnect?:
+    | Prisma.WarehouseWhereUniqueInput
+    | Prisma.WarehouseWhereUniqueInput[]
+  delete?: Prisma.WarehouseWhereUniqueInput | Prisma.WarehouseWhereUniqueInput[]
+  connect?:
+    | Prisma.WarehouseWhereUniqueInput
+    | Prisma.WarehouseWhereUniqueInput[]
+  update?:
+    | Prisma.WarehouseUpdateWithWhereUniqueWithoutAddressInput
+    | Prisma.WarehouseUpdateWithWhereUniqueWithoutAddressInput[]
+  updateMany?:
+    | Prisma.WarehouseUpdateManyWithWhereWithoutAddressInput
+    | Prisma.WarehouseUpdateManyWithWhereWithoutAddressInput[]
+  deleteMany?:
+    | Prisma.WarehouseScalarWhereInput
+    | Prisma.WarehouseScalarWhereInput[]
 }
 
 export type WarehouseCreateNestedOneWithoutManifestsInput = {
@@ -694,31 +692,96 @@ export type WarehouseUncheckedUpdateManyWithoutTenantNestedInput = {
     | Prisma.WarehouseScalarWhereInput[]
 }
 
-export type WarehouseCreateWithoutManifestsInput = {
+export type WarehouseCreateWithoutAddressInput = {
   id?: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
+  manifests?: Prisma.ManifestCreateNestedManyWithoutWarehouseInput
+}
+
+export type WarehouseUncheckedCreateWithoutAddressInput = {
+  id?: string
+  name: string
+  isPrimary?: boolean
+  createdAt: number
+  updatedAt: number
+  manifests?: Prisma.ManifestUncheckedCreateNestedManyWithoutWarehouseInput
+}
+
+export type WarehouseCreateOrConnectWithoutAddressInput = {
+  where: Prisma.WarehouseWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.WarehouseCreateWithoutAddressInput,
+    Prisma.WarehouseUncheckedCreateWithoutAddressInput
+  >
+}
+
+export type WarehouseCreateManyAddressInputEnvelope = {
+  data:
+    | Prisma.WarehouseCreateManyAddressInput
+    | Prisma.WarehouseCreateManyAddressInput[]
+  skipDuplicates?: boolean
+}
+
+export type WarehouseUpsertWithWhereUniqueWithoutAddressInput = {
+  where: Prisma.WarehouseWhereUniqueInput
+  update: Prisma.XOR<
+    Prisma.WarehouseUpdateWithoutAddressInput,
+    Prisma.WarehouseUncheckedUpdateWithoutAddressInput
+  >
+  create: Prisma.XOR<
+    Prisma.WarehouseCreateWithoutAddressInput,
+    Prisma.WarehouseUncheckedCreateWithoutAddressInput
+  >
+}
+
+export type WarehouseUpdateWithWhereUniqueWithoutAddressInput = {
+  where: Prisma.WarehouseWhereUniqueInput
+  data: Prisma.XOR<
+    Prisma.WarehouseUpdateWithoutAddressInput,
+    Prisma.WarehouseUncheckedUpdateWithoutAddressInput
+  >
+}
+
+export type WarehouseUpdateManyWithWhereWithoutAddressInput = {
+  where: Prisma.WarehouseScalarWhereInput
+  data: Prisma.XOR<
+    Prisma.WarehouseUpdateManyMutationInput,
+    Prisma.WarehouseUncheckedUpdateManyWithoutAddressInput
+  >
+}
+
+export type WarehouseScalarWhereInput = {
+  AND?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
+  OR?: Prisma.WarehouseScalarWhereInput[]
+  NOT?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
+  id?: Prisma.StringFilter<'Warehouse'> | string
+  tenantId?: Prisma.StringFilter<'Warehouse'> | string
+  addressId?: Prisma.StringFilter<'Warehouse'> | string
+  name?: Prisma.StringFilter<'Warehouse'> | string
+  isPrimary?: Prisma.BoolFilter<'Warehouse'> | boolean
+  createdAt?: Prisma.IntFilter<'Warehouse'> | number
+  updatedAt?: Prisma.IntFilter<'Warehouse'> | number
+}
+
+export type WarehouseCreateWithoutManifestsInput = {
+  id?: string
+  name: string
+  isPrimary?: boolean
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
+  address: Prisma.AddressCreateNestedOneWithoutWarehousesInput
 }
 
 export type WarehouseUncheckedCreateWithoutManifestsInput = {
   id?: string
   tenantId: string
+  addressId: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
@@ -755,28 +818,18 @@ export type WarehouseUpdateToOneWithWhereWithoutManifestsInput = {
 export type WarehouseUpdateWithoutManifestsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
+  address?: Prisma.AddressUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
 export type WarehouseUncheckedUpdateWithoutManifestsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -785,27 +838,17 @@ export type WarehouseUncheckedUpdateWithoutManifestsInput = {
 export type WarehouseCreateWithoutTenantInput = {
   id?: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
+  address: Prisma.AddressCreateNestedOneWithoutWarehousesInput
   manifests?: Prisma.ManifestCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseUncheckedCreateWithoutTenantInput = {
   id?: string
+  addressId: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
@@ -855,33 +898,45 @@ export type WarehouseUpdateManyWithWhereWithoutTenantInput = {
   >
 }
 
-export type WarehouseScalarWhereInput = {
-  AND?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
-  OR?: Prisma.WarehouseScalarWhereInput[]
-  NOT?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
-  id?: Prisma.StringFilter<'Warehouse'> | string
-  tenantId?: Prisma.StringFilter<'Warehouse'> | string
-  name?: Prisma.StringFilter<'Warehouse'> | string
-  street1?: Prisma.StringFilter<'Warehouse'> | string
-  street2?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-  city?: Prisma.StringFilter<'Warehouse'> | string
-  state?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-  country?: Prisma.StringFilter<'Warehouse'> | string
-  postalCode?: Prisma.StringNullableFilter<'Warehouse'> | string | null
-  isPrimary?: Prisma.BoolFilter<'Warehouse'> | boolean
-  createdAt?: Prisma.IntFilter<'Warehouse'> | number
-  updatedAt?: Prisma.IntFilter<'Warehouse'> | number
+export type WarehouseCreateManyAddressInput = {
+  id?: string
+  name: string
+  isPrimary?: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export type WarehouseUpdateWithoutAddressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
+  manifests?: Prisma.ManifestUpdateManyWithoutWarehouseNestedInput
+}
+
+export type WarehouseUncheckedUpdateWithoutAddressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  manifests?: Prisma.ManifestUncheckedUpdateManyWithoutWarehouseNestedInput
+}
+
+export type WarehouseUncheckedUpdateManyWithoutAddressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type WarehouseCreateManyTenantInput = {
   id?: string
+  addressId: string
   name: string
-  street1: string
-  street2?: string | null
-  city: string
-  state?: string | null
-  country?: string
-  postalCode?: string | null
   isPrimary?: boolean
   createdAt: number
   updatedAt: number
@@ -890,27 +945,17 @@ export type WarehouseCreateManyTenantInput = {
 export type WarehouseUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  address?: Prisma.AddressUpdateOneRequiredWithoutWarehousesNestedInput
   manifests?: Prisma.ManifestUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseUncheckedUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -919,13 +964,8 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
 
 export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  addressId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  street1?: Prisma.StringFieldUpdateOperationsInput | string
-  street2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  city?: Prisma.StringFieldUpdateOperationsInput | string
-  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  country?: Prisma.StringFieldUpdateOperationsInput | string
-  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -976,17 +1016,13 @@ export type WarehouseSelect<
   {
     id?: boolean
     tenantId?: boolean
+    addressId?: boolean
     name?: boolean
-    street1?: boolean
-    street2?: boolean
-    city?: boolean
-    state?: boolean
-    country?: boolean
-    postalCode?: boolean
     isPrimary?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
+    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
     manifests?: boolean | Prisma.Warehouse$manifestsArgs<ExtArgs>
     _count?: boolean | Prisma.WarehouseCountOutputTypeDefaultArgs<ExtArgs>
   },
@@ -1000,17 +1036,13 @@ export type WarehouseSelectCreateManyAndReturn<
   {
     id?: boolean
     tenantId?: boolean
+    addressId?: boolean
     name?: boolean
-    street1?: boolean
-    street2?: boolean
-    city?: boolean
-    state?: boolean
-    country?: boolean
-    postalCode?: boolean
     isPrimary?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
+    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['warehouse']
 >
@@ -1022,17 +1054,13 @@ export type WarehouseSelectUpdateManyAndReturn<
   {
     id?: boolean
     tenantId?: boolean
+    addressId?: boolean
     name?: boolean
-    street1?: boolean
-    street2?: boolean
-    city?: boolean
-    state?: boolean
-    country?: boolean
-    postalCode?: boolean
     isPrimary?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
+    address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   },
   ExtArgs['result']['warehouse']
 >
@@ -1040,13 +1068,8 @@ export type WarehouseSelectUpdateManyAndReturn<
 export type WarehouseSelectScalar = {
   id?: boolean
   tenantId?: boolean
+  addressId?: boolean
   name?: boolean
-  street1?: boolean
-  street2?: boolean
-  city?: boolean
-  state?: boolean
-  country?: boolean
-  postalCode?: boolean
   isPrimary?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1058,13 +1081,8 @@ export type WarehouseOmit<
 > = runtime.Types.Extensions.GetOmit<
   | 'id'
   | 'tenantId'
+  | 'addressId'
   | 'name'
-  | 'street1'
-  | 'street2'
-  | 'city'
-  | 'state'
-  | 'country'
-  | 'postalCode'
   | 'isPrimary'
   | 'createdAt'
   | 'updatedAt',
@@ -1075,6 +1093,7 @@ export type WarehouseInclude<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
+  address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
   manifests?: boolean | Prisma.Warehouse$manifestsArgs<ExtArgs>
   _count?: boolean | Prisma.WarehouseCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1083,12 +1102,14 @@ export type WarehouseIncludeCreateManyAndReturn<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
+  address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }
 export type WarehouseIncludeUpdateManyAndReturn<
   ExtArgs extends runtime.Types.Extensions.InternalArgs =
     runtime.Types.Extensions.DefaultArgs,
 > = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
+  address?: boolean | Prisma.AddressDefaultArgs<ExtArgs>
 }
 
 export type $WarehousePayload<
@@ -1098,19 +1119,15 @@ export type $WarehousePayload<
   name: 'Warehouse'
   objects: {
     tenant: Prisma.$TenantPayload<ExtArgs>
+    address: Prisma.$AddressPayload<ExtArgs>
     manifests: Prisma.$ManifestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<
     {
       id: string
       tenantId: string
+      addressId: string
       name: string
-      street1: string
-      street2: string | null
-      city: string
-      state: string | null
-      country: string
-      postalCode: string | null
       isPrimary: boolean
       createdAt: number
       updatedAt: number
@@ -1678,6 +1695,20 @@ export interface Prisma__WarehouseClient<
     ExtArgs,
     GlobalOmitOptions
   >
+  address<T extends Prisma.AddressDefaultArgs<ExtArgs> = {}>(
+    args?: Prisma.Subset<T, Prisma.AddressDefaultArgs<ExtArgs>>
+  ): Prisma.Prisma__AddressClient<
+    | runtime.Types.Result.GetResult<
+        Prisma.$AddressPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >
+    | Null,
+    Null,
+    ExtArgs,
+    GlobalOmitOptions
+  >
   manifests<T extends Prisma.Warehouse$manifestsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.Warehouse$manifestsArgs<ExtArgs>>
   ): Prisma.PrismaPromise<
@@ -1733,13 +1764,8 @@ export interface Prisma__WarehouseClient<
 export interface WarehouseFieldRefs {
   readonly id: Prisma.FieldRef<'Warehouse', 'String'>
   readonly tenantId: Prisma.FieldRef<'Warehouse', 'String'>
+  readonly addressId: Prisma.FieldRef<'Warehouse', 'String'>
   readonly name: Prisma.FieldRef<'Warehouse', 'String'>
-  readonly street1: Prisma.FieldRef<'Warehouse', 'String'>
-  readonly street2: Prisma.FieldRef<'Warehouse', 'String'>
-  readonly city: Prisma.FieldRef<'Warehouse', 'String'>
-  readonly state: Prisma.FieldRef<'Warehouse', 'String'>
-  readonly country: Prisma.FieldRef<'Warehouse', 'String'>
-  readonly postalCode: Prisma.FieldRef<'Warehouse', 'String'>
   readonly isPrimary: Prisma.FieldRef<'Warehouse', 'Boolean'>
   readonly createdAt: Prisma.FieldRef<'Warehouse', 'Int'>
   readonly updatedAt: Prisma.FieldRef<'Warehouse', 'Int'>

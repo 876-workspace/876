@@ -10,6 +10,7 @@ import { createPrefixedId } from '@876/core/id'
  * Prisma's own model name.
  */
 const ENTITY_PREFIXES = {
+  Address: 'adr',
   Branch: 'brn',
   CourierCustomerProfile: 'cus',
   CustomerAddress: 'cadr',

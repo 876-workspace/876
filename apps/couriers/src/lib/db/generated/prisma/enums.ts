@@ -17,6 +17,19 @@ export const CashSessionStatus = {
 export type CashSessionStatus =
   (typeof CashSessionStatus)[keyof typeof CashSessionStatus]
 
+export const CustomerAddressType = {
+  HOME: 'HOME',
+  WORK: 'WORK',
+  DELIVERY: 'DELIVERY',
+  SHIPPING: 'SHIPPING',
+  BILLING: 'BILLING',
+  RETURN: 'RETURN',
+  OTHER: 'OTHER',
+} as const
+
+export type CustomerAddressType =
+  (typeof CustomerAddressType)[keyof typeof CustomerAddressType]
+
 export const CustomerStatus = {
   ACTIVE: 'ACTIVE',
   SUSPENDED: 'SUSPENDED',

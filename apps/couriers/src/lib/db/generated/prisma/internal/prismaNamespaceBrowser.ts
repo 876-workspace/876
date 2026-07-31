@@ -54,12 +54,13 @@ export const JsonNull = runtime.JsonNull
 export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
-  CustomerAddress: 'CustomerAddress',
+  Address: 'Address',
   CashSession: 'CashSession',
   CashSessionPayment: 'CashSessionPayment',
   Branch: 'Branch',
   Carrier: 'Carrier',
   Contact: 'Contact',
+  CustomerAddress: 'CustomerAddress',
   CustomerIdType: 'CustomerIdType',
   CustomerDocument: 'CustomerDocument',
   CourierCustomerProfile: 'CourierCustomerProfile',
@@ -97,23 +98,26 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel =
   (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
-export const CustomerAddressScalarFieldEnum = {
+export const AddressScalarFieldEnum = {
   id: 'id',
-  customerId: 'customerId',
-  label: 'label',
-  street1: 'street1',
-  street2: 'street2',
+  tenantId: 'tenantId',
+  name: 'name',
+  line1: 'line1',
+  line2: 'line2',
   city: 'city',
-  parish: 'parish',
-  country: 'country',
+  regionCode: 'regionCode',
+  regionName: 'regionName',
+  countryCode: 'countryCode',
   postalCode: 'postalCode',
-  isDefault: 'isDefault',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
 } as const
 
-export type CustomerAddressScalarFieldEnum =
-  (typeof CustomerAddressScalarFieldEnum)[keyof typeof CustomerAddressScalarFieldEnum]
+export type AddressScalarFieldEnum =
+  (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
 
 export const CashSessionScalarFieldEnum = {
   id: 'id',
@@ -151,12 +155,8 @@ export type CashSessionPaymentScalarFieldEnum =
 export const BranchScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  addressId: 'addressId',
   name: 'name',
-  street1: 'street1',
-  street2: 'street2',
-  city: 'city',
-  parish: 'parish',
-  country: 'country',
   phone: 'phone',
   isDefault: 'isDefault',
   isActive: 'isActive',
@@ -196,6 +196,20 @@ export const ContactScalarFieldEnum = {
 
 export type ContactScalarFieldEnum =
   (typeof ContactScalarFieldEnum)[keyof typeof ContactScalarFieldEnum]
+
+export const CustomerAddressScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  customerId: 'customerId',
+  addressId: 'addressId',
+  type: 'type',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+} as const
+
+export type CustomerAddressScalarFieldEnum =
+  (typeof CustomerAddressScalarFieldEnum)[keyof typeof CustomerAddressScalarFieldEnum]
 
 export const CustomerIdTypeScalarFieldEnum = {
   id: 'id',
@@ -507,13 +521,8 @@ export type TenantScalarFieldEnum =
 export const WarehouseScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  addressId: 'addressId',
   name: 'name',
-  street1: 'street1',
-  street2: 'street2',
-  city: 'city',
-  state: 'state',
-  country: 'country',
-  postalCode: 'postalCode',
   isPrimary: 'isPrimary',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

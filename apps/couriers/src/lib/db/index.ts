@@ -14,9 +14,11 @@ import { COURIERS_ID_PREFIXES, generateId, type EntityType } from '../id'
 export type {
   Tenant,
   Domain,
+  Address,
   Contact,
   CourierCustomerProfile,
   CustomerAddress,
+  CustomerAddressType,
   Mailbox,
   Warehouse,
   Branch,

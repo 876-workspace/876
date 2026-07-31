@@ -1,17 +1,18 @@
-/// A tenant-owned Jamaica office / customer pickup location.
-/// Customers are assigned a home branch at enrollment; packages are routed there by default.
-/// isDefault marks the first/primary branch shown during onboarding and signup flows.
-/// settings is a schemaless JSONB bag for future branch-level config (e.g. delivery options,
-/// pickup hours) — structure is defined by the application layer, not enforced here.
+/// A tenant-owned office / customer pickup location.
+///
+/// A branch is an operational entity, not an address: its name, phone, default
+/// and active state, settings, assigned customers, routed packages and staff all
+/// belong here, and the address it occupies is one property of it. Customers are
+/// assigned a home branch at enrollment; packages are routed there by default.
+/// isDefault marks the primary branch shown during onboarding and signup flows.
+/// settings is a schemaless JSONB bag for future branch-level config (e.g.
+/// delivery options, pickup hours) — structure is defined by the application
+/// layer, not enforced here.
 model Branch {
   id        String  @id @default(cuid())
   tenantId  String  @map("tenant_id")
+  addressId String  @unique @map("address_id")
   name      String
-  street1   String  @map("street_1")
-  street2   String? @map("street_2")
-  city      String
-  parish    String?
-  country   String  @default("JM")
   phone     String?
   isDefault Boolean @default(false) @map("is_default")
   isActive  Boolean @default(true) @map("is_active")
@@ -21,6 +22,7 @@ model Branch {
   updatedAt Int     @map("updated_at")
 
   tenant    Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  address   Address                  @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
   customers CourierCustomerProfile[]
   packages  Package[]
   staff     StaffMember[]

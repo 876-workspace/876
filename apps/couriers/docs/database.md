@@ -33,8 +33,17 @@ never joins directly to the Billing database.
 | Tenant routing          | `tenants`, `domains`                                                                                                  |
 | Customer operations     | `courier_customer_profiles`, `customer_addresses`, `contacts`, `customer_id_types`, `customer_documents`, `mailboxes` |
 | Shipping                | `packages`, `package_documents`, `package_notes`, `package_categories`, `sellers`, `carriers`, `manifests`            |
-| Locations and workforce | `warehouses`, `branches`, `staff_positions`, `staff_members`                                                          |
+| Locations and workforce | `addresses`, `warehouses`, `branches`, `staff_positions`, `staff_members`                                             |
 | Cash-shift operations   | `cash_sessions`, `cash_session_payments`                                                                              |
+
+Postal data lives in `addresses` alone. Branches, warehouses and customer
+addresses reference it through a composite `(id, tenant_id)` key rather than
+carrying their own street, city and region columns, so an owner can never point
+at another tenant's address. A branch or warehouse remains an operational entity
+that _has_ an address; the address role for a customer belongs to the
+`customer_addresses` relationship, not to the address. Region is stored as a
+neutral canonical code plus a display snapshot resolved from the platform geo
+catalog. See `docs/architecture/010-courier-address-foundation.md`.
 
 The customer profile contains courier-specific facts such as home branch, TRN,
 commercial-account classification, and enrollment status. It intentionally

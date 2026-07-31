@@ -341,6 +341,7 @@ export type CourierCustomerProfileOrderByWithRelationInput = {
 export type CourierCustomerProfileWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string
+    courier_customer_profiles_id_tenant_id_key?: Prisma.CourierCustomerProfileCourier_customer_profiles_id_tenant_id_keyCompoundUniqueInput
     courier_customer_profiles_tenant_user_key?: Prisma.CourierCustomerProfileCourier_customer_profiles_tenant_user_keyCompoundUniqueInput
     courier_customer_profiles_tenant_billing_customer_key?: Prisma.CourierCustomerProfileCourier_customer_profiles_tenant_billing_customer_keyCompoundUniqueInput
     AND?:
@@ -380,6 +381,7 @@ export type CourierCustomerProfileWhereUniqueInput = Prisma.AtLeast<
     documents?: Prisma.CustomerDocumentListRelationFilter
   },
   | 'id'
+  | 'courier_customer_profiles_id_tenant_id_key'
   | 'courier_customer_profiles_tenant_user_key'
   | 'courier_customer_profiles_tenant_billing_customer_key'
 >
@@ -564,11 +566,6 @@ export type CourierCustomerProfileUncheckedUpdateManyInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
-export type CourierCustomerProfileScalarRelationFilter = {
-  is?: Prisma.CourierCustomerProfileWhereInput
-  isNot?: Prisma.CourierCustomerProfileWhereInput
-}
-
 export type CourierCustomerProfileListRelationFilter = {
   every?: Prisma.CourierCustomerProfileWhereInput
   some?: Prisma.CourierCustomerProfileWhereInput
@@ -578,6 +575,17 @@ export type CourierCustomerProfileListRelationFilter = {
 export type CourierCustomerProfileOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
+
+export type CourierCustomerProfileScalarRelationFilter = {
+  is?: Prisma.CourierCustomerProfileWhereInput
+  isNot?: Prisma.CourierCustomerProfileWhereInput
+}
+
+export type CourierCustomerProfileCourier_customer_profiles_id_tenant_id_keyCompoundUniqueInput =
+  {
+    id: string
+    tenantId: string
+  }
 
 export type CourierCustomerProfileCourier_customer_profiles_tenant_user_keyCompoundUniqueInput =
   {
@@ -644,33 +652,6 @@ export type CourierCustomerProfileSumOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
-
-export type CourierCustomerProfileCreateNestedOneWithoutAddressesInput = {
-  create?: Prisma.XOR<
-    Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
-    Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
-  >
-  connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutAddressesInput
-  connect?: Prisma.CourierCustomerProfileWhereUniqueInput
-}
-
-export type CourierCustomerProfileUpdateOneRequiredWithoutAddressesNestedInput =
-  {
-    create?: Prisma.XOR<
-      Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
-      Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
-    >
-    connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutAddressesInput
-    upsert?: Prisma.CourierCustomerProfileUpsertWithoutAddressesInput
-    connect?: Prisma.CourierCustomerProfileWhereUniqueInput
-    update?: Prisma.XOR<
-      Prisma.XOR<
-        Prisma.CourierCustomerProfileUpdateToOneWithWhereWithoutAddressesInput,
-        Prisma.CourierCustomerProfileUpdateWithoutAddressesInput
-      >,
-      Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput
-    >
-  }
 
 export type CourierCustomerProfileCreateNestedManyWithoutBranchInput = {
   create?:
@@ -808,6 +789,33 @@ export type CourierCustomerProfileUpdateOneRequiredWithoutContactsNestedInput =
         Prisma.CourierCustomerProfileUpdateWithoutContactsInput
       >,
       Prisma.CourierCustomerProfileUncheckedUpdateWithoutContactsInput
+    >
+  }
+
+export type CourierCustomerProfileCreateNestedOneWithoutAddressesInput = {
+  create?: Prisma.XOR<
+    Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
+    Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
+  >
+  connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutAddressesInput
+  connect?: Prisma.CourierCustomerProfileWhereUniqueInput
+}
+
+export type CourierCustomerProfileUpdateOneRequiredWithoutAddressesNestedInput =
+  {
+    create?: Prisma.XOR<
+      Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
+      Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
+    >
+    connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutAddressesInput
+    upsert?: Prisma.CourierCustomerProfileUpsertWithoutAddressesInput
+    connect?: Prisma.CourierCustomerProfileWhereUniqueInput
+    update?: Prisma.XOR<
+      Prisma.XOR<
+        Prisma.CourierCustomerProfileUpdateToOneWithWhereWithoutAddressesInput,
+        Prisma.CourierCustomerProfileUpdateWithoutAddressesInput
+      >,
+      Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput
     >
   }
 
@@ -1007,110 +1015,6 @@ export type CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput =
       | Prisma.CourierCustomerProfileScalarWhereInput
       | Prisma.CourierCustomerProfileScalarWhereInput[]
   }
-
-export type CourierCustomerProfileCreateWithoutAddressesInput = {
-  id?: string
-  userId: string
-  billingCustomerId: string
-  status?: $Enums.CustomerStatus
-  trn?: string | null
-  isCommercial?: boolean
-  firstSeenAt: number
-  createdAt: number
-  updatedAt: number
-  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
-  branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
-  mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
-  packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
-  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
-  documents?: Prisma.CustomerDocumentCreateNestedManyWithoutCustomerInput
-}
-
-export type CourierCustomerProfileUncheckedCreateWithoutAddressesInput = {
-  id?: string
-  tenantId: string
-  userId: string
-  billingCustomerId: string
-  branchId?: string | null
-  status?: $Enums.CustomerStatus
-  trn?: string | null
-  isCommercial?: boolean
-  firstSeenAt: number
-  createdAt: number
-  updatedAt: number
-  mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
-  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
-  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
-  documents?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutCustomerInput
-}
-
-export type CourierCustomerProfileCreateOrConnectWithoutAddressesInput = {
-  where: Prisma.CourierCustomerProfileWhereUniqueInput
-  create: Prisma.XOR<
-    Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
-    Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
-  >
-}
-
-export type CourierCustomerProfileUpsertWithoutAddressesInput = {
-  update: Prisma.XOR<
-    Prisma.CourierCustomerProfileUpdateWithoutAddressesInput,
-    Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput
-  >
-  create: Prisma.XOR<
-    Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
-    Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
-  >
-  where?: Prisma.CourierCustomerProfileWhereInput
-}
-
-export type CourierCustomerProfileUpdateToOneWithWhereWithoutAddressesInput = {
-  where?: Prisma.CourierCustomerProfileWhereInput
-  data: Prisma.XOR<
-    Prisma.CourierCustomerProfileUpdateWithoutAddressesInput,
-    Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput
-  >
-}
-
-export type CourierCustomerProfileUpdateWithoutAddressesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
-  billingCustomerId?: Prisma.StringFieldUpdateOperationsInput | string
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  trn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isCommercial?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  firstSeenAt?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
-  branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
-  mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
-  packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
-  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
-  documents?: Prisma.CustomerDocumentUpdateManyWithoutCustomerNestedInput
-}
-
-export type CourierCustomerProfileUncheckedUpdateWithoutAddressesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
-  billingCustomerId?: Prisma.StringFieldUpdateOperationsInput | string
-  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?:
-    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
-    | $Enums.CustomerStatus
-  trn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isCommercial?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  firstSeenAt?: Prisma.IntFieldUpdateOperationsInput | number
-  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
-  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
-  mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
-  packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
-  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
-  documents?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutCustomerNestedInput
-}
 
 export type CourierCustomerProfileCreateWithoutBranchInput = {
   id?: string
@@ -1318,6 +1222,110 @@ export type CourierCustomerProfileUncheckedUpdateWithoutContactsInput = {
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
   addresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput
+  documents?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
+export type CourierCustomerProfileCreateWithoutAddressesInput = {
+  id?: string
+  userId: string
+  billingCustomerId: string
+  status?: $Enums.CustomerStatus
+  trn?: string | null
+  isCommercial?: boolean
+  firstSeenAt: number
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
+  branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
+  mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
+  packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
+  contacts?: Prisma.ContactCreateNestedManyWithoutCustomerInput
+  documents?: Prisma.CustomerDocumentCreateNestedManyWithoutCustomerInput
+}
+
+export type CourierCustomerProfileUncheckedCreateWithoutAddressesInput = {
+  id?: string
+  tenantId: string
+  userId: string
+  billingCustomerId: string
+  branchId?: string | null
+  status?: $Enums.CustomerStatus
+  trn?: string | null
+  isCommercial?: boolean
+  firstSeenAt: number
+  createdAt: number
+  updatedAt: number
+  mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
+  contacts?: Prisma.ContactUncheckedCreateNestedManyWithoutCustomerInput
+  documents?: Prisma.CustomerDocumentUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CourierCustomerProfileCreateOrConnectWithoutAddressesInput = {
+  where: Prisma.CourierCustomerProfileWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
+    Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
+  >
+}
+
+export type CourierCustomerProfileUpsertWithoutAddressesInput = {
+  update: Prisma.XOR<
+    Prisma.CourierCustomerProfileUpdateWithoutAddressesInput,
+    Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput
+  >
+  create: Prisma.XOR<
+    Prisma.CourierCustomerProfileCreateWithoutAddressesInput,
+    Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput
+  >
+  where?: Prisma.CourierCustomerProfileWhereInput
+}
+
+export type CourierCustomerProfileUpdateToOneWithWhereWithoutAddressesInput = {
+  where?: Prisma.CourierCustomerProfileWhereInput
+  data: Prisma.XOR<
+    Prisma.CourierCustomerProfileUpdateWithoutAddressesInput,
+    Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput
+  >
+}
+
+export type CourierCustomerProfileUpdateWithoutAddressesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  billingCustomerId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  trn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCommercial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  firstSeenAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
+  branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
+  mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
+  contacts?: Prisma.ContactUpdateManyWithoutCustomerNestedInput
+  documents?: Prisma.CustomerDocumentUpdateManyWithoutCustomerNestedInput
+}
+
+export type CourierCustomerProfileUncheckedUpdateWithoutAddressesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  billingCustomerId?: Prisma.StringFieldUpdateOperationsInput | string
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?:
+    | Prisma.EnumCustomerStatusFieldUpdateOperationsInput
+    | $Enums.CustomerStatus
+  trn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCommercial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  firstSeenAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
+  contacts?: Prisma.ContactUncheckedUpdateManyWithoutCustomerNestedInput
   documents?: Prisma.CustomerDocumentUncheckedUpdateManyWithoutCustomerNestedInput
 }
 

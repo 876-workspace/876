@@ -176,6 +176,15 @@ export type PlatformInviteToken = {
   created_at: number
 }
 
+/** An enabled country row (`/geo/countries`). */
+export type PlatformCountry = {
+  object: 'country'
+  code: string
+  name: string
+  phone_prefix: string | null
+  default_currency_code: string | null
+}
+
 /** A region (parish/state/province) row for a country (`/geo/countries/{code}/regions`). */
 export type PlatformRegion = {
   id: string

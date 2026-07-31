@@ -1,35 +1,57 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma, type Branch, type Prisma } from '@/lib/db'
+import { prisma, type Prisma } from '@/lib/db'
 import {
   branchUpdateParamsSchema,
   type BranchUpdateParams,
+  type BranchView,
 } from '@/types/branch'
 import type { ServiceResult } from '@/types/api'
 
+import { buildAddressUpdateData } from '../addresses/update'
 import { isUniqueConstraintError } from '../prisma-errors'
 import { ok, err } from '../result'
+import { toBranchView } from './view'
+
+class DefaultBranchError extends Error {}
 
 export async function update(
   tenantId: string,
   id: string,
   params: BranchUpdateParams
-): ServiceResult<Branch> {
+): ServiceResult<BranchView> {
   const parsed = branchUpdateParamsSchema.safeParse(params)
   if (!parsed.success)
     return err(parsed.error.issues[0]?.message ?? 'Invalid branch.', 400)
 
   const input = parsed.data
+
+  const current = await prisma.branch.findFirst({
+    where: { id, tenantId },
+    select: {
+      id: true,
+      isDefault: true,
+      addressId: true,
+      address: { select: { countryCode: true, regionCode: true } },
+    },
+  })
+  if (!current) return err('Branch not found.', 404)
+
+  // Resolved outside the transaction for the same reason as create.
+  let addressData: Prisma.AddressUncheckedUpdateInput | undefined
+  if (input.address) {
+    if (!current.address || !current.addressId)
+      return err('Branch not found.', 404)
+
+    const built = await buildAddressUpdateData(current.address, input.address)
+    if (!built.ok) return built.result
+    addressData = built.data
+  }
+
   const now = nowUnixSeconds()
 
   try {
     const branch = await prisma.$transaction(async (tx) => {
-      const current = await tx.branch.findFirst({
-        where: { id, tenantId },
-        select: { id: true, isDefault: true },
-      })
-      if (!current) return null
-
       // A tenant must always keep exactly one default branch, so clearing the
       // flag on the current default is rejected rather than silently ignored —
       // promote another branch instead.
@@ -42,15 +64,16 @@ export async function update(
           data: { isDefault: false, updatedAt: now },
         })
 
+      if (addressData && current.addressId)
+        await tx.address.update({
+          where: { id: current.addressId },
+          data: addressData,
+        })
+
       return tx.branch.update({
         where: { id: current.id },
         data: {
           ...(input.name === undefined ? {} : { name: input.name }),
-          ...(input.street1 === undefined ? {} : { street1: input.street1 }),
-          ...(input.street2 === undefined ? {} : { street2: input.street2 }),
-          ...(input.city === undefined ? {} : { city: input.city }),
-          ...(input.parish === undefined ? {} : { parish: input.parish }),
-          ...(input.country === undefined ? {} : { country: input.country }),
           ...(input.phone === undefined ? {} : { phone: input.phone }),
           ...(input.isDefault === undefined
             ? {}
@@ -61,12 +84,11 @@ export async function update(
             : { settings: input.settings as Prisma.InputJsonObject }),
           updatedAt: now,
         },
+        include: { address: true },
       })
     })
 
-    if (!branch) return err('Branch not found.', 404)
-
-    return ok(branch)
+    return ok(toBranchView(branch))
   } catch (error) {
     if (error instanceof DefaultBranchError)
       return err(
@@ -80,5 +102,3 @@ export async function update(
     return err('Failed to update branch.', 500)
   }
 }
-
-class DefaultBranchError extends Error {}

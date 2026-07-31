@@ -7,12 +7,13 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/CustomerAddress.ts'
+export type * from './models/Address.ts'
 export type * from './models/CashSession.ts'
 export type * from './models/CashSessionPayment.ts'
 export type * from './models/Branch.ts'
 export type * from './models/Carrier.ts'
 export type * from './models/Contact.ts'
+export type * from './models/CustomerAddress.ts'
 export type * from './models/CustomerIdType.ts'
 export type * from './models/CustomerDocument.ts'
 export type * from './models/CourierCustomerProfile.ts'

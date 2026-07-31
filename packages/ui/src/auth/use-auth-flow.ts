@@ -305,7 +305,8 @@ export function useAuthFlow() {
           handleEmailVerificationChallenge(
             {
               email: result.data.email ?? state.identifier,
-              pendingAuthenticationToken: result.data.pendingAuthenticationToken,
+              pendingAuthenticationToken:
+                result.data.pendingAuthenticationToken,
             },
             () =>
               client
@@ -386,7 +387,8 @@ export function useAuthFlow() {
           handleEmailVerificationChallenge(
             {
               email: result.data.email ?? params.email,
-              pendingAuthenticationToken: result.data.pendingAuthenticationToken,
+              pendingAuthenticationToken:
+                result.data.pendingAuthenticationToken,
             },
             () =>
               client
@@ -478,7 +480,8 @@ export function useAuthFlow() {
           handleEmailVerificationChallenge(
             {
               email: result.data.email ?? params.email,
-              pendingAuthenticationToken: result.data.pendingAuthenticationToken,
+              pendingAuthenticationToken:
+                result.data.pendingAuthenticationToken,
             },
             () =>
               client

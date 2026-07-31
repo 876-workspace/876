@@ -17,12 +17,14 @@ export { Prisma }
 export * as $Enums from './enums.ts'
 export * from './enums.ts'
 /**
- * Model CustomerAddress
- * A customer-defined delivery destination (e.g. "Home", "Office").
- * Platform 876 billing/shipping addresses are NOT duplicated here — they live
- * in the 876 identity API and are resolved via $876 at read time.
+ * Model Address
+ * A named physical or postal location owned by one Courier tenant.
+ *
+ * Address contains geographic information only. Operational contact details,
+ * opening hours, recipient instructions, and branch capabilities belong to
+ * the entity or relationship using this address.
  */
-export type CustomerAddress = Prisma.CustomerAddressModel
+export type Address = Prisma.AddressModel
 /**
  * Model CashSession
  * A staff member's shift-based cash collection session.
@@ -41,11 +43,16 @@ export type CashSession = Prisma.CashSessionModel
 export type CashSessionPayment = Prisma.CashSessionPaymentModel
 /**
  * Model Branch
- * A tenant-owned Jamaica office / customer pickup location.
- * Customers are assigned a home branch at enrollment; packages are routed there by default.
- * isDefault marks the first/primary branch shown during onboarding and signup flows.
- * settings is a schemaless JSONB bag for future branch-level config (e.g. delivery options,
- * pickup hours) — structure is defined by the application layer, not enforced here.
+ * A tenant-owned office / customer pickup location.
+ *
+ * A branch is an operational entity, not an address: its name, phone, default
+ * and active state, settings, assigned customers, routed packages and staff all
+ * belong here, and the address it occupies is one property of it. Customers are
+ * assigned a home branch at enrollment; packages are routed there by default.
+ * isDefault marks the primary branch shown during onboarding and signup flows.
+ * settings is a schemaless JSONB bag for future branch-level config (e.g.
+ * delivery options, pickup hours) — structure is defined by the application
+ * layer, not enforced here.
  */
 export type Branch = Prisma.BranchModel
 /**
@@ -64,6 +71,14 @@ export type Carrier = Prisma.CarrierModel
  * name + phone only. Staff verify identity at pickup against this record.
  */
 export type Contact = Prisma.ContactModel
+/**
+ * Model CustomerAddress
+ * A customer's use of an address, in a particular role.
+ *
+ * Platform 876 billing/shipping addresses are NOT duplicated here — they live
+ * in the 876 identity API and are resolved via $876 at read time.
+ */
+export type CustomerAddress = Prisma.CustomerAddressModel
 /**
  * Model CustomerIdType
  * Reference table for identity document types accepted by tenants.
@@ -204,8 +219,12 @@ export type TeamMember = Prisma.TeamMemberModel
 export type Tenant = Prisma.TenantModel
 /**
  * Model Warehouse
- * A US receiving address owned by a tenant.
- * Packages sent by customers are delivered here using the customer's mailbox number.
- * A tenant may have multiple warehouses (e.g. a dedicated Amazon address).
+ * A receiving address owned by a tenant, typically in the US.
+ *
+ * Packages sent by customers are delivered here using the customer's mailbox
+ * number. A tenant may have multiple warehouses (e.g. a dedicated Amazon
+ * address). Like a branch, a warehouse is an operational entity that has an
+ * address rather than being one — receiving, consolidation and manifest
+ * behaviour belong here.
  */
 export type Warehouse = Prisma.WarehouseModel
