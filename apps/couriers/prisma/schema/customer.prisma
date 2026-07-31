@@ -30,6 +30,9 @@ model CourierCustomerProfile {
   contacts  Contact[]
   documents CustomerDocument[]
 
+  /// Lets CustomerAddress reference (customerId, tenantId) together, so a
+  /// customer address can never point at a profile in another tenant.
+  @@unique([id, tenantId], name: "courier_customer_profiles_id_tenant_id_key")
   @@unique([tenantId, userId], name: "courier_customer_profiles_tenant_user_key", map: "courier_customer_profiles_tenant_user_key")
   @@unique([tenantId, billingCustomerId], name: "courier_customer_profiles_tenant_billing_customer_key", map: "courier_customer_profiles_tenant_billing_customer_key")
   @@index([userId], name: "courier_customer_profiles_user_id_idx")

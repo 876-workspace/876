@@ -1,3 +1,8 @@
+/// The role an address plays for a customer.
+///
+/// The role belongs to the relationship, not to the address: one physical
+/// address can be a customer's home and their billing address at once, and two
+/// customers can share an address with different roles.
 enum CustomerAddressType {
   HOME
   WORK
@@ -8,28 +13,22 @@ enum CustomerAddressType {
   OTHER
 }
 
-/// A customer-defined delivery destination linked to a shared Address entity.
+/// A customer's use of an address, in a particular role.
+///
 /// Platform 876 billing/shipping addresses are NOT duplicated here — they live
 /// in the 876 identity API and are resolved via $876 at read time.
 model CustomerAddress {
   id         String              @id @default(cuid())
-  tenantId   String?             @map("tenant_id")
+  tenantId   String              @map("tenant_id")
   customerId String              @map("customer_id")
-  addressId  String?             @map("address_id")
+  addressId  String              @map("address_id")
   type       CustomerAddressType @default(DELIVERY)
-  label      String?
-  street1    String?             @map("street_1")
-  street2    String?             @map("street_2")
-  city       String?
-  parish     String?
-  country    String?             @default("JM")
-  postalCode String?             @map("postal_code")
   isDefault  Boolean             @default(false) @map("is_default")
   createdAt  Int                 @map("created_at")
   updatedAt  Int                 @map("updated_at")
 
-  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  address  Address?               @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
+  customer CourierCustomerProfile @relation(fields: [customerId, tenantId], references: [id, tenantId], onDelete: Cascade)
+  address  Address                @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
 
   @@unique([customerId, addressId, type], name: "customer_addresses_customer_address_type_key")
   @@index([tenantId], name: "customer_addresses_tenant_id_idx")
