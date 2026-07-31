@@ -73,8 +73,10 @@ from domains.users.schemas import (
     UserSessionRevokeResponse,
     UserUpdate,
 )
+from providers.workos.adapter import get_auth_provider
 from providers.workos.client import get_workos_client
 from services.features import FeatureService
+from services.identity_sync import delete_provider_user
 from services.provisioning import resolve_member_permissions
 
 from . import docs  # noqa: F401
@@ -1774,8 +1776,18 @@ async def delete_user(
             message="No user exists with the provided identifier.",
             http_status_code=status.HTTP_404_NOT_FOUND,
         )
+    workos_user_id, email = user.workos_user_id, user.email
     await repo.delete(user_id, deleted_by=deleted_by, reason=reason)
-    logger.info("users.delete", user_id=user_id, email=user.email)
+
+    # A tombstoned account must not be able to authenticate, and WorkOS has no
+    # "disable" state — deleting the provider user is what revokes the
+    # credentials. The local row survives as the tombstone of record. Running it
+    # after the local write means a provider failure rolls the tombstone back
+    # rather than leaving the account half-deleted.
+    await db.flush()
+    await delete_provider_user(get_auth_provider(get_settings()), workos_user_id, local_user_id=user_id)
+
+    logger.info("users.delete", user_id=user_id, email=email)
     return UserDeleteResponse(id=user_id)
 
 
@@ -1804,8 +1816,13 @@ async def purge_user(
             message="No user exists with the provided identifier.",
             http_status_code=status.HTTP_404_NOT_FOUND,
         )
+    workos_user_id, email = user.workos_user_id, user.email
     await repo.purge(user_id)
-    logger.info("users.purge", user_id=user_id, email=user.email, purged_by=deleted_by)
+
+    await db.flush()
+    await delete_provider_user(get_auth_provider(get_settings()), workos_user_id, local_user_id=user_id)
+
+    logger.info("users.purge", user_id=user_id, email=email, purged_by=deleted_by)
     return UserDeleteResponse(id=user_id)
 
 
