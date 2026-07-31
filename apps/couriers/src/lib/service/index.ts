@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { addresses } from './addresses'
 import { branches } from './branches'
 import { tenants } from './tenants'
 import { customerProfiles } from './customer-profiles'
@@ -12,6 +13,7 @@ import { modules } from './modules'
 import { preferences } from './preferences'
 
 export const service = {
+  addresses,
   branches,
   tenants,
   customerProfiles,

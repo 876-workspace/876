@@ -1,6 +1,7 @@
 import type { ErrorDef, AppError, HttpStatusCode } from '@876/core'
 import { HttpStatus } from '@876/core'
 
+import { ADDRESS_ERRORS } from './address'
 import { GENERIC_ERRORS } from './generic'
 import { TENANT_ERRORS } from './tenant'
 import { CUSTOMER_ERRORS } from './customer'
@@ -11,6 +12,7 @@ import { STORAGE_ERRORS } from './storage'
 
 export const COURIERS_ERRORS = {
   ...GENERIC_ERRORS,
+  ...ADDRESS_ERRORS,
   ...TENANT_ERRORS,
   ...CUSTOMER_ERRORS,
   ...PORTAL_ERRORS,

@@ -24,6 +24,7 @@ function createWarehouse(overrides: Partial<Warehouse> = {}): Warehouse {
   return {
     id: 'wh_rocketship_miami',
     tenantId: 'ten_rocketship',
+    addressId: 'adr_wh_rocketship_miami',
     name: 'Miami Receiving Hub',
     street1: '8760 NW 25th Street',
     street2: 'Suite RSJ',
