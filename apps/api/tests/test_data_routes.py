@@ -717,6 +717,16 @@ async def test_memberships_crud_operations(monkeypatch) -> None:
     monkeypatch.setattr(MembershipRepository, "update", fake_update)
     monkeypatch.setattr(MembershipRepository, "delete", fake_delete)
 
+    # Deleting a membership now deletes its WorkOS counterpart, so stub the
+    # provider — otherwise this test issues a live call to api.workos.com.
+    deleted_workos_membership_ids: list[str] = []
+
+    class _FakeProvider:
+        async def delete_organization_membership(self, *, membership_id: str) -> None:
+            deleted_workos_membership_ids.append(membership_id)
+
+    monkeypatch.setattr("domains.memberships.router.get_auth_provider", lambda _settings: _FakeProvider())
+
     app = create_app(Settings(internal_key="test-internal-key"))
 
     async def fake_db() -> AsyncIterator[MockDb]:
@@ -751,6 +761,8 @@ async def test_memberships_crud_operations(monkeypatch) -> None:
         )
         assert resp.status_code == 200
         assert resp.json()["data"]["deleted"] is True
+
+    assert deleted_workos_membership_ids == ["workos_mbr_test"]
 
 
 async def test_features_routes(monkeypatch) -> None:
@@ -1054,7 +1066,7 @@ async def test_internal_key_can_list_user_accounts_without_secrets(monkeypatch: 
 async def test_users_routes(monkeypatch) -> None:
     db_mock = MockDb()
 
-    async def fake_get_by_workos_id(self, workos_user_id: str) -> Any:
+    async def fake_get_by_workos_id(self, workos_user_id: str, include_deleted: bool = False) -> Any:
         if workos_user_id == "workos_usr_test":
             return _UserRow()
         return None

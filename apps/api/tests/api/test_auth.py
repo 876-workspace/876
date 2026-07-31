@@ -274,7 +274,7 @@ def client(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_resolve_email_success(client, monkeypatch) -> None:
-    async def mock_get_by_email(self, email):
+    async def mock_get_by_email(self, email, include_deleted: bool = False):
         return User(
             id="usr_123",
             workos_user_id="user_wos_123",
@@ -311,7 +311,7 @@ async def test_resolve_email_disposable(client, monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_login_success(client, monkeypatch) -> None:
-    async def mock_get_by_workos_id(self, wos_id):
+    async def mock_get_by_workos_id(self, wos_id, include_deleted: bool = False):
         return User(
             id="usr_123",
             workos_user_id=wos_id,
@@ -434,7 +434,7 @@ async def test_register_adopts_existing_workos_user_after_duplicate_email(client
         updated_at=1700000000,
     )
 
-    async def mock_get_by_workos_id(self, workos_user_id):
+    async def mock_get_by_workos_id(self, workos_user_id, include_deleted: bool = False):
         assert workos_user_id == "user_wos_123"
         return existing_user
 
@@ -511,7 +511,7 @@ async def test_register_adopts_existing_user_when_login_requires_email_verificat
         )
         raise httpx.HTTPStatusError("Verification required", request=request, response=response)
 
-    async def mock_get_by_workos_id(self, workos_user_id):
+    async def mock_get_by_workos_id(self, workos_user_id, include_deleted: bool = False):
         assert workos_user_id == existing_user.workos_user_id
         return existing_user
 
@@ -586,9 +586,7 @@ async def test_register_rejects_adoption_when_login_event_does_not_prove_credent
 
 
 @pytest.mark.asyncio
-async def test_register_business_rejects_unproven_adoption_before_creating_organizations(
-    client, monkeypatch
-) -> None:
+async def test_register_business_rejects_unproven_adoption_before_creating_organizations(client, monkeypatch) -> None:
     async def sso_required_event(self, email, password, client_id, ip_address=None, user_agent=None):
         request = httpx.Request("POST", "https://api.workos.com")
         response = httpx.Response(
@@ -622,9 +620,7 @@ async def test_register_business_rejects_unproven_adoption_before_creating_organ
 
 
 @pytest.mark.asyncio
-async def test_register_business_returns_auth_event_when_email_verification_required(
-    client, monkeypatch
-) -> None:
+async def test_register_business_returns_auth_event_when_email_verification_required(client, monkeypatch) -> None:
     """register_business must not compensate (delete org) when WorkOS requires email
     verification after a fresh sign-up. It should commit the org/membership with
     status='invited' and return a 200 auth_event so the UI can show the verify step."""
@@ -780,7 +776,7 @@ async def test_register_business_resumes_adopted_user_with_existing_membership(c
         updated_at=1700000000,
     )
 
-    async def mock_get_by_workos_id(self, workos_user_id):
+    async def mock_get_by_workos_id(self, workos_user_id, include_deleted: bool = False):
         assert workos_user_id == existing_user.workos_user_id
         return existing_user
 
@@ -840,7 +836,7 @@ async def test_register_business_does_not_delete_adopted_user_when_new_org_setup
         updated_at=1700000000,
     )
 
-    async def mock_get_by_workos_id(self, workos_user_id):
+    async def mock_get_by_workos_id(self, workos_user_id, include_deleted: bool = False):
         return existing_user
 
     async def mock_list_memberships(self, **kwargs):
@@ -1287,7 +1283,7 @@ async def test_list_providers(client, monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_send_magic_otp_success(client, monkeypatch) -> None:
-    async def mock_get_by_email(self, email):
+    async def mock_get_by_email(self, email, include_deleted: bool = False):
         return None
 
     async def mock_upsert(self, email, **kwargs):
@@ -1366,7 +1362,7 @@ async def test_reset_password_success(client) -> None:
 
 @pytest.mark.asyncio
 async def test_verify_email_success(client, monkeypatch) -> None:
-    async def mock_get_by_email(self, email):
+    async def mock_get_by_email(self, email, include_deleted: bool = False):
         return User(
             id="usr_123",
             workos_user_id="user_wos_123",
@@ -1424,7 +1420,7 @@ async def test_callback_refreshes_existing_user_avatar(client, monkeypatch) -> N
     )
     updates = {}
 
-    async def mock_get_by_workos_id(self, workos_user_id):
+    async def mock_get_by_workos_id(self, workos_user_id, include_deleted: bool = False):
         assert workos_user_id == "user_wos_123"
         return existing_user
 
