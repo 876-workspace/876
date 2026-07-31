@@ -17,10 +17,10 @@
   // Non-secret service URLs. Secrets (keys, DB URLs) are set with
   // `wrangler secret put` and never appear here.
   "vars": {
-    "API_URL": "https://876-api.raheemforschool.workers.dev",
-    "WIDGETS_API_URL": "https://876-widgets-api.raheemforschool.workers.dev",
-    "BILLING_URL": "https://876-billing.raheemforschool.workers.dev",
-    "BILLING_API_URL": "https://876-billing-api.raheemforschool.workers.dev",
+    "API_URL": "https://876-api.1876.workers.dev",
+    "WIDGETS_API_URL": "https://876-widgets-api.1876.workers.dev",
+    "BILLING_URL": "https://876-billing.1876.workers.dev",
+    "BILLING_API_URL": "https://876-billing-api.1876.workers.dev",
     "SENTRY_DSN": "https://83d33d619c53ce274bb1c1aefb7d1867@o4507681618591744.ingest.us.sentry.io/4511802776092672",
     "NEXT_PUBLIC_SENTRY_DSN": "https://83d33d619c53ce274bb1c1aefb7d1867@o4507681618591744.ingest.us.sentry.io/4511802776092672",
   },
