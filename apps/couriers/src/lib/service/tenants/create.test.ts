@@ -9,6 +9,7 @@ type MockTx = {
 const mocks = vi.hoisted(() => ({
   ensureDefaults: vi.fn(),
   ensureDefaultBranch: vi.fn(),
+  resolveDefaultAddress: vi.fn(),
   transaction: vi.fn(),
 }))
 
@@ -31,7 +32,10 @@ vi.mock('../roles', () => ({
 }))
 
 vi.mock('../branches', () => ({
-  branches: { ensureDefault: mocks.ensureDefaultBranch },
+  branches: {
+    ensureDefault: mocks.ensureDefaultBranch,
+    resolveDefaultAddress: mocks.resolveDefaultAddress,
+  },
 }))
 
 import { create } from './create'
@@ -68,6 +72,7 @@ describe('service.tenants.create', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     tx = createTx()
     mocks.ensureDefaults.mockResolvedValue(undefined)
+    mocks.resolveDefaultAddress.mockResolvedValue(null)
     mocks.transaction.mockImplementation(
       async (callback: (client: MockTx) => Promise<unknown>) => callback(tx)
     )
@@ -123,9 +128,15 @@ describe('service.tenants.create', () => {
     const address = {
       street1: '1 Knutsford Blvd',
       city: 'Kingston',
-      parish: 'Saint Andrew',
-      country: 'JM',
+      regionId: 'region_jm_02',
+      countryCode: 'JM',
     }
+    const resolved = {
+      ...address,
+      regionCode: 'JM-02',
+      regionName: 'Saint Andrew',
+    }
+    mocks.resolveDefaultAddress.mockResolvedValue(resolved)
 
     await create({
       orgId: 'org_123',
@@ -134,10 +145,11 @@ describe('service.tenants.create', () => {
       address,
     })
 
+    expect(mocks.resolveDefaultAddress).toHaveBeenCalledWith(address)
     expect(mocks.ensureDefaultBranch).toHaveBeenCalledTimes(1)
     expect(mocks.ensureDefaultBranch).toHaveBeenCalledWith(
       'ten_rocketship',
-      address,
+      resolved,
       tx
     )
   })

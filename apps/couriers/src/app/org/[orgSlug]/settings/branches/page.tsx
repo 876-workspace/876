@@ -1,6 +1,7 @@
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
+import { formatAddressLine } from '@/lib/address/format'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
@@ -56,13 +57,11 @@ export default async function BranchesSettingsPage({ params }: Props) {
                   )}
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {[branch.street1, branch.street2, branch.city, branch.parish]
-                    .filter(Boolean)
-                    .join(', ')}
+                  {formatAddressLine(branch.address)}
                 </p>
               </div>
               <span className="text-muted-foreground text-xs">
-                {branch.country}
+                {branch.address.countryCode}
               </span>
             </li>
           ))}
