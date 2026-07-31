@@ -73,8 +73,10 @@ from domains.users.schemas import (
     UserSessionRevokeResponse,
     UserUpdate,
 )
+from providers.workos.adapter import get_auth_provider
 from providers.workos.client import get_workos_client
 from services.features import FeatureService
+from services.identity_sync import delete_provider_user
 from services.provisioning import resolve_member_permissions
 
 from . import docs  # noqa: F401
@@ -83,6 +85,7 @@ from .username import normalize_username as _normalize_username
 
 logger = get_logger(__name__)
 router = APIRouter(prefix="/users", tags=["Users"])
+
 
 async def _unique_username(
     db: AsyncSession,
@@ -1483,6 +1486,11 @@ async def ensure_user(
     if user:
         return _serialize_ensured_user(user)
 
+    # Same tombstone rule as the session path: a deleted account must be refused
+    # here rather than falling through to create and colliding with its own row
+    # on the `users.email` unique index.
+    await repo.assert_not_deleted(workos_user_id=body.workos_user_id, email=body.email)
+
     now = now_unix_seconds()
     first_name = body.first_name if body.first_name is not None else body.email.split("@")[0]
     last_name = body.last_name if body.last_name is not None else "User"
@@ -1551,9 +1559,7 @@ async def list_users(
     repo = UserRepository(db)
     membership_repo = MembershipRepository(db)
     if search:
-        rows = await repo.search(
-            query=search, limit=limit, include_deleted=include_deleted, status=user_status
-        )
+        rows = await repo.search(query=search, limit=limit, include_deleted=include_deleted, status=user_status)
         companies = await membership_repo.companies_for_users([r.id for r in rows])
         return ListObject[UserResponse](
             data=[_serialize_user(r, *companies.get(r.id, (None, None, None))) for r in rows],
@@ -1775,8 +1781,18 @@ async def delete_user(
             message="No user exists with the provided identifier.",
             http_status_code=status.HTTP_404_NOT_FOUND,
         )
+    workos_user_id, email = user.workos_user_id, user.email
     await repo.delete(user_id, deleted_by=deleted_by, reason=reason)
-    logger.info("users.delete", user_id=user_id, email=user.email)
+
+    # A tombstoned account must not be able to authenticate, and WorkOS has no
+    # "disable" state — deleting the provider user is what revokes the
+    # credentials. The local row survives as the tombstone of record. Running it
+    # after the local write means a provider failure rolls the tombstone back
+    # rather than leaving the account half-deleted.
+    await db.flush()
+    await delete_provider_user(get_auth_provider(get_settings()), workos_user_id, local_user_id=user_id)
+
+    logger.info("users.delete", user_id=user_id, email=email)
     return UserDeleteResponse(id=user_id)
 
 
@@ -1805,8 +1821,13 @@ async def purge_user(
             message="No user exists with the provided identifier.",
             http_status_code=status.HTTP_404_NOT_FOUND,
         )
+    workos_user_id, email = user.workos_user_id, user.email
     await repo.purge(user_id)
-    logger.info("users.purge", user_id=user_id, email=user.email, purged_by=deleted_by)
+
+    await db.flush()
+    await delete_provider_user(get_auth_provider(get_settings()), workos_user_id, local_user_id=user_id)
+
+    logger.info("users.purge", user_id=user_id, email=email, purged_by=deleted_by)
     return UserDeleteResponse(id=user_id)
 
 
@@ -2232,9 +2253,7 @@ async def disclose_user_identification(
             http_status_code=status.HTTP_403_FORBIDDEN,
         )
 
-    subscription = await SubscriptionRepository(db).get_by_app_slug(
-        org_id=body.organization_id, app_slug=body.app_slug
-    )
+    subscription = await SubscriptionRepository(db).get_by_app_slug(org_id=body.organization_id, app_slug=body.app_slug)
     if not subscription or subscription.status != "active":
         raise AppHTTPException(
             code="identification/subscription-required",

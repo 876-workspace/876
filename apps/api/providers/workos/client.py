@@ -11,6 +11,9 @@ from providers.workos.errors import normalize_workos_error
 
 logger = get_logger(__name__)
 
+# WorkOS caps list endpoints at 100 items per page.
+_LIST_PAGE_SIZE = 100
+
 
 class WorkOSClient:
     def __init__(self, api_key: str, base_url: str = "https://api.workos.com") -> None:
@@ -264,6 +267,40 @@ class WorkOSClient:
     async def delete_user(self, user_id: str) -> None:
         await self._delete(f"/user_management/users/{user_id}")
 
+    async def list_all_users(self) -> list[dict[str, Any]]:
+        """Every WorkOS user in the environment, following pagination cursors."""
+        return await self._list_all("/user_management/users")
+
+    async def list_all_organizations(self) -> list[dict[str, Any]]:
+        """Every WorkOS organization in the environment, following pagination cursors."""
+        return await self._list_all("/organizations")
+
+    async def list_all_organization_memberships(
+        self,
+        *,
+        organization_id: str | None = None,
+        user_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Every WorkOS organization membership matching the given filters."""
+        return await self._list_all(
+            "/user_management/organization_memberships",
+            params={"organization_id": organization_id, "user_id": user_id},
+        )
+
+    async def _list_all(self, path: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+        """Drain a cursor-paginated WorkOS list endpoint into a single list."""
+        items: list[dict[str, Any]] = []
+        after: str | None = None
+        while True:
+            page_params: dict[str, Any] = {**(params or {}), "limit": _LIST_PAGE_SIZE, "after": after}
+            body = await self._get(path, params=page_params)
+            items.extend(body.get("data", []))
+
+            metadata = body.get("list_metadata") or {}
+            after = metadata.get("after")
+            if not after:
+                return items
+
     async def create_magic_auth(self, email: str, client_id: str) -> dict[str, Any]:
         return await self._post(
             "/user_management/magic_auth",
@@ -309,6 +346,9 @@ class WorkOSClient:
 
     async def delete_organization(self, organization_id: str) -> None:
         await self._delete(f"/organizations/{organization_id}")
+
+    async def delete_organization_membership(self, membership_id: str) -> None:
+        await self._delete(f"/user_management/organization_memberships/{membership_id}")
 
     async def create_organization_membership(
         self,

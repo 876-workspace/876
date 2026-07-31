@@ -6,9 +6,12 @@ from core.config import is_platform_owner_email
 from core.deletion import deletion_values
 from core.errors import AppHTTPException
 from core.id import generate_id, generate_platform_owner_user_id
+from core.logging import get_logger
 from core.timestamps import now_unix_seconds
 from db.models import User, UserProfile
 from db.repositories.base import BaseRepository
+
+logger = get_logger(__name__)
 
 
 class UserRepository(BaseRepository):
@@ -20,13 +23,17 @@ class UserRepository(BaseRepository):
             return None
         return user
 
-    async def get_by_workos_id(self, workos_user_id: str) -> User | None:
-        stmt = select(User).where(User.workos_user_id == workos_user_id, User.deleted_at.is_(None))
+    async def get_by_workos_id(self, workos_user_id: str, include_deleted: bool = False) -> User | None:
+        stmt = select(User).where(User.workos_user_id == workos_user_id)
+        if not include_deleted:
+            stmt = stmt.where(User.deleted_at.is_(None))
         return (await self.db.scalars(stmt)).first()
 
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email: str, include_deleted: bool = False) -> User | None:
         normalized = email.lower().strip()
-        stmt = select(User).where(User.email == normalized, User.deleted_at.is_(None))
+        stmt = select(User).where(User.email == normalized)
+        if not include_deleted:
+            stmt = stmt.where(User.deleted_at.is_(None))
         return (await self.db.scalars(stmt)).first()
 
     async def get_by_username(self, username: str, include_deleted: bool = False) -> User | None:
@@ -91,6 +98,8 @@ class UserRepository(BaseRepository):
 
     async def ensure_from_workos(self, workos_user: Any) -> "User":
         """Get or create a local user record from a WorkOS provider user object."""
+        await self.assert_not_deleted(workos_user_id=workos_user.id, email=workos_user.email)
+
         user = await self.get_by_workos_id(workos_user.id)
         if user:
             now = now_unix_seconds()
@@ -171,6 +180,33 @@ class UserRepository(BaseRepository):
         await self.db.flush()
         return user
 
+    async def assert_not_deleted(self, *, workos_user_id: str, email: str) -> None:
+        """Refuse to resurrect a tombstoned account from a provider session.
+
+        Every other lookup here filters `deleted_at IS NULL`, so without this a
+        deleted user who still holds provider credentials falls through to a
+        create branch and collides with the tombstone on the `users.email`
+        unique index — surfacing as a 500 instead of a refusal. Deleting the
+        provider user is what normally prevents this; the guard covers the
+        window before that lands, and any account deleted before it existed.
+
+        Matches on the WorkOS id **or** the email: an account recreated at the
+        provider carries a new id, leaving the email as the only link.
+        """
+        normalized = email.lower().strip()
+        deleted = await self.get_by_workos_id(workos_user_id, include_deleted=True)
+        if deleted is None or deleted.deleted_at is None:
+            deleted = await self.get_by_email(normalized, include_deleted=True)
+        if deleted is None or deleted.deleted_at is None:
+            return
+
+        logger.warning("users.deleted_account_rejected", user_id=deleted.id, workos_user_id=workos_user_id)
+        raise AppHTTPException(
+            code="auth/account-deleted",
+            message="This account is no longer available.",
+            http_status_code=403,
+        )
+
     async def list(
         self,
         limit: int = 20,
@@ -180,6 +216,7 @@ class UserRepository(BaseRepository):
         status: str | None = None,
     ) -> tuple[list[User], bool]:
         from sqlalchemy.sql.elements import ColumnElement
+
         filters: list[ColumnElement[bool]] = [] if include_deleted else [User.deleted_at.is_(None)]
         if status:
             filters.append(User.status == status)
@@ -205,6 +242,7 @@ class UserRepository(BaseRepository):
         user.banned = banned
         user.banned_reason = reason if banned else None
         from core.timestamps import now_unix_seconds
+
         user.updated_at = now_unix_seconds()
         await self.db.flush()
         await self.db.refresh(user)

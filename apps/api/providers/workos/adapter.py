@@ -273,6 +273,40 @@ class WorkOSAuthProvider:
         except httpx.HTTPStatusError as exc:
             raise normalize_workos_error(exc) from exc
 
+    async def delete_organization_membership(self, *, membership_id: str) -> None:
+        try:
+            await self._client.delete_organization_membership(membership_id)
+        except httpx.HTTPStatusError as exc:
+            raise normalize_workos_error(exc) from exc
+
+    # ── Directory listing (reconciliation) ───────────────────────────────────
+
+    async def list_users(self) -> list[dict[str, Any]]:
+        try:
+            return await self._client.list_all_users()
+        except httpx.HTTPStatusError as exc:
+            raise normalize_workos_error(exc) from exc
+
+    async def list_organizations(self) -> list[dict[str, Any]]:
+        try:
+            return await self._client.list_all_organizations()
+        except httpx.HTTPStatusError as exc:
+            raise normalize_workos_error(exc) from exc
+
+    async def list_organization_memberships(
+        self,
+        *,
+        organization_id: str | None = None,
+        user_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        try:
+            return await self._client.list_all_organization_memberships(
+                organization_id=organization_id,
+                user_id=user_id,
+            )
+        except httpx.HTTPStatusError as exc:
+            raise normalize_workos_error(exc) from exc
+
     # ── Feature flag operations ───────────────────────────────────────────────
 
     async def add_feature_target(self, *, slug: str, target_id: str) -> None:
