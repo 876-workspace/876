@@ -48,7 +48,7 @@ export default async function PortalDashboardPage() {
               <CopyableAddressLine label="Full name" value={customerName} />
               <CopyableAddressLine
                 label="Address line 1"
-                value={[warehouse.street1, warehouse.street2]
+                value={[warehouse.address.line1, warehouse.address.line2]
                   .filter(Boolean)
                   .join(', ')}
               />
@@ -65,9 +65,9 @@ export default async function PortalDashboardPage() {
               <CopyableAddressLine
                 label="City, state, ZIP"
                 value={formatLocality(
-                  warehouse.city,
-                  warehouse.state,
-                  warehouse.postalCode
+                  warehouse.address.city,
+                  warehouse.address.regionName ?? warehouse.address.regionCode,
+                  warehouse.address.postalCode
                 )}
               />
             </div>

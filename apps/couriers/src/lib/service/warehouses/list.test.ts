@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Warehouse } from '@/lib/db'
+import type { Address, Warehouse } from '@/lib/db'
 
 type MockPrismaClient = {
   warehouse: {
@@ -20,21 +20,39 @@ vi.mock('@/lib/db', () => ({
 
 import { list } from './list'
 
-function createWarehouse(overrides: Partial<Warehouse> = {}): Warehouse {
+function createAddress(overrides: Partial<Address> = {}): Address {
+  return {
+    id: 'adr_rocketship_miami',
+    tenantId: 'ten_rocketship',
+    name: 'Miami Receiving Hub',
+    line1: '8760 NW 25th Street',
+    line2: 'Suite RSJ',
+    city: 'Doral',
+    regionCode: 'US-FL',
+    regionName: 'Florida',
+    countryCode: 'US',
+    postalCode: '33172',
+    latitude: null,
+    longitude: null,
+    isActive: true,
+    createdAt: 1_784_419_200,
+    updatedAt: 1_784_419_200,
+    ...overrides,
+  }
+}
+
+function createWarehouse(
+  overrides: Partial<Warehouse & { address: Address }> = {}
+): Warehouse & { address: Address } {
   return {
     id: 'wh_rocketship_miami',
     tenantId: 'ten_rocketship',
-    addressId: 'adr_wh_rocketship_miami',
+    addressId: 'adr_rocketship_miami',
     name: 'Miami Receiving Hub',
-    street1: '8760 NW 25th Street',
-    street2: 'Suite RSJ',
-    city: 'Doral',
-    state: 'FL',
-    country: 'US',
-    postalCode: '33172',
     isPrimary: true,
     createdAt: 1_784_419_200,
     updatedAt: 1_784_419_200,
+    address: createAddress(),
     ...overrides,
   }
 }
@@ -61,11 +79,37 @@ describe('warehouses.list', () => {
 
     const result = await list({ tenantId: 'ten_rocketship' })
 
-    expect(result).toEqual(warehouses)
     expect(findMany).toHaveBeenCalledTimes(1)
     expect(findMany).toHaveBeenCalledWith({
       where: { tenantId: 'ten_rocketship' },
       orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      include: { address: true },
     })
+    expect(result).toHaveLength(2)
+    expect(result[0]!.name).toBe('Miami Receiving Hub')
+  })
+
+  it('returns the address nested on each warehouse', async () => {
+    mockPrismaRef.current!.warehouse.findMany.mockResolvedValue([
+      createWarehouse(),
+    ])
+
+    const [warehouse] = await list({ tenantId: 'ten_rocketship' })
+
+    expect(warehouse!.address.line1).toBe('8760 NW 25th Street')
+    expect(warehouse!.address.regionName).toBe('Florida')
+    expect(warehouse!.addressId).toBe('adr_rocketship_miami')
+  })
+
+  it('fetches addresses in the same query rather than one per warehouse', async () => {
+    mockPrismaRef.current!.warehouse.findMany.mockResolvedValue([
+      createWarehouse(),
+      createWarehouse({ id: 'wh_two', name: 'Second' }),
+      createWarehouse({ id: 'wh_three', name: 'Third' }),
+    ])
+
+    await list({ tenantId: 'ten_rocketship' })
+
+    expect(mockPrismaRef.current!.warehouse.findMany).toHaveBeenCalledTimes(1)
   })
 })
