@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { expectErr } from '@/test/service-result'
+
 import type { AddressCreateParams } from '@/types/address'
 
 type MockPrismaClient = {
@@ -130,14 +132,14 @@ describe('addresses.create', () => {
       const result = await create(TENANT_ID, params(override))
 
       expect(result.error).toBeTruthy()
-      expect(result.status).toBe(400)
+      expect(expectErr(result).status).toBe(400)
       expect(mockPrismaRef.current!.address.create).not.toHaveBeenCalled()
     })
 
     it('rejects a country code that is not two characters', async () => {
       const result = await create(TENANT_ID, params({ countryCode: 'JAM' }))
 
-      expect(result.status).toBe(400)
+      expect(expectErr(result).status).toBe(400)
       expect(mockResolveRegion).not.toHaveBeenCalled()
     })
 
@@ -147,7 +149,7 @@ describe('addresses.create', () => {
     ])('rejects %s', async (_case, override) => {
       const result = await create(TENANT_ID, params(override))
 
-      expect(result.status).toBe(400)
+      expect(expectErr(result).status).toBe(400)
       expect(mockPrismaRef.current!.address.create).not.toHaveBeenCalled()
     })
 
@@ -159,7 +161,7 @@ describe('addresses.create', () => {
     ])('rejects a %s', async (_case, override) => {
       const result = await create(TENANT_ID, params(override))
 
-      expect(result.status).toBe(400)
+      expect(expectErr(result).status).toBe(400)
       expect(mockPrismaRef.current!.address.create).not.toHaveBeenCalled()
     })
   })
@@ -175,8 +177,8 @@ describe('addresses.create', () => {
 
       const result = await create(TENANT_ID, params())
 
-      expect(result.code).toBe(code)
-      expect(result.status).toBe(status)
+      expect(expectErr(result).code).toBe(code)
+      expect(expectErr(result).status).toBe(status)
       expect(result.data).toBeNull()
       expect(mockPrismaRef.current!.address.create).not.toHaveBeenCalled()
     })

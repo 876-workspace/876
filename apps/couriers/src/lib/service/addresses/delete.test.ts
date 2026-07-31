@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { expectErr } from '@/test/service-result'
+
 type MockTx = {
   address: {
     findFirst: ReturnType<typeof vi.fn>
@@ -91,8 +93,8 @@ describe('addresses.delete', () => {
 
     const result = await del(TENANT_ID, ADDRESS_ID)
 
-    expect(result.code).toBe('address/in-use')
-    expect(result.status).toBe(409)
+    expect(expectErr(result).code).toBe('address/in-use')
+    expect(expectErr(result).status).toBe(409)
     expect(mockTxRef.current!.address.delete).not.toHaveBeenCalled()
   })
 
@@ -101,8 +103,8 @@ describe('addresses.delete', () => {
 
     const result = await del('ten_other', ADDRESS_ID)
 
-    expect(result.code).toBe('address/not-found')
-    expect(result.status).toBe(404)
+    expect(expectErr(result).code).toBe('address/not-found')
+    expect(expectErr(result).status).toBe(404)
     expect(mockTxRef.current!.address.delete).not.toHaveBeenCalled()
   })
 

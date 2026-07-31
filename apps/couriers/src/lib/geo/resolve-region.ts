@@ -30,6 +30,27 @@ const listRegions = cache(async (countryCode: string) => {
 })
 
 /**
+ * Resolves a core region id (`organizations.region_id`) to its canonical code
+ * and name. Used when seeding a branch from the organization profile, which
+ * references a region by id rather than by code.
+ *
+ * Returns null when the region cannot be resolved — the caller keeps the rest
+ * of the address rather than inventing a region.
+ */
+export async function resolveRegionById(
+  countryCode: string,
+  regionId: string
+): Promise<ResolvedRegion | null> {
+  const regions = await listRegions(countryCode)
+  if (regions.error) return null
+
+  const region = regions.data.find((entry) => entry.id === regionId)
+  if (!region) return null
+
+  return { regionCode: region.code, regionName: region.name }
+}
+
+/**
  * Resolves a client-supplied country and region code against the platform geo
  * catalog, returning the canonical region code and its display name.
  *

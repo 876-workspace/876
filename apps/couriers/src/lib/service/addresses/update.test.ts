@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { expectErr } from '@/test/service-result'
+
 type MockPrismaClient = {
   address: {
     findFirst: ReturnType<typeof vi.fn>
@@ -127,8 +129,8 @@ describe('addresses.update', () => {
       regionCode: 'JM-02',
     })
 
-    expect(result.code).toBe('address/unknown-region')
-    expect(result.status).toBe(422)
+    expect(expectErr(result).code).toBe('address/unknown-region')
+    expect(expectErr(result).status).toBe(422)
     expect(mockPrismaRef.current!.address.update).not.toHaveBeenCalled()
   })
 
@@ -137,15 +139,15 @@ describe('addresses.update', () => {
 
     const result = await update('ten_other', ADDRESS_ID, { name: 'Renamed' })
 
-    expect(result.code).toBe('address/not-found')
-    expect(result.status).toBe(404)
+    expect(expectErr(result).code).toBe('address/not-found')
+    expect(expectErr(result).status).toBe(404)
     expect(mockPrismaRef.current!.address.update).not.toHaveBeenCalled()
   })
 
   it('rejects a blank name without writing', async () => {
     const result = await update(TENANT_ID, ADDRESS_ID, { name: '' })
 
-    expect(result.status).toBe(400)
+    expect(expectErr(result).status).toBe(400)
     expect(mockPrismaRef.current!.address.update).not.toHaveBeenCalled()
   })
 
