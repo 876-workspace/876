@@ -84,6 +84,7 @@ from .username import normalize_username as _normalize_username
 logger = get_logger(__name__)
 router = APIRouter(prefix="/users", tags=["Users"])
 
+
 async def _unique_username(
     db: AsyncSession,
     base: str,
@@ -1551,9 +1552,7 @@ async def list_users(
     repo = UserRepository(db)
     membership_repo = MembershipRepository(db)
     if search:
-        rows = await repo.search(
-            query=search, limit=limit, include_deleted=include_deleted, status=user_status
-        )
+        rows = await repo.search(query=search, limit=limit, include_deleted=include_deleted, status=user_status)
         companies = await membership_repo.companies_for_users([r.id for r in rows])
         return ListObject[UserResponse](
             data=[_serialize_user(r, *companies.get(r.id, (None, None, None))) for r in rows],
@@ -2232,9 +2231,7 @@ async def disclose_user_identification(
             http_status_code=status.HTTP_403_FORBIDDEN,
         )
 
-    subscription = await SubscriptionRepository(db).get_by_app_slug(
-        org_id=body.organization_id, app_slug=body.app_slug
-    )
+    subscription = await SubscriptionRepository(db).get_by_app_slug(org_id=body.organization_id, app_slug=body.app_slug)
     if not subscription or subscription.status != "active":
         raise AppHTTPException(
             code="identification/subscription-required",
