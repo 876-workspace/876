@@ -477,6 +477,12 @@ class AuthService:
                         workos_organization_id=workos_organization_id,
                         exc_info=True,
                     )
+            # The WorkOS user is deliberately NOT compensated. It is left in
+            # place so a retry re-adopts it via _register_or_adopt_workos_user
+            # instead of forcing the person to register again — deleting real
+            # credentials over a transient local failure is the worse outcome.
+            # An orphan that is never retried is cleaned up by
+            # scripts/reconcile_workos.py.
             raise
 
     async def send_otp(self, *, email: str) -> dict[str, Any]:
@@ -595,12 +601,15 @@ class AuthService:
         provider_user = result.user
         email = self._validate_email(provider_user.email)
 
-        # Upsert local user
+        # Upsert local user. Match on the WorkOS id first — matching on email
+        # alone leaves a row still pointing at a stale provider id (e.g. after
+        # the account was recreated in WorkOS), so repair the link here.
         now = now_unix_seconds()
-        local_user = await self._users.get_by_email(email)
+        local_user = await self._users.get_by_workos_id(provider_user.id) or await self._users.get_by_email(email)
         if local_user:
             await self._users.update(
                 user_id=local_user.id,
+                workos_user_id=provider_user.id,
                 email=email,
                 email_verified=provider_user.email_verified,
                 first_name=provider_user.first_name or local_user.first_name,
