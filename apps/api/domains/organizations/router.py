@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import get_settings
 from core.errors import AppHTTPException
 from core.id import generate_id, normalize_slug
 from core.logging import get_logger
@@ -39,7 +40,9 @@ from domains.organizations.schemas import (
     SubscriptionResponse,
     SubscriptionUpdateRequest,
 )
+from providers.workos.adapter import get_auth_provider
 from services.finance_provisioning import reconcile_finance_connections
+from services.identity_sync import delete_provider_organization
 from services.organization_bootstrap import OrganizationBootstrapServiceDep
 from services.provisioning import (
     assign_member_apps,
@@ -740,8 +743,20 @@ async def delete_organization(
         limit=None,
         desired_status="REVOKED",
     )
+    workos_organization_id, slug = org.workos_organization_id, org.slug
     await repo.delete(organization_id, deleted_by=deleted_by, reason=reason)
-    logger.info("organizations.delete", organization_id=organization_id, slug=org.slug)
+
+    # Drop the WorkOS organization too, so the provider does not accumulate
+    # orgs that no 876 record points at. Runs after the local write: a provider
+    # failure rolls the tombstone back instead of half-deleting the org.
+    await db.flush()
+    await delete_provider_organization(
+        get_auth_provider(get_settings()),
+        workos_organization_id,
+        local_organization_id=organization_id,
+    )
+
+    logger.info("organizations.delete", organization_id=organization_id, slug=slug)
     return OrganizationDeleteResponse(id=organization_id)
 
 
@@ -776,8 +791,17 @@ async def purge_organization(
         limit=None,
         desired_status="REVOKED",
     )
+    workos_organization_id, slug = org.workos_organization_id, org.slug
     await repo.purge(organization_id)
-    logger.info("organizations.purge", organization_id=organization_id, slug=org.slug, purged_by=deleted_by)
+
+    await db.flush()
+    await delete_provider_organization(
+        get_auth_provider(get_settings()),
+        workos_organization_id,
+        local_organization_id=organization_id,
+    )
+
+    logger.info("organizations.purge", organization_id=organization_id, slug=slug, purged_by=deleted_by)
     return OrganizationDeleteResponse(id=organization_id)
 
 
