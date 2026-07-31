@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import get_settings
 from core.errors import AppHTTPException
 from core.logging import get_logger
 from core.responses import ListObject
@@ -18,6 +19,8 @@ from domains.memberships.schemas import (
     MembershipResponse,
     MembershipUpdate,
 )
+from providers.workos.adapter import get_auth_provider
+from services.identity_sync import delete_provider_membership, ensure_provider_membership
 from services.provisioning import assign_member_apps, link_membership_role
 
 from . import docs
@@ -115,11 +118,26 @@ async def create_membership(
         )
 
     now = now_unix_seconds()
+    role = body.role or "member"
+
+    # Mirror the membership into WorkOS first: without it the member can never
+    # receive an org-scoped session, and an admin-created membership would look
+    # active in Console while the provider knows nothing about it. Creating the
+    # provider record before the local row means a provider failure aborts the
+    # whole operation instead of leaving a local-only membership behind.
+    workos_membership_id = await ensure_provider_membership(
+        get_auth_provider(get_settings()),
+        workos_organization_id=org.workos_organization_id,
+        workos_user_id=user.workos_user_id,
+        role=role,
+    )
+
     membership = await repo.create(
         id=generate_id("membership"),
         organization_id=body.organization_id,
         user_id=body.user_id,
-        role=body.role or "member",
+        workos_membership_id=workos_membership_id,
+        role=role,
         status=body.status or "active",
         created_at=now,
         updated_at=now,
@@ -237,11 +255,21 @@ async def delete_membership(
             http_status_code=status.HTTP_404_NOT_FOUND,
         )
 
+    organization_id, user_id = membership.organization_id, membership.user_id
+    workos_membership_id = membership.workos_membership_id
     await repo.delete(membership_id)
+
+    await db.flush()
+    await delete_provider_membership(
+        get_auth_provider(get_settings()),
+        workos_membership_id,
+        local_membership_id=membership_id,
+    )
+
     logger.info(
         "memberships.delete",
         membership_id=membership_id,
-        organization_id=membership.organization_id,
-        user_id=membership.user_id,
+        organization_id=organization_id,
+        user_id=user_id,
     )
     return MembershipDeleteResponse(id=membership_id)

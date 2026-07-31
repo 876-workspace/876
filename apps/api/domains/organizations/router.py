@@ -42,7 +42,7 @@ from domains.organizations.schemas import (
 )
 from providers.workos.adapter import get_auth_provider
 from services.finance_provisioning import reconcile_finance_connections
-from services.identity_sync import delete_provider_organization
+from services.identity_sync import delete_provider_organization, ensure_provider_membership
 from services.organization_bootstrap import OrganizationBootstrapServiceDep
 from services.provisioning import (
     assign_member_apps,
@@ -890,11 +890,20 @@ async def create_organization_membership(
     from domains.memberships.router import _serialize_membership
 
     now = now_unix_seconds()
+    role = body.role or "member"
+    workos_membership_id = await ensure_provider_membership(
+        get_auth_provider(get_settings()),
+        workos_organization_id=org.workos_organization_id,
+        workos_user_id=user.workos_user_id,
+        role=role,
+    )
+
     membership = await repo.create(
         id=generate_id("membership"),
         organization_id=organization_id,
         user_id=body.user_id,
-        role=body.role or "member",
+        workos_membership_id=workos_membership_id,
+        role=role,
         status=body.status or "active",
         created_at=now,
         updated_at=now,
@@ -1137,6 +1146,14 @@ async def accept_invite(
     membership_repo = MembershipRepository(db)
     existing = await membership_repo.get_by_org_and_user(invite.organization_id, user_id)
 
+    invite_org = await OrganizationRepository(db).get_by_id(invite.organization_id)
+    workos_membership_id = await ensure_provider_membership(
+        get_auth_provider(get_settings()),
+        workos_organization_id=invite_org.workos_organization_id if invite_org else None,
+        workos_user_id=user.workos_user_id,
+        role=invite.role,
+    )
+
     now_ts = now_unix_seconds()
     if existing:
         membership = (
@@ -1144,6 +1161,7 @@ async def accept_invite(
                 existing.id,
                 status="active",
                 role=invite.role,
+                workos_membership_id=workos_membership_id or existing.workos_membership_id,
                 updated_at=now_ts,
             )
             or existing
@@ -1153,6 +1171,7 @@ async def accept_invite(
             id=generate_id("membership"),
             organization_id=invite.organization_id,
             user_id=user_id,
+            workos_membership_id=workos_membership_id,
             role=invite.role,
             status="active",
             created_at=now_ts,
