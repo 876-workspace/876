@@ -40,13 +40,13 @@ def _repo() -> UserRepository:
 
 
 async def test_links_verified_social_to_existing_email(monkeypatch: Any) -> None:
-    existing = SimpleNamespace(id="876_existing", first_name="Jane", last_name="Doe", avatar=None)
+    existing = SimpleNamespace(id="876_existing", first_name="Jane", last_name="Doe", avatar=None, deleted_at=None)
     captured: dict[str, Any] = {}
 
-    async def fake_get_by_workos_id(self: UserRepository, wid: str) -> Any:
+    async def fake_get_by_workos_id(self: UserRepository, wid: str, include_deleted: bool = False) -> Any:
         return None
 
-    async def fake_get_by_email(self: UserRepository, email: str) -> Any:
+    async def fake_get_by_email(self: UserRepository, email: str, include_deleted: bool = False) -> Any:
         assert email == "jane@example.com"
         return existing
 
@@ -76,12 +76,12 @@ async def test_links_verified_social_to_existing_email(monkeypatch: Any) -> None
 
 
 async def test_rejects_unverified_social_for_existing_email(monkeypatch: Any) -> None:
-    existing = SimpleNamespace(id="876_existing", first_name="Jane", last_name="Doe", avatar=None)
+    existing = SimpleNamespace(id="876_existing", first_name="Jane", last_name="Doe", avatar=None, deleted_at=None)
 
-    async def fake_get_by_workos_id(self: UserRepository, wid: str) -> Any:
+    async def fake_get_by_workos_id(self: UserRepository, wid: str, include_deleted: bool = False) -> Any:
         return None
 
-    async def fake_get_by_email(self: UserRepository, email: str) -> Any:
+    async def fake_get_by_email(self: UserRepository, email: str, include_deleted: bool = False) -> Any:
         return existing
 
     monkeypatch.setattr(UserRepository, "get_by_workos_id", fake_get_by_workos_id)
@@ -98,3 +98,59 @@ async def test_rejects_unverified_social_for_existing_email(monkeypatch: Any) ->
 
     assert exc.value.app_code == "auth/email-already-registered"
     assert exc.value.status_code == 409
+
+
+# ── deleted accounts ──────────────────────────────────────────────────────────
+#
+# Deleting a user now deletes the WorkOS user too, so a tombstoned account
+# normally has no credentials left to sign in with. These cover the accounts
+# deleted before that landed, whose provider users still exist: the tombstone
+# must refuse the session rather than fall through to the create branch and
+# collide with its own row on the `users.email` unique index.
+
+
+async def test_rejects_a_tombstoned_account_matched_by_workos_id(monkeypatch: Any) -> None:
+    tombstone = SimpleNamespace(id="876_deleted", deleted_at=1700000000)
+
+    async def fake_get_by_workos_id(self: UserRepository, wid: str, include_deleted: bool = False) -> Any:
+        assert include_deleted is True
+        return tombstone
+
+    async def fail_create(self: UserRepository, **kwargs: Any) -> Any:
+        raise AssertionError("a deleted account must never be recreated")
+
+    monkeypatch.setattr(UserRepository, "get_by_workos_id", fake_get_by_workos_id)
+    monkeypatch.setattr(UserRepository, "create", fail_create)
+
+    with pytest.raises(AppHTTPException) as exc:
+        await _repo().ensure_from_workos(_WorkosUser(id="user_DELETED", email="jane@example.com", email_verified=True))
+
+    assert exc.value.app_code == "auth/account-deleted"
+    assert exc.value.status_code == 403
+
+
+async def test_rejects_a_tombstoned_account_matched_by_email(monkeypatch: Any) -> None:
+    """A recreated WorkOS user carries a new id, so the email is the only link."""
+    tombstone = SimpleNamespace(id="876_deleted", deleted_at=1700000000)
+
+    async def fake_get_by_workos_id(self: UserRepository, wid: str, include_deleted: bool = False) -> Any:
+        return None
+
+    async def fake_get_by_email(self: UserRepository, email: str, include_deleted: bool = False) -> Any:
+        assert include_deleted is True
+        return tombstone
+
+    async def fail_create(self: UserRepository, **kwargs: Any) -> Any:
+        raise AssertionError("a deleted account must never be recreated")
+
+    monkeypatch.setattr(UserRepository, "get_by_workos_id", fake_get_by_workos_id)
+    monkeypatch.setattr(UserRepository, "get_by_email", fake_get_by_email)
+    monkeypatch.setattr(UserRepository, "create", fail_create)
+
+    with pytest.raises(AppHTTPException) as exc:
+        await _repo().ensure_from_workos(
+            _WorkosUser(id="user_RECREATED", email="jane@example.com", email_verified=True)
+        )
+
+    assert exc.value.app_code == "auth/account-deleted"
+    assert exc.value.status_code == 403

@@ -1486,6 +1486,11 @@ async def ensure_user(
     if user:
         return _serialize_ensured_user(user)
 
+    # Same tombstone rule as the session path: a deleted account must be refused
+    # here rather than falling through to create and colliding with its own row
+    # on the `users.email` unique index.
+    await repo.assert_not_deleted(workos_user_id=body.workos_user_id, email=body.email)
+
     now = now_unix_seconds()
     first_name = body.first_name if body.first_name is not None else body.email.split("@")[0]
     last_name = body.last_name if body.last_name is not None else "User"
