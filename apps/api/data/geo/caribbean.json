@@ -1,0 +1,654 @@
+{
+  "schema_version": 1,
+  "catalog_revision": 2,
+  "countries": [
+    {
+      "code": "JM",
+      "name": "Jamaica",
+      "phone_prefix": "+1",
+      "default_currency_code": "JMD",
+      "is_enabled": true,
+      "regions": [
+        {
+          "id": "region_jm_01",
+          "code": "01",
+          "name": "Kingston",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_02",
+          "code": "02",
+          "name": "St. Andrew",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_03",
+          "code": "03",
+          "name": "St. Thomas",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_04",
+          "code": "04",
+          "name": "Portland",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_05",
+          "code": "05",
+          "name": "St. Mary",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_06",
+          "code": "06",
+          "name": "St. Ann",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_07",
+          "code": "07",
+          "name": "Trelawny",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_08",
+          "code": "08",
+          "name": "St. James",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_09",
+          "code": "09",
+          "name": "Hanover",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_10",
+          "code": "10",
+          "name": "Westmoreland",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_11",
+          "code": "11",
+          "name": "St. Elizabeth",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_12",
+          "code": "12",
+          "name": "Manchester",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_13",
+          "code": "13",
+          "name": "Clarendon",
+          "type": "parish",
+          "is_enabled": true
+        },
+        {
+          "id": "region_jm_14",
+          "code": "14",
+          "name": "St. Catherine",
+          "type": "parish",
+          "is_enabled": true
+        }
+      ]
+    },
+    {
+      "code": "US",
+      "name": "United States",
+      "phone_prefix": "+1",
+      "default_currency_code": "USD",
+      "is_enabled": true,
+      "regions": [
+        {
+          "id": "region_us_al",
+          "code": "AL",
+          "name": "Alabama",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ak",
+          "code": "AK",
+          "name": "Alaska",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_az",
+          "code": "AZ",
+          "name": "Arizona",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ar",
+          "code": "AR",
+          "name": "Arkansas",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ca",
+          "code": "CA",
+          "name": "California",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_co",
+          "code": "CO",
+          "name": "Colorado",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ct",
+          "code": "CT",
+          "name": "Connecticut",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_de",
+          "code": "DE",
+          "name": "Delaware",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_fl",
+          "code": "FL",
+          "name": "Florida",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ga",
+          "code": "GA",
+          "name": "Georgia",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_hi",
+          "code": "HI",
+          "name": "Hawaii",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_id",
+          "code": "ID",
+          "name": "Idaho",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_il",
+          "code": "IL",
+          "name": "Illinois",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_in",
+          "code": "IN",
+          "name": "Indiana",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ia",
+          "code": "IA",
+          "name": "Iowa",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ks",
+          "code": "KS",
+          "name": "Kansas",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ky",
+          "code": "KY",
+          "name": "Kentucky",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_la",
+          "code": "LA",
+          "name": "Louisiana",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_me",
+          "code": "ME",
+          "name": "Maine",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_md",
+          "code": "MD",
+          "name": "Maryland",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ma",
+          "code": "MA",
+          "name": "Massachusetts",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_mi",
+          "code": "MI",
+          "name": "Michigan",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_mn",
+          "code": "MN",
+          "name": "Minnesota",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ms",
+          "code": "MS",
+          "name": "Mississippi",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_mo",
+          "code": "MO",
+          "name": "Missouri",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_mt",
+          "code": "MT",
+          "name": "Montana",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ne",
+          "code": "NE",
+          "name": "Nebraska",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_nv",
+          "code": "NV",
+          "name": "Nevada",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_nh",
+          "code": "NH",
+          "name": "New Hampshire",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_nj",
+          "code": "NJ",
+          "name": "New Jersey",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_nm",
+          "code": "NM",
+          "name": "New Mexico",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ny",
+          "code": "NY",
+          "name": "New York",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_nc",
+          "code": "NC",
+          "name": "North Carolina",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_nd",
+          "code": "ND",
+          "name": "North Dakota",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_oh",
+          "code": "OH",
+          "name": "Ohio",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ok",
+          "code": "OK",
+          "name": "Oklahoma",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_or",
+          "code": "OR",
+          "name": "Oregon",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_pa",
+          "code": "PA",
+          "name": "Pennsylvania",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ri",
+          "code": "RI",
+          "name": "Rhode Island",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_sc",
+          "code": "SC",
+          "name": "South Carolina",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_sd",
+          "code": "SD",
+          "name": "South Dakota",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_tn",
+          "code": "TN",
+          "name": "Tennessee",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_tx",
+          "code": "TX",
+          "name": "Texas",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_ut",
+          "code": "UT",
+          "name": "Utah",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_vt",
+          "code": "VT",
+          "name": "Vermont",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_va",
+          "code": "VA",
+          "name": "Virginia",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_wa",
+          "code": "WA",
+          "name": "Washington",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_wv",
+          "code": "WV",
+          "name": "West Virginia",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_wi",
+          "code": "WI",
+          "name": "Wisconsin",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_wy",
+          "code": "WY",
+          "name": "Wyoming",
+          "type": "state",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_dc",
+          "code": "DC",
+          "name": "District of Columbia",
+          "type": "district",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_pr",
+          "code": "PR",
+          "name": "Puerto Rico",
+          "type": "territory",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_vi",
+          "code": "VI",
+          "name": "Virgin Islands",
+          "type": "territory",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_gu",
+          "code": "GU",
+          "name": "Guam",
+          "type": "territory",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_as",
+          "code": "AS",
+          "name": "American Samoa",
+          "type": "territory",
+          "is_enabled": true
+        },
+        {
+          "id": "region_us_mp",
+          "code": "MP",
+          "name": "Northern Mariana Islands",
+          "type": "territory",
+          "is_enabled": true
+        }
+      ]
+    },
+    {
+      "code": "CA",
+      "name": "Canada",
+      "phone_prefix": "+1",
+      "default_currency_code": "CAD",
+      "is_enabled": true,
+      "regions": [
+        {
+          "id": "region_ca_ab",
+          "code": "AB",
+          "name": "Alberta",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_bc",
+          "code": "BC",
+          "name": "British Columbia",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_mb",
+          "code": "MB",
+          "name": "Manitoba",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_nb",
+          "code": "NB",
+          "name": "New Brunswick",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_nl",
+          "code": "NL",
+          "name": "Newfoundland and Labrador",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_ns",
+          "code": "NS",
+          "name": "Nova Scotia",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_on",
+          "code": "ON",
+          "name": "Ontario",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_pe",
+          "code": "PE",
+          "name": "Prince Edward Island",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_qc",
+          "code": "QC",
+          "name": "Quebec",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_sk",
+          "code": "SK",
+          "name": "Saskatchewan",
+          "type": "province",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_nt",
+          "code": "NT",
+          "name": "Northwest Territories",
+          "type": "territory",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_nu",
+          "code": "NU",
+          "name": "Nunavut",
+          "type": "territory",
+          "is_enabled": true
+        },
+        {
+          "id": "region_ca_yt",
+          "code": "YT",
+          "name": "Yukon",
+          "type": "territory",
+          "is_enabled": true
+        }
+      ]
+    },
+    {
+      "code": "BB",
+      "name": "Barbados",
+      "phone_prefix": "+1246",
+      "default_currency_code": "BBD",
+      "is_enabled": true,
+      "regions": []
+    },
+    {
+      "code": "TT",
+      "name": "Trinidad and Tobago",
+      "phone_prefix": "+1868",
+      "default_currency_code": "TTD",
+      "is_enabled": true,
+      "regions": []
+    },
+    {
+      "code": "GY",
+      "name": "Guyana",
+      "phone_prefix": "+592",
+      "default_currency_code": "GYD",
+      "is_enabled": true,
+      "regions": []
+    },
+    {
+      "code": "BS",
+      "name": "Bahamas",
+      "phone_prefix": "+1242",
+      "default_currency_code": "BSD",
+      "is_enabled": true,
+      "regions": []
+    },
+    {
+      "code": "GB",
+      "name": "United Kingdom",
+      "phone_prefix": "+44",
+      "default_currency_code": "GBP",
+      "is_enabled": true,
+      "regions": []
+    }
+  ]
+}
