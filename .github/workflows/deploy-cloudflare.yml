@@ -3,14 +3,18 @@ name: Deploy to Cloudflare
 # Continuous deployment for the 876 monorepo.
 #
 # Next.js apps ship as OpenNext Workers; the FastAPI services ship as
-# Cloudflare Containers. Pushes are path-filtered to the Storage API migration;
-# manual dispatches can target one app or the full deployment graph.
+# Cloudflare Containers. Pushes are path-filtered to the migration of every app
+# that owns a datastore; manual dispatches can target one app or the full
+# deployment graph.
 #
 # Division of labour with Cloudflare Workers Builds (the git integration):
 #   - Workers Builds owns every push deployment, including Container images.
 #     It does not touch the database.
-#   - This workflow applies the storage migration on matching pushes and owns
-#     explicit manual migration + deploy fallbacks for every Worker.
+#   - This workflow applies every datastore migration on matching pushes and
+#     owns explicit manual migration + deploy fallbacks for every Worker.
+#     Migrations must run on push: Workers Builds ships the new code regardless,
+#     so a dispatch-only migration leaves the schema behind the code and every
+#     write against a changed table fails in production.
 #   - Deploy steps therefore run on `workflow_dispatch` only. This avoids
 #     duplicate deployments and keeps database credentials out of Workers Builds.
 #
@@ -107,7 +111,7 @@ jobs:
 
   widgets-api:
     needs: changes
-    if: github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'widgets-api')
+    if: needs.changes.outputs.widgets-api == 'true' || inputs.app == 'all' || inputs.app == 'widgets-api'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -173,7 +177,7 @@ jobs:
 
   console:
     needs: [changes, widgets-api, api]
-    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'console')
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.console == 'true' || inputs.app == 'all' || inputs.app == 'console')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -194,7 +198,7 @@ jobs:
 
   billing:
     needs: [changes, widgets-api, api, billing-api]
-    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'billing')
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.billing == 'true' || inputs.app == 'all' || inputs.app == 'billing')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -213,7 +217,7 @@ jobs:
 
   couriers:
     needs: [changes, widgets-api, api]
-    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'couriers')
+    if: always() && !failure() && !cancelled() && (needs.changes.outputs.couriers == 'true' || inputs.app == 'all' || inputs.app == 'couriers')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
