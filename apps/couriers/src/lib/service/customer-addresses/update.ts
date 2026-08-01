@@ -10,7 +10,9 @@ import type { ServiceResult } from '@/types/api'
 
 import { buildAddressUpdateData } from '../addresses/update'
 import { isUniqueConstraintError } from '../prisma-errors'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
 import { toCustomerAddressView } from './view'
 
 export async function update(
@@ -49,73 +51,90 @@ export async function update(
   const typeChanged = nextType !== current.type
 
   try {
-    const updated = await prisma.$transaction(async (tx) => {
-      // Moving an address to another role re-evaluates the invariant on both
-      // sides: the role it leaves must not be left without a default, and the
-      // role it joins must not end up with two.
-      if (typeChanged && current.isDefault) {
-        const successor = await tx.customerAddress.findFirst({
-          where: {
-            tenantId,
-            customerId: current.customerId,
-            type: current.type,
-            id: { not: current.id },
-          },
-          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-          select: { id: true },
-        })
-        if (successor)
-          await tx.customerAddress.update({
-            where: { id: successor.id },
-            data: { isDefault: true, updatedAt: now },
+    const updated = await runTransaction(
+      'customerAddresses.update',
+      async (tx) => {
+        // Moving an address to another role re-evaluates the invariant on both
+        // sides: the role it leaves must not be left without a default, and the
+        // role it joins must not end up with two.
+        if (typeChanged && current.isDefault) {
+          const successor = await tx.customerAddress.findFirst({
+            where: {
+              tenantId,
+              customerId: current.customerId,
+              type: current.type,
+              id: { not: current.id },
+            },
+            orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+            select: { id: true },
           })
-      }
+          if (successor)
+            await tx.customerAddress.update({
+              where: { id: successor.id },
+              data: { isDefault: true, updatedAt: now },
+            })
+        }
 
-      const peers = await tx.customerAddress.count({
-        where: {
-          tenantId,
-          customerId: current.customerId,
-          type: nextType,
-          id: { not: current.id },
-        },
-      })
-      // Sole address of its role is always that role's default.
-      const isDefault =
-        peers === 0 ||
-        input.isDefault === true ||
-        (!typeChanged && input.isDefault === undefined && current.isDefault)
-
-      if (isDefault && peers > 0)
-        await tx.customerAddress.updateMany({
+        const peers = await tx.customerAddress.count({
           where: {
             tenantId,
             customerId: current.customerId,
             type: nextType,
-            isDefault: true,
             id: { not: current.id },
           },
-          data: { isDefault: false, updatedAt: now },
         })
+        // Sole address of its role is always that role's default.
+        const isDefault =
+          peers === 0 ||
+          input.isDefault === true ||
+          (!typeChanged && input.isDefault === undefined && current.isDefault)
 
-      if (addressData)
-        await tx.address.update({
-          where: { id: current.addressId },
-          data: addressData,
+        if (isDefault && peers > 0)
+          await tx.customerAddress.updateMany({
+            where: {
+              tenantId,
+              customerId: current.customerId,
+              type: nextType,
+              isDefault: true,
+              id: { not: current.id },
+            },
+            data: { isDefault: false, updatedAt: now },
+          })
+
+        if (addressData)
+          await tx.address.update({
+            where: { id: current.addressId },
+            data: addressData,
+          })
+
+        return tx.customerAddress.update({
+          where: { id: current.id },
+          data: { type: nextType, isDefault, updatedAt: now },
+          include: { address: true },
         })
-
-      return tx.customerAddress.update({
-        where: { id: current.id },
-        data: { type: nextType, isDefault, updatedAt: now },
-        include: { address: true },
-      })
-    })
+      }
+    )
 
     return ok(toCustomerAddressView(updated))
   } catch (error) {
     if (isUniqueConstraintError(error))
       return err('That address is already saved for this customer.', 409)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'customerAddresses.update',
+        consequence:
+          'The address was not updated and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.customerAddresses.update]', error)
+    reportServiceFailure(error, {
+      operation: 'customerAddresses.update',
+      consequence:
+        'The address was not updated and the form shows a generic failure.',
+    })
     return err('Failed to update address.', 500)
   }
 }
