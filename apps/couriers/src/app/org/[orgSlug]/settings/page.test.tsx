@@ -129,14 +129,12 @@ describe('Couriers settings page', () => {
     expect(rendered).toEqual(expected)
   })
 
-  it('links locations and branches, the page settings readiness points at', async () => {
+  it('links locations to its settings area', async () => {
     await renderPage()
 
     expect(
-      screen
-        .getByRole('link', { name: 'Locations & branches' })
-        .getAttribute('href')
-    ).toBe('/org/island-logistics/settings/branches')
+      screen.getByRole('link', { name: 'Locations' }).getAttribute('href')
+    ).toBe('/org/island-logistics/settings/locations')
   })
 
   it('gives every rendered item a real destination, never a dead link', async () => {
