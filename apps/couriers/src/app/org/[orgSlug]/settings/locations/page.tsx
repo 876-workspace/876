@@ -1,13 +1,11 @@
-import { Badge } from '@876/ui/badge'
-import { Button } from '@876/ui/button'
-import Link from 'next/link'
 import { after } from 'next/server'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
-import { formatAddressLine, needsRegionReview } from '@/lib/address/format'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
+
+import { LocationsTable } from './locations-table'
 
 export const metadata = { title: 'Locations — Settings' }
 
@@ -56,50 +54,13 @@ export default async function LocationsSettingsPage({ params }: Props) {
         refresh
       />
 
-      {branches.length === 0 ? (
-        <div className="876-empty-dashed max-w-2xl">No branches yet.</div>
-      ) : (
-        <ul className="max-w-3xl space-y-2">
-          {branches.map((branch) => (
-            <li
-              key={branch.id}
-              className="876-card flex items-start justify-between gap-4 p-4"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{branch.name}</span>
-                  {branch.isDefault ? <Badge>Default</Badge> : null}
-                  {branch.isActive ? null : (
-                    <Badge variant="secondary">Inactive</Badge>
-                  )}
-                  {needsRegionReview(branch.address) ? (
-                    <Badge variant="secondary">Region needs review</Badge>
-                  ) : null}
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {formatAddressLine(branch.address)}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <span className="text-muted-foreground text-xs">
-                  {branch.address.countryCode}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  render={
-                    <Link
-                      href={`/org/${orgSlug}/settings/locations/${branch.id}/edit`}
-                    />
-                  }
-                >
-                  Edit
-                </Button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <LocationsTable
+        branches={branches}
+        orgSlug={orgSlug}
+        emptyState={
+          <div className="876-empty-dashed max-w-2xl">No branches yet.</div>
+        }
+      />
     </Page>
   )
 }
