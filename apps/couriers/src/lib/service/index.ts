@@ -12,6 +12,7 @@ import { roles } from './roles'
 import { team } from './team'
 import { modules } from './modules'
 import { preferences } from './preferences'
+import { orgLocations } from './org-locations'
 
 export const service = {
   addresses,
@@ -26,4 +27,5 @@ export const service = {
   team,
   modules,
   preferences,
+  orgLocations,
 }
