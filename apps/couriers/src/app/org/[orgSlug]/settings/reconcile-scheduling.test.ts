@@ -23,16 +23,16 @@ vi.mock('@/lib/auth/manage-context', () => ({
 
 vi.mock('@/lib/service', () => ({ service: mockService }))
 
-import BranchesSettingsPage from './page'
+import BranchesSettingsPage from './locations/page'
 import WarehousesSettingsPage from './warehouses/page'
 
 const TENANT_ID = 'ten_rocketship'
 const ORG_ID = 'org_rocketship'
 
 /**
- * Both tabs must schedule the repair pass. The warehouse form redirects to the
- * Warehouses tab, so a warehouse whose mirror failed would stay unlinked
- * indefinitely if only the Branches tab scheduled it.
+ * Both pages must schedule the repair pass. The warehouse form redirects to the
+ * Warehouses page, so a warehouse whose mirror failed would stay unlinked
+ * indefinitely if only the Locations page scheduled it.
  */
 describe.each([
   ['Branches', BranchesSettingsPage],

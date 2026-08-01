@@ -38,6 +38,11 @@ export const SETTINGS_NAV = defineSettingsNav([
         href: '/settings/locations',
         status: 'available',
       },
+      {
+        title: 'Warehouses',
+        href: '/settings/warehouses',
+        status: 'available',
+      },
       { title: 'Custom domain', href: '/settings/domain', status: 'available' },
       {
         title: 'Manage subscription',

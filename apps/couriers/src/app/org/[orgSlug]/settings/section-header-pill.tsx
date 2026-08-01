@@ -1,6 +1,16 @@
 import type { ComponentType, SVGProps } from 'react'
 
-export type SectionHeaderTone = 'blue' | 'cyan' | 'sky' | 'teal'
+export type SectionHeaderTone =
+  | 'violet'
+  | 'fuchsia'
+  | 'rose'
+  | 'amber'
+  | 'lime'
+  | 'emerald'
+  | 'teal'
+  | 'cyan'
+  | 'indigo'
+  | 'orange'
 
 type SectionHeaderPillProps = {
   Icon: ComponentType<SVGProps<SVGSVGElement>>
@@ -10,25 +20,55 @@ type SectionHeaderPillProps = {
 
 const TONE_STYLES: Record<SectionHeaderTone, { header: string; icon: string }> =
   {
-    blue: {
+    violet: {
       header:
-        'border-blue-200! bg-blue-100! dark:border-blue-300/25! dark:bg-blue-400/20!',
-      icon: 'text-blue-600 dark:text-blue-300',
+        'border-violet-100! bg-violet-50! dark:border-violet-300/10! dark:bg-violet-400/6!',
+      icon: 'text-violet-600 dark:text-violet-300',
     },
-    cyan: {
+    fuchsia: {
       header:
-        'border-cyan-200! bg-cyan-100! dark:border-cyan-300/25! dark:bg-cyan-400/20!',
-      icon: 'text-cyan-600 dark:text-cyan-300',
+        'border-fuchsia-100! bg-fuchsia-50! dark:border-fuchsia-300/10! dark:bg-fuchsia-400/6!',
+      icon: 'text-fuchsia-600 dark:text-fuchsia-300',
     },
-    sky: {
+    rose: {
       header:
-        'border-sky-200! bg-sky-100! dark:border-sky-300/25! dark:bg-sky-400/20!',
-      icon: 'text-sky-600 dark:text-sky-300',
+        'border-rose-100! bg-rose-50! dark:border-rose-300/10! dark:bg-rose-400/6!',
+      icon: 'text-rose-600 dark:text-rose-300',
+    },
+    amber: {
+      header:
+        'border-amber-100! bg-amber-50! dark:border-amber-300/10! dark:bg-amber-400/6!',
+      icon: 'text-amber-600 dark:text-amber-300',
+    },
+    lime: {
+      header:
+        'border-lime-100! bg-lime-50! dark:border-lime-300/10! dark:bg-lime-400/6!',
+      icon: 'text-lime-600 dark:text-lime-300',
+    },
+    emerald: {
+      header:
+        'border-emerald-100! bg-emerald-50! dark:border-emerald-300/10! dark:bg-emerald-400/6!',
+      icon: 'text-emerald-600 dark:text-emerald-300',
     },
     teal: {
       header:
-        'border-teal-200! bg-teal-100! dark:border-teal-300/25! dark:bg-teal-400/20!',
+        'border-teal-100! bg-teal-50! dark:border-teal-300/10! dark:bg-teal-400/6!',
       icon: 'text-teal-600 dark:text-teal-300',
+    },
+    cyan: {
+      header:
+        'border-cyan-100! bg-cyan-50! dark:border-cyan-300/10! dark:bg-cyan-400/6!',
+      icon: 'text-cyan-600 dark:text-cyan-300',
+    },
+    indigo: {
+      header:
+        'border-indigo-100! bg-indigo-50! dark:border-indigo-300/10! dark:bg-indigo-400/6!',
+      icon: 'text-indigo-600 dark:text-indigo-300',
+    },
+    orange: {
+      header:
+        'border-orange-100! bg-orange-50! dark:border-orange-300/10! dark:bg-orange-400/6!',
+      icon: 'text-orange-600 dark:text-orange-300',
     },
   }
 

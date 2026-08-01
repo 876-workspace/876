@@ -1,4 +1,4 @@
-import { PageHeader, PageTitle } from '@876/ui/page'
+import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -18,14 +18,19 @@ export default async function EditBranchPage({ params }: Props) {
 
   if (ctx.role !== 'owner' && ctx.role !== 'admin')
     return (
-      <>
+      <Page>
+        <PageBreadcrumb
+          href={`/org/${orgSlug}/settings/locations`}
+          label="Locations"
+          className="mb-4"
+        />
         <PageHeader className="mb-8">
           <PageTitle>Edit branch</PageTitle>
         </PageHeader>
         <div className="876-empty-dashed max-w-2xl">
           You do not have permission to manage locations.
         </div>
-      </>
+      </Page>
     )
 
   const branch = await service.branches.retrieve({
@@ -35,12 +40,17 @@ export default async function EditBranchPage({ params }: Props) {
   if (!branch) notFound()
 
   return (
-    <>
+    <Page>
+      <PageBreadcrumb
+        href={`/org/${orgSlug}/settings/locations`}
+        label="Locations"
+        className="mb-4"
+      />
       <PageHeader className="mb-8">
         <PageTitle>Edit branch</PageTitle>
       </PageHeader>
 
       <BranchForm orgSlug={orgSlug} branch={branch} />
-    </>
+    </Page>
   )
 }

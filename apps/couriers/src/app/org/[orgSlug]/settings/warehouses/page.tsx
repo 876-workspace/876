@@ -5,13 +5,13 @@ import { ResourceToolbar } from '@/components/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { LocationsTable } from './locations-table'
+import { WarehousesTable } from './warehouses-table'
 
-export const metadata = { title: 'Locations — Settings' }
+export const metadata = { title: 'Warehouses — Settings' }
 
 type Props = { params: Promise<{ orgSlug: string }> }
 
-export default async function LocationsSettingsPage({ params }: Props) {
+export default async function WarehousesSettingsPage({ params }: Props) {
   const { orgSlug } = await params
 
   const ctx = await getManageContext(orgSlug)
@@ -24,7 +24,7 @@ export default async function LocationsSettingsPage({ params }: Props) {
           className="mb-4"
         />
         <div className="876-empty-dashed max-w-2xl">
-          We couldn&apos;t load this organization&apos;s branches. Please try
+          We couldn&apos;t load this organization&apos;s warehouses. Please try
           again.
         </div>
       </Page>
@@ -32,10 +32,10 @@ export default async function LocationsSettingsPage({ params }: Props) {
 
   const { id: tenantId, orgId } = ctx.tenant
 
-  const branches = await service.branches.list({ tenantId })
+  const warehouses = await service.warehouses.list({ tenantId })
 
-  // Opportunistic repair for sites whose core mirror failed at write time. It
-  // runs after the response so a slow identity API never delays this page.
+  // The warehouse form redirects here, so a warehouse whose core mirror failed
+  // would otherwise stay unlinked no matter how often this list is refreshed.
   after(() => service.orgLocations.reconcile(tenantId, orgId))
 
   return (
@@ -47,18 +47,18 @@ export default async function LocationsSettingsPage({ params }: Props) {
       />
 
       <ResourceToolbar
-        title="Locations"
+        title="Warehouses"
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/settings/locations/new`}
+        primaryHref={`/org/${orgSlug}/settings/warehouses/new`}
         primaryVariant="info"
         refresh
       />
 
-      <LocationsTable
-        branches={branches}
+      <WarehousesTable
+        warehouses={warehouses}
         orgSlug={orgSlug}
         emptyState={
-          <div className="876-empty-dashed max-w-2xl">No branches yet.</div>
+          <div className="876-empty-dashed max-w-2xl">No warehouses yet.</div>
         }
       />
     </Page>

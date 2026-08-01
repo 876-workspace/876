@@ -40,7 +40,7 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const listHref = `/org/${orgSlug}/settings/locations/warehouses`
+  const listHref = `/org/${orgSlug}/settings/warehouses`
   const lockedPrimary =
     warehouse?.isPrimary === true || isFirstWarehouse === true
 
