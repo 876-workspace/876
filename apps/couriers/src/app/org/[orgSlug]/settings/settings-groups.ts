@@ -34,8 +34,8 @@ export const SETTINGS_NAV = defineSettingsNav([
       { title: 'Profile', href: '/settings/orgprofile', status: 'available' },
       { title: 'Branding', href: '/settings/branding', status: 'available' },
       {
-        title: 'Locations & branches',
-        href: '/settings/branches',
+        title: 'Locations',
+        href: '/settings/locations',
         status: 'available',
       },
       { title: 'Custom domain', href: '/settings/domain', status: 'available' },
