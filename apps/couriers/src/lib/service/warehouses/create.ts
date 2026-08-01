@@ -1,6 +1,5 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma } from '@/lib/db'
 import {
   warehouseCreateParamsSchema,
   type WarehouseCreateParams,
@@ -10,7 +9,9 @@ import type { ServiceResult } from '@/types/api'
 
 import { buildAddressData } from '../addresses/create'
 import { isUniqueConstraintError } from '../prisma-errors'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
 import { toWarehouseView } from './view'
 
 export async function create(
@@ -32,7 +33,7 @@ export async function create(
   const now = nowUnixSeconds()
 
   try {
-    const warehouse = await prisma.$transaction(async (tx) => {
+    const warehouse = await runTransaction('warehouses.create', async (tx) => {
       // A tenant's first warehouse is its primary regardless of what was
       // requested, so inbound packages always have somewhere to be received.
       const count = await tx.warehouse.count({ where: { tenantId } })
@@ -66,7 +67,21 @@ export async function create(
     if (isUniqueConstraintError(error))
       return err('A warehouse with that name already exists.', 409)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'warehouses.create',
+        consequence:
+          'The warehouse was not created and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.warehouses.create]', error)
+    reportServiceFailure(error, {
+      operation: 'warehouses.create',
+      consequence:
+        'The warehouse was not created and the form shows a generic failure.',
+    })
     return err('Failed to create warehouse.', 500)
   }
 }

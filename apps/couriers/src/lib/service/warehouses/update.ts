@@ -10,7 +10,9 @@ import type { ServiceResult } from '@/types/api'
 
 import { buildAddressUpdateData } from '../addresses/update'
 import { isUniqueConstraintError } from '../prisma-errors'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
 import { toWarehouseView } from './view'
 
 export async function update(
@@ -45,7 +47,7 @@ export async function update(
   const now = nowUnixSeconds()
 
   try {
-    const warehouse = await prisma.$transaction(async (tx) => {
+    const warehouse = await runTransaction('warehouses.update', async (tx) => {
       // Unlike a branch, a warehouse's primary flag may be cleared directly —
       // promoting another warehouse is not required to demote this one.
       if (input.isPrimary === true && !current.isPrimary)
@@ -78,7 +80,21 @@ export async function update(
     if (isUniqueConstraintError(error))
       return err('A warehouse with that name already exists.', 409)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'warehouses.update',
+        consequence:
+          'The warehouse was not updated and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.warehouses.update]', error)
+    reportServiceFailure(error, {
+      operation: 'warehouses.update',
+      consequence:
+        'The warehouse was not updated and the form shows a generic failure.',
+    })
     return err('Failed to update warehouse.', 500)
   }
 }
