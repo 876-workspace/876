@@ -218,6 +218,16 @@ async def create_org_location(
     await _require_org_permission(db, org_id, principal, "structure:manage")
 
     repo = OrgLocationRepository(db)
+    # The uniqueness constraint spans deleted rows, so a soft-deleted location
+    # still owns its code. Answer 409 rather than letting the insert fail with
+    # an integrity error the caller sees as a 500.
+    if body.code and await repo.get_by_code_for_org(body.code, org_id, include_deleted=True):
+        raise AppHTTPException(
+            code="location/duplicate-code",
+            message="A location with this code already exists.",
+            http_status_code=status.HTTP_409_CONFLICT,
+        )
+
     if body.is_primary:
         await repo.clear_primary_for_org(org_id)
 
@@ -275,6 +285,15 @@ async def update_org_location(
     existing = await repo.get_by_id_for_org(location_id, org_id)
     if not existing:
         raise _not_found("location/not-found", "Location not found.")
+
+    if body.code and body.code != existing.code:
+        conflict = await repo.get_by_code_for_org(body.code, org_id, include_deleted=True)
+        if conflict:
+            raise AppHTTPException(
+                code="location/duplicate-code",
+                message="A location with this code already exists.",
+                http_status_code=status.HTTP_409_CONFLICT,
+            )
 
     if body.is_primary:
         await repo.clear_primary_for_org(org_id)

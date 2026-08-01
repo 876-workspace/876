@@ -29,6 +29,16 @@ class OrgLocationRepository(BaseRepository):
             stmt = stmt.where(OrgLocation.deleted_at.is_(None))
         return (await self.db.scalars(stmt)).first()
 
+    async def get_by_code_for_org(
+        self, code: str, organization_id: str, include_deleted: bool = False
+    ) -> OrgLocation | None:
+        stmt = select(OrgLocation).where(
+            OrgLocation.code == code, OrgLocation.organization_id == organization_id
+        )
+        if not include_deleted:
+            stmt = stmt.where(OrgLocation.deleted_at.is_(None))
+        return (await self.db.scalars(stmt)).first()
+
     async def create(self, **kwargs: Any) -> OrgLocation:
         location = OrgLocation(**kwargs)
         self.db.add(location)
