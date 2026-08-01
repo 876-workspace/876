@@ -1,6 +1,7 @@
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import Link from 'next/link'
+import { after } from 'next/server'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 import { formatAddressLine } from '@/lib/address/format'
@@ -23,7 +24,15 @@ export default async function WarehousesSettingsPage({ params }: Props) {
       </div>
     )
 
-  const warehouses = await service.warehouses.list({ tenantId: ctx.tenant.id })
+  const { id: tenantId, orgId } = ctx.tenant
+
+  const warehouses = await service.warehouses.list({ tenantId })
+
+  // Both tabs schedule the repair pass. The warehouse form redirects here, so a
+  // warehouse whose mirror failed would otherwise stay unlinked no matter how
+  // often its own list is refreshed — reconcile covers branches and warehouses
+  // alike, so whichever tab the user lands on repairs both.
+  after(() => service.orgLocations.reconcile(tenantId, orgId))
 
   return (
     <>
