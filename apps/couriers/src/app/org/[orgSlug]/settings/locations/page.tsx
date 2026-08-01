@@ -1,6 +1,7 @@
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import Link from 'next/link'
+import { after } from 'next/server'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 import { formatAddressLine, needsRegionReview } from '@/lib/address/format'
@@ -23,7 +24,13 @@ export default async function LocationsSettingsPage({ params }: Props) {
       </div>
     )
 
-  const branches = await service.branches.list({ tenantId: ctx.tenant.id })
+  const { id: tenantId, orgId } = ctx.tenant
+
+  const branches = await service.branches.list({ tenantId })
+
+  // Opportunistic repair for sites whose core mirror failed at write time. It
+  // runs after the response so a slow identity API never delays this page.
+  after(() => service.orgLocations.reconcile(tenantId, orgId))
 
   return (
     <>
