@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Providers } from './providers'
-import { SerwistProvider } from './serwist'
+import { ServiceWorkerProvider } from './serwist'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
@@ -96,7 +96,7 @@ export default async function RootLayout({
         <Providers user={initialUser}>
           <ThemeProvider>
             <UserStoreProvider initialUser={initialUser}>
-              <SerwistProvider swUrl="/sw.js">{children}</SerwistProvider>
+              <ServiceWorkerProvider>{children}</ServiceWorkerProvider>
             </UserStoreProvider>
           </ThemeProvider>
         </Providers>
