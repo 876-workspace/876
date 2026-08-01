@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import Script from 'next/script'
 import type { ReactNode } from 'react'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
+import { ServiceWorkerRegistration } from './service-worker-registration'
 import { ThemeProvider } from './providers'
 import './globals.css'
 
@@ -67,12 +67,6 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <head>
-        <Script id="register-serwist" strategy="beforeInteractive">
-          {`if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js', { scope: '/' });
-window.addEventListener('online', () => window.location.reload());`}
-        </Script>
-      </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider
           analyticsUser={sessionUser}
@@ -80,6 +74,7 @@ window.addEventListener('online', () => window.location.reload());`}
         >
           {children}
         </ThemeProvider>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   )
