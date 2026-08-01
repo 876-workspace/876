@@ -184,7 +184,7 @@ describe('orgLocations.sync', () => {
     expect(mockBranchUpdate).not.toHaveBeenCalled()
   })
 
-  it('adopts the existing core location when the code already exists', async () => {
+  function duplicateThenList() {
     mockCreate.mockResolvedValue({
       data: null,
       error: { code: 'location/duplicate-code', message: 'Duplicate.' },
@@ -198,6 +198,10 @@ describe('orgLocations.sync', () => {
       },
       error: null,
     })
+  }
+
+  it('adopts the existing core location when the code already exists', async () => {
+    duplicateThenList()
 
     await sync(ORG_ID, site())
 
@@ -206,6 +210,36 @@ describe('orgLocations.sync', () => {
       data: { orgLocationId: 'loc_adopted' },
     })
     expect(mockReportServiceFailure).not.toHaveBeenCalled()
+  })
+
+  it('applies this payload to the adopted location before linking it', async () => {
+    duplicateThenList()
+
+    await sync(ORG_ID, site({ name: 'Kingston HQ' }))
+
+    // Without this the adopted row keeps whatever an earlier, staler mirror
+    // wrote, and reconcile skips the site forever once it is linked.
+    expect(mockUpdate).toHaveBeenCalledTimes(1)
+    expect(mockUpdate).toHaveBeenCalledWith(
+      ORG_ID,
+      'loc_adopted',
+      expect.objectContaining({ name: 'Kingston HQ', code: 'br_kingston' })
+    )
+  })
+
+  it('leaves the site unlinked when the adopted location cannot be updated', async () => {
+    duplicateThenList()
+    mockUpdate.mockResolvedValue({
+      data: null,
+      error: { code: 'platform/unavailable', message: 'Upstream failed.' },
+    })
+
+    await sync(ORG_ID, site())
+
+    // Linking a stale row would retire it from reconcile; staying unlinked
+    // means the next pass retries.
+    expect(mockBranchUpdate).not.toHaveBeenCalled()
+    expect(mockReportServiceFailure).toHaveBeenCalledTimes(1)
   })
 
   it('reports without linking when the duplicate code is not listed for the org', async () => {

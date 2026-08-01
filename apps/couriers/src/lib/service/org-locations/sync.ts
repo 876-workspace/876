@@ -117,6 +117,16 @@ export async function sync(orgId: string, site: SyncSite): Promise<void> {
         `Core location code ${site.id} is taken by a location that is not listed for this organization, so the ${site.kind} cannot be linked.`
       )
 
+    // Apply this payload before linking. The row we are adopting was written by
+    // an earlier, possibly staler call — two mirrors for the same site can be
+    // in flight while orgLocationId is still null — and once the id is
+    // persisted the reconcile pass skips the site, so an unapplied payload
+    // would leave the core location permanently out of date.
+    const adopted = await platform.locations.update(orgId, existing.id, payload)
+    if (adopted.error) throw adopted.error
+
+    // Linking last: if the update above fails, the site stays unlinked and the
+    // next reconcile retries, rather than being marked done while stale.
     await persistOrgLocationId(site, existing.id)
   } catch (error) {
     reportServiceFailure(error, {
