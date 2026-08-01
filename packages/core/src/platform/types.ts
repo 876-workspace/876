@@ -144,6 +144,55 @@ export type PlatformOrgProfileUpdateParams = {
   currency_code?: string | null
 }
 
+/** A physical or logical site in an organization's core location registry. */
+export type PlatformOrgLocation = {
+  object: 'org_location'
+  id: string
+  organization_id: string
+  name: string
+  code: string | null
+  type: string
+  status: string
+  is_primary: boolean
+  phone: string | null
+  email: string | null
+  line1: string | null
+  line2: string | null
+  city: string | null
+  region_id: string | null
+  country_code: string | null
+  postal_code: string | null
+  timezone: string | null
+  metadata: Record<string, unknown> | null
+  deleted_at: number | null
+  deleted_by: string | null
+  deletion_reason: string | null
+  created_at: number
+  updated_at: number
+}
+
+/** The writable fields for creating an organization location. */
+export type PlatformOrgLocationCreateParams = {
+  name: string
+  code?: string | null
+  type?: string | null
+  status?: string | null
+  phone?: string | null
+  email?: string | null
+  line1?: string | null
+  line2?: string | null
+  city?: string | null
+  regionId?: string | null
+  countryCode?: string | null
+  postalCode?: string | null
+  timezone?: string | null
+  metadata?: Record<string, unknown> | null
+}
+
+/** The writable fields for updating an organization location. */
+export type PlatformOrgLocationUpdateParams =
+  Partial<PlatformOrgLocationCreateParams>
+
 /** An org→app subscription row, narrowed to the fields product apps consume. */
 export type PlatformSubscription = {
   object: 'subscription'
