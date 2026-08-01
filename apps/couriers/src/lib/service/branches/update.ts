@@ -10,7 +10,9 @@ import type { ServiceResult } from '@/types/api'
 
 import { buildAddressUpdateData } from '../addresses/update'
 import { isUniqueConstraintError } from '../prisma-errors'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
 import { toBranchView } from './view'
 
 class DefaultBranchError extends Error {}
@@ -51,7 +53,7 @@ export async function update(
   const now = nowUnixSeconds()
 
   try {
-    const branch = await prisma.$transaction(async (tx) => {
+    const branch = await runTransaction('branches.update', async (tx) => {
       // A tenant must always keep exactly one default branch, so clearing the
       // flag on the current default is rejected rather than silently ignored —
       // promote another branch instead.
@@ -98,7 +100,21 @@ export async function update(
     if (isUniqueConstraintError(error))
       return err('A branch with that name already exists.', 409)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'branches.update',
+        consequence:
+          'The branch was not updated and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.branches.update]', error)
+    reportServiceFailure(error, {
+      operation: 'branches.update',
+      consequence:
+        'The branch was not updated and the form shows a generic failure.',
+    })
     return err('Failed to update branch.', 500)
   }
 }

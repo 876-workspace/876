@@ -1,6 +1,6 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma, type Prisma } from '@/lib/db'
+import type { Prisma } from '@/lib/db'
 import {
   branchCreateParamsSchema,
   type BranchCreateParams,
@@ -10,7 +10,9 @@ import type { ServiceResult } from '@/types/api'
 
 import { buildAddressData } from '../addresses/create'
 import { isUniqueConstraintError } from '../prisma-errors'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
 import { toBranchView } from './view'
 
 export async function create(
@@ -36,7 +38,7 @@ export async function create(
   const now = nowUnixSeconds()
 
   try {
-    const branch = await prisma.$transaction(async (tx) => {
+    const branch = await runTransaction('branches.create', async (tx) => {
       // A tenant's first branch is its default regardless of what was requested,
       // so customers and packages always have a location to route to.
       const count = await tx.branch.count({ where: { tenantId } })
@@ -75,7 +77,21 @@ export async function create(
     if (isUniqueConstraintError(error))
       return err('A branch with that name already exists.', 409)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'branches.create',
+        consequence:
+          'The branch was not created and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.branches.create]', error)
+    reportServiceFailure(error, {
+      operation: 'branches.create',
+      consequence:
+        'The branch was not created and the form shows a generic failure.',
+    })
     return err('Failed to create branch.', 500)
   }
 }
