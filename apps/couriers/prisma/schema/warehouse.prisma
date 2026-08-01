@@ -9,6 +9,10 @@ model Warehouse {
   id        String  @id @default(cuid())
   tenantId  String  @map("tenant_id")
   addressId String  @unique @map("address_id")
+  /// The core 876 organization location this site is mirrored to. Opaque id,
+  /// no cross-database foreign key. Null when the mirror has not yet
+  /// succeeded — the site is fully usable either way.
+  orgLocationId String? @unique @map("org_location_id")
   name      String
   isPrimary Boolean @default(false) @map("is_primary")
   createdAt Int     @map("created_at")

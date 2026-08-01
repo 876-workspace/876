@@ -49,6 +49,7 @@ export type BranchMinAggregateOutputType = {
   id: string | null
   tenantId: string | null
   addressId: string | null
+  orgLocationId: string | null
   name: string | null
   phone: string | null
   isDefault: boolean | null
@@ -61,6 +62,7 @@ export type BranchMaxAggregateOutputType = {
   id: string | null
   tenantId: string | null
   addressId: string | null
+  orgLocationId: string | null
   name: string | null
   phone: string | null
   isDefault: boolean | null
@@ -73,6 +75,7 @@ export type BranchCountAggregateOutputType = {
   id: number
   tenantId: number
   addressId: number
+  orgLocationId: number
   name: number
   phone: number
   isDefault: number
@@ -97,6 +100,7 @@ export type BranchMinAggregateInputType = {
   id?: true
   tenantId?: true
   addressId?: true
+  orgLocationId?: true
   name?: true
   phone?: true
   isDefault?: true
@@ -109,6 +113,7 @@ export type BranchMaxAggregateInputType = {
   id?: true
   tenantId?: true
   addressId?: true
+  orgLocationId?: true
   name?: true
   phone?: true
   isDefault?: true
@@ -121,6 +126,7 @@ export type BranchCountAggregateInputType = {
   id?: true
   tenantId?: true
   addressId?: true
+  orgLocationId?: true
   name?: true
   phone?: true
   isDefault?: true
@@ -228,6 +234,7 @@ export type BranchGroupByOutputType = {
   id: string
   tenantId: string
   addressId: string
+  orgLocationId: string | null
   name: string
   phone: string | null
   isDefault: boolean
@@ -262,6 +269,7 @@ export type BranchWhereInput = {
   id?: Prisma.StringFilter<'Branch'> | string
   tenantId?: Prisma.StringFilter<'Branch'> | string
   addressId?: Prisma.StringFilter<'Branch'> | string
+  orgLocationId?: Prisma.StringNullableFilter<'Branch'> | string | null
   name?: Prisma.StringFilter<'Branch'> | string
   phone?: Prisma.StringNullableFilter<'Branch'> | string | null
   isDefault?: Prisma.BoolFilter<'Branch'> | boolean
@@ -286,6 +294,7 @@ export type BranchOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   isDefault?: Prisma.SortOrder
@@ -304,6 +313,7 @@ export type BranchWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string
     addressId?: string
+    orgLocationId?: string
     branches_tenant_id_name_key?: Prisma.BranchBranches_tenant_id_name_keyCompoundUniqueInput
     AND?: Prisma.BranchWhereInput | Prisma.BranchWhereInput[]
     OR?: Prisma.BranchWhereInput[]
@@ -328,13 +338,14 @@ export type BranchWhereUniqueInput = Prisma.AtLeast<
     packages?: Prisma.PackageListRelationFilter
     staff?: Prisma.StaffMemberListRelationFilter
   },
-  'id' | 'addressId' | 'branches_tenant_id_name_key'
+  'id' | 'addressId' | 'orgLocationId' | 'branches_tenant_id_name_key'
 >
 
 export type BranchOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   isDefault?: Prisma.SortOrder
@@ -360,6 +371,10 @@ export type BranchScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<'Branch'> | string
   tenantId?: Prisma.StringWithAggregatesFilter<'Branch'> | string
   addressId?: Prisma.StringWithAggregatesFilter<'Branch'> | string
+  orgLocationId?:
+    | Prisma.StringNullableWithAggregatesFilter<'Branch'>
+    | string
+    | null
   name?: Prisma.StringWithAggregatesFilter<'Branch'> | string
   phone?: Prisma.StringNullableWithAggregatesFilter<'Branch'> | string | null
   isDefault?: Prisma.BoolWithAggregatesFilter<'Branch'> | boolean
@@ -371,6 +386,7 @@ export type BranchScalarWhereWithAggregatesInput = {
 
 export type BranchCreateInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -389,6 +405,7 @@ export type BranchUncheckedCreateInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -403,6 +420,10 @@ export type BranchUncheckedCreateInput = {
 
 export type BranchUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -421,6 +442,10 @@ export type BranchUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -437,6 +462,7 @@ export type BranchCreateManyInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -448,6 +474,10 @@ export type BranchCreateManyInput = {
 
 export type BranchUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -461,6 +491,10 @@ export type BranchUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -489,6 +523,7 @@ export type BranchCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
@@ -507,6 +542,7 @@ export type BranchMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
@@ -519,6 +555,7 @@ export type BranchMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
@@ -795,6 +832,7 @@ export type BranchUncheckedUpdateManyWithoutTenantNestedInput = {
 
 export type BranchCreateWithoutAddressInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -810,6 +848,7 @@ export type BranchCreateWithoutAddressInput = {
 
 export type BranchUncheckedCreateWithoutAddressInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -872,6 +911,7 @@ export type BranchScalarWhereInput = {
   id?: Prisma.StringFilter<'Branch'> | string
   tenantId?: Prisma.StringFilter<'Branch'> | string
   addressId?: Prisma.StringFilter<'Branch'> | string
+  orgLocationId?: Prisma.StringNullableFilter<'Branch'> | string | null
   name?: Prisma.StringFilter<'Branch'> | string
   phone?: Prisma.StringNullableFilter<'Branch'> | string | null
   isDefault?: Prisma.BoolFilter<'Branch'> | boolean
@@ -883,6 +923,7 @@ export type BranchScalarWhereInput = {
 
 export type BranchCreateWithoutCustomersInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -900,6 +941,7 @@ export type BranchUncheckedCreateWithoutCustomersInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -941,6 +983,10 @@ export type BranchUpdateToOneWithWhereWithoutCustomersInput = {
 
 export type BranchUpdateWithoutCustomersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -958,6 +1004,10 @@ export type BranchUncheckedUpdateWithoutCustomersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -971,6 +1021,7 @@ export type BranchUncheckedUpdateWithoutCustomersInput = {
 
 export type BranchCreateWithoutPackagesInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -988,6 +1039,7 @@ export type BranchUncheckedCreateWithoutPackagesInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1029,6 +1081,10 @@ export type BranchUpdateToOneWithWhereWithoutPackagesInput = {
 
 export type BranchUpdateWithoutPackagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1046,6 +1102,10 @@ export type BranchUncheckedUpdateWithoutPackagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1059,6 +1119,7 @@ export type BranchUncheckedUpdateWithoutPackagesInput = {
 
 export type BranchCreateWithoutStaffInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1076,6 +1137,7 @@ export type BranchUncheckedCreateWithoutStaffInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1117,6 +1179,10 @@ export type BranchUpdateToOneWithWhereWithoutStaffInput = {
 
 export type BranchUpdateWithoutStaffInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1134,6 +1200,10 @@ export type BranchUncheckedUpdateWithoutStaffInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1147,6 +1217,7 @@ export type BranchUncheckedUpdateWithoutStaffInput = {
 
 export type BranchCreateWithoutTenantInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1163,6 +1234,7 @@ export type BranchCreateWithoutTenantInput = {
 export type BranchUncheckedCreateWithoutTenantInput = {
   id?: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1220,6 +1292,7 @@ export type BranchUpdateManyWithWhereWithoutTenantInput = {
 
 export type BranchCreateManyAddressInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1231,6 +1304,10 @@ export type BranchCreateManyAddressInput = {
 
 export type BranchUpdateWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1246,6 +1323,10 @@ export type BranchUpdateWithoutAddressInput = {
 
 export type BranchUncheckedUpdateWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1260,6 +1341,10 @@ export type BranchUncheckedUpdateWithoutAddressInput = {
 
 export type BranchUncheckedUpdateManyWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1272,6 +1357,7 @@ export type BranchUncheckedUpdateManyWithoutAddressInput = {
 export type BranchCreateManyTenantInput = {
   id?: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   phone?: string | null
   isDefault?: boolean
@@ -1283,6 +1369,10 @@ export type BranchCreateManyTenantInput = {
 
 export type BranchUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1299,6 +1389,10 @@ export type BranchUpdateWithoutTenantInput = {
 export type BranchUncheckedUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1314,6 +1408,10 @@ export type BranchUncheckedUpdateWithoutTenantInput = {
 export type BranchUncheckedUpdateManyWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1393,6 +1491,7 @@ export type BranchSelect<
     id?: boolean
     tenantId?: boolean
     addressId?: boolean
+    orgLocationId?: boolean
     name?: boolean
     phone?: boolean
     isDefault?: boolean
@@ -1418,6 +1517,7 @@ export type BranchSelectCreateManyAndReturn<
     id?: boolean
     tenantId?: boolean
     addressId?: boolean
+    orgLocationId?: boolean
     name?: boolean
     phone?: boolean
     isDefault?: boolean
@@ -1439,6 +1539,7 @@ export type BranchSelectUpdateManyAndReturn<
     id?: boolean
     tenantId?: boolean
     addressId?: boolean
+    orgLocationId?: boolean
     name?: boolean
     phone?: boolean
     isDefault?: boolean
@@ -1456,6 +1557,7 @@ export type BranchSelectScalar = {
   id?: boolean
   tenantId?: boolean
   addressId?: boolean
+  orgLocationId?: boolean
   name?: boolean
   phone?: boolean
   isDefault?: boolean
@@ -1472,6 +1574,7 @@ export type BranchOmit<
   | 'id'
   | 'tenantId'
   | 'addressId'
+  | 'orgLocationId'
   | 'name'
   | 'phone'
   | 'isDefault'
@@ -1524,6 +1627,12 @@ export type $BranchPayload<
       id: string
       tenantId: string
       addressId: string
+      /**
+       * The core 876 organization location this site is mirrored to. Opaque id,
+       * no cross-database foreign key. Null when the mirror has not yet
+       * succeeded — the site is fully usable either way.
+       */
+      orgLocationId: string | null
       name: string
       phone: string | null
       isDefault: boolean
@@ -2190,6 +2299,7 @@ export interface BranchFieldRefs {
   readonly id: Prisma.FieldRef<'Branch', 'String'>
   readonly tenantId: Prisma.FieldRef<'Branch', 'String'>
   readonly addressId: Prisma.FieldRef<'Branch', 'String'>
+  readonly orgLocationId: Prisma.FieldRef<'Branch', 'String'>
   readonly name: Prisma.FieldRef<'Branch', 'String'>
   readonly phone: Prisma.FieldRef<'Branch', 'String'>
   readonly isDefault: Prisma.FieldRef<'Branch', 'Boolean'>
