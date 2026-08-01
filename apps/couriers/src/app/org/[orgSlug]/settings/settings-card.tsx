@@ -29,19 +29,19 @@ type SectionStyle = {
 }
 
 const GROUP_STYLES: Record<string, SectionStyle> = {
-  organization: { Icon: BuildingOffice2Icon, tone: 'sky' },
-  users: { Icon: UsersIcon, tone: 'cyan' },
-  modules_core: { Icon: Squares2X2Icon, tone: 'blue' },
-  modules_ops: { Icon: QueueListIcon, tone: 'teal' },
-  portal: { Icon: GlobeAltIcon, tone: 'sky' },
-  rates: { Icon: ChartBarIcon, tone: 'cyan' },
-  customization: { Icon: PaintBrushIcon, tone: 'blue' },
+  organization: { Icon: BuildingOffice2Icon, tone: 'indigo' },
+  users: { Icon: UsersIcon, tone: 'violet' },
+  modules_core: { Icon: Squares2X2Icon, tone: 'fuchsia' },
+  modules_ops: { Icon: QueueListIcon, tone: 'rose' },
+  portal: { Icon: GlobeAltIcon, tone: 'cyan' },
+  rates: { Icon: ChartBarIcon, tone: 'emerald' },
+  customization: { Icon: PaintBrushIcon, tone: 'orange' },
   communication: { Icon: EnvelopeIcon, tone: 'teal' },
-  automation: { Icon: CommandLineIcon, tone: 'sky' },
-  billing: { Icon: CreditCardIcon, tone: 'cyan' },
+  automation: { Icon: CommandLineIcon, tone: 'lime' },
+  billing: { Icon: CreditCardIcon, tone: 'amber' },
 }
 
-const FALLBACK_STYLE: SectionStyle = { Icon: Cog6ToothIcon, tone: 'blue' }
+const FALLBACK_STYLE: SectionStyle = { Icon: Cog6ToothIcon, tone: 'indigo' }
 
 type SettingsCardProps = {
   group: SettingsNavGroup
@@ -52,10 +52,10 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
   const { Icon, tone } = GROUP_STYLES[group.icon] ?? FALLBACK_STYLE
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200! bg-white! shadow-sm transition-shadow hover:shadow-md dark:border-white/10! dark:bg-slate-900! dark:shadow-black/20">
+    <section className="876-card overflow-hidden transition-shadow">
       <SectionHeaderPill Icon={Icon} title={group.title} tone={tone} />
 
-      <ul className="space-y-0.5 bg-white! px-4 pt-2 pb-4 dark:bg-slate-900!">
+      <ul className="space-y-0.5 px-4 pt-2 pb-4">
         {group.items.map((item) => (
           <li key={item.title}>
             {item.href ? (

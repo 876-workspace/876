@@ -46,19 +46,23 @@ describe('Couriers settings page', () => {
     expect(screen.queryByText('User preferences')).not.toBeInTheDocument()
   })
 
-  it('uses manually styled pastel cards and aligns item text with their labels', async () => {
+  it('uses shared 876 cards with pastel headers and aligns item text with their labels', async () => {
     await renderPage()
 
     const headings = screen.getAllByRole('heading', { level: 2 })
     const cards = headings.map((heading) => heading.closest('section'))
     const headerBackgrounds = headings.flatMap((heading) =>
       Array.from(heading.classList).filter((className) =>
-        /^bg-(blue|cyan|sky|teal)-100!$/.test(className)
+        /^bg-(violet|fuchsia|rose|amber|lime|emerald|teal|cyan|indigo|orange)-50!$/.test(
+          className
+        )
       )
     )
     const darkHeaderBackgrounds = headings.flatMap((heading) =>
       Array.from(heading.classList).filter((className) =>
-        /^dark:bg-(blue|cyan|sky|teal)-400\/20!$/.test(className)
+        /^dark:bg-(violet|fuchsia|rose|amber|lime|emerald|teal|cyan|indigo|orange)-400\/6!$/.test(
+          className
+        )
       )
     )
 
@@ -66,12 +70,10 @@ describe('Couriers settings page', () => {
     expect(
       cards.every(
         (card) =>
-          card?.classList.contains('rounded-xl') &&
-          card.classList.contains('border') &&
-          card.classList.contains('bg-white!') &&
-          card.classList.contains('dark:bg-slate-900!') &&
-          card.classList.contains('shadow-sm') &&
-          !card.classList.contains('876-card')
+          card?.classList.contains('876-card') &&
+          card.classList.contains('overflow-hidden') &&
+          !card.classList.contains('bg-white!') &&
+          !card.classList.contains('dark:bg-slate-900!')
       )
     ).toBe(true)
     expect(
@@ -100,11 +102,9 @@ describe('Couriers settings page', () => {
       name: 'Organization',
     }).nextElementSibling
 
-    expect(firstCardBody).toHaveClass(
-      'space-y-0.5',
-      'bg-white!',
-      'dark:bg-slate-900!'
-    )
+    expect(firstCardBody).toHaveClass('space-y-0.5')
+    expect(firstCardBody).not.toHaveClass('bg-white!')
+    expect(firstCardBody).not.toHaveClass('dark:bg-slate-900!')
     expect(screen.getByRole('link', { name: 'Profile' })).toHaveClass(
       'py-1.5',
       'pl-6'
