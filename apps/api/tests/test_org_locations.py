@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.exc import IntegrityError
 
 from core.config import Settings
 from core.security import Principal, require_api_key, require_session
@@ -209,6 +210,33 @@ async def test_create_location_checks_soft_deleted_rows_for_the_code(
 
     assert resp.status_code == 201
     assert calls["by_code"] == [("br_kingston", "org_test", True)]
+
+
+async def test_create_location_translates_a_losing_insert_race_into_409(
+    monkeypatch: Any,
+) -> None:
+    """Two concurrent creates can both pass the preflight; the loser must 409."""
+    app, _db, _calls = _locations_app(monkeypatch, existing_by_code=None)
+
+    async def raise_integrity(self: OrgLocationRepository, **kwargs: Any) -> Any:
+        raise IntegrityError("INSERT", {}, Exception("duplicate key"))
+
+    monkeypatch.setattr(OrgLocationRepository, "create", raise_integrity)
+
+    async with _client(app) as client:
+        resp = await client.post(
+            "/organizations/org_test/locations",
+            json={"name": "Kingston branch", "code": "br_kingston"},
+        )
+
+    assert resp.status_code == 409
+    assert resp.json() == {
+        "data": None,
+        "error": {
+            "code": "location/duplicate-code",
+            "message": "A location with this code already exists.",
+        },
+    }
 
 
 async def test_create_location_skips_the_code_check_when_no_code_is_given(

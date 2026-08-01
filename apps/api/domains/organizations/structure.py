@@ -11,6 +11,7 @@ import contextlib
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.errors import AppHTTPException
@@ -62,6 +63,20 @@ logger = get_logger(__name__)
 def _not_found(code: str, message: str) -> AppHTTPException:
     return AppHTTPException(
         code=code, message=message, http_status_code=status.HTTP_404_NOT_FOUND
+    )
+
+
+def _duplicate_code_conflict() -> AppHTTPException:
+    """The 409 for a location code already taken within the organization.
+
+    Raised from the preflight lookup and from the integrity error the database
+    raises when two concurrent creates both pass that lookup, so both paths
+    answer with the same client-safe error.
+    """
+    return AppHTTPException(
+        code="location/duplicate-code",
+        message="A location with this code already exists.",
+        http_status_code=status.HTTP_409_CONFLICT,
     )
 
 
@@ -222,25 +237,29 @@ async def create_org_location(
     # still owns its code. Answer 409 rather than letting the insert fail with
     # an integrity error the caller sees as a 500.
     if body.code and await repo.get_by_code_for_org(body.code, org_id, include_deleted=True):
-        raise AppHTTPException(
-            code="location/duplicate-code",
-            message="A location with this code already exists.",
-            http_status_code=status.HTTP_409_CONFLICT,
-        )
+        raise _duplicate_code_conflict()
 
     if body.is_primary:
         await repo.clear_primary_for_org(org_id)
 
     now = now_unix_seconds()
     values = body.model_dump(exclude_none=True, exclude={"metadata"})
-    row = await repo.create(
-        id=generate_id("orgLocation"),
-        organization_id=org_id,
-        metadata_=body.metadata,
-        created_at=now,
-        updated_at=now,
-        **values,
-    )
+    try:
+        row = await repo.create(
+            id=generate_id("orgLocation"),
+            organization_id=org_id,
+            metadata_=body.metadata,
+            created_at=now,
+            updated_at=now,
+            **values,
+        )
+    except IntegrityError as error:
+        # The check above is a preflight, not a lock: two creates for the same
+        # code can both pass it before either insert flushes. The database is
+        # the only authority, so translate its constraint violation into the
+        # same documented 409 rather than letting it surface as a 500.
+        raise _duplicate_code_conflict() from error
+
     logger.info("organizations.location.create", org_id=org_id, location_id=row.id)
     return _serialize_location(row)
 
@@ -289,11 +308,7 @@ async def update_org_location(
     if body.code and body.code != existing.code:
         conflict = await repo.get_by_code_for_org(body.code, org_id, include_deleted=True)
         if conflict:
-            raise AppHTTPException(
-                code="location/duplicate-code",
-                message="A location with this code already exists.",
-                http_status_code=status.HTTP_409_CONFLICT,
-            )
+            raise _duplicate_code_conflict()
 
     if body.is_primary:
         await repo.clear_primary_for_org(org_id)
