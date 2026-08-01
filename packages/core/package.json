@@ -27,6 +27,10 @@
       "types": "./src/lib/timestamps.ts",
       "default": "./src/lib/timestamps.ts"
     },
+    "./phone": {
+      "types": "./src/lib/phone.ts",
+      "default": "./src/lib/phone.ts"
+    },
     "./platform-apps": {
       "types": "./src/lib/platform-apps.ts",
       "default": "./src/lib/platform-apps.ts"
@@ -75,6 +79,7 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
