@@ -2,6 +2,7 @@ import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import Link from 'next/link'
 import { after } from 'next/server'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 import { formatAddressLine, needsRegionReview } from '@/lib/address/format'
@@ -18,10 +19,17 @@ export default async function LocationsSettingsPage({ params }: Props) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant)
     return (
-      <div className="876-empty-dashed max-w-2xl">
-        We couldn&apos;t load this organization&apos;s branches. Please try
-        again.
-      </div>
+      <Page>
+        <PageBreadcrumb
+          href={`/org/${orgSlug}/settings`}
+          label="Settings"
+          className="mb-4"
+        />
+        <div className="876-empty-dashed max-w-2xl">
+          We couldn&apos;t load this organization&apos;s branches. Please try
+          again.
+        </div>
+      </Page>
     )
 
   const { id: tenantId, orgId } = ctx.tenant
@@ -33,9 +41,15 @@ export default async function LocationsSettingsPage({ params }: Props) {
   after(() => service.orgLocations.reconcile(tenantId, orgId))
 
   return (
-    <>
+    <Page>
+      <PageBreadcrumb
+        href={`/org/${orgSlug}/settings`}
+        label="Settings"
+        className="mb-4"
+      />
+
       <ResourceToolbar
-        title="Branches"
+        title="Locations"
         primaryLabel="Add"
         primaryHref={`/org/${orgSlug}/settings/locations/new`}
         primaryVariant="info"
@@ -86,6 +100,6 @@ export default async function LocationsSettingsPage({ params }: Props) {
           ))}
         </ul>
       )}
-    </>
+    </Page>
   )
 }

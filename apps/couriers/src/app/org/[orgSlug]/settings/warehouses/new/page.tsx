@@ -1,10 +1,10 @@
-import { PageHeader, PageTitle } from '@876/ui/page'
+import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { WarehouseForm } from '../../warehouse-form'
+import { WarehouseForm } from '../warehouse-form'
 
 export const metadata = { title: 'Add warehouse — Settings' }
 
@@ -18,14 +18,19 @@ export default async function NewWarehousePage({ params }: Props) {
 
   if (ctx.role !== 'owner' && ctx.role !== 'admin')
     return (
-      <>
+      <Page>
+        <PageBreadcrumb
+          href={`/org/${orgSlug}/settings/warehouses`}
+          label="Warehouses"
+          className="mb-4"
+        />
         <PageHeader className="mb-8">
           <PageTitle>Add warehouse</PageTitle>
         </PageHeader>
         <div className="876-empty-dashed max-w-2xl">
           You do not have permission to manage locations.
         </div>
-      </>
+      </Page>
     )
 
   const warehouses = await service.warehouses.list({
@@ -33,7 +38,12 @@ export default async function NewWarehousePage({ params }: Props) {
   })
 
   return (
-    <>
+    <Page>
+      <PageBreadcrumb
+        href={`/org/${orgSlug}/settings/warehouses`}
+        label="Warehouses"
+        className="mb-4"
+      />
       <PageHeader className="mb-8">
         <PageTitle>Add warehouse</PageTitle>
       </PageHeader>
@@ -42,6 +52,6 @@ export default async function NewWarehousePage({ params }: Props) {
         orgSlug={orgSlug}
         isFirstWarehouse={warehouses.length === 0}
       />
-    </>
+    </Page>
   )
 }

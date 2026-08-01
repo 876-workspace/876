@@ -2,6 +2,7 @@ import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import Link from 'next/link'
 import { after } from 'next/server'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { ResourceToolbar } from '@/components/resource-toolbar'
 import { formatAddressLine } from '@/lib/address/format'
@@ -18,28 +19,39 @@ export default async function WarehousesSettingsPage({ params }: Props) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant)
     return (
-      <div className="876-empty-dashed max-w-2xl">
-        We couldn&apos;t load this organization&apos;s warehouses. Please try
-        again.
-      </div>
+      <Page>
+        <PageBreadcrumb
+          href={`/org/${orgSlug}/settings`}
+          label="Settings"
+          className="mb-4"
+        />
+        <div className="876-empty-dashed max-w-2xl">
+          We couldn&apos;t load this organization&apos;s warehouses. Please try
+          again.
+        </div>
+      </Page>
     )
 
   const { id: tenantId, orgId } = ctx.tenant
 
   const warehouses = await service.warehouses.list({ tenantId })
 
-  // Both tabs schedule the repair pass. The warehouse form redirects here, so a
-  // warehouse whose mirror failed would otherwise stay unlinked no matter how
-  // often its own list is refreshed — reconcile covers branches and warehouses
-  // alike, so whichever tab the user lands on repairs both.
+  // The warehouse form redirects here, so a warehouse whose core mirror failed
+  // would otherwise stay unlinked no matter how often this list is refreshed.
   after(() => service.orgLocations.reconcile(tenantId, orgId))
 
   return (
-    <>
+    <Page>
+      <PageBreadcrumb
+        href={`/org/${orgSlug}/settings`}
+        label="Settings"
+        className="mb-4"
+      />
+
       <ResourceToolbar
         title="Warehouses"
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/settings/locations/warehouses/new`}
+        primaryHref={`/org/${orgSlug}/settings/warehouses/new`}
         primaryVariant="info"
         refresh
       />
@@ -71,7 +83,7 @@ export default async function WarehousesSettingsPage({ params }: Props) {
                   size="sm"
                   render={
                     <Link
-                      href={`/org/${orgSlug}/settings/locations/warehouses/${warehouse.id}/edit`}
+                      href={`/org/${orgSlug}/settings/warehouses/${warehouse.id}/edit`}
                     />
                   }
                 >
@@ -82,6 +94,6 @@ export default async function WarehousesSettingsPage({ params }: Props) {
           ))}
         </ul>
       )}
-    </>
+    </Page>
   )
 }

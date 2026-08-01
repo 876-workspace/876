@@ -1,4 +1,4 @@
-import { PageHeader, PageTitle } from '@876/ui/page'
+import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -18,25 +18,35 @@ export default async function NewBranchPage({ params }: Props) {
 
   if (ctx.role !== 'owner' && ctx.role !== 'admin')
     return (
-      <>
+      <Page>
+        <PageBreadcrumb
+          href={`/org/${orgSlug}/settings/locations`}
+          label="Locations"
+          className="mb-4"
+        />
         <PageHeader className="mb-8">
           <PageTitle>Add branch</PageTitle>
         </PageHeader>
         <div className="876-empty-dashed max-w-2xl">
           You do not have permission to manage locations.
         </div>
-      </>
+      </Page>
     )
 
   const branches = await service.branches.list({ tenantId: ctx.tenant.id })
 
   return (
-    <>
+    <Page>
+      <PageBreadcrumb
+        href={`/org/${orgSlug}/settings/locations`}
+        label="Locations"
+        className="mb-4"
+      />
       <PageHeader className="mb-8">
         <PageTitle>Add branch</PageTitle>
       </PageHeader>
 
       <BranchForm orgSlug={orgSlug} isFirstBranch={branches.length === 0} />
-    </>
+    </Page>
   )
 }

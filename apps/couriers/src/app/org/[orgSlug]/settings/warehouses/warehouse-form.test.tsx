@@ -121,7 +121,7 @@ describe('WarehouseForm', () => {
       },
     })
     expect(mocks.push).toHaveBeenCalledWith(
-      '/org/island-logistics/settings/locations/warehouses'
+      '/org/island-logistics/settings/warehouses'
     )
     expect(mocks.refresh).toHaveBeenCalledTimes(1)
   })
