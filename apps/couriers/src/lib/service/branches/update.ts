@@ -13,12 +13,14 @@ import { isUniqueConstraintError } from '../prisma-errors'
 import { reportServiceFailure } from '../report'
 import { ok, err, errFrom } from '../result'
 import { isColdStartError, runTransaction } from '../transaction'
+import { scheduleSync } from '../org-locations/sync'
 import { toBranchView } from './view'
 
 class DefaultBranchError extends Error {}
 
 export async function update(
   tenantId: string,
+  orgId: string,
   id: string,
   params: BranchUpdateParams
 ): ServiceResult<BranchView> {
@@ -32,6 +34,7 @@ export async function update(
     where: { id, tenantId },
     select: {
       id: true,
+      orgLocationId: true,
       isDefault: true,
       addressId: true,
       address: { select: { countryCode: true, regionCode: true } },
@@ -90,7 +93,19 @@ export async function update(
       })
     })
 
-    return ok(toBranchView(branch))
+    const view = toBranchView(branch)
+    scheduleSync(orgId, {
+      kind: 'branch',
+      id: view.id,
+      orgLocationId: view.orgLocationId,
+      name: view.name,
+      phone: view.phone,
+      isActive: view.isActive,
+      isDefaultForKind: view.isDefault,
+      address: view.address,
+    })
+
+    return ok(view)
   } catch (error) {
     if (error instanceof DefaultBranchError)
       return err(

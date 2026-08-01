@@ -13,10 +13,12 @@ import { isUniqueConstraintError } from '../prisma-errors'
 import { reportServiceFailure } from '../report'
 import { ok, err, errFrom } from '../result'
 import { isColdStartError, runTransaction } from '../transaction'
+import { scheduleSync } from '../org-locations/sync'
 import { toBranchView } from './view'
 
 export async function create(
   tenantId: string,
+  orgId: string,
   params: BranchCreateParams
 ): ServiceResult<BranchView> {
   const parsed = branchCreateParamsSchema.safeParse(params)
@@ -70,7 +72,19 @@ export async function create(
       })
     })
 
-    return ok(toBranchView(branch))
+    const view = toBranchView(branch)
+    scheduleSync(orgId, {
+      kind: 'branch',
+      id: view.id,
+      orgLocationId: view.orgLocationId,
+      name: view.name,
+      phone: view.phone,
+      isActive: view.isActive,
+      isDefaultForKind: view.isDefault,
+      address: view.address,
+    })
+
+    return ok(view)
   } catch (error) {
     // The address write is inside the transaction, so a duplicate branch name
     // rolls it back rather than leaving an orphan address behind.

@@ -60,6 +60,7 @@ function createWarehouse(
     id: 'wh_miami',
     tenantId: 'ten_rocketship',
     addressId: 'adr_miami',
+    orgLocationId: null,
     name: 'Miami Receiving Hub',
     isPrimary: true,
     address: {

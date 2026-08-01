@@ -13,10 +13,12 @@ import { isUniqueConstraintError } from '../prisma-errors'
 import { reportServiceFailure } from '../report'
 import { ok, err, errFrom } from '../result'
 import { isColdStartError, runTransaction } from '../transaction'
+import { scheduleSync } from '../org-locations/sync'
 import { toWarehouseView } from './view'
 
 export async function update(
   tenantId: string,
+  orgId: string,
   id: string,
   params: WarehouseUpdateParams
 ): ServiceResult<WarehouseView> {
@@ -30,6 +32,7 @@ export async function update(
     where: { id, tenantId },
     select: {
       id: true,
+      orgLocationId: true,
       isPrimary: true,
       addressId: true,
       address: { select: { countryCode: true, regionCode: true } },
@@ -75,7 +78,19 @@ export async function update(
       })
     })
 
-    return ok(toWarehouseView(warehouse))
+    const view = toWarehouseView(warehouse)
+    scheduleSync(orgId, {
+      kind: 'warehouse',
+      id: view.id,
+      orgLocationId: view.orgLocationId,
+      name: view.name,
+      phone: null,
+      isActive: true,
+      isDefaultForKind: view.isPrimary,
+      address: view.address,
+    })
+
+    return ok(view)
   } catch (error) {
     if (isUniqueConstraintError(error))
       return err('A warehouse with that name already exists.', 409)

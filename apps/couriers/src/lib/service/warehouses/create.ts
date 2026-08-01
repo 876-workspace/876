@@ -12,10 +12,12 @@ import { isUniqueConstraintError } from '../prisma-errors'
 import { reportServiceFailure } from '../report'
 import { ok, err, errFrom } from '../result'
 import { isColdStartError, runTransaction } from '../transaction'
+import { scheduleSync } from '../org-locations/sync'
 import { toWarehouseView } from './view'
 
 export async function create(
   tenantId: string,
+  orgId: string,
   params: WarehouseCreateParams
 ): ServiceResult<WarehouseView> {
   const parsed = warehouseCreateParamsSchema.safeParse(params)
@@ -60,7 +62,19 @@ export async function create(
       })
     })
 
-    return ok(toWarehouseView(warehouse))
+    const view = toWarehouseView(warehouse)
+    scheduleSync(orgId, {
+      kind: 'warehouse',
+      id: view.id,
+      orgLocationId: view.orgLocationId,
+      name: view.name,
+      phone: null,
+      isActive: true,
+      isDefaultForKind: view.isPrimary,
+      address: view.address,
+    })
+
+    return ok(view)
   } catch (error) {
     // The address write is inside the transaction, so a duplicate warehouse
     // name rolls it back rather than leaving an orphan address behind.

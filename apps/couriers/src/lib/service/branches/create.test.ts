@@ -17,6 +17,7 @@ const {
   mockBuildAddressData,
   mockPrismaRef,
   mockReportServiceFailure,
+  mockScheduleSync,
   mockTxRef,
 } = vi.hoisted(() => {
   class MockPrismaClientKnownRequestError extends Error {
@@ -35,6 +36,7 @@ const {
       current: null as { $transaction: ReturnType<typeof vi.fn> } | null,
     },
     mockReportServiceFailure: vi.fn(),
+    mockScheduleSync: vi.fn(),
     mockTxRef: { current: null as MockTx | null },
   }
 })
@@ -57,9 +59,14 @@ vi.mock('../report', () => ({
   reportServiceFailure: mockReportServiceFailure,
 }))
 
+vi.mock('../org-locations/sync', () => ({
+  scheduleSync: mockScheduleSync,
+}))
+
 import { create } from './create'
 
 const TENANT_ID = 'ten_rocketship'
+const ORG_ID = 'org_rocketship'
 const NOW = 1_785_427_200
 
 function params(
@@ -108,6 +115,7 @@ function branchView(overrides: Partial<BranchView> = {}): BranchView {
     id: 'br_kingston',
     tenantId: TENANT_ID,
     addressId: 'adr_kingston',
+    orgLocationId: null,
     name: 'Kingston branch',
     phone: '+18765550123',
     isDefault: true,
@@ -154,7 +162,7 @@ describe('branches.create', () => {
   it('creates the branch and address in one transaction', async () => {
     const input = params()
 
-    const result = await create(TENANT_ID, input)
+    const result = await create(TENANT_ID, ORG_ID, input)
 
     expect(result).toEqual({ data: branchView(), error: null })
     expect(mockBuildAddressData).toHaveBeenCalledTimes(1)
@@ -186,7 +194,7 @@ describe('branches.create', () => {
   })
 
   it('forces the first branch to default when the caller requests false', async () => {
-    const result = await create(TENANT_ID, params({ isDefault: false }))
+    const result = await create(TENANT_ID, ORG_ID, params({ isDefault: false }))
 
     expect(result).toEqual({ data: branchView(), error: null })
     expect(mockTxRef.current!.branch.create).toHaveBeenCalledTimes(1)
@@ -210,7 +218,7 @@ describe('branches.create', () => {
   it('demotes the previous default when a later branch is requested as default', async () => {
     mockTxRef.current!.branch.count.mockResolvedValue(1)
 
-    const result = await create(TENANT_ID, params({ isDefault: true }))
+    const result = await create(TENANT_ID, ORG_ID, params({ isDefault: true }))
 
     expect(result).toEqual({ data: branchView(), error: null })
     expect(mockTxRef.current!.branch.updateMany).toHaveBeenCalledTimes(1)
@@ -224,7 +232,7 @@ describe('branches.create', () => {
     const error = prismaError('P2002')
     mockPrismaRef.current!.$transaction.mockRejectedValue(error)
 
-    const result = await create(TENANT_ID, params())
+    const result = await create(TENANT_ID, ORG_ID, params())
 
     expect(result).toEqual({
       data: null,
@@ -239,7 +247,7 @@ describe('branches.create', () => {
     const error = prismaError('P2024')
     mockPrismaRef.current!.$transaction.mockRejectedValue(error)
 
-    const result = await create(TENANT_ID, params())
+    const result = await create(TENANT_ID, ORG_ID, params())
 
     expect(result).toEqual({
       data: null,
@@ -268,7 +276,7 @@ describe('branches.create', () => {
       result: geographyFailure,
     })
 
-    const result = await create(TENANT_ID, params())
+    const result = await create(TENANT_ID, ORG_ID, params())
 
     expect(result).toEqual(geographyFailure)
     expect(mockPrismaRef.current!.$transaction).not.toHaveBeenCalled()
