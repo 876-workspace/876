@@ -10,13 +10,17 @@ import type { ServiceResult } from '@/types/api'
 
 import { buildAddressUpdateData } from '../addresses/update'
 import { isUniqueConstraintError } from '../prisma-errors'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
+import { scheduleSync } from '../org-locations/sync'
 import { toBranchView } from './view'
 
 class DefaultBranchError extends Error {}
 
 export async function update(
   tenantId: string,
+  orgId: string,
   id: string,
   params: BranchUpdateParams
 ): ServiceResult<BranchView> {
@@ -30,6 +34,7 @@ export async function update(
     where: { id, tenantId },
     select: {
       id: true,
+      orgLocationId: true,
       isDefault: true,
       addressId: true,
       address: { select: { countryCode: true, regionCode: true } },
@@ -51,7 +56,7 @@ export async function update(
   const now = nowUnixSeconds()
 
   try {
-    const branch = await prisma.$transaction(async (tx) => {
+    const branch = await runTransaction('branches.update', async (tx) => {
       // A tenant must always keep exactly one default branch, so clearing the
       // flag on the current default is rejected rather than silently ignored —
       // promote another branch instead.
@@ -88,7 +93,19 @@ export async function update(
       })
     })
 
-    return ok(toBranchView(branch))
+    const view = toBranchView(branch)
+    scheduleSync(orgId, {
+      kind: 'branch',
+      id: view.id,
+      orgLocationId: view.orgLocationId,
+      name: view.name,
+      phone: view.phone,
+      isActive: view.isActive,
+      isDefaultForKind: view.isDefault,
+      address: view.address,
+    })
+
+    return ok(view)
   } catch (error) {
     if (error instanceof DefaultBranchError)
       return err(
@@ -98,7 +115,21 @@ export async function update(
     if (isUniqueConstraintError(error))
       return err('A branch with that name already exists.', 409)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'branches.update',
+        consequence:
+          'The branch was not updated and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.branches.update]', error)
+    reportServiceFailure(error, {
+      operation: 'branches.update',
+      consequence:
+        'The branch was not updated and the form shows a generic failure.',
+    })
     return err('Failed to update branch.', 500)
   }
 }

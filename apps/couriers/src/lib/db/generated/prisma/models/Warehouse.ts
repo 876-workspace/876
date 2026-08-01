@@ -46,6 +46,7 @@ export type WarehouseMinAggregateOutputType = {
   id: string | null
   tenantId: string | null
   addressId: string | null
+  orgLocationId: string | null
   name: string | null
   isPrimary: boolean | null
   createdAt: number | null
@@ -56,6 +57,7 @@ export type WarehouseMaxAggregateOutputType = {
   id: string | null
   tenantId: string | null
   addressId: string | null
+  orgLocationId: string | null
   name: string | null
   isPrimary: boolean | null
   createdAt: number | null
@@ -66,6 +68,7 @@ export type WarehouseCountAggregateOutputType = {
   id: number
   tenantId: number
   addressId: number
+  orgLocationId: number
   name: number
   isPrimary: number
   createdAt: number
@@ -87,6 +90,7 @@ export type WarehouseMinAggregateInputType = {
   id?: true
   tenantId?: true
   addressId?: true
+  orgLocationId?: true
   name?: true
   isPrimary?: true
   createdAt?: true
@@ -97,6 +101,7 @@ export type WarehouseMaxAggregateInputType = {
   id?: true
   tenantId?: true
   addressId?: true
+  orgLocationId?: true
   name?: true
   isPrimary?: true
   createdAt?: true
@@ -107,6 +112,7 @@ export type WarehouseCountAggregateInputType = {
   id?: true
   tenantId?: true
   addressId?: true
+  orgLocationId?: true
   name?: true
   isPrimary?: true
   createdAt?: true
@@ -211,6 +217,7 @@ export type WarehouseGroupByOutputType = {
   id: string
   tenantId: string
   addressId: string
+  orgLocationId: string | null
   name: string
   isPrimary: boolean
   createdAt: number
@@ -242,6 +249,7 @@ export type WarehouseWhereInput = {
   id?: Prisma.StringFilter<'Warehouse'> | string
   tenantId?: Prisma.StringFilter<'Warehouse'> | string
   addressId?: Prisma.StringFilter<'Warehouse'> | string
+  orgLocationId?: Prisma.StringNullableFilter<'Warehouse'> | string | null
   name?: Prisma.StringFilter<'Warehouse'> | string
   isPrimary?: Prisma.BoolFilter<'Warehouse'> | boolean
   createdAt?: Prisma.IntFilter<'Warehouse'> | number
@@ -261,6 +269,7 @@ export type WarehouseOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -274,6 +283,7 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<
   {
     id?: string
     addressId?: string
+    orgLocationId?: string
     warehouses_tenant_id_name_key?: Prisma.WarehouseWarehouses_tenant_id_name_keyCompoundUniqueInput
     AND?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
     OR?: Prisma.WarehouseWhereInput[]
@@ -293,13 +303,14 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<
     >
     manifests?: Prisma.ManifestListRelationFilter
   },
-  'id' | 'addressId' | 'warehouses_tenant_id_name_key'
+  'id' | 'addressId' | 'orgLocationId' | 'warehouses_tenant_id_name_key'
 >
 
 export type WarehouseOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -322,6 +333,10 @@ export type WarehouseScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
   tenantId?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
   addressId?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
+  orgLocationId?:
+    | Prisma.StringNullableWithAggregatesFilter<'Warehouse'>
+    | string
+    | null
   name?: Prisma.StringWithAggregatesFilter<'Warehouse'> | string
   isPrimary?: Prisma.BoolWithAggregatesFilter<'Warehouse'> | boolean
   createdAt?: Prisma.IntWithAggregatesFilter<'Warehouse'> | number
@@ -330,6 +345,7 @@ export type WarehouseScalarWhereWithAggregatesInput = {
 
 export type WarehouseCreateInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -343,6 +359,7 @@ export type WarehouseUncheckedCreateInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -352,6 +369,10 @@ export type WarehouseUncheckedCreateInput = {
 
 export type WarehouseUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -365,6 +386,10 @@ export type WarehouseUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -376,6 +401,7 @@ export type WarehouseCreateManyInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -384,6 +410,10 @@ export type WarehouseCreateManyInput = {
 
 export type WarehouseUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -394,6 +424,10 @@ export type WarehouseUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -424,6 +458,7 @@ export type WarehouseCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -439,6 +474,7 @@ export type WarehouseMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -449,6 +485,7 @@ export type WarehouseMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
   addressId?: Prisma.SortOrder
+  orgLocationId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -694,6 +731,7 @@ export type WarehouseUncheckedUpdateManyWithoutTenantNestedInput = {
 
 export type WarehouseCreateWithoutAddressInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -704,6 +742,7 @@ export type WarehouseCreateWithoutAddressInput = {
 
 export type WarehouseUncheckedCreateWithoutAddressInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -761,6 +800,7 @@ export type WarehouseScalarWhereInput = {
   id?: Prisma.StringFilter<'Warehouse'> | string
   tenantId?: Prisma.StringFilter<'Warehouse'> | string
   addressId?: Prisma.StringFilter<'Warehouse'> | string
+  orgLocationId?: Prisma.StringNullableFilter<'Warehouse'> | string | null
   name?: Prisma.StringFilter<'Warehouse'> | string
   isPrimary?: Prisma.BoolFilter<'Warehouse'> | boolean
   createdAt?: Prisma.IntFilter<'Warehouse'> | number
@@ -769,6 +809,7 @@ export type WarehouseScalarWhereInput = {
 
 export type WarehouseCreateWithoutManifestsInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -781,6 +822,7 @@ export type WarehouseUncheckedCreateWithoutManifestsInput = {
   id?: string
   tenantId: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -817,6 +859,10 @@ export type WarehouseUpdateToOneWithWhereWithoutManifestsInput = {
 
 export type WarehouseUpdateWithoutManifestsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -829,6 +875,10 @@ export type WarehouseUncheckedUpdateWithoutManifestsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   tenantId?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -837,6 +887,7 @@ export type WarehouseUncheckedUpdateWithoutManifestsInput = {
 
 export type WarehouseCreateWithoutTenantInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -848,6 +899,7 @@ export type WarehouseCreateWithoutTenantInput = {
 export type WarehouseUncheckedCreateWithoutTenantInput = {
   id?: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -900,6 +952,7 @@ export type WarehouseUpdateManyWithWhereWithoutTenantInput = {
 
 export type WarehouseCreateManyAddressInput = {
   id?: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -908,6 +961,10 @@ export type WarehouseCreateManyAddressInput = {
 
 export type WarehouseUpdateWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -918,6 +975,10 @@ export type WarehouseUpdateWithoutAddressInput = {
 
 export type WarehouseUncheckedUpdateWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -927,6 +988,10 @@ export type WarehouseUncheckedUpdateWithoutAddressInput = {
 
 export type WarehouseUncheckedUpdateManyWithoutAddressInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -936,6 +1001,7 @@ export type WarehouseUncheckedUpdateManyWithoutAddressInput = {
 export type WarehouseCreateManyTenantInput = {
   id?: string
   addressId: string
+  orgLocationId?: string | null
   name: string
   isPrimary?: boolean
   createdAt: number
@@ -944,6 +1010,10 @@ export type WarehouseCreateManyTenantInput = {
 
 export type WarehouseUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -955,6 +1025,10 @@ export type WarehouseUpdateWithoutTenantInput = {
 export type WarehouseUncheckedUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -965,6 +1039,10 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
 export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   addressId?: Prisma.StringFieldUpdateOperationsInput | string
+  orgLocationId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1017,6 +1095,7 @@ export type WarehouseSelect<
     id?: boolean
     tenantId?: boolean
     addressId?: boolean
+    orgLocationId?: boolean
     name?: boolean
     isPrimary?: boolean
     createdAt?: boolean
@@ -1037,6 +1116,7 @@ export type WarehouseSelectCreateManyAndReturn<
     id?: boolean
     tenantId?: boolean
     addressId?: boolean
+    orgLocationId?: boolean
     name?: boolean
     isPrimary?: boolean
     createdAt?: boolean
@@ -1055,6 +1135,7 @@ export type WarehouseSelectUpdateManyAndReturn<
     id?: boolean
     tenantId?: boolean
     addressId?: boolean
+    orgLocationId?: boolean
     name?: boolean
     isPrimary?: boolean
     createdAt?: boolean
@@ -1069,6 +1150,7 @@ export type WarehouseSelectScalar = {
   id?: boolean
   tenantId?: boolean
   addressId?: boolean
+  orgLocationId?: boolean
   name?: boolean
   isPrimary?: boolean
   createdAt?: boolean
@@ -1082,6 +1164,7 @@ export type WarehouseOmit<
   | 'id'
   | 'tenantId'
   | 'addressId'
+  | 'orgLocationId'
   | 'name'
   | 'isPrimary'
   | 'createdAt'
@@ -1127,6 +1210,12 @@ export type $WarehousePayload<
       id: string
       tenantId: string
       addressId: string
+      /**
+       * The core 876 organization location this site is mirrored to. Opaque id,
+       * no cross-database foreign key. Null when the mirror has not yet
+       * succeeded — the site is fully usable either way.
+       */
+      orgLocationId: string | null
       name: string
       isPrimary: boolean
       createdAt: number
@@ -1765,6 +1854,7 @@ export interface WarehouseFieldRefs {
   readonly id: Prisma.FieldRef<'Warehouse', 'String'>
   readonly tenantId: Prisma.FieldRef<'Warehouse', 'String'>
   readonly addressId: Prisma.FieldRef<'Warehouse', 'String'>
+  readonly orgLocationId: Prisma.FieldRef<'Warehouse', 'String'>
   readonly name: Prisma.FieldRef<'Warehouse', 'String'>
   readonly isPrimary: Prisma.FieldRef<'Warehouse', 'Boolean'>
   readonly createdAt: Prisma.FieldRef<'Warehouse', 'Int'>

@@ -1,11 +1,12 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma } from '@/lib/db'
 import type { DeletedCustomerAddress } from '@/types/customer-address'
 import type { ServiceResult } from '@/types/api'
 
 import { isAddressInUse, usage } from '../addresses/usage'
-import { ok, err } from '../result'
+import { reportServiceFailure } from '../report'
+import { ok, err, errFrom } from '../result'
+import { isColdStartError, runTransaction } from '../transaction'
 
 class NotFoundError extends Error {}
 
@@ -24,7 +25,7 @@ export async function del(
   const now = nowUnixSeconds()
 
   try {
-    await prisma.$transaction(async (tx) => {
+    await runTransaction('customerAddresses.delete', async (tx) => {
       const current = await tx.customerAddress.findFirst({
         where: { id, tenantId },
         select: {
@@ -64,7 +65,21 @@ export async function del(
   } catch (error) {
     if (error instanceof NotFoundError) return err('Address not found.', 404)
 
+    if (isColdStartError(error)) {
+      reportServiceFailure(error, {
+        operation: 'customerAddresses.delete',
+        consequence:
+          'The address was not removed and the form asks the user to try again shortly.',
+      })
+      return errFrom('error/database-unavailable')
+    }
+
     console.error('[service.customerAddresses.delete]', error)
+    reportServiceFailure(error, {
+      operation: 'customerAddresses.delete',
+      consequence:
+        'The address was not removed and the form shows a generic failure.',
+    })
     return err('Failed to remove address.', 500)
   }
 }

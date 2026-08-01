@@ -18,6 +18,10 @@ export const GENERIC_ERRORS = {
     message: 'The request was invalid or malformed.',
     httpStatus: HttpStatus.BAD_REQUEST,
   },
+  'error/database-unavailable': {
+    message: 'The database is waking up. Please try again in a moment.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
   'error/validation-failed': {
     message: 'The provided data failed validation.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,

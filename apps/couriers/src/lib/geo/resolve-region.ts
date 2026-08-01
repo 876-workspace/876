@@ -51,6 +51,23 @@ export async function resolveRegionById(
 }
 
 /**
+ * Resolves a Couriers region code to the core region id used by organization
+ * locations. A missing or unavailable catalog leaves the field absent rather
+ * than risking a corrupt cross-service reference.
+ */
+export async function resolveRegionIdByCode(
+  countryCode: string,
+  regionCode: string | null
+): Promise<string | null> {
+  if (!regionCode) return null
+
+  const regions = await listRegions(countryCode)
+  if (regions.error) return null
+
+  return regions.data.find((entry) => entry.code === regionCode)?.id ?? null
+}
+
+/**
  * Resolves a client-supplied country and region code against the platform geo
  * catalog, returning the canonical region code and its display name.
  *

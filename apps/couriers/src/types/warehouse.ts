@@ -15,6 +15,7 @@ export const warehouseViewSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
   addressId: z.string(),
+  orgLocationId: z.string().nullable(),
   name: z.string(),
   isPrimary: z.boolean(),
   address: addressViewSchema,
@@ -30,7 +31,7 @@ export const warehouseCreateParamsSchema = z.strictObject({
 })
 export type WarehouseCreateParams = z.input<typeof warehouseCreateParamsSchema>
 
-/** `tenantId` and `addressId` are never client-controlled. */
+/** `tenantId`, `addressId`, and `orgLocationId` are never client-controlled. */
 export const warehouseUpdateParamsSchema = z.strictObject({
   name: z.string().trim().min(1).optional(),
   isPrimary: z.boolean().optional(),

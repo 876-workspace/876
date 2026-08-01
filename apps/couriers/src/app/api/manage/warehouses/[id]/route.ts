@@ -47,7 +47,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await service.warehouses.update(ctx.tenant.id, id, parsed.data)
+  const result = await service.warehouses.update(
+    ctx.tenant.id,
+    ctx.tenant.orgId,
+    id,
+    parsed.data
+  )
   if (result.error)
     return apiJson(
       { error: result.error },

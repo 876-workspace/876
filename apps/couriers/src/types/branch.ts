@@ -15,6 +15,7 @@ export const branchViewSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
   addressId: z.string(),
+  orgLocationId: z.string().nullable(),
   name: z.string(),
   phone: z.string().nullable(),
   isDefault: z.boolean(),
@@ -36,7 +37,7 @@ export const branchCreateParamsSchema = z.strictObject({
 })
 export type BranchCreateParams = z.input<typeof branchCreateParamsSchema>
 
-/** `tenantId` and `addressId` are never client-controlled. */
+/** `tenantId`, `addressId`, and `orgLocationId` are never client-controlled. */
 export const branchUpdateParamsSchema = z.strictObject({
   name: z.string().trim().min(1).optional(),
   phone: z.string().trim().nullable().optional(),

@@ -3,6 +3,9 @@ import type { PlatformRuntime } from '../runtime'
 import type {
   PlatformInviteToken,
   PlatformList,
+  PlatformOrgLocation,
+  PlatformOrgLocationCreateParams,
+  PlatformOrgLocationUpdateParams,
   PlatformOrganization,
   PlatformOrganizationProfile,
   PlatformOrgProfileUpdateParams,
@@ -57,6 +60,46 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
         path: `/organizations/${encodeURIComponent(orgId)}/profile`,
         body: body as Record<string, unknown>,
       })
+    },
+
+    locations: {
+      /** Creates an organization location. @see POST /organizations/{org_id}/locations */
+      create(orgId: string, params: PlatformOrgLocationCreateParams) {
+        return platformRequest<PlatformOrgLocation>(runtime, {
+          method: 'POST',
+          path: `/organizations/${encodeURIComponent(orgId)}/locations`,
+          body: toLocationBody(params),
+        })
+      },
+
+      /** Lists an organization's locations. @see GET /organizations/{org_id}/locations */
+      list(orgId: string) {
+        return platformRequest<PlatformList<PlatformOrgLocation>>(runtime, {
+          method: 'GET',
+          path: `/organizations/${encodeURIComponent(orgId)}/locations`,
+        })
+      },
+
+      /** Retrieves an organization location. @see GET /organizations/{org_id}/locations/{location_id} */
+      retrieve(orgId: string, locationId: string) {
+        return platformRequest<PlatformOrgLocation>(runtime, {
+          method: 'GET',
+          path: `/organizations/${encodeURIComponent(orgId)}/locations/${encodeURIComponent(locationId)}`,
+        })
+      },
+
+      /** Updates an organization location. @see PATCH /organizations/{org_id}/locations/{location_id} */
+      update(
+        orgId: string,
+        locationId: string,
+        params: PlatformOrgLocationUpdateParams
+      ) {
+        return platformRequest<PlatformOrgLocation>(runtime, {
+          method: 'PATCH',
+          path: `/organizations/${encodeURIComponent(orgId)}/locations/${encodeURIComponent(locationId)}`,
+          body: toLocationBody(params),
+        })
+      },
     },
 
     invites: {
@@ -126,5 +169,26 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
         })
       },
     },
+  }
+}
+
+function toLocationBody(
+  params: PlatformOrgLocationCreateParams | PlatformOrgLocationUpdateParams
+): Record<string, unknown> {
+  return {
+    name: params.name,
+    code: params.code,
+    type: params.type,
+    status: params.status,
+    phone: params.phone,
+    email: params.email,
+    line1: params.line1,
+    line2: params.line2,
+    city: params.city,
+    region_id: params.regionId,
+    country_code: params.countryCode,
+    postal_code: params.postalCode,
+    timezone: params.timezone,
+    metadata: params.metadata,
   }
 }

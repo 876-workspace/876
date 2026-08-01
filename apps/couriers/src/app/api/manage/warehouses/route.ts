@@ -43,7 +43,11 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await service.warehouses.create(ctx.tenant.id, parsed.data)
+  const result = await service.warehouses.create(
+    ctx.tenant.id,
+    ctx.tenant.orgId,
+    parsed.data
+  )
   if (result.error)
     return apiJson(
       { error: result.error },
