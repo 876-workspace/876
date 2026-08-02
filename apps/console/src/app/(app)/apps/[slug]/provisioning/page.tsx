@@ -4,7 +4,7 @@ import { buttonVariants } from '@876/ui/button'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
-import { FinanceProvisioningEditor } from '@/app/(app)/orgs/provisioning/finance-provisioning-editor'
+import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 
 type Props = { params: Promise<{ slug: string }> }
 

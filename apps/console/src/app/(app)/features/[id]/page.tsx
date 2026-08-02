@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Fingerprint, Settings, Calendar } from '@876/ui/icons'
-import { InfoSection, Field } from '@/components/detail/info-section'
+import { InfoSection, Field } from '@/components/patterns/detail/info-section'
 import { formatDate } from '@/lib/format'
 import { resolveFeature } from './_data'
 

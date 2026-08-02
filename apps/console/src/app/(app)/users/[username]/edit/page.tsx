@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveUser, resolveUserMcRole, resolveUserProfile } from '../_data'
-import { ConsumerDataEditor } from '../consumer-data-editor'
-import { EditUserForm } from './edit-user-form'
+import { ConsumerDataEditor } from '@/app/(app)/users/[username]/_components/consumer-data-editor'
+import { EditUserForm } from './_components/edit-user-form'
 
 type Props = { params: Promise<{ username: string }> }
 

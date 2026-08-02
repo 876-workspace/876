@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
-import { ApiKeysTable } from './api-keys-table'
-import { CreateApiKeyDialog } from './create-api-key-dialog'
+import { ApiKeysTable } from './_components/api-keys-table'
+import { CreateApiKeyDialog } from './_components/create-api-key-dialog'
 
 type Props = {
   params: Promise<{ slug: string }>

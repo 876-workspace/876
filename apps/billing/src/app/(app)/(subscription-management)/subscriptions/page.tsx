@@ -12,8 +12,8 @@ import {
 import { Page } from '@876/ui/page'
 import { SubscriptionsTable } from './subscriptions-table'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
-import { StatusFilterHeading } from '@/components/status-filter-heading'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import { buildSubscriptionTableRows } from '@/lib/subscriptions/view'

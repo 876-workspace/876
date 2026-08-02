@@ -5,7 +5,7 @@ import { PageBreadcrumb } from '@876/ui/page'
 import { $876 } from '@/lib/876'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../../_data'
-import { SubscriptionCreate } from './subscription-create'
+import { SubscriptionCreate } from './_components/subscription-create'
 
 type Props = { params: Promise<{ slug: string }> }
 

@@ -4,11 +4,11 @@ import { Badge } from '@876/ui/badge'
 import { Building2, CircleStackIcon, CreditCard } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'

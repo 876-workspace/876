@@ -5,7 +5,7 @@ import { AuthPageShell } from '@876/ui/auth'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { AccessDeniedActions } from './access-denied-actions'
+import { AccessDeniedActions } from './_components/access-denied-actions'
 
 export const metadata: Metadata = {
   title: 'Access denied',

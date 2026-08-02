@@ -10,7 +10,7 @@ import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { $876 } from '@/lib/876'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 
-import { EmbeddedAuth } from './embedded-auth'
+import { EmbeddedAuth } from './_components/embedded-auth'
 
 export const metadata: Metadata = {
   title: 'Login',

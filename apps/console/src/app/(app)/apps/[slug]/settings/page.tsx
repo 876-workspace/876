@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Calendar, Fingerprint, KeyRound } from '@876/ui/icons'
 
-import { InfoSection, Field } from '@/components/detail/info-section'
+import { InfoSection, Field } from '@/components/patterns/detail/info-section'
 import { $876 } from '@/lib/876'
 import { formatDate } from '@/lib/format'
 import { resolveApp } from '../_data'
@@ -12,7 +12,7 @@ import {
   IconSection,
   OwnershipSection,
   type OrgOption,
-} from './settings-editor'
+} from './_components/settings-editor'
 
 type Props = { params: Promise<{ slug: string }> }
 

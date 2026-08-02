@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { ActivityView } from '@/components/detail/detail-views'
+import { ActivityView } from '@/components/patterns/detail/detail-views'
 import { resolveOrg } from '../_data'
 
 type Props = { params: Promise<{ slug: string }> }

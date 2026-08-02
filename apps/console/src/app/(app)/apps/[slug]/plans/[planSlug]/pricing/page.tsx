@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../../_data'
-import { PricingTable } from './pricing-table'
+import { PricingTable } from './_components/pricing-table'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }
 

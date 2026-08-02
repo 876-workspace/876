@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { resolveApp, resolveProduct } from '../../../_data'
-import { EditPlanForm } from './edit-plan-form'
+import { EditPlanForm } from './_components/edit-plan-form'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }
 

@@ -3,7 +3,7 @@ import { WIDGET_HOST_APP_SLUGS, type WidgetHost } from '@876/widgets'
 import { $876 } from '@/lib/876'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { NotesSplit, type AdminNoteRow } from './notes-split'
+import { NotesSplit, type AdminNoteRow } from './_components/notes-split'
 
 export const metadata = { title: 'Data — Notepad' }
 

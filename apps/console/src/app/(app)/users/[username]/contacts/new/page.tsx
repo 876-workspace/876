@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { resolveUser } from '../../_data'
-import { ContactCreate } from './contact-create'
+import { ContactCreate } from './_components/contact-create'
 
 type Props = {
   params: Promise<{ username: string }>

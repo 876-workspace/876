@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { AdminAddress } from '@876/admin'
 import { resolveUser, resolveUserAddresses } from '../../../_data'
-import { AddressEdit } from './address-edit'
+import { AddressEdit } from './_components/address-edit'
 
 type Props = {
   params: Promise<{ username: string; addressId: string }>

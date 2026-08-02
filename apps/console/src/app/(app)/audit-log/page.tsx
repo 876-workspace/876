@@ -20,8 +20,8 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { CursorPagination } from '@/components/cursor-pagination'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { CursorPagination } from '@/components/patterns/cursor-pagination'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { $876 } from '@/lib/876'

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
-import { TeamSectionActions } from './team-section-actions'
+import { TeamSectionActions } from './_components/team-section-actions'
 import { PageBreadcrumb } from '@876/ui/page'
 
 type Props = { children: ReactNode }

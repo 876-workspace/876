@@ -1,17 +1,17 @@
 import { Page } from '@876/ui/page'
 import { WIDGET_HOST_APP_SLUGS } from '@876/widgets'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
-import { StatusFilterHeading } from '@/components/status-filter-heading'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import {
   CONSOLE_WIDGETS_FEATURE_SLUG,
   consoleWidgetCatalog,
   getConsoleWidgetDetailHref,
   getConsoleWidgetStatusFeatureSlug,
-} from '@/components/widgets/widget-catalog'
+} from '@/features/widgets/widget-catalog'
 import { $876 } from '@/lib/876'
 
-import { WidgetsTable, type WidgetTableRow } from './widgets-table'
+import { WidgetsTable, type WidgetTableRow } from './_components/widgets-table'
 
 export const metadata = { title: 'Widgets' }
 

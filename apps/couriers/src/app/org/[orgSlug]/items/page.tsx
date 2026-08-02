@@ -8,8 +8,8 @@ import {
 import { CircleStackIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
-import { StatusFilterHeading } from '@/components/status-filter-heading'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 

@@ -14,14 +14,14 @@ import {
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 import { USER_STATUSES, isUserStatus } from '@/lib/user-status'
-import { UserSearchBar } from './user-search-bar'
-import { UsersTable } from './users-table'
+import { UserSearchBar } from './_components/user-search-bar'
+import { UsersTable } from './_components/users-table'
 
 export const metadata = { title: 'Users' }
 

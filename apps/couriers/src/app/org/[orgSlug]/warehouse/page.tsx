@@ -2,7 +2,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { LayoutList } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
 export const metadata = { title: 'Warehouse' }
 

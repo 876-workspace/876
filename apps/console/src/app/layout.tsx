@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
-import { ThemeProvider } from './providers'
-import { ServiceWorkerRegistration } from './service-worker-registration'
+import { ThemeProvider } from '@/components/providers/providers'
+import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 import './globals.css'
 
 const APP_NAME = '876 Console'

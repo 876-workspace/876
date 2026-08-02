@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { getConsoleWidgetByRouteSlug } from '@/components/widgets/widget-catalog'
-import { WidgetOverview } from '@/components/widgets/widget-overview'
+import { getConsoleWidgetByRouteSlug } from '@/features/widgets/widget-catalog'
+import { WidgetOverview } from '@/features/widgets/components/widget-overview'
 
 export default async function WidgetPage({
   params,

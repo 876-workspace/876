@@ -1,7 +1,7 @@
 import { after } from 'next/server'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 

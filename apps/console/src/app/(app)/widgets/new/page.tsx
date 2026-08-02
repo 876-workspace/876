@@ -3,15 +3,15 @@ import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
-import { consoleWidgetCatalog } from '@/components/widgets/widget-catalog'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
 import { $876 } from '@/lib/876'
 
 import {
   RegisterWidgetFlagsForm,
   type PendingWidget,
   type PendingFlag,
-} from './register-widget-flags-form'
+} from './_components/register-widget-flags-form'
 
 export const metadata = { title: 'Register widget flags' }
 

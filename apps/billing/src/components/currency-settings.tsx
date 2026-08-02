@@ -20,7 +20,7 @@ import { Pencil, Trash, Plus } from '@876/ui/icons'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import { client } from '@/lib/client'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
 type CurrencyOption = {
   code: string

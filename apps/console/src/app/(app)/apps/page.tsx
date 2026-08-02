@@ -10,15 +10,15 @@ import {
 } from '@876/ui/empty'
 
 import { $876 } from '@/lib/876'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 import { APP_STATUSES } from '@/lib/app-status'
-import { AppsTable } from './apps-table'
+import { AppsTable } from './_components/apps-table'
 import { Page } from '@876/ui/page'
-import { AppsSearchBar } from './apps-search-bar'
+import { AppsSearchBar } from './_components/apps-search-bar'
 
 type AppStatusFilterValue = 'all' | AdminAppStatus
 

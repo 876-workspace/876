@@ -141,8 +141,13 @@ Do not build a new standalone selector (`<Select>`, segmented control) next to
 
 ### The component
 
-Each app ships its own copy (e.g.
-`apps/console/src/components/status-filter-heading.tsx`):
+`StatusFilterHeading` is **shared**, exported from `@876/ui/status-filter-heading`.
+Import it; do not copy it into an app. (It previously shipped as a per-app copy
+in Console, Billing and Couriers — three files that had already drifted. The
+shared component owns the routing/`searchParams` behavior, exactly as the
+already-shared `ResourceToolbar` does.)
+
+Its contract:
 
 ```tsx
 type StatusFilterOption = { value: string; label: string }

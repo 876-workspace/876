@@ -7,11 +7,11 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 
 export const metadata = {
   title: 'Expenses',

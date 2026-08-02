@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { SETTINGS_SECTIONS } from '@/components/console-nav-config'
+import { SETTINGS_SECTIONS } from '@/components/shell/nav-config'
 import { Page } from '@876/ui/page'
 
 export const metadata = { title: 'Settings' }

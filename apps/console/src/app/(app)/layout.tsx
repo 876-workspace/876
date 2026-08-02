@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react'
 
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
-import { ConsoleShell } from '@/components/console-shell'
-import { consoleWidgetCatalog } from '@/components/widgets/widget-catalog'
+import { Shell } from '@/components/shell/shell'
+import { WidgetBar } from '@/features/widgets/components/widget-bar'
+import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
 import { requireConsoleAccount, requireSession } from '@/lib/auth/guards'
 import { getConsoleFeatures } from '@/lib/features'
 import { AnalyticsIdentity } from '@/lib/analytics/provider'
@@ -48,14 +49,21 @@ export default async function ConsoleRootLayout({
           role: user.role,
         }}
       >
-        <ConsoleShell
-          auditEvents={auditEvents}
+        <Shell
           user={{ name: displayName, email: user.email, avatar: user.avatar }}
-          enabledWidgetIds={enabledWidgetIds}
           uiFeatures={uiFeatures}
+          widgetRail={
+            enabledWidgetIds.length > 0 ? (
+              <WidgetBar
+                auditEvents={auditEvents}
+                enabledWidgetIds={enabledWidgetIds}
+                chatEnabled={uiFeatures.chat}
+              />
+            ) : null
+          }
         >
           {children}
-        </ConsoleShell>
+        </Shell>
       </UserStoreProvider>
     </>
   )

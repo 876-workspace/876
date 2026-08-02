@@ -1,4 +1,4 @@
-import { CreateRoleForm } from './create-role-form'
+import { CreateRoleForm } from './_components/create-role-form'
 import { Page, PageHeader, PageTitle, PageDescription } from '@876/ui/page'
 
 export const metadata = { title: 'New Role - Roles' }

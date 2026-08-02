@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveOrg } from '../../../_data'
-import { BillingAccountCreate } from './account-create'
+import { BillingAccountCreate } from './_components/account-create'
 
 type Props = { params: Promise<{ slug: string }> }
 

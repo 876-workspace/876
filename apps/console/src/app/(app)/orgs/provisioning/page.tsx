@@ -1,8 +1,8 @@
 import { Page } from '@876/ui/page'
 
 import { $876 } from '@/lib/876'
-import { FinanceProvisioningEditor } from './finance-provisioning-editor'
-import { ProvisioningNav } from './provisioning-nav'
+import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
+import { ProvisioningNav } from './_components/provisioning-nav'
 
 export const metadata = { title: 'Provisioning defaults' }
 

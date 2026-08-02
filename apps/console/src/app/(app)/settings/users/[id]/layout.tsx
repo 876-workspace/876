@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
-import { DetailChromeGate } from '@/components/detail/detail-chrome-gate'
+import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import {
   DetailHeader,

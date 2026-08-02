@@ -4,7 +4,7 @@ import { service } from '@/lib/service'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { PermissionEditor } from '../permission-editor'
+import { PermissionEditor } from '@/app/(app)/settings/users/roles/_components/permission-editor'
 import { Page } from '@876/ui/page'
 
 export async function generateMetadata({

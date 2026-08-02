@@ -1,4 +1,7 @@
-import type { AdminCommunicationCall, AdminCommunicationMessage } from '@876/admin'
+import type {
+  AdminCommunicationCall,
+  AdminCommunicationMessage,
+} from '@876/admin'
 import { Badge } from '@876/ui/badge'
 import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
@@ -12,11 +15,11 @@ import {
 } from '@876/ui/table'
 import { maskPhoneNumber } from '@876/core/phone'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 import { formatDateTime } from '@/lib/format'
 import { $876 } from '@/lib/876'
 
@@ -60,7 +63,9 @@ type Props = { searchParams: Promise<{ status?: string }> }
 
 export default async function CommunicationsPage({ searchParams }: Props) {
   const { status } = await searchParams
-  const selectedStatus = STATUS_OPTIONS.some((option) => option.value === status)
+  const selectedStatus = STATUS_OPTIONS.some(
+    (option) => option.value === status
+  )
     ? status!
     : 'all'
   const statusFilter = selectedStatus === 'all' ? undefined : selectedStatus

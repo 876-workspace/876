@@ -8,8 +8,8 @@ import {
 import { QueueListIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
-import { StatusFilterHeading } from '@/components/status-filter-heading'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 const MANIFEST_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Manifests' },
