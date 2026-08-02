@@ -117,7 +117,7 @@ describe('Couriers settings page', () => {
     const expected = COURIERS_MODULE_CATALOG.filter(
       (module) => module.key !== 'general'
     ).map((module) => ({
-      title: module.label,
+      title: `${module.label} settings`,
       href: `/org/island-logistics/settings/modules/${module.key}`,
     }))
 

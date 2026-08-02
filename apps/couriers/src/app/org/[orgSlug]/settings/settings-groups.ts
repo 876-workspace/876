@@ -5,25 +5,32 @@ import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
 
 const coreModuleKeys = new Set(['customers', 'items', 'packages', 'pre_alerts'])
 
-const corePreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
-  (module) => coreModuleKeys.has(module.key)
-).map((module) => ({
-  title: module.label,
+/**
+ * A module-preference entry, titled "<Module> settings".
+ *
+ * The bare module label collides with the records it governs — the catalog's
+ * "Warehouse" sat one card away from Organization's "Warehouses", and its
+ * "Customer portal" duplicated the Customer portal card outright. Naming every
+ * generated entry for what it is keeps any future module from colliding too.
+ */
+const toPreferenceItem = (module: {
+  key: string
+  label: string
+}): SettingsNavItem => ({
+  title: `${module.label} settings`,
   href: `/settings/modules/${module.key}`,
   status: 'available',
   permission: `${module.key}.view`,
   module: module.key,
-}))
+})
+
+const corePreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
+  (module) => coreModuleKeys.has(module.key)
+).map(toPreferenceItem)
 
 const opsPreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
   (module) => module.key !== 'general' && !coreModuleKeys.has(module.key)
-).map((module) => ({
-  title: module.label,
-  href: `/settings/modules/${module.key}`,
-  status: 'available',
-  permission: `${module.key}.view`,
-  module: module.key,
-}))
+).map(toPreferenceItem)
 
 export const SETTINGS_NAV = defineSettingsNav([
   {
