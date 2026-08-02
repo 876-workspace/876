@@ -18,7 +18,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 
-import HomePage from '../page'
+import HomePage from './page'
 
 function createSession(
   overrides: Partial<Signed876Session> = {}

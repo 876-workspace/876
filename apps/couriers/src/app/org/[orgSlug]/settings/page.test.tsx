@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
 
-import SettingsPage from '../page'
+import SettingsPage from './page'
 
 async function renderPage() {
   render(

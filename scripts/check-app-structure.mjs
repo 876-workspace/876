@@ -137,6 +137,22 @@ for (const app of APPS) {
     fail(app, 'bare-non-route-file', `apps/${app}/src/app/${rel}`)
   }
 
+  // ---- 1b. route tests buried in a private folder --------------------------
+  // Check 1 skips anything under _components/ or _lib/ before it reaches the
+  // route-test exception, so a page.test.tsx wrongly moved *into* a private
+  // folder slipped through. It is the mirror image of the same mistake: a
+  // route file's test belongs beside its subject either way.
+  for (const file of walk(appDir)) {
+    const segments = relative(appDir, file).split(sep)
+    if (!segments.some((s) => PRIVATE_DIRS.has(s))) continue
+
+    const name = segments.at(-1)
+    if (!/\.test\.tsx?$/.test(name)) continue
+    if (!ROUTE_FILES.has(name.replace(/\.test\./, '.'))) continue
+
+    fail(app, 'route-test-in-private-folder', file)
+  }
+
   // ---- 2. barrels ---------------------------------------------------------
   for (const dir of [componentsDir, featuresDir]) {
     for (const file of walk(dir)) {

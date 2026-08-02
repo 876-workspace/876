@@ -18,7 +18,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 
-import LegacyAppRedirect from '../page'
+import LegacyAppRedirect from './page'
 
 const SECURITY_SEGMENTS = [
   ['XSS', '<script>alert(1)</script>'],
