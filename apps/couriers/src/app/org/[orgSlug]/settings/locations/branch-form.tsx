@@ -2,10 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { listDialCodes, parsePhone } from '@876/core/phone'
 import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
+import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
+import { PhoneInput, type PhoneInputValue } from '@876/ui/phone-input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@876/ui/tabs'
 
 import {
   AddressFields,
@@ -17,6 +21,33 @@ import {
 import { client } from '@/lib/client'
 import type { BranchView } from '@/types/branch'
 
+/** Built once at module scope — the catalog is static and ~250 entries long. */
+const DIAL_CODE_OPTIONS = listDialCodes().map((country) => ({
+  value: country.dialCode,
+  label: country.countryCode,
+  leadingLabel: country.dialCode,
+}))
+
+const DEFAULT_DIAL_CODE = '+1'
+
+/**
+ * Splits a stored number into the picker's parts. An unparseable legacy value
+ * keeps its digits in the number field rather than being silently dropped.
+ */
+function toPhoneValue(stored: string | null | undefined): PhoneInputValue {
+  if (!stored) return { dialCode: DEFAULT_DIAL_CODE, number: '' }
+
+  const parsed = parsePhone(stored, 'JM')
+  if (!parsed) return { dialCode: DEFAULT_DIAL_CODE, number: stored }
+
+  // A NANP number reports its area code separately from the national number;
+  // keeping only the latter would silently drop the "876" from +1876…
+  return {
+    dialCode: parsed.dialCode,
+    number: `${parsed.areaCode ?? ''}${parsed.nationalNumber}`,
+  }
+}
+
 type Props = {
   orgSlug: string
   branch?: BranchView
@@ -27,7 +58,9 @@ type Props = {
 export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
   const router = useRouter()
   const [name, setName] = useState(branch?.name ?? '')
-  const [phone, setPhone] = useState(branch?.phone ?? '')
+  const [phoneValue, setPhoneValue] = useState<PhoneInputValue>(() =>
+    toPhoneValue(branch?.phone)
+  )
   const [isDefault, setIsDefault] = useState(branch?.isDefault ?? false)
   const [isActive, setIsActive] = useState(branch?.isActive ?? true)
   const [address, setAddress] = useState<AddressFieldsValue>(
@@ -48,17 +81,20 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
 
     startTransition(async () => {
       const addressParams = toAddressParams(address, name.trim())
+      const phone = phoneValue.number.trim()
+        ? `${phoneValue.dialCode}${phoneValue.number.replace(/\D/g, '')}`
+        : ''
       const result = branch
         ? await client.branches.update(orgSlug, branch.id, {
             name: name.trim(),
-            phone: phone.trim() || null,
+            phone: phone || null,
             ...(lockedDefault ? {} : { isDefault }),
             isActive,
             address: addressParams,
           })
         : await client.branches.create(orgSlug, {
             name: name.trim(),
-            ...(phone.trim() ? { phone: phone.trim() } : {}),
+            ...(phone ? { phone } : {}),
             ...(lockedDefault ? {} : { isDefault }),
             isActive,
             address: addressParams,
@@ -76,50 +112,42 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
 
   return (
     <form className="max-w-3xl space-y-6" onSubmit={save}>
-      <div className="876-card divide-border divide-y">
-        <div className="grid gap-5 p-5 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="branch-name">Branch name</Label>
-            <Input
-              id="branch-name"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              disabled={isPending}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="branch-phone">Phone</Label>
-            <Input
-              id="branch-phone"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              disabled={isPending}
-            />
-          </div>
-        </div>
-
-        <div className="p-5">
-          <AddressFields
-            value={address}
-            onChange={setAddress}
+      <div className="876-card space-y-5 p-5">
+        <FormRow htmlFor="branch-name" label="Branch name" required>
+          <Input
+            id="branch-name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
             disabled={isPending}
-            onGeographyUnavailable={setGeographyUnavailable}
+            required
           />
-        </div>
+        </FormRow>
 
-        <div className="space-y-4 p-5">
+        <FormRow
+          htmlFor="branch-phone"
+          label="Phone"
+          hint="The number customers reach this branch on."
+        >
+          <PhoneInput
+            id="branch-phone"
+            value={phoneValue}
+            onValueChange={setPhoneValue}
+            dialCodes={DIAL_CODE_OPTIONS}
+            disabled={isPending}
+          />
+        </FormRow>
+
+        <FormRow label="Default">
           {isFirstBranch ? (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground pt-2 text-sm">
               Your first branch is the default customers and packages route to.
             </p>
           ) : branch?.isDefault ? (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground pt-2 text-sm">
               This is the default branch. Promote another branch to change it.
             </p>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2">
               <Checkbox
                 id="branch-default"
                 checked={isDefault}
@@ -131,8 +159,10 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
               </Label>
             </div>
           )}
+        </FormRow>
 
-          <div className="flex items-center gap-2">
+        <FormRow label="Status">
+          <div className="flex items-center gap-2 pt-2">
             <Checkbox
               id="branch-active"
               checked={isActive}
@@ -143,8 +173,30 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
               Active
             </Label>
           </div>
-        </div>
+        </FormRow>
       </div>
+
+      <Tabs defaultValue="address" className="gap-5">
+        <TabsList variant="line" className="mb-1">
+          <TabsTrigger value="address">Address</TabsTrigger>
+          <TabsTrigger value="custom-fields">Custom fields</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="address" className="876-card p-5">
+          <AddressFields
+            value={address}
+            onChange={setAddress}
+            disabled={isPending}
+            onGeographyUnavailable={setGeographyUnavailable}
+          />
+        </TabsContent>
+
+        {/* TODO: custom fields are not built yet — the tab is deliberately
+            empty so the information architecture matches the warehouse form. */}
+        <TabsContent value="custom-fields" className="876-card p-5">
+          <p className="text-muted-foreground text-sm">No custom fields yet.</p>
+        </TabsContent>
+      </Tabs>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
