@@ -71,15 +71,15 @@ enum MailboxPlacement {
 
 New `Warehouse` fields:
 
-| Field              | Type                      | Map                 | Notes                                                                                                                              |
-| ------------------ | ------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `operatingModel`   | `WarehouseOperatingModel` | `operating_model`   | `@default(OWNED)`                                                                                                                  |
-| `agentName`        | `String?`                 | `agent_name`        | Trading name of the receiving agent. Meaningful only when `operatingModel` is `AGENT`.                                             |
-| `code`             | `String?`                 |                     | The tenant's identifier at this facility, e.g. `JMC`. Printed before the mailbox number so the receiving operation can sort by courier. |
-| `mailboxPlacement` | `MailboxPlacement`        | `mailbox_placement` | `@default(ADDRESS_LINE_2)`                                                                                                         |
+| Field              | Type                      | Map                 | Notes                                                                                                                                                       |
+| ------------------ | ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `operatingModel`   | `WarehouseOperatingModel` | `operating_model`   | `@default(OWNED)`                                                                                                                                           |
+| `agentName`        | `String?`                 | `agent_name`        | Trading name of the receiving agent. Meaningful only when `operatingModel` is `AGENT`.                                                                      |
+| `code`             | `String?`                 |                     | The tenant's identifier at this facility, e.g. `JMC`. Printed before the mailbox number so the receiving operation can sort by courier.                     |
+| `mailboxPlacement` | `MailboxPlacement`        | `mailbox_placement` | `@default(ADDRESS_LINE_2)`                                                                                                                                  |
 | `mailboxPrefix`    | `String?`                 | `mailbox_prefix`    | Literal text printed immediately before the mailbox number, e.g. `"Suite "`, `"MB-"`. Kept separate from `code` because some operations use one, some both. |
-| `instructions`     | `String?`                 |                     | Free text shown to customers alongside the shipping address.                                                                       |
-| `isActive`         | `Boolean`                 | `is_active`         | `@default(true)`. A retired warehouse stays readable for historical packages.                                                      |
+| `instructions`     | `String?`                 |                     | Free text shown to customers alongside the shipping address.                                                                                                |
+| `isActive`         | `Boolean`                 | `is_active`         | `@default(true)`. A retired warehouse stays readable for historical packages.                                                                               |
 
 Add `@@index([tenantId, isActive], name: "warehouses_tenant_id_is_active_idx")`.
 
