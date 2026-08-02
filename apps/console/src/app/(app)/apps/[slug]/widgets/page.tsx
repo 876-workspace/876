@@ -9,8 +9,8 @@ import { ChevronRight } from '@876/ui/icons'
 import {
   consoleWidgetCatalog,
   getConsoleWidgetDetailHref,
-} from '@/components/widgets/widget-catalog'
-import { WidgetCatalogIcon } from '@/components/widgets/widget-catalog-icon'
+} from '@/features/widgets/widget-catalog'
+import { WidgetCatalogIcon } from '@/features/widgets/components/widget-catalog-icon'
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
 

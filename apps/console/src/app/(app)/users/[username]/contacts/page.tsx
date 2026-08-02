@@ -4,7 +4,10 @@ import { notFound } from 'next/navigation'
 import type { AdminConsumerContact, AdminUser } from '@876/admin'
 
 import { resolveUser, resolveUserContacts } from '../_data'
-import { ContactsManager, type ContactsView } from './contacts-manager'
+import {
+  ContactsManager,
+  type ContactsView,
+} from './_components/contacts-manager'
 
 type Props = {
   params: Promise<{ username: string }>

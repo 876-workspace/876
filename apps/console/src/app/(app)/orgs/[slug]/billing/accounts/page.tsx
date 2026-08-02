@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../_data'
-import { AccountsManager, type AccountsView } from '../accounts-manager'
+import {
+  AccountsManager,
+  type AccountsView,
+} from '@/app/(app)/orgs/[slug]/billing/_components/accounts-manager'
 
 type Props = {
   params: Promise<{ slug: string }>

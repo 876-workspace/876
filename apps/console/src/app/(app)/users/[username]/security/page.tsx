@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 import { resolveUser } from '../_data'
 import { $876 } from '@/lib/876'
-import { AccountStatusSection } from './account-status-section'
-import { AuthMethodsSection } from './auth-methods-section'
-import { UsernameSection } from './username-section'
-import { SessionsSection } from './sessions-section'
+import { AccountStatusSection } from './_components/account-status-section'
+import { AuthMethodsSection } from './_components/auth-methods-section'
+import { UsernameSection } from './_components/username-section'
+import { SessionsSection } from './_components/sessions-section'
 
 type Props = { params: Promise<{ username: string }> }
 

@@ -5,7 +5,7 @@ import { PageBreadcrumb } from '@876/ui/page'
 import { $876 } from '@/lib/876'
 
 import { resolveOrg } from '../../../../_data'
-import { BillingAccountEdit } from './account-edit'
+import { BillingAccountEdit } from './_components/account-edit'
 
 type Props = { params: Promise<{ slug: string; accountId: string }> }
 

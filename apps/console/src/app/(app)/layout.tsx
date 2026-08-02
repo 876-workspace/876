@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
-import { ConsoleShell } from '@/components/console-shell'
-import { consoleWidgetCatalog } from '@/components/widgets/widget-catalog'
+import { ConsoleShell } from '@/components/shell/shell'
+import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
 import { requireConsoleAccount, requireSession } from '@/lib/auth/guards'
 import { getConsoleFeatures } from '@/lib/features'
 import { AnalyticsIdentity } from '@/lib/analytics/provider'

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { notepadWidgetMetadata } from '@876/widgets'
 
-import { WidgetDetailHeader } from '@/components/widgets/widget-detail-header'
+import { WidgetDetailHeader } from '@/features/widgets/components/widget-detail-header'
 
 export default function NotepadWidgetLayout({
   children,

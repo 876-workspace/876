@@ -10,8 +10,8 @@ import {
 import { Page } from '@876/ui/page'
 
 import { $876 } from '@/lib/876'
-import { ResourceToolbar } from '@/components/resource-toolbar'
-import { FeaturesTable } from './features-table'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { FeaturesTable } from './_components/features-table'
 
 export const metadata = {
   title: 'Features',

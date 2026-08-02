@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
 import { resolveOrg } from '../../../_data'
-import { CustomerCreateForm } from './customer-create-form'
+import { CustomerCreateForm } from './_components/customer-create-form'
 
 type Props = { params: Promise<{ slug: string }> }
 

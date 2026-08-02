@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { AuditView } from '@/components/detail/detail-views'
+import { AuditView } from '@/components/patterns/detail/detail-views'
 import { resolveMemberGrant, resolveMemberIdentity } from '../_data'
 
 type Props = { params: Promise<{ id: string }> }

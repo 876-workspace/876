@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { consoleWidgetCatalog } from '@/components/widgets/widget-catalog'
+import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
 import { notepadWidgetMetadata } from '@876/widgets'
 import { getConsoleFeatures } from './features'
 

@@ -18,7 +18,7 @@ import { service } from '@/lib/service'
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { TeamTableRow } from './member-row'
+import { TeamTableRow } from './_components/member-row'
 import { Page } from '@876/ui/page'
 
 export const metadata = { title: 'Team - Settings' }

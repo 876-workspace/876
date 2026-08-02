@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { $876 } from '@/lib/876'
 import { resolveOrg } from '../_data'
-import { OnboardingEditor } from './onboarding-editor'
+import { OnboardingEditor } from './_components/onboarding-editor'
 
 type Props = { params: Promise<{ slug: string }> }
 

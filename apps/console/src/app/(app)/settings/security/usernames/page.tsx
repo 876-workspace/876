@@ -1,5 +1,5 @@
 import { $876 } from '@/lib/876'
-import { UsernamesManager } from './usernames-manager'
+import { UsernamesManager } from './_components/usernames-manager'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 export const metadata = { title: 'Reserved Usernames - Security' }

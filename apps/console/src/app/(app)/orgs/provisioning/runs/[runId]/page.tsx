@@ -12,9 +12,9 @@ import {
 
 import { $876 } from '@/lib/876'
 import { formatDateTime } from '@/lib/format'
-import { ProvisioningNav } from '../../provisioning-nav'
-import { RetryRunButton } from '../run-actions'
-import { RunStatus } from '../run-status'
+import { ProvisioningNav } from '@/app/(app)/orgs/provisioning/_components/provisioning-nav'
+import { RetryRunButton } from '@/app/(app)/orgs/provisioning/runs/_components/run-actions'
+import { RunStatus } from '@/app/(app)/orgs/provisioning/runs/_components/run-status'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0

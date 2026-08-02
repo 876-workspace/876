@@ -1,6 +1,6 @@
 import { notepadWidgetMetadata } from '@876/widgets'
 
-import { WidgetAccessList } from '@/components/widgets/widget-access-list'
+import { WidgetAccessList } from '@/features/widgets/components/widget-access-list'
 
 export default function NotepadWidgetAccessPage() {
   return <WidgetAccessList widget={notepadWidgetMetadata} />

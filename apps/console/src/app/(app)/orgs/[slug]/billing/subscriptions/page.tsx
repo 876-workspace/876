@@ -9,7 +9,7 @@ import {
   resolveOrgBillingAccounts,
   resolveOrgSubscriptions,
 } from '../../_data'
-import { SubscriptionsManager } from '../subscriptions-manager'
+import { SubscriptionsManager } from '@/app/(app)/orgs/[slug]/billing/_components/subscriptions-manager'
 
 type Props = { params: Promise<{ slug: string }> }
 

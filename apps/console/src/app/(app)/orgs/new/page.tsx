@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 
-import { CreateOrgForm } from './create-org-form'
+import { CreateOrgForm } from './_components/create-org-form'
 import { Page, PageHeader, PageTitle, PageDescription } from '@876/ui/page'
 
 export const metadata = { title: 'New Organization' }

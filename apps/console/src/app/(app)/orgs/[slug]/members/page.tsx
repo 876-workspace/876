@@ -4,8 +4,8 @@ import type { AdminMembership, AdminUser } from '@876/admin'
 
 import { $876 } from '@/lib/876'
 import { resolveOrg } from '../_data'
-import { MembersTable } from './members-table'
-import { InviteMemberDialog } from './invite-member-dialog'
+import { MembersTable } from './_components/members-table'
+import { InviteMemberDialog } from './_components/invite-member-dialog'
 
 type Props = { params: Promise<{ slug: string }> }
 

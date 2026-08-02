@@ -6,8 +6,8 @@ import { resolveApp } from '../../_data'
 import {
   DetailAccordionGroup,
   DetailAccordionSection,
-} from '@/components/detail/detail-accordion'
-import { Field } from '@/components/detail/info-section'
+} from '@/components/patterns/detail/detail-accordion'
+import { Field } from '@/components/patterns/detail/info-section'
 import { formatDate } from '@/lib/format'
 import { cn } from '@876/core/utils'
 

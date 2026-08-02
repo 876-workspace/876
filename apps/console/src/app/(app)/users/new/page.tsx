@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 
-import { CreateUserForm } from './create-user-form'
+import { CreateUserForm } from './_components/create-user-form'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 export const metadata = { title: 'New User' }

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveOrg } from '../_data'
-import { EditOrgForm } from './edit-org-form'
+import { EditOrgForm } from './_components/edit-org-form'
 
 type Props = { params: Promise<{ slug: string }> }
 

@@ -4,8 +4,8 @@ import { notFound } from 'next/navigation'
 import {
   getConsoleWidgetByRouteSlug,
   getConsoleWidgetDetailHref,
-} from '@/components/widgets/widget-catalog'
-import { WidgetDetailHeader } from '@/components/widgets/widget-detail-header'
+} from '@/features/widgets/widget-catalog'
+import { WidgetDetailHeader } from '@/features/widgets/components/widget-detail-header'
 
 export default async function WidgetLayout({
   children,

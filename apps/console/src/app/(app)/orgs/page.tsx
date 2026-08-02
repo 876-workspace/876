@@ -13,14 +13,14 @@ import {
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 import { ORG_STATUSES, isOrgStatus } from '@/lib/org-status'
-import { OrgSearchBar } from './org-search-bar'
-import { OrgTable } from './org-table'
+import { OrgSearchBar } from './_components/org-search-bar'
+import { OrgTable } from './_components/org-table'
 import { Page } from '@876/ui/page'
 import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'

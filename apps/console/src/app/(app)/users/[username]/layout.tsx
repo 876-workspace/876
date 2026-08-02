@@ -6,7 +6,7 @@ import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { FlagStripe } from '@876/ui/flag-stripe'
 import { OrgAvatar } from '@876/ui/org-avatar'
-import { DetailChromeGate } from '@/components/detail/detail-chrome-gate'
+import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 import {
   DetailHeader,
@@ -18,7 +18,7 @@ import {
 } from '@876/ui/detail-header'
 import { formatDate, statusBadgeClass } from '@/lib/format'
 import { resolveUser, resolveUserAddresses, resolveUserContacts } from './_data'
-import { UserActions } from './user-actions'
+import { UserActions } from './_components/user-actions'
 
 type Props = {
   children: ReactNode

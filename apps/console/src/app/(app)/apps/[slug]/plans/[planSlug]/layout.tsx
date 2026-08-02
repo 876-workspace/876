@@ -8,7 +8,7 @@ import { cn } from '@876/core/utils'
 import { Button, buttonVariants } from '@876/ui/button'
 import { Badge } from '@876/ui/badge'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
-import { PlanActions } from './plan-actions'
+import { PlanActions } from './_components/plan-actions'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'

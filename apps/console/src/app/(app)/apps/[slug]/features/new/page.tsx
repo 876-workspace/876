@@ -5,7 +5,7 @@ import { Alert, AlertTitle, AlertDescription } from '@876/ui/alert'
 
 import { $876 } from '@/lib/876'
 import { FEATURE_GROUPS } from '@/lib/feature-groups'
-import { CreateFeatureForm } from '../../../../features/create-feature-form'
+import { CreateFeatureForm } from '@/app/(app)/features/_components/create-feature-form'
 import { resolveApp } from '../../_data'
 
 type Props = {

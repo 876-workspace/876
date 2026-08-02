@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { FeatureAccessBoard } from '@/components/access/feature-access-board'
-import { loadGrants, toAccessFlag } from '@/components/access/to-access-flag'
+import { FeatureAccessBoard } from '@/features/access/components/feature-access-board'
+import { loadGrants, toAccessFlag } from '@/features/access/to-access-flag'
 import { $876 } from '@/lib/876'
 import { resolveFeature } from '../_data'
 

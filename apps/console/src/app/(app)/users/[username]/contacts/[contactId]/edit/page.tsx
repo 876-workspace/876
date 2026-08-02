@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { AdminConsumerContact } from '@876/admin'
 import { resolveUser, resolveUserContacts } from '../../../_data'
-import { ContactEdit } from './contact-edit'
+import { ContactEdit } from './_components/contact-edit'
 
 type Props = {
   params: Promise<{ username: string; contactId: string }>

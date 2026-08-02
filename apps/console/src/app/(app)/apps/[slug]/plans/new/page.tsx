@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
-import { CreatePlanForm } from './create-plan-form'
+import { CreatePlanForm } from './_components/create-plan-form'
 
 type Props = { params: Promise<{ slug: string }> }
 

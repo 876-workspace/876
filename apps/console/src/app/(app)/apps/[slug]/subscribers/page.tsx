@@ -4,7 +4,7 @@ import type { AdminOrganization } from '@876/admin'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
-import { SubscribersTable } from './subscribers-table'
+import { SubscribersTable } from './_components/subscribers-table'
 
 type Props = { params: Promise<{ slug: string }> }
 

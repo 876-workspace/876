@@ -6,7 +6,7 @@ import {
 } from '@876/widgets'
 
 import { getConsoleFeatures } from '@/lib/features'
-import { consoleWidgetCatalog } from '@/components/widgets/widget-catalog'
+import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export async function requireNotepadMember() {

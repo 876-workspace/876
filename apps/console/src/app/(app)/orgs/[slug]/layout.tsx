@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Building2, Calendar, Globe, Hash, Mail, Trash } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
 
-import { DetailChromeGate } from '@/components/detail/detail-chrome-gate'
+import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import {
   DetailHeader,
@@ -16,7 +16,7 @@ import {
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { formatDate, statusBadgeClass } from '@/lib/format'
 import { resolveOrg, resolveOrgMembers } from './_data'
-import { OrgActions } from './org-actions'
+import { OrgActions } from './_components/org-actions'
 
 type Props = {
   children: ReactNode

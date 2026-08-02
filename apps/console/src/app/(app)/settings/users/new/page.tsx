@@ -1,4 +1,4 @@
-import { PromoteUserForm } from '../promote-user-form'
+import { PromoteUserForm } from '@/app/(app)/settings/users/_components/promote-user-form'
 import {
   Page,
   PageBreadcrumb,

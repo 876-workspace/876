@@ -1,0 +1,52 @@
+import { NotepadIcon } from '@876/widgets/react'
+import { Terminal, type IconComponent } from '@876/ui/icons'
+import type { ComponentType } from 'react'
+import type { AdminAuditEvent } from '@876/admin'
+import type { PopoutSize } from '@/features/widgets/components/popout-bar'
+
+import { LiveLogsWidget } from '@/features/widgets/components/live-logs-widget'
+import { NotepadWidget } from '@/features/widgets/components/notepad-widget'
+import {
+  consoleWidgetCatalog,
+  type ConsoleWidgetId,
+} from '@/features/widgets/widget-catalog'
+
+export type WidgetPanelProps = {
+  auditEvents: AdminAuditEvent[]
+}
+
+/** A single widget mounted in the widget bar. */
+export type Widget = {
+  id: string
+  label: string
+  icon: IconComponent
+  panel: ComponentType<WidgetPanelProps>
+  panelSize?: PopoutSize
+}
+
+type WidgetRenderer = Omit<Widget, 'id' | 'label'>
+
+const widgetRenderers = {
+  notepad: {
+    icon: NotepadIcon as IconComponent,
+    panel: NotepadWidget,
+  },
+  live_logs: {
+    icon: Terminal,
+    panel: LiveLogsWidget,
+    panelSize: 'xl',
+  },
+} satisfies Record<ConsoleWidgetId, WidgetRenderer>
+
+/**
+ * Widgets available in the persistent right-hand widget bar. New widgets
+ * are added here and rendered on demand.
+ */
+export const widgets: Widget[] = consoleWidgetCatalog.map((metadata) => {
+  const renderer = widgetRenderers[metadata.id]
+  return {
+    id: metadata.id,
+    label: metadata.name,
+    ...renderer,
+  }
+})

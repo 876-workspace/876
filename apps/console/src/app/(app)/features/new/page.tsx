@@ -4,7 +4,7 @@ import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { $876 } from '@/lib/876'
 import { FEATURE_GROUPS } from '@/lib/feature-groups'
-import { CreateFeatureForm } from '../create-feature-form'
+import { CreateFeatureForm } from '@/app/(app)/features/_components/create-feature-form'
 
 export const metadata = { title: 'New Feature' }
 

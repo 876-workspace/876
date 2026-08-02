@@ -8,7 +8,7 @@ import {
 } from '@/lib/feature-groups'
 import { resolveFeature } from '../../../../features/[id]/_data'
 import { resolveApp } from '../../_data'
-import { FeatureChildrenPanel } from './feature-children-panel'
+import { FeatureChildrenPanel } from './_components/feature-children-panel'
 
 type Props = {
   params: Promise<{ slug: string; featureId: string }>

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
-import { CreateAppForm } from './create-app-form'
+import { CreateAppForm } from './_components/create-app-form'
 
 export const metadata = { title: 'New Application' }
 
