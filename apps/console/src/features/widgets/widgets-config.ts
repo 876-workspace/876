@@ -6,10 +6,7 @@ import type { PopoutSize } from '@/features/widgets/components/popout-bar'
 
 import { LiveLogsWidget } from '@/features/widgets/components/live-logs-widget'
 import { NotepadWidget } from '@/features/widgets/components/notepad-widget'
-import {
-  consoleWidgetCatalog,
-  type ConsoleWidgetId,
-} from '@/features/widgets/widget-catalog'
+import { widgetCatalog, type WidgetId } from '@/features/widgets/widget-catalog'
 
 export type WidgetPanelProps = {
   auditEvents: AdminAuditEvent[]
@@ -36,13 +33,13 @@ const widgetRenderers = {
     panel: LiveLogsWidget,
     panelSize: 'xl',
   },
-} satisfies Record<ConsoleWidgetId, WidgetRenderer>
+} satisfies Record<WidgetId, WidgetRenderer>
 
 /**
  * Widgets available in the persistent right-hand widget bar. New widgets
  * are added here and rendered on demand.
  */
-export const widgets: Widget[] = consoleWidgetCatalog.map((metadata) => {
+export const widgets: Widget[] = widgetCatalog.map((metadata) => {
   const renderer = widgetRenderers[metadata.id]
   return {
     id: metadata.id,

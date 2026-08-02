@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
+import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { notepadWidgetMetadata } from '@876/widgets'
 import { getConsoleFeatures } from './features'
 
@@ -116,7 +116,7 @@ describe('getConsoleFeatures', () => {
     )
 
     const result = await getConsoleFeatures({
-      widgets: consoleWidgetCatalog,
+      widgets: widgetCatalog,
     })
 
     expect(result).toEqual({
@@ -145,7 +145,7 @@ describe('getConsoleFeatures', () => {
     )
     const result = await getConsoleFeatures({
       userId: undefined,
-      widgets: consoleWidgetCatalog,
+      widgets: widgetCatalog,
     })
 
     expect(result).toEqual({
