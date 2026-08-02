@@ -233,7 +233,9 @@ export function ContactForm({
               disabled={isPending}
               onCheckedChange={(checked) => setIsPrimary(!!checked)}
             />
-            <Label htmlFor="contact-primary">Primary contact</Label>
+            <Label htmlFor="contact-primary" className="mb-0">
+              Primary contact
+            </Label>
           </div>
         </div>
 

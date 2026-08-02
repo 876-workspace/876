@@ -192,7 +192,7 @@ does the API's job in the wrong layer. If a resource's `list()` (or
 `search()`) does not yet accept a `status` param, that is a gap to close in
 `apps/api` (repository filter + router query param) and the admin/SDK client
 method — not a reason to fake the filter in Next.js. See
-`.agents/rules/api-backend.md` and `.agents/rules/sdk-conventions.md`.
+`.claude/rules/api-backend.md` and `.claude/rules/sdk-conventions.md`.
 
 ### Interaction with search (`q`)
 
@@ -346,6 +346,65 @@ text is what this rule constrains).
 
 ---
 
+## 10a. Form field anatomy
+
+Every labelled field in a create/edit form uses `FormRow` from `@876/ui/form-row`
+— label on the left, control(s) on the right, collapsing to stacked below `sm`.
+A fixed label column is what lets two controls share a row without the form
+reading as a ragged stack.
+
+- **Spacing between a label and its control comes from `Label`**, which carries
+  `mb-1.5`. Never add `mt-*` to an `Input`/`SelectTrigger` to create that gap —
+  that is how the gap ends up different on every form. The one exception is a
+  `Label` sitting **inline** beside a `Checkbox`/`Switch`/`Radio`, which must
+  pass `className="mb-0"` or it sits 6px below its control.
+- **Required fields** are marked by `FormRow`'s `required` prop: the label turns
+  `text-destructive` and gains an asterisk. The asterisk is rendered **outside**
+  the `<label>` and `aria-hidden`, so it never becomes part of the control's
+  accessible name.
+- **Guidance goes in `FormRow`'s `hint`**, which renders an info tooltip beside
+  the label — never as a `<p>` under the control. This is the same rule as
+  `CLAUDE.md` → UI Copy; the tooltip is how a form keeps guidance without
+  spending a line of layout on it.
+- **Long forms split basics from the rest with `Tabs`**, not with a stack of
+  separate cards: the always-relevant identity fields stay visible at the top in
+  one card, and everything else goes in tabbed cards below.
+- Use `EmailInput` (`@876/ui/email-input`) for email and `PhoneInput`
+  (`@876/ui/phone-input`, fed by `listDialCodes()` from `@876/core/phone`) for
+  phone. Do not hand-roll either.
+- A choice between two or three mutually exclusive options is a `RadioGroup`,
+  not a `Select`. Reach for a `Select` at four or more, and
+  `SearchableSelect` past roughly fifty.
+
+---
+
+## 10b. Page headings — one size
+
+There is exactly one page-title size, `876-page-title` (20px/600, defined in
+`packages/ui/src/876.css`). Every page `<h1>` uses that class, including a
+filterable list heading (`StatusFilterHeading`) and a detail-page entity name.
+
+Never write a heading as `text-xl`/`text-2xl` + `font-semibold` at a call site.
+That is how the platform ended up with a list page and a form page whose titles
+differed by 4px — two definitions of the same thing, drifting independently.
+
+---
+
+## 10c. Settings hub layout
+
+The settings landing page uses CSS multi-column (`sm:columns-2 lg:columns-3`)
+with `break-inside-avoid` on each card — **not** a grid with cards assigned to
+columns by hand. Cards are deliberately different heights; the browser balances
+the columns exactly, at every breakpoint, and a new group needs no layout change.
+A hand-assigned grid goes stale the moment a group is added, and orphans the
+short cards at the bottom of the longest column.
+
+A settings item generated from the module catalog is titled
+`"<Module> settings"`, never the bare module label — the bare label collides
+with the records it governs (catalog "Warehouse" vs Organization "Warehouses").
+
+---
+
 ## 11. Icon sizes
 
 - `size-3.5` in labeled buttons (Edit, Add)
@@ -387,7 +446,7 @@ Additional rules:
 
 ## 13. Applying this to a new app
 
-When scaffolding a new sidebar-style app (see `.agents/rules/new-app-guide.md`
+When scaffolding a new sidebar-style app (see `.claude/rules/new-app-guide.md`
 for the integration side), copy the shell/sidebar/toolbar/breadcrumb/status-
 filter components from Console or Couriers rather than rebuilding them. If a
 page type doesn't have a precedent yet, look for the closest existing page

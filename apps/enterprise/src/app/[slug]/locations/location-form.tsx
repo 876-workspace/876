@@ -180,7 +180,9 @@ export function LocationForm({
               disabled={isPending}
               onCheckedChange={(checked) => setIsPrimary(!!checked)}
             />
-            <Label htmlFor="loc-primary">Primary location</Label>
+            <Label htmlFor="loc-primary" className="mb-0">
+              Primary location
+            </Label>
           </div>
         </div>
 

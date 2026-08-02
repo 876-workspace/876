@@ -65,7 +65,7 @@ export function StatusFilterHeading({
   const activeOption = options.find((option) => option.value === value)
 
   return (
-    <h1 className="text-foreground text-xl font-semibold tracking-tight">
+    <h1 className="876-page-title text-foreground">
       <DropdownMenu>
         <DropdownMenuTrigger
           className="group hover:text-foreground/80 inline-flex items-center gap-1 outline-none"

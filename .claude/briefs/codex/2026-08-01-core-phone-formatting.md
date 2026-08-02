@@ -34,15 +34,21 @@ Export at minimum:
 
 ```ts
 /** Normalizes any input to E.164 digits, e.g. "+18765555555". Null if unparseable. */
-export function normalizePhone(input: string, defaultCountryCode?: string): string | null
+export function normalizePhone(
+  input: string,
+  defaultCountryCode?: string
+): string | null
 
 /** Human display form, e.g. "+1 (876) 555-5555". Returns input unchanged if unparseable. */
 export function formatPhone(input: string, defaultCountryCode?: string): string
 
 /** Parsed parts, for callers that need them (dial code, national number, country). */
-export function parsePhone(input: string, defaultCountryCode?: string): {
+export function parsePhone(
+  input: string,
+  defaultCountryCode?: string
+): {
   e164: string
-  dialCode: string        // "+1"
+  dialCode: string // "+1"
   areaCode: string | null // "876" for NANP, null otherwise
   nationalNumber: string
   countryCode: string | null // ISO-2, resolved from countries.json when unambiguous
@@ -71,6 +77,7 @@ small pure-TS helper over `countries.json`.
 Add `packages/core/src/lib/phone.test.ts` following
 `.claude/rules/testing.md` — in particular: assert exact strings, not
 `toBeDefined()`; one behavior per `it()`; cover
+
 - `18765555555`, `+18765555555`, `8765555555` (with and without `defaultCountryCode`)
 - formatted input already containing spaces/parens/dashes
 - at least three non-Jamaica Caribbean NANP countries from `countries.json`

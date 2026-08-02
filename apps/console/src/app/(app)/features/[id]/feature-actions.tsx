@@ -169,7 +169,9 @@ export function EditFeatureDialog({
               checked={enabled}
               onCheckedChange={setEnabled}
             />
-            <Label htmlFor="edit-enabled">Globally enabled</Label>
+            <Label htmlFor="edit-enabled" className="mb-0">
+              Globally enabled
+            </Label>
           </div>
 
           <div className="flex items-center gap-3">
@@ -178,7 +180,9 @@ export function EditFeatureDialog({
               checked={defaultValue}
               onCheckedChange={setDefaultValue}
             />
-            <Label htmlFor="edit-default-value">Default value</Label>
+            <Label htmlFor="edit-default-value" className="mb-0">
+              Default value
+            </Label>
           </div>
 
           <div className="flex items-center gap-3">
@@ -187,7 +191,9 @@ export function EditFeatureDialog({
               checked={consumerDefaultEnabled}
               onCheckedChange={setConsumerDefaultEnabled}
             />
-            <Label htmlFor="edit-consumer-default">Consumer default</Label>
+            <Label htmlFor="edit-consumer-default" className="mb-0">
+              Consumer default
+            </Label>
           </div>
 
           {error && <p className="text-destructive text-sm">{error}</p>}
@@ -332,7 +338,7 @@ export function FeatureToolbar({
             onCheckedChange={toggleFeature}
             aria-label={`Toggle ${feature.name}`}
           />
-          <Label htmlFor="toolbar-toggle" className="text-sm font-medium">
+          <Label htmlFor="toolbar-toggle" className="mb-0 text-sm font-medium">
             Enabled
           </Label>
         </div>

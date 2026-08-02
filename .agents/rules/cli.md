@@ -3,7 +3,7 @@
 Read this before spawning any sub-agent or driving any external CLI (Codex,
 `agy`, `opencode`, Command Code) for a delegated chunk of work. It defines
 **which model/tool handles which class of task**, and how to invoke each CLI
-non-interactively. See `.agents/rules/implementation-tracker.md` for tracking
+non-interactively. See `.claude/rules/implementation-tracker.md` for tracking
 multi-file delegated work, and the root `CLAUDE.md` "Sub-Agent Rules" section
 for the background-execution rule.
 
@@ -210,7 +210,7 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
 ## Shared rules across all delegated CLIs/sub-agents
 
 - **Never let a delegated CLI or sub-agent commit.** The orchestrating
-  Claude agent stages and commits, per `.agents/rules/git.md` (no AI
+  Claude agent stages and commits, per `.claude/rules/git.md` (no AI
   attribution).
 - **Background execution is authorized** (user, 2026-07-26: _"run codex in the
   background always going further"_, refined to _"in the background only if they
@@ -221,6 +221,33 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
   immediately. Backgrounding a two-second command costs a round trip and buys
   nothing. Whatever the mode, you still **read and verify the output** — a
   backgrounded delegation you never inspect is not delegation.
+- **Every backgrounded Codex run gets a 5-minute monitor, started in the same
+  turn that launches it.** Not on request — automatically, every time.
+
+  ```bash
+  # Immediately after the `codex exec … &` / run_in_background launch.
+  # Note the bracket in "cod[e]x": the monitor's own command line contains the
+  # pattern, so a literal "bin/codex" matches the monitor itself and it reports
+  # "still running" forever, long after the run has exited. This is not
+  # hypothetical — it happened on 2026-08-02.
+  Monitor(
+    command: 'while true; do sleep 300;
+      if pgrep -f "bin/cod[e]x" >/dev/null 2>&1; then
+        echo "[$(date -u +%H:%M)] codex still running — $(git status --short | wc -l) files changed";
+      else echo "[$(date -u +%H:%M)] codex EXITED"; break; fi; done',
+    description: '<what the run is doing>, 5-min checks',
+    timeout_ms: 3600000,
+  )
+  ```
+
+  The harness does notify on exit, so the monitor is not what tells you the run
+  finished — it is what tells you the run is **alive and progressing** while it
+  is still going, which the exit notification cannot do. Do not argue the point
+  or offer the exit-notification reasoning instead of starting the monitor;
+  that response has been rejected repeatedly. Match the `pgrep` on the binary
+  path (`bin/codex`), never on the prompt text — a pattern that matches the
+  monitor's own command line hangs forever.
+
 - Scope parallel tasks (Codex, `agy`, `opencode`, Command Code, or Claude
   sub-agents) to non-overlapping file sets; run overlapping areas
   sequentially.
@@ -242,7 +269,7 @@ command or left to exist solely in conversation history.
   e.g. `.claude/briefs/codex/2026-07-18-couriers-org-bootstrap.md`. Do not
   let briefs accumulate as an unsorted pile of `brief1.md`, `brief2.md`.
 - **Do not gitignore `.claude/briefs/`.** Unlike `.claude/tracker/` (local,
-  ephemeral, gitignored per `.agents/rules/implementation-tracker.md`),
+  ephemeral, gitignored per `.claude/rules/implementation-tracker.md`),
   briefs are committed and versioned — they are the durable record of what
   was asked of a delegated tool and why, and later work (or another agent)
   may need to see exactly what a prior brief specified.

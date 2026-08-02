@@ -233,6 +233,36 @@ export function normalizePhone(
   return parsePhone(input, defaultCountryCode)?.e164 ?? null
 }
 
+/** One country's dialling code, for a country-code picker. */
+export type DialCodeOption = {
+  countryCode: string
+  dialCode: string
+}
+
+/**
+ * Every country's dialling code, sorted by ISO-2 country code.
+ *
+ * The internal catalog is sorted longest-prefix-first because parsing needs
+ * that order; a picker needs a stable alphabetical one, so this returns its
+ * own sorted copy rather than exposing the parser's ordering.
+ */
+export function listDialCodes(): DialCodeOption[] {
+  const seen = new Set<string>()
+
+  return countryDialCodes
+    .filter((country) => {
+      if (seen.has(country.countryCode)) return false
+      seen.add(country.countryCode)
+
+      return true
+    })
+    .map((country) => ({
+      countryCode: country.countryCode,
+      dialCode: country.dialCode,
+    }))
+    .sort((left, right) => left.countryCode.localeCompare(right.countryCode))
+}
+
 /** Formats a phone number for display, returning unparseable input unchanged. */
 export function formatPhone(
   input: string,

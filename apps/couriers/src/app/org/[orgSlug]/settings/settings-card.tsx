@@ -52,7 +52,7 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
   const { Icon, tone } = GROUP_STYLES[group.icon] ?? FALLBACK_STYLE
 
   return (
-    <section className="876-card overflow-hidden transition-shadow">
+    <section className="876-card mb-6 break-inside-avoid overflow-hidden transition-shadow">
       <SectionHeaderPill Icon={Icon} title={group.title} tone={tone} />
 
       <ul className="space-y-0.5 px-4 pt-2 pb-4">

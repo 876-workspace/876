@@ -33,9 +33,15 @@ export function WarehousesCards({ warehouses, orgSlug, emptyState }: Props) {
             </Button>
           </div>
 
-          {warehouse.isPrimary ? (
+          {/* Inactive wins over primary: a retired warehouse that still holds
+              the primary flag must not read as the live one. */}
+          {!warehouse.isActive || warehouse.isPrimary ? (
             <div className="flex flex-wrap gap-1.5">
-              <Badge>Primary</Badge>
+              {!warehouse.isActive ? (
+                <Badge variant="secondary">Inactive</Badge>
+              ) : (
+                <Badge>Primary</Badge>
+              )}
             </div>
           ) : null}
 
