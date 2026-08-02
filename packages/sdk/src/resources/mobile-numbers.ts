@@ -69,6 +69,29 @@ export function createMobileNumbersResource(runtime: SdkRuntime) {
       )
     },
 
+    /**
+     * Promotes a verified mobile number to the account's primary number.
+     *
+     * @param mobileNumberId - The mobile number to promote.
+     * @param options - Optional per-request configuration.
+     * @returns A Promise resolving to the updated `MobileNumber`.
+     *
+     * @see /users/me/mobile-numbers/{id}/make-primary
+     */
+    makePrimary(
+      mobileNumberId: string,
+      options?: RequestOptions
+    ): Promise<MobileNumberResult> {
+      return sendAuthRequest(
+        runtime,
+        'POST',
+        `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}/make-primary`,
+        undefined,
+        mobileNumberSchema,
+        options
+      )
+    },
+
     delete(
       mobileNumberId: string,
       options?: RequestOptions

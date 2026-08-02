@@ -13,6 +13,10 @@ export const mobileNumberSchema = z.strictObject({
   number: z.string().regex(/^\+[1-9]\d{7,14}$/),
   type: mobileNumberTypeSchema,
   is_primary: z.boolean(),
+  // Always serialized by the API, null until a Lookup resolves them. Omitting
+  // them from a strictObject rejects every real response as auth/invalid-response.
+  carrier_name: z.string().nullable(),
+  line_type: z.string().nullable(),
   verification_status: z.string(),
   verification_id: z.string().nullable(),
   verified_at: z.number().int().nullable(),

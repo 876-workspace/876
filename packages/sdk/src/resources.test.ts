@@ -186,6 +186,8 @@ describe('$876.mobileNumbers', () => {
     number: '+18765550100',
     type: 'mobile',
     is_primary: false,
+    carrier_name: null,
+    line_type: null,
     verification_status: 'unverified',
     verification_id: null,
     verified_at: null,
@@ -491,5 +493,54 @@ describe('$876.auditEvents', () => {
     expect(result.data).toBeNull()
     expect(result.error?.code).toBe('auth/invalid-input')
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('$876.mobileNumbers response contract', () => {
+  // Regression: the schema omitted carrier_name/line_type, which the API always
+  // serializes, so every real response was rejected as auth/invalid-response.
+  // The existing path tests never asserted that a response actually parses.
+  it('parses a mobile number exactly as the API serializes it', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          data: {
+            object: 'mobile_number',
+            id: 'mobileNumber_123',
+            user_id: 'user_123',
+            number: '+18765550100',
+            type: 'mobile',
+            is_primary: false,
+            carrier_name: null,
+            line_type: null,
+            verification_status: 'unverified',
+            verification_id: null,
+            verified_at: null,
+            created_at: 1717200000,
+            updated_at: 1717200000,
+          },
+          error: null,
+        }),
+    })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    const result = await $876.mobileNumbers.retrieve('mobileNumber_123')
+
+    expect(result.error).toBeNull()
+    expect(result.data?.carrier_name).toBeNull()
+    expect(result.data?.number).toBe('+18765550100')
+  })
+
+  it('exposes make-primary on its own path', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ data: null, error: null }),
+    })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    await $876.mobileNumbers.makePrimary('mobileNumber_123')
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      '/api/users/me/mobile-numbers/mobileNumber_123/make-primary'
+    )
   })
 })
