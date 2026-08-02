@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
+from urllib.parse import urlencode
 
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,10 +15,10 @@ from core.id import generate_id
 from core.lookup_cache import resolve_cached_lookup
 from core.phone import normalize_phone_number
 from core.timestamps import now_unix_seconds
-from db.models import CommunicationMessage, CommunicationPhoneLookup
+from db.models import CommunicationCall, CommunicationMessage, CommunicationPhoneLookup
 from db.repositories.communications import CommunicationRepository
-from providers.communications import MessagingProvider, PhoneLookupProvider
-from providers.twilio import get_messaging_provider, get_phone_lookup_provider
+from providers.communications import MessagingProvider, PhoneLookupProvider, VoiceProvider
+from providers.twilio import get_messaging_provider, get_phone_lookup_provider, get_voice_provider
 from providers.twilio.errors import channel_disabled
 
 # Body strings and WhatsApp content SIDs are server-owned. Calling applications can
@@ -24,6 +26,13 @@ from providers.twilio.errors import channel_disabled
 TEMPLATES: dict[str, dict[str, str | None]] = {
     "sms.test": {"channel": "sms", "body": "876 test notification", "content_sid": None},
     "whatsapp.test": {"channel": "whatsapp", "body": None, "content_sid": "HX_TEST_TEMPLATE"},
+}
+
+# This registry is intentionally separate from message templates. A caller can
+# select a platform-owned semantic key, but no caller-controlled content, URL,
+# or TwiML reaches Twilio.
+VOICE_TEMPLATES: dict[str, str] = {
+    "voice.test": "<Response><Say>876 test notification</Say></Response>",
 }
 
 
@@ -39,12 +48,14 @@ class CommunicationsService:
         settings: Settings | None = None,
         lookup_provider: PhoneLookupProvider | None = None,
         messaging_provider: MessagingProvider | None = None,
+        voice_provider: VoiceProvider | None = None,
     ) -> None:
         self._db = db
         self._repo = CommunicationRepository(db)
         self._settings = settings or get_settings()
         self._lookup_provider = lookup_provider or get_phone_lookup_provider(self._settings)
         self._messaging_provider = messaging_provider or get_messaging_provider(self._settings)
+        self._voice_provider = voice_provider or get_voice_provider(self._settings)
 
     async def lookup(self, *, number: str, include_line_type: bool) -> CommunicationPhoneLookup:
         return await resolve_cached_lookup(
@@ -84,26 +95,39 @@ class CommunicationsService:
         body_hash = hashlib.sha256((body or content_sid or "").encode()).hexdigest()
         now = now_unix_seconds()
         row = await self._repo.create_message(
-            id=generate_id("message"), provider="twilio", provider_sid=None, channel=channel,
-            direction="outbound", status="queued", to_number=number, from_number=None,
-            messaging_service_sid=self._settings.twilio_messaging_service_sid or None, content_sid=content_sid,
+            id=generate_id("message"),
+            provider="twilio",
+            provider_sid=None,
+            channel=channel,
+            direction="outbound",
+            status="queued",
+            to_number=number,
+            from_number=None,
+            messaging_service_sid=self._settings.twilio_messaging_service_sid or None,
+            content_sid=content_sid,
             # A template label supports operational debugging without retaining
             # customer-facing message content (even when a template is short).
-            body_preview=f"Template: {template_key}", body_hash=body_hash, user_id=user_id,
-            organization_id=organization_id, app_id=app_id, client_reference=client_reference,
+            body_preview=f"Template: {template_key}",
+            body_hash=body_hash,
+            user_id=user_id,
+            organization_id=organization_id,
+            app_id=app_id,
+            client_reference=client_reference,
             idempotency_scope=idempotency_scope,
             idempotency_key=idempotency_key,
             provider_error_code=None,
             sent_at=None,
             delivered_at=None,
-            read_at=None, failed_at=None, created_at=now, updated_at=now,
+            read_at=None,
+            failed_at=None,
+            created_at=now,
+            updated_at=now,
         )
         try:
             status_callback = None
             if self._settings.twilio_webhook_base_url:
                 status_callback = (
-                    self._settings.twilio_webhook_base_url.rstrip("/")
-                    + "/webhooks/twilio/messages/status"
+                    self._settings.twilio_webhook_base_url.rstrip("/") + "/webhooks/twilio/messages/status"
                 )
             result = await self._messaging_provider.create_message(
                 to_number=number,
@@ -136,8 +160,107 @@ class CommunicationsService:
         return row
 
     async def list_messages(
-        self, *, limit: int, starting_after: str | None, ending_before: str | None
+        self, *, limit: int, starting_after: str | None, ending_before: str | None, status: str | None = None
     ) -> tuple[list[CommunicationMessage], bool, int]:
         return await self._repo.list_messages(
-            limit=limit, starting_after=starting_after, ending_before=ending_before
+            limit=limit, starting_after=starting_after, ending_before=ending_before, status=status
         )
+
+    async def create_call(
+        self,
+        *,
+        to_number: str,
+        template_key: str,
+        idempotency_key: str,
+        user_id: str | None,
+        organization_id: str | None,
+        app_id: str | None,
+        client_reference: str | None,
+    ) -> CommunicationCall:
+        if template_key not in VOICE_TEMPLATES:
+            raise _error("communications/invalid-template", "The requested voice template is unavailable.")
+
+        idempotency_scope = app_id or organization_id or user_id or "platform"
+        existing = await self._repo.get_call_by_idempotency(scope=idempotency_scope, key=idempotency_key)
+        if existing:
+            return existing
+        if not self._settings.twilio_voice_enabled:
+            raise channel_disabled("voice")
+        if not self._settings.twilio_webhook_base_url or not self._settings.twilio_auth_token:
+            raise _error(
+                "communications/not-configured",
+                "Outbound voice requires the public Twilio webhook configuration.",
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        number = normalize_phone_number(to_number)
+        now = now_unix_seconds()
+        row = await self._repo.create_call(
+            id=generate_id("call"),
+            provider="twilio",
+            provider_sid=None,
+            direction="outbound",
+            status="queued",
+            to_number=number,
+            from_number=None,
+            template_key=template_key,
+            user_id=user_id,
+            organization_id=organization_id,
+            app_id=app_id,
+            client_reference=client_reference,
+            idempotency_scope=idempotency_scope,
+            idempotency_key=idempotency_key,
+            duration_seconds=None,
+            provider_error_code=None,
+            started_at=None,
+            answered_at=None,
+            completed_at=None,
+            created_at=now,
+            updated_at=now,
+        )
+        twiml_url = build_voice_twiml_url(self._settings, template_key)
+        status_callback = self._settings.twilio_webhook_base_url.rstrip("/") + "/webhooks/twilio/calls/status"
+        try:
+            result = await self._voice_provider.create_call(
+                to_number=number,
+                twiml_url=twiml_url,
+                status_callback=status_callback,
+            )
+        except AppHTTPException:
+            row.status = "failed"
+            row.completed_at = now
+            row.updated_at = now
+            await self._db.flush()
+            raise
+        row.provider = result.provider
+        row.provider_sid = result.provider_sid
+        row.status = result.status
+        row.from_number = result.from_number
+        row.started_at = now if result.status in {"initiated", "ringing", "in-progress"} else None
+        row.updated_at = now
+        await self._db.flush()
+        return row
+
+    async def retrieve_call(self, call_id: str) -> CommunicationCall:
+        row = await self._repo.get_call(call_id)
+        if row is None:
+            raise _error("communications/not-found", "The call was not found.", status.HTTP_404_NOT_FOUND)
+        return row
+
+    async def list_calls(
+        self, *, limit: int, starting_after: str | None, ending_before: str | None, status: str | None = None
+    ) -> tuple[list[CommunicationCall], bool, int]:
+        return await self._repo.list_calls(
+            limit=limit, starting_after=starting_after, ending_before=ending_before, status=status
+        )
+
+
+def voice_template_signature(*, auth_token: str, template_key: str) -> str:
+    """Bind the selected server template to the TwiML URL without exposing content."""
+    return hmac.new(auth_token.encode(), template_key.encode(), hashlib.sha256).hexdigest()
+
+
+def build_voice_twiml_url(settings: Settings, template_key: str) -> str:
+    base_url = settings.twilio_webhook_base_url.rstrip("/") + "/webhooks/twilio/voice"
+    signature = voice_template_signature(auth_token=settings.twilio_auth_token, template_key=template_key)
+    return f"{base_url}?{urlencode({'template_key': template_key, 'signature': signature})}"

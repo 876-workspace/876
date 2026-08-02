@@ -507,6 +507,7 @@ async def _ensure_communications_tables(engine: object) -> None:
                 tables=[
                     Base.metadata.tables["communication_phone_lookups"],
                     Base.metadata.tables["communication_messages"],
+                    Base.metadata.tables["communication_calls"],
                     Base.metadata.tables["communication_webhook_events"],
                 ],
                 checkfirst=True,
