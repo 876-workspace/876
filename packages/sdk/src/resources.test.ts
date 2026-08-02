@@ -178,6 +178,98 @@ describe('$876.apps', () => {
   })
 })
 
+describe('$876.mobileNumbers', () => {
+  const mobileNumberPayload = {
+    object: 'mobile_number',
+    id: 'mobileNumber_123',
+    user_id: 'user_123',
+    number: '+18765550100',
+    type: 'mobile',
+    is_primary: false,
+    carrier_name: null,
+    line_type: null,
+    verification_status: 'unverified',
+    verification_id: null,
+    verified_at: null,
+    created_at: 1717200000,
+    updated_at: 1717200000,
+  } as const
+
+  it('uses only self-scoped mobile-number paths', async () => {
+    const fetchMock = vi.fn()
+    fetchMock.mockResolvedValueOnce({
+      json: () => Promise.resolve({ data: mobileNumberPayload, error: null }),
+    })
+    fetchMock.mockResolvedValueOnce({
+      json: () =>
+        Promise.resolve({
+          data: {
+            object: 'mobile_number',
+            id: 'mobileNumber_123',
+            deleted: true,
+          },
+          error: null,
+        }),
+    })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    await $876.mobileNumbers.create({ number: '+1 (876) 555-0100' })
+    await $876.mobileNumbers.delete('mobileNumber_123')
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      '/api/users/me/mobile-numbers',
+      expect.objectContaining({ method: 'POST' })
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/users/me/mobile-numbers/mobileNumber_123',
+      expect.objectContaining({ method: 'DELETE' })
+    )
+  })
+
+  it('creates and approves provider-owned verifications', async () => {
+    const verification = {
+      object: 'mobile_number_verification',
+      id: 'verification_123',
+      mobile_number_id: 'mobileNumber_123',
+      provider: 'fake',
+      provider_sid: 'fake_123',
+      channel: 'sms',
+      status: 'pending',
+      attempt_count: 0,
+      last_sent_at: 1717200000,
+      can_resend_at: 1717200060,
+      verified_at: null,
+      expires_at: 1717200600,
+      created_at: 1717200000,
+      updated_at: 1717200000,
+    } as const
+    const fetchMock = jsonFetch({ data: verification, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    await $876.mobileNumberVerifications.create('mobileNumber_123', {
+      channel: 'sms',
+    })
+    await $876.mobileNumberVerifications.approve(
+      'mobileNumber_123',
+      'verification_123',
+      { code: '000000', makePrimary: true }
+    )
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      '/api/users/me/mobile-numbers/mobileNumber_123/verifications',
+      expect.objectContaining({ method: 'POST' })
+    )
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/users/me/mobile-numbers/mobileNumber_123/verifications/verification_123/approve',
+      expect.objectContaining({ method: 'POST' })
+    )
+  })
+})
+
 describe('$876.oauthGrants', () => {
   it('lists a user connected apps', async () => {
     const fetchMock = jsonFetch({ data: [grantPayload], error: null })
@@ -401,5 +493,54 @@ describe('$876.auditEvents', () => {
     expect(result.data).toBeNull()
     expect(result.error?.code).toBe('auth/invalid-input')
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('$876.mobileNumbers response contract', () => {
+  // Regression: the schema omitted carrier_name/line_type, which the API always
+  // serializes, so every real response was rejected as auth/invalid-response.
+  // The existing path tests never asserted that a response actually parses.
+  it('parses a mobile number exactly as the API serializes it', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () =>
+        Promise.resolve({
+          data: {
+            object: 'mobile_number',
+            id: 'mobileNumber_123',
+            user_id: 'user_123',
+            number: '+18765550100',
+            type: 'mobile',
+            is_primary: false,
+            carrier_name: null,
+            line_type: null,
+            verification_status: 'unverified',
+            verification_id: null,
+            verified_at: null,
+            created_at: 1717200000,
+            updated_at: 1717200000,
+          },
+          error: null,
+        }),
+    })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    const result = await $876.mobileNumbers.retrieve('mobileNumber_123')
+
+    expect(result.error).toBeNull()
+    expect(result.data?.carrier_name).toBeNull()
+    expect(result.data?.number).toBe('+18765550100')
+  })
+
+  it('exposes make-primary on its own path', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ data: null, error: null }),
+    })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    await $876.mobileNumbers.makePrimary('mobileNumber_123')
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      '/api/users/me/mobile-numbers/mobileNumber_123/make-primary'
+    )
   })
 })

@@ -34,6 +34,7 @@ from db.migrate import (
     ensure_identity_columns,
     ensure_indexes,
     ensure_invite_source_app_column,
+    ensure_mobile_number_verification_schema,
     ensure_org_business_identity_columns,
     ensure_organizations_logo_file_id_column,
     ensure_organizations_stripe_customer_id,
@@ -50,6 +51,7 @@ from db.repositories.prices import PriceRepository
 from db.repositories.products import ProductRepository
 from db.session import AsyncSessionLocal
 from db.session import lifespan as db_lifespan
+from providers.twilio import close_shared_clients as close_shared_twilio_clients
 from services.billing_customer_dispatch import run_billing_sync_worker
 from services.bootstrap import BootstrapStep, run_bootstrap
 from services.feature_seeds import seed_all_features
@@ -475,9 +477,61 @@ async def _ensure_org_erm_tables(engine: object) -> None:
                     Base.metadata.tables["employee_profiles"],
                     Base.metadata.tables["org_contacts"],
                     Base.metadata.tables["user_emails"],
+                    Base.metadata.tables["verifications"],
                     Base.metadata.tables["user_mobile_numbers"],
                 ],
                 checkfirst=True,
+            )
+        )
+
+
+async def _ensure_mobile_number_verification_schema(engine: object) -> None:
+    """Install phone verification columns after their referenced tables exist."""
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[Base.metadata.tables["verifications"]],
+                checkfirst=True,
+            )
+        )
+        await conn.run_sync(ensure_mobile_number_verification_schema)
+
+
+async def _ensure_communications_tables(engine: object) -> None:
+    """Create the isolated communications persistence tables and additive phone columns."""
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[
+                    Base.metadata.tables["communication_phone_lookups"],
+                    Base.metadata.tables["communication_messages"],
+                    Base.metadata.tables["communication_calls"],
+                    Base.metadata.tables["communication_webhook_events"],
+                ],
+                checkfirst=True,
+            )
+        )
+        await conn.execute(sa_text("ALTER TABLE user_mobile_numbers ADD COLUMN IF NOT EXISTS carrier_name VARCHAR"))
+        await conn.execute(sa_text("ALTER TABLE user_mobile_numbers ADD COLUMN IF NOT EXISTS line_type VARCHAR"))
+        await conn.execute(
+            sa_text("ALTER TABLE communication_messages ADD COLUMN IF NOT EXISTS idempotency_scope VARCHAR")
+        )
+        await conn.execute(
+            sa_text(
+                "UPDATE communication_messages SET idempotency_scope = "
+                "COALESCE(app_id, organization_id, user_id, 'platform') "
+                "WHERE idempotency_scope IS NULL"
+            )
+        )
+        await conn.execute(
+            sa_text("ALTER TABLE communication_messages ALTER COLUMN idempotency_scope SET NOT NULL")
+        )
+        await conn.execute(
+            sa_text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_communication_messages_idempotency "
+                "ON communication_messages (idempotency_scope, idempotency_key)"
             )
         )
 
@@ -602,6 +656,8 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("first_party_provisioning", 1, seed_first_party_provisioning_manifests),
         BootstrapStep("billing_v2_cutover", 1, _cut_over_billing_v2),
         BootstrapStep("org_erm_tables", 1, _ensure_org_erm_tables),
+        BootstrapStep("mobile_number_verification", 1, _ensure_mobile_number_verification_schema),
+        BootstrapStep("communications", 1, _ensure_communications_tables),
         BootstrapStep("org_access_tables", 1, _ensure_org_access_tables),
         BootstrapStep("feature_flag_tables", 1, _ensure_feature_flag_tables),
         BootstrapStep("plan_module_tables", 1, ensure_plan_module_tables),
@@ -650,6 +706,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 billing_worker_task.cancel()
                 with suppress(asyncio.CancelledError):
                     await billing_worker_task
+            await close_shared_twilio_clients()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

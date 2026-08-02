@@ -198,6 +198,20 @@ export type {
   FeatureListResult,
 } from './types/features.ts'
 export type {
+  DeletedMobileNumber,
+  DeletedMobileNumberResult,
+  MobileNumber,
+  MobileNumberCreateParams,
+  MobileNumberList,
+  MobileNumberListResult,
+  MobileNumberResult,
+  MobileNumberUpdateParams,
+  MobileNumberVerification,
+  MobileNumberVerificationApproveParams,
+  MobileNumberVerificationCreateParams,
+  MobileNumberVerificationResult,
+} from './types/mobile-numbers.ts'
+export type {
   Price,
   Product,
   ProductList,

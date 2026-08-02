@@ -13,6 +13,7 @@ ENTITY_PREFIXES = {
     "billingAccount": "ba",
     "billingCustomerEvent": "bce",
     "billingProviderObject": "bpo",
+    "call": "cal",
     "contact": "cnt",
     "currency": "cur",
     "customer": "cus",
@@ -34,6 +35,7 @@ ENTITY_PREFIXES = {
     "invoice": "inv",
     "log": "log",
     "membership": "mem",
+    "message": "msg",
     "mobileNumber": "mob",
     "note": "nte",
     "notification": "ntf",
@@ -76,6 +78,8 @@ ENTITY_PREFIXES = {
     "userIdentification": "uident",
     "userProfile": "upr",
     "userSocialProfile": "usp",
+    "verification": "ver",
+    "webhookEvent": "whe",
 }
 
 

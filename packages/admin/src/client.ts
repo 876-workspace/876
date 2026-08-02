@@ -42,6 +42,7 @@ import { createAdminProvisioningResource } from './resources/provisioning'
 import { createAdminReservedUsernamesResource } from './resources/reserved-usernames'
 import { createAdminUsersResource } from './resources/users'
 import { createAdminBillingAccountsResource } from './resources/billing-accounts'
+import { createAdminCommunicationsResource } from './resources/communications'
 import { createAdminSubscriptionsResource } from './resources/subscriptions'
 import type { AdminPlatformClientOptions } from './types'
 
@@ -82,11 +83,15 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     ...organizations
   } = createAdminOrgsResource(runtime)
   const subscriptions = createAdminSubscriptionsResource(runtime)
+  const communications = createAdminCommunicationsResource(runtime)
   const billing = create876BillingAdminClient(options.billing)
   const widgets = createWidgetsClient(options.widgets)
 
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
+    messages: communications.messages,
+    calls: communications.calls,
+    phoneLookups: communications.phoneLookups,
     users,
     identifications,
     auth: createAdminAuthResource(runtime),

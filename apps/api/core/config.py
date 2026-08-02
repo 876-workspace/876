@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -86,6 +87,31 @@ class Settings(BaseSettings):
         validation_alias="FINANCE_PROVISIONING_BATCH_SIZE",
     )
 
+    twilio_mode: Literal["disabled", "fake", "live"] = Field(default="disabled", validation_alias="TWILIO_MODE")
+    twilio_account_sid: str = Field(default="", validation_alias="TWILIO_ACCOUNT_SID")
+    twilio_api_key: str = Field(default="", validation_alias="TWILIO_API_KEY")
+    twilio_api_key_secret: str = Field(default="", validation_alias="TWILIO_API_KEY_SECRET")
+    twilio_auth_token: str = Field(default="", validation_alias="TWILIO_AUTH_TOKEN")
+    twilio_verify_service_sid: str = Field(default="", validation_alias="TWILIO_VERIFY_SERVICE_SID")
+    twilio_messaging_service_sid: str = Field(default="", validation_alias="TWILIO_MESSAGING_SERVICE_SID")
+    twilio_voice_from_number: str = Field(default="", validation_alias="TWILIO_VOICE_FROM_NUMBER")
+    twilio_whatsapp_from: str = Field(default="", validation_alias="TWILIO_WHATSAPP_FROM")
+    # Issued per Twilio account when a template is approved, so it cannot be a
+    # literal in the template registry.
+    twilio_whatsapp_content_sid: str = Field(default="", validation_alias="TWILIO_WHATSAPP_CONTENT_SID")
+    twilio_webhook_base_url: str = Field(default="", validation_alias="TWILIO_WEBHOOK_BASE_URL")
+    twilio_lookup_enabled: bool = Field(default=False, validation_alias="TWILIO_LOOKUP_ENABLED")
+    twilio_lookup_line_type_enabled: bool = Field(default=False, validation_alias="TWILIO_LOOKUP_LINE_TYPE_ENABLED")
+    twilio_lookup_cache_ttl_seconds: int = Field(
+        default=30 * 24 * 60 * 60, validation_alias="TWILIO_LOOKUP_CACHE_TTL_SECONDS"
+    )
+    twilio_verify_sms_enabled: bool = Field(default=False, validation_alias="TWILIO_VERIFY_SMS_ENABLED")
+    twilio_verify_call_enabled: bool = Field(default=False, validation_alias="TWILIO_VERIFY_CALL_ENABLED")
+    twilio_verify_whatsapp_enabled: bool = Field(default=False, validation_alias="TWILIO_VERIFY_WHATSAPP_ENABLED")
+    twilio_sms_enabled: bool = Field(default=False, validation_alias="TWILIO_SMS_ENABLED")
+    twilio_whatsapp_enabled: bool = Field(default=False, validation_alias="TWILIO_WHATSAPP_ENABLED")
+    twilio_voice_enabled: bool = Field(default=False, validation_alias="TWILIO_VOICE_ENABLED")
+
     @property
     def is_owner_email_set(self) -> bool:
         return bool(self.platform_owner_email.strip())
@@ -131,6 +157,38 @@ class Settings(BaseSettings):
         if self.cookie_secure is not None:
             return self.cookie_secure
         return self.is_production
+
+    @property
+    def twilio_live_enabled(self) -> bool:
+        """Whether live Twilio Verify traffic can be configured safely."""
+        return self.twilio_mode == "live" and bool(
+            self.twilio_api_key.strip()
+            and self.twilio_api_key_secret.strip()
+            and self.twilio_verify_service_sid.strip()
+        )
+
+    @property
+    def twilio_messaging_live_enabled(self) -> bool:
+        return self.twilio_mode == "live" and bool(
+            self.twilio_api_key.strip()
+            and self.twilio_api_key_secret.strip()
+            and self.twilio_account_sid.strip()
+            and self.twilio_messaging_service_sid.strip()
+        )
+
+    @property
+    def twilio_voice_live_enabled(self) -> bool:
+        return self.twilio_mode == "live" and bool(
+            self.twilio_api_key.strip()
+            and self.twilio_api_key_secret.strip()
+            and self.twilio_account_sid.strip()
+            and self.twilio_voice_from_number.strip()
+        )
+
+    @property
+    def twilio_lookup_live_enabled(self) -> bool:
+        """Lookup needs REST credentials, but not a Verify service SID."""
+        return self.twilio_mode == "live" and bool(self.twilio_api_key.strip() and self.twilio_api_key_secret.strip())
 
 
 @lru_cache(maxsize=1)

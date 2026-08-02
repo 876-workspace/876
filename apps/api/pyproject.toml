@@ -21,6 +21,7 @@ dependencies = [
   "python-dotenv>=1.0,<2",
   "stripe>=11.0,<12",
   "beautifulsoup4>=4.12,<5",
+  "twilio>=9.0,<10",
 ]
 
 [project.optional-dependencies]

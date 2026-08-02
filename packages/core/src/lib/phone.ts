@@ -276,3 +276,13 @@ export function formatPhone(
 
   return `${phone.dialCode} ${formatNationalNumber(phone.nationalNumber, phone.dialCode)}`
 }
+
+/** Masks a phone number for operational UI while preserving its last four digits. */
+export function maskPhoneNumber(input: string | null | undefined): string {
+  if (!input) return '—'
+
+  const digits = input.replace(/\D/g, '')
+  if (digits.length <= 4) return '****'
+
+  return `+***${digits.slice(-4)}`
+}
