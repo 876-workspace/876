@@ -97,6 +97,7 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 
 - Read `.claude/rules/performance.md` (index — open only the relevant category file(s)), `.claude/rules/types.md`, `.claude/rules/code-style.md`, and `.claude/rules/data-fetching.md` before editing app code.
 - Read `.claude/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
+- Read `.claude/rules/app-structure.md` before creating or moving **any** component, hook, or module file in a Next.js app (the `_components/` / `components/{shell,providers,patterns}` / `features/<domain>` placement model, the `src/lib/` spine, the no-barrels and no-app-name-prefix rules).
 - Read `.claude/rules/app-layout.md` before scaffolding or editing any page in Console, Enterprise, Couriers, Billing, or a new sidebar-style app (page containers, toolbars, list status filters, list/detail/settings patterns, forms-vs-dialogs, back-links, button labels/colors). These do not apply to `@876/app` (consumer), which has its own layout.
 - Read `.claude/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.claude/rules/api-access.md` before writing any data-fetching code in `apps/876` or `apps/console`.
