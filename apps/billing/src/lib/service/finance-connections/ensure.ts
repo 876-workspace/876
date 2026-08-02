@@ -15,8 +15,8 @@ import type {
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
 import { ensureWorkspace, ProvisioningInputError } from '../tenants/workspace'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 class FinanceProvisioningConflict extends Error {}
 

@@ -5,7 +5,8 @@ import type { ItemUpdateParams } from '@/types/item'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Updates a billing item. */
 export async function update(

@@ -8,8 +8,8 @@ import { recomputeCustomerAr } from '../customers/ar'
 import { recordLedgerEntry } from '../ledger'
 import { resolveDueAt } from '../payment-terms'
 import { err, ok } from '../result'
-import { isRetryableTransactionError } from '../payments/shared'
 import { settleWithAvailableCredits } from './settlement'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 class InvoiceFinalizeError extends Error {
   constructor(

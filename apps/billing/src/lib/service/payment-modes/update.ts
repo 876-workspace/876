@@ -5,7 +5,7 @@ import type { ServiceResult } from '@/types/api'
 import type { PaymentModeUpdateParams } from '@/types/payment'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Updates a mode while preserving one active default per tenant. */
 export async function update(

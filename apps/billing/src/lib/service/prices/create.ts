@@ -6,7 +6,8 @@ import type { PriceCreateParams } from '@/types/price'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates an immutable price for exactly one item or plan. */
 export async function create(

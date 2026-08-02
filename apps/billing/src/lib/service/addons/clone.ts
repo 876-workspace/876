@@ -6,7 +6,7 @@ import type { AddonCloneParams } from '@/types/addon'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Clones add-on configuration while issuing fresh immutable price records. */
 export async function cloneAddon(

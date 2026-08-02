@@ -5,8 +5,8 @@ import type { ServiceResult } from '@/types/api'
 import type { ProductEnsureParams } from '@/types/sync'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
 import { create } from './create'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Idempotently links or creates the Billing product mirroring a core 876 app. */
 export async function ensure(

@@ -5,7 +5,8 @@ import type { ServiceResult } from '@/types/api'
 import type { BankAccountUpdateParams } from '@/types/banking'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Updates account details without allowing historical currency rewrites. */
 export async function update(

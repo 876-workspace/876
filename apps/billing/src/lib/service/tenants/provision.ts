@@ -9,12 +9,12 @@ import type { TenantCreateParams } from '@/types/tenant'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
 import {
   ensureBillingMember,
   ensureWorkspace,
   ProvisioningInputError,
 } from './workspace'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 interface ProvisionedTenant {
   id: string

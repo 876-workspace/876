@@ -6,7 +6,8 @@ import type { ServiceResult } from '@/types/api'
 import type { PriceListCreateParams } from '@/types/price-list'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 export async function create(
   tenantId: string,

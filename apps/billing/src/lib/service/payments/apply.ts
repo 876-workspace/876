@@ -8,10 +8,10 @@ import { recomputeCustomerAr } from '../customers/ar'
 import { err, ok } from '../result'
 import {
   applyPaymentAllocations,
-  isRetryableTransactionError,
   loadPaymentTargets,
   PaymentMutationError,
 } from './shared'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 /** Applies previously unapplied customer cash to open invoices. */
 export async function apply(

@@ -9,9 +9,9 @@ import { recomputeCustomerAr } from '../customers/ar'
 import {
   applyCreditNoteAllocations,
   CreditNoteMutationError,
-  isRetryableTransactionError,
   loadApplyTargets,
 } from './shared'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 /**
  * Applies an open credit note's balance to one or more of the customer's open

@@ -6,7 +6,7 @@ import type { ServiceResult } from '@/types/api'
 import type { TaxAuthorityCreateParams } from '@/types/tax'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates a tenant tax authority and maintains one optional default. */
 export async function create(

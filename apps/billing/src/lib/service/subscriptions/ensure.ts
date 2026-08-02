@@ -6,9 +6,9 @@ import type { ServiceResult } from '@/types/api'
 import type { SubscriptionEnsureParams } from '@/types/sync'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
 import { resolveSubscriptionComposition } from './composition'
 import { create } from './create'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates or reconciles a Billing projection of a core org-app subscription. */
 export async function ensure(

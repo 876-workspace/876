@@ -6,7 +6,8 @@ import type { VendorCreateParams } from '@/types/vendor'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates an external or optionally core-linked Billing vendor. */
 export async function create(

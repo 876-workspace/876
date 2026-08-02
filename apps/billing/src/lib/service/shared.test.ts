@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { hasEnabledCurrency, isUniqueConstraintError } from './shared'
+import { hasEnabledCurrency } from './shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 const { prismaRef } = vi.hoisted(() => ({
   prismaRef: { current: null as unknown as Record<string, unknown> },

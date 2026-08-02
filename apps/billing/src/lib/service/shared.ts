@@ -17,13 +17,3 @@ export async function hasEnabledCurrency(
 
   return tenantCurrency !== null
 }
-
-/** Detects an expected database uniqueness conflict without exposing internals. */
-export function isUniqueConstraintError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: unknown }).code === 'P2002'
-  )
-}

@@ -10,7 +10,8 @@ import { recordLedgerEntry } from '../ledger'
 import { err, ok } from '../result'
 import { hasEnabledCurrency } from '../shared'
 import { recomputeCustomerAr } from '../customers/ar'
-import { isRetryableTransactionError, RefundMutationError } from './shared'
+import { RefundMutationError } from './shared'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 /** Records a cash return to a customer drawn from a credit note or an overpaid payment. */
 export async function create(

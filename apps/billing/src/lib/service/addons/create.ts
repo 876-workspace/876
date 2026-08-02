@@ -6,7 +6,8 @@ import type { AddonCreateParams } from '@/types/addon'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Atomically creates an add-on, its first immutable price, and plan rules. */
 export async function create(

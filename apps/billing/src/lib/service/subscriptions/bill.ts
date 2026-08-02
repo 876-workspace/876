@@ -12,12 +12,12 @@ import { nextDocumentNumber } from '../documents/numbers'
 import { recordLedgerEntry } from '../ledger'
 import { resolveDueAt } from '../payment-terms'
 import { calculateCatalogAmount } from '../pricing'
-import { isUniqueConstraintError } from '../shared'
 import { settleWithAvailableCredits } from '../invoices/settlement'
 import { addInterval } from './period'
 import { adjustRenewalAmount } from './renewal-pricing'
 import { enqueueSubscriptionNotification } from './notifications'
 import { prorateInitialStubAmount } from './amounts'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 interface BillResult {
   status: 'succeeded' | 'skipped'
