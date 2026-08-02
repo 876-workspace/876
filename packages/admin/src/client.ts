@@ -90,6 +90,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
     messages: communications.messages,
+    calls: communications.calls,
     phoneLookups: communications.phoneLookups,
     users,
     identifications,
