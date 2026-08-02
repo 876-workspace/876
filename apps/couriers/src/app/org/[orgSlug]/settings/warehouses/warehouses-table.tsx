@@ -26,8 +26,12 @@ const columns: ColumnDef<WarehouseTableRow, unknown>[] = [
   {
     id: 'status',
     header: 'Status',
+    // Inactive wins over primary: a retired warehouse that still holds the
+    // primary flag must not read as the live one.
     cell: ({ row }) =>
-      row.original.isPrimary ? (
+      !row.original.isActive ? (
+        <Badge variant="secondary">Inactive</Badge>
+      ) : row.original.isPrimary ? (
         <Badge>Primary</Badge>
       ) : (
         <span className="text-muted-foreground">—</span>
