@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 from core.config import Settings, get_settings
-from providers.communications import PhoneLookup, PhoneLookupProvider, PhoneVerification, PhoneVerificationProvider
+from providers.communications import (
+    MessagingProvider,
+    PhoneLookup,
+    PhoneLookupProvider,
+    PhoneVerification,
+    PhoneVerificationProvider,
+    ProviderMessage,
+)
 
-from .adapter import TwilioPhoneLookupProvider, TwilioPhoneVerificationProvider
+from .adapter import TwilioMessagingProvider, TwilioPhoneLookupProvider, TwilioPhoneVerificationProvider
 from .client import TwilioClient
 from .errors import not_configured
 from .fake import FakeTwilioProvider
@@ -20,7 +27,21 @@ class DisabledTwilioProvider:
     async def approve_verification(self, *, to_number: str, code: str) -> PhoneVerification:
         raise not_configured()
 
-    async def create_lookup(self, *, number: str) -> PhoneLookup:
+    async def create_lookup(self, *, number: str, include_line_type: bool = False) -> PhoneLookup:
+        raise not_configured()
+
+    async def create_message(
+        self,
+        *,
+        to_number: str,
+        body: str | None,
+        channel: str,
+        content_sid: str | None = None,
+        status_callback: str | None = None,
+    ) -> ProviderMessage:
+        raise not_configured()
+
+    async def retrieve_message(self, *, provider_sid: str) -> ProviderMessage:
         raise not_configured()
 
 
@@ -64,10 +85,24 @@ def get_phone_lookup_provider(settings: Settings | None = None) -> PhoneLookupPr
     configured = settings or get_settings()
     if configured.twilio_mode == "fake":
         return FakeTwilioProvider()
-    if not configured.twilio_live_enabled or not configured.twilio_lookup_enabled:
+    if not configured.twilio_lookup_live_enabled or not configured.twilio_lookup_enabled:
         return DisabledTwilioProvider()
     client = _shared_client(configured.twilio_api_key, configured.twilio_api_key_secret)
     return TwilioPhoneLookupProvider(client)
+
+
+def get_messaging_provider(settings: Settings | None = None) -> MessagingProvider:
+    configured = settings or get_settings()
+    if configured.twilio_mode == "fake":
+        return FakeTwilioProvider()
+    if not configured.twilio_messaging_live_enabled:
+        return DisabledTwilioProvider()
+    client = _shared_client(configured.twilio_api_key, configured.twilio_api_key_secret)
+    return TwilioMessagingProvider(
+        client,
+        account_sid=configured.twilio_account_sid,
+        messaging_service_sid=configured.twilio_messaging_service_sid,
+    )
 
 
 __all__ = [
@@ -76,5 +111,6 @@ __all__ = [
     "TwilioClient",
     "close_shared_clients",
     "get_phone_lookup_provider",
+    "get_messaging_provider",
     "get_phone_verification_provider",
 ]

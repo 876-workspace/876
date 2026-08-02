@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TwilioVerification(BaseModel):
@@ -23,6 +23,16 @@ class TwilioLookup(BaseModel):
     national_format: str | None = None
     country_code: str | None = None
     valid: bool | None = None
+    line_type_intelligence: TwilioLineTypeIntelligence | None = None
+
+
+class TwilioLineTypeIntelligence(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    carrier_name: str | None = None
+    type: str | None = None
+    mobile_country_code: str | None = None
+    mobile_network_code: str | None = None
 
 
 def verification_create_form(*, to_number: str, channel: str) -> dict[str, str]:
@@ -31,6 +41,33 @@ def verification_create_form(*, to_number: str, channel: str) -> dict[str, str]:
 
 def verification_check_form(*, to_number: str, code: str) -> dict[str, str]:
     return {"To": to_number, "Code": code}
+
+
+def message_create_form(
+    *,
+    to_number: str,
+    messaging_service_sid: str,
+    body: str | None,
+    content_sid: str | None,
+    status_callback: str | None,
+) -> dict[str, str]:
+    form = {"To": to_number, "MessagingServiceSid": messaging_service_sid}
+    if body is not None:
+        form["Body"] = body
+    if content_sid is not None:
+        form["ContentSid"] = content_sid
+    if status_callback is not None:
+        form["StatusCallback"] = status_callback
+    return form
+
+
+class TwilioMessage(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    sid: str
+    status: str
+    to: str
+    from_: str | None = Field(default=None, alias="from")
 
 
 def twilio_error_details(payload: object) -> tuple[str, str | None, str | None]:

@@ -56,6 +56,15 @@ class PhoneLookup:
     national_format: str | None = None
     country_code: str | None = None
     valid: bool | None = None
+    carrier_name: str | None = None
+    line_type: str | None = None
+    mobile_country_code: str | None = None
+    mobile_network_code: str | None = None
+
+    @property
+    def e164(self) -> str:
+        """Explicit E.164 name for consumers; ``number`` remains protocol-compatible."""
+        return self.number
 
 
 @runtime_checkable
@@ -75,7 +84,15 @@ class PhoneVerificationProvider(Protocol):
 class MessagingProvider(Protocol):
     """Reserved Phase 2 message operations with the same hard-error contract."""
 
-    async def create_message(self, *, to_number: str, body: str, channel: str) -> ProviderMessage: ...
+    async def create_message(
+        self,
+        *,
+        to_number: str,
+        body: str | None,
+        channel: str,
+        content_sid: str | None = None,
+        status_callback: str | None = None,
+    ) -> ProviderMessage: ...
 
     async def retrieve_message(self, *, provider_sid: str) -> ProviderMessage: ...
 
@@ -93,7 +110,7 @@ class VoiceProvider(Protocol):
 class PhoneLookupProvider(Protocol):
     """Provider number lookup operation with the same hard-error contract."""
 
-    async def create_lookup(self, *, number: str) -> PhoneLookup: ...
+    async def create_lookup(self, *, number: str, include_line_type: bool = False) -> PhoneLookup: ...
 
 
 @runtime_checkable

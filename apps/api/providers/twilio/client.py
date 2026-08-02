@@ -10,7 +10,7 @@ import httpx
 from core.logging import get_logger
 
 from .errors import mask_phone_number, normalize_twilio_error, provider_unavailable
-from .types import verification_check_form, verification_create_form
+from .types import message_create_form, verification_check_form, verification_create_form
 
 logger = get_logger(__name__)
 
@@ -78,8 +78,34 @@ class TwilioClient:
             to_number=to_number,
         )
 
-    async def create_lookup(self, *, number: str) -> dict[str, Any]:
-        return await self._request("GET", f"{self._lookup_base_url}/v2/PhoneNumbers/{number}", to_number=number)
+    async def create_lookup(self, *, number: str, include_line_type: bool = False) -> dict[str, Any]:
+        url = f"{self._lookup_base_url}/v2/PhoneNumbers/{number}"
+        if include_line_type:
+            url += "?Fields=line_type_intelligence"
+        return await self._request("GET", url, to_number=number)
+
+    async def create_message(
+        self,
+        *,
+        account_sid: str,
+        messaging_service_sid: str,
+        to_number: str,
+        body: str | None,
+        content_sid: str | None,
+        status_callback: str | None,
+    ) -> dict[str, Any]:
+        return await self._request(
+            "POST",
+            f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json",
+            data=message_create_form(
+                to_number=to_number,
+                messaging_service_sid=messaging_service_sid,
+                body=body,
+                content_sid=content_sid,
+                status_callback=status_callback,
+            ),
+            to_number=to_number,
+        )
 
     async def aclose(self) -> None:
         await self._client.aclose()

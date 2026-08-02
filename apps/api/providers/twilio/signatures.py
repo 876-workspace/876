@@ -15,5 +15,7 @@ class TwilioWebhookVerifier:
         self._base_url = webhook_base_url.rstrip("/") + "/"
 
     def validate(self, *, path: str, params: dict[str, str], signature: str) -> bool:
+        # ``path`` includes the original query string. Twilio signs the exact URL,
+        # and reconstructing only the path makes otherwise valid callbacks fail.
         url = urljoin(self._base_url, path.lstrip("/"))
         return bool(self._validator.validate(url, params, signature))

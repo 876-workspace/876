@@ -30,10 +30,13 @@ class FakeTwilioProvider:
             valid=approved,
         )
 
-    async def create_lookup(self, *, number: str) -> PhoneLookup:
+    async def create_lookup(self, *, number: str, include_line_type: bool = False) -> PhoneLookup:
         return PhoneLookup(provider="fake", number=number, valid=True)
 
-    async def create_message(self, *, to_number: str, body: str, channel: str) -> ProviderMessage:
+    async def create_message(
+        self, *, to_number: str, body: str | None, channel: str, content_sid: str | None = None,
+        status_callback: str | None = None,
+    ) -> ProviderMessage:
         return ProviderMessage("fake", self._sid("message", to_number, channel), "queued", to_number)
 
     async def retrieve_message(self, *, provider_sid: str) -> ProviderMessage:
