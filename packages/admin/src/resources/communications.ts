@@ -40,11 +40,14 @@ export function createAdminCommunicationsResource(runtime: AdminRuntime) {
         })
       },
       list(params?: AdminCommunicationListParams) {
-        return adminRequest<AdminListResponse<AdminCommunicationMessage>>(runtime, {
-          method: 'GET',
-          path: '/communications/messages',
-          query: { ...toCursorQuery(params), status: params?.status },
-        })
+        return adminRequest<AdminListResponse<AdminCommunicationMessage>>(
+          runtime,
+          {
+            method: 'GET',
+            path: '/communications/messages',
+            query: { ...toCursorQuery(params), status: params?.status },
+          }
+        )
       },
     },
     calls: {
@@ -70,11 +73,14 @@ export function createAdminCommunicationsResource(runtime: AdminRuntime) {
         })
       },
       list(params?: AdminCommunicationListParams) {
-        return adminRequest<AdminListResponse<AdminCommunicationCall>>(runtime, {
-          method: 'GET',
-          path: '/communications/calls',
-          query: { ...toCursorQuery(params), status: params?.status },
-        })
+        return adminRequest<AdminListResponse<AdminCommunicationCall>>(
+          runtime,
+          {
+            method: 'GET',
+            path: '/communications/calls',
+            query: { ...toCursorQuery(params), status: params?.status },
+          }
+        )
       },
     },
     phoneLookups: {
@@ -82,7 +88,10 @@ export function createAdminCommunicationsResource(runtime: AdminRuntime) {
         return adminRequest<AdminPhoneLookup>(runtime, {
           method: 'POST',
           path: '/communications/phone-lookups',
-          body: { number: params.number, include_line_type: params.includeLineType },
+          body: {
+            number: params.number,
+            include_line_type: params.includeLineType,
+          },
         })
       },
     },

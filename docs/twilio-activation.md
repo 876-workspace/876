@@ -6,26 +6,26 @@ Every Twilio capability ships disabled. This runbook is the deliberate, per-chan
 
 ## Environment variables
 
-| Variable | Where it goes | Purpose |
-| --- | --- | --- |
-| TWILIO_MODE | `vars` | disabled, fake, or live |
-| TWILIO_ACCOUNT_SID | secret | Account identifier |
-| TWILIO_API_KEY | secret | REST API key SID |
-| TWILIO_API_KEY_SECRET | secret | REST API key secret |
-| TWILIO_AUTH_TOKEN | secret | Webhook signature validation and signed voice-template URLs |
-| TWILIO_VERIFY_SERVICE_SID | secret | Verify service identifier |
-| TWILIO_MESSAGING_SERVICE_SID | secret | Messaging service identifier |
-| TWILIO_VOICE_FROM_NUMBER | `vars` | Outbound caller ID |
-| TWILIO_WHATSAPP_FROM | `vars` | WhatsApp sender |
-| TWILIO_WEBHOOK_BASE_URL | `vars` | Public base URL signatures are checked against |
-| TWILIO_LOOKUP_ENABLED | `vars` | Lookup validation and formatting |
-| TWILIO_LOOKUP_LINE_TYPE_ENABLED | `vars` | Paid carrier/line-type package, billed per lookup |
-| TWILIO_VERIFY_SMS_ENABLED | `vars` | SMS OTP channel |
-| TWILIO_VERIFY_CALL_ENABLED | `vars` | Voice OTP channel |
-| TWILIO_VERIFY_WHATSAPP_ENABLED | `vars` | WhatsApp OTP channel |
-| TWILIO_SMS_ENABLED | `vars` | Transactional SMS |
-| TWILIO_WHATSAPP_ENABLED | `vars` | Transactional WhatsApp |
-| TWILIO_VOICE_ENABLED | `vars` | Outbound calls |
+| Variable                        | Where it goes | Purpose                                                     |
+| ------------------------------- | ------------- | ----------------------------------------------------------- |
+| TWILIO_MODE                     | `vars`        | disabled, fake, or live                                     |
+| TWILIO_ACCOUNT_SID              | secret        | Account identifier                                          |
+| TWILIO_API_KEY                  | secret        | REST API key SID                                            |
+| TWILIO_API_KEY_SECRET           | secret        | REST API key secret                                         |
+| TWILIO_AUTH_TOKEN               | secret        | Webhook signature validation and signed voice-template URLs |
+| TWILIO_VERIFY_SERVICE_SID       | secret        | Verify service identifier                                   |
+| TWILIO_MESSAGING_SERVICE_SID    | secret        | Messaging service identifier                                |
+| TWILIO_VOICE_FROM_NUMBER        | `vars`        | Outbound caller ID                                          |
+| TWILIO_WHATSAPP_FROM            | `vars`        | WhatsApp sender                                             |
+| TWILIO_WEBHOOK_BASE_URL         | `vars`        | Public base URL signatures are checked against              |
+| TWILIO_LOOKUP_ENABLED           | `vars`        | Lookup validation and formatting                            |
+| TWILIO_LOOKUP_LINE_TYPE_ENABLED | `vars`        | Paid carrier/line-type package, billed per lookup           |
+| TWILIO_VERIFY_SMS_ENABLED       | `vars`        | SMS OTP channel                                             |
+| TWILIO_VERIFY_CALL_ENABLED      | `vars`        | Voice OTP channel                                           |
+| TWILIO_VERIFY_WHATSAPP_ENABLED  | `vars`        | WhatsApp OTP channel                                        |
+| TWILIO_SMS_ENABLED              | `vars`        | Transactional SMS                                           |
+| TWILIO_WHATSAPP_ENABLED         | `vars`        | Transactional WhatsApp                                      |
+| TWILIO_VOICE_ENABLED            | `vars`        | Outbound calls                                              |
 
 - Non-secret values live in the `vars` block of `apps/api/wrangler.jsonc` and are reviewed in a pull request.
 - Secrets are never committed. They are set with `wrangler secret put` and exist only in Cloudflare and in a developer's gitignored `.env.development.local`.
