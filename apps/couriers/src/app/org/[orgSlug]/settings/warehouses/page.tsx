@@ -5,7 +5,7 @@ import { ResourceToolbar } from '@/components/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { WarehousesTable } from './warehouses-table'
+import { WarehousesCards } from './warehouses-cards'
 
 export const metadata = { title: 'Warehouses — Settings' }
 
@@ -54,7 +54,7 @@ export default async function WarehousesSettingsPage({ params }: Props) {
         refresh
       />
 
-      <WarehousesTable
+      <WarehousesCards
         warehouses={warehouses}
         orgSlug={orgSlug}
         emptyState={
