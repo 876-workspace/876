@@ -5,8 +5,8 @@ import type { ServiceResult } from '@/types/api'
 import type { PlanEnsureParams } from '@/types/sync'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
 import { create } from './create'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Idempotently creates the Billing plan mirroring a core plan tier at one cadence. */
 export async function ensure(

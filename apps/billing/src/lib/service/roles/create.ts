@@ -6,7 +6,7 @@ import type { RoleCreateParams } from '@/types/access'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 export async function create(
   tenantId: string,

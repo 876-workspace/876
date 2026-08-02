@@ -6,7 +6,8 @@ import type { ServiceResult } from '@/types/api'
 import type { BankAccountCreateParams } from '@/types/banking'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates a tenant-owned, single-currency financial account. */
 export async function create(

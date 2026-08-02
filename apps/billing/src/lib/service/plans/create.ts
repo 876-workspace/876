@@ -6,7 +6,8 @@ import type { PlanCreateParams } from '@/types/plan'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates a subscription plan under a tenant-owned product. */
 export async function create(

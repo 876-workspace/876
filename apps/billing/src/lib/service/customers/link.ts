@@ -5,7 +5,7 @@ import type { ServiceResult } from '@/types/api'
 import type { CustomerLinkParams } from '@/types/customer'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /**
  * Links an EXTERNAL billing customer to an 876 consumer account, converting

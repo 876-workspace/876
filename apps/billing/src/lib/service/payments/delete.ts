@@ -6,11 +6,8 @@ import type { ServiceResult } from '@/types/api'
 import { err, ok } from '../result'
 import { recordLedgerEntry } from '../ledger'
 import { recomputeCustomerAr } from '../customers/ar'
-import {
-  isRetryableTransactionError,
-  PaymentMutationError,
-  reversePaymentAllocations,
-} from './shared'
+import { PaymentMutationError, reversePaymentAllocations } from './shared'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 /** Cancels a manual payment after restoring every allocated invoice balance. */
 export async function deletePayment(

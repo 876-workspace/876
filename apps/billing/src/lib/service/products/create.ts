@@ -6,7 +6,7 @@ import type { ProductCreateParams } from '@/types/product'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates a subscription product grouping plans and future add-ons. */
 export async function create(

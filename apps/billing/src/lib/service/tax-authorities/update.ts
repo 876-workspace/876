@@ -5,7 +5,7 @@ import type { ServiceResult } from '@/types/api'
 import type { TaxAuthorityUpdateParams } from '@/types/tax'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Updates mutable authority metadata without changing linked historical rates. */
 export async function update(

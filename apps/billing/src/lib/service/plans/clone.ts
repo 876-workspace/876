@@ -6,7 +6,7 @@ import type { PlanCloneParams } from '@/types/plan'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Clones catalog terms into new records without copying provider identities. */
 export async function clonePlan(

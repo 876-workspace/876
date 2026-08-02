@@ -6,7 +6,6 @@ import type { SubscriptionCreateServiceParams } from '@/types/subscription'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
 
 import {
   resolveSubscriptionComposition,
@@ -19,6 +18,7 @@ import {
   PromotionRedemptionConflict,
   resolveCouponAmount,
 } from './promotion-eligibility'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates a manual subscription from recurring, tenant-owned prices. */
 export async function create(

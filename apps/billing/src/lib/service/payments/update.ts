@@ -11,11 +11,11 @@ import { hasEnabledCurrency } from '../shared'
 import { recomputeCustomerAr } from '../customers/ar'
 import {
   applyPaymentAllocations,
-  isRetryableTransactionError,
   loadPaymentTargets,
   PaymentMutationError,
   reversePaymentAllocations,
 } from './shared'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 /** Replaces a payment and its allocations as one serializable transaction. */
 export async function update(

@@ -14,14 +14,17 @@ import {
 } from '../integrations/attribution'
 import { recordLedgerEntry } from '../ledger'
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
 import { recomputeCustomerAr } from '../customers/ar'
 import {
   applyPaymentAllocations,
-  isRetryableTransactionError,
   loadPaymentTargets,
   PaymentMutationError,
 } from './shared'
+import {
+  isRetryableTransactionError,
+  isUniqueConstraintError,
+} from '@/lib/errors/prisma'
 
 /** Records money received, settles invoices, and posts a matched bank credit. */
 export async function create(

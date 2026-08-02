@@ -6,11 +6,8 @@ import type { ServiceResult } from '@/types/api'
 import { err, ok } from '../result'
 import { recordLedgerEntry } from '../ledger'
 import { recomputeCustomerAr } from '../customers/ar'
-import {
-  CreditNoteMutationError,
-  isRetryableTransactionError,
-  reverseCreditNoteAllocations,
-} from './shared'
+import { CreditNoteMutationError, reverseCreditNoteAllocations } from './shared'
+import { isRetryableTransactionError } from '@/lib/errors/prisma'
 
 /**
  * Voids a credit note: reverses every invoice application (restoring those

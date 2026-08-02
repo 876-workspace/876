@@ -6,13 +6,14 @@ import type { CustomerCreateParams } from '@/types/customer'
 import type { ServiceResult } from '@/types/api'
 
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
 import {
   attributionData,
   type AttributedCreateResult,
   type IntegrationAttribution,
   resolveIdempotencyReplay,
 } from '../integrations/attribution'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates an external or optionally core-linked Billing customer. */
 export async function create(

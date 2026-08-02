@@ -14,8 +14,9 @@ import {
   resolveIdempotencyReplay,
 } from '../integrations/attribution'
 import { err, ok } from '../result'
-import { hasEnabledCurrency, isUniqueConstraintError } from '../shared'
+import { hasEnabledCurrency } from '../shared'
 import { resolveInvoiceDefaults } from './defaults'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 /** Creates a draft invoice manually or by copying a quote snapshot. */
 export async function create(

@@ -5,7 +5,7 @@ import type { ServiceResult } from '@/types/api'
 import type { PriceListUpdateParams } from '@/types/price-list'
 
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 export async function update(
   tenantId: string,

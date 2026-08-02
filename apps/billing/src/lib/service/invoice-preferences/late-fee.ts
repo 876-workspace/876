@@ -9,7 +9,7 @@ import { nextDocumentNumber } from '../documents/numbers'
 import { markOverdue } from '../invoices/mark-overdue'
 import { recordLedgerEntry } from '../ledger'
 import { err, ok } from '../result'
-import { isUniqueConstraintError } from '../shared'
+import { isUniqueConstraintError } from '@/lib/errors/prisma'
 
 const DAY_SECONDS = 86_400
 const PERCENT_SCALE = 1_000_000n
