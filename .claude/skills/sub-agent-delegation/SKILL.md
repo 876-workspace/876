@@ -1,6 +1,6 @@
 ---
 name: sub-agent-delegation
-description: How to delegate implementation chunks to Codex (gpt-5.5) and docs work to Antigravity (agy) in this repo — exact non-interactive invocation flags, model choice, and briefing format. Read before running codex exec or agy for a delegated task.
+description: How to delegate implementation chunks to Codex (gpt-5.6-terra) and docs work to Antigravity (agy) in this repo — exact non-interactive invocation flags, model choice, and briefing format. Read before running codex exec or agy for a delegated task.
 ---
 
 # Sub-Agent Delegation (Codex + Antigravity)
@@ -12,7 +12,7 @@ briefing format.
 
 ## Sub-Agent Delegation (Codex)
 
-**Claude-led, Codex-assisted workflow (default for non-trivial work — conserves Claude tokens without giving up quality).** Aim for roughly a **60/40 split**: Claude does ~60% (the majority and the harder/design-critical share); Codex (`gpt-5.5`) does ~40% (well-scoped, lower-risk chunks) in parallel. Keep delegating to Codex to stretch the budget _until the usage limit runs low_, but Claude stays the primary author. The division of labor:
+**Claude-led, Codex-assisted workflow (default for non-trivial work — conserves Claude tokens without giving up quality).** Aim for roughly a **60/40 split**: Claude does ~60% (the majority and the harder/design-critical share); Codex (`gpt-5.6-terra`) does ~40% (well-scoped, lower-risk chunks) in parallel. Keep delegating to Codex to stretch the budget _until the usage limit runs low_, but Claude stays the primary author. The division of labor:
 
 1. **Claude** reads enough to understand the task, makes the design decisions, and personally writes the genuinely hard / design-critical / cross-cutting code.
 2. **Claude** writes a precise, self-contained brief (reasoning, file scope, data shapes, exact patterns, verification commands) for each delegated chunk.
@@ -24,13 +24,13 @@ Scope parallel codex tasks to non-overlapping file sets. Don't over-delegate —
 Drive it non-interactively:
 
 ```bash
-codex exec --model gpt-5.5 -c model_reasoning_effort=<medium|high> \
+codex exec --model gpt-5.6-terra -c model_reasoning_effort=<medium|high> \
   -s workspace-write --dangerously-bypass-approvals-and-sandbox \
   -C /workspaces/876 "<task prompt>" < /dev/null
 ```
 
 - `model_reasoning_effort=medium` for mechanical/localized edits; `high` for cross-cutting or design-sensitive work.
-- Use `gpt-5.5` (the `gpt-5.5-codex` model is **not** available on the ChatGPT-account auth in this environment).
+- Use `gpt-5.6-terra` at `model_reasoning_effort=high`; both are already the defaults in `~/.codex/config.toml`.
 - Always pass `< /dev/null` so codex does not block reading stdin.
 - Give each codex task an explicit file scope, the exact commands to verify (`pnpm --filter <pkg> typecheck/test`), and a note to follow `.agents/rules/git.md` (no AI commit attribution) — but **do not let codex commit**; the orchestrator stages and commits.
 - Scope parallel codex tasks to non-overlapping file sets to avoid edit conflicts; run overlapping areas sequentially.
