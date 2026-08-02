@@ -6,6 +6,9 @@ import { $876 } from '@/lib/876'
 import { resolveOrg } from '../_data'
 import { MembersTable } from './_components/members-table'
 import { InviteMemberDialog } from './_components/invite-member-dialog'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { MEMBERS_SKELETON_COLUMNS } from './_components/members-skeleton-columns'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -16,7 +19,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Members - Organizations` }
 }
 
-export default async function OrganizationMembersPage({ params }: Props) {
+export default function OrganizationMembersPage({ params }: Props) {
+  return (
+    <Suspense
+      fallback={<DataTableSkeleton columns={MEMBERS_SKELETON_COLUMNS} />}
+    >
+      <MembersTableData params={params} />
+    </Suspense>
+  )
+}
+
+async function MembersTableData({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()

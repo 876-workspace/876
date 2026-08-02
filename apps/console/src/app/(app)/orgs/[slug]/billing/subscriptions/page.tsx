@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { SUBSCRIPTIONS_SKELETON_COLUMNS } from './_components/subscriptions-skeleton-columns'
 
 import { $876 } from '@/lib/876'
 
@@ -22,9 +25,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function OrganizationBillingSubscriptionsPage({
+export default function OrganizationBillingSubscriptionsPage({
   params,
 }: Props) {
+  return (
+    <div className="space-y-5">
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
+        }
+      >
+        <BillingSubscriptionsData params={params} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function BillingSubscriptionsData({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()
@@ -36,7 +53,7 @@ export default async function OrganizationBillingSubscriptionsPage({
   ])
 
   return (
-    <div className="space-y-5">
+    <>
       <div>
         <PageBreadcrumb
           href={`/orgs/${slug}/billing`}
@@ -45,13 +62,12 @@ export default async function OrganizationBillingSubscriptionsPage({
         />
         <h1 className="876-page-title mt-2">Subscriptions</h1>
       </div>
-
       <SubscriptionsManager
         orgSlug={slug}
         accounts={accounts?.data ?? []}
         subscriptions={subscriptions ?? []}
         products={productsResult.data?.data ?? []}
       />
-    </div>
+    </>
   )
 }

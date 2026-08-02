@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { ACCOUNTS_SKELETON_COLUMNS } from './_components/accounts-skeleton-columns'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../_data'
 import {
@@ -33,10 +36,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function OrganizationBillingAccountsPage({
+export default function OrganizationBillingAccountsPage({
   params,
   searchParams,
 }: Props) {
+  return (
+    <div className="space-y-5">
+      <Suspense
+        fallback={<DataTableSkeleton columns={ACCOUNTS_SKELETON_COLUMNS} />}
+      >
+        <BillingAccountsData params={params} searchParams={searchParams} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function BillingAccountsData({ params, searchParams }: Props) {
   const [{ slug }, resolvedSearchParams] = await Promise.all([
     params,
     searchParams,
@@ -48,7 +63,7 @@ export default async function OrganizationBillingAccountsPage({
   const view = resolveAccountsView(resolvedSearchParams?.view)
 
   return (
-    <div className="space-y-5">
+    <>
       <div>
         <PageBreadcrumb
           href={`/orgs/${slug}/billing`}
@@ -57,12 +72,11 @@ export default async function OrganizationBillingAccountsPage({
         />
         <h1 className="876-page-title mt-2">Accounts</h1>
       </div>
-
       <AccountsManager
         orgSlug={slug}
         accounts={accounts?.data ?? []}
         view={view}
       />
-    </div>
+    </>
   )
 }
