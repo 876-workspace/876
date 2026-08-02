@@ -28,6 +28,8 @@ class MobileNumberResponse(BaseModel):
     verification_status: str
     verification_id: str | None = None
     verified_at: int | None = None
+    carrier_name: str | None = None
+    line_type: str | None = None
     created_at: int
     updated_at: int
 

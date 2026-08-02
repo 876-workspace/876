@@ -498,6 +498,43 @@ async def _ensure_mobile_number_verification_schema(engine: object) -> None:
         await conn.run_sync(ensure_mobile_number_verification_schema)
 
 
+async def _ensure_communications_tables(engine: object) -> None:
+    """Create the isolated communications persistence tables and additive phone columns."""
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[
+                    Base.metadata.tables["communication_phone_lookups"],
+                    Base.metadata.tables["communication_messages"],
+                    Base.metadata.tables["communication_webhook_events"],
+                ],
+                checkfirst=True,
+            )
+        )
+        await conn.execute(sa_text("ALTER TABLE user_mobile_numbers ADD COLUMN IF NOT EXISTS carrier_name VARCHAR"))
+        await conn.execute(sa_text("ALTER TABLE user_mobile_numbers ADD COLUMN IF NOT EXISTS line_type VARCHAR"))
+        await conn.execute(
+            sa_text("ALTER TABLE communication_messages ADD COLUMN IF NOT EXISTS idempotency_scope VARCHAR")
+        )
+        await conn.execute(
+            sa_text(
+                "UPDATE communication_messages SET idempotency_scope = "
+                "COALESCE(app_id, organization_id, user_id, 'platform') "
+                "WHERE idempotency_scope IS NULL"
+            )
+        )
+        await conn.execute(
+            sa_text("ALTER TABLE communication_messages ALTER COLUMN idempotency_scope SET NOT NULL")
+        )
+        await conn.execute(
+            sa_text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_communication_messages_idempotency "
+                "ON communication_messages (idempotency_scope, idempotency_key)"
+            )
+        )
+
+
 async def _ensure_org_access_tables(engine: object) -> None:
     """Create the org roles/permissions + app-assignment tables and columns."""
     async with engine.begin() as conn:  # type: ignore[attr-defined]
@@ -619,6 +656,7 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("billing_v2_cutover", 1, _cut_over_billing_v2),
         BootstrapStep("org_erm_tables", 1, _ensure_org_erm_tables),
         BootstrapStep("mobile_number_verification", 1, _ensure_mobile_number_verification_schema),
+        BootstrapStep("communications", 1, _ensure_communications_tables),
         BootstrapStep("org_access_tables", 1, _ensure_org_access_tables),
         BootstrapStep("feature_flag_tables", 1, _ensure_feature_flag_tables),
         BootstrapStep("plan_module_tables", 1, ensure_plan_module_tables),

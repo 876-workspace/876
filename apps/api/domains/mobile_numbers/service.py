@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 from typing import Literal
 
 from fastapi import status
@@ -11,18 +10,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.id import generate_id
+from core.logging import get_logger
+from core.lookup_cache import resolve_cached_lookup
+from core.phone import invalid_phone as _invalid_phone
+from core.phone import normalize_phone_number
 from core.rate_limit import enforce_rate_limit
 from core.timestamps import now_unix_seconds
 from db.models import User, UserMobileNumber, Verification
 from db.repositories.audit_events import AuditEventRepository
+from db.repositories.communications import CommunicationRepository
 from db.repositories.mobile_numbers import MobileNumberRepository
-from providers.communications import PhoneVerificationProvider
-from providers.twilio import get_phone_verification_provider
+from providers.communications import PhoneLookupProvider, PhoneVerificationProvider
+from providers.twilio import get_phone_lookup_provider, get_phone_verification_provider
 from providers.twilio.errors import channel_disabled, not_configured
 
 from .schemas import verification_metadata_send_count
 
-_E164 = re.compile(r"^\+[1-9][0-9]{7,14}$")
 _CHANNEL_FLAGS = {
     "sms": "twilio_verify_sms_enabled",
     "call": "twilio_verify_call_enabled",
@@ -33,26 +36,9 @@ _VERIFICATION_TTL_SECONDS = 600
 _MAX_CHECK_ATTEMPTS = 5
 _MAX_SENDS_PER_WINDOW = 5
 _SEND_WINDOW_SECONDS = 24 * 60 * 60
+logger = get_logger(__name__)
 
 
-def normalize_phone_number(value: str) -> str:
-    """Normalize the same international E.164-compatible inputs as `@876/core`."""
-    stripped = value.strip()
-    if not stripped.startswith("+") or not re.fullmatch(r"\+?[\d\s().-]+", stripped):
-        raise _invalid_phone()
-    digits = re.sub(r"\D", "", stripped)
-    normalized = f"+{digits}"
-    if not _E164.fullmatch(normalized):
-        raise _invalid_phone()
-    return normalized
-
-
-def _invalid_phone() -> AppHTTPException:
-    return AppHTTPException(
-        code="communications/invalid-phone-number",
-        message="Enter a valid international phone number.",
-        http_status_code=status.HTTP_400_BAD_REQUEST,
-    )
 
 
 def _verification_error(code: str, message: str, http_status: int = status.HTTP_400_BAD_REQUEST) -> AppHTTPException:
@@ -66,14 +52,39 @@ class MobileNumberService:
         *,
         settings: Settings | None = None,
         provider: PhoneVerificationProvider | None = None,
+        lookup_provider: PhoneLookupProvider | None = None,
     ) -> None:
         self._db = db
         self._repo = MobileNumberRepository(db)
+        self._lookup_repo = CommunicationRepository(db)
         self._settings = settings or get_settings()
         self._provider = provider or get_phone_verification_provider(self._settings)
+        self._lookup_provider = lookup_provider or get_phone_lookup_provider(self._settings)
 
     async def create(self, *, user_id: str, number: str, number_type: str) -> UserMobileNumber:
         normalized = normalize_phone_number(number)
+        carrier_name: str | None = None
+        line_type: str | None = None
+        if self._settings.twilio_lookup_enabled:
+            try:
+                # Through the cache, never the provider directly: several users
+                # adding the same number must not bill a lookup each time.
+                lookup = await resolve_cached_lookup(
+                    repo=self._lookup_repo,
+                    provider=self._lookup_provider,
+                    settings=self._settings,
+                    number=normalized,
+                    include_line_type=self._settings.twilio_lookup_line_type_enabled,
+                )
+                if not lookup.valid:
+                    raise _invalid_phone()
+                normalized = lookup.e164 or normalized
+                carrier_name = lookup.carrier_name
+                line_type = lookup.line_type
+            except AppHTTPException as exc:
+                if exc.app_code == "communications/invalid-phone-number":
+                    raise
+                logger.warning("phone_lookup.fail_open", code=exc.app_code)
         if await self._repo.get_by_number(user_id=user_id, number=normalized):
             raise _verification_error(
                 "communications/number-already-used",
@@ -88,6 +99,8 @@ class MobileNumberService:
             type=number_type,
             is_primary=False,
             verification_status="unverified",
+            carrier_name=carrier_name,
+            line_type=line_type,
             created_at=now,
             updated_at=now,
         )
