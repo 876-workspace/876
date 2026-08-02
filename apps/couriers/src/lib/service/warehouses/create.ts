@@ -25,6 +25,7 @@ export async function create(
     return err(parsed.error.issues[0]?.message ?? 'Invalid warehouse.', 400)
 
   const input = parsed.data
+  const operatingModel = input.operatingModel ?? 'OWNED'
 
   const address = await buildAddressData(tenantId, {
     ...input.address,
@@ -54,6 +55,14 @@ export async function create(
           tenantId,
           addressId: created.id,
           name: input.name,
+          operatingModel,
+          agentName:
+            operatingModel === 'AGENT' ? (input.agentName ?? null) : null,
+          code: input.code ?? null,
+          mailboxPlacement: input.mailboxPlacement ?? 'ADDRESS_LINE_2',
+          mailboxPrefix: input.mailboxPrefix ?? null,
+          instructions: input.instructions ?? null,
+          isActive: input.isActive ?? true,
           isPrimary,
           createdAt: now,
           updatedAt: now,
