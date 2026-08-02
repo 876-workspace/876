@@ -3,9 +3,23 @@
 Plan of record for adding phone verification, SMS/WhatsApp messaging, and
 programmable voice to the 876 platform.
 
-**Status:** Phase 0 (discovery and contracts) complete. No provider code written.
-Nothing in this plan sends a message, places a call, or contacts Twilio until
-Phase 6 activation is performed deliberately, per channel.
+**Status:** Phases 1–3 implemented (verification, Lookup, messaging, voice,
+Console log). Nothing sends a message, places a call, or contacts Twilio until
+activation is performed deliberately, per channel — see `docs/twilio-activation.md`.
+
+## Known gaps
+
+- **The Console communications log is not paginated.** It merges the most recent
+  50 messages and 50 calls into one time-ordered table, so `has_more` is
+  discarded and older rows are simply absent. Two cursor-paginated sources cannot
+  be merged into one coherent page; closing this needs either separate paginated
+  tables per channel or a unified server-side list endpoint over both. Treat the
+  page as a recent-activity view, not an audit-complete record.
+- **`mypy . tests` does not run** on this repo, independently of this work: the
+  documented command passes the tests directory twice, and `mypy .` alone fails
+  on `utils/security_helpers.py`. Targeted invocations are clean.
+- Inbound call routing is a signature-validating scaffold that records the event
+  and returns empty TwiML. It does not route.
 
 ---
 

@@ -12,7 +12,7 @@ Every Twilio capability ships disabled. This runbook is the deliberate, per-chan
 | TWILIO_ACCOUNT_SID | secret | Account identifier |
 | TWILIO_API_KEY | secret | REST API key SID |
 | TWILIO_API_KEY_SECRET | secret | REST API key secret |
-| TWILIO_AUTH_TOKEN | secret | Webhook signature validation only |
+| TWILIO_AUTH_TOKEN | secret | Webhook signature validation and signed voice-template URLs |
 | TWILIO_VERIFY_SERVICE_SID | secret | Verify service identifier |
 | TWILIO_MESSAGING_SERVICE_SID | secret | Messaging service identifier |
 | TWILIO_VOICE_FROM_NUMBER | `vars` | Outbound caller ID |
@@ -29,7 +29,7 @@ Every Twilio capability ships disabled. This runbook is the deliberate, per-chan
 
 - Non-secret values live in the `vars` block of `apps/api/wrangler.jsonc` and are reviewed in a pull request.
 - Secrets are never committed. They are set with `wrangler secret put` and exist only in Cloudflare and in a developer's gitignored `.env.development.local`.
-- `TWILIO_AUTH_TOKEN` is the Twilio account master credential. It can create and revoke API keys and spend money on the account. It is required only for webhook signature validation. Prefer the API key and secret for everything else.
+- `TWILIO_AUTH_TOKEN` is the Twilio account master credential. It can create and revoke API keys and spend money on the account. It is required for webhook validation and signed voice-template URLs. Prefer the API key and secret for everything else.
 
 ## Setting secrets
 
