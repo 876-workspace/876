@@ -35,6 +35,7 @@ export async function update(
       orgLocationId: true,
       isPrimary: true,
       addressId: true,
+      operatingModel: true,
       address: { select: { countryCode: true, regionCode: true } },
     },
   })
@@ -48,6 +49,7 @@ export async function update(
   }
 
   const now = nowUnixSeconds()
+  const operatingModel = input.operatingModel ?? current.operatingModel
 
   try {
     const warehouse = await runTransaction('warehouses.update', async (tx) => {
@@ -69,6 +71,27 @@ export async function update(
         where: { id: current.id },
         data: {
           ...(input.name === undefined ? {} : { name: input.name }),
+          ...(input.operatingModel === undefined
+            ? {}
+            : { operatingModel: input.operatingModel }),
+          ...(operatingModel === 'OWNED'
+            ? { agentName: null }
+            : input.agentName === undefined
+              ? {}
+              : { agentName: input.agentName }),
+          ...(input.code === undefined ? {} : { code: input.code }),
+          ...(input.mailboxPlacement === undefined
+            ? {}
+            : { mailboxPlacement: input.mailboxPlacement }),
+          ...(input.mailboxPrefix === undefined
+            ? {}
+            : { mailboxPrefix: input.mailboxPrefix }),
+          ...(input.instructions === undefined
+            ? {}
+            : { instructions: input.instructions }),
+          ...(input.isActive === undefined
+            ? {}
+            : { isActive: input.isActive }),
           ...(input.isPrimary === undefined
             ? {}
             : { isPrimary: input.isPrimary }),

@@ -1,3 +1,23 @@
+/// How the tenant gets packages received at this address.
+enum WarehouseOperatingModel {
+  /// The tenant leases or owns the facility and receives packages itself.
+  OWNED
+  /// A third-party receiving agent or consolidator receives on the tenant's behalf.
+  AGENT
+}
+
+/// Where a customer's mailbox number is placed in the shipping address the
+/// customer is given. Receiving operations differ on this and a package sent
+/// with the token in the wrong place is a package that goes missing.
+enum MailboxPlacement {
+  /// Appended to the customer's name: "John Brown JMC1042".
+  RECIPIENT_LINE
+  /// Appended to the street line: "8005 NW 80th St, JMC1042".
+  ADDRESS_LINE_1
+  /// Its own line beneath the street: "JMC1042".
+  ADDRESS_LINE_2
+}
+
 /// A receiving address owned by a tenant, typically in the US.
 ///
 /// Packages sent by customers are delivered here using the customer's mailbox
@@ -14,6 +34,20 @@ model Warehouse {
   /// succeeded — the site is fully usable either way.
   orgLocationId String? @unique @map("org_location_id")
   name      String
+  /// How the tenant gets packages received at this address.
+  operatingModel   WarehouseOperatingModel @default(OWNED) @map("operating_model")
+  /// Trading name of the receiving agent when one receives on the tenant's behalf.
+  agentName        String?                 @map("agent_name")
+  /// The tenant's identifier at this facility, printed before mailbox numbers.
+  code             String?
+  /// Where the customer's mailbox number is placed in their shipping address.
+  mailboxPlacement MailboxPlacement         @default(ADDRESS_LINE_2) @map("mailbox_placement")
+  /// Literal text printed immediately before the mailbox number.
+  mailboxPrefix    String?                  @map("mailbox_prefix")
+  /// Free text shown to customers alongside the shipping address.
+  instructions     String?
+  /// Whether this warehouse is currently available for receiving packages.
+  isActive         Boolean                  @default(true) @map("is_active")
   isPrimary Boolean @default(false) @map("is_primary")
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
@@ -24,5 +58,6 @@ model Warehouse {
 
   @@unique([tenantId, name], name: "warehouses_tenant_id_name_key")
   @@index([tenantId], name: "warehouses_tenant_id_idx")
+  @@index([tenantId, isActive], name: "warehouses_tenant_id_is_active_idx")
   @@map("warehouses")
 }
