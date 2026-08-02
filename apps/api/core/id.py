@@ -76,6 +76,7 @@ ENTITY_PREFIXES = {
     "userIdentification": "uident",
     "userProfile": "upr",
     "userSocialProfile": "usp",
+    "verification": "ver",
 }
 
 
