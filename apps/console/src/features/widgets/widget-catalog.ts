@@ -1,7 +1,7 @@
 import {
   getWidgetAppFeatureKeys,
   getWidgetPlatformFeatureKeys,
-  widgetCatalog,
+  widgetCatalog as baseWidgetCatalog,
   type WidgetHost,
   type WidgetMetadata,
 } from '@876/widgets'
@@ -38,19 +38,19 @@ export const liveLogsWidgetMetadata = {
   },
 } as const satisfies WidgetMetadata
 
-export const consoleWidgetCatalog = [
-  ...widgetCatalog,
+export const widgetCatalog = [
+  ...baseWidgetCatalog,
   liveLogsWidgetMetadata,
 ] as const satisfies readonly WidgetMetadata[]
 
-export type ConsoleWidgetId = (typeof consoleWidgetCatalog)[number]['id']
+export type WidgetId = (typeof widgetCatalog)[number]['id']
 
-export function getConsoleWidgetRouteSlug(widget: WidgetMetadata) {
+export function getWidgetRouteSlug(widget: WidgetMetadata) {
   return widget.id.replaceAll('_', '-')
 }
 
 export function getConsoleWidgetDetailHref(widget: WidgetMetadata) {
-  return `/widgets/${getConsoleWidgetRouteSlug(widget)}`
+  return `/widgets/${getWidgetRouteSlug(widget)}`
 }
 
 export function getConsoleWidgetStatusFeatureSlug(widget: WidgetMetadata) {
@@ -64,7 +64,7 @@ export function getConsoleWidgetStatusFeatureSlug(widget: WidgetMetadata) {
 }
 
 export function getConsoleWidgetByRouteSlug(routeSlug: string) {
-  return consoleWidgetCatalog.find(
-    (widget) => getConsoleWidgetRouteSlug(widget) === routeSlug
+  return widgetCatalog.find(
+    (widget) => getWidgetRouteSlug(widget) === routeSlug
   )
 }

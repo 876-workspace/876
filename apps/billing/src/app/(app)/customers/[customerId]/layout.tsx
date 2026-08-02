@@ -12,11 +12,11 @@ import {
 import { OrgAvatar } from '@876/ui/org-avatar'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 
-import { DetailLayout } from '@/components/detail-layout'
-import { resolveCustomer } from '@/app/(app)/detail-data'
+import { DetailLayout } from '@/components/patterns/detail/detail-layout'
+import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
-import { CustomerActions } from './customer-actions'
+import { CustomerActions } from './_components/customer-actions'
 import { resolveCustomerParty } from './_data'
 
 function initialsOf(name: string): string {

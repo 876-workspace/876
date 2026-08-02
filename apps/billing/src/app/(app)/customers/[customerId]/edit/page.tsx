@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { CreateForm } from '@/components/billing-create-form'
-import { CustomerInvoicePreferenceForm } from '@/components/customer-invoice-preference-form'
+import { CreateForm } from '@/components/patterns/create-form'
+import { CustomerInvoicePreferenceForm } from '@/features/settings/components/customer-invoice-preference-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

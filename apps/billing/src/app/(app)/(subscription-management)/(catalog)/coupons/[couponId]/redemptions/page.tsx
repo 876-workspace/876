@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { resolveCoupon } from '@/app/(app)/detail-data'
+import { resolveCoupon } from '@/app/(app)/_lib/detail-data'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 

@@ -5,7 +5,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import {
   CONSOLE_WIDGETS_FEATURE_SLUG,
-  consoleWidgetCatalog,
+  widgetCatalog,
   getConsoleWidgetDetailHref,
   getConsoleWidgetStatusFeatureSlug,
 } from '@/features/widgets/widget-catalog'
@@ -50,7 +50,7 @@ export default async function WidgetsPage({
     (appsResult.data?.data ?? []).map((app) => [app.slug, app])
   )
   const allWidgetsFeature = features.get(CONSOLE_WIDGETS_FEATURE_SLUG)
-  const visibleWidgets = consoleWidgetCatalog.filter(
+  const visibleWidgets = widgetCatalog.filter(
     (widget) => distribution === 'all' || widget.distribution === distribution
   )
 

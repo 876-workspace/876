@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation'
 
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { resolveSubscription } from '@/app/(app)/detail-data'
-import { SubscriptionAmendmentForm } from '@/components/subscription-amendment-form'
+import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
+import { SubscriptionAmendmentForm } from '@/features/subscriptions/components/subscription-amendment-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

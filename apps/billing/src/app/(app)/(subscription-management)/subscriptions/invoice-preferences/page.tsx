@@ -1,6 +1,6 @@
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { SubscriptionBulkInvoiceForm } from '@/components/subscription-bulk-invoice-form'
+import { SubscriptionBulkInvoiceForm } from '@/features/subscriptions/components/subscription-bulk-invoice-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import { buildSubscriptionTableRows } from '@/lib/subscriptions/view'

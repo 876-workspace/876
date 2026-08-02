@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
 
-import { AddonAssociationManager } from '@/components/addon-association-manager'
+import { AddonAssociationManager } from '@/features/catalog/components/addon-association-manager'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

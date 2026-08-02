@@ -7,7 +7,7 @@ import { buttonVariants } from '@876/ui/button'
 import { ChevronRight } from '@876/ui/icons'
 
 import {
-  consoleWidgetCatalog,
+  widgetCatalog,
   getConsoleWidgetDetailHref,
 } from '@/features/widgets/widget-catalog'
 import { WidgetCatalogIcon } from '@/features/widgets/components/widget-catalog-icon'
@@ -35,9 +35,7 @@ export default async function AppWidgetsPage({
   ).find(([, appSlug]) => appSlug === app.slug)?.[0]
 
   const widgets = host
-    ? consoleWidgetCatalog.filter((widget) =>
-        getWidgetAppFeatureKeys(widget, host)
-      )
+    ? widgetCatalog.filter((widget) => getWidgetAppFeatureKeys(widget, host))
     : []
 
   const result = await $876.appFeatures.list(app.id, {

@@ -1,6 +1,6 @@
 import type { WidgetMetadata } from '@876/widgets'
 
-import { WidgetStatCards } from '@/features/widgets/components/widget-stat-cards'
+import { WidgetStatCards } from './widget-stat-cards'
 
 const HOST_LABELS = {
   console: 'Console',

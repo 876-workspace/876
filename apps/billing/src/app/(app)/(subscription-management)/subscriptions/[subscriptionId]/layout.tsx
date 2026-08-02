@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 
-import { DetailLayout } from '@/components/detail-layout'
-import { resolveSubscription } from '@/app/(app)/detail-data'
+import { DetailLayout } from '@/components/patterns/detail/detail-layout'
+import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { buildSubscriptionTableRows } from '@/lib/subscriptions/view'
-import { SubscriptionDetailActions } from '@/components/subscription-detail-actions'
+import { SubscriptionDetailActions } from '@/features/subscriptions/components/subscription-detail-actions'
 
 export default async function SubscriptionDetailLayout({
   children,

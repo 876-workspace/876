@@ -4,9 +4,9 @@ import { createElement } from 'react'
 import type { AdminAuditEvent } from '@876/admin'
 import { ChatRail } from '@876/widgets/react'
 
-import { PopoutBar } from '@/features/widgets/components/popout-bar'
-import { widgets } from '@/features/widgets/widgets-config'
-import type { PopoutSize } from '@/features/widgets/components/popout-bar'
+import { PopoutBar } from './popout-bar'
+import { widgets } from '../widgets-config'
+import type { PopoutSize } from './popout-bar'
 
 const NAVBAR_HEIGHT = 56 // px — matches the shell's `h-14` header
 

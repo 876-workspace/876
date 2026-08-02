@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { resolveSubscription } from '@/app/(app)/detail-data'
-import { SubscriptionLifecycleForm } from '@/components/subscription-lifecycle-form'
+import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
+import { SubscriptionLifecycleForm } from '@/features/subscriptions/components/subscription-lifecycle-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 export const metadata = { title: 'Manage subscription' }

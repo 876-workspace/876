@@ -6,7 +6,7 @@ import {
   PageTitle,
 } from '@876/ui/page'
 
-import { BankAccountForm } from '@/components/bank-account-form'
+import { BankAccountForm } from '@/features/banking/components/bank-account-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

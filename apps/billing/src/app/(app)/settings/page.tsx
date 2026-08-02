@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { Page } from '@876/ui/page'
 
-import { getVisibleSettingsSections } from '@/components/billing-nav-config'
+import { getVisibleSettingsSections } from '@/components/shell/nav-config'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 export const metadata = {

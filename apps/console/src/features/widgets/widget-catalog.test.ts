@@ -5,7 +5,7 @@ import {
   CONSOLE_WIDGETS_FEATURE_SLUG,
   getConsoleWidgetStatusFeatureSlug,
   liveLogsWidgetMetadata,
-} from '@/features/widgets/widget-catalog'
+} from './widget-catalog'
 
 describe('Console widget feature controls', () => {
   it('uses the Console parent as the global widget switch', () => {

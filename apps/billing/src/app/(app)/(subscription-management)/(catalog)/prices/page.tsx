@@ -7,7 +7,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
-import { PricesTable } from './prices-table'
+import { PricesTable } from '@/features/catalog/components/prices-table'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'

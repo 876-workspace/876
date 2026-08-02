@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { WidgetAccessList } from '@/features/widgets/components/widget-access-list'
+import { WidgetAccessList } from '@/features/access/components/widget-access-list'
 import { getConsoleWidgetByRouteSlug } from '@/features/widgets/widget-catalog'
 
 export default async function WidgetAccessPage({

@@ -4,7 +4,7 @@ import { ChevronRightIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
+import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { $876 } from '@/lib/876'
 
 import {
@@ -52,7 +52,7 @@ export default async function NewWidgetFlagsPage() {
     return null
   }
 
-  const widgets: PendingWidget[] = consoleWidgetCatalog.map((widget) => {
+  const widgets: PendingWidget[] = widgetCatalog.map((widget) => {
     const scopes: { label: string; parent: string; widget: string }[] = []
 
     const platform = getWidgetPlatformFeatureKeys(widget)

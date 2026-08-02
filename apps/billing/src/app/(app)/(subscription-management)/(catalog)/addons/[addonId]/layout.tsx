@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 
-import { DetailLayout } from '@/components/detail-layout'
-import { CatalogResourceActions } from '@/components/catalog-resource-actions'
-import { resolveAddon } from '@/app/(app)/detail-data'
+import { DetailLayout } from '@/components/patterns/detail/detail-layout'
+import { CatalogResourceActions } from '@/features/catalog/components/catalog-resource-actions'
+import { resolveAddon } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 
 export default async function AddonDetailLayout({

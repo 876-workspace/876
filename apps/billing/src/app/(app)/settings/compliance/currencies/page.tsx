@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import { CurrencySettings } from '@/components/currency-settings'
+import { CurrencySettings } from '@/features/settings/components/currency-settings'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

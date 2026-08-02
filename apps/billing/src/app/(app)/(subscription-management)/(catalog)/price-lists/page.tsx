@@ -5,7 +5,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 
-import { PriceListsTable } from './price-lists-table'
+import { PriceListsTable } from './_components/price-lists-table'
 
 export const metadata = { title: 'Price Lists' }
 const OPTIONS = [

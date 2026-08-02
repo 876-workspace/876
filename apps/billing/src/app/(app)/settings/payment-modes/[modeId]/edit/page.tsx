@@ -8,7 +8,7 @@ import {
   PageTitle,
 } from '@876/ui/page'
 
-import { PaymentModeForm } from '@/components/payment-mode-form'
+import { PaymentModeForm } from '@/features/payments/components/payment-mode-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

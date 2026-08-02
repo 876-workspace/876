@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import { TaxAuthoritySettings } from '@/components/tax-authority-settings'
+import { TaxAuthoritySettings } from '@/features/settings/components/tax-authority-settings'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import type { TaxAuthorityResource } from '@/types/tax'

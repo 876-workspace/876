@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { AddonsTable } from '@/app/(app)/(subscription-management)/(catalog)/addons/addons-table'
+import { AddonsTable } from '@/features/catalog/components/addons-table'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

@@ -1,0 +1,42 @@
+name: App structure
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-structure-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # The structural invariants ESLint cannot express — notably the
+      # sideways-import test, which compares the importing file's path against
+      # the owning route's path. See .claude/rules/app-structure.md.
+      - name: Structural invariants
+        run: pnpm check:structure
+
+      # The boundary rules that ESLint can express, for the apps that import
+      # eslint.app-structure.mjs.
+      - name: Boundary lint (console)
+        run: pnpm --filter @876/console lint
+
+      - name: Boundary lint (billing)
+        run: pnpm --filter @876/billing-app lint

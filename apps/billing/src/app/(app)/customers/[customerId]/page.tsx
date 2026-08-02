@@ -3,14 +3,14 @@ import { notFound } from 'next/navigation'
 import { Building2, CreditCard, Mail, ShieldCheck } from '@876/ui/icons'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 
-import { MetricCard } from '@/components/metric-card'
+import { MetricCard } from '@/components/patterns/metric-card'
 import {
   DetailAccordion,
   DetailAccordionCard,
   Fact,
   FactGrid,
-} from '@/components/detail-accordion'
-import { resolveCustomer } from '@/app/(app)/detail-data'
+} from '@/components/patterns/detail/detail-accordion'
+import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
 import { resolveCustomerParty, type PrimaryContact } from './_data'

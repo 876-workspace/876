@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
 import { Shell } from '@/components/shell/shell'
 import { WidgetBar } from '@/features/widgets/components/widget-bar'
-import { consoleWidgetCatalog } from '@/features/widgets/widget-catalog'
+import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { requireConsoleAccount, requireSession } from '@/lib/auth/guards'
 import { getConsoleFeatures } from '@/lib/features'
 import { AnalyticsIdentity } from '@/lib/analytics/provider'
@@ -19,7 +19,7 @@ export default async function ConsoleRootLayout({
     requireConsoleAccount(sessionUser.id, sessionUser),
     getConsoleFeatures({
       userId: sessionUser.id,
-      widgets: consoleWidgetCatalog,
+      widgets: widgetCatalog,
     }),
   ])
 

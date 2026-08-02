@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { resolvePrice } from '@/app/(app)/detail-data'
+import { resolvePrice } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
 

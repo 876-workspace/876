@@ -7,7 +7,7 @@ import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 import { getContext } from '@/lib/auth/billing-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { SetupButton } from './setup-button'
+import { SetupButton } from './_components/setup-button'
 
 export const metadata: Metadata = {
   title: 'Set up Billing',

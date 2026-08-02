@@ -6,9 +6,9 @@ import { Toaster } from '@876/ui/sonner'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { getFeatures } from '@/lib/features'
-import { FocusRevalidate } from '@/components/focus-revalidate'
+import { FocusRevalidate } from '@/components/providers/focus-revalidate'
 
-import { ThemeProvider } from './providers'
+import { ThemeProvider } from '@/components/providers/providers'
 import './globals.css'
 
 const BILLING_URL =

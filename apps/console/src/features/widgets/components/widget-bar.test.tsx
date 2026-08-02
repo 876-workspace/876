@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { WidgetBar } from '@/features/widgets/components/widget-bar'
+import { WidgetBar } from './widget-bar'
 
 describe('WidgetBar', () => {
   beforeEach(() => {

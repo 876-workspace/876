@@ -10,7 +10,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
-import { ProductsTable } from './products-table'
+import { ProductsTable } from './_components/products-table'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'

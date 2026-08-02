@@ -19,10 +19,7 @@ import { Trash } from '@876/ui/icons'
 import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
-import {
-  PrincipalSearch,
-  type Principal,
-} from '@/features/access/components/principal-search'
+import { PrincipalSearch, type Principal } from './principal-search'
 
 /** An override forces a flag on or off for one principal. */
 export type OverrideRow = Principal & { enabled: boolean }

@@ -1,5 +1,5 @@
 import { NotepadWidget as SharedNotepadWidget } from '@876/widgets/react'
-import type { WidgetPanelProps } from '@/features/widgets/widgets-config'
+import type { WidgetPanelProps } from '../widgets-config'
 
 /**
  * Console host for the shared account-owned Notepad widget. Live Logs remains

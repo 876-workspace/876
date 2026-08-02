@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { SubscriptionViewForm } from '@/components/subscription-view-form'
+import { SubscriptionViewForm } from '@/features/subscriptions/components/subscription-view-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

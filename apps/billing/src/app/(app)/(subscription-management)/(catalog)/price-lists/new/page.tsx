@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
-import { PriceListCreateForm } from '@/components/price-list-create-form'
+import { PriceListCreateForm } from '@/features/catalog/components/price-list-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'

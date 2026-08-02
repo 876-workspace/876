@@ -11,9 +11,9 @@ import {
 
 import { $876 } from '@/lib/876'
 
-import { getConsoleWidgetStatusFeatureSlug } from '@/features/widgets/widget-catalog'
-import { WidgetCatalogIcon } from '@/features/widgets/components/widget-catalog-icon'
-import { WidgetFeatureToggle } from '@/features/widgets/components/widget-feature-toggle'
+import { getConsoleWidgetStatusFeatureSlug } from '../widget-catalog'
+import { WidgetCatalogIcon } from './widget-catalog-icon'
+import { FeatureToggle } from '@/components/patterns/feature-toggle'
 
 export async function WidgetDetailHeader({
   widget,
@@ -67,7 +67,7 @@ export async function WidgetDetailHeader({
               Enabled
             </span>
             {feature ? (
-              <WidgetFeatureToggle feature={feature} />
+              <FeatureToggle feature={feature} />
             ) : (
               <span className="text-muted-foreground font-mono text-xs">
                 Missing: {featureSlug}

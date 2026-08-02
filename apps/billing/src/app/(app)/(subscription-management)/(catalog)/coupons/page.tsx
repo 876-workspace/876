@@ -5,7 +5,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 
-import { CouponsTable } from './coupons-table'
+import { CouponsTable } from './_components/coupons-table'
 
 export const metadata = { title: 'Coupons' }
 
