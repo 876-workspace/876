@@ -22,8 +22,11 @@ import { ORG_STATUSES, isOrgStatus } from '@/lib/org-status'
 import { OrgSearchBar } from './_components/org-search-bar'
 import { OrgTable } from './_components/org-table'
 import { Page } from '@876/ui/page'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
 import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
+import { ORGS_SKELETON_COLUMNS } from './_components/orgs-skeleton-columns'
 
 export const metadata = { title: 'Organizations' }
 
@@ -45,7 +48,72 @@ type Props = {
   }>
 }
 
-export default async function OrganizationsPage({ searchParams }: Props) {
+export default function OrganizationsPage({ searchParams }: Props) {
+  return (
+    <Page>
+      <TrackMCEventOnMount event={AnalyticsEvent.OrgListViewed} />
+      <ResourceToolbar
+        title="Organizations"
+        titleFilter={
+          <Suspense fallback={<Skeleton className="h-7 w-48" />}>
+            <OrganizationsStatusFilter searchParams={searchParams} />
+          </Suspense>
+        }
+        primaryLabel="Add"
+        primaryHref="/org/new"
+        primaryVariant="info"
+        refresh
+        dropdownActions={[
+          { label: 'Import', icon: 'import' },
+          { label: 'Export', icon: 'export' },
+          {
+            label: 'Delete organizations',
+            icon: 'delete',
+            destructive: true,
+            separator: true,
+          },
+        ]}
+      />
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="w-full max-w-sm">
+          <Suspense>
+            <OrgSearchBar />
+          </Suspense>
+        </div>
+        <Link
+          href="/orgs/provisioning"
+          className={buttonVariants({ variant: 'outline' })}
+        >
+          Provisioning defaults
+        </Link>
+      </div>
+      <Suspense
+        fallback={<DataTableSkeleton columns={ORGS_SKELETON_COLUMNS} />}
+      >
+        <OrganizationsTableData searchParams={searchParams} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function OrganizationsStatusFilter({
+  searchParams,
+}: Pick<Props, 'searchParams'>) {
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'all' || !isOrgStatus(status) ? 'all' : status
+  return (
+    <StatusFilterHeading
+      label="Organizations"
+      value={selectedStatus}
+      options={ORG_STATUS_OPTIONS}
+    />
+  )
+}
+
+async function OrganizationsTableData({
+  searchParams,
+}: Pick<Props, 'searchParams'>) {
   const { after, before, q, status } = await searchParams
 
   const isSearching = Boolean(q?.trim())
@@ -89,74 +157,30 @@ export default async function OrganizationsPage({ searchParams }: Props) {
     }
   }
 
-  return (
-    <Page>
-      <TrackMCEventOnMount event={AnalyticsEvent.OrgListViewed} />
-      <ResourceToolbar
-        title="Organizations"
-        titleFilter={
-          <StatusFilterHeading
-            label="Organizations"
-            value={selectedStatus}
-            options={ORG_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="Add"
-        primaryHref="/org/new"
-        primaryVariant="info"
-        refresh
-        dropdownActions={[
-          { label: 'Import', icon: 'import' },
-          { label: 'Export', icon: 'export' },
-          {
-            label: 'Delete organizations',
-            icon: 'delete',
-            destructive: true,
-            separator: true,
-          },
-        ]}
-      />
-
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="w-full max-w-sm">
-          <Suspense>
-            <OrgSearchBar />
-          </Suspense>
-        </div>
-        <Link
-          href="/orgs/provisioning"
-          className={buttonVariants({ variant: 'outline' })}
-        >
-          Provisioning defaults
-        </Link>
-      </div>
-
-      {orgs.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Building2 />
-            </EmptyMedia>
-            <EmptyTitle>
-              {isSearching ? 'No results' : 'No organizations'}
-            </EmptyTitle>
-            <EmptyDescription>
-              {isSearching
-                ? `No organizations matched "${q}".`
-                : 'No organizations found.'}
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <OrgTable
-          data={orgs}
-          subscriptionsMap={subscriptionsMap}
-          isSearching={isSearching}
-          hasMore={hasMore}
-          firstId={orgs[0]?.id ?? null}
-          lastId={orgs[orgs.length - 1]?.id ?? null}
-        />
-      )}
-    </Page>
+  return orgs.length === 0 ? (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Building2 />
+        </EmptyMedia>
+        <EmptyTitle>
+          {isSearching ? 'No results' : 'No organizations'}
+        </EmptyTitle>
+        <EmptyDescription>
+          {isSearching
+            ? `No organizations matched "${q}".`
+            : 'No organizations found.'}
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  ) : (
+    <OrgTable
+      data={orgs}
+      subscriptionsMap={subscriptionsMap}
+      isSearching={isSearching}
+      hasMore={hasMore}
+      firstId={orgs[0]?.id ?? null}
+      lastId={orgs[orgs.length - 1]?.id ?? null}
+    />
   )
 }
