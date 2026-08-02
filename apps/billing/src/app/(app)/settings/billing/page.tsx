@@ -10,14 +10,14 @@ import {
 import {
   PaymentTermCreateForm,
   SalespersonCreateForm,
-} from '@/components/billing-engine-settings-forms'
-import { InvoicePreferenceForm } from '@/components/invoice-preference-form'
+} from '@/features/settings/components/engine-settings-forms'
+import { InvoicePreferenceForm } from '@/features/settings/components/invoice-preference-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 
 export const metadata = { title: 'Billing & Sales - Settings' }
 
-export default async function BillingSettingsPage() {
+export default async function SettingsPage() {
   const context = await requirePagePermission('sales:read')
   const [paymentTerms, salespeople, preference, currencies] = await Promise.all(
     [

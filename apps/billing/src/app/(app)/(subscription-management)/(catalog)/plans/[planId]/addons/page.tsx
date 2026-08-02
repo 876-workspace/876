@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
 
-import { resolvePlan } from '@/app/(app)/detail-data'
+import { resolvePlan } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 
 export default async function PlanAddonsPage({

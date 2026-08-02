@@ -8,7 +8,7 @@ import {
   PageTitle,
 } from '@876/ui/page'
 
-import { BankTransactionForm } from '@/components/bank-transaction-form'
+import { BankTransactionForm } from '@/features/banking/components/bank-transaction-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

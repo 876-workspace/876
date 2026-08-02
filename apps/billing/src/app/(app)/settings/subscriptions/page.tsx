@@ -6,7 +6,7 @@ import {
   PageTitle,
 } from '@876/ui/page'
 
-import { SubscriptionPreferenceForm } from '@/components/subscription-preference-form'
+import { SubscriptionPreferenceForm } from '@/features/subscriptions/components/subscription-preference-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

@@ -1,6 +1,6 @@
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { RoleCreateForm } from '@/components/billing-role-create-form'
+import { RoleCreateForm } from '@/features/access/components/role-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 export const metadata = { title: 'New role - Billing settings' }

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { DetailField } from '@/components/detail-field'
-import { MetricCard } from '@/components/metric-card'
-import { resolvePlan } from '@/app/(app)/detail-data'
+import { DetailField } from '@/components/patterns/detail/detail-field'
+import { MetricCard } from '@/components/patterns/metric-card'
+import { resolvePlan } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney, formatPriceCadence } from '@/lib/format'
 

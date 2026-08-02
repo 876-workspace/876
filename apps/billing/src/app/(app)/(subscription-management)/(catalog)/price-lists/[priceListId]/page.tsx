@@ -9,8 +9,8 @@ import {
   PageTitle,
 } from '@876/ui/page'
 
-import { CatalogResourceActions } from '@/components/catalog-resource-actions'
-import { DetailField } from '@/components/detail-field'
+import { CatalogResourceActions } from '@/features/catalog/components/catalog-resource-actions'
+import { DetailField } from '@/components/patterns/detail/detail-field'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'

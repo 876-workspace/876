@@ -7,7 +7,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
-import { PlansTable } from './plans-table'
+import { PlansTable } from '@/features/catalog/components/plans-table'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'

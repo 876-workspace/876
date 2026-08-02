@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { PlansTable } from '@/app/(app)/(subscription-management)/(catalog)/plans/plans-table'
-import { resolveProduct } from '@/app/(app)/detail-data'
+import { PlansTable } from '@/features/catalog/components/plans-table'
+import { resolveProduct } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

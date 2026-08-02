@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { DetailField } from '@/components/detail-field'
-import { DetailActionList } from '@/components/detail-action-list'
-import { MetricCard } from '@/components/metric-card'
-import { resolveProduct } from '@/app/(app)/detail-data'
+import { DetailField } from '@/components/patterns/detail/detail-field'
+import { DetailActionList } from '@/components/patterns/detail/detail-action-list'
+import { MetricCard } from '@/components/patterns/metric-card'
+import { resolveProduct } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
 

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { PricesTable } from '@/app/(app)/(subscription-management)/(catalog)/prices/prices-table'
+import { PricesTable } from '@/features/catalog/components/prices-table'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

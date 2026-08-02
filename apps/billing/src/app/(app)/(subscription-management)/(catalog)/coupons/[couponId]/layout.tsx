@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 
-import { resolveCoupon } from '@/app/(app)/detail-data'
-import { CatalogResourceActions } from '@/components/catalog-resource-actions'
-import { DetailLayout } from '@/components/detail-layout'
+import { resolveCoupon } from '@/app/(app)/_lib/detail-data'
+import { CatalogResourceActions } from '@/features/catalog/components/catalog-resource-actions'
+import { DetailLayout } from '@/components/patterns/detail/detail-layout'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 
 export default async function CouponDetailLayout({

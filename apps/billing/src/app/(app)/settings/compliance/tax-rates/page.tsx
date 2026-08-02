@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import { nowUnixSeconds } from '@876/core/timestamps'
-import { TaxRateSettings } from '@/components/tax-rate-settings'
+import { TaxRateSettings } from '@/features/settings/components/tax-rate-settings'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import type { TaxAuthorityResource, TaxRateResource } from '@/types/tax'

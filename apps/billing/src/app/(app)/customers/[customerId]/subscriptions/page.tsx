@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { SubscriptionsTable } from '@/app/(app)/(subscription-management)/subscriptions/subscriptions-table'
-import { resolveCustomer } from '@/app/(app)/detail-data'
+import { SubscriptionsTable } from '@/features/subscriptions/components/subscriptions-table'
+import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import { buildSubscriptionTableRows } from '@/lib/subscriptions/view'

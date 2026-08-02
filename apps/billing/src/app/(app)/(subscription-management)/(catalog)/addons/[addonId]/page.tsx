@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 
-import { DetailField } from '@/components/detail-field'
-import { MetricCard } from '@/components/metric-card'
-import { resolveAddon } from '@/app/(app)/detail-data'
+import { DetailField } from '@/components/patterns/detail/detail-field'
+import { MetricCard } from '@/components/patterns/metric-card'
+import { resolveAddon } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatPriceCadence } from '@/lib/format'
 

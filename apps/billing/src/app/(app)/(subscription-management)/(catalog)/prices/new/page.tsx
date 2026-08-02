@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
-import { PriceCreateForm } from '@/components/price-create-form'
+import { PriceCreateForm } from '@/features/catalog/components/price-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

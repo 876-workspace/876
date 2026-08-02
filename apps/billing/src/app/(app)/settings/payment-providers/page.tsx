@@ -8,7 +8,7 @@ import {
   PageTitle,
 } from '@876/ui/page'
 
-import { ProviderConnectionCreateForm } from '@/components/billing-engine-settings-forms'
+import { ProviderConnectionCreateForm } from '@/features/settings/components/engine-settings-forms'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
 import { service } from '@/lib/service'

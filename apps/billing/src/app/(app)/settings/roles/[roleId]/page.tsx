@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { RoleEditor } from '@/components/billing-role-editor'
+import { RoleEditor } from '@/features/access/components/role-editor'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

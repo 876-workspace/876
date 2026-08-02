@@ -5,7 +5,7 @@ import { resolveRelativeReturnTo } from '@876/core/auth/return-to'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { EmbeddedAuth } from './embedded-auth'
+import { EmbeddedAuth } from './_components/embedded-auth'
 
 export const metadata: Metadata = {
   title: 'Login',

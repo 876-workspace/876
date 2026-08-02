@@ -13,7 +13,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 
-import { AddonsTable } from './addons-table'
+import { AddonsTable } from '@/features/catalog/components/addons-table'
 
 export const metadata = { title: 'Add-ons' }
 const STATUS_OPTIONS = [

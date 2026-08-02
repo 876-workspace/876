@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 
-import { Shell } from '@/components/billing-shell'
+import { Shell } from '@/components/shell/shell'
 import { getContext } from '@/lib/auth/billing-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { getFeatures } from '@/lib/features'

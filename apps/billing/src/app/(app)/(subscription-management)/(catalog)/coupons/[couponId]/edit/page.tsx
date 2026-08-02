@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { resolveCoupon } from '@/app/(app)/detail-data'
-import { CouponEditForm } from '@/components/coupon-edit-form'
+import { resolveCoupon } from '@/app/(app)/_lib/detail-data'
+import { CouponEditForm } from '@/features/coupons/components/coupon-edit-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 export default async function EditCouponPage({

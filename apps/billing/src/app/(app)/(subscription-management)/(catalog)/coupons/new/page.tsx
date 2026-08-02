@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
-import { CatalogCouponCreateForm } from '@/components/coupon-create-form'
+import { CatalogCouponCreateForm } from '@/features/coupons/components/coupon-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

@@ -2,7 +2,7 @@ import { cookies } from 'next/headers'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import type { Permission } from '@/types/access'
-import { SettingsSidebarLayout } from './settings-sidebar-layout'
+import { SettingsSidebarLayout } from './_components/settings-sidebar-layout'
 
 const COMPLIANCE_SECTIONS = [
   {

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { CreateForm } from '@/components/billing-create-form'
+import { CreateForm } from '@/components/patterns/create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

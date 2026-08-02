@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { CreateForm } from '@/components/billing-create-form'
+import { CreateForm } from '@/components/patterns/create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

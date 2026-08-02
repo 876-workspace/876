@@ -1,6 +1,6 @@
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { SubscriptionViewForm } from '@/components/subscription-view-form'
+import { SubscriptionViewForm } from '@/features/subscriptions/components/subscription-view-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 export const metadata = { title: 'New subscription view' }

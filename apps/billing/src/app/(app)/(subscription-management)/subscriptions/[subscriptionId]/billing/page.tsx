@@ -4,11 +4,11 @@ import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { buttonVariants } from '@876/ui/button'
 
-import { resolveSubscription } from '@/app/(app)/detail-data'
+import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { SubscriptionInvoiceActions } from '@/components/subscription-invoice-actions'
-import { SubscriptionBillingItemAction } from '@/components/subscription-billing-item-action'
+import { SubscriptionInvoiceActions } from '@/features/subscriptions/components/subscription-invoice-actions'
+import { SubscriptionBillingItemAction } from '@/features/subscriptions/components/subscription-billing-item-action'
 
 export default async function SubscriptionBillingPage({
   params,

@@ -1,7 +1,7 @@
 import { ShieldCheck } from '@876/ui/icons'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { MembersTable } from '@/components/billing-members-table'
+import { MembersTable } from '@/features/access/components/members-table'
 import {
   normalizeOrgRole,
   requirePagePermission,

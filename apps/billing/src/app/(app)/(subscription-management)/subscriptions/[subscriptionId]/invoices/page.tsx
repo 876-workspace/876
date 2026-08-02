@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 
-import { InvoicesTable } from '@/app/(app)/(invoicing)/(sales)/invoices/invoices-table'
-import { resolveSubscription } from '@/app/(app)/detail-data'
+import { InvoicesTable } from '@/features/documents/components/invoices-table'
+import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 
 export default async function SubscriptionInvoicesPage({

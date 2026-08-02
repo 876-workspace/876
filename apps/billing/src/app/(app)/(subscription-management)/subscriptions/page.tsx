@@ -10,7 +10,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
-import { SubscriptionsTable } from './subscriptions-table'
+import { SubscriptionsTable } from '@/features/subscriptions/components/subscriptions-table'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
