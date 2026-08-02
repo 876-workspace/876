@@ -13,11 +13,8 @@ import { Button } from '@876/ui/button'
 import { Settings } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
 
-import { WidgetFeatureToggle } from '@/features/widgets/components/widget-feature-toggle'
-import {
-  FlagTargetingSheet,
-  type FlagTarget,
-} from '@/features/access/components/flag-targeting-sheet'
+import { FeatureToggle } from '@/components/patterns/feature-toggle'
+import { FlagTargetingSheet, type FlagTarget } from './flag-targeting-sheet'
 
 export type AccessFlag = FlagTarget & {
   /** True when this flag is a child of the scope's master flag. */
@@ -136,7 +133,7 @@ export function FeatureAccessBoard({ scopes }: { scopes: AccessScope[] }) {
                           </Badge>
                         )}
 
-                        <WidgetFeatureToggle
+                        <FeatureToggle
                           feature={{
                             id: flag.id,
                             name: flag.name,

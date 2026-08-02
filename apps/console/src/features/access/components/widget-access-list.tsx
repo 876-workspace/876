@@ -10,8 +10,8 @@ import {
   FeatureAccessBoard,
   type AccessFlag,
   type AccessScope,
-} from '@/features/access/components/feature-access-board'
-import { loadGrants, toAccessFlag } from '@/features/access/to-access-flag'
+} from './feature-access-board'
+import { loadGrants, toAccessFlag } from '../to-access-flag'
 import { $876 } from '@/lib/876'
 
 const HOST_LABELS: Record<WidgetHost, string> = {

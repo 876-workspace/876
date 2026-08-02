@@ -6,7 +6,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 
-import { PlanModulePicker } from '@/features/plans/components/plan-module-picker'
+import { PlanModulePicker } from './plan-module-picker'
 
 it('selects durable modules independently of their rollout flag', async () => {
   const onChange = vi.fn()

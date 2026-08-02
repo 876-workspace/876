@@ -15,8 +15,8 @@ import {
   prepareDocumentLine,
   type DocumentItemOption,
   type EditableDocumentLine,
-} from '@/features/documents/document-create-model'
-import { DocumentLineEditor } from '@/features/documents/components/document-line-editor'
+} from '../document-create-model'
+import { DocumentLineEditor } from './document-line-editor'
 import { client } from '@/lib/client'
 import {
   parseMinorAmountInput,

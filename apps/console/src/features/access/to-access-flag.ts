@@ -1,6 +1,6 @@
 import type { AdminFeature, AdminFeatureGrants } from '@876/admin'
 
-import type { AccessFlag } from '@/features/access/components/feature-access-board'
+import type { AccessFlag } from './components/feature-access-board'
 
 /**
  * Maps a feature plus its overrides into the board's row shape.

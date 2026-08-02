@@ -2,11 +2,11 @@ import { NotepadIcon } from '@876/widgets/react'
 import { Terminal, type IconComponent } from '@876/ui/icons'
 import type { ComponentType } from 'react'
 import type { AdminAuditEvent } from '@876/admin'
-import type { PopoutSize } from '@/features/widgets/components/popout-bar'
+import type { PopoutSize } from './components/popout-bar'
 
-import { LiveLogsWidget } from '@/features/widgets/components/live-logs-widget'
-import { NotepadWidget } from '@/features/widgets/components/notepad-widget'
-import { widgetCatalog, type WidgetId } from '@/features/widgets/widget-catalog'
+import { LiveLogsWidget } from './components/live-logs-widget'
+import { NotepadWidget } from './components/notepad-widget'
+import { widgetCatalog, type WidgetId } from './widget-catalog'
 
 export type WidgetPanelProps = {
   auditEvents: AdminAuditEvent[]

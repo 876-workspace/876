@@ -9,7 +9,7 @@ import { ChevronRight, LayoutGrid } from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
 
 import { WidgetCatalogIcon } from '@/features/widgets/components/widget-catalog-icon'
-import { WidgetFeatureToggle } from '@/features/widgets/components/widget-feature-toggle'
+import { FeatureToggle } from '@/components/patterns/feature-toggle'
 
 export interface WidgetFeatureSummary {
   id: string
@@ -126,7 +126,7 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
     cell: ({ row }) => (
       <div onClick={(event) => event.stopPropagation()}>
         {row.original.feature ? (
-          <WidgetFeatureToggle feature={row.original.feature} />
+          <FeatureToggle feature={row.original.feature} />
         ) : (
           <span className="text-muted-foreground font-mono text-xs">
             Missing: {row.original.missingFeatureSlug}

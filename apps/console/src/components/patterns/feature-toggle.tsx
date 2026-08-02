@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 
 import { client } from '@/lib/client'
 
-export function WidgetFeatureToggle({
+export function FeatureToggle({
   feature,
 }: {
   feature: { id: string; name: string; enabled: boolean }

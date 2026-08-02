@@ -10,7 +10,7 @@ import { Input } from '@876/ui/input'
 import { ArrowRight, SearchIcon, Terminal, XIcon } from '@876/ui/icons'
 
 import { formatDateTime } from '@/lib/format'
-import type { WidgetPanelProps } from '@/features/widgets/widgets-config'
+import type { WidgetPanelProps } from '../widgets-config'
 
 const APP_LABELS: Record<string, string> = {
   '876-consumer': '876',

@@ -14,7 +14,7 @@ import {
   emptyDocumentLine,
   type DocumentItemOption,
   type EditableDocumentLine,
-} from '@/features/documents/document-create-model'
+} from '../document-create-model'
 import { formatMinorAmountInput, minorAmountInputStep } from '@/lib/format'
 import { client } from '@/lib/client'
 

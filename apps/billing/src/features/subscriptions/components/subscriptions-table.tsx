@@ -8,7 +8,7 @@ import { DataTable } from '@876/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import { formatMoney, formatPriceCadence } from '@/lib/format'
-import { SubscriptionStatusBadge } from '@/features/subscriptions/components/subscription-status-badge'
+import { SubscriptionStatusBadge } from './subscription-status-badge'
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 import type { SubscriptionTableRow } from '@/types/subscription'
 
