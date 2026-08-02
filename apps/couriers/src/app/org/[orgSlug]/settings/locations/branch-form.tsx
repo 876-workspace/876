@@ -61,6 +61,11 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
   const [phoneValue, setPhoneValue] = useState<PhoneInputValue>(() =>
     toPhoneValue(branch?.phone)
   )
+  // A stored number the parser cannot read (a legacy seven-digit local number,
+  // say) round-trips through the picker as raw digits, and recomposing it would
+  // rewrite "555-1234" as "+15551234" just because an unrelated field changed.
+  // Only a number the user actually edited is recomposed.
+  const [phoneEdited, setPhoneEdited] = useState(false)
   const [isDefault, setIsDefault] = useState(branch?.isDefault ?? false)
   const [isActive, setIsActive] = useState(branch?.isActive ?? true)
   const [address, setAddress] = useState<AddressFieldsValue>(
@@ -81,9 +86,10 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
 
     startTransition(async () => {
       const addressParams = toAddressParams(address, name.trim())
-      const phone = phoneValue.number.trim()
+      const editedPhone = phoneValue.number.trim()
         ? `${phoneValue.dialCode}${phoneValue.number.replace(/\D/g, '')}`
         : ''
+      const phone = phoneEdited ? editedPhone : (branch?.phone ?? '')
       const result = branch
         ? await client.branches.update(orgSlug, branch.id, {
             name: name.trim(),
@@ -131,7 +137,10 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
           <PhoneInput
             id="branch-phone"
             value={phoneValue}
-            onValueChange={setPhoneValue}
+            onValueChange={(next) => {
+              setPhoneEdited(true)
+              setPhoneValue(next)
+            }}
             dialCodes={DIAL_CODE_OPTIONS}
             disabled={isPending}
           />

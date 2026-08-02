@@ -160,6 +160,43 @@ describe('BranchForm', () => {
     expect(mocks.update.mock.calls[0]?.[2]).toMatchObject({ phone: null })
   })
 
+  it('leaves an unparseable legacy phone untouched when another field is edited', async () => {
+    const user = userEvent.setup({ delay: null })
+
+    render(
+      <BranchForm
+        orgSlug="island-logistics"
+        branch={createBranch({ phone: '555-1234' })}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Branch name'), ' West')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update.mock.calls[0]?.[2]).toMatchObject({ phone: '555-1234' })
+  })
+
+  it('recomposes a legacy phone once the user actually edits it', async () => {
+    const user = userEvent.setup({ delay: null })
+
+    render(
+      <BranchForm
+        orgSlug="island-logistics"
+        branch={createBranch({ phone: '555-1234' })}
+      />
+    )
+
+    await user.clear(screen.getByLabelText('Phone'))
+    await user.type(screen.getByLabelText('Phone'), '8765555555')
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update.mock.calls[0]?.[2]).toMatchObject({
+      phone: '+18765555555',
+    })
+  })
+
   it('marks the branch name required and leaves the phone optional', () => {
     render(<BranchForm orgSlug="island-logistics" />)
 
