@@ -5,7 +5,7 @@ import { ResourceToolbar } from '@/components/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { LocationsTable } from './locations-table'
+import { LocationsCards } from './locations-cards'
 
 export const metadata = { title: 'Locations — Settings' }
 
@@ -54,7 +54,7 @@ export default async function LocationsSettingsPage({ params }: Props) {
         refresh
       />
 
-      <LocationsTable
+      <LocationsCards
         branches={branches}
         orgSlug={orgSlug}
         emptyState={
