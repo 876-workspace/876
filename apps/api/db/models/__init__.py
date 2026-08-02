@@ -27,6 +27,7 @@ from db.models.base import Base
 from db.models.billing_accounts import BillingAccount
 from db.models.billing_customer_sync import BillingCustomerOutbox
 from db.models.billing_provider_objects import BillingProviderObject
+from db.models.communications import CommunicationMessage, CommunicationPhoneLookup, CommunicationWebhookEvent
 from db.models.contacts import (
     Address,
     Contact,
@@ -106,6 +107,9 @@ __all__ = [
     "BillingCustomerOutbox",
     "BillingProviderObject",
     "Contact",
+    "CommunicationMessage",
+    "CommunicationPhoneLookup",
+    "CommunicationWebhookEvent",
     "Country",
     "CreditUnion",
     "CreditUnionBranch",

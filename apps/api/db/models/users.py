@@ -182,6 +182,8 @@ class UserMobileNumber(Base):
         String, ForeignKey("verifications.id", ondelete="SET NULL"), nullable=True
     )
     verified_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    carrier_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    line_type: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
