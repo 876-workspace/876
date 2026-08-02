@@ -57,6 +57,43 @@ class CommunicationMessage(Base):
     created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
+    @property
+    def template_key(self) -> str | None:
+        """Expose the server-owned template label without retaining message text."""
+        if self.body_preview and self.body_preview.startswith("Template: "):
+            return self.body_preview.removeprefix("Template: ")
+        return None
+
+
+class CommunicationCall(Base):
+    __tablename__ = "communication_calls"
+    __table_args__ = (
+        UniqueConstraint("idempotency_scope", "idempotency_key", name="uq_communication_calls_idempotency"),
+        Index("ix_communication_calls_provider_sid", "provider_sid"),
+    )
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    provider_sid: Mapped[str | None] = mapped_column(String, nullable=True)
+    direction: Mapped[str] = mapped_column(String, nullable=False, server_default="outbound")
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    to_number: Mapped[str] = mapped_column(String, nullable=False)
+    from_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    template_key: Mapped[str] = mapped_column(String, nullable=False)
+    user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    app_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    client_reference: Mapped[str | None] = mapped_column(String, nullable=True)
+    idempotency_scope: Mapped[str] = mapped_column(String, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String, nullable=False)
+    duration_seconds: Mapped[int | None] = mapped_column(nullable=True)
+    provider_error_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    started_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    answered_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    completed_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+
 
 class CommunicationWebhookEvent(Base):
     __tablename__ = "communication_webhook_events"

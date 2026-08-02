@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from providers.communications import PhoneLookup, PhoneVerification, ProviderMessage
+from providers.communications import PhoneLookup, PhoneVerification, ProviderCall, ProviderMessage
 
 from .client import TwilioClient
-from .types import TwilioLookup, TwilioMessage, TwilioVerification
+from .types import TwilioCall, TwilioLookup, TwilioMessage, TwilioVerification
 
 
 class TwilioPhoneVerificationProvider:
@@ -95,3 +95,24 @@ class TwilioMessagingProvider:
 
     async def retrieve_message(self, *, provider_sid: str) -> ProviderMessage:
         raise NotImplementedError("Message retrieval is not required for outbound status tracking.")
+
+
+class TwilioVoiceProvider:
+    def __init__(self, client: TwilioClient, *, account_sid: str, from_number: str) -> None:
+        self._client = client
+        self._account_sid = account_sid
+        self._from_number = from_number
+
+    async def create_call(self, *, to_number: str, twiml_url: str, status_callback: str | None = None) -> ProviderCall:
+        raw = await self._client.create_call(
+            account_sid=self._account_sid,
+            to_number=to_number,
+            from_number=self._from_number,
+            twiml_url=twiml_url,
+            status_callback=status_callback,
+        )
+        value = TwilioCall.model_validate(raw)
+        return ProviderCall("twilio", value.sid, value.status, value.to, value.from_)
+
+    async def retrieve_call(self, *, provider_sid: str) -> ProviderCall:
+        raise NotImplementedError("Call retrieval is not required for outbound status tracking.")

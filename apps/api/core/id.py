@@ -13,6 +13,7 @@ ENTITY_PREFIXES = {
     "billingAccount": "ba",
     "billingCustomerEvent": "bce",
     "billingProviderObject": "bpo",
+    "call": "cal",
     "contact": "cnt",
     "currency": "cur",
     "customer": "cus",

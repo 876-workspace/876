@@ -61,7 +61,28 @@ def message_create_form(
     return form
 
 
+def call_create_form(
+    *, to_number: str, from_number: str, twiml_url: str, status_callback: str | None
+) -> dict[str, str]:
+    form = {"To": to_number, "From": from_number, "Url": twiml_url}
+    if status_callback is not None:
+        form["StatusCallback"] = status_callback
+        # Twilio accepts the selected progress events as a space-separated
+        # value. Without this field it sends only the completed callback.
+        form["StatusCallbackEvent"] = "initiated ringing answered completed"
+    return form
+
+
 class TwilioMessage(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    sid: str
+    status: str
+    to: str
+    from_: str | None = Field(default=None, alias="from")
+
+
+class TwilioCall(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     sid: str

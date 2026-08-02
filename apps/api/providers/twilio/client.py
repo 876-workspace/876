@@ -10,7 +10,7 @@ import httpx
 from core.logging import get_logger
 
 from .errors import mask_phone_number, normalize_twilio_error, provider_unavailable
-from .types import message_create_form, verification_check_form, verification_create_form
+from .types import call_create_form, message_create_form, verification_check_form, verification_create_form
 
 logger = get_logger(__name__)
 
@@ -102,6 +102,27 @@ class TwilioClient:
                 messaging_service_sid=messaging_service_sid,
                 body=body,
                 content_sid=content_sid,
+                status_callback=status_callback,
+            ),
+            to_number=to_number,
+        )
+
+    async def create_call(
+        self,
+        *,
+        account_sid: str,
+        to_number: str,
+        from_number: str,
+        twiml_url: str,
+        status_callback: str | None,
+    ) -> dict[str, Any]:
+        return await self._request(
+            "POST",
+            f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Calls.json",
+            data=call_create_form(
+                to_number=to_number,
+                from_number=from_number,
+                twiml_url=twiml_url,
                 status_callback=status_callback,
             ),
             to_number=to_number,

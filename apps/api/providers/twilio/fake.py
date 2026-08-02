@@ -34,7 +34,12 @@ class FakeTwilioProvider:
         return PhoneLookup(provider="fake", number=number, valid=True)
 
     async def create_message(
-        self, *, to_number: str, body: str | None, channel: str, content_sid: str | None = None,
+        self,
+        *,
+        to_number: str,
+        body: str | None,
+        channel: str,
+        content_sid: str | None = None,
         status_callback: str | None = None,
     ) -> ProviderMessage:
         return ProviderMessage("fake", self._sid("message", to_number, channel), "queued", to_number)
@@ -42,7 +47,7 @@ class FakeTwilioProvider:
     async def retrieve_message(self, *, provider_sid: str) -> ProviderMessage:
         return ProviderMessage("fake", provider_sid, "queued", "")
 
-    async def create_call(self, *, to_number: str, twiml_url: str) -> ProviderCall:
+    async def create_call(self, *, to_number: str, twiml_url: str, status_callback: str | None = None) -> ProviderCall:
         return ProviderCall("fake", self._sid("call", to_number), "queued", to_number)
 
     async def retrieve_call(self, *, provider_sid: str) -> ProviderCall:

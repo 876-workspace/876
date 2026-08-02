@@ -9,10 +9,17 @@ from providers.communications import (
     PhoneLookupProvider,
     PhoneVerification,
     PhoneVerificationProvider,
+    ProviderCall,
     ProviderMessage,
+    VoiceProvider,
 )
 
-from .adapter import TwilioMessagingProvider, TwilioPhoneLookupProvider, TwilioPhoneVerificationProvider
+from .adapter import (
+    TwilioMessagingProvider,
+    TwilioPhoneLookupProvider,
+    TwilioPhoneVerificationProvider,
+    TwilioVoiceProvider,
+)
 from .client import TwilioClient
 from .errors import not_configured
 from .fake import FakeTwilioProvider
@@ -42,6 +49,12 @@ class DisabledTwilioProvider:
         raise not_configured()
 
     async def retrieve_message(self, *, provider_sid: str) -> ProviderMessage:
+        raise not_configured()
+
+    async def create_call(self, *, to_number: str, twiml_url: str, status_callback: str | None = None) -> ProviderCall:
+        raise not_configured()
+
+    async def retrieve_call(self, *, provider_sid: str) -> ProviderCall:
         raise not_configured()
 
 
@@ -105,6 +118,20 @@ def get_messaging_provider(settings: Settings | None = None) -> MessagingProvide
     )
 
 
+def get_voice_provider(settings: Settings | None = None) -> VoiceProvider:
+    configured = settings or get_settings()
+    if configured.twilio_mode == "fake":
+        return FakeTwilioProvider()
+    if not configured.twilio_voice_live_enabled:
+        return DisabledTwilioProvider()
+    client = _shared_client(configured.twilio_api_key, configured.twilio_api_key_secret)
+    return TwilioVoiceProvider(
+        client,
+        account_sid=configured.twilio_account_sid,
+        from_number=configured.twilio_voice_from_number,
+    )
+
+
 __all__ = [
     "DisabledTwilioProvider",
     "FakeTwilioProvider",
@@ -113,4 +140,5 @@ __all__ = [
     "get_phone_lookup_provider",
     "get_messaging_provider",
     "get_phone_verification_provider",
+    "get_voice_provider",
 ]

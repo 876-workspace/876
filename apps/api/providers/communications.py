@@ -99,9 +99,11 @@ class MessagingProvider(Protocol):
 
 @runtime_checkable
 class VoiceProvider(Protocol):
-    """Reserved Phase 2 voice operations with the same hard-error contract."""
+    """Outbound voice operations with the same hard-error contract."""
 
-    async def create_call(self, *, to_number: str, twiml_url: str) -> ProviderCall: ...
+    async def create_call(
+        self, *, to_number: str, twiml_url: str, status_callback: str | None = None
+    ) -> ProviderCall: ...
 
     async def retrieve_call(self, *, provider_sid: str) -> ProviderCall: ...
 
