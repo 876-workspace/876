@@ -87,7 +87,11 @@ def normalize_twilio_error(exc: httpx.HTTPStatusError, *, context: dict[str, obj
         resource_sid=resource_sid,
         correlation_id=get_request_id() or None,
         mapped_code=mapped_code,
-        upstream_message=upstream_message,
+        # The upstream text is provider-controlled and Twilio validation messages
+        # echo request parameters, including the full destination number — logging
+        # it verbatim defeats the masked `to` context sitting beside it. Length is
+        # enough to tell a truncated payload from an empty one.
+        upstream_message_length=len(upstream_message) if upstream_message else 0,
         **safe_context,
     )
     return AppHTTPException(code=mapped_code, message=message, http_status_code=http_status)
