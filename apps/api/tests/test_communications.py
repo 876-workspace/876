@@ -4,17 +4,22 @@ from types import SimpleNamespace
 from typing import cast
 
 import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession
+from twilio.request_validator import RequestValidator  # type: ignore[import-untyped]
 
 from core.config import Settings
 from core.errors import AppHTTPException
-from db.models import CommunicationMessage, CommunicationPhoneLookup
+from db.models import CommunicationCall, CommunicationMessage, CommunicationPhoneLookup
 from db.repositories.communications import CommunicationRepository
 from db.repositories.mobile_numbers import MobileNumberRepository
-from domains.communications.service import CommunicationsService
+from domains.communications.service import CommunicationsService, build_voice_twiml_url
 from domains.mobile_numbers.service import MobileNumberService
-from domains.twilio_webhooks.service import TwilioWebhookService, should_apply_status
-from providers.communications import MessagingProvider, PhoneLookup, ProviderMessage
+from domains.twilio_webhooks.router import router as twilio_webhooks_router
+from domains.twilio_webhooks.service import TwilioWebhookService, should_apply_call_status, should_apply_status
+from providers.communications import MessagingProvider, PhoneLookup, ProviderCall, ProviderMessage
+from providers.twilio.fake import FakeTwilioProvider
 
 
 class _LookupProvider:
@@ -132,6 +137,34 @@ class _Db:
         return None
 
 
+class _CallProvider:
+    def __init__(self) -> None:
+        self.calls = 0
+        self.twiml_url: str | None = None
+
+    async def create_call(
+        self, *, to_number: str, twiml_url: str, status_callback: str | None = None
+    ) -> ProviderCall:
+        self.calls += 1
+        self.twiml_url = twiml_url
+        return ProviderCall("fake", "CA123", "queued", to_number, "+18765550199")
+
+    async def retrieve_call(self, *, provider_sid: str) -> ProviderCall:
+        return ProviderCall("fake", provider_sid, "queued", "")
+
+
+class _CallRepo:
+    def __init__(self) -> None:
+        self.row: CommunicationCall | None = None
+
+    async def get_call_by_idempotency(self, **_: object) -> CommunicationCall | None:
+        return self.row
+
+    async def create_call(self, **values: object) -> CommunicationCall:
+        self.row = CommunicationCall(**values)
+        return self.row
+
+
 @pytest.mark.asyncio
 async def test_template_rejection_precedes_provider_and_duplicate_send_is_idempotent() -> None:
     provider = _MessageProvider()
@@ -162,11 +195,77 @@ async def test_template_rejection_precedes_provider_and_duplicate_send_is_idempo
     assert "876 test notification" not in repr(first.__dict__)
 
 
+@pytest.mark.asyncio
+async def test_voice_template_rejection_and_disabled_gate_precede_provider_calls() -> None:
+    provider = _CallProvider()
+    service = CommunicationsService.__new__(CommunicationsService)
+    service._settings = Settings(
+        twilio_mode="fake",
+        twilio_voice_enabled=True,
+        twilio_webhook_base_url="https://api.example.test",
+        twilio_auth_token="token",
+    )
+    service._repo = cast(CommunicationRepository, _CallRepo())
+    service._voice_provider = provider
+    service._db = cast(AsyncSession, _Db())
+
+    with pytest.raises(AppHTTPException) as invalid:
+        await service.create_call(
+            to_number="+18765550100", template_key="<Say>caller input</Say>", idempotency_key="first",
+            user_id=None, organization_id=None, app_id="app_1", client_reference=None,
+        )
+    assert invalid.value.app_code == "communications/invalid-template"
+    assert provider.calls == 0
+
+    service._settings = Settings(twilio_mode="fake", twilio_voice_enabled=False)
+    with pytest.raises(AppHTTPException) as disabled:
+        await service.create_call(
+            to_number="+18765550100", template_key="voice.test", idempotency_key="second",
+            user_id=None, organization_id=None, app_id="app_1", client_reference=None,
+        )
+    assert disabled.value.app_code == "communications/channel-disabled"
+    assert provider.calls == 0
+
+
+@pytest.mark.asyncio
+async def test_fake_voice_provider_places_no_network_call_and_only_uses_signed_template_url() -> None:
+    settings = Settings(
+        twilio_mode="fake",
+        twilio_voice_enabled=True,
+        twilio_webhook_base_url="https://api.example.test",
+        twilio_auth_token="token",
+    )
+    service = CommunicationsService.__new__(CommunicationsService)
+    service._settings = settings
+    service._repo = cast(CommunicationRepository, _CallRepo())
+    service._voice_provider = FakeTwilioProvider()
+    service._db = cast(AsyncSession, _Db())
+
+    call = await service.create_call(
+        to_number="+18765550100", template_key="voice.test", idempotency_key="first",
+        user_id=None, organization_id=None, app_id="app_1", client_reference=None,
+    )
+
+    assert call.provider == "fake"
+    assert call.provider_sid is not None and call.provider_sid.startswith("fake_")
+    assert build_voice_twiml_url(settings, "voice.test").startswith(
+        "https://api.example.test/webhooks/twilio/voice?template_key=voice.test&signature="
+    )
+
+
 def test_terminal_and_out_of_order_status_rules() -> None:
     assert not should_apply_status("delivered", "sent")
     assert should_apply_status("sent", "delivered")
     assert should_apply_status("sent", "failed")
     assert not should_apply_status("failed", "delivered")
+
+
+def test_terminal_and_out_of_order_call_status_rules() -> None:
+    assert not should_apply_call_status("ringing", "initiated")
+    assert should_apply_call_status("ringing", "in-progress")
+    assert should_apply_call_status("in-progress", "completed")
+    assert not should_apply_call_status("completed", "ringing")
+    assert not should_apply_call_status("busy", "completed")
 
 
 @pytest.mark.asyncio
@@ -192,6 +291,68 @@ async def test_replayed_status_callback_is_a_no_op() -> None:
     payload = {"MessageSid": "SM123", "MessageStatus": "sent"}
     assert await service.apply_message_status(payload)
     assert not await service.apply_message_status(payload)
+
+
+@pytest.mark.asyncio
+async def test_call_status_callbacks_are_replay_safe_and_terminal_statuses_do_not_regress() -> None:
+    call = CommunicationCall(
+        id="call_1", provider="twilio", provider_sid="CA123", direction="outbound", status="ringing",
+        to_number="+18765550100", from_number="+18765550199", template_key="voice.test", user_id=None,
+        organization_id=None, app_id="app_1", client_reference=None, idempotency_scope="app_1",
+        idempotency_key="key", duration_seconds=None, provider_error_code=None, started_at=None,
+        answered_at=None, completed_at=None, created_at=1, updated_at=1,
+    )
+
+    class Repo:
+        def __init__(self) -> None:
+            self.events: set[tuple[str, str, str]] = set()
+
+        async def get_webhook_event(self, **values: str) -> object | None:
+            key = (values["provider_sid"], values["event_type"], values["payload_hash"])
+            return key if key in self.events else None
+
+        async def create_webhook_event(self, **values: object) -> object:
+            self.events.add((str(values["provider_sid"]), str(values["event_type"]), str(values["payload_hash"])))
+            return object()
+
+        async def get_call_by_provider_sid(self, _: str) -> CommunicationCall:
+            return call
+
+    service = TwilioWebhookService.__new__(TwilioWebhookService)
+    service._repo = cast(CommunicationRepository, Repo())
+    service._db = cast(AsyncSession, _Db())
+    completed = {"CallSid": "CA123", "CallStatus": "completed", "CallDuration": "12"}
+    assert await service.apply_call_status(completed)
+    assert call.status == "completed"
+    assert call.duration_seconds == 12
+    assert call.answered_at is not None
+    assert not await service.apply_call_status(completed)
+    assert await service.apply_call_status({"CallSid": "CA123", "CallStatus": "ringing"})
+    assert call.status == "completed"
+
+
+def test_voice_twiml_ignores_caller_input() -> None:
+    settings = Settings(
+        twilio_auth_token="token",
+        twilio_webhook_base_url="https://api.example.test",
+    )
+    app = FastAPI()
+    app.state.settings = settings
+    app.include_router(twilio_webhooks_router)
+    url = build_voice_twiml_url(settings, "voice.test")
+    injection = "<Say>caller controlled</Say>"
+    signature = RequestValidator(settings.twilio_auth_token).compute_signature(url, {"Injected": injection})
+
+    with TestClient(app, base_url="https://api.example.test") as client:
+        response = client.post(
+            url.removeprefix("https://api.example.test"),
+            data={"Injected": injection},
+            headers={"X-Twilio-Signature": signature},
+        )
+
+    assert response.status_code == 200
+    assert response.text == "<Response><Say>876 test notification</Say></Response>"
+    assert injection not in response.text
 
 
 @pytest.mark.asyncio
