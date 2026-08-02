@@ -4,7 +4,7 @@ import { Badge } from '@876/ui/badge'
 import { CreditCard } from '@876/ui/icons'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 

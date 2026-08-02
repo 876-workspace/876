@@ -8,7 +8,7 @@ import {
 import { DocumentTextIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
 export const metadata = { title: 'Documents' }
 

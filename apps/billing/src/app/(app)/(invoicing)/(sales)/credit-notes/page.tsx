@@ -12,11 +12,11 @@ import {
 import { Page } from '@876/ui/page'
 
 import { CreditNotesTable } from './credit-notes-table'
-import { ResourceToolbar } from '@/components/resource-toolbar'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
   type StatusFilterOption,
-} from '@/components/status-filter-heading'
+} from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import type { CreditNoteStatus } from '@/lib/db'

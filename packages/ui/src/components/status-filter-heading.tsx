@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { CheckIcon, ChevronDown } from '@876/ui/icons'
-import { cn } from '@876/ui/lib/utils'
+import { CheckIcon, ChevronDown } from '../icons'
+import { cn } from '../lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@876/ui/dropdown-menu'
+} from './dropdown-menu'
 
 export type StatusFilterOption = {
   value: string
@@ -35,8 +35,10 @@ type Props = {
  * preserving other query params and resetting pagination cursors.
  *
  * Pass as `ResourceToolbar`'s `titleFilter` prop in place of a plain string
- * `title` on Console list pages filtered by a lifecycle status. See
+ * `title` on list pages filtered by a lifecycle status. See
  * `.claude/rules/app-layout.md` (§5 list status filter).
+ *
+ * Shared across every sidebar-style app — do not copy this into an app.
  */
 export function StatusFilterHeading({
   label,
@@ -65,7 +67,7 @@ export function StatusFilterHeading({
   const activeOption = options.find((option) => option.value === value)
 
   return (
-    <h1 className="text-foreground text-xl font-semibold tracking-tight">
+    <h1 className="876-page-title text-foreground">
       <DropdownMenu>
         <DropdownMenuTrigger
           className="group hover:text-foreground/80 inline-flex items-center gap-1 outline-none"
