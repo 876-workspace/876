@@ -1,13 +1,5 @@
 import { cn } from '../lib/utils'
 import { Skeleton } from './skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './table'
 
 /**
  * One column of a {@link DataTableSkeleton}. `label` is the real header text so
@@ -68,8 +60,13 @@ function SkeletonCell({ column }: { column: DataTableSkeletonColumn }) {
  * identical column set in the route's `loading.tsx` and in the page's Suspense
  * fallback so a hard load and a client navigation show the same shell.
  *
- * This is a Server Component: it ships no JavaScript and is safe inside
- * `loading.tsx`.
+ * This is a Server Component and ships **no** JavaScript, which is why it
+ * inlines the plain `table` elements and their classes rather than importing
+ * the `Table` primitives from `./table`. Those are marked `'use client'`, so
+ * importing them here would open a Client Component boundary inside every
+ * `loading.tsx` — forcing Next.js to send and hydrate the table module and
+ * serialize each generated row, on exactly the navigations this exists to make
+ * cheap. Keep the markup below in sync with `./table` by hand.
  *
  * @example
  * const COLUMNS: DataTableSkeletonColumn[] = [
@@ -96,40 +93,55 @@ function DataTableSkeleton({
   className?: string
 }) {
   const table = (
-    <Table>
-      <TableHeader className="876-header-row">
-        <TableRow>
-          {columns.map((column) => (
-            <TableHead
-              key={column.label}
-              className="px-5 py-3.5"
-              style={column.width ? { width: column.width } : undefined}
-            >
-              {column.srOnly ? (
-                <span className="sr-only">{column.label}</span>
-              ) : (
-                column.label
-              )}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {Array.from({ length: rows }, (_, rowIndex) => (
-          <TableRow key={rowIndex}>
+    <div
+      data-slot="table-container"
+      aria-hidden="true"
+      className="relative w-full overflow-x-auto"
+    >
+      <table data-slot="table" className="w-full caption-bottom text-sm">
+        <thead
+          data-slot="table-header"
+          className="876-header-row [&_tr]:border-b"
+        >
+          <tr data-slot="table-row" className="border-b transition-colors">
             {columns.map((column) => (
-              <TableCell
+              <th
                 key={column.label}
-                className="px-5 py-4"
+                data-slot="table-head"
+                className="text-foreground h-10 px-5 py-3.5 text-left align-middle font-medium whitespace-nowrap"
                 style={column.width ? { width: column.width } : undefined}
               >
-                <SkeletonCell column={column} />
-              </TableCell>
+                {column.srOnly ? (
+                  <span className="sr-only">{column.label}</span>
+                ) : (
+                  column.label
+                )}
+              </th>
             ))}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+          </tr>
+        </thead>
+        <tbody data-slot="table-body" className="[&_tr:last-child]:border-0">
+          {Array.from({ length: rows }, (_, rowIndex) => (
+            <tr
+              key={rowIndex}
+              data-slot="table-row"
+              className="border-b transition-colors"
+            >
+              {columns.map((column) => (
+                <td
+                  key={column.label}
+                  data-slot="table-cell"
+                  className="px-5 py-4 align-middle whitespace-nowrap"
+                  style={column.width ? { width: column.width } : undefined}
+                >
+                  <SkeletonCell column={column} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 
   if (!card) return <div className={className}>{table}</div>
