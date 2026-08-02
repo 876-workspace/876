@@ -5,7 +5,7 @@ import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { UserPlus } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import {
   hasOrgPermission,
@@ -13,8 +13,8 @@ import {
   requireSession,
 } from '@/lib/auth/guards'
 
-import { MembersTable } from './members-table'
-import { PendingInvites } from './pending-invites'
+import { MembersTable } from './_components/members-table'
+import { PendingInvites } from './_components/pending-invites'
 
 export default async function OrganizationMembersPage({
   params,

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { AccountPage } from '@/components/account/account-page'
+import { AccountPage } from '@/features/account/components/account-page'
 
 export const metadata: Metadata = {
   title: 'Home | 876',

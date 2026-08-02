@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { requireConsumerFeature } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { DeveloperAppsClient } from './developer-apps-client'
+import { DeveloperAppsClient } from './_components/developer-apps-client'
 
 export const metadata: Metadata = {
   title: 'Developer Apps | 876',

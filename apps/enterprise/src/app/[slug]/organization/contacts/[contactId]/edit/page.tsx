@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation'
 import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
-import { ContactForm } from '../../contact-form'
+import { ContactForm } from '../../_components/contact-form'
 
 export default async function EditContactPage({
   params,

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { EnterpriseShell } from '@/components/enterprise/enterprise-shell'
+import { Shell } from '@/components/shell/shell'
 import { AnalyticsIdentity } from '@/lib/analytics/provider'
 import {
   getEnabledEnterpriseFeatureSlugs,
@@ -44,7 +44,7 @@ export default async function OrgLayout({
           },
         ]}
       />
-      <EnterpriseShell
+      <Shell
         organization={membership.organization}
         enabledFeatureSlugs={[...enabledFeatureSlugs]}
         permissions={membership.permissions}
@@ -56,7 +56,7 @@ export default async function OrgLayout({
         }}
       >
         {children}
-      </EnterpriseShell>
+      </Shell>
     </>
   )
 }

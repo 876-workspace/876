@@ -40,3 +40,12 @@ jobs:
 
       - name: Boundary lint (billing)
         run: pnpm --filter @876/billing-app lint
+
+      - name: Boundary lint (couriers)
+        run: pnpm --filter @876/couriers lint
+
+      - name: Boundary lint (876)
+        run: pnpm --filter @876/app lint
+
+      - name: Boundary lint (enterprise)
+        run: pnpm --filter @876/enterprise lint

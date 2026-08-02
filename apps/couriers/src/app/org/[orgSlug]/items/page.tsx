@@ -13,7 +13,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 
-import { ItemsTable } from './items-table'
+import { ItemsTable } from './_components/items-table'
 
 const ITEM_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Items' },

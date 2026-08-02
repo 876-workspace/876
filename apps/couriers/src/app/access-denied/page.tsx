@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ChangeAccountAction } from './change-account-action'
+import { ChangeAccountAction } from './_components/change-account-action'
 
 export const metadata: Metadata = {
   title: 'Wrong account | 876',

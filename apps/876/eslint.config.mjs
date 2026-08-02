@@ -1,10 +1,12 @@
 import { defineConfig, globalIgnores } from 'eslint/config'
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
+import { appStructureRules } from '../../eslint.app-structure.mjs'
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  ...appStructureRules,
   {
     rules: {
       // Admin isolation: the consumer app must never import Console code.

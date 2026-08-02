@@ -10,9 +10,9 @@ import type {
   TeamRoleOption,
 } from '@/types/team'
 
-import { PendingInvites } from './pending-invites'
-import { UsersSplit } from './users-split'
-import { UsersToolbar } from './users-toolbar'
+import { PendingInvites } from './_components/pending-invites'
+import { UsersSplit } from './_components/users-split'
+import { UsersToolbar } from './_components/users-toolbar'
 
 export const metadata = { title: 'Users — Settings' }
 

@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { ServiceWorkerRegistration } from './service-worker-registration'
-import { ThemeProvider } from './providers'
+import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
+import { ThemeProvider } from '@/components/providers/providers'
 import './globals.css'
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })

@@ -4,8 +4,8 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFeatures } from '@/lib/features'
-import { buildSections } from './field-spec'
-import { ProfileForm, type ProfileFormValues } from './profile-form'
+import { buildSections } from './_lib/field-spec'
+import { ProfileForm, type ProfileFormValues } from './_components/profile-form'
 
 export const metadata = { title: 'Organization profile — Settings' }
 

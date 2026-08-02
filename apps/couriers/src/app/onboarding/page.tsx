@@ -9,7 +9,7 @@ import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 
-import { OnboardingWizard } from './onboarding-wizard'
+import { OnboardingWizard } from './_components/onboarding-wizard'
 
 function OnboardingShell({ children }: { children: ReactNode }) {
   return (

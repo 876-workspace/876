@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { APP_NAME } from '@/lib/app-name'
 import { getManageContext } from '@/lib/auth/manage-context'
 
-import { BusinessOnboarding } from './business-onboarding'
+import { BusinessOnboarding } from './_components/business-onboarding'
 
 export const dynamic = 'force-dynamic'
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { BusinessOnboardingFlow } from './onboarding-flow'
+import { BusinessOnboardingFlow } from './_components/onboarding-flow'
 
 export const dynamic = 'force-dynamic'
 

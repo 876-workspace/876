@@ -1,7 +1,7 @@
 import { Page } from '@876/ui/page'
 
-import { SettingsCard } from './settings-card'
-import { SETTINGS_NAV } from './settings-groups'
+import { SettingsCard } from './_components/settings-card'
+import { SETTINGS_NAV } from './_lib/settings-groups'
 
 export default async function SettingsPage({
   params,

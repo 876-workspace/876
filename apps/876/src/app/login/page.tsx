@@ -8,7 +8,7 @@ import {
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { EmbeddedAuth } from './embedded-auth'
+import { EmbeddedAuth } from '@/features/auth/components/embedded-auth'
 
 export const metadata: Metadata = {
   title: 'Sign in',

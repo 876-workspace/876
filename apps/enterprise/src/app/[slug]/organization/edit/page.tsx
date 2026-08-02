@@ -1,10 +1,10 @@
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
-import { OrganizationDetailsForm } from './organization-details-form'
+import { OrganizationDetailsForm } from './_components/organization-details-form'
 
 export default async function OrganizationEditPage({
   params,

@@ -146,6 +146,17 @@ Everything non-route under `src/app/` → sibling `_components/` /
 - `@/` alias outside the current route subtree; relative within it.
 - Never import sideways into another subtree's `_components/`.
 - `components/` must never import from `features/`.
+- **Inside a feature, import your own feature's files RELATIVELY**
+  (`./widget-bar`, `../types`) — never via `@/features/<own-feature>/…`. The
+  ESLint rule bans the `@/features` alias inside `features/` entirely, because
+  an alias import makes a cross-feature import indistinguishable from a local
+  one at a glance. This tripped up both previous phases; expect to fix several.
+- **No feature may import another feature at all.** If two features need the
+  same thing, that thing goes to `components/patterns/` (if domain-agnostic)
+  or `src/lib/`. Watch specifically for a _cycle_ — in Console, `access` and
+  `widgets` imported each other, and the resolution was to notice that the
+  shared component was misfiled in the first place. If you find a cycle,
+  describe it and propose the fix rather than forcing a move.
 - No JSX in `src/lib/`.
 - Do not touch `src/lib/`, `src/types/`, `src/stores/`, `src/test/`, `prisma/`,
   or any config file.
@@ -154,13 +165,43 @@ Everything non-route under `src/app/` → sibling `_components/` /
   `git rebase`.** Leave everything unstaged.
 - Move with **`git mv`** so renames are detected, then fix imports.
 
+## Wire the enforcement in (part of the task, not optional)
+
+`apps/console/eslint.config.mjs` and `apps/billing/eslint.config.mjs` already
+import the shared boundary rules:
+
+```js
+import { appStructureRules } from '../../eslint.app-structure.mjs'
+// …
+const eslintConfig = defineConfig([...nextVitals, ...nextTs, ...appStructureRules, globalIgnores([...])])
+```
+
+Do the same for **`apps/876/eslint.config.mjs`**, and **create**
+`apps/couriers/eslint.config.mjs` and `apps/enterprise/eslint.config.mjs` by
+copying Console's (they currently have none and fall back to the root config).
+
+Then extend the root `package.json` script to cover all five:
+
+```json
+"check:structure": "node scripts/check-app-structure.mjs console billing couriers 876 enterprise"
+```
+
+and add the three new apps to the `Boundary lint` steps in
+`.github/workflows/app-structure.yml`.
+
 ## Verification — all must pass
 
 ```bash
 pnpm --filter @876/couriers typecheck && pnpm --filter @876/couriers test && pnpm --filter @876/couriers lint
 pnpm --filter @876/app typecheck && pnpm --filter @876/app test && pnpm --filter @876/app lint
 pnpm --filter @876/enterprise typecheck && pnpm --filter @876/enterprise test && pnpm --filter @876/enterprise lint
+pnpm check:structure
 ```
+
+`pnpm check:structure` is the authoritative structural gate — it encodes the
+sideways-import test and the prefix checks. **A green run of it plus three
+green lints is the definition of done for this phase.** Do not report success
+without pasting its actual output.
 
 Structural invariants — each must print **nothing**:
 

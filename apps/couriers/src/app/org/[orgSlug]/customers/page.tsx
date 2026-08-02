@@ -9,7 +9,10 @@ import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 import { customerStatusSchema } from '@/types/customer'
 
-import { CustomersTable, type CustomerTableRow } from './customers-table'
+import {
+  CustomersTable,
+  type CustomerTableRow,
+} from './_components/customers-table'
 
 const CUSTOMER_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Customers' },
