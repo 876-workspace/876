@@ -1,6 +1,64 @@
 export type AdminAppStatus = 'active' | 'inactive'
 export type AdminAppKind = 'internal' | 'platform' | 'product' | 'external'
 
+export type AdminPhoneLookup = {
+  object: 'phone_lookup'
+  valid: boolean
+  e164: string | null
+  national_format: string | null
+  country_code: string | null
+  carrier_name: string | null
+  line_type: string | null
+  mobile_country_code: string | null
+  mobile_network_code: string | null
+  line_type_requested: boolean
+  created_at: number
+}
+
+export type AdminPhoneLookupCreateParams = {
+  number: string
+  includeLineType?: boolean
+}
+
+export type AdminCommunicationMessage = {
+  object: 'communication_message'
+  id: string
+  provider: string
+  provider_sid: string | null
+  channel: 'sms' | 'whatsapp'
+  direction: string
+  status: string
+  to_number: string
+  from_number: string | null
+  messaging_service_sid: string | null
+  content_sid: string | null
+  body_preview: string | null
+  body_hash: string
+  user_id: string | null
+  organization_id: string | null
+  app_id: string | null
+  client_reference: string | null
+  idempotency_key: string
+  provider_error_code: string | null
+  sent_at: number | null
+  delivered_at: number | null
+  read_at: number | null
+  failed_at: number | null
+  created_at: number
+  updated_at: number
+}
+
+export type AdminCommunicationMessageCreateParams = {
+  toNumber: string
+  channel: 'sms' | 'whatsapp'
+  templateKey: string
+  idempotencyKey: string
+  userId?: string | null
+  organizationId?: string | null
+  appId?: string | null
+  clientReference?: string | null
+}
+
 export type AdminUser = {
   object: 'user'
   id: string

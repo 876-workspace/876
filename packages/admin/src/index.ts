@@ -172,4 +172,8 @@ export type {
   AdminOrgMember,
   AdminAppAssignment,
   AdminAppAssignmentCreateParams,
+  AdminPhoneLookup,
+  AdminPhoneLookupCreateParams,
+  AdminCommunicationMessage,
+  AdminCommunicationMessageCreateParams,
 } from './types'
