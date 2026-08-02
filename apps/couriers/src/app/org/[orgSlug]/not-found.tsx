@@ -8,9 +8,7 @@ export default function NotFound() {
       <div className="bg-muted mb-4 flex size-14 items-center justify-center rounded-2xl">
         <ClipboardDocumentListIcon className="text-muted-foreground size-7" />
       </div>
-      <h1 className="mb-2 text-xl font-semibold tracking-tight">
-        Page not found
-      </h1>
+      <h1 className="876-page-title mb-2">Page not found</h1>
       <p className="text-muted-foreground mb-8 max-w-xs text-sm">
         This page doesn&apos;t exist or may have been removed.
       </p>

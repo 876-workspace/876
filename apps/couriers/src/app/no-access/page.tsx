@@ -29,9 +29,7 @@ export default async function NoAccessPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-foreground text-xl font-semibold tracking-tight">
-            {content.heading}
-          </h1>
+          <h1 className="876-page-title text-foreground">{content.heading}</h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             {content.body}
           </p>

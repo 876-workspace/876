@@ -152,7 +152,7 @@
    Layered so composed utilities always win over these declarations. */
 @layer components {
   /* ── Type scale — five levels, no ad-hoc heading sizes ──────────────────
-     1. 876-page-title    24px/600  every page <h1> AND detail entity name
+     1. 876-page-title    20px/600  every page <h1> AND detail entity name
      2. 876-section-title 16px/600  card/section <h2>
      3. body/table        14px/400  (Tailwind text-sm default)
      4. nav/tabs/meta     13px      (text-[0.8125rem])
@@ -161,8 +161,8 @@
 
   /* Page <h1> — also the detail-page entity name; there is one title size. */
   [class~='876-page-title'] {
-    font-size: 1.5rem;
-    line-height: 2rem;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
     font-weight: 600;
     letter-spacing: -0.025em;
   }
