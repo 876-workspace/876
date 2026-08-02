@@ -76,67 +76,73 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
 
   return (
     <form className="max-w-3xl space-y-6" onSubmit={save}>
-      <div className="876-card grid gap-5 p-5 sm:grid-cols-2">
-        <div>
-          <Label htmlFor="branch-name">Branch name</Label>
-          <Input
-            id="branch-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            disabled={isPending}
-            required
-          />
-        </div>
+      <div className="876-card divide-border divide-y">
+        <div className="grid gap-5 p-5 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="branch-name">Branch name</Label>
+            <Input
+              id="branch-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              disabled={isPending}
+              required
+            />
+          </div>
 
-        <div>
-          <Label htmlFor="branch-phone">Phone</Label>
-          <Input
-            id="branch-phone"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            disabled={isPending}
-          />
-        </div>
-      </div>
-
-      <div className="876-card p-5">
-        <AddressFields
-          value={address}
-          onChange={setAddress}
-          disabled={isPending}
-          onGeographyUnavailable={setGeographyUnavailable}
-        />
-      </div>
-
-      <div className="876-card space-y-4 p-5">
-        {isFirstBranch ? (
-          <p className="text-muted-foreground text-sm">
-            Your first branch is the default customers and packages route to.
-          </p>
-        ) : branch?.isDefault ? (
-          <p className="text-muted-foreground text-sm">
-            This is the default branch. Promote another branch to change it.
-          </p>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="branch-default"
-              checked={isDefault}
-              onCheckedChange={(checked) => setIsDefault(checked === true)}
+          <div>
+            <Label htmlFor="branch-phone">Phone</Label>
+            <Input
+              id="branch-phone"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
               disabled={isPending}
             />
-            <Label htmlFor="branch-default">Set as default branch</Label>
           </div>
-        )}
+        </div>
 
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="branch-active"
-            checked={isActive}
-            onCheckedChange={(checked) => setIsActive(checked === true)}
+        <div className="p-5">
+          <AddressFields
+            value={address}
+            onChange={setAddress}
             disabled={isPending}
+            onGeographyUnavailable={setGeographyUnavailable}
           />
-          <Label htmlFor="branch-active">Active</Label>
+        </div>
+
+        <div className="space-y-4 p-5">
+          {isFirstBranch ? (
+            <p className="text-muted-foreground text-sm">
+              Your first branch is the default customers and packages route to.
+            </p>
+          ) : branch?.isDefault ? (
+            <p className="text-muted-foreground text-sm">
+              This is the default branch. Promote another branch to change it.
+            </p>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="branch-default"
+                checked={isDefault}
+                onCheckedChange={(checked) => setIsDefault(checked === true)}
+                disabled={isPending}
+              />
+              <Label htmlFor="branch-default" className="mb-0">
+                Set as default branch
+              </Label>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="branch-active"
+              checked={isActive}
+              onCheckedChange={(checked) => setIsActive(checked === true)}
+              disabled={isPending}
+            />
+            <Label htmlFor="branch-active" className="mb-0">
+              Active
+            </Label>
+          </div>
         </div>
       </div>
 

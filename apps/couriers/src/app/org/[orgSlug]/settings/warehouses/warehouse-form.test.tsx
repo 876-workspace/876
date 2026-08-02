@@ -109,11 +109,8 @@ describe('WarehouseForm', () => {
       screen.getByLabelText('Warehouse name'),
       'Miami Receiving Hub'
     )
-    await user.click(screen.getByRole('combobox', { name: 'Operating model' }))
     await user.click(
-      await screen.findByRole('option', {
-        name: 'A receiving agent operates it',
-      })
+      screen.getByRole('radio', { name: 'A receiving agent operates it' })
     )
     await user.type(screen.getByLabelText('Agent name'), 'Caribbean Receiving')
     await user.type(screen.getByLabelText('Warehouse code'), 'jmc')
@@ -131,7 +128,6 @@ describe('WarehouseForm', () => {
       code: 'JMC',
       mailboxPlacement: 'ADDRESS_LINE_2',
       mailboxPrefix: '',
-      instructions: '',
       address: {
         name: 'Miami Receiving Hub',
         line1: '8760 NW 25th Street',
@@ -160,9 +156,8 @@ describe('WarehouseForm', () => {
       />
     )
 
-    await user.click(screen.getByRole('combobox', { name: 'Operating model' }))
     await user.click(
-      await screen.findByRole('option', { name: 'We operate this warehouse' })
+      screen.getByRole('radio', { name: 'We operate this warehouse' })
     )
 
     expect(screen.queryByLabelText('Agent name')).not.toBeInTheDocument()
@@ -175,15 +170,16 @@ describe('WarehouseForm', () => {
 
     render(<WarehouseForm orgSlug="island-logistics" />)
 
-    expect(screen.getByRole('combobox', { name: 'Mailbox number placement' })).toHaveTextContent(
-      'On its own line'
-    )
+    await user.click(screen.getByRole('tab', { name: 'Mailbox config' }))
+    expect(
+      screen.getByRole('combobox', { name: 'Mailbox placement' })
+    ).toHaveTextContent('On its own line')
     await user.type(
       screen.getByLabelText('Warehouse name'),
       'Miami Receiving Hub'
     )
     await user.click(
-      screen.getByRole('combobox', { name: 'Mailbox number placement' })
+      screen.getByRole('combobox', { name: 'Mailbox placement' })
     )
     await user.click(
       await screen.findByRole('option', { name: 'On the street line' })
@@ -194,11 +190,11 @@ describe('WarehouseForm', () => {
     expect(mocks.create).toHaveBeenCalledWith('island-logistics', {
       name: 'Miami Receiving Hub',
       isPrimary: false,
-      operatingModel: 'OWNED',
+      operatingModel: 'AGENT',
+      agentName: '',
       code: '',
       mailboxPlacement: 'ADDRESS_LINE_1',
       mailboxPrefix: '',
-      instructions: '',
       address: {
         name: 'Miami Receiving Hub',
         line1: '8760 NW 25th Street',
@@ -223,6 +219,62 @@ describe('WarehouseForm', () => {
     expect(
       screen.queryByRole('checkbox', { name: 'Set as primary warehouse' })
     ).not.toBeInTheDocument()
+    expect(mocks.create).not.toHaveBeenCalled()
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it('previews the mailbox token appended to the existing second address line', async () => {
+    const user = userEvent.setup()
+    render(
+      <WarehouseForm
+        orgSlug="island-logistics"
+        warehouse={createWarehouse({ code: 'JMC', mailboxPrefix: null })}
+      />
+    )
+
+    await user.click(screen.getByRole('tab', { name: 'Mailbox config' }))
+
+    const preview = screen.getByLabelText('Sample customer address')
+
+    expect(preview).toHaveTextContent('Customer Name')
+    expect(preview).toHaveTextContent('Suite RSJ, JMC 1042')
+  })
+
+  it('moves the mailbox token to the recipient line when the placement changes', async () => {
+    const user = userEvent.setup()
+    render(
+      <WarehouseForm
+        orgSlug="island-logistics"
+        warehouse={createWarehouse({ code: 'JMC', mailboxPrefix: null })}
+      />
+    )
+
+    await user.click(screen.getByRole('tab', { name: 'Mailbox config' }))
+    await user.click(
+      screen.getByRole('combobox', { name: 'Mailbox placement' })
+    )
+    await user.click(
+      await screen.findByRole('option', { name: 'On the recipient line' })
+    )
+
+    const preview = screen.getByLabelText('Sample customer address')
+
+    await waitFor(() =>
+      expect(preview).toHaveTextContent('Customer Name JMC 1042')
+    )
+    expect(preview).not.toHaveTextContent('Suite RSJ, JMC 1042')
+    expect(preview).toHaveTextContent('Suite RSJ')
+  })
+
+  it('keeps only uppercase letters in the mailbox prefix input', async () => {
+    const user = userEvent.setup({ delay: null })
+
+    render(<WarehouseForm orgSlug="island-logistics" />)
+
+    await user.click(screen.getByRole('tab', { name: 'Mailbox config' }))
+    await user.type(screen.getByLabelText('Prefix'), 'suite1042!')
+
+    expect(screen.getByLabelText('Prefix')).toHaveValue('SUITE')
     expect(mocks.create).not.toHaveBeenCalled()
     expect(mocks.update).not.toHaveBeenCalled()
   })

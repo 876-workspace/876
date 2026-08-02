@@ -4,8 +4,10 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { Checkbox } from '@876/ui/checkbox'
+import { FormRow, FormRowGroup } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
+import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
 import {
   Select,
   SelectContent,
@@ -13,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@876/ui/select'
-import { Textarea } from '@876/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@876/ui/tabs'
 
 import {
   AddressFields,
@@ -24,6 +26,8 @@ import {
 } from '@/components/address-fields'
 import { client } from '@/lib/client'
 import type { WarehouseView } from '@/types/warehouse'
+
+import { ShippingAddressPreview } from './shipping-address-preview'
 
 const OPERATING_MODEL_OPTIONS = [
   { value: 'OWNED', label: 'We operate this warehouse' },
@@ -47,7 +51,7 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
   const router = useRouter()
   const [name, setName] = useState(warehouse?.name ?? '')
   const [operatingModel, setOperatingModel] = useState(
-    warehouse?.operatingModel ?? 'OWNED'
+    warehouse?.operatingModel ?? 'AGENT'
   )
   const [agentName, setAgentName] = useState(warehouse?.agentName ?? '')
   const [code, setCode] = useState(warehouse?.code ?? '')
@@ -56,9 +60,6 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
   )
   const [mailboxPrefix, setMailboxPrefix] = useState(
     warehouse?.mailboxPrefix ?? ''
-  )
-  const [instructions, setInstructions] = useState(
-    warehouse?.instructions ?? ''
   )
   const [isPrimary, setIsPrimary] = useState(warehouse?.isPrimary ?? false)
   const [address, setAddress] = useState<AddressFieldsValue>(
@@ -89,7 +90,6 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
         code: code.trim(),
         mailboxPlacement,
         mailboxPrefix: mailboxPrefix.trim(),
-        instructions: instructions.trim(),
       }
       const result = warehouse
         ? await client.warehouses.update(orgSlug, warehouse.id, {
@@ -117,152 +117,188 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
 
   return (
     <form className="max-w-3xl space-y-6" onSubmit={save}>
-      <div className="876-card p-5">
-        <Label htmlFor="warehouse-name">Warehouse name</Label>
-        <Input
-          id="warehouse-name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          disabled={isPending}
-          required
-        />
-      </div>
-
-      <div className="876-card space-y-4 p-5">
-        <h2 className="font-medium">Receiving</h2>
-        <div>
-          <Label htmlFor="warehouse-operating-model">Operating model</Label>
-          <Select
-            value={operatingModel}
-            onValueChange={(value) => setOperatingModel(value as typeof operatingModel)}
-            disabled={isPending}
-            items={OPERATING_MODEL_OPTIONS}
-          >
-            <SelectTrigger id="warehouse-operating-model" className="mt-1 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {OPERATING_MODEL_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {operatingModel === 'AGENT' ? (
-          <div>
-            <Label htmlFor="warehouse-agent-name">Agent name</Label>
-            <Input
-              id="warehouse-agent-name"
-              value={agentName}
-              onChange={(event) => setAgentName(event.target.value)}
-              disabled={isPending}
-              maxLength={120}
-            />
-          </div>
-        ) : null}
-
-        <div>
-          <Label htmlFor="warehouse-code">Warehouse code</Label>
+      <div className="876-card space-y-5 p-5">
+        <FormRow htmlFor="warehouse-name" label="Warehouse name" required>
           <Input
-            id="warehouse-code"
-            value={code}
-            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            id="warehouse-name"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
             disabled={isPending}
-            maxLength={16}
+            required
           />
-          <p className="text-muted-foreground mt-1 text-xs">
-            Printed before each customer&apos;s mailbox number.
-          </p>
-        </div>
-      </div>
+        </FormRow>
 
-      <div className="876-card p-5">
-        <AddressFields
-          value={address}
-          onChange={setAddress}
-          disabled={isPending}
-          onGeographyUnavailable={setGeographyUnavailable}
-        />
-      </div>
-
-      <div className="876-card space-y-4 p-5">
-        <h2 className="font-medium">Customer address</h2>
-        <div>
-          <Label htmlFor="warehouse-mailbox-placement">
-            Mailbox number placement
-          </Label>
-          <Select
-            value={mailboxPlacement}
+        <FormRow
+          label="Operating model"
+          hint="Whether your own staff receive packages here, or a third-party agent receives them on your behalf."
+        >
+          <RadioGroup
+            value={operatingModel}
             onValueChange={(value) =>
-              setMailboxPlacement(value as typeof mailboxPlacement)
+              setOperatingModel(value as typeof operatingModel)
             }
             disabled={isPending}
-            items={MAILBOX_PLACEMENT_OPTIONS}
+            className="grid-flow-col justify-start gap-6 pt-2"
           >
-            <SelectTrigger
-              id="warehouse-mailbox-placement"
-              className="mt-1 w-full"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MAILBOX_PLACEMENT_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+            {OPERATING_MODEL_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <RadioGroupItem value={option.value} />
+                {option.label}
+              </label>
+            ))}
+          </RadioGroup>
+        </FormRow>
 
-        <div>
-          <Label htmlFor="warehouse-mailbox-prefix">Prefix</Label>
-          <Input
-            id="warehouse-mailbox-prefix"
-            value={mailboxPrefix}
-            onChange={(event) => setMailboxPrefix(event.target.value)}
-            disabled={isPending}
-            maxLength={16}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="warehouse-instructions">Instructions</Label>
-          <Textarea
-            id="warehouse-instructions"
-            value={instructions}
-            onChange={(event) => setInstructions(event.target.value)}
-            disabled={isPending}
-            maxLength={500}
-          />
-        </div>
-      </div>
-
-      <div className="876-card p-5">
-        {isFirstWarehouse ? (
-          <p className="text-muted-foreground text-sm">
-            Your first warehouse is the primary warehouse.
-          </p>
-        ) : warehouse?.isPrimary ? (
-          <p className="text-muted-foreground text-sm">
-            This is the primary warehouse. Promote another warehouse to change
-            it.
-          </p>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Checkbox
-              id="warehouse-primary"
-              checked={isPrimary}
-              onCheckedChange={(checked) => setIsPrimary(checked === true)}
+        <FormRow
+          label={operatingModel === 'AGENT' ? 'Agent & code' : 'Warehouse code'}
+          hint="The code is printed before each customer's mailbox number."
+        >
+          <FormRowGroup>
+            {operatingModel === 'AGENT' ? (
+              <Input
+                aria-label="Agent name"
+                placeholder="Agent name"
+                value={agentName}
+                onChange={(event) => setAgentName(event.target.value)}
+                disabled={isPending}
+                maxLength={120}
+                className="w-56"
+              />
+            ) : null}
+            <Input
+              id="warehouse-code"
+              aria-label="Warehouse code"
+              placeholder="Code"
+              value={code}
+              onChange={(event) => setCode(event.target.value.toUpperCase())}
               disabled={isPending}
+              maxLength={16}
+              className="w-32"
             />
-            <Label htmlFor="warehouse-primary">Set as primary warehouse</Label>
-          </div>
+          </FormRowGroup>
+        </FormRow>
+
+        {isFirstWarehouse ? (
+          <FormRow label="Primary">
+            <p className="text-muted-foreground pt-2 text-sm">
+              Your first warehouse is the primary warehouse.
+            </p>
+          </FormRow>
+        ) : warehouse?.isPrimary ? (
+          <FormRow label="Primary">
+            <p className="text-muted-foreground pt-2 text-sm">
+              This is the primary warehouse. Promote another warehouse to change
+              it.
+            </p>
+          </FormRow>
+        ) : (
+          <FormRow label="Primary">
+            <div className="flex items-center gap-2 pt-2">
+              <Checkbox
+                id="warehouse-primary"
+                checked={isPrimary}
+                onCheckedChange={(checked) => setIsPrimary(checked === true)}
+                disabled={isPending}
+              />
+              <Label htmlFor="warehouse-primary" className="mb-0">
+                Set as primary warehouse
+              </Label>
+            </div>
+          </FormRow>
         )}
       </div>
+
+      <Tabs defaultValue="address" className="gap-5">
+        <TabsList variant="line" className="mb-1">
+          <TabsTrigger value="address">Address</TabsTrigger>
+          <TabsTrigger value="customer-address">Mailbox config</TabsTrigger>
+          <TabsTrigger value="custom-fields">Custom fields</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="address" className="876-card p-5">
+          <AddressFields
+            value={address}
+            onChange={setAddress}
+            disabled={isPending}
+            onGeographyUnavailable={setGeographyUnavailable}
+          />
+        </TabsContent>
+
+        <TabsContent
+          value="customer-address"
+          className="876-card space-y-5 p-5"
+        >
+          <FormRow
+            htmlFor="warehouse-mailbox-placement"
+            label="Mailbox placement"
+            hint="Where a customer's mailbox number goes in the address they give a retailer."
+          >
+            <Select
+              value={mailboxPlacement}
+              onValueChange={(value) =>
+                setMailboxPlacement(value as typeof mailboxPlacement)
+              }
+              disabled={isPending}
+              items={MAILBOX_PLACEMENT_OPTIONS}
+            >
+              <SelectTrigger
+                id="warehouse-mailbox-placement"
+                className="w-full"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MAILBOX_PLACEMENT_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormRow>
+
+          <FormRow
+            htmlFor="warehouse-mailbox-prefix"
+            label="Prefix"
+            hint='Your label for the mailbox, printed before the number — a prefix of "Suite" gives "Suite 1042".'
+          >
+            <Input
+              id="warehouse-mailbox-prefix"
+              value={mailboxPrefix}
+              onChange={(event) =>
+                setMailboxPrefix(
+                  event.target.value.replace(/[^A-Za-z]/g, '').toUpperCase()
+                )
+              }
+              disabled={isPending}
+              maxLength={16}
+              className="w-40"
+            />
+          </FormRow>
+
+          <FormRow label="Preview">
+            <ShippingAddressPreview
+              warehouse={{
+                code: code.trim() === '' ? null : code.trim(),
+                mailboxPrefix: mailboxPrefix === '' ? null : mailboxPrefix,
+                mailboxPlacement,
+                address,
+              }}
+            />
+          </FormRow>
+        </TabsContent>
+
+        {/* TODO: custom fields are not built yet. The tab is deliberately
+            empty rather than absent so the information architecture is
+            visible; `instructions` is intentionally not submitted from here,
+            so an existing warehouse's value is left untouched on save. */}
+        <TabsContent value="custom-fields" className="876-card p-5">
+          <p className="text-muted-foreground text-sm">No custom fields yet.</p>
+        </TabsContent>
+      </Tabs>
 
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
 
