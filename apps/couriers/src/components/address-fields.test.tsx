@@ -19,6 +19,7 @@ vi.mock('@/lib/client', () => ({
 
 import {
   AddressFields,
+  clearRegionCache,
   emptyAddressValue,
   toAddressParams,
   type AddressFieldsValue,
@@ -45,6 +46,8 @@ function renderFields(value: AddressFieldsValue, onChange = vi.fn()) {
 describe('AddressFields', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Module-level cache: without this, one case's fetch satisfies the next.
+    clearRegionCache()
     mockListCountries.mockResolvedValue({ data: COUNTRIES, error: null })
     mockListRegions.mockResolvedValue({ data: JM_REGIONS, error: null })
   })
@@ -67,6 +70,26 @@ describe('AddressFields', () => {
     renderFields(emptyAddressValue('JM'))
 
     await waitFor(() => expect(mockListRegions).toHaveBeenCalledWith('JM'))
+  })
+
+  it('does not refetch regions for a country already loaded in this session', async () => {
+    const user = userEvent.setup()
+    renderFields(emptyAddressValue('JM'))
+    await screen.findByLabelText('Parish')
+    expect(mockListRegions).toHaveBeenCalledTimes(1)
+
+    mockListRegions.mockResolvedValue({ data: US_REGIONS, error: null })
+    await user.click(screen.getByLabelText('Country'))
+    await user.click(
+      await screen.findByRole('option', { name: 'United States' })
+    )
+
+    // Re-rendering at the already-loaded country must not issue a request.
+    renderFields(emptyAddressValue('JM'))
+    await screen.findAllByLabelText('Parish')
+
+    expect(mockListRegions).toHaveBeenCalledTimes(1)
+    expect(mockListRegions).toHaveBeenCalledWith('JM')
   })
 
   it('clears the previously selected region when the country changes', async () => {

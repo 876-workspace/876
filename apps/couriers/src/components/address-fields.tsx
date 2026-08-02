@@ -1,15 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@876/ui/select'
+import { SearchableSelect } from '@876/ui/searchable-select'
 
 import { client } from '@/lib/client'
 import type { AddressCreateParams, AddressView } from '@/types/address'
@@ -76,6 +70,27 @@ function regionLabel(regions: Region[]): string {
   return type.charAt(0).toUpperCase() + type.slice(1)
 }
 
+/**
+ * Country subdivisions are static reference data, so a country visited once in
+ * this page session never needs a second round trip. Without this, every switch
+ * back to a country the user already picked re-fetches, and the field spends
+ * another network round trip disabled — which is what makes the Parish/State
+ * switch feel slow even though the request itself is fast.
+ *
+ * Module scope is safe here: the catalog is public, identical for every user,
+ * and this file is a client component, so there is no cross-request server
+ * state to leak.
+ */
+const regionCache = new Map<string, Region[]>()
+
+/**
+ * Test support. The cache is module state, so it survives between test cases in
+ * a file and would otherwise let one case satisfy the next case's fetch.
+ */
+export function clearRegionCache(): void {
+  regionCache.clear()
+}
+
 type Props = {
   value: AddressFieldsValue
   onChange: (value: AddressFieldsValue) => void
@@ -94,7 +109,10 @@ export function AddressFields({
   // Keyed by the country it was loaded for, so "still loading" is derived from
   // a mismatch rather than tracked as a second piece of state that has to be
   // flipped in the effect body.
-  const [loadedRegions, setLoadedRegions] = useState<{
+  // Only ever holds a freshly fetched result. A cached country is resolved
+  // during render instead, so a cache hit costs no state write and no extra
+  // render — see `regions` below.
+  const [fetchedRegions, setFetchedRegions] = useState<{
     countryCode: string
     regions: Region[]
   } | null>(null)
@@ -126,15 +144,22 @@ export function AddressFields({
     const countryCode = value.countryCode
     if (!countryCode) return
 
+    // Already cached: render resolves it directly, so there is nothing to do
+    // and no state to write.
+    if (regionCache.has(countryCode)) return
+
     let cancelled = false
 
     void client.geo.listRegions(countryCode).then((result) => {
+      const regions = result.error ? [] : result.data
+      // Cached even when the component unmounted mid-flight: the next form to
+      // open pays nothing for a request this one already made. A failed lookup
+      // is not cached, so it can be retried.
+      if (!result.error) regionCache.set(countryCode, regions)
+
       if (cancelled) return
 
-      setLoadedRegions({
-        countryCode,
-        regions: result.error ? [] : result.data,
-      })
+      setFetchedRegions({ countryCode, regions })
     })
 
     return () => {
@@ -150,17 +175,31 @@ export function AddressFields({
     onChange({ ...value, countryCode, regionCode: '' })
   }
 
-  // A stale entry means the country just changed and its regions are still in
-  // flight, so the control stays disabled rather than briefly offering the
-  // previous country's options.
+  // Cache first, so a country visited before resolves in the same render that
+  // selected it. A stale fetched entry means the country just changed and its
+  // regions are still in flight, so the control stays disabled rather than
+  // briefly offering the previous country's options.
   const regions =
-    loadedRegions?.countryCode === value.countryCode
-      ? loadedRegions.regions
-      : null
+    regionCache.get(value.countryCode) ??
+    (fetchedRegions?.countryCode === value.countryCode
+      ? fetchedRegions.regions
+      : null)
   const regionsLoading = regions === null
 
   const label = regions ? regionLabel(regions) : 'Region'
-  const hasRegions = (regions?.length ?? 0) > 0
+  // While regions are in flight the field stays mounted and disabled. Hiding it
+  // and bringing it back shifts every control below it, which reads as a slower
+  // form than one that simply waits in place.
+  const hasRegions = regionsLoading || (regions?.length ?? 0) > 0
+
+  const countryOptions = useMemo(
+    () => (countries ?? []).map((c) => ({ value: c.code, label: c.name })),
+    [countries]
+  )
+  const regionOptions = useMemo(
+    () => (regions ?? []).map((r) => ({ value: r.code, label: r.name })),
+    [regions]
+  )
 
   return (
     <div className="grid gap-5 sm:grid-cols-2">
@@ -207,52 +246,34 @@ export function AddressFields({
             Country information could not be loaded.
           </p>
         ) : (
-          <Select
+          <SearchableSelect
+            id="address-country"
+            options={countryOptions}
             value={value.countryCode}
             onValueChange={selectCountry}
+            placeholder="Select a country"
+            searchPlaceholder="Search countries…"
+            emptyMessage="No country matches that search."
             disabled={disabled || !countries}
-          >
-            <SelectTrigger id="address-country">
-              <SelectValue placeholder="Select a country" />
-            </SelectTrigger>
-            <SelectContent>
-              {(countries ?? []).map((country) => (
-                <SelectItem key={country.code} value={country.code}>
-                  {country.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         )}
       </div>
 
       {hasRegions ? (
         <div>
           <Label htmlFor="address-region">{label}</Label>
-          <Select
+          <SearchableSelect
+            id="address-region"
+            options={regionOptions}
             value={value.regionCode}
-            onValueChange={(regionCode) =>
-              onChange({ ...value, regionCode: regionCode ?? '' })
+            onValueChange={(regionCode) => onChange({ ...value, regionCode })}
+            placeholder={
+              regionsLoading ? 'Loading…' : `Select a ${label.toLowerCase()}`
             }
+            searchPlaceholder={`Search ${label.toLowerCase()}…`}
+            emptyMessage={`No ${label.toLowerCase()} matches that search.`}
             disabled={disabled || regionsLoading}
-          >
-            <SelectTrigger id="address-region">
-              <SelectValue
-                placeholder={
-                  regionsLoading
-                    ? 'Loading…'
-                    : `Select a ${label.toLowerCase()}`
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {(regions ?? []).map((region) => (
-                <SelectItem key={region.code} value={region.code}>
-                  {region.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
       ) : null}
 
