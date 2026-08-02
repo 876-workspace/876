@@ -51,6 +51,7 @@ from db.repositories.prices import PriceRepository
 from db.repositories.products import ProductRepository
 from db.session import AsyncSessionLocal
 from db.session import lifespan as db_lifespan
+from providers.twilio import close_shared_clients as close_shared_twilio_clients
 from services.billing_customer_dispatch import run_billing_sync_worker
 from services.bootstrap import BootstrapStep, run_bootstrap
 from services.feature_seeds import seed_all_features
@@ -666,6 +667,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 billing_worker_task.cancel()
                 with suppress(asyncio.CancelledError):
                     await billing_worker_task
+            await close_shared_twilio_clients()
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

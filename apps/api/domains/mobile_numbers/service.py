@@ -31,6 +31,8 @@ _CHANNEL_FLAGS = {
 _RESEND_COOLDOWN_SECONDS = 60
 _VERIFICATION_TTL_SECONDS = 600
 _MAX_CHECK_ATTEMPTS = 5
+_MAX_SENDS_PER_WINDOW = 5
+_SEND_WINDOW_SECONDS = 24 * 60 * 60
 
 
 def normalize_phone_number(value: str) -> str:
@@ -121,8 +123,6 @@ class MobileNumberService:
         if self._settings.twilio_mode != "fake" and not self._settings.twilio_live_enabled:
             raise not_configured()
         self._require_channel(channel)
-        enforce_rate_limit("communications.verify.send.user", user_id, max_attempts=5, window_seconds=24 * 60 * 60)
-        enforce_rate_limit("communications.verify.send.number", row.number, max_attempts=5, window_seconds=24 * 60 * 60)
 
         now = now_unix_seconds()
         previous = (
@@ -136,13 +136,33 @@ class MobileNumberService:
                 "A verification was sent recently. Please wait before requesting another.",
                 status.HTTP_429_TOO_MANY_REQUESTS,
             )
-        send_count = verification_metadata_send_count(previous.metadata_ if previous else None)
-        if send_count >= 5:
+
+        # The counter carries forward only inside the send window. Carrying it for the
+        # life of the row would make the cap permanent: a number that ever reached the
+        # limit could never be re-verified, because nothing decays the stored count.
+        within_window = bool(previous and previous.last_sent_at and previous.last_sent_at > now - _SEND_WINDOW_SECONDS)
+        send_count = verification_metadata_send_count(previous.metadata_ if previous and within_window else None)
+        if send_count >= _MAX_SENDS_PER_WINDOW:
             raise _verification_error(
                 "communications/rate-limited",
                 "Too many verification messages have been sent.",
                 status.HTTP_429_TOO_MANY_REQUESTS,
             )
+
+        # Counted only once the request is going to reach the provider, so a caller
+        # bounced by the cooldown above does not burn its own daily send quota.
+        enforce_rate_limit(
+            "communications.verify.send.user",
+            user_id,
+            max_attempts=_MAX_SENDS_PER_WINDOW,
+            window_seconds=_SEND_WINDOW_SECONDS,
+        )
+        enforce_rate_limit(
+            "communications.verify.send.number",
+            row.number,
+            max_attempts=_MAX_SENDS_PER_WINDOW,
+            window_seconds=_SEND_WINDOW_SECONDS,
+        )
 
         provider_result = await self._provider.create_verification(to_number=row.number, channel=channel)
         verification = await self._repo.create_verification(
