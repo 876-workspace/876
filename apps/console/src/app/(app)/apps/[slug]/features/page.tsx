@@ -15,6 +15,9 @@ import {
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
 import { AppFeaturesTable } from './_components/features-table'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { FEATURES_SKELETON_COLUMNS } from './_components/features-skeleton-columns'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -28,7 +31,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${app.name} • Features - Apps` }
 }
 
-export default async function AppFeaturesPage({ params, searchParams }: Props) {
+export default function AppFeaturesPage({ params, searchParams }: Props) {
+  return (
+    <div className="space-y-5">
+      <div className="mb-2">
+        <h2 className="text-lg font-medium tracking-tight">Feature Flags</h2>
+      </div>
+      <Suspense
+        fallback={<DataTableSkeleton columns={FEATURES_SKELETON_COLUMNS} />}
+      >
+        <FeaturesTableData params={params} searchParams={searchParams} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function FeaturesTableData({ params, searchParams }: Props) {
   const { slug } = await params
   const { after, before } = await searchParams
 
@@ -51,47 +69,41 @@ export default async function AppFeaturesPage({ params, searchParams }: Props) {
   const hasMore = featureResult.data?.has_more ?? false
 
   return (
-    <div className="space-y-5">
-      <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Feature Flags</h2>
-      </div>
-
-      <AppFeaturesTable
-        appSlug={slug}
-        data={features}
-        hasMore={hasMore}
-        firstId={firstId}
-        lastId={lastId}
-        toolbarAction={
-          <Link
-            href={`/apps/${slug}/features/new`}
-            className={buttonVariants({ variant: 'info', size: 'sm' })}
-          >
-            Create feature
-          </Link>
-        }
-        emptyState={
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <Flag className="text-amber-600 dark:text-amber-400" />
-              </EmptyMedia>
-              <EmptyTitle>No features</EmptyTitle>
-              <EmptyDescription>
-                Create a feature flag for {app.name}.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Link
-                href={`/apps/${slug}/features/new`}
-                className={buttonVariants({ variant: 'info', size: 'sm' })}
-              >
-                Create feature
-              </Link>
-            </EmptyContent>
-          </Empty>
-        }
-      />
-    </div>
+    <AppFeaturesTable
+      appSlug={slug}
+      data={features}
+      hasMore={hasMore}
+      firstId={firstId}
+      lastId={lastId}
+      toolbarAction={
+        <Link
+          href={`/apps/${slug}/features/new`}
+          className={buttonVariants({ variant: 'info', size: 'sm' })}
+        >
+          Create feature
+        </Link>
+      }
+      emptyState={
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Flag className="text-amber-600 dark:text-amber-400" />
+            </EmptyMedia>
+            <EmptyTitle>No features</EmptyTitle>
+            <EmptyDescription>
+              Create a feature flag for {app.name}.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Link
+              href={`/apps/${slug}/features/new`}
+              className={buttonVariants({ variant: 'info', size: 'sm' })}
+            >
+              Create feature
+            </Link>
+          </EmptyContent>
+        </Empty>
+      }
+    />
   )
 }
