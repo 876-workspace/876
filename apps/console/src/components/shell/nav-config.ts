@@ -13,26 +13,26 @@ import {
 import type { IconComponent } from '@876/ui/icons'
 
 /** A single child link rendered inside a dropdown item. */
-export type ConsoleNavChild = {
+export type NavChild = {
   title: string
   href: string
 }
 
 /** A top-level sidebar item. When `children` is set it renders as a dropdown. */
-export type ConsoleNavItem = {
+export type NavItem = {
   title: string
   href: string
   icon: IconComponent
   color?: string
-  children?: ConsoleNavChild[]
+  children?: NavChild[]
 }
 
-export type ConsoleNavGroup = {
-  items: ConsoleNavItem[]
+export type NavGroup = {
+  items: NavItem[]
 }
 
 /** Unlabelled Console navigation groups rendered in sidebar order. */
-export const consoleNav: ConsoleNavGroup[] = [
+export const navConfig: NavGroup[] = [
   {
     items: [
       {

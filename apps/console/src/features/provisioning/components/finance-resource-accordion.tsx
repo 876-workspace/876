@@ -22,7 +22,7 @@ import {
   rowReferenceKey,
   type FinanceResourceDefinition,
   type FinanceResourceRow,
-} from '../_lib/finance-provisioning-utils'
+} from '../finance-provisioning-utils'
 
 type Props = {
   definition: FinanceResourceDefinition

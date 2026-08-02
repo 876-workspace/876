@@ -14,7 +14,7 @@ export const navLinkRest =
 export const navLinkActive =
   'bg-[var(--876-nav-active-bg)] text-[var(--876-nav-active-fg)] hover:bg-[var(--876-nav-active-bg-hover)] font-medium'
 
-export function ConsoleNavLink({
+export function NavLink({
   href,
   title,
   icon: Icon,
@@ -62,13 +62,7 @@ export function ConsoleNavLink({
 }
 
 /** Indented child link rendered inside a sidebar dropdown. */
-export function ConsoleNavSubLink({
-  href,
-  title,
-}: {
-  href: string
-  title: string
-}) {
+export function NavSubLink({ href, title }: { href: string; title: string }) {
   const pathname = usePathname()
   const isActive = isActiveConsolePath(pathname, href)
 

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import type { AdminApp } from '@876/admin'
 
 import type { RouteTabItem as DetailTab } from '@876/ui/route-tabs'
-import { FeatureHeader } from '@/app/(app)/features/[id]/_components/feature-header'
+import { FeatureHeader } from '@/features/access/components/feature-header'
 import { resolveFeature } from '../../../../features/[id]/_data'
 import { resolveApp } from '../../_data'
 

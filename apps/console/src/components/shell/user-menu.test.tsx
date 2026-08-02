@@ -6,7 +6,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ConsoleShellUser } from '@/components/shell/shell'
+import type { ShellUser } from '@/components/shell/shell'
 
 const mocks = vi.hoisted(() => ({
   request: vi.fn(),
@@ -14,11 +14,9 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/client/request', () => ({ request: mocks.request }))
 
-import { ConsoleUserMenu } from '@/components/shell/user-menu'
+import { UserMenu } from '@/components/shell/user-menu'
 
-function createUser(
-  overrides: Partial<ConsoleShellUser> = {}
-): ConsoleShellUser {
+function createUser(overrides: Partial<ShellUser> = {}): ShellUser {
   return {
     name: 'Althea Morgan',
     email: 'althea@islandcommerce.test',
@@ -40,7 +38,7 @@ describe('Console user menu', () => {
 
   it('renders the account trigger with the user initials and theme option by default', async () => {
     const user = userEvent.setup()
-    render(<ConsoleUserMenu user={createUser()} />)
+    render(<UserMenu user={createUser()} />)
 
     const trigger = screen.getByRole('button', { name: 'Open account menu' })
     expect(within(trigger).getByText('AM')).toBeVisible()
@@ -54,7 +52,7 @@ describe('Console user menu', () => {
 
   it('hides the theme option when showThemeSwitcher is false', async () => {
     const user = userEvent.setup()
-    render(<ConsoleUserMenu user={createUser()} showThemeSwitcher={false} />)
+    render(<UserMenu user={createUser()} showThemeSwitcher={false} />)
 
     await user.click(screen.getByRole('button', { name: 'Open account menu' }))
 
@@ -69,7 +67,7 @@ describe('Console user menu', () => {
     const user = userEvent.setup()
     const location = { ...window.location, href: 'http://localhost/' }
     vi.stubGlobal('location', location)
-    render(<ConsoleUserMenu user={createUser()} showThemeSwitcher={false} />)
+    render(<UserMenu user={createUser()} showThemeSwitcher={false} />)
     await user.click(screen.getByRole('button', { name: 'Open account menu' }))
 
     await user.click(await screen.findByRole('button', { name: 'Sign out' }))

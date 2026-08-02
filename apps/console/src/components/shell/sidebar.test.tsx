@@ -32,26 +32,26 @@ vi.mock('@876/ui/sidebar', () => ({
 }))
 
 vi.mock('./nav-dropdown', () => ({
-  ConsoleNavDropdown: ({ item }: { item: { title: string; href: string } }) => (
+  NavDropdown: ({ item }: { item: { title: string; href: string } }) => (
     <a href={item.href}>{item.title}</a>
   ),
 }))
 
 vi.mock('./nav-link', () => ({
-  ConsoleNavLink: ({ href, title }: { href: string; title: string }) => (
+  NavLink: ({ href, title }: { href: string; title: string }) => (
     <a href={href}>{title}</a>
   ),
 }))
 
-import { ConsoleSidebar } from '@/components/shell/sidebar'
+import { Sidebar } from '@/components/shell/sidebar'
 
-describe('ConsoleSidebar', () => {
+describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('renders console navigation without the former account-menu footer', () => {
-    render(<ConsoleSidebar />)
+    render(<Sidebar />)
 
     expect(
       screen.getByRole('navigation', { name: 'Console sections' })

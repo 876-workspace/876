@@ -2,20 +2,23 @@
 
 import Link from 'next/link'
 
-import { consoleNav } from '@/components/shell/nav-config'
-import { ConsoleNavDropdown } from '@/components/shell/nav-dropdown'
-import { ConsoleNavLink } from '@/components/shell/nav-link'
+import { navConfig } from '@/components/shell/nav-config'
+import { NavDropdown } from '@/components/shell/nav-dropdown'
+import { NavLink } from '@/components/shell/nav-link'
 import { Logo } from '@876/ui/logo'
 import {
-  Sidebar,
+  Sidebar as SidebarRoot,
   SidebarContent,
   SidebarGroup,
   SidebarHeader,
 } from '@876/ui/sidebar'
 
-export function ConsoleSidebar() {
+export function Sidebar() {
   return (
-    <Sidebar collapsible="icon" className="border-sidebar-border/50 bg-sidebar">
+    <SidebarRoot
+      collapsible="icon"
+      className="border-sidebar-border/50 bg-sidebar"
+    >
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link
           href="/"
@@ -37,14 +40,14 @@ export function ConsoleSidebar() {
           aria-label="Console sections"
           className="flex flex-1 flex-col gap-4"
         >
-          {consoleNav.map((group) => (
+          {navConfig.map((group) => (
             <SidebarGroup key={group.items[0]?.title} className="gap-1.5 p-0">
               <div className="flex flex-col gap-1">
                 {group.items.map((item) =>
                   item.children?.length ? (
-                    <ConsoleNavDropdown key={item.title} item={item} />
+                    <NavDropdown key={item.title} item={item} />
                   ) : (
-                    <ConsoleNavLink
+                    <NavLink
                       key={item.title}
                       href={item.href}
                       title={item.title}
@@ -58,6 +61,6 @@ export function ConsoleSidebar() {
           ))}
         </nav>
       </SidebarContent>
-    </Sidebar>
+    </SidebarRoot>
   )
 }

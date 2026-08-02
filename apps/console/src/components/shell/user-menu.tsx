@@ -2,14 +2,14 @@
 
 import { CompactUserMenu } from '@876/ui/sidebar-user-menu'
 
-import type { ConsoleShellUser } from '@/components/shell/shell'
+import type { ShellUser } from '@/components/shell/shell'
 import { request } from '@/lib/client/request'
 
-export function ConsoleUserMenu({
+export function UserMenu({
   user,
   showThemeSwitcher = true,
 }: {
-  user: ConsoleShellUser
+  user: ShellUser
   showThemeSwitcher?: boolean
 }) {
   async function handleSignOut() {

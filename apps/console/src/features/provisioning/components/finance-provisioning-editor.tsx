@@ -16,7 +16,7 @@ import {
   buildFinanceDraft,
   revisionRows,
   type FinanceResourceRow,
-} from '../_lib/finance-provisioning-utils'
+} from '../finance-provisioning-utils'
 
 export function FinanceProvisioningEditor({
   catalog,

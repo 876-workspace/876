@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import type { AdminAuditEvent } from '@876/admin'
 
-import { ConsoleMobileNav } from '@/components/shell/mobile-nav'
-import { ConsoleSidebar } from '@/components/shell/sidebar'
-import { ConsoleUserMenu } from '@/components/shell/user-menu'
-import { WidgetBar } from '@/features/widgets/components/widget-bar'
+import { MobileNav } from '@/components/shell/mobile-nav'
+import { Sidebar } from '@/components/shell/sidebar'
+import { UserMenu } from '@/components/shell/user-menu'
 import { TopbarActions } from '@/components/shell/topbar-actions'
 import { TopbarSearch } from '@/components/shell/topbar-search'
 import { Logo } from '@876/ui/logo'
@@ -20,7 +18,7 @@ import {
   AppShellMain,
 } from '@876/ui/app-shell'
 
-export type ConsoleShellUser = {
+export type ShellUser = {
   name: string
   email: string
   avatar: string | null
@@ -28,11 +26,10 @@ export type ConsoleShellUser = {
   countryCode?: string | null
 }
 
-export async function ConsoleShell({
+export async function Shell({
   children,
-  auditEvents,
+  widgetRail,
   user,
-  enabledWidgetIds,
   uiFeatures = {
     themeSwitcher: false,
     globalAdd: false,
@@ -42,9 +39,13 @@ export async function ConsoleShell({
   },
 }: {
   children: ReactNode
-  auditEvents: AdminAuditEvent[]
-  user: ConsoleShellUser
-  enabledWidgetIds: string[]
+  /**
+   * Optional right-hand rail, composed by the caller. The shell places it but
+   * knows nothing about what is in it — that is what keeps the shell free of
+   * any product domain (see `.claude/rules/app-structure.md`).
+   */
+  widgetRail?: ReactNode
+  user: ShellUser
   uiFeatures: {
     themeSwitcher: boolean
     globalAdd: boolean
@@ -62,13 +63,13 @@ export async function ConsoleShell({
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
       <AppShellSidebarArea className="hidden md:contents">
-        <ConsoleSidebar />
+        <Sidebar />
       </AppShellSidebarArea>
 
       <AppShellContent>
         <AppShellHeader className="border-b-0">
           <div className="flex items-center gap-2 md:hidden">
-            <ConsoleMobileNav />
+            <MobileNav />
             <Link
               href="/"
               aria-label="Console home"
@@ -90,7 +91,7 @@ export async function ConsoleShell({
                 showAppSwitcher={uiFeatures.appSwitcher}
               />
             </div>
-            <ConsoleUserMenu
+            <UserMenu
               user={user}
               showThemeSwitcher={uiFeatures.themeSwitcher}
             />
@@ -100,13 +101,7 @@ export async function ConsoleShell({
         {/* Navbar spans full content width; dock sits under it beside main. */}
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
-          {enabledWidgetIds.length > 0 && (
-            <WidgetBar
-              auditEvents={auditEvents}
-              enabledWidgetIds={enabledWidgetIds}
-              chatEnabled={uiFeatures.chat}
-            />
-          )}
+          {widgetRail}
         </AppShellBody>
       </AppShellContent>
     </AppShell>

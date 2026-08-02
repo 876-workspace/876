@@ -5,7 +5,7 @@ import type { AdminApp } from '@876/admin'
 import { $876 } from '@/lib/876'
 import type { RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import { resolveFeature } from './_data'
-import { FeatureHeader } from './_components/feature-header'
+import { FeatureHeader } from '@/features/access/components/feature-header'
 
 type Props = {
   children: ReactNode

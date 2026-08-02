@@ -73,13 +73,28 @@ everything under it is excluded from routing, so it can sit beside `page.tsx`
 without becoming a URL segment.
 
 - A route directory should contain **only** route files — `page.tsx`,
-  `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`, `route.ts` — plus
-  `_components/` and, where used, `_data.ts` / `_lib/`.
+  `layout.tsx`, `loading.tsx`, `error.tsx`, `not-found.tsx`, `route.ts`,
+  `global-error.tsx`, `manifest.ts`, `sitemap.ts`, `opengraph-image.tsx` — plus
+  the private siblings below.
+- Three private siblings, by content:
+  - **`_components/`** — anything that renders (`.tsx` exporting a component).
+  - **`_lib/`** — pure helpers for this route subtree: column builders that are
+    plain data, formatters, `*-utils.ts`. No JSX.
+  - **`_data.ts`** — this route's data loading. Already in use in Console; keep
+    the single-file form rather than a `_data/` folder until it outgrows one file.
 - A non-route `.tsx` sitting as a bare sibling of `page.tsx` is a **bug in
   placement**, not a style choice. Console once had 114 of them.
-- A nested route gets its **own** `_components/`. Never reach up into a parent's
-  `_components/` and never reach sideways into a sibling route's — if two routes
-  need it, it is a `features/` component.
+- A nested route gets its **own** `_components/` for its own files. A
+  descendant route **may** import from an ancestor's `_components/` — that is
+  what "private to the subtree" means, and it is how a section like
+  `orgs/[slug]/billing/` shares a form with its own child routes.
+- A route may **never** reach sideways into another subtree's `_components/`.
+  `apps/[slug]/provisioning/` importing from `orgs/provisioning/_components/`
+  is the violation this rule exists to prevent: it makes route ownership
+  unknowable and defeats any later boundary enforcement. If two subtrees need
+  the same component, it belongs in `features/<domain>/components/`.
+- The mechanical test: an import of another route's `_components/` is legal
+  only when the importing file's path **starts with** the owning route's path.
 - Tests live beside their subject: `_components/foo.tsx` +
   `_components/foo.test.tsx`.
 
@@ -105,9 +120,13 @@ primitive (those are `packages/ui`) and **not** tied to one domain (that is
 detail-field row, a metric card.
 
 `patterns/` is a **waiting room, not a destination.** A pattern that a second
-app needs should be promoted to `packages/ui`. If `patterns/` grows past ~10
-files, that is the signal that promotions are overdue, not that the folder
-needs subfolders.
+app needs should be promoted to `packages/ui`.
+
+One level of grouping is allowed for a **cohesive cluster of pieces that are
+only ever used together** — `patterns/detail/` (the detail-view accordion,
+info section, stat tile, placeholder). That is a named thing, not a category
+folder. Do not create category folders (`patterns/forms/`, `patterns/tables/`)
+— those are the flat directory reintroduced one level down.
 
 ### 5. `features/<domain>/` — one product domain
 
@@ -192,11 +211,30 @@ that landed in the wrong bucket.
 ## Naming
 
 - Files are `kebab-case.tsx`; the default export is `PascalCase`.
-- **Do not prefix a file with its own app name inside that app.**
-  `components/shell/sidebar.tsx`, not `components/console-sidebar.tsx` — the
-  path already says `apps/console`, and the prefix is noise that survives only
-  because the folder gave no other way to group. (The `<app>-app.ts` identity
-  file in `lib/` is the deliberate exception; it names the app as data.)
+- **Do not prefix a file _or its exported symbol_ with its own app name inside
+  that app.** `components/shell/sidebar.tsx` exporting `Sidebar`, not
+  `components/console-sidebar.tsx` exporting `ConsoleSidebar` — the path
+  already says `apps/console`, and the prefix is noise that survives only
+  because the flat folder gave no other way to group. This applies to
+  components, their prop types (`ShellUser`, not `ConsoleShellUser`), local
+  helpers, and nav config.
+- The `<app>-app.ts` identity file in `lib/` is the deliberate exception; it
+  names the app as data.
+- **When dropping the prefix collides with a `@876/ui` primitive, alias the
+  primitive, not the local component.** The app-local component owns the plain
+  name; the imported primitive takes the suffix:
+
+  ```tsx
+  import { Sidebar as SidebarRoot, SidebarContent } from '@876/ui/sidebar'
+
+  export function Sidebar() {
+    return <SidebarRoot>…</SidebarRoot>
+  }
+  ```
+
+  Re-prefixing the local component to dodge the collision reintroduces exactly
+  the noise this rule removes.
+
 - Directory names are singular for a domain (`features/access`) and plural for
   a collection of like things (`components/providers`).
 

@@ -9,20 +9,20 @@ import { useSidebar } from '@876/ui/sidebar'
 
 import {
   isActiveConsolePath,
-  ConsoleNavLink,
-  ConsoleNavSubLink,
+  NavLink,
+  NavSubLink,
   navLinkActive,
   navLinkBase,
   navLinkRest,
 } from '@/components/shell/nav-link'
-import type { ConsoleNavItem } from '@/components/shell/nav-config'
+import type { NavItem } from '@/components/shell/nav-config'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@876/ui/collapsible'
 
-export function ConsoleNavDropdown({ item }: { item: ConsoleNavItem }) {
+export function NavDropdown({ item }: { item: NavItem }) {
   const { title, href, icon, color, children = [] } = item
   const pathname = usePathname()
   const { state } = useSidebar()
@@ -35,14 +35,7 @@ export function ConsoleNavDropdown({ item }: { item: ConsoleNavItem }) {
   // or falling back to the first child.
   if (state === 'collapsed') {
     const targetHref = href !== '#' ? href : (children[0]?.href ?? href)
-    return (
-      <ConsoleNavLink
-        href={targetHref}
-        title={title}
-        icon={icon}
-        color={color}
-      />
-    )
+    return <NavLink href={targetHref} title={title} icon={icon} color={color} />
   }
 
   const hasRealHref = href !== '#'
@@ -124,7 +117,7 @@ export function ConsoleNavDropdown({ item }: { item: ConsoleNavItem }) {
       <CollapsibleContent className="876-nav-dropdown-panel">
         <div className="876-nav-dropdown-items mt-1 ml-[1.4375rem] flex flex-col gap-0.5 pb-1">
           {children.map((child) => (
-            <ConsoleNavSubLink
+            <NavSubLink
               key={child.title}
               href={child.href}
               title={child.title}

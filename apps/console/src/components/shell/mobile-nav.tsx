@@ -22,9 +22,9 @@ import {
 } from '@876/ui/sheet'
 
 import {
-  consoleNav,
-  type ConsoleNavChild,
-  type ConsoleNavItem,
+  navConfig,
+  type NavChild,
+  type NavItem,
 } from '@/components/shell/nav-config'
 import { isActiveConsolePath } from '@/components/shell/nav-link'
 
@@ -37,7 +37,7 @@ const mobileNavItemActive =
 const mobileNavIconBase =
   'flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f4] transition-colors dark:bg-white/8'
 
-function accordionValue(item: ConsoleNavItem): string {
+function accordionValue(item: NavItem): string {
   return `${item.title}:${item.href}`
 }
 
@@ -45,18 +45,15 @@ function hasRealHref(href: string): boolean {
   return href !== '#'
 }
 
-function hasActiveChild(
-  pathname: string,
-  children: ConsoleNavChild[] = []
-): boolean {
+function hasActiveChild(pathname: string, children: NavChild[] = []): boolean {
   return children.some((child) => isActiveConsolePath(pathname, child.href))
 }
 
-export function ConsoleMobileNav() {
+export function MobileNav() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
-  const activeAccordionValues = consoleNav.flatMap((group) =>
+  const activeAccordionValues = navConfig.flatMap((group) =>
     group.items
       .filter((item) => {
         if (!item.children?.length) return false
@@ -105,7 +102,7 @@ export function ConsoleMobileNav() {
             defaultValue={activeAccordionValues}
             className="gap-5"
           >
-            {consoleNav.map((group) => (
+            {navConfig.map((group) => (
               <div
                 key={group.items[0]?.title}
                 className="flex flex-col gap-1.5"
@@ -113,14 +110,14 @@ export function ConsoleMobileNav() {
                 <div className="flex flex-col gap-1">
                   {group.items.map((item) =>
                     item.children?.length ? (
-                      <ConsoleMobileNavSection
+                      <MobileNavSection
                         key={item.title}
                         item={item}
                         pathname={pathname}
                         onNavigate={() => setOpen(false)}
                       />
                     ) : (
-                      <ConsoleMobileNavLink
+                      <MobileNavLink
                         key={item.title}
                         item={item}
                         pathname={pathname}
@@ -138,12 +135,12 @@ export function ConsoleMobileNav() {
   )
 }
 
-function ConsoleMobileNavLink({
+function MobileNavLink({
   item,
   pathname,
   onNavigate,
 }: {
-  item: ConsoleNavItem
+  item: NavItem
   pathname: string
   onNavigate: () => void
 }) {
@@ -177,12 +174,12 @@ function ConsoleMobileNavLink({
   )
 }
 
-function ConsoleMobileNavSection({
+function MobileNavSection({
   item,
   pathname,
   onNavigate,
 }: {
-  item: ConsoleNavItem
+  item: NavItem
   pathname: string
   onNavigate: () => void
 }) {
@@ -223,7 +220,7 @@ function ConsoleMobileNavSection({
       <AccordionContent className="px-0 pt-1 pb-1 [&_a]:no-underline">
         <div className="border-876-surface-border ml-7 flex flex-col gap-1 border-l pl-3">
           {hasRealHref(item.href) ? (
-            <ConsoleMobileNavSubLink
+            <MobileNavSubLink
               href={item.href}
               title="Overview"
               pathname={pathname}
@@ -232,7 +229,7 @@ function ConsoleMobileNavSection({
           ) : null}
 
           {item.children?.map((child) => (
-            <ConsoleMobileNavSubLink
+            <MobileNavSubLink
               key={child.title}
               href={child.href}
               title={child.title}
@@ -246,7 +243,7 @@ function ConsoleMobileNavSection({
   )
 }
 
-function ConsoleMobileNavSubLink({
+function MobileNavSubLink({
   href,
   title,
   pathname,

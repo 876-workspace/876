@@ -7,7 +7,7 @@ import {
   type TopbarSearchItem,
 } from '@876/ui/topbar-search'
 
-import { consoleNav, SETTINGS_SECTIONS } from '@/components/shell/nav-config'
+import { navConfig, SETTINGS_SECTIONS } from '@/components/shell/nav-config'
 
 export function TopbarSearch() {
   const router = useRouter()
@@ -21,14 +21,14 @@ export function TopbarSearch() {
 }
 
 const CONSOLE_SEARCH_ITEMS: TopbarSearchItem[] = [
-  ...consoleNav.flatMap((group) =>
+  ...navConfig.flatMap((group) =>
     group.items.map((item) => ({
       group: 'Navigation',
       title: item.title,
       href: item.href,
     }))
   ),
-  ...consoleNav.flatMap((group) =>
+  ...navConfig.flatMap((group) =>
     group.items.flatMap((item) =>
       (item.children ?? []).map((child) => ({
         group: item.title,
