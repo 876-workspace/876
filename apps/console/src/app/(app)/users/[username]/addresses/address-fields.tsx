@@ -99,7 +99,9 @@ export function DefaultCheckbox({
         checked={checked}
         onCheckedChange={(nextChecked) => onChange(nextChecked === true)}
       />
-      <Label htmlFor={id}>Default</Label>
+      <Label htmlFor={id} className="mb-0">
+        Default
+      </Label>
     </div>
   )
 }

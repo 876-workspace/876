@@ -44,7 +44,7 @@ function ScalarControl({
           checked={value === true}
           onCheckedChange={(checked) => onChange(checked === true)}
         />
-        <Label htmlFor={id} className="font-normal">
+        <Label htmlFor={id} className="mb-0 font-normal">
           Yes
         </Label>
       </div>
