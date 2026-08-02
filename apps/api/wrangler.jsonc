@@ -35,6 +35,20 @@
     "IS_PRODUCTION": "true",
     "LOG_LEVEL": "info",
     "PORT": "4000",
+    // Twilio ships inert. Every channel is enabled one at a time, in production,
+    // by editing this block — so each activation is a reviewed diff rather than a
+    // console click nobody can find later. Credentials are secrets, never vars:
+    // see docs/twilio-activation.md.
+    "TWILIO_MODE": "disabled",
+    "TWILIO_LOOKUP_ENABLED": "false",
+    // Billed per lookup — the paid line_type_intelligence package.
+    "TWILIO_LOOKUP_LINE_TYPE_ENABLED": "false",
+    "TWILIO_VERIFY_SMS_ENABLED": "false",
+    "TWILIO_VERIFY_CALL_ENABLED": "false",
+    "TWILIO_VERIFY_WHATSAPP_ENABLED": "false",
+    "TWILIO_SMS_ENABLED": "false",
+    "TWILIO_WHATSAPP_ENABLED": "false",
+    "TWILIO_VOICE_ENABLED": "false",
   },
   "observability": {
     "enabled": true,
