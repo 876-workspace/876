@@ -25,7 +25,11 @@ from providers.twilio.errors import channel_disabled
 # select a semantic key, but cannot inject arbitrary content or provider identifiers.
 TEMPLATES: dict[str, dict[str, str | None]] = {
     "sms.test": {"channel": "sms", "body": "876 test notification", "content_sid": None},
-    "whatsapp.test": {"channel": "whatsapp", "body": None, "content_sid": "HX_TEST_TEMPLATE"},
+    # A WhatsApp content SID is issued per Twilio account once a template is
+    # approved, so it cannot be a literal here. It resolves from configuration at
+    # send time; without it the template is unavailable rather than sent with a
+    # placeholder Twilio would reject.
+    "whatsapp.test": {"channel": "whatsapp", "body": None, "content_sid": None},
 }
 
 # This registry is intentionally separate from message templates. A caller can
@@ -92,6 +96,13 @@ class CommunicationsService:
         number = normalize_phone_number(to_number)
         body = template["body"]
         content_sid = template["content_sid"]
+        if channel == "whatsapp":
+            content_sid = self._settings.twilio_whatsapp_content_sid or None
+            if not content_sid:
+                raise _error(
+                    "communications/invalid-template",
+                    "The requested message template is unavailable.",
+                )
         body_hash = hashlib.sha256((body or content_sid or "").encode()).hexdigest()
         now = now_unix_seconds()
         row = await self._repo.create_message(
@@ -123,6 +134,13 @@ class CommunicationsService:
             created_at=now,
             updated_at=now,
         )
+        # Commit the intent before calling the provider. get_db() rolls the whole
+        # request transaction back on an exception, so a row that only reaches
+        # flush() disappears together with its idempotency key — and the retry
+        # that follows an uncertain timeout would then reach Twilio a second time
+        # and bill a second message. The record has to outlive the failure.
+        await self._db.commit()
+
         try:
             status_callback = None
             if self._settings.twilio_webhook_base_url:
@@ -137,12 +155,10 @@ class CommunicationsService:
                 status_callback=status_callback,
             )
         except AppHTTPException:
-            # Do not retry uncertain sends; the idempotency record keeps a duplicate
-            # caller from issuing a second provider request after a timeout.
             row.status = "failed"
             row.failed_at = now
             row.updated_at = now
-            await self._db.flush()
+            await self._db.commit()
             raise
         row.provider = result.provider
         row.provider_sid = result.provider_sid
@@ -220,6 +236,11 @@ class CommunicationsService:
         )
         twiml_url = build_voice_twiml_url(self._settings, template_key)
         status_callback = self._settings.twilio_webhook_base_url.rstrip("/") + "/webhooks/twilio/calls/status"
+        # Same durability rule as create_message: the intent must survive the
+        # rollback that get_db() performs on failure, or the retry after an
+        # uncertain timeout places a second real call.
+        await self._db.commit()
+
         try:
             result = await self._voice_provider.create_call(
                 to_number=number,
@@ -230,7 +251,7 @@ class CommunicationsService:
             row.status = "failed"
             row.completed_at = now
             row.updated_at = now
-            await self._db.flush()
+            await self._db.commit()
             raise
         row.provider = result.provider
         row.provider_sid = result.provider_sid

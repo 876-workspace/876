@@ -96,6 +96,9 @@ class Settings(BaseSettings):
     twilio_messaging_service_sid: str = Field(default="", validation_alias="TWILIO_MESSAGING_SERVICE_SID")
     twilio_voice_from_number: str = Field(default="", validation_alias="TWILIO_VOICE_FROM_NUMBER")
     twilio_whatsapp_from: str = Field(default="", validation_alias="TWILIO_WHATSAPP_FROM")
+    # Issued per Twilio account when a template is approved, so it cannot be a
+    # literal in the template registry.
+    twilio_whatsapp_content_sid: str = Field(default="", validation_alias="TWILIO_WHATSAPP_CONTENT_SID")
     twilio_webhook_base_url: str = Field(default="", validation_alias="TWILIO_WEBHOOK_BASE_URL")
     twilio_lookup_enabled: bool = Field(default=False, validation_alias="TWILIO_LOOKUP_ENABLED")
     twilio_lookup_line_type_enabled: bool = Field(default=False, validation_alias="TWILIO_LOOKUP_LINE_TYPE_ENABLED")
