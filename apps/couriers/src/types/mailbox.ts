@@ -26,7 +26,9 @@ export interface CustomerMailboxListParams {
 
 export const mailboxCreateParamsSchema = z.strictObject({
   customerId: z.string(),
-  number: z.string().min(1),
+  number: z
+    .string()
+    .regex(/^[0-9]+$/, 'Mailbox number may only contain digits.'),
   isPrimary: z.boolean().optional(),
 })
 export type MailboxCreateParams = z.input<typeof mailboxCreateParamsSchema>
