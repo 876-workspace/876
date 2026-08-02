@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import {
@@ -35,6 +35,10 @@ export function InviteDialog({ open, onOpenChange, orgSlug, roles }: Props) {
   const [roleId, setRoleId] = useState(roles[0]?.id ?? '')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const roleOptions = useMemo(
+    () => roles.map((role) => ({ value: role.id, label: role.name })),
+    [roles]
+  )
 
   function handleOpenChange(next: boolean) {
     onOpenChange(next)
@@ -88,14 +92,15 @@ export function InviteDialog({ open, onOpenChange, orgSlug, roles }: Props) {
               value={roleId}
               onValueChange={(value) => value && setRoleId(value)}
               required
+              items={roleOptions}
             >
               <SelectTrigger id="invite-role" className="w-full">
                 <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
-                {roles.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
-                    {role.name}
+                {roleOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>

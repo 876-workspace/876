@@ -42,6 +42,21 @@ describe('InviteDialog', () => {
     })
   })
 
+  it('shows the selected role label in the closed trigger', () => {
+    render(
+      <InviteDialog
+        open
+        onOpenChange={vi.fn()}
+        orgSlug="island-logistics"
+        roles={roles}
+      />
+    )
+
+    expect(screen.getByRole('combobox', { name: 'Role' })).toHaveTextContent(
+      'Admin'
+    )
+  })
+
   it('trims the email, posts the selected role, closes, and refreshes on success', async () => {
     const user = userEvent.setup({ delay: null })
     const onOpenChange = vi.fn()

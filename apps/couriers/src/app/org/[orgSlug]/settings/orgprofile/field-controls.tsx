@@ -38,18 +38,21 @@ export function FieldControl({
   disabled,
   onChange,
 }: ControlProps) {
+  const selectOptions = field.options ?? []
+
   if (field.options)
     return (
       <Select
         value={value}
         onValueChange={(next) => onChange(field.key, next || '')}
         disabled={disabled || field.options.length === 0}
+        items={selectOptions}
       >
         <SelectTrigger id={field.key} className="w-full">
           <SelectValue placeholder={field.placeholder ?? 'Select'} />
         </SelectTrigger>
         <SelectContent>
-          {field.options.map((option) => (
+          {selectOptions.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>

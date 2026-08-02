@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   AlertDialog,
@@ -52,6 +52,10 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [removeOpen, setRemoveOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const roleOptions = useMemo(
+    () => roles.map((role) => ({ value: role.id, label: role.name })),
+    [roles]
+  )
 
   function update(params: { roleId?: string; status?: 'active' | 'inactive' }) {
     setError(null)
@@ -152,14 +156,15 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
                 value={row.roleId}
                 disabled={isPending}
                 onValueChange={(value) => value && update({ roleId: value })}
+                items={roleOptions}
               >
                 <SelectTrigger className="w-full max-w-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {roles.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.name}
+                  {roleOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
