@@ -201,7 +201,11 @@ describe('$876.mobileNumbers', () => {
     fetchMock.mockResolvedValueOnce({
       json: () =>
         Promise.resolve({
-          data: { object: 'mobile_number', id: 'mobileNumber_123', deleted: true },
+          data: {
+            object: 'mobile_number',
+            id: 'mobileNumber_123',
+            deleted: true,
+          },
           error: null,
         }),
     })

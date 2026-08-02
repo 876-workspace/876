@@ -22,28 +22,76 @@ export const MOBILE_NUMBERS_ENDPOINT = '/users/me/mobile-numbers'
 /** `$876.mobileNumbers.*` — mobile numbers owned by the current user. */
 export function createMobileNumbersResource(runtime: SdkRuntime) {
   return {
-    create(params: MobileNumberCreateParams, options?: RequestOptions): Promise<MobileNumberResult> {
+    create(
+      params: MobileNumberCreateParams,
+      options?: RequestOptions
+    ): Promise<MobileNumberResult> {
       const validation = validateParams(mobileNumberCreateParamsSchema, params)
       if (validation.error) return Promise.resolve(validation)
-      return sendAuthRequest(runtime, 'POST', MOBILE_NUMBERS_ENDPOINT, validation.data, mobileNumberSchema, options)
+      return sendAuthRequest(
+        runtime,
+        'POST',
+        MOBILE_NUMBERS_ENDPOINT,
+        validation.data,
+        mobileNumberSchema,
+        options
+      )
     },
 
-    retrieve(mobileNumberId: string, options?: RequestOptions): Promise<MobileNumberResult> {
-      return sendAuthRequest(runtime, 'GET', `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}`, undefined, mobileNumberSchema, options)
+    retrieve(
+      mobileNumberId: string,
+      options?: RequestOptions
+    ): Promise<MobileNumberResult> {
+      return sendAuthRequest(
+        runtime,
+        'GET',
+        `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}`,
+        undefined,
+        mobileNumberSchema,
+        options
+      )
     },
 
-    update(mobileNumberId: string, params: MobileNumberUpdateParams, options?: RequestOptions): Promise<MobileNumberResult> {
+    update(
+      mobileNumberId: string,
+      params: MobileNumberUpdateParams,
+      options?: RequestOptions
+    ): Promise<MobileNumberResult> {
       const validation = validateParams(mobileNumberUpdateParamsSchema, params)
       if (validation.error) return Promise.resolve(validation)
-      return sendAuthRequest(runtime, 'PATCH', `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}`, validation.data, mobileNumberSchema, options)
+      return sendAuthRequest(
+        runtime,
+        'PATCH',
+        `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}`,
+        validation.data,
+        mobileNumberSchema,
+        options
+      )
     },
 
-    delete(mobileNumberId: string, options?: RequestOptions): Promise<DeletedMobileNumberResult> {
-      return sendAuthRequest(runtime, 'DELETE', `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}`, undefined, deletedMobileNumberSchema, options)
+    delete(
+      mobileNumberId: string,
+      options?: RequestOptions
+    ): Promise<DeletedMobileNumberResult> {
+      return sendAuthRequest(
+        runtime,
+        'DELETE',
+        `${MOBILE_NUMBERS_ENDPOINT}/${mobileNumberId}`,
+        undefined,
+        deletedMobileNumberSchema,
+        options
+      )
     },
 
     list(options?: RequestOptions): Promise<MobileNumberListResult> {
-      return sendAuthRequest(runtime, 'GET', MOBILE_NUMBERS_ENDPOINT, undefined, mobileNumberListSchema, options)
+      return sendAuthRequest(
+        runtime,
+        'GET',
+        MOBILE_NUMBERS_ENDPOINT,
+        undefined,
+        mobileNumberListSchema,
+        options
+      )
     },
   }
 }
