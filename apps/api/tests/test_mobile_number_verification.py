@@ -10,13 +10,14 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from core.config import Settings
 from core.errors import AppHTTPException
+from core.phone import normalize_phone_number
 from core.rate_limit import reset_rate_limits
 from core.security import Principal, require_api_key, require_session
 from core.timestamps import now_unix_seconds
 from db.models import AuditEvent, Base, User, UserMobileNumber, Verification
 from db.repositories.mobile_numbers import MobileNumberRepository
 from db.session import get_db
-from domains.mobile_numbers.service import MobileNumberService, normalize_phone_number
+from domains.mobile_numbers.service import MobileNumberService
 from main import create_app
 from providers.twilio import get_phone_verification_provider
 from providers.twilio.fake import FakeTwilioProvider
