@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { requireSession } from '@/lib/auth/guards'
-import { NoAccessView } from './no-access-view'
+import { NoAccessView } from './_components/no-access-view'
 
 export const metadata: Metadata = {
   title: 'No Access | 876',

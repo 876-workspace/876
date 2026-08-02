@@ -6,7 +6,7 @@ import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { Plus } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import {
   hasOrgPermission,

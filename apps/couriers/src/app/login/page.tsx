@@ -9,7 +9,7 @@ import {
 import { APP_NAME } from '@/lib/app-name'
 import { getManageContext } from '@/lib/auth/manage-context'
 
-import { AppEmbeddedAuth } from './embedded-auth'
+import { AppEmbeddedAuth } from './_components/embedded-auth'
 
 export const metadata: Metadata = {
   title: `Sign in | ${APP_NAME}`,

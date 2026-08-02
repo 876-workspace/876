@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { WarehouseForm } from '../warehouse-form'
+import { WarehouseForm } from '../_components/warehouse-form'
 
 export const metadata = { title: 'Add warehouse — Settings' }
 

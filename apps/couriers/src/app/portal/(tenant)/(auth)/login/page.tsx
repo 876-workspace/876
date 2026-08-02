@@ -6,7 +6,7 @@ import {
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 
-import { PortalEmbeddedAuth } from '@/components/portal/embedded-auth'
+import { PortalEmbeddedAuth } from '@/features/portal/components/embedded-auth'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { getPortalTenant } from '@/lib/portal/tenant'
 

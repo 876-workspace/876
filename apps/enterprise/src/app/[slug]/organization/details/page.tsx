@@ -5,7 +5,7 @@ import { buttonVariants } from '@876/ui/button'
 import { Pencil } from '@876/ui/icons'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import {
   hasOrgPermission,
@@ -13,7 +13,7 @@ import {
   requireSession,
 } from '@/lib/auth/guards'
 
-import { SECTIONS } from '../organization-sections'
+import { SECTIONS } from '../_lib/organization-sections'
 
 export default async function OrganizationDetailsPage({
   params,

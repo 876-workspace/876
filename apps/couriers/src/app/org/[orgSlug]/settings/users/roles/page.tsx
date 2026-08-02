@@ -4,7 +4,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { RolesTable } from './roles-table'
+import { RolesTable } from './_components/roles-table'
 
 export const metadata = { title: 'Roles — Settings' }
 

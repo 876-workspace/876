@@ -5,7 +5,7 @@ import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { CouriersShell } from '@/components/couriers-shell'
+import { Shell } from '@/components/shell/shell'
 import { getAppsDirectory } from '@/lib/apps-directory'
 import { getFeatures } from '@/lib/features'
 
@@ -63,7 +63,7 @@ export default async function OrgLayout({
   }
 
   return (
-    <CouriersShell
+    <Shell
       basePath={basePath}
       tenantName={tenantName}
       user={user}
@@ -74,6 +74,6 @@ export default async function OrgLayout({
       enabledWidgetIds={features.enabledWidgetIds}
     >
       {children}
-    </CouriersShell>
+    </Shell>
   )
 }

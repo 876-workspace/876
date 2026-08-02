@@ -2,7 +2,7 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
-import { LocationForm } from '../location-form'
+import { LocationForm } from '../_components/location-form'
 
 export default async function NewLocationPage({
   params,

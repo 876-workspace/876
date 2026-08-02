@@ -5,7 +5,7 @@ import type { Price, Subscription } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 

@@ -52,7 +52,7 @@
     "deploy:couriers": "pnpm --filter @876/couriers deploy",
     "build": "turbo run build",
     "lint": "turbo lint",
-    "check:structure": "node scripts/check-app-structure.mjs console billing",
+    "check:structure": "node scripts/check-app-structure.mjs console billing couriers 876 enterprise",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "test:browser": "pnpm --filter @876/widgets test:browser",

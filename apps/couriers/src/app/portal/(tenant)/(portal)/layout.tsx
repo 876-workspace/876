@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
-import { PortalHeader } from '@/components/portal/portal-header'
+import { PortalHeader } from '@/features/portal/components/header'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { getPortalTenant } from '@/lib/portal/tenant'
 

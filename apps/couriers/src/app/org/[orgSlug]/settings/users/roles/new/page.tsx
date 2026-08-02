@@ -2,7 +2,7 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 
-import { RoleForm } from '../role-form'
+import { RoleForm } from '../_components/role-form'
 
 export const metadata = { title: 'Add role — Settings' }
 

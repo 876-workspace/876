@@ -7,7 +7,7 @@ import { Building2, ChevronRight, MapPin, Users } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 

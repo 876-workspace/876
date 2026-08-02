@@ -46,6 +46,36 @@ const routePrivatePatterns = [
 
 const appPattern = { group: ['@/app/*', '@/app/**'], message: NO_ROUTE_CODE }
 
+/**
+ * Build the boundary rules, merging in any app-specific restricted-import
+ * patterns.
+ *
+ * An app that declares its own `no-restricted-imports` (e.g. `apps/876` bans
+ * `@876/console-client*`) **must** pass those patterns here rather than adding
+ * a second config block, for the same replace-not-merge reason documented
+ * above: a later block silently erases these zones' patterns, and an earlier
+ * one loses its own for every file a zone also matches. Merging is the only
+ * option that keeps both.
+ */
+export function createAppStructureRules({ extraPatterns = [] } = {}) {
+  return appStructureRules.map((block) => {
+    const rules = { ...block.rules }
+    for (const key of [
+      'no-restricted-imports',
+      '@typescript-eslint/no-restricted-imports',
+    ]) {
+      const existing = rules[key]
+      if (!Array.isArray(existing)) continue
+      const [level, options] = existing
+      rules[key] = [
+        level,
+        { ...options, patterns: [...options.patterns, ...extraPatterns] },
+      ]
+    }
+    return { ...block, rules }
+  })
+}
+
 export const appStructureRules = [
   {
     name: 'app-structure/components',

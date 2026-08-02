@@ -5,8 +5,8 @@ import { buttonVariants } from '@876/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@876/ui/card'
 import { ChevronLeft } from '@876/ui/icons'
 
-import { PackageStatusBadge } from '@/components/portal/package-status-badge'
-import { PackageTimeline } from '@/components/portal/package-timeline'
+import { PackageStatusBadge } from '@/features/portal/components/package-status-badge'
+import { PackageTimeline } from '@/features/portal/components/package-timeline'
 import { requirePortalCustomer } from '@/lib/portal/customer'
 import { service } from '@/lib/service'
 

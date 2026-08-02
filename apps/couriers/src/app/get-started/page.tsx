@@ -3,10 +3,10 @@ import { redirect } from 'next/navigation'
 
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 
-import { SwitchAccountLink } from '@/components/switch-account-link'
+import { SwitchAccountLink } from '@/components/shell/switch-account-link'
 import { getManageContext } from '@/lib/auth/manage-context'
 
-import { SetupButton } from './setup-button'
+import { SetupButton } from './_components/setup-button'
 import { PageHeader, PageTitle, PageDescription } from '@876/ui/page'
 
 export const metadata: Metadata = {

@@ -4,8 +4,8 @@ import { buttonVariants } from '@876/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@876/ui/card'
 import { MapPin } from '@876/ui/icons'
 
-import { CopyableAddressLine } from '@/components/portal/copyable-address-line'
-import { PackageList } from '@/components/portal/package-list'
+import { CopyableAddressLine } from '@/features/portal/components/copyable-address-line'
+import { PackageList } from '@/features/portal/components/package-list'
 import { requirePortalCustomer } from '@/lib/portal/customer'
 import { service } from '@/lib/service'
 

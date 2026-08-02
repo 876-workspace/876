@@ -5,7 +5,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { WarehousesCards } from './warehouses-cards'
+import { WarehousesCards } from './_components/warehouses-cards'
 
 export const metadata = { title: 'Warehouses — Settings' }
 

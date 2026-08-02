@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation'
 import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
-import { ErrorState } from '@/components/enterprise/error-state'
+import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
-import { LocationForm } from '../../location-form'
+import { LocationForm } from '../../_components/location-form'
 
 export default async function EditLocationPage({
   params,

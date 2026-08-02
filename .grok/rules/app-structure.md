@@ -96,7 +96,11 @@ without becoming a URL segment.
 - The mechanical test: an import of another route's `_components/` is legal
   only when the importing file's path **starts with** the owning route's path.
 - Tests live beside their subject: `_components/foo.tsx` +
-  `_components/foo.test.tsx`.
+  `_components/foo.test.tsx`. That cuts both ways — a **route file's** test
+  stays beside the route file (`page.tsx` + `page.test.tsx`), and must **not**
+  be pushed into `_components/` to satisfy a "no bare `.tsx` beside `page.tsx`"
+  reading. Both directions are enforced by
+  `scripts/check-app-structure.mjs`.
 
 ### 2. `components/shell/` — the app frame
 

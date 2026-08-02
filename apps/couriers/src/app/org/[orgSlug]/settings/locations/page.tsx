@@ -5,7 +5,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { LocationsCards } from './locations-cards'
+import { LocationsCards } from './_components/locations-cards'
 
 export const metadata = { title: 'Locations — Settings' }
 

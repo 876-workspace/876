@@ -1,4 +1,4 @@
-import { PackageList } from '@/components/portal/package-list'
+import { PackageList } from '@/features/portal/components/package-list'
 import { requirePortalCustomer } from '@/lib/portal/customer'
 import { service } from '@/lib/service'
 

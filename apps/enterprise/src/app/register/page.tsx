@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { BusinessOnboarding } from './business-onboarding'
+import { BusinessOnboarding } from './_components/business-onboarding'
 
 export const dynamic = 'force-dynamic'
 

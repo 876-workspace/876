@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-import { SwitchAccountLink } from '@/components/switch-account-link'
+import { SwitchAccountLink } from '@/components/shell/switch-account-link'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 export const metadata: Metadata = {
