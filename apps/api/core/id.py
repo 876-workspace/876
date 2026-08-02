@@ -34,6 +34,7 @@ ENTITY_PREFIXES = {
     "invoice": "inv",
     "log": "log",
     "membership": "mem",
+    "message": "msg",
     "mobileNumber": "mob",
     "note": "nte",
     "notification": "ntf",
@@ -77,6 +78,7 @@ ENTITY_PREFIXES = {
     "userProfile": "upr",
     "userSocialProfile": "usp",
     "verification": "ver",
+    "webhookEvent": "whe",
 }
 
 
