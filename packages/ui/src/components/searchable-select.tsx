@@ -17,6 +17,12 @@ import {
 export type SearchableSelectOption = {
   value: string
   label: string
+  /**
+   * A short value shown in its own column to the left of the label, e.g. a
+   * dialling code beside a country. Kept as a separate column rather than
+   * folded into `label` so the codes align down the list instead of ragging.
+   */
+  leadingLabel?: string
 }
 
 type Props = {
@@ -81,8 +87,21 @@ export function SearchableSelect({
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
         <ComboboxList>
           {(option: SearchableSelectOption) => (
-            <ComboboxItem key={option.value} value={option.value}>
-              {option.label}
+            <ComboboxItem
+              key={option.value}
+              value={option.value}
+              className="group/option data-selected:bg-primary data-selected:text-primary-foreground data-selected:data-highlighted:bg-primary data-selected:data-highlighted:text-primary-foreground"
+            >
+              {option.leadingLabel ? (
+                <span className="flex w-full items-center gap-3">
+                  <span className="text-muted-foreground group-data-selected/option:text-primary-foreground w-12 shrink-0 tabular-nums">
+                    {option.leadingLabel}
+                  </span>
+                  <span className="truncate">{option.label}</span>
+                </span>
+              ) : (
+                option.label
+              )}
             </ComboboxItem>
           )}
         </ComboboxList>

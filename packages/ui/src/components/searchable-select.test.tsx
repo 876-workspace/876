@@ -16,9 +16,7 @@ import {
 async function openPopup(): Promise<void> {
   const trigger = screen.getByRole('combobox')
   fireEvent.click(trigger)
-  await waitFor(() =>
-    expect(trigger).toHaveAttribute('aria-expanded', 'true')
-  )
+  await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
 }
 
 const COUNTRIES: SearchableSelectOption[] = [
