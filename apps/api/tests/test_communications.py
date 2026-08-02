@@ -136,6 +136,9 @@ class _Db:
     async def flush(self) -> None:
         return None
 
+    async def commit(self) -> None:
+        return None
+
 
 class _CallProvider:
     def __init__(self) -> None:
@@ -391,3 +394,67 @@ async def _none_coroutine(**_: object) -> None:
 
 async def _namespace_coroutine(**values: object) -> SimpleNamespace:
     return SimpleNamespace(**values)
+
+
+@pytest.mark.asyncio
+async def test_failed_send_keeps_its_idempotency_record() -> None:
+    """A provider failure must leave the idempotency row committed.
+
+    Regression: the failure path only flushed, and get_db() rolls the request
+    transaction back on the re-raise — so the row and its idempotency key
+    vanished, and the retry after an uncertain timeout billed a second message.
+    """
+
+    class FailingProvider:
+        async def create_message(self, **_: object) -> ProviderMessage:
+            raise AppHTTPException("communications/provider-unavailable", "Unavailable", 503)
+
+        async def retrieve_message(self, **_: object) -> ProviderMessage:
+            raise AssertionError("not reached")
+
+    class RecordingDb:
+        def __init__(self) -> None:
+            self.commits = 0
+
+        async def commit(self) -> None:
+            self.commits += 1
+
+        async def flush(self) -> None:
+            return None
+
+    db = RecordingDb()
+    service = CommunicationsService.__new__(CommunicationsService)
+    service._settings = Settings(twilio_mode="fake", twilio_sms_enabled=True)
+    service._repo = cast(CommunicationRepository, _MessageRepo())
+    service._messaging_provider = cast(MessagingProvider, FailingProvider())
+    service._db = cast(AsyncSession, db)
+
+    with pytest.raises(AppHTTPException):
+        await service.create_message(
+            to_number="+18765550100", channel="sms", template_key="sms.test", idempotency_key="k1",
+            user_id=None, organization_id=None, app_id="app_1", client_reference=None,
+        )
+
+    # One commit for the intent before the provider call, one for the failure.
+    assert db.commits == 2
+
+
+@pytest.mark.asyncio
+async def test_whatsapp_without_a_configured_content_sid_is_unavailable() -> None:
+    """A placeholder content SID would be rejected by Twilio at send time."""
+    provider = _MessageProvider()
+    service = CommunicationsService.__new__(CommunicationsService)
+    service._settings = Settings(twilio_mode="fake", twilio_whatsapp_enabled=True)
+    service._repo = cast(CommunicationRepository, _MessageRepo())
+    service._messaging_provider = cast(MessagingProvider, provider)
+    service._db = cast(AsyncSession, _Db())
+
+    with pytest.raises(AppHTTPException) as exc_info:
+        await service.create_message(
+            to_number="+18765550100", channel="whatsapp", template_key="whatsapp.test",
+            idempotency_key="k2", user_id=None, organization_id=None, app_id="app_1",
+            client_reference=None,
+        )
+
+    assert exc_info.value.app_code == "communications/invalid-template"
+    assert provider.calls == 0

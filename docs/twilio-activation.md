@@ -76,9 +76,9 @@ Lookup
 
 - `TWILIO_LOOKUP_LINE_TYPE_ENABLED` requests a paid data package and is billed per lookup; leave it off unless carrier or line type is actually needed.
 - Lookup results are cached per number, so a repeat lookup inside the cache TTL does not bill a second request.
-- Per-user, per-number, per-IP, per-organization, and per-app rate limits apply before any provider call.
+- Per-user and per-number rate limits apply to **verification sends only**. Transactional messages and outbound calls are admin-only and idempotency-scoped, but are **not** yet rate limited — treat per-app, per-org, and per-IP limits as a prerequisite to enabling them, not an existing protection.
 - Verification sends are capped per 24-hour window with a resend cooldown.
-- Destination-country allowlists restrict where messages and calls can go.
+- Destination-country allowlists are **not implemented**; restrict destinations in the Twilio console (Geo Permissions) until they are.
 - Set a Twilio budget alert before enabling any channel.
 
 ## Rollback
