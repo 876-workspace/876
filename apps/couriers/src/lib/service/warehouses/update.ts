@@ -89,9 +89,7 @@ export async function update(
           ...(input.instructions === undefined
             ? {}
             : { instructions: input.instructions }),
-          ...(input.isActive === undefined
-            ? {}
-            : { isActive: input.isActive }),
+          ...(input.isActive === undefined ? {} : { isActive: input.isActive }),
           ...(input.isPrimary === undefined
             ? {}
             : { isPrimary: input.isPrimary }),

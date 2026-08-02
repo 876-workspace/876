@@ -27,6 +27,23 @@ const optionalText = (max: number) =>
     .transform((value) => (value === '' ? undefined : value))
     .optional()
 
+/**
+ * The mailbox prefix is uppercased server-side as well as in the form, so a
+ * value written by the API or an import renders the same as one typed by an
+ * admin — a warehouse's addresses must not differ by the case of their prefix.
+ */
+const optionalMailboxPrefix = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .transform((value) => (value === '' ? undefined : value.toUpperCase()))
+    .refine(
+      (value) => value === undefined || /^[A-Za-z]+$/.test(value),
+      'Warehouse mailbox prefix may only contain letters.'
+    )
+    .optional()
+
 const optionalWarehouseCode = z
   .string()
   .trim()
@@ -34,6 +51,48 @@ const optionalWarehouseCode = z
   .transform((value) => (value === '' ? undefined : value.toUpperCase()))
   .refine(
     (value) => value === undefined || /^[A-Z0-9-]+$/.test(value),
+    'Warehouse code may only contain letters, numbers and hyphens.'
+  )
+  .optional()
+
+/*
+ * Update-only variants. On update, a blank string is the user **clearing** the
+ * field, which is a different intent from omitting it — and the two must not
+ * collapse. The create variants map blank to `undefined` (absence), so reusing
+ * them on update makes a cleared field indistinguishable from an untouched one
+ * and the old value survives the save. These map blank to `null`, which the
+ * service writes through as an explicit clear.
+ */
+/*
+ * They accept `null` as input as well as producing it, so parsing is
+ * idempotent: the route handler parses the body and the service parses again,
+ * and feeding an already-cleared `null` back through must not be rejected.
+ */
+const clearableText = (max: number) =>
+  z
+    .union([z.string().trim().max(max), z.null()])
+    .transform((value) => (value === null || value === '' ? null : value))
+    .optional()
+
+const clearableMailboxPrefix = (max: number) =>
+  z
+    .union([z.string().trim().max(max), z.null()])
+    .transform((value) =>
+      value === null || value === '' ? null : value.toUpperCase()
+    )
+    .refine(
+      (value) => value === null || /^[A-Z]+$/.test(value),
+      'Warehouse mailbox prefix may only contain letters.'
+    )
+    .optional()
+
+const clearableWarehouseCode = z
+  .union([z.string().trim().max(16), z.null()])
+  .transform((value) =>
+    value === null || value === '' ? null : value.toUpperCase()
+  )
+  .refine(
+    (value) => value === null || /^[A-Z0-9-]+$/.test(value),
     'Warehouse code may only contain letters, numbers and hyphens.'
   )
   .optional()
@@ -69,7 +128,7 @@ export const warehouseCreateParamsSchema = z.strictObject({
   agentName: optionalText(120),
   code: optionalWarehouseCode,
   mailboxPlacement: mailboxPlacementSchema.optional(),
-  mailboxPrefix: optionalText(16),
+  mailboxPrefix: optionalMailboxPrefix(16),
   instructions: optionalText(500),
   isActive: z.boolean().optional(),
   isPrimary: z.boolean().optional(),
@@ -81,11 +140,11 @@ export type WarehouseCreateParams = z.input<typeof warehouseCreateParamsSchema>
 export const warehouseUpdateParamsSchema = z.strictObject({
   name: z.string().trim().min(1).optional(),
   operatingModel: warehouseOperatingModelSchema.optional(),
-  agentName: optionalText(120),
-  code: optionalWarehouseCode,
+  agentName: clearableText(120),
+  code: clearableWarehouseCode,
   mailboxPlacement: mailboxPlacementSchema.optional(),
-  mailboxPrefix: optionalText(16),
-  instructions: optionalText(500),
+  mailboxPrefix: clearableMailboxPrefix(16),
+  instructions: clearableText(500),
   isActive: z.boolean().optional(),
   isPrimary: z.boolean().optional(),
   address: addressUpdateParamsSchema.optional(),
