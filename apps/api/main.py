@@ -34,6 +34,7 @@ from db.migrate import (
     ensure_identity_columns,
     ensure_indexes,
     ensure_invite_source_app_column,
+    ensure_mobile_number_verification_schema,
     ensure_org_business_identity_columns,
     ensure_organizations_logo_file_id_column,
     ensure_organizations_stripe_customer_id,
@@ -475,11 +476,25 @@ async def _ensure_org_erm_tables(engine: object) -> None:
                     Base.metadata.tables["employee_profiles"],
                     Base.metadata.tables["org_contacts"],
                     Base.metadata.tables["user_emails"],
+                    Base.metadata.tables["verifications"],
                     Base.metadata.tables["user_mobile_numbers"],
                 ],
                 checkfirst=True,
             )
         )
+
+
+async def _ensure_mobile_number_verification_schema(engine: object) -> None:
+    """Install phone verification columns after their referenced tables exist."""
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[Base.metadata.tables["verifications"]],
+                checkfirst=True,
+            )
+        )
+        await conn.run_sync(ensure_mobile_number_verification_schema)
 
 
 async def _ensure_org_access_tables(engine: object) -> None:
@@ -602,6 +617,7 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("first_party_provisioning", 1, seed_first_party_provisioning_manifests),
         BootstrapStep("billing_v2_cutover", 1, _cut_over_billing_v2),
         BootstrapStep("org_erm_tables", 1, _ensure_org_erm_tables),
+        BootstrapStep("mobile_number_verification", 1, _ensure_mobile_number_verification_schema),
         BootstrapStep("org_access_tables", 1, _ensure_org_access_tables),
         BootstrapStep("feature_flag_tables", 1, _ensure_feature_flag_tables),
         BootstrapStep("plan_module_tables", 1, ensure_plan_module_tables),

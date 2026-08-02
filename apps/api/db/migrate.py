@@ -863,6 +863,42 @@ def ensure_indexes(conn: Connection) -> None:
         )
 
 
+def ensure_mobile_number_verification_schema(conn: Connection) -> None:
+    """Add phone-verification columns and the one-primary database invariant."""
+    inspector: Any = sa_inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "verifications" in tables:
+        columns = {column["name"] for column in inspector.get_columns("verifications")}
+        additions = {
+            "provider": "VARCHAR",
+            "provider_sid": "VARCHAR",
+            "subject_type": "VARCHAR",
+            "subject_id": "VARCHAR",
+            "channel": "VARCHAR",
+            "status": "VARCHAR",
+            "attempt_count": "INTEGER",
+            "last_sent_at": "BIGINT",
+            "can_resend_at": "BIGINT",
+            "verified_at": "BIGINT",
+            "metadata": "JSON",
+        }
+        for name, definition in additions.items():
+            if name not in columns:
+                exec_isolated(
+                    conn,
+                    f"verifications.{name}",
+                    f"ALTER TABLE verifications ADD COLUMN {name} {definition}",
+                )
+
+    if "user_mobile_numbers" in tables:
+        exec_isolated(
+            conn,
+            "user_mobile_numbers.one_primary",
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_user_mobile_numbers_primary_per_user "
+            "ON user_mobile_numbers (user_id) WHERE is_primary",
+        )
+
+
 def ensure_identity_columns(conn: Connection) -> None:
     inspector: Any = sa_inspect(conn)
     tables = set(inspector.get_table_names())

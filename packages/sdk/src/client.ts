@@ -9,6 +9,8 @@ import { createOrgsResource } from './resources/orgs.ts'
 import { createUsersResource } from './resources/users.ts'
 import { createProductsResource } from './resources/products.ts'
 import { createFeaturesResource } from './resources/features.ts'
+import { createMobileNumberVerificationsResource } from './resources/mobile-number-verifications.ts'
+import { createMobileNumbersResource } from './resources/mobile-numbers.ts'
 import type { ClientOptions } from './types/api.ts'
 import { auth876ClientOptionsSchema } from './types/api.ts'
 
@@ -123,6 +125,8 @@ export function create876Client(options: ClientOptions = {}) {
     invites,
     subscriptions,
     products: createProductsResource(runtime),
+    mobileNumbers: createMobileNumbersResource(runtime),
+    mobileNumberVerifications: createMobileNumberVerificationsResource(runtime),
   }
 }
 

@@ -160,7 +160,15 @@ class UserMobileNumber(Base):
     """A phone number on a user account, typed (mobile/home/work/other) with one primary."""
 
     __tablename__ = "user_mobile_numbers"
-    __table_args__ = (UniqueConstraint("user_id", "number"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "number"),
+        Index(
+            "uq_user_mobile_numbers_primary_per_user",
+            "user_id",
+            unique=True,
+            postgresql_where=sa_text("is_primary"),
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

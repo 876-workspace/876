@@ -12,6 +12,7 @@ from domains.features.router import router as features_router
 from domains.geo.router import router as geo_router
 from domains.health.router import router as health_router
 from domains.memberships.router import router as memberships_router
+from domains.mobile_numbers.router import router as mobile_numbers_router
 from domains.modules.router import router as modules_router
 from domains.oauth.router import router as oauth_router
 from domains.onboarding.router import router as onboarding_router
@@ -54,4 +55,5 @@ protected_router.include_router(provisioning_router)
 protected_router.include_router(billing_router)
 protected_router.include_router(apps_router)
 protected_router.include_router(users_router)
+protected_router.include_router(mobile_numbers_router)
 router.include_router(protected_router)
