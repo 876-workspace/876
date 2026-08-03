@@ -86,8 +86,14 @@ export function makeUserColumns(
           [user.first_name, user.last_name].filter(Boolean).join(' ') || '—'
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-6 shrink-0 rounded-md">
-              {user.avatar && <AvatarImage src={user.avatar} alt="" />}
+            {/* Every layer that rounds must be overridden together — the root,
+                its border pseudo-element, the image and the fallback all
+                default to rounded-full, so overriding only some of them leaves
+                uploaded photos circular beside square monograms. */}
+            <Avatar className="size-6 shrink-0 rounded-md after:rounded-md">
+              {user.avatar && (
+                <AvatarImage src={user.avatar} alt="" className="rounded-md" />
+              )}
               <AvatarFallback className="rounded-md text-[0.5625rem]">
                 {initialsOf(user)}
               </AvatarFallback>
