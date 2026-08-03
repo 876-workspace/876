@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -14,11 +16,19 @@ function str(value: string | null | undefined): string {
   return value ?? ''
 }
 
-export default async function ProfileSettingsPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>
-}) {
+type Props = { params: Promise<{ orgSlug: string }> }
+
+export default function ProfileSettingsPage({ params }: Props) {
+  return (
+    <Page>
+      <Suspense fallback={<ProfileSkeleton />}>
+        <ProfileSettingsData params={params} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function ProfileSettingsData({ params }: Props) {
   const { orgSlug } = await params
 
   const ctx = await getManageContext(orgSlug)
@@ -33,7 +43,7 @@ export default async function ProfileSettingsPage({
 
   if (result.error)
     return (
-      <Page>
+      <>
         <PageBreadcrumb
           href={`/org/${orgSlug}/settings`}
           label="Settings"
@@ -47,7 +57,7 @@ export default async function ProfileSettingsPage({
         <div className="876-empty-dashed max-w-2xl">
           We couldn&apos;t load your organization profile. Please try again.
         </div>
-      </Page>
+      </>
     )
 
   const profile = result.data
@@ -85,7 +95,7 @@ export default async function ProfileSettingsPage({
   const sections = buildSections(parishes)
 
   return (
-    <Page>
+    <>
       <PageBreadcrumb
         href={`/org/${orgSlug}/settings`}
         label="Settings"
@@ -104,6 +114,28 @@ export default async function ProfileSettingsPage({
         initial={initial}
         sections={sections}
       />
-    </Page>
+    </>
+  )
+}
+
+function ProfileSkeleton() {
+  return (
+    <>
+      <Skeleton className="mb-4 h-5 w-16" />
+      <PageHeader className="mb-6">
+        <PageTitle>Organization profile</PageTitle>
+      </PageHeader>
+      <div className="space-y-6">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index} className="876-card space-y-4 p-5">
+            <Skeleton className="h-5 w-40" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   )
 }

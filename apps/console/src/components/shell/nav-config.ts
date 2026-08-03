@@ -1,12 +1,12 @@
 import {
   BarChart3,
   Building2,
-  ClipboardList,
+  ChartPieIcon,
   Database,
   KeyRound,
   LayoutDashboard,
+  RectangleGroup,
   Settings,
-  StickyNote,
   Users,
   Waves,
 } from '@876/ui/icons'
@@ -73,7 +73,7 @@ export const navConfig: NavGroup[] = [
       {
         title: 'Widgets',
         href: '/widgets',
-        icon: StickyNote,
+        icon: RectangleGroup,
         color: 'var(--876-gold)',
       },
       {
@@ -89,7 +89,7 @@ export const navConfig: NavGroup[] = [
       {
         title: 'Reports',
         href: '/reports',
-        icon: ClipboardList,
+        icon: ChartPieIcon,
         color: 'var(--876-gold)',
       },
       {

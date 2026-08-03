@@ -80,14 +80,36 @@ Also relevant:
   different detail pages is `components/patterns/`, not a route-local
   `_components/`. Promote to `packages/ui` only once a second app needs it.
 
-## Open questions to settle before implementation
+## Already built — start here, do not rebuild it
 
-1. Does 876 Storage already exist in the tree, and which upload routes are
-   implemented? The rule's "current implementation boundary" section says the R2
-   adapter, file metadata, upload sessions and `organization.primaryLogo` were
-   the in-scope cycle — **verify against the actual tree** rather than assuming.
-   If only the org route exists, `app.logo` and `user.avatar` are new routes in
-   the Storage service.
+**Couriers already implements the whole org-logo upload flow against 876
+Storage.** Found 2026-08-03 while working nearby:
+
+- `apps/couriers/src/app/org/[orgSlug]/settings/orgprofile/_components/organization-logo-upload.tsx`
+  — the client component: file picker, size/type gate
+  (`MAX_LOGO_SIZE_BYTES = 5MB`, `image/png|jpeg|webp` — note SVG correctly
+  excluded), a phased progress ring (`starting → uploading → verifying → done`)
+  and `OrgAvatar` for the preview/fallback.
+- `organization-logo-upload.test.tsx` beside it — existing coverage to mirror.
+- `apps/couriers/src/lib/client/upload.ts` — `putDirectToStorage`, the direct-
+  to-R2 PUT.
+- `apps/couriers/src/types/storage.ts` — `OrganizationLogoFile`,
+  `OrganizationLogoUploadSession`.
+
+So the session→PUT→verify contract, the upload route, and the UX vocabulary all
+exist. This work is therefore **mostly porting and generalizing**, not greenfield:
+
+1. Confirm which upload routes the Storage service actually declares today
+   (`organization.primaryLogo` at minimum) and add `app.logo` / `user.avatar`.
+2. Promote the couriers upload component to a shared
+   `components/patterns/` (or `packages/ui`) change-image dialog with the hover
+   affordance, parameterized by upload route + current image + fallback name.
+3. Wire Console's three detail pages to it.
+
+Read the couriers implementation before designing anything new — matching it is
+the goal, and any divergence should be deliberate.
+
+## Open questions to settle before implementation
 2. Do `apps`/`users` have a `logo_file_id`/`avatar_file_id` column yet, or do
    they still carry a plain `logo_url`/`avatar` string? A migration is likely.
    `AdminApp.logo_url`, `AdminUser.avatar` and `AdminOrganization.logo_url` are
