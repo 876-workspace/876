@@ -66,25 +66,25 @@ clean). Do not "fix" unrelated things you notice.
 **Couriers already does this whole flow for org logos.** Read all of it first;
 matching it is the goal and any divergence must be deliberate:
 
-| File                                                                                      | What it gives you                                                                                   |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| File                                                                                               | What it gives you                                                                                                                    |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `apps/couriers/src/app/org/[orgSlug]/settings/orgprofile/_components/organization-logo-upload.tsx` | 397 lines: file picker, client-side size/type gate, phased progress (`starting → uploading → verifying → done`), `OrgAvatar` preview |
-| `…/organization-logo-upload.test.tsx`                                                     | the coverage shape to mirror                                                                        |
-| `apps/couriers/src/lib/client/upload.ts`                                                  | `putDirectToStorage` — the direct-to-R2 `PUT`                                                       |
-| `apps/couriers/src/types/storage.ts`                                                      | the start/complete Zod schemas and session/file types                                               |
-| `apps/couriers/src/app/api/manage/settings/orglogo/route.ts`                              | the **start** handler                                                                               |
-| `apps/couriers/src/app/api/manage/settings/orglogo/complete/route.ts`                     | the **complete** handler — verify, check owner, then update the profile                             |
+| `…/organization-logo-upload.test.tsx`                                                              | the coverage shape to mirror                                                                                                         |
+| `apps/couriers/src/lib/client/upload.ts`                                                           | `putDirectToStorage` — the direct-to-R2 `PUT`                                                                                        |
+| `apps/couriers/src/types/storage.ts`                                                               | the start/complete Zod schemas and session/file types                                                                                |
+| `apps/couriers/src/app/api/manage/settings/orglogo/route.ts`                                       | the **start** handler                                                                                                                |
+| `apps/couriers/src/app/api/manage/settings/orglogo/complete/route.ts`                              | the **complete** handler — verify, check owner, then update the profile                                                              |
 
 ## The three surfaces
 
 Each detail page already renders the image; you are adding the affordance around
 the existing renderer, not replacing it.
 
-| Entity | Layout file                                       | Renders today                                     | Upload route key             | Reference fields                |
-| ------ | ------------------------------------------------- | ------------------------------------------------- | ---------------------------- | ------------------------------- |
-| App    | `app/(app)/apps/[slug]/layout.tsx:45`             | `<AppLogo name={app.name} src={app.logo_url} …>`  | `app.logo`                   | `logo_file_id` + `logo_url`     |
-| Org    | `app/(app)/orgs/[slug]/layout.tsx:70,84`          | `OrgLogo … src={org.logo_url}` (two breakpoints)  | `organization.primaryLogo`   | `logo_file_id` + `logo_url`     |
-| User   | `app/(app)/users/[username]/layout.tsx:88,111`    | `<AvatarImage src={user.avatar} …>` (two)         | `user.avatar`                | `avatar_file_id` + `avatar`     |
+| Entity | Layout file                                    | Renders today                                    | Upload route key           | Reference fields            |
+| ------ | ---------------------------------------------- | ------------------------------------------------ | -------------------------- | --------------------------- |
+| App    | `app/(app)/apps/[slug]/layout.tsx:45`          | `<AppLogo name={app.name} src={app.logo_url} …>` | `app.logo`                 | `logo_file_id` + `logo_url` |
+| Org    | `app/(app)/orgs/[slug]/layout.tsx:70,84`       | `OrgLogo … src={org.logo_url}` (two breakpoints) | `organization.primaryLogo` | `logo_file_id` + `logo_url` |
+| User   | `app/(app)/users/[username]/layout.tsx:88,111` | `<AvatarImage src={user.avatar} …>` (two)        | `user.avatar`              | `avatar_file_id` + `avatar` |
 
 Note the org and user layouts render the image **twice** (desktop and mobile
 breakpoints). Both must get the affordance, or it works on one viewport only.

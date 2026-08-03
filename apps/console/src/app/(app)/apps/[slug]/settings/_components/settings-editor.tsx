@@ -30,7 +30,7 @@ import {
 } from '@876/ui/select'
 
 import { client } from '@/lib/client'
-import { UploadDropzone } from '@/lib/uploadthing'
+import { ChangeImageDialog } from '@/components/patterns/change-image-dialog'
 
 const APP_KINDS = ['internal', 'platform', 'product', 'external'] as const
 const APP_STATUSES = ['active', 'inactive'] as const
@@ -315,58 +315,23 @@ export function OwnershipSection({
 /* ── App icon (saves immediately) ──────────────────────────────────────── */
 
 export function IconSection({ app }: { app: AdminApp }) {
-  const router = useRouter()
-  const [updating, setUpdating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  async function updateLogo(logoUrl: string | null) {
-    setUpdating(true)
-    setError(null)
-    const { error: updateError } = await client.apps.update(app.id, {
-      logo_url: logoUrl,
-    })
-    setUpdating(false)
-    if (updateError) {
-      setError(updateError.message)
-      return
-    }
-
-    router.refresh()
-  }
-
   return (
     <SettingsCard title="App icon">
-      {app.logo_url ? (
-        <div className="flex items-center gap-5">
-          <OrgAvatar
-            name={app.name}
-            src={app.logo_url}
-            size="lg"
-            className="size-16 rounded-lg"
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={updating}
-            onClick={() => void updateLogo(null)}
-          >
-            {updating ? 'Removing...' : 'Remove'}
-          </Button>
-        </div>
-      ) : (
-        <UploadDropzone
-          endpoint="appIcon"
-          onClientUploadComplete={(files) => {
-            const url = files[0]?.serverData?.url
-            if (url) void updateLogo(url)
-          }}
-          onUploadError={(uploadError) => setError(uploadError.message)}
+      <ChangeImageDialog
+        entity="app"
+        routeKey="app.logo"
+        ownerId={app.id}
+        currentImageUrl={app.logo_url}
+        fallbackName={app.name}
+        imageKind="logo"
+      >
+        <OrgAvatar
+          name={app.name}
+          src={app.logo_url}
+          size="lg"
+          className="size-16 rounded-lg"
         />
-      )}
-      {error && (
-        <p className="text-destructive mt-2 text-[0.8125rem]">{error}</p>
-      )}
+      </ChangeImageDialog>
     </SettingsCard>
   )
 }
