@@ -9,7 +9,7 @@ automated reviewer on PR #159. All three are legitimate.
 **This is the important one.** The whole point of the change was that page
 chrome paints immediately. On these four routes it does not: the single
 `<Suspense>` wraps a data component that renders the breadcrumb and heading
-*as well as* the table, so while the list request is in flight the user sees
+_as well as_ the table, so while the list request is in flight the user sees
 `loading.tsx`'s chrome, then that chrome **disappears** and is replaced by only
 a table skeleton, then comes back. A visible layout shift, and the opposite of
 the intent.
@@ -78,7 +78,7 @@ re-resolving it there.
 ## Finding 2 — the product-kind gate runs after the shell commits
 
 `apps/[slug]/plans/page.tsx` and `apps/[slug]/subscribers/page.tsx` call
-`notFound()` for `app_kind !== 'product'` *inside* the data component, so a
+`notFound()` for `app_kind !== 'product'` _inside_ the data component, so a
 non-product app streams a Plans heading and skeleton before 404-ing.
 
 Apply the same two-tier split: resolve the app and run the
@@ -94,7 +94,7 @@ the 200 status is **inherent to having `loading.tsx` at all**, not to where
 `notFound()` sits. Next.js emits `<meta name="robots" content="noindex">` for a
 streamed 404, and this is an auth-gated internal console, so the status code is
 acceptable. **Do not remove `loading.tsx`, and do not restructure the page to
-block rendering just to recover a 404 status.** Fix only the *ordering*, so the
+block rendering just to recover a 404 status.** Fix only the _ordering_, so the
 not-found result is reached before the slow fetch instead of after it.
 
 ## Finding 3 — `loading.tsx` renders a breadcrumb pointing at the wrong place

@@ -26,21 +26,21 @@ That migration was explicitly deferred. Plain Suspense + `loading.tsx` only.
 
 Only these route directories under `apps/console/src/app/(app)/`:
 
-| # | Route dir | Page file |
-|---|-----------|-----------|
-| 1 | `users/` | `page.tsx` |
-| 2 | `orgs/` | `page.tsx` |
-| 3 | `apps/` | `page.tsx` |
-| 4 | `settings/users/` | `page.tsx` |
-| 5 | `settings/users/roles/` | `page.tsx` |
-| 6 | `audit-log/` | `page.tsx` |
-| 7 | `orgs/[slug]/members/` | `page.tsx` |
-| 8 | `orgs/[slug]/billing/accounts/` | `page.tsx` |
-| 9 | `orgs/[slug]/billing/customers/` | `page.tsx` |
-| 10 | `orgs/[slug]/billing/subscriptions/` | `page.tsx` |
-| 11 | `apps/[slug]/plans/` | `page.tsx` |
-| 12 | `apps/[slug]/subscribers/` | `page.tsx` |
-| 13 | `apps/[slug]/features/` | `page.tsx` |
+| #   | Route dir                            | Page file  |
+| --- | ------------------------------------ | ---------- |
+| 1   | `users/`                             | `page.tsx` |
+| 2   | `orgs/`                              | `page.tsx` |
+| 3   | `apps/`                              | `page.tsx` |
+| 4   | `settings/users/`                    | `page.tsx` |
+| 5   | `settings/users/roles/`              | `page.tsx` |
+| 6   | `audit-log/`                         | `page.tsx` |
+| 7   | `orgs/[slug]/members/`               | `page.tsx` |
+| 8   | `orgs/[slug]/billing/accounts/`      | `page.tsx` |
+| 9   | `orgs/[slug]/billing/customers/`     | `page.tsx` |
+| 10  | `orgs/[slug]/billing/subscriptions/` | `page.tsx` |
+| 11  | `apps/[slug]/plans/`                 | `page.tsx` |
+| 12  | `apps/[slug]/subscribers/`           | `page.tsx` |
+| 13  | `apps/[slug]/features/`              | `page.tsx` |
 
 You may **add** `loading.tsx` and files under each route's own `_components/`
 directory. You may **not** touch `packages/`, any other app, any API code, or
@@ -132,8 +132,16 @@ import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
 export default function Loading() {
   return (
     <Page>
-      <ResourceToolbar title="Users" primaryLabel="Add" primaryHref="/users/new" primaryVariant="info" refresh />
-      <div className="mb-4 max-w-sm"><Skeleton className="h-9 w-full" /></div>
+      <ResourceToolbar
+        title="Users"
+        primaryLabel="Add"
+        primaryHref="/users/new"
+        primaryVariant="info"
+        refresh
+      />
+      <div className="mb-4 max-w-sm">
+        <Skeleton className="h-9 w-full" />
+      </div>
       <DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />
     </Page>
   )
@@ -154,17 +162,17 @@ export default function Loading() {
 
 ```ts
 type DataTableSkeletonColumn = {
-  label: string          // real header text
-  width?: string         // e.g. '36px'
-  srOnly?: boolean       // avatar / action columns
+  label: string // real header text
+  width?: string // e.g. '36px'
+  srOnly?: boolean // avatar / action columns
   cell?: 'text' | 'avatar' | 'badge'
   cellWidth?: string
 }
 
 function DataTableSkeleton(props: {
   columns: DataTableSkeletonColumn[]
-  rows?: number   // default 8
-  card?: boolean  // default true — wraps in `876-card`
+  rows?: number // default 8
+  card?: boolean // default true — wraps in `876-card`
   className?: string
 }): JSX.Element
 ```
