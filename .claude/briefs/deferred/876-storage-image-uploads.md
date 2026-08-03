@@ -62,7 +62,7 @@ apply directly here:
   bucket, owner, category, audience, or purpose.
 - **R2 has no presigned POST**, so size cannot be capped at the edge. Sign
   `Content-Type`/`Content-Length` into the presigned `PUT`, reject the declared
-  size against the route max *before* signing, and HEAD-verify the object on
+  size against the route max _before_ signing, and HEAD-verify the object on
   completion — deleting it and marking the file `failed` on mismatch. Never mark
   `ready` on the client's word.
 - **SVG is not accepted** until a sanitization step exists (active-content
@@ -109,11 +109,61 @@ exist. This work is therefore **mostly porting and generalizing**, not greenfiel
 Read the couriers implementation before designing anything new — matching it is
 the goal, and any divergence should be deliberate.
 
-## Open questions to settle before implementation
-2. Do `apps`/`users` have a `logo_file_id`/`avatar_file_id` column yet, or do
-   they still carry a plain `logo_url`/`avatar` string? A migration is likely.
-   `AdminApp.logo_url`, `AdminUser.avatar` and `AdminOrganization.logo_url` are
-   the current serialized fields.
+## Answered by inspection (2026-08-03) — questions 1 and 2
+
+**Delegation:** this work goes to **`gpt-5.6-sol` at medium reasoning effort**
+(user instruction, 2026-08-03), not `gpt-5.6-terra`.
+
+**1. The Storage service exists: `apps/storage-api`.** Upload routes are
+declared in `apps/storage-api/domains/uploads/routes.py` as a frozen dataclass
+keyed by route name. **Only `organization.primaryLogo` is declared today**, so
+`app.logo` and `user.avatar` are genuinely new routes. The shape to copy:
+
+```python
+@dataclass(frozen=True)
+class UploadRoute:
+    key: str
+    purpose: str
+    owner_type: str
+    allowed_content_types: tuple[str, ...]
+    max_size_bytes: int
+    category: str
+    audience: str
+    key_template: str
+
+"organization.primaryLogo": UploadRoute(
+    key="organization.primaryLogo",
+    purpose="organization_logo",
+    owner_type="organization",
+    allowed_content_types=("image/png", "image/jpeg", "image/webp"),
+    max_size_bytes=5 * 1024 * 1024,
+    category="attachment",
+    audience="public",
+    key_template="organizations/{owner_id}/branding/{file_id}/{version_id}",
+)
+```
+
+Note it already matches the rule: `attachment` + `public`, no SVG, 5 MB cap,
+server-side `key_template`. The new routes follow the same pattern with
+`owner_type="app"` / `"user"` and their own key templates. There are existing
+tests to extend — `tests/test_architecture_invariants.py` asserts on
+`UPLOAD_ROUTES["organization.primaryLogo"]`.
+
+**2. Column state differs per entity — one already done, two need migrations:**
+
+| Entity       | Today                                                                                                                                                                   | Needed                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Organization | **`logo_file_id` already exists** (`apps/api/db/migrate.py` → `ensure_organizations_logo_file_id_column`, revision 2; serialized in `domains/organizations/schemas.py`) | nothing                                       |
+| App          | `logo_url` string only (`apps/api/db/models/apps.py`)                                                                                                                   | add `logo_file_id` + migration + serializer   |
+| User         | `avatar` string only (`apps/api/db/models/users.py`)                                                                                                                    | add `avatar_file_id` + migration + serializer |
+
+So the org path is the working end-to-end reference across **all three layers**
+— storage route, core column, couriers UI — and the app/user paths need the
+core-API half built to match. Follow `ensure_organizations_logo_file_id_column`
+as the migration precedent.
+
+## Open questions still to settle
+
 3. Cropping — is a client-side crop step wanted, or is a plain
    pick-preview-upload enough for v1? Cropping pulls in a dependency; ask before
    adding one.
