@@ -44,4 +44,5 @@ export type ManageContext = {
   tenant: Tenant | null
   role: OrgRole
   accessStatus: AppAccessStatus
+  currentPlanName?: string | null
 }

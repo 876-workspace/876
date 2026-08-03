@@ -152,6 +152,7 @@ export const getManageContext = cache(async function getManageContext(
   const accessStatus: AppAccessStatus = accessResult.error
     ? 'none'
     : ((accessResult.data?.status as AppAccessStatus) ?? 'none')
+  const currentPlanName = accessResult.data?.items?.[0]?.product_name ?? null
 
   return {
     userId: user.id,
@@ -163,5 +164,6 @@ export const getManageContext = cache(async function getManageContext(
     tenant: resolvedTenant,
     role: resolvedRole,
     accessStatus,
+    ...(currentPlanName ? { currentPlanName } : {}),
   }
 })
