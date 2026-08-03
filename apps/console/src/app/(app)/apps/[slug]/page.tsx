@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { ArrowRight } from '@876/ui/icons'
 
 import { resolveApp } from './_data'
@@ -12,6 +13,7 @@ import {
   CardAction,
 } from '@876/ui/card'
 import { Button } from '@876/ui/button'
+import { Skeleton } from '@876/ui/skeleton'
 import { $876 } from '@/lib/876'
 import {
   Table,
@@ -68,14 +70,30 @@ function formatMoney(amount: string, currency: string): string {
   }
 }
 
-export default async function AppOverviewPage({ params }: Props) {
+export default function AppOverviewPage({ params }: Props) {
+  return (
+    <Suspense fallback={<AppOverviewSkeleton />}>
+      <AppOverviewData params={params} />
+    </Suspense>
+  )
+}
+
+async function AppOverviewData({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
   if (!app) notFound()
 
   if (app.app_kind !== 'product') return null
 
-  const billingStats = await retrieveBillingStats(app.id)
+  return (
+    <Suspense fallback={<AppOverviewSkeleton />}>
+      <AppPerformance appId={app.id} />
+    </Suspense>
+  )
+}
+
+async function AppPerformance({ appId }: { appId: string }) {
+  const billingStats = await retrieveBillingStats(appId)
   const stats = [
     {
       label: 'Monthly recurring revenue',
@@ -182,6 +200,22 @@ export default async function AppOverviewPage({ params }: Props) {
             </span>
           </div>
         </aside>
+      </div>
+    </div>
+  )
+}
+
+function AppOverviewSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {Array.from({ length: 4 }, (_, index) => (
+          <Skeleton key={index} className="h-28" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Skeleton className="h-72 lg:col-span-2" />
+        <Skeleton className="h-64" />
       </div>
     </div>
   )

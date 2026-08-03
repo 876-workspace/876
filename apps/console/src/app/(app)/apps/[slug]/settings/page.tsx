@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
+import type { AdminApp } from '@876/admin'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { Calendar, Fingerprint, KeyRound } from '@876/ui/icons'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { InfoSection, Field } from '@/components/patterns/detail/info-section'
 import { $876 } from '@/lib/876'
@@ -37,11 +40,27 @@ function ValueList({ values }: { values: string[] }) {
   )
 }
 
-export default async function AppSettingsPage({ params }: Props) {
+export default function AppSettingsPage({ params }: Props) {
+  return (
+    <Suspense fallback={<SettingsSkeleton />}>
+      <AppSettingsData params={params} />
+    </Suspense>
+  )
+}
+
+async function AppSettingsData({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
   if (!app) notFound()
 
+  return (
+    <Suspense fallback={<SettingsSkeleton />}>
+      <AppSettingsContent app={app} />
+    </Suspense>
+  )
+}
+
+async function AppSettingsContent({ app }: { app: AdminApp }) {
   const { data: orgList } = await $876.organizations.list({ limit: 100 })
   const orgs: OrgOption[] = (orgList?.data ?? []).map((org) => ({
     id: org.id,
@@ -110,6 +129,19 @@ export default async function AppSettingsPage({ params }: Props) {
         </InfoSection>
 
         <DangerSection app={app} />
+      </div>
+    </div>
+  )
+}
+
+function SettingsSkeleton() {
+  return (
+    <div>
+      <Skeleton className="mb-5 h-8 w-28" />
+      <div className="space-y-5">
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-72 w-full" />
       </div>
     </div>
   )

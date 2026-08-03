@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { Fingerprint, Settings, Calendar } from '@876/ui/icons'
 import { InfoSection, Field } from '@/components/patterns/detail/info-section'
@@ -15,7 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${feature.name} - Features` }
 }
 
-export default async function FeatureOverviewPage({ params }: Props) {
+export default function FeatureOverviewPage({ params }: Props) {
+  return (
+    <Suspense fallback={<FeatureSkeleton />}>
+      <FeatureOverviewData params={params} />
+    </Suspense>
+  )
+}
+
+async function FeatureOverviewData({ params }: Props) {
   const { id } = await params
   const feature = await resolveFeature(id)
   if (!feature) notFound()
@@ -56,6 +66,16 @@ export default async function FeatureOverviewPage({ params }: Props) {
         <Field label="Record created" value={formatDate(feature.created_at)} />
         <Field label="Record updated" value={formatDate(feature.updated_at)} />
       </InfoSection>
+    </div>
+  )
+}
+
+function FeatureSkeleton() {
+  return (
+    <div className="grid gap-5 lg:grid-cols-2">
+      <Skeleton className="h-64" />
+      <Skeleton className="h-64" />
+      <Skeleton className="h-48" />
     </div>
   )
 }

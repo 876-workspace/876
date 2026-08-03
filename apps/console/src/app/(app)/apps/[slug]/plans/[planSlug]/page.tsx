@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { Pencil, Plus } from '@876/ui/icons'
 
 import { cn } from '@876/core/utils'
@@ -12,6 +13,7 @@ import {
   CardAction,
 } from '@876/ui/card'
 import { Separator } from '@876/ui/separator'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
@@ -45,7 +47,15 @@ function CopyChip({ value, className }: { value: string; className?: string }) {
   )
 }
 
-export default async function PlanDetailPage({ params }: Props) {
+export default function PlanDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<PlanSkeleton />}>
+      <PlanDetailData params={params} />
+    </Suspense>
+  )
+}
+
+async function PlanDetailData({ params }: Props) {
   const { slug, planSlug } = await params
   const app = await resolveApp(slug)
 
@@ -174,6 +184,15 @@ export default async function PlanDetailPage({ params }: Props) {
           )}
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+function PlanSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <Skeleton className="h-80" />
+      <Skeleton className="h-80" />
     </div>
   )
 }
