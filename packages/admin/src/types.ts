@@ -359,6 +359,7 @@ export type AdminOrganization = {
   slug: string
   status: string
   logo_url: string | null
+  logo_file_id: string | null
   // Contact
   primary_phone: string | null
   primary_email: string | null
@@ -443,6 +444,7 @@ export type AdminOrganizationUpdateParams = Partial<
     | 'slug'
     | 'status'
     | 'logo_url'
+    | 'logo_file_id'
     | 'primary_phone'
     | 'primary_email'
     | 'website_url'

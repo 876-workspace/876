@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 
 /** Searches organizations. Pure transport over `$876.organizations.search`. */
 export async function GET(request: NextRequest): Promise<Response> {
-  const { response } = await requireConsolePermission('console:orgs')
+  const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
 
   const query = request.nextUrl.searchParams.get('q')?.trim() ?? ''
