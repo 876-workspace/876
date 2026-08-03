@@ -4,9 +4,9 @@ import {
   ChartPieIcon,
   Database,
   KeyRound,
-  LayoutDashboard,
   RectangleGroup,
   Settings,
+  SquaresPlusIcon,
   Users,
   Waves,
 } from '@876/ui/icons'
@@ -60,7 +60,7 @@ export const navConfig: NavGroup[] = [
       {
         title: 'Apps',
         href: '/apps',
-        icon: LayoutDashboard,
+        icon: SquaresPlusIcon,
         color: 'var(--876-purple)',
         children: [
           { title: '876', href: '/apps/876-consumer' },
