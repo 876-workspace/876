@@ -27,6 +27,10 @@ import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { $876 } from '@/lib/876'
 import { formatDateTime } from '@/lib/format'
 import { Page } from '@876/ui/page'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
+import { AUDIT_LOG_SKELETON_COLUMNS } from './_components/audit-log-skeleton-columns'
 
 export const metadata = { title: 'Audit Log' }
 
@@ -49,7 +53,60 @@ const APP_LABELS: Record<string, string> = {
   '876-couriers': 'Couriers',
 }
 
-export default async function AuditLogPage({ searchParams }: Props) {
+export default function AuditLogPage({ searchParams }: Props) {
+  return (
+    <Page>
+      <ResourceToolbar title="Audit Log" refresh />
+      <Suspense fallback={<Skeleton className="mb-4 h-10 w-full" />}>
+        <AuditLogFilters searchParams={searchParams} />
+      </Suspense>
+      <Suspense
+        fallback={<DataTableSkeleton columns={AUDIT_LOG_SKELETON_COLUMNS} />}
+      >
+        <AuditLogTableData searchParams={searchParams} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function AuditLogFilters({ searchParams }: Pick<Props, 'searchParams'>) {
+  const params = await searchParams
+  const filters = cleanFilters(params)
+
+  return (
+    <form className="mb-4 grid gap-3 lg:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto_auto]">
+      <Input
+        name="q"
+        placeholder="Search events, paths, users, request IDs"
+        defaultValue={filters.q ?? ''}
+      />
+      <Input
+        name="app_name"
+        placeholder="App"
+        defaultValue={filters.app_name ?? ''}
+      />
+      <Input
+        name="event"
+        placeholder="Event"
+        defaultValue={filters.event ?? ''}
+      />
+      <Input name="path" placeholder="Path" defaultValue={filters.path ?? ''} />
+      <button className={buttonVariants({ variant: 'brand' })} type="submit">
+        Query
+      </button>
+      <Link
+        href="/audit-log"
+        className={buttonVariants({ variant: 'outline' })}
+      >
+        Clear
+      </Link>
+    </form>
+  )
+}
+
+async function AuditLogTableData({
+  searchParams,
+}: Pick<Props, 'searchParams'>) {
   const params = await searchParams
   const filters = cleanFilters(params)
   const { data } = await $876.auditEvents.list({
@@ -68,45 +125,11 @@ export default async function AuditLogPage({ searchParams }: Props) {
   const isFiltered = Object.values(filters).some(Boolean)
 
   return (
-    <Page>
+    <>
       <TrackMCEventOnMount
         event={AnalyticsEvent.AuditLogViewed}
         properties={{ filter_applied: isFiltered }}
       />
-      <ResourceToolbar title="Audit Log" refresh />
-
-      <form className="mb-4 grid gap-3 lg:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto_auto]">
-        <Input
-          name="q"
-          placeholder="Search events, paths, users, request IDs"
-          defaultValue={filters.q ?? ''}
-        />
-        <Input
-          name="app_name"
-          placeholder="App"
-          defaultValue={filters.app_name ?? ''}
-        />
-        <Input
-          name="event"
-          placeholder="Event"
-          defaultValue={filters.event ?? ''}
-        />
-        <Input
-          name="path"
-          placeholder="Path"
-          defaultValue={filters.path ?? ''}
-        />
-        <button className={buttonVariants({ variant: 'brand' })} type="submit">
-          Query
-        </button>
-        <Link
-          href="/audit-log"
-          className={buttonVariants({ variant: 'outline' })}
-        >
-          Clear
-        </Link>
-      </form>
-
       {events.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -175,7 +198,7 @@ export default async function AuditLogPage({ searchParams }: Props) {
           />
         </div>
       )}
-    </Page>
+    </>
   )
 }
 

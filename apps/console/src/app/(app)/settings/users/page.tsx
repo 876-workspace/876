@@ -20,6 +20,9 @@ import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { TeamTableRow } from './_components/member-row'
 import { Page } from '@876/ui/page'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { TEAM_SKELETON_COLUMNS } from './_components/team-skeleton-columns'
 
 export const metadata = { title: 'Team - Settings' }
 
@@ -39,7 +42,20 @@ type TeamMember = {
  * (name, email, avatar) are hydrated from `$876` by opaque user ID; a failed
  * identity lookup degrades to placeholders rather than dropping the member.
  */
-export default async function TeamSettingsPage() {
+export default function TeamSettingsPage() {
+  return (
+    <Page>
+      <TrackMCEventOnMount event={AnalyticsEvent.TeamListViewed} />
+      <Suspense
+        fallback={<DataTableSkeleton columns={TEAM_SKELETON_COLUMNS} />}
+      >
+        <TeamTableData />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function TeamTableData() {
   const grants = await service.team.list()
 
   const teamMembers: TeamMember[] = await Promise.all(
@@ -60,43 +76,35 @@ export default async function TeamSettingsPage() {
     })
   )
 
-  return (
-    <Page>
-      <TrackMCEventOnMount event={AnalyticsEvent.TeamListViewed} />
-
-      {teamMembers.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Settings />
-            </EmptyMedia>
-            <EmptyTitle>No team members</EmptyTitle>
-            <EmptyDescription>
-              No users have Console access yet.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="876-card overflow-hidden">
-          <Table>
-            <TableHeader className="876-header-row">
-              <TableRow>
-                <TableHead className="w-12 px-5 py-3.5">
-                  <span className="sr-only">Avatar</span>
-                </TableHead>
-                <TableHead className="px-5 py-3.5">Name</TableHead>
-                <TableHead className="px-5 py-3.5">Email</TableHead>
-                <TableHead className="px-5 py-3.5">Role</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teamMembers.map((user) => (
-                <TeamTableRow key={user.id} user={user} />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </Page>
+  return teamMembers.length === 0 ? (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Settings />
+        </EmptyMedia>
+        <EmptyTitle>No team members</EmptyTitle>
+        <EmptyDescription>No users have Console access yet.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  ) : (
+    <div className="876-card overflow-hidden">
+      <Table>
+        <TableHeader className="876-header-row">
+          <TableRow>
+            <TableHead className="w-12 px-5 py-3.5">
+              <span className="sr-only">Avatar</span>
+            </TableHead>
+            <TableHead className="px-5 py-3.5">Name</TableHead>
+            <TableHead className="px-5 py-3.5">Email</TableHead>
+            <TableHead className="px-5 py-3.5">Role</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {teamMembers.map((user) => (
+            <TeamTableRow key={user.id} user={user} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
