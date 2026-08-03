@@ -3,7 +3,7 @@
 Read this before spawning any sub-agent or driving any external CLI (Codex,
 `agy`, `opencode`, Command Code) for a delegated chunk of work. It defines
 **which model/tool handles which class of task**, and how to invoke each CLI
-non-interactively. See `.claude/rules/implementation-tracker.md` for tracking
+non-interactively. See `.agents/rules/implementation-tracker.md` for tracking
 multi-file delegated work, and the root `CLAUDE.md` "Sub-Agent Rules" section
 for the background-execution rule.
 
@@ -210,7 +210,7 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
 ## Shared rules across all delegated CLIs/sub-agents
 
 - **Never let a delegated CLI or sub-agent commit.** The orchestrating
-  Claude agent stages and commits, per `.claude/rules/git.md` (no AI
+  Claude agent stages and commits, per `.agents/rules/git.md` (no AI
   attribution).
 - **Background execution is authorized** (user, 2026-07-26: _"run codex in the
   background always going further"_, refined to _"in the background only if they
@@ -221,6 +221,30 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
   immediately. Backgrounding a two-second command costs a round trip and buys
   nothing. Whatever the mode, you still **read and verify the output** — a
   backgrounded delegation you never inspect is not delegation.
+- **Verification commands run in the FOREGROUND. Always.** `typecheck`, `lint`,
+  `test`, `prettier --check` — never `run_in_background`, never a background
+  wait-loop, no matter how slow they are. Background them and the result arrives
+  as a notification you may not act on, so you end up reporting "still waiting"
+  turn after turn with no actual information, and in the worst case narrating a
+  pass that never happened. The user named this directly on 2026-08-03: _"when
+  those check[s] run in the background they cause you to hallucinate and not
+  wake up or monitor sometimes."_ It is not hypothetical — that same session,
+  a backgrounded couriers typecheck sat unread while stale Next route types
+  masked a real failure, which surfaced within seconds of running it in the
+  foreground.
+
+  A foreground run blocks the turn, which is the point: the exit status and the
+  output are in front of you before you say anything about them. Pass a generous
+  `timeout` (the console and couriers suites need 300000–420000 ms) rather than
+  reaching for the background to dodge a timeout. If a command genuinely cannot
+  finish in the maximum foreground timeout, split it (one package at a time)
+  instead of backgrounding it.
+
+  This applies to your own verification and to re-verifying a delegated tool's
+  work. Backgrounding remains correct for the delegated _run itself_ (a `codex
+exec`), for CI polling, and for a long-lived dev server — things that are not
+  a pass/fail gate you are about to report on.
+
 - **Every backgrounded Codex run gets a 5-minute monitor, started in the same
   turn that launches it.** Not on request — automatically, every time.
 
@@ -269,7 +293,7 @@ command or left to exist solely in conversation history.
   e.g. `.claude/briefs/codex/2026-07-18-couriers-org-bootstrap.md`. Do not
   let briefs accumulate as an unsorted pile of `brief1.md`, `brief2.md`.
 - **Do not gitignore `.claude/briefs/`.** Unlike `.claude/tracker/` (local,
-  ephemeral, gitignored per `.claude/rules/implementation-tracker.md`),
+  ephemeral, gitignored per `.agents/rules/implementation-tracker.md`),
   briefs are committed and versioned — they are the durable record of what
   was asked of a delegated tool and why, and later work (or another agent)
   may need to see exactly what a prior brief specified.
