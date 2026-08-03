@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { Calendar, Trash } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
@@ -6,6 +6,7 @@ import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { FlagStripe } from '@876/ui/flag-stripe'
 import { OrgAvatar } from '@876/ui/org-avatar'
+import { Skeleton } from '@876/ui/skeleton'
 import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 import {
@@ -48,15 +49,9 @@ export default async function UserDetailLayout({ children, params }: Props) {
       .join('')
       .toUpperCase() || user.email[0].toUpperCase()
 
-  // Addresses and contacts are independent — fetch them together rather than
-  // letting the country lookup (which reads addresses) serialize ahead of the
-  // contacts fetch. The flag-stripe country is then derived locally.
-  const [addresses, contacts] = await Promise.all([
-    resolveUserAddresses(user.id),
-    resolveUserContacts(user.id),
-  ])
-  const countryCode =
-    addresses.find((address) => address.country_code)?.country_code ?? 'JM'
+  // Contact presence changes tab visibility, so it remains part of the
+  // blocking detail chrome. The flag stripe is purely decorative and streams.
+  const contacts = await resolveUserContacts(user.id)
   const hasContacts = contacts.length > 0
 
   const tabs: RouteTabItem[] = [
@@ -103,10 +98,11 @@ export default async function UserDetailLayout({ children, params }: Props) {
         >
           <DetailHeaderTop>
             <DetailHeaderMain>
-              <FlagStripe
-                countryCode={countryCode}
-                className="h-14 self-center sm:h-16"
-              />
+              <Suspense
+                fallback={<Skeleton className="h-14 w-2 self-center sm:h-16" />}
+              >
+                <UserCountryFlag userId={user.id} />
+              </Suspense>
 
               <Avatar
                 size="lg"
@@ -177,5 +173,17 @@ export default async function UserDetailLayout({ children, params }: Props) {
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
     </div>
+  )
+}
+
+async function UserCountryFlag({ userId }: { userId: string }) {
+  const addresses = await resolveUserAddresses(userId)
+  const countryCode =
+    addresses.find((address) => address.country_code)?.country_code ?? 'JM'
+  return (
+    <FlagStripe
+      countryCode={countryCode}
+      className="h-14 self-center sm:h-16"
+    />
   )
 }
