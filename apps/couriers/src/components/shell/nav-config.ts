@@ -1,13 +1,13 @@
 import {
   BuildingOffice2Icon,
   ChartBarIcon,
+  ChartPieIcon,
   ClipboardDocumentListIcon,
   CreditCardIcon,
   DocumentTextIcon,
-  GlobeAltIcon,
-  LayoutList,
+  RectangleStackIcon,
   Settings,
-  Squares2X2Icon,
+  TruckIcon,
   UsersIcon,
 } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
@@ -60,7 +60,7 @@ export const nav: NavGroup[] = [
       {
         title: 'Packages',
         href: '/packages',
-        icon: LayoutList,
+        icon: RectangleStackIcon,
         color: 'var(--876-gold)',
         children: [
           { title: 'Pre-alerts', href: '/packages/pre-alerts' },
@@ -80,7 +80,7 @@ export const nav: NavGroup[] = [
       {
         title: 'Deliveries',
         href: '/deliveries',
-        icon: GlobeAltIcon,
+        icon: TruckIcon,
         color: 'var(--876-blue)',
       },
       {
@@ -97,7 +97,7 @@ export const nav: NavGroup[] = [
       {
         title: 'Reports',
         href: '/reports',
-        icon: Squares2X2Icon,
+        icon: ChartPieIcon,
         color: 'var(--876-blue)',
       },
       {
