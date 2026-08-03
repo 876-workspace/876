@@ -29,6 +29,7 @@ const user: AdminUser = {
   last_name: 'Lovelace',
   middle_name: null,
   avatar: null,
+  avatar_file_id: null,
   status: 'active',
   platform_role: null,
   banned: false,
