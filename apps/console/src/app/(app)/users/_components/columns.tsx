@@ -67,22 +67,6 @@ export function makeUserColumns(
 ): ColumnDef<AdminUser, unknown>[] {
   return [
     {
-      id: 'avatar',
-      size: 36,
-      enableSorting: false,
-      header: () => <span className="sr-only">Avatar</span>,
-      cell: ({ row }) => (
-        <Avatar className="size-8">
-          {row.original.avatar && (
-            <AvatarImage src={row.original.avatar} alt="" />
-          )}
-          <AvatarFallback className="text-xs">
-            {initialsOf(row.original)}
-          </AvatarFallback>
-        </Avatar>
-      ),
-    },
-    {
       accessorKey: 'first_name',
       header: 'Name',
       sortingFn: (a, b) => {
@@ -101,17 +85,27 @@ export function makeUserColumns(
         const displayName =
           [user.first_name, user.last_name].filter(Boolean).join(' ') || '—'
         return (
-          <div>
-            <Link
-              href={`/users/${user.username ?? user.id}`}
-              className="hover:text-primary font-medium"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {displayName}
-            </Link>
-            {user.username && (
-              <p className="text-muted-foreground text-xs">@{user.username}</p>
-            )}
+          <div className="flex items-center gap-3">
+            <Avatar className="size-6 shrink-0 rounded-md">
+              {user.avatar && <AvatarImage src={user.avatar} alt="" />}
+              <AvatarFallback className="rounded-md text-[0.5625rem]">
+                {initialsOf(user)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <Link
+                href={`/users/${user.username ?? user.id}`}
+                className="hover:text-primary font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {displayName}
+              </Link>
+              {user.username && (
+                <p className="text-muted-foreground text-xs">
+                  @{user.username}
+                </p>
+              )}
+            </div>
           </div>
         )
       },
