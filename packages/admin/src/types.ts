@@ -116,6 +116,7 @@ export type AdminUser = {
   last_name: string
   middle_name: string | null
   avatar: string | null
+  avatar_file_id: string | null
   status: string
   platform_role: string | null
   banned: boolean
@@ -165,6 +166,7 @@ export type AdminConsumerProfile = {
   middle_name: string | null
   nickname: string | null
   avatar: string | null
+  avatar_file_id: string | null
   gender: 'male' | 'female' | 'other' | null
   phone_number: string | null
   date_of_birth: string | null
@@ -205,6 +207,7 @@ export type AdminConsumerContactUser = {
   last_name: string
   middle_name: string | null
   avatar: string | null
+  avatar_file_id: string | null
 }
 
 export type AdminConsumerContact = {
@@ -326,6 +329,7 @@ export type AdminUserUpdateParams = Partial<
     | 'last_name'
     | 'middle_name'
     | 'avatar'
+    | 'avatar_file_id'
     | 'status'
   >
 >
@@ -505,6 +509,7 @@ export type AdminApp = {
   allowed_redirect_uris: string[]
   allowed_logout_uris: string[]
   logo_url: string | null
+  logo_file_id: string | null
   homepage_url: string | null
   type: string
   scopes_allowed: string[]
@@ -516,6 +521,7 @@ export type AdminAppPublic = {
   object: 'app'
   name: string
   logo_url: string | null
+  logo_file_id: string | null
   app_kind: AdminAppKind
 }
 
@@ -534,6 +540,7 @@ export type AdminAppCreateParams = {
 export type AdminAppUpdateParams = Partial<{
   name: string
   logo_url: string | null
+  logo_file_id: string | null
   homepage_url: string | null
   app_kind: AdminAppKind
   status: AdminAppStatus
@@ -833,6 +840,7 @@ export type AdminUserApp = {
   name: string
   slug: string
   logo_url: string | null
+  logo_file_id: string | null
   homepage_url: string | null
   app_kind: 'internal' | 'platform' | 'product' | 'external'
   status: string

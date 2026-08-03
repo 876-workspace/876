@@ -720,6 +720,38 @@ def ensure_organizations_logo_file_id_column(conn: Connection) -> None:
     )
 
 
+def ensure_apps_logo_file_id_column(conn: Connection) -> None:
+    """Add the canonical Storage file reference to existing apps."""
+    inspector: Any = sa_inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "apps" not in tables:
+        return
+    columns = {column["name"] for column in inspector.get_columns("apps")}
+    if "logo_file_id" in columns:
+        return
+    exec_isolated(
+        conn,
+        "apps.logo_file_id",
+        "ALTER TABLE apps ADD COLUMN logo_file_id VARCHAR",
+    )
+
+
+def ensure_users_avatar_file_id_column(conn: Connection) -> None:
+    """Add the canonical Storage file reference to existing users."""
+    inspector: Any = sa_inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "users" not in tables:
+        return
+    columns = {column["name"] for column in inspector.get_columns("users")}
+    if "avatar_file_id" in columns:
+        return
+    exec_isolated(
+        conn,
+        "users.avatar_file_id",
+        "ALTER TABLE users ADD COLUMN avatar_file_id VARCHAR",
+    )
+
+
 def ensure_invite_source_app_column(conn: Connection) -> None:
     """Add the source_app_id column to an existing invite_tokens table."""
     inspector: Any = sa_inspect(conn)

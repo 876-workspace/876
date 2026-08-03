@@ -30,6 +30,10 @@ class UserBase(BaseModel):
         default=None,
         description="URL of the user's avatar image, if available.",
     )
+    avatar_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the user's avatar.",
+    )
     platform_role: str | None = Field(
         default=None,
         description=(
@@ -106,6 +110,7 @@ class UserResponse(UserBase):
                     "last_name": "Doe",
                     "middle_name": None,
                     "avatar": None,
+                    "avatar_file_id": None,
                     "status": "active",
                     "created_at": 1700000000,
                     "updated_at": 1700000000,
@@ -140,6 +145,10 @@ class EnsuredUserResponse(BaseModel):
     last_name: str = Field(description="The user's last name.")
     middle_name: str | None = Field(default=None, description="The user's middle name.")
     avatar: str | None = Field(default=None, description="URL of the user's avatar image, if available.")
+    avatar_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the user's avatar.",
+    )
     status: str = Field(description="The user's account status.", examples=["active", "inactive", "suspended"])
     created_at: int = Field(description="Time at which the user was created. Seconds since the Unix epoch.")
     updated_at: int = Field(description="Time at which the user was last updated. Seconds since the Unix epoch.")
@@ -159,6 +168,7 @@ class CurrentUserResponse(BaseModel):
     last_name: str
     middle_name: str | None = None
     avatar: str | None = None
+    avatar_file_id: str | None = None
     status: str
     banned: bool
     created_at: int
@@ -179,6 +189,10 @@ class UserAppResponse(BaseModel):
     name: str = Field(description="Display name of the app.")
     slug: str = Field(description="URL-safe slug for the app.")
     logo_url: str | None = Field(default=None, description="Logo URL for the app.")
+    logo_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the app's logo.",
+    )
     homepage_url: str | None = Field(default=None, description="Homepage URL for the app.")
     app_kind: str = Field(
         description="App category: 'internal', 'platform', 'product', or 'external'.",
@@ -231,6 +245,10 @@ class ConsumerProfileResponse(BaseModel):
     middle_name: str | None = Field(default=None, description="The user's middle name.")
     nickname: str | None = Field(default=None, description="The user's preferred nickname.")
     avatar: str | None = Field(default=None, description="URL of the user's avatar image.")
+    avatar_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the user's avatar.",
+    )
     gender: Gender | None = Field(default=None, description="The user's gender.")
     phone_number: str | None = Field(default=None, description="The user's phone number.")
     date_of_birth: str | None = Field(default=None, description="The user's date of birth.")
@@ -296,6 +314,10 @@ class ConsumerContactUserResponse(BaseModel):
     last_name: str = Field(description="The contact user's last name.")
     middle_name: str | None = Field(default=None, description="The contact user's middle name.")
     avatar: str | None = Field(default=None, description="URL of the contact user's avatar image.")
+    avatar_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the contact user's avatar.",
+    )
 
 
 class ConsumerContactResponse(BaseModel):
@@ -369,6 +391,10 @@ class UserUpdate(BaseModel):
     avatar: str | None = Field(
         default=None,
         description="URL of the user's avatar image. Set to null to clear it.",
+    )
+    avatar_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the user's avatar. Set to null to clear it.",
     )
     status: str | None = Field(default=None, description="The user's account status.")
 

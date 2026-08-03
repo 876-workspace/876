@@ -10,6 +10,32 @@ function jsonResponse(payload: unknown) {
 }
 
 describe('admin provisioning resource', () => {
+  it('sends and returns the canonical app logo file reference', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        object: 'app',
+        id: 'app_test',
+        logo_file_id: null,
+      })
+    )
+    const $876 = create876AdminClient({
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
+    })
+
+    const result = await $876.apps.update('app_test', { logo_file_id: null })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.test/apps/app_test',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ logo_file_id: null }),
+      })
+    )
+    expect(result.data?.logo_file_id).toBeNull()
+  })
+
   it('uses encoded target and note identifiers for provisioning requests', async () => {
     const fetchMock = vi
       .fn()

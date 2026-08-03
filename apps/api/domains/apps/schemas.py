@@ -43,6 +43,10 @@ class AppResponse(BaseModel):
     allowed_redirect_uris: list[str] = Field(description="List of allowed redirect URIs for OAuth flows.")
     allowed_logout_uris: list[str] = Field(description="List of allowed post-logout redirect URIs.")
     logo_url: str | None = Field(default=None, description="URL of the app's logo image.")
+    logo_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the app's logo.",
+    )
     homepage_url: str | None = Field(default=None, description="URL of the app's homepage.")
     type: str = Field(description="Internal app type classification.", examples=["web"])
     scopes_allowed: list[str] = Field(
@@ -56,7 +60,34 @@ class AppResponse(BaseModel):
         description="Time at which the app record was last updated. Measured in seconds since the Unix epoch."
     )
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "examples": [
+                {
+                    "object": "app",
+                    "id": "app_01HFNPGM9K",
+                    "name": "My OAuth App",
+                    "slug": "my-oauth-app",
+                    "feature_prefix": "my_oauth_app",
+                    "organization_id": None,
+                    "client_id": "client_01HFNPGM9K",
+                    "client_type": "public",
+                    "app_kind": "external",
+                    "status": "active",
+                    "allowed_redirect_uris": [],
+                    "allowed_logout_uris": [],
+                    "logo_file_id": None,
+                    "logo_url": None,
+                    "homepage_url": None,
+                    "type": "web",
+                    "scopes_allowed": ["openid", "profile", "email"],
+                    "created_at": 1700000000,
+                    "updated_at": 1700000000,
+                }
+            ]
+        },
+    )
 
 
 class AppCreatedResponse(AppResponse):
@@ -114,6 +145,10 @@ class AppCreate(BaseModel):
 class AppUpdate(BaseModel):
     name: str | None = None
     logo_url: str | None = None
+    logo_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the app's logo. Set to null to clear it.",
+    )
     homepage_url: str | None = None
     app_kind: Literal["internal", "platform", "product", "external"] | None = None
     status: Literal["active", "inactive"] | None = None
@@ -170,4 +205,8 @@ class AppPublicResponse(BaseModel):
     object: Literal["app"] = "app"
     name: str
     logo_url: str | None = None
+    logo_file_id: str | None = Field(
+        default=None,
+        description="Canonical 876 Storage file identifier for the app's logo.",
+    )
     app_kind: Literal["internal", "platform", "product", "external"]

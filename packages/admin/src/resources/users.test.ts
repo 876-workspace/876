@@ -10,6 +10,34 @@ function jsonResponse(payload: unknown) {
 }
 
 describe('admin users resource', () => {
+  it('sends and returns the canonical user avatar file reference', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        object: 'user',
+        id: 'user_test',
+        avatar_file_id: null,
+      })
+    )
+    const $876 = create876AdminClient({
+      baseUrl: 'https://api.test',
+      internalKey: 'test-internal-key',
+      fetch: fetchMock,
+    })
+
+    const result = await $876.users.update('user_test', {
+      avatar_file_id: null,
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.test/users/user_test',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ avatar_file_id: null }),
+      })
+    )
+    expect(result.data?.avatar_file_id).toBeNull()
+  })
+
   it('routes user feature mutations through the feature grant API', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({

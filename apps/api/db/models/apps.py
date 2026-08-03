@@ -38,6 +38,7 @@ class App(Base):
     status: Mapped[str] = mapped_column(String, nullable=False, default="active", server_default="active")
     allowed_redirect_uris: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False)
     allowed_logout_uris: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, server_default="{}")
+    logo_file_id: Mapped[str | None] = mapped_column(String, nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String, nullable=True)
     homepage_url: Mapped[str | None] = mapped_column(String, nullable=True)
     type: Mapped[str] = mapped_column(String, nullable=False, server_default="web")

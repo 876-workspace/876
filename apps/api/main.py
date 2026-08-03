@@ -25,6 +25,7 @@ from core.products import PLATFORM_PRODUCTS
 from core.timestamps import now_unix_seconds
 from db.migrate import (
     backfill_billing_v3_data,
+    ensure_apps_logo_file_id_column,
     ensure_apps_status_column,
     ensure_billing_customer_outbox_party_columns,
     ensure_billing_v2,
@@ -42,6 +43,7 @@ from db.migrate import (
     ensure_subscription_lifecycle_columns,
     ensure_tax_catalog_schema,
     ensure_user_profile_country_column,
+    ensure_users_avatar_file_id_column,
 )
 from db.models import App as AppModel
 from db.models import AuthProvider, Base, Membership, Organization, SocialPlatform, User
@@ -79,6 +81,8 @@ async def _seed_identity_tables(engine: object) -> None:
         await conn.run_sync(ensure_organizations_stripe_customer_id)
         await conn.run_sync(ensure_org_business_identity_columns)
         await conn.run_sync(ensure_organizations_logo_file_id_column)
+        await conn.run_sync(ensure_apps_logo_file_id_column)
+        await conn.run_sync(ensure_users_avatar_file_id_column)
         await conn.run_sync(ensure_user_profile_country_column)
         await conn.run_sync(
             lambda c: Base.metadata.create_all(
@@ -641,8 +645,8 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
     """
 
     return (
-        # Revision 2 adds organizations.logo_file_id.
-        BootstrapStep("identity_tables", 2, _seed_identity_tables),
+        # Revision 3 adds apps.logo_file_id and users.avatar_file_id.
+        BootstrapStep("identity_tables", 3, _seed_identity_tables),
         BootstrapStep("platform_apps", 1, _seed_platform_apps),
         BootstrapStep("geo_regions", 2, seed_geo_catalog),
         BootstrapStep("provisioning", 1, _ensure_provisioning_tables),

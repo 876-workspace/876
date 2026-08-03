@@ -26,16 +26,16 @@ That migration was explicitly deferred. Plain Suspense + `loading.tsx` only.
 
 Only these route directories under `apps/couriers/src/app/`:
 
-| # | Route dir |
-|---|-----------|
-| 1 | `org/[orgSlug]/customers/` |
-| 2 | `org/[orgSlug]/items/` |
-| 3 | `org/[orgSlug]/settings/users/` |
-| 4 | `org/[orgSlug]/settings/users/roles/` |
-| 5 | `org/[orgSlug]/settings/locations/` |
-| 6 | `org/[orgSlug]/settings/warehouses/` |
-| 7 | `org/[orgSlug]/settings/orgprofile/` |
-| 8 | `portal/(tenant)/(portal)/packages/` |
+| #   | Route dir                             |
+| --- | ------------------------------------- |
+| 1   | `org/[orgSlug]/customers/`            |
+| 2   | `org/[orgSlug]/items/`                |
+| 3   | `org/[orgSlug]/settings/users/`       |
+| 4   | `org/[orgSlug]/settings/users/roles/` |
+| 5   | `org/[orgSlug]/settings/locations/`   |
+| 6   | `org/[orgSlug]/settings/warehouses/`  |
+| 7   | `org/[orgSlug]/settings/orgprofile/`  |
+| 8   | `portal/(tenant)/(portal)/packages/`  |
 
 You may **add** `loading.tsx` and files under each route's own `_components/`.
 You may **not** touch `packages/`, `apps/console`, `apps/api`, any other route,
@@ -134,17 +134,17 @@ For routes 7 (`settings/orgprofile`) and any other form page, there is no table
 
 ```ts
 type DataTableSkeletonColumn = {
-  label: string          // real header text
-  width?: string         // e.g. '36px'
-  srOnly?: boolean       // avatar / action columns
+  label: string // real header text
+  width?: string // e.g. '36px'
+  srOnly?: boolean // avatar / action columns
   cell?: 'text' | 'avatar' | 'badge'
   cellWidth?: string
 }
 
 function DataTableSkeleton(props: {
   columns: DataTableSkeletonColumn[]
-  rows?: number   // default 8
-  card?: boolean  // default true — wraps in `876-card`
+  rows?: number // default 8
+  card?: boolean // default true — wraps in `876-card`
   className?: string
 }): JSX.Element
 ```

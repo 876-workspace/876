@@ -32,21 +32,21 @@ those conventions exactly** — do not invent a second style. Start by reading:
 
 Only these route directories under `apps/console/src/app/(app)/`:
 
-| # | Route dir |
-|---|-----------|
-| 1 | `users/[username]/` (the overview `page.tsx` + its `_data.ts`) |
-| 2 | `users/[username]/security/` |
-| 3 | `users/[username]/addresses/` |
-| 4 | `users/[username]/contacts/` |
-| 5 | `users/[username]/audit/` |
-| 6 | `users/[username]/org/` |
-| 7 | `orgs/[slug]/` (overview `page.tsx`) |
-| 8 | `orgs/[slug]/activity/` |
-| 9 | `orgs/[slug]/billing/` |
-| 10 | `apps/[slug]/` (overview `page.tsx`) |
-| 11 | `apps/[slug]/settings/` |
-| 12 | `apps/[slug]/plans/[planSlug]/` |
-| 13 | `features/[id]/` |
+| #   | Route dir                                                      |
+| --- | -------------------------------------------------------------- |
+| 1   | `users/[username]/` (the overview `page.tsx` + its `_data.ts`) |
+| 2   | `users/[username]/security/`                                   |
+| 3   | `users/[username]/addresses/`                                  |
+| 4   | `users/[username]/contacts/`                                   |
+| 5   | `users/[username]/audit/`                                      |
+| 6   | `users/[username]/org/`                                        |
+| 7   | `orgs/[slug]/` (overview `page.tsx`)                           |
+| 8   | `orgs/[slug]/activity/`                                        |
+| 9   | `orgs/[slug]/billing/`                                         |
+| 10  | `apps/[slug]/` (overview `page.tsx`)                           |
+| 11  | `apps/[slug]/settings/`                                        |
+| 12  | `apps/[slug]/plans/[planSlug]/`                                |
+| 13  | `features/[id]/`                                               |
 
 You may **add** `loading.tsx` and files under each route's own `_components/`.
 You may **not** touch `packages/`, any other app, `apps/api`, or any route
@@ -71,7 +71,7 @@ below. Do not touch `(app)/layout.tsx`.
    place.
 4. **`notFound()` must still run before anything streams.** A detail page that
    currently calls `notFound()` when the entity is missing must keep doing so
-   *before* any other boundary can flush, otherwise a 404 renders as a shell
+   _before_ any other boundary can flush, otherwise a 404 renders as a shell
    with panels. Put the entity fetch + `notFound()` in the outermost data
    component and nest the panels inside it. Do not hoist panels above it.
    See the "Status Codes" section of the streaming doc.
@@ -80,9 +80,9 @@ below. Do not touch `(app)/layout.tsx`.
 
 ### The layout caveat — this is the important one
 
-Per the `loading.js` doc: *"If the layout accesses uncached or runtime data,
+Per the `loading.js` doc: _"If the layout accesses uncached or runtime data,
 `loading.js` will not show a fallback for it — navigation blocks until the
-layout finishes rendering."*
+layout finishes rendering."_
 
 `users/[username]/layout.tsx`, `orgs/[slug]/layout.tsx` and
 `apps/[slug]/layout.tsx` each fetch data to build their tab strip (e.g.
