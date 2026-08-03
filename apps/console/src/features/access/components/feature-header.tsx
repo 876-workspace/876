@@ -1,7 +1,9 @@
 'use client'
 
+import { Suspense, use } from 'react'
 import type { AdminApp, AdminFeature } from '@876/admin'
 import { cn } from '@876/core/utils'
+import { Skeleton } from '@876/ui/skeleton'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import { FeatureToolbar } from './feature-actions'
 import { Flag, InfoIcon } from '@876/ui/icons'
@@ -14,7 +16,14 @@ import {
 
 type FeatureHeaderProps = {
   feature: AdminFeature
-  apps: AdminApp[]
+  /**
+   * Resolved lazily. The app list is only needed by the actions toolbar, but
+   * awaiting it in the layout blocked every child route's `loading.tsx` from
+   * showing — a layout that awaits uncached data suppresses the fallback
+   * beneath it. The layout now passes the promise and the toolbar unwraps it
+   * behind its own Suspense boundary.
+   */
+  apps: Promise<AdminApp[]>
   tabs: DetailTab[]
   appSlug?: string
   returnHref?: string
@@ -97,14 +106,44 @@ export function FeatureHeader({
 
         {/* Actions */}
         <div className="ml-auto flex shrink-0 items-center pl-2">
-          <FeatureToolbar
-            feature={feature}
-            apps={apps}
-            appSlug={appSlug}
-            returnHref={returnHref}
-          />
+          <Suspense fallback={<Skeleton className="h-8 w-20" />}>
+            <FeatureToolbarWithApps
+              feature={feature}
+              apps={apps}
+              appSlug={appSlug}
+              returnHref={returnHref}
+            />
+          </Suspense>
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * Unwraps the lazily-resolved app list for the actions toolbar.
+ *
+ * Lives behind its own Suspense boundary so a slow `apps.list` never blocks the
+ * feature name, badges or tabs — and, more importantly, never blocks the
+ * layout, which would suppress `loading.tsx` for every route beneath it.
+ */
+function FeatureToolbarWithApps({
+  feature,
+  apps,
+  appSlug,
+  returnHref,
+}: {
+  feature: AdminFeature
+  apps: Promise<AdminApp[]>
+  appSlug?: string
+  returnHref?: string
+}) {
+  return (
+    <FeatureToolbar
+      feature={feature}
+      apps={use(apps)}
+      appSlug={appSlug}
+      returnHref={returnHref}
+    />
   )
 }

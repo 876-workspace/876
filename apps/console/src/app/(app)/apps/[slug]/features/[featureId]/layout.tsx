@@ -36,7 +36,9 @@ export default async function AppFeatureDetailLayout({
   ])
   if (!app || !feature || feature.app_id !== app.id) notFound()
 
-  const apps: AdminApp[] = [app]
+  // Already resolved — the app is required by the guard above — but FeatureHeader
+  // takes a promise so the /features/[id] layout can pass an unawaited one.
+  const apps: Promise<AdminApp[]> = Promise.resolve([app])
   const base = `/apps/${slug}/features/${featureId}`
   const returnHref = `/apps/${slug}/features`
   const tabs: DetailTab[] = [

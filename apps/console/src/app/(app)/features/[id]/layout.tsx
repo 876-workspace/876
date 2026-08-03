@@ -21,13 +21,17 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function FeatureDetailLayout({ children, params }: Props) {
   const { id } = await params
-  const [feature, appsResult] = await Promise.all([
-    resolveFeature(id),
-    $876.apps.list({ appKind: 'internal', limit: 100 }),
-  ])
-  if (!feature) notFound()
 
-  const apps: AdminApp[] = appsResult.data?.data ?? []
+  // Only the feature lookup blocks — it decides notFound(). The app list feeds
+  // the actions toolbar alone, and awaiting it here would suppress loading.tsx
+  // for every route beneath this layout, so it is passed down unresolved and
+  // unwrapped behind the toolbar's own Suspense boundary.
+  const apps: Promise<AdminApp[]> = $876.apps
+    .list({ appKind: 'internal', limit: 100 })
+    .then((result) => result.data?.data ?? [])
+
+  const feature = await resolveFeature(id)
+  if (!feature) notFound()
 
   const base = `/features/${id}`
   const tabs: DetailTab[] = [
