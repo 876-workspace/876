@@ -84,7 +84,7 @@ def test_mime_matrix(
         "organization.logo",
         "organization.primary_logo",
         "org.primaryLogo",
-        "user.avatar",
+        "user.profilePhoto",
         "payment.receipt",
         "",
         "library.doc",
