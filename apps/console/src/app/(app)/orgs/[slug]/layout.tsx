@@ -4,6 +4,7 @@ import { Building2, Calendar, Globe, Hash, Mail, Trash } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
 
 import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
+import { ChangeImageDialog } from '@/components/patterns/change-image-dialog'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import {
   DetailHeader,
@@ -65,12 +66,23 @@ export default async function OrganizationDetailLayout({
         <DetailHeader
           condensedTitle={
             <>
-              <OrgLogo
-                name={org.name}
-                src={org.logo_url}
-                size="sm"
-                className="size-6 shrink-0 text-[0.625rem]"
-              />
+              <ChangeImageDialog
+                entity="organization"
+                routeKey="organization.primaryLogo"
+                ownerId={org.id}
+                currentImageUrl={org.logo_url}
+                currentFileId={org.logo_file_id}
+                fallbackName={org.name ?? org.slug}
+                imageKind="logo"
+                compact
+              >
+                <OrgLogo
+                  name={org.name}
+                  src={org.logo_url}
+                  size="sm"
+                  className="size-6 shrink-0 text-[0.625rem]"
+                />
+              </ChangeImageDialog>
               <span className="truncate text-sm font-semibold">
                 {org.name ?? org.slug}
               </span>
@@ -79,12 +91,22 @@ export default async function OrganizationDetailLayout({
         >
           <DetailHeaderTop>
             <DetailHeaderMain>
-              <OrgLogo
-                name={org.name}
-                src={org.logo_url}
-                size="lg"
-                className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
-              />
+              <ChangeImageDialog
+                entity="organization"
+                routeKey="organization.primaryLogo"
+                ownerId={org.id}
+                currentImageUrl={org.logo_url}
+                currentFileId={org.logo_file_id}
+                fallbackName={org.name ?? org.slug}
+                imageKind="logo"
+              >
+                <OrgLogo
+                  name={org.name}
+                  src={org.logo_url}
+                  size="lg"
+                  className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
+                />
+              </ChangeImageDialog>
 
               <div className="min-w-0 flex-1">
                 <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">

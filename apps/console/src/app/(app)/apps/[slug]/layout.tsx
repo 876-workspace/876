@@ -5,6 +5,7 @@ import { Badge } from '@876/ui/badge'
 import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 import { Link2 } from '@876/ui/icons'
 
+import { ChangeImageDialog } from '@/components/patterns/change-image-dialog'
 import { RouteTabs } from '@876/ui/route-tabs'
 import {
   DetailHeader,
@@ -42,7 +43,17 @@ export default async function AppDetailLayout({ children, params }: Props) {
           <DetailHeaderMain className="min-w-0 flex-1">
             <div className="min-w-0 flex-1">
               <div className="mb-1.5 flex items-center gap-3">
-                <AppLogo name={app.name} src={app.logo_url} size="md" />
+                <ChangeImageDialog
+                  entity="app"
+                  routeKey="app.logo"
+                  ownerId={app.id}
+                  currentImageUrl={app.logo_url}
+                  currentFileId={app.logo_file_id}
+                  fallbackName={app.name}
+                  imageKind="logo"
+                >
+                  <AppLogo name={app.name} src={app.logo_url} size="md" />
+                </ChangeImageDialog>
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
                     <h1 className="876-page-title text-foreground truncate">

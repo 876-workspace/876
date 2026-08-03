@@ -8,6 +8,7 @@ import { FlagStripe } from '@876/ui/flag-stripe'
 import { OrgAvatar } from '@876/ui/org-avatar'
 import { Skeleton } from '@876/ui/skeleton'
 import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
+import { ChangeImageDialog } from '@/components/patterns/change-image-dialog'
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 import {
   DetailHeader,
@@ -84,12 +85,23 @@ export default async function UserDetailLayout({ children, params }: Props) {
         <DetailHeader
           condensedTitle={
             <>
-              <Avatar size="sm" className="size-6 shrink-0 text-[0.625rem]">
-                {user.avatar && (
-                  <AvatarImage src={user.avatar} alt={displayName} />
-                )}
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
+              <ChangeImageDialog
+                entity="user"
+                routeKey="user.avatar"
+                ownerId={user.id}
+                currentImageUrl={user.avatar}
+                currentFileId={user.avatar_file_id}
+                fallbackName={displayName}
+                imageKind="avatar"
+                compact
+              >
+                <Avatar size="sm" className="size-6 shrink-0 text-[0.625rem]">
+                  {user.avatar && (
+                    <AvatarImage src={user.avatar} alt={displayName} />
+                  )}
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              </ChangeImageDialog>
               <span className="truncate text-sm font-semibold">
                 {displayName}
               </span>
@@ -104,15 +116,25 @@ export default async function UserDetailLayout({ children, params }: Props) {
                 <UserCountryFlag userId={user.id} />
               </Suspense>
 
-              <Avatar
-                size="lg"
-                className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
+              <ChangeImageDialog
+                entity="user"
+                routeKey="user.avatar"
+                ownerId={user.id}
+                currentImageUrl={user.avatar}
+                currentFileId={user.avatar_file_id}
+                fallbackName={displayName}
+                imageKind="avatar"
               >
-                {user.avatar && (
-                  <AvatarImage src={user.avatar} alt={displayName} />
-                )}
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
+                <Avatar
+                  size="lg"
+                  className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
+                >
+                  {user.avatar && (
+                    <AvatarImage src={user.avatar} alt={displayName} />
+                  )}
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              </ChangeImageDialog>
 
               <div className="min-w-0 flex-1">
                 <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
