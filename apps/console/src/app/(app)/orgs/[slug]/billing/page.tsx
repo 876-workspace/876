@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { buttonVariants } from '@876/ui/button'
 import { ArrowRight, CreditCard, Users } from '@876/ui/icons'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveOrg } from '../_data'
@@ -16,13 +18,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Billing - Organizations` }
 }
 
-export default async function OrganizationBillingPage({ params }: Props) {
+export default function OrganizationBillingPage({ params }: Props) {
+  return (
+    <Suspense fallback={<BillingSkeleton />}>
+      <OrganizationBillingData params={params} />
+    </Suspense>
+  )
+}
+
+async function OrganizationBillingData({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()
-
-  const billingWorkspace =
-    await $876.billing.integration.organizations.retrieve(org.id)
 
   const base = `/orgs/${slug}/billing`
 
@@ -30,16 +37,9 @@ export default async function OrganizationBillingPage({ params }: Props) {
     <div className="space-y-5">
       <h1 className="876-page-title">Billing</h1>
 
-      {billingWorkspace.data && (
-        <div className="876-card grid gap-4 p-4 text-sm sm:grid-cols-3">
-          <BillingFact label="Workspace" value={billingWorkspace.data.name} />
-          <BillingFact
-            label="Default currency"
-            value={billingWorkspace.data.defaultCurrency}
-          />
-          <BillingFact label="Status" value={billingWorkspace.data.status} />
-        </div>
-      )}
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <BillingWorkspace orgId={org.id} />
+      </Suspense>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <BillingLinkCard
@@ -60,6 +60,36 @@ export default async function OrganizationBillingPage({ params }: Props) {
           title="Subscriptions"
           description="Assign plans, switch prices, and update subscription statuses."
         />
+      </div>
+    </div>
+  )
+}
+
+async function BillingWorkspace({ orgId }: { orgId: string }) {
+  const billingWorkspace =
+    await $876.billing.integration.organizations.retrieve(orgId)
+  if (!billingWorkspace.data) return null
+  return (
+    <div className="876-card grid gap-4 p-4 text-sm sm:grid-cols-3">
+      <BillingFact label="Workspace" value={billingWorkspace.data.name} />
+      <BillingFact
+        label="Default currency"
+        value={billingWorkspace.data.defaultCurrency}
+      />
+      <BillingFact label="Status" value={billingWorkspace.data.status} />
+    </div>
+  )
+}
+
+function BillingSkeleton() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-8 w-24" />
+      <Skeleton className="h-24 w-full" />
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Skeleton className="h-44" />
+        <Skeleton className="h-44" />
+        <Skeleton className="h-44" />
       </div>
     </div>
   )
