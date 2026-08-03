@@ -36,6 +36,7 @@ class User(Base):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     middle_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    avatar_file_id: Mapped[str | None] = mapped_column(String, nullable=True)
     avatar: Mapped[str | None] = mapped_column(String, nullable=True)
     role: Mapped[str] = mapped_column(String, nullable=False, server_default="user")
     platform_role: Mapped[str | None] = mapped_column(String, nullable=True)
