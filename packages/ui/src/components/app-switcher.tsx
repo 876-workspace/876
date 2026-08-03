@@ -42,7 +42,7 @@ export function AppSwitcher({
       >
         <Squares2X2Icon
           aria-hidden="true"
-          className="size-5 text-muted-foreground dark:text-white/70"
+          className="text-muted-foreground size-5 dark:text-white/70"
         />
       </DropdownMenuTrigger>
 
