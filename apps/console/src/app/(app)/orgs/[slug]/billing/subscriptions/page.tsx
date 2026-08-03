@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from './_components/subscriptions-skeleton-columns'
 
 import { $876 } from '@/lib/876'
@@ -30,27 +32,17 @@ export default function OrganizationBillingSubscriptionsPage({
 }: Props) {
   return (
     <div className="space-y-5">
-      <Suspense
-        fallback={
-          <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
-        }
-      >
-        <BillingSubscriptionsData params={params} />
+      <Suspense fallback={<SubscriptionsChromeSkeleton />}>
+        <BillingSubscriptionsShell params={params} />
       </Suspense>
     </div>
   )
 }
 
-async function BillingSubscriptionsData({ params }: Props) {
+async function BillingSubscriptionsShell({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()
-
-  const [accounts, subscriptions, productsResult] = await Promise.all([
-    resolveOrgBillingAccounts(org.id),
-    resolveOrgSubscriptions(org.id),
-    $876.products.list({ status: 'active' }),
-  ])
 
   return (
     <>
@@ -62,12 +54,48 @@ async function BillingSubscriptionsData({ params }: Props) {
         />
         <h1 className="876-page-title mt-2">Subscriptions</h1>
       </div>
-      <SubscriptionsManager
-        orgSlug={slug}
-        accounts={accounts?.data ?? []}
-        subscriptions={subscriptions ?? []}
-        products={productsResult.data?.data ?? []}
-      />
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
+        }
+      >
+        <BillingSubscriptionsData org={org} slug={slug} />
+      </Suspense>
+    </>
+  )
+}
+
+async function BillingSubscriptionsData({
+  org,
+  slug,
+}: {
+  org: AdminOrganization
+  slug: string
+}) {
+  const [accounts, subscriptions, productsResult] = await Promise.all([
+    resolveOrgBillingAccounts(org.id),
+    resolveOrgSubscriptions(org.id),
+    $876.products.list({ status: 'active' }),
+  ])
+
+  return (
+    <SubscriptionsManager
+      orgSlug={slug}
+      accounts={accounts?.data ?? []}
+      subscriptions={subscriptions ?? []}
+      products={productsResult.data?.data ?? []}
+    />
+  )
+}
+
+function SubscriptionsChromeSkeleton() {
+  return (
+    <>
+      <div>
+        <Skeleton className="mb-2 h-7 w-24" />
+        <h1 className="876-page-title mt-2">Subscriptions</h1>
+      </div>
+      <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
     </>
   )
 }
