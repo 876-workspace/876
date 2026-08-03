@@ -22,7 +22,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
     )
 
   const fileId = retrieveResult.data.avatar_file_id
-  if (!fileId)
+  if (!fileId && !retrieveResult.data.avatar)
     return apiJson(
       { error: 'The user has no image to remove.' },
       { status: 409 }
@@ -37,6 +37,9 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { error: updateResult.error ?? 'Failed to clear the user image.' },
       { status: 400 }
     )
+
+  // An avatar predating 876 Storage has a URL but no file to delete.
+  if (!fileId) return apiJson({ data: null })
 
   const deleteResult = await $876.storage.files.delete(fileId)
   if (deleteResult.error || !deleteResult.data)
