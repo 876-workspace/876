@@ -70,6 +70,33 @@ const cases: RequestCase[] = [
     init: { method: 'DELETE' },
   },
   {
+    name: 'starts an app image upload',
+    act: () =>
+      apps.startImageUpload('app /1', {
+        route_key: 'app.logo',
+        file_name: 'logo.png',
+        content_type: 'image/png',
+        size_bytes: 4,
+      }),
+    url: '/api/storage/apps/app%20%2F1/image',
+    init: {
+      method: 'POST',
+      body: '{"route_key":"app.logo","file_name":"logo.png","content_type":"image/png","size_bytes":4}',
+    },
+  },
+  {
+    name: 'completes an app image upload',
+    act: () => apps.completeImageUpload('app /1', { id: 'upl_1' }),
+    url: '/api/storage/apps/app%20%2F1/image/complete',
+    init: { method: 'POST', body: '{"id":"upl_1"}' },
+  },
+  {
+    name: 'removes an app image',
+    act: () => apps.removeImage('app /1'),
+    url: '/api/storage/apps/app%20%2F1/image/remove',
+    init: { method: 'DELETE' },
+  },
+  {
     name: 'creates a billing account',
     act: () => billing.createAccount(EMPTY),
     url: '/api/billing/accounts',
@@ -231,6 +258,33 @@ const cases: RequestCase[] = [
     name: 'purges an organization',
     act: () => orgs.purge('org /1'),
     url: '/api/organizations/org%20%2F1/purge',
+    init: { method: 'DELETE' },
+  },
+  {
+    name: 'starts an organization image upload',
+    act: () =>
+      orgs.startImageUpload('org /1', {
+        route_key: 'organization.primaryLogo',
+        file_name: 'logo.png',
+        content_type: 'image/png',
+        size_bytes: 4,
+      }),
+    url: '/api/storage/organizations/org%20%2F1/image',
+    init: {
+      method: 'POST',
+      body: '{"route_key":"organization.primaryLogo","file_name":"logo.png","content_type":"image/png","size_bytes":4}',
+    },
+  },
+  {
+    name: 'completes an organization image upload',
+    act: () => orgs.completeImageUpload('org /1', { id: 'upl_1' }),
+    url: '/api/storage/organizations/org%20%2F1/image/complete',
+    init: { method: 'POST', body: '{"id":"upl_1"}' },
+  },
+  {
+    name: 'removes an organization image',
+    act: () => orgs.removeImage('org /1'),
+    url: '/api/storage/organizations/org%20%2F1/image/remove',
     init: { method: 'DELETE' },
   },
   {
@@ -396,6 +450,33 @@ const cases: RequestCase[] = [
     name: 'purges a user',
     act: () => users.purge('user /1'),
     url: '/api/users/user%20%2F1/purge',
+    init: { method: 'DELETE' },
+  },
+  {
+    name: 'starts a user image upload',
+    act: () =>
+      users.startImageUpload('user /1', {
+        route_key: 'user.avatar',
+        file_name: 'avatar.png',
+        content_type: 'image/png',
+        size_bytes: 4,
+      }),
+    url: '/api/storage/users/user%20%2F1/image',
+    init: {
+      method: 'POST',
+      body: '{"route_key":"user.avatar","file_name":"avatar.png","content_type":"image/png","size_bytes":4}',
+    },
+  },
+  {
+    name: 'completes a user image upload',
+    act: () => users.completeImageUpload('user /1', { id: 'upl_1' }),
+    url: '/api/storage/users/user%20%2F1/image/complete',
+    init: { method: 'POST', body: '{"id":"upl_1"}' },
+  },
+  {
+    name: 'removes a user image',
+    act: () => users.removeImage('user /1'),
+    url: '/api/storage/users/user%20%2F1/image/remove',
     init: { method: 'DELETE' },
   },
   {

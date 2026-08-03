@@ -7,6 +7,13 @@ import type {
   AdminOrganizationCreateParams,
   AdminOrganizationUpdateParams,
 } from '@876/admin'
+import type {
+  DeletedImageFile,
+  ImageFile,
+  ImageUploadComplete,
+  ImageUploadSession,
+  ImageUploadStart,
+} from '@/types/storage'
 
 import { request } from './request'
 
@@ -80,6 +87,27 @@ export const search = (query: string) =>
     `/api/organizations/search?q=${encodeURIComponent(query)}`
   )
 
+export const startImageUpload = (orgId: string, params: ImageUploadStart) =>
+  request<ImageUploadSession>(
+    `/api/storage/organizations/${encodeURIComponent(orgId)}/image`,
+    { method: 'POST', body: JSON.stringify(params) }
+  )
+
+export const completeImageUpload = (
+  orgId: string,
+  params: ImageUploadComplete
+) =>
+  request<ImageFile>(
+    `/api/storage/organizations/${encodeURIComponent(orgId)}/image/complete`,
+    { method: 'POST', body: JSON.stringify(params) }
+  )
+
+export const removeImage = (orgId: string) =>
+  request<DeletedImageFile>(
+    `/api/storage/organizations/${encodeURIComponent(orgId)}/image/remove`,
+    { method: 'DELETE' }
+  )
+
 export const organizations = {
   create,
   update,
@@ -87,6 +115,9 @@ export const organizations = {
   delete: del,
   purge,
   search,
+  startImageUpload,
+  completeImageUpload,
+  removeImage,
 }
 
 export const invites = {

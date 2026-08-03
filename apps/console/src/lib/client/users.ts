@@ -20,6 +20,13 @@ import type {
   UnlinkedAccount,
 } from '@876/admin'
 import type { UserIdentity } from '@/types/member'
+import type {
+  DeletedImageFile,
+  ImageFile,
+  ImageUploadComplete,
+  ImageUploadSession,
+  ImageUploadStart,
+} from '@/types/storage'
 
 import { request } from './request'
 
@@ -183,6 +190,27 @@ export const revokeSessions = (userId: string) =>
     method: 'DELETE',
   })
 
+export const startImageUpload = (userId: string, params: ImageUploadStart) =>
+  request<ImageUploadSession>(
+    `/api/storage/users/${encodeURIComponent(userId)}/image`,
+    { method: 'POST', body: JSON.stringify(params) }
+  )
+
+export const completeImageUpload = (
+  userId: string,
+  params: ImageUploadComplete
+) =>
+  request<ImageFile>(
+    `/api/storage/users/${encodeURIComponent(userId)}/image/complete`,
+    { method: 'POST', body: JSON.stringify(params) }
+  )
+
+export const removeImage = (userId: string) =>
+  request<DeletedImageFile>(
+    `/api/storage/users/${encodeURIComponent(userId)}/image/remove`,
+    { method: 'DELETE' }
+  )
+
 export const users = {
   create,
   search,
@@ -208,4 +236,7 @@ export const users = {
   checkUsernameAvailability,
   unlinkAccount,
   revokeSessions,
+  startImageUpload,
+  completeImageUpload,
+  removeImage,
 }
