@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
@@ -16,7 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${name} - Users` }
 }
 
-export default async function UserOverviewPage({ params }: Props) {
+export default function UserOverviewPage({ params }: Props) {
+  return (
+    <Suspense fallback={null}>
+      <UserOverviewData params={params} />
+    </Suspense>
+  )
+}
+
+async function UserOverviewData({ params }: Props) {
   const { username } = await params
   const user = await resolveUser(username)
   if (!user) notFound()

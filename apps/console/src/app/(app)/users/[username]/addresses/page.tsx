@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { Skeleton } from '@876/ui/skeleton'
 
 import type { AdminAddress, AdminUser } from '@876/admin'
 
@@ -36,17 +38,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${userDisplayName(user)} • Addresses - Users` }
 }
 
-export default async function UserAddressesPage({
-  params,
-  searchParams,
-}: Props) {
+export default function UserAddressesPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <UserAddressesData params={params} searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function UserAddressesData({ params, searchParams }: Props) {
   const { username } = await params
-  const { view } = await searchParams
   const user = await resolveUser(username)
   if (!user) notFound()
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <AddressesData user={user} searchParams={searchParams} />
+    </Suspense>
+  )
+}
 
-  const addresses = await resolveUserAddresses(user.id)
-
+async function AddressesData({
+  user,
+  searchParams,
+}: {
+  user: AdminUser
+  searchParams: Props['searchParams']
+}) {
+  const [{ view }, addresses] = await Promise.all([
+    searchParams,
+    resolveUserAddresses(user.id),
+  ])
   return (
     <AddressesManager
       user={user}

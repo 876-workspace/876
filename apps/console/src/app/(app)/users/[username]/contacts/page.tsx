@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { Skeleton } from '@876/ui/skeleton'
 
 import type { AdminConsumerContact, AdminUser } from '@876/admin'
 
@@ -36,17 +38,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${userDisplayName(user)} • Contacts - Users` }
 }
 
-export default async function UserContactsPage({
-  params,
-  searchParams,
-}: Props) {
+export default function UserContactsPage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <UserContactsData params={params} searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function UserContactsData({ params, searchParams }: Props) {
   const { username } = await params
-  const { view } = await searchParams
   const user = await resolveUser(username)
   if (!user) notFound()
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <ContactsData user={user} searchParams={searchParams} />
+    </Suspense>
+  )
+}
 
-  const contacts = await resolveUserContacts(user.id)
-
+async function ContactsData({
+  user,
+  searchParams,
+}: {
+  user: AdminUser
+  searchParams: Props['searchParams']
+}) {
+  const [{ view }, contacts] = await Promise.all([
+    searchParams,
+    resolveUserContacts(user.id),
+  ])
   return (
     <ContactsManager
       user={user}

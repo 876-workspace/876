@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { UserOrganizationView } from '@/components/patterns/detail/detail-views'
 import { resolveUser } from '../_data'
@@ -15,9 +17,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${name} • Organization - Users` }
 }
 
-export default async function UserOrganizationPage({ params }: Props) {
+export default function UserOrganizationPage({ params }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+      <UserOrganizationData params={params} />
+    </Suspense>
+  )
+}
+
+async function UserOrganizationData({ params }: Props) {
   const { username } = await params
   const user = await resolveUser(username)
   if (!user) notFound()
-  return <UserOrganizationView userId={user.id} />
+  return (
+    <Suspense fallback={<Skeleton className="h-80 w-full" />}>
+      <UserOrganizationView userId={user.id} />
+    </Suspense>
+  )
 }
