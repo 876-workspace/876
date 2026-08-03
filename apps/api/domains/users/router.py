@@ -146,6 +146,7 @@ def _serialize_user(
         deletion_reason=row.deletion_reason,
         middle_name=row.middle_name,
         avatar=row.avatar,
+        avatar_file_id=getattr(row, "avatar_file_id", None),
         platform_role=getattr(row, "platform_role", None),
         status=row.status,
         banned=row.banned,
@@ -167,6 +168,7 @@ def _serialize_ensured_user(row: Any) -> EnsuredUserResponse:
         last_name=row.last_name,
         middle_name=row.middle_name,
         avatar=row.avatar,
+        avatar_file_id=getattr(row, "avatar_file_id", None),
         status=row.status,
         created_at=row.created_at,
         updated_at=row.updated_at,
@@ -198,6 +200,7 @@ def _serialize_consumer_profile(user: User, profile: UserProfile) -> ConsumerPro
         middle_name=user.middle_name,
         nickname=profile.nickname,
         avatar=user.avatar,
+        avatar_file_id=getattr(user, "avatar_file_id", None),
         gender=profile.gender,  # type: ignore[arg-type]
         phone_number=profile.phone_number or user.phone,
         date_of_birth=profile.date_of_birth,
@@ -217,6 +220,7 @@ def _serialize_contact_user(user: User) -> ConsumerContactUserResponse:
         last_name=user.last_name,
         middle_name=user.middle_name,
         avatar=user.avatar,
+        avatar_file_id=getattr(user, "avatar_file_id", None),
     )
 
 
@@ -1416,6 +1420,7 @@ async def list_user_apps(
                 name=e.app.name,
                 slug=e.app.slug,
                 logo_url=e.app.logo_url,
+                logo_file_id=getattr(e.app, "logo_file_id", None),
                 homepage_url=e.app.homepage_url,
                 app_kind=e.app.app_kind,
                 status=e.app.status,
@@ -1741,6 +1746,8 @@ async def update_user(
         update_data["middle_name"] = body.middle_name  # nullable — allow clearing
     if "avatar" in explicitly_set:
         update_data["avatar"] = body.avatar  # nullable — allow clearing
+    if "avatar_file_id" in explicitly_set:
+        update_data["avatar_file_id"] = body.avatar_file_id  # nullable — allow clearing
     if body.status is not None:
         update_data["status"] = body.status
     if "stripe_customer_id" in explicitly_set:

@@ -70,6 +70,7 @@ def _serialize_app(row: Any) -> AppResponse:
         allowed_redirect_uris=row.allowed_redirect_uris or [],
         allowed_logout_uris=row.allowed_logout_uris or [],
         logo_url=row.logo_url,
+        logo_file_id=getattr(row, "logo_file_id", None),
         homepage_url=row.homepage_url,
         type=row.type,
         scopes_allowed=row.scopes_allowed or [],
@@ -233,6 +234,7 @@ async def get_app_public(
     return AppPublicResponse(
         name=app.name,
         logo_url=app.logo_url,
+        logo_file_id=getattr(app, "logo_file_id", None),
         app_kind=app.app_kind,  # type: ignore[arg-type]
     )
 
@@ -297,6 +299,8 @@ async def update_app(
     _admin: AdminDep,
 ) -> AppResponse:
     updates = body.model_dump(exclude_none=True)
+    if "logo_file_id" in body.model_fields_set:
+        updates["logo_file_id"] = body.logo_file_id
     if not updates:
         raise AppHTTPException(
             code="provider/invalid-request",
