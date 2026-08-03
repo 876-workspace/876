@@ -124,3 +124,39 @@ duplicate import and 18 tests were failing. Do not summarize — quote the outpu
 3. Every edit you made and the specific reason it was bucket 3.
 4. **If you made no edits at all, say so plainly** — that is a legitimate and
    likely outcome, and is a better result than inventing changes.
+
+---
+
+## Outcome (2026-08-03) — no code changes required
+
+The audit ran and produced **no edits**. Recording the result here so the
+question does not get re-asked and re-audited.
+
+**Bucket 3 (prerendered but must not be) was empty.** Both production builds
+already classify every content-bearing route as dynamic (`ƒ`):
+
+- **Console** — every application and API route is dynamic. Protected pages
+  inherit `requireSession()` from `(app)/layout.tsx`; the public `access-denied`
+  and login routes read `searchParams`. Only `/_not-found` and
+  `/manifest.webmanifest` are static, which is correct.
+- **Couriers** — the root layout calls `getAuthSession()`, and the org/portal
+  layouts resolve session or tenant context, so `/access-denied`, `/no-access`
+  and `/portal/unavailable` are dynamic too. Only `/manifest.webmanifest` is
+  static.
+- **Bucket 4** — no build failures and no dynamic-rendering warnings in either
+  app. The only lint output is a pre-existing
+  `import/no-anonymous-default-export` warning on each `open-next.config.ts`.
+
+This confirms the premise the brief was written on: **a route that reads
+`cookies()` is already dynamic, so `export const dynamic = 'force-dynamic'`
+would have been a no-op** on essentially every route in both apps. Adding it
+broadly would have implied a distinction that does not exist. The four
+pre-existing markers were left untouched.
+
+Cloudflare/OpenNext checks also passed: neither app has `proxy.ts` or
+`middleware.ts`, both Workers enable `nodejs_compat`, and Prisma remains lazy
+and request-scoped via `createRequestScopedResolver`.
+
+Verification (all quoted from real output in the run log): console typecheck /
+lint / test — 557 passed, 49 files; couriers typecheck / lint / test — 799
+passed, 72 files.
