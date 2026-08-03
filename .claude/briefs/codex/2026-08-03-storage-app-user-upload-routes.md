@@ -49,10 +49,39 @@ route. Add two more, following the existing one exactly:
 
 Add:
 
-| Route key | purpose | owner_type | key_template |
-| --- | --- | --- | --- |
-| `app.logo` | `app_logo` | `app` | `apps/{owner_id}/branding/{file_id}/{version_id}` |
-| `user.avatar` | `user_avatar` | `user` | `users/{owner_id}/avatar/{file_id}/{version_id}` |
+| Route key     | purpose       | owner_type | key_template                                      |
+| ------------- | ------------- | ---------- | ------------------------------------------------- |
+| `app.logo`    | `app_logo`    | `platform` | `apps/{owner_id}/branding/{file_id}/{version_id}` |
+| `user.avatar` | `user_avatar` | `user`     | `users/{owner_id}/avatar/{file_id}/{version_id}`  |
+
+### Why `app.logo` is `platform`-owned — decided, do not revisit
+
+A first run of this brief correctly stopped and reported that `"app"` is **not**
+a supported owner type or quota subject: `domains/uploads/schemas.py:8` allows
+only `organization | user | platform`, and `domains/quotas/schemas.py:5` allows
+only `organization | user`. That report was right, and the answer is **not** to
+widen either union.
+
+`owner_type="platform"` is already first-class and is exactly the right fit:
+
+- It is accepted by the upload schema, the files schema, the files router
+  filter, and serialization.
+- `domains/uploads/quota.py:298` already **exempts** platform subjects from
+  quota enforcement (`if subject_type == "platform": continue`), which matches
+  `storage-architecture.md`: _"For `owner_type='platform'`, `limit_bytes` is
+  `NULL` (unlimited)."_
+- Semantically it is correct. 876's first-party apps (`876-console`,
+  `876-couriers`, …) are not owned by any organization or user — 876 owns the
+  Couriers logo. Charging a customer's storage pool for 876's own branding would
+  be wrong.
+
+So `app.logo` adds **no new concept**: no new owner type, no new quota subject,
+no schema widening, no migration. `owner_id` is the app's opaque ID, giving keys
+like `apps/app_xxx/branding/{file_id}/{version_id}`.
+
+**Out of scope:** third-party/external OAuth apps registered by an organization,
+whose logos would arguably be org-owned. Console's app management covers
+first-party apps only. Do not build for that case; note it if you touch it.
 
 Both take the **same** `allowed_content_types`, `max_size_bytes`, `category` and
 `audience` as the org route. Specifically:
@@ -67,13 +96,9 @@ Both take the **same** `allowed_content_types`, `max_size_bytes`, `category` and
   sanitization step exists. Do not add it "for completeness".
 - `max_size_bytes = 5 * 1024 * 1024`.
 
-Verify `owner_type` values `"app"` and `"user"` are actually accepted by the
-rest of the service before assuming — check the owner-type validation and the
-quota subject resolution (`_validate_upload` in `domains/uploads/router.py`
-compares `body.owner_type` to `route.owner_type`, but the quota layer resolves
-subjects by owner type too). **If `"app"` or `"user"` is not a supported quota
-subject, stop and report it rather than inventing one** — that is a design
-decision, not a mechanical fix.
+Both `"platform"` and `"user"` are already supported owner types, so no schema
+change is required. Confirm that as you go, but it has been verified — see the
+decision box above. **Do not widen `owner_type` or `QuotaSubjectType`.**
 
 ## Security notes you must not undo
 
@@ -124,8 +149,8 @@ failing.
 ## Report back
 
 1. The two route declarations you added, verbatim.
-2. Whether `"app"` and `"user"` are supported owner types / quota subjects
-   elsewhere in the service, with `file:line` evidence — and if not, say so
-   loudly instead of working around it.
+2. Confirmation that the `platform` owner path works end to end for an
+   `app.logo` upload — accepted by the upload schema, exempt from quota
+   admission, and serialized correctly — with `file:line` evidence.
 3. The generalized invariant test, and what it now guarantees for future routes.
 4. The real tail of all three verification commands.
