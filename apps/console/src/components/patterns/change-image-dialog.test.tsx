@@ -66,14 +66,15 @@ const completedFile = {
   url: 'https://assets.876.test/new.png',
 }
 
-function renderDialog(currentFileId: string | null = 'file_old') {
+function renderDialog(
+  currentImageUrl: string | null = 'https://assets.876.test/old.png'
+) {
   return render(
     <ChangeImageDialog
       entity="app"
       routeKey="app.logo"
       ownerId="app_123"
-      currentImageUrl="https://assets.876.test/old.png"
-      currentFileId={currentFileId}
+      currentImageUrl={currentImageUrl}
       fallbackName="Couriers"
       imageKind="logo"
     >
@@ -255,5 +256,32 @@ describe('ChangeImageDialog', () => {
 
     await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith('app_123'))
     expect(mocks.refresh).toHaveBeenCalledTimes(1)
+  })
+
+  /**
+   * An image predating 876 Storage has a URL but no file record, so the remove
+   * endpoint clears the reference and returns no deleted file. Treating that
+   * null payload as a failure would make every legacy logo unremovable.
+   */
+  it('treats a null remove payload as success', async () => {
+    mocks.remove.mockResolvedValue({ data: null, error: null })
+    renderDialog()
+    const user = await openDialog()
+
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
+
+    await waitFor(() => expect(mocks.refresh).toHaveBeenCalledTimes(1))
+    expect(
+      screen.queryByText('Failed to remove the image.')
+    ).not.toBeInTheDocument()
+  })
+
+  it('offers no remove action when there is no image', async () => {
+    renderDialog(null)
+    await openDialog()
+
+    expect(
+      screen.queryByRole('button', { name: 'Remove' })
+    ).not.toBeInTheDocument()
   })
 })

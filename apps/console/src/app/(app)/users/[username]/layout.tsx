@@ -90,7 +90,6 @@ export default async function UserDetailLayout({ children, params }: Props) {
                 routeKey="user.avatar"
                 ownerId={user.id}
                 currentImageUrl={user.avatar}
-                currentFileId={user.avatar_file_id}
                 fallbackName={displayName}
                 imageKind="avatar"
                 compact
@@ -121,7 +120,6 @@ export default async function UserDetailLayout({ children, params }: Props) {
                 routeKey="user.avatar"
                 ownerId={user.id}
                 currentImageUrl={user.avatar}
-                currentFileId={user.avatar_file_id}
                 fallbackName={displayName}
                 imageKind="avatar"
               >

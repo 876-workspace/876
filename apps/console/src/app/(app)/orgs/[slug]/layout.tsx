@@ -71,7 +71,6 @@ export default async function OrganizationDetailLayout({
                 routeKey="organization.primaryLogo"
                 ownerId={org.id}
                 currentImageUrl={org.logo_url}
-                currentFileId={org.logo_file_id}
                 fallbackName={org.name ?? org.slug}
                 imageKind="logo"
                 compact
@@ -96,7 +95,6 @@ export default async function OrganizationDetailLayout({
                 routeKey="organization.primaryLogo"
                 ownerId={org.id}
                 currentImageUrl={org.logo_url}
-                currentFileId={org.logo_file_id}
                 fallbackName={org.name ?? org.slug}
                 imageKind="logo"
               >

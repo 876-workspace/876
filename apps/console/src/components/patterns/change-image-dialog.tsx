@@ -58,7 +58,6 @@ type Target =
 export type ChangeImageDialogProps = Target & {
   ownerId: string
   currentImageUrl: string | null
-  currentFileId: string | null
   fallbackName: string
   imageKind: 'logo' | 'avatar'
   children: ReactNode
@@ -176,7 +175,6 @@ export function ChangeImageDialog({
   routeKey,
   ownerId,
   currentImageUrl,
-  currentFileId,
   fallbackName,
   imageKind,
   children,
@@ -189,7 +187,6 @@ export function ChangeImageDialog({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [savedImageUrl, setSavedImageUrl] = useState(currentImageUrl)
-  const [savedFileId, setSavedFileId] = useState(currentFileId)
   const [phase, setPhase] = useState<UploadPhase>('idle')
   const [sentFraction, setSentFraction] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -226,7 +223,6 @@ export function ChangeImageDialog({
     if (!next && busy) return
     if (next) {
       setSavedImageUrl(currentImageUrl)
-      setSavedFileId(currentFileId)
     }
     if (!next) {
       clearSelection()
@@ -332,28 +328,28 @@ export function ChangeImageDialog({
 
     const file: ImageFile = completeResult.data
     setSavedImageUrl(file.url)
-    setSavedFileId(file.id)
     clearSelection()
     setPhase('done')
     router.refresh()
   }
 
   async function handleRemove() {
-    if (!savedFileId || busy) return
+    // An image predating 876 Storage has a URL but no file id, and must still
+    // be removable — gate on what is shown, not on the file reference.
+    if (!savedImageUrl || busy) return
 
     setRemoving(true)
     setError(null)
     const result = await removeImage(entity, ownerId)
     setRemoving(false)
 
-    if (result.error || !result.data) {
-      setError(result.error?.message ?? 'Failed to remove the image.')
+    if (result.error) {
+      setError(result.error.message)
       return
     }
 
     clearSelection()
     setSavedImageUrl(null)
-    setSavedFileId(null)
     router.refresh()
   }
 
@@ -454,7 +450,7 @@ export function ChangeImageDialog({
 
         <DialogFooter className="sm:justify-between">
           <div>
-            {savedFileId ? (
+            {savedImageUrl ? (
               <Button
                 type="button"
                 variant="destructive"

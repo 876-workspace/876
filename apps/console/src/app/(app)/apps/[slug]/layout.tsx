@@ -48,7 +48,6 @@ export default async function AppDetailLayout({ children, params }: Props) {
                   routeKey="app.logo"
                   ownerId={app.id}
                   currentImageUrl={app.logo_url}
-                  currentFileId={app.logo_file_id}
                   fallbackName={app.name}
                   imageKind="logo"
                 >

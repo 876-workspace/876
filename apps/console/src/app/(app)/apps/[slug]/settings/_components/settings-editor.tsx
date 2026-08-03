@@ -322,7 +322,6 @@ export function IconSection({ app }: { app: AdminApp }) {
         routeKey="app.logo"
         ownerId={app.id}
         currentImageUrl={app.logo_url}
-        currentFileId={app.logo_file_id}
         fallbackName={app.name}
         imageKind="logo"
       >
