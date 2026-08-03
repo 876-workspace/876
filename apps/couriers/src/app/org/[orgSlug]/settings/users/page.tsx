@@ -1,4 +1,7 @@
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -13,6 +16,7 @@ import type {
 import { PendingInvites } from './_components/pending-invites'
 import { UsersSplit } from './_components/users-split'
 import { UsersToolbar } from './_components/users-toolbar'
+import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
 
 export const metadata = { title: 'Users — Settings' }
 
@@ -29,10 +33,24 @@ type Props = {
   searchParams: Promise<{ status?: string; user?: string }>
 }
 
-export default async function UsersSettingsPage({
-  params,
-  searchParams,
-}: Props) {
+export default function UsersSettingsPage({ params, searchParams }: Props) {
+  return (
+    <Page>
+      <Suspense
+        fallback={
+          <>
+            <Skeleton className="mb-6 h-9 w-full" />
+            <DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />
+          </>
+        }
+      >
+        <UsersSettingsData params={params} searchParams={searchParams} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function UsersSettingsData({ params, searchParams }: Props) {
   const [{ orgSlug }, query] = await Promise.all([params, searchParams])
   const selectedStatus = isTeamMemberStatus(query.status) ? query.status : 'all'
   const status = selectedStatus === 'all' ? undefined : selectedStatus
@@ -40,12 +58,9 @@ export default async function UsersSettingsPage({
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant)
     return (
-      <Page>
-        <div className="876-empty-dashed max-w-2xl">
-          We couldn&apos;t load this organization&apos;s users. Please try
-          again.
-        </div>
-      </Page>
+      <div className="876-empty-dashed max-w-2xl">
+        We couldn&apos;t load this organization&apos;s users. Please try again.
+      </div>
     )
 
   await service.team.ensure(ctx.tenant.id, {
@@ -107,7 +122,7 @@ export default async function UsersSettingsPage({
     : undefined
 
   return (
-    <Page>
+    <>
       <UsersToolbar
         orgSlug={orgSlug}
         roles={roles.map(({ id, name }) => ({ id, name }))}
@@ -120,6 +135,6 @@ export default async function UsersSettingsPage({
         orgSlug={orgSlug}
       />
       <PendingInvites orgSlug={orgSlug} invites={pendingInvites} />
-    </Page>
+    </>
   )
 }
