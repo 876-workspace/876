@@ -10,6 +10,7 @@ import {
   AddressesManager,
   type AddressesView,
 } from './_components/addresses-manager'
+import { AddressesPageSkeleton } from './_components/addresses-page-skeleton'
 
 type Props = {
   params: Promise<{ username: string }>
@@ -40,7 +41,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default function UserAddressesPage({ params, searchParams }: Props) {
   return (
-    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+    // The outer fallback is the whole route shell, matching loading.tsx — a
+    // body-only fallback here would drop the toolbar placeholder loading.tsx
+    // had already painted and shift the panel upward.
+    <Suspense fallback={<AddressesPageSkeleton />}>
       <UserAddressesData params={params} searchParams={searchParams} />
     </Suspense>
   )
