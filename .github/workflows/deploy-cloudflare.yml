@@ -7,19 +7,29 @@ name: Deploy to Cloudflare
 # that owns a datastore; manual dispatches can target one app or the full
 # deployment graph.
 #
-# Division of labour with Cloudflare Workers Builds (the git integration):
-#   - Workers Builds owns every push deployment, including Container images.
-#     It does not touch the database.
-#   - This workflow applies every datastore migration on matching pushes and
-#     owns explicit manual migration + deploy fallbacks for every Worker.
-#     Migrations must run on push: Workers Builds ships the new code regardless,
-#     so a dispatch-only migration leaves the schema behind the code and every
-#     write against a changed table fails in production.
-#   - Deploy steps therefore run on `workflow_dispatch` only. This avoids
-#     duplicate deployments and keeps database credentials out of Workers Builds.
+# Who owns a push deployment is a switch: the `DEPLOY_FROM_ACTIONS` repository
+# variable. Exactly one deployer must be active, or two builds race onto the
+# same Worker script.
+#
+#   unset / not "true"  — Cloudflare Workers Builds (the git integration) owns
+#     every push deployment, including Container images. This workflow applies
+#     datastore migrations on matching pushes and keeps deploys as a manual
+#     `workflow_dispatch` fallback.
+#
+#   "true"  — this workflow owns push deployments too. Set it ONLY after
+#     disconnecting the repo from Workers Builds in the Cloudflare dashboard
+#     (Workers & Pages → the Worker → Settings → Builds), otherwise every
+#     Worker deploys twice. Prefer this: a Workers Builds run that fails or
+#     never triggers reports nothing anywhere, so main can sit undeployed for
+#     hours with every check green — which is exactly what happened to
+#     876-console on 2026-08-03 (PR #170 merged 14:03, last deploy 13:26).
+#
+# Migrations always run on push, under either owner: whoever ships the code
+# does so regardless, so a dispatch-only migration would leave the schema
+# behind the code and every write against a changed table would fail.
 #
 # Required repository secrets:
-#   CLOUDFLARE_API_TOKEN    Workers Scripts:Edit (+ Containers; manual only)
+#   CLOUDFLARE_API_TOKEN    Workers Scripts:Edit (+ Containers)
 #   CLOUDFLARE_ACCOUNT_ID
 # Plus the per-app NEXT_PUBLIC_* build-time values listed in each job.
 # Runtime secrets are NOT set here — they live in `wrangler secret put`.
@@ -121,12 +131,14 @@ jobs:
         env:
           WIDGETS_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
       - name: Deploy
-        if: github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/widgets-api run deploy
 
   api:
     needs: changes
-    if: github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'api')
+    if:
+      (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'api'))
+      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.api == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +151,9 @@ jobs:
 
   billing-api:
     needs: changes
-    if: github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'billing-api')
+    if:
+      (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'billing-api'))
+      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.billing-api == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,7 +183,7 @@ jobs:
         env:
           STORAGE_DATABASE_URL: ${{ secrets.STORAGE_DATABASE_URL }}
       - name: Deploy container Worker
-        if: github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/storage-api
         run: pnpm exec wrangler deploy
 
@@ -187,7 +201,7 @@ jobs:
         env:
           CONSOLE_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
       - name: Deploy
-        if: github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/console run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -208,7 +222,7 @@ jobs:
         env:
           BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Deploy
-        if: github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/billing-app run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -227,7 +241,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Deploy
-        if: github.event_name == 'workflow_dispatch'
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/couriers run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
@@ -238,7 +252,9 @@ jobs:
   # workflow to do — Workers Builds owns them end to end.
   enterprise:
     needs: [changes, api]
-    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'enterprise')
+    if: always() && !failure() && !cancelled()
+      && ((github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'enterprise'))
+      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.enterprise == 'true'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -252,7 +268,9 @@ jobs:
 
   app:
     needs: [changes, api]
-    if: always() && !failure() && !cancelled() && github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'app')
+    if: always() && !failure() && !cancelled()
+      && ((github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'app'))
+      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.app == 'true'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
