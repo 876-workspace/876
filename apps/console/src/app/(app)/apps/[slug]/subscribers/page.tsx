@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminApp, AdminOrganization } from '@876/admin'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
@@ -21,23 +21,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default function AppSubscribersPage({ params }: Props) {
   return (
     <div className="space-y-5">
+      <Suspense
+        fallback={<DataTableSkeleton columns={SUBSCRIBERS_SKELETON_COLUMNS} />}
+      >
+        <AppSubscribersShell params={params} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function AppSubscribersShell({ params }: Props) {
+  const { slug } = await params
+  const app = await resolveApp(slug)
+  if (!app || app.app_kind !== 'product') notFound()
+
+  return (
+    <>
       <div className="mb-2">
         <h2 className="text-lg font-medium tracking-tight">Subscribers</h2>
       </div>
       <Suspense
         fallback={<DataTableSkeleton columns={SUBSCRIBERS_SKELETON_COLUMNS} />}
       >
-        <SubscribersTableData params={params} />
+        <SubscribersTableData app={app} />
       </Suspense>
-    </div>
+    </>
   )
 }
 
-async function SubscribersTableData({ params }: Props) {
-  const { slug } = await params
-  const app = await resolveApp(slug)
-  if (!app || app.app_kind !== 'product') notFound()
-
+async function SubscribersTableData({ app }: { app: AdminApp }) {
   const [subscriptionsResult, productsResult] = await Promise.all([
     $876.appSubscriptions.list(app.id),
     $876.products.list({ appId: app.id, status: 'active' }),
