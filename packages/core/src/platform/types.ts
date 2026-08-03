@@ -207,6 +207,7 @@ export type PlatformSubscription = {
     id: string
     price_id: string
     product_id: string | null
+    product_name?: string | null
     quantity: number
   }>
   created_at: number

@@ -20,6 +20,7 @@ export type OrgSwitcherOrg = {
   slug: string
   role?: string | null
   logoUrl?: string | null
+  planName?: string | null
 }
 
 /**
@@ -69,13 +70,25 @@ export function OrgSwitcher({
             <span className="text-muted-foreground block truncate text-xs">
               @{current.slug}
             </span>
-            {current.role ? (
-              <Badge
-                variant="secondary"
-                className="mt-1 h-4 px-1.5 text-[0.625rem]"
-              >
-                {current.role}
-              </Badge>
+            {current.planName || current.role ? (
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {current.planName ? (
+                  <Badge
+                    variant="secondary"
+                    className="h-4 px-1.5 text-[0.625rem]"
+                  >
+                    {current.planName}
+                  </Badge>
+                ) : null}
+                {current.role ? (
+                  <Badge
+                    variant="secondary"
+                    className="h-4 px-1.5 text-[0.625rem]"
+                  >
+                    {current.role}
+                  </Badge>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </div>

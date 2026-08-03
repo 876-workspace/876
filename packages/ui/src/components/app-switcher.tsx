@@ -1,8 +1,7 @@
 'use client'
 
-import type { SVGProps } from 'react'
-
 import { cn } from '../lib/utils'
+import { Squares2X2Icon } from '../icons'
 import { buttonVariants } from './button'
 import {
   DropdownMenu,
@@ -41,7 +40,10 @@ export function AppSwitcher({
           className
         )}
       >
-        <Grid9Icon aria-hidden="true" className="size-4" />
+        <Squares2X2Icon
+          aria-hidden="true"
+          className="size-5 text-muted-foreground dark:text-white/70"
+        />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -81,27 +83,6 @@ export function AppSwitcher({
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
-
-function Grid9Icon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      {...props}
-    >
-      <circle cx="5" cy="5" r="2" />
-      <circle cx="12" cy="5" r="2" />
-      <circle cx="19" cy="5" r="2" />
-      <circle cx="5" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="19" cy="12" r="2" />
-      <circle cx="5" cy="19" r="2" />
-      <circle cx="12" cy="19" r="2" />
-      <circle cx="19" cy="19" r="2" />
-    </svg>
   )
 }
 

@@ -2,11 +2,11 @@ import {
   BuildingOffice2Icon,
   ChartBarIcon,
   ChartPieIcon,
-  ClipboardDocumentListIcon,
-  CreditCardIcon,
   DocumentTextIcon,
   RectangleStackIcon,
+  ReceiptPercentIcon,
   Settings,
+  TagIcon,
   TruckIcon,
   UsersIcon,
 } from '@876/ui/icons'
@@ -43,7 +43,7 @@ export const nav: NavGroup[] = [
       {
         title: 'Items',
         href: '/items',
-        icon: ClipboardDocumentListIcon,
+        icon: TagIcon,
         color: 'var(--876-orange)',
       },
       {
@@ -70,7 +70,7 @@ export const nav: NavGroup[] = [
       {
         title: 'Transactions',
         href: '#',
-        icon: CreditCardIcon,
+        icon: ReceiptPercentIcon,
         color: 'var(--876-purple)',
         children: [
           { title: 'Invoices', href: '/invoices' },
