@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 import { Building2, Calendar, Globe, Hash, Mail, Trash } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
@@ -14,6 +14,7 @@ import {
   DetailHeaderTabs,
 } from '@876/ui/detail-header'
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
+import { Skeleton } from '@876/ui/skeleton'
 import { formatDate, statusBadgeClass } from '@/lib/format'
 import { resolveOrg, resolveOrgMembers } from './_data'
 import { OrgActions } from './_components/org-actions'
@@ -38,13 +39,13 @@ export default async function OrganizationDetailLayout({
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const membersResult = await resolveOrgMembers(org.id)
-  const memberCount = membersResult?.data.length ?? 0
-
   const base = `/orgs/${slug}`
   const tabs: DetailTab[] = [
     { label: 'Overview', href: base, exact: true },
-    { label: `Members (${memberCount})`, href: `${base}/members` },
+    {
+      label: <MemberTabLabel orgId={org.id} />,
+      href: `${base}/members`,
+    },
     { label: 'Onboarding', href: `${base}/onboarding` },
     { label: 'Billing', href: `${base}/billing` },
     { label: 'Activity', href: `${base}/activity` },
@@ -117,10 +118,7 @@ export default async function OrganizationDetailLayout({
                       {org.slug}
                     </span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-1.5">
-                    <Building2 className="size-3.5 shrink-0" />
-                    {memberCount} {memberCount === 1 ? 'member' : 'members'}
-                  </span>
+                  <MemberCount orgId={org.id} />
                   {org.primary_email && (
                     <span className="flex min-w-0 items-center gap-1.5">
                       <Mail className="size-3.5 shrink-0" />
@@ -158,5 +156,51 @@ export default async function OrganizationDetailLayout({
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
     </div>
+  )
+}
+
+function MemberTabLabel({ orgId }: { orgId: string }) {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <span>Members</span>{' '}
+          <Skeleton className="inline-block h-3 w-5 align-middle" />
+        </>
+      }
+    >
+      <MemberCountLabel orgId={orgId} />
+    </Suspense>
+  )
+}
+
+async function MemberCountLabel({ orgId }: { orgId: string }) {
+  const membersResult = await resolveOrgMembers(orgId)
+  return <>Members ({membersResult?.data.length ?? 0})</>
+}
+
+function MemberCount({ orgId }: { orgId: string }) {
+  return (
+    <Suspense
+      fallback={
+        <span className="flex shrink-0 items-center gap-1.5">
+          <Building2 className="size-3.5 shrink-0" />
+          Members <Skeleton className="h-3 w-5" />
+        </span>
+      }
+    >
+      <MemberCountValue orgId={orgId} />
+    </Suspense>
+  )
+}
+
+async function MemberCountValue({ orgId }: { orgId: string }) {
+  const membersResult = await resolveOrgMembers(orgId)
+  const memberCount = membersResult?.data.length ?? 0
+  return (
+    <span className="flex shrink-0 items-center gap-1.5">
+      <Building2 className="size-3.5 shrink-0" />
+      {memberCount} {memberCount === 1 ? 'member' : 'members'}
+    </span>
   )
 }

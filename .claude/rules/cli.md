@@ -221,6 +221,30 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
   immediately. Backgrounding a two-second command costs a round trip and buys
   nothing. Whatever the mode, you still **read and verify the output** — a
   backgrounded delegation you never inspect is not delegation.
+- **Verification commands run in the FOREGROUND. Always.** `typecheck`, `lint`,
+  `test`, `prettier --check` — never `run_in_background`, never a background
+  wait-loop, no matter how slow they are. Background them and the result arrives
+  as a notification you may not act on, so you end up reporting "still waiting"
+  turn after turn with no actual information, and in the worst case narrating a
+  pass that never happened. The user named this directly on 2026-08-03: _"when
+  those check[s] run in the background they cause you to hallucinate and not
+  wake up or monitor sometimes."_ It is not hypothetical — that same session,
+  a backgrounded couriers typecheck sat unread while stale Next route types
+  masked a real failure, which surfaced within seconds of running it in the
+  foreground.
+
+  A foreground run blocks the turn, which is the point: the exit status and the
+  output are in front of you before you say anything about them. Pass a generous
+  `timeout` (the console and couriers suites need 300000–420000 ms) rather than
+  reaching for the background to dodge a timeout. If a command genuinely cannot
+  finish in the maximum foreground timeout, split it (one package at a time)
+  instead of backgrounding it.
+
+  This applies to your own verification and to re-verifying a delegated tool's
+  work. Backgrounding remains correct for the delegated _run itself_ (a `codex
+exec`), for CI polling, and for a long-lived dev server — things that are not
+  a pass/fail gate you are about to report on.
+
 - **Every backgrounded Codex run gets a 5-minute monitor, started in the same
   turn that launches it.** Not on request — automatically, every time.
 

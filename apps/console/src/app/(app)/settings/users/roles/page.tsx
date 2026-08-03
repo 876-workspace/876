@@ -13,10 +13,26 @@ import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { RolesTableRow } from './_components/roles-table-row'
 import type { RoleView } from '@/types/role'
 import { Page } from '@876/ui/page'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { ROLES_SKELETON_COLUMNS } from './_components/roles-skeleton-columns'
 
 export const metadata = { title: 'Roles & Permissions - Settings' }
 
-export default async function RolesPermissionsPage() {
+export default function RolesPermissionsPage() {
+  return (
+    <Page>
+      <TrackMCEventOnMount event={AnalyticsEvent.RoleListViewed} />
+      <Suspense
+        fallback={<DataTableSkeleton columns={ROLES_SKELETON_COLUMNS} />}
+      >
+        <RolesTableData />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function RolesTableData() {
   const rows = await service.roles.list()
 
   const roles: RoleView[] = rows.map((r) => ({
@@ -39,37 +55,31 @@ export default async function RolesPermissionsPage() {
   ]
 
   return (
-    <Page>
-      <TrackMCEventOnMount event={AnalyticsEvent.RoleListViewed} />
-
-      <div className="876-card overflow-hidden">
-        <Table>
-          <TableHeader className="876-header-row">
+    <div className="876-card overflow-hidden">
+      <Table>
+        <TableHeader className="876-header-row">
+          <TableRow>
+            <TableHead className="px-5 py-3.5">Role</TableHead>
+            <TableHead className="px-5 py-3.5">Type</TableHead>
+            <TableHead className="px-5 py-3.5">Permissions</TableHead>
+            <TableHead className="px-5 py-3.5">Users</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sorted.length === 0 ? (
             <TableRow>
-              <TableHead className="px-5 py-3.5">Role</TableHead>
-              <TableHead className="px-5 py-3.5">Type</TableHead>
-              <TableHead className="px-5 py-3.5">Permissions</TableHead>
-              <TableHead className="px-5 py-3.5">Users</TableHead>
+              <TableCell
+                colSpan={4}
+                className="text-muted-foreground px-5 py-8 text-center text-sm"
+              >
+                No roles found.
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sorted.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-muted-foreground px-5 py-8 text-center text-sm"
-                >
-                  No roles found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              sorted.map((role) => (
-                <RolesTableRow key={role.name} role={role} />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </Page>
+          ) : (
+            sorted.map((role) => <RolesTableRow key={role.name} role={role} />)
+          )}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

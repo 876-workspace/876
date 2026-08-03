@@ -1,6 +1,11 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
+import { ACCOUNTS_SKELETON_COLUMNS } from './_components/accounts-skeleton-columns'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../_data'
 import {
@@ -33,22 +38,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function OrganizationBillingAccountsPage({
+export default function OrganizationBillingAccountsPage({
   params,
   searchParams,
 }: Props) {
-  const [{ slug }, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams,
-  ])
+  return (
+    <div className="space-y-5">
+      <Suspense fallback={<AccountsChromeSkeleton />}>
+        <BillingAccountsShell params={params} searchParams={searchParams} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function BillingAccountsShell({ params, searchParams }: Props) {
+  const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  const accounts = await resolveOrgBillingAccounts(org.id)
-  const view = resolveAccountsView(resolvedSearchParams?.view)
-
   return (
-    <div className="space-y-5">
+    <>
       <div>
         <PageBreadcrumb
           href={`/orgs/${slug}/billing`}
@@ -57,12 +66,51 @@ export default async function OrganizationBillingAccountsPage({
         />
         <h1 className="876-page-title mt-2">Accounts</h1>
       </div>
+      <Suspense
+        fallback={<DataTableSkeleton columns={ACCOUNTS_SKELETON_COLUMNS} />}
+      >
+        <BillingAccountsData
+          org={org}
+          slug={slug}
+          searchParams={searchParams}
+        />
+      </Suspense>
+    </>
+  )
+}
 
-      <AccountsManager
-        orgSlug={slug}
-        accounts={accounts?.data ?? []}
-        view={view}
-      />
-    </div>
+async function BillingAccountsData({
+  org,
+  slug,
+  searchParams,
+}: {
+  org: AdminOrganization
+  slug: string
+  searchParams: Props['searchParams']
+}) {
+  const [resolvedSearchParams, accounts] = await Promise.all([
+    searchParams,
+    resolveOrgBillingAccounts(org.id),
+  ])
+  const view = resolveAccountsView(resolvedSearchParams?.view)
+
+  return (
+    <AccountsManager
+      orgSlug={slug}
+      accounts={accounts?.data ?? []}
+      view={view}
+    />
+  )
+}
+
+function AccountsChromeSkeleton() {
+  return (
+    <>
+      <div>
+        <Skeleton className="mb-2 h-7 w-24" />
+        <h1 className="876-page-title mt-2">Accounts</h1>
+      </div>
+      <DataTableSkeleton columns={ACCOUNTS_SKELETON_COLUMNS} />
+    </>
   )
 }

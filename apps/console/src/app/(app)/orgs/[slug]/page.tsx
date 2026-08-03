@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
@@ -14,7 +15,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} - Organizations` }
 }
 
-export default async function OrganizationOverviewPage({ params }: Props) {
+export default function OrganizationOverviewPage({ params }: Props) {
+  return (
+    <Suspense fallback={null}>
+      <OrganizationOverviewData params={params} />
+    </Suspense>
+  )
+}
+
+async function OrganizationOverviewData({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()

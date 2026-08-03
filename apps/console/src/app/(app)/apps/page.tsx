@@ -19,6 +19,9 @@ import { APP_STATUSES } from '@/lib/app-status'
 import { AppsTable } from './_components/apps-table'
 import { Page } from '@876/ui/page'
 import { AppsSearchBar } from './_components/apps-search-bar'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
+import { APPS_SKELETON_COLUMNS } from './_components/apps-skeleton-columns'
 
 type AppStatusFilterValue = 'all' | AdminAppStatus
 
@@ -53,7 +56,48 @@ function resolveStatusFilter(status?: string): AppStatusFilterValue {
   return 'active'
 }
 
-export default async function AppsPage({ searchParams }: Props) {
+export default function AppsPage({ searchParams }: Props) {
+  return (
+    <Page>
+      <ResourceToolbar
+        title="Apps"
+        titleFilter={
+          <Suspense fallback={<Skeleton className="h-7 w-32" />}>
+            <AppsStatusFilter searchParams={searchParams} />
+          </Suspense>
+        }
+        primaryLabel="New App"
+        primaryHref="/apps/new"
+        primaryVariant="info"
+        refresh
+      />
+      <div className="mb-4 max-w-sm">
+        <Suspense>
+          <AppsSearchBar />
+        </Suspense>
+      </div>
+      <Suspense
+        fallback={<DataTableSkeleton columns={APPS_SKELETON_COLUMNS} />}
+      >
+        <AppsTableData searchParams={searchParams} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function AppsStatusFilter({ searchParams }: Pick<Props, 'searchParams'>) {
+  const { status } = await searchParams
+  const selectedStatus = resolveStatusFilter(status)
+  return (
+    <StatusFilterHeading
+      label="Apps"
+      value={selectedStatus}
+      options={APP_STATUS_OPTIONS}
+    />
+  )
+}
+
+async function AppsTableData({ searchParams }: Pick<Props, 'searchParams'>) {
   const { q, status } = await searchParams
   const query = q?.trim().toLowerCase() ?? ''
   const isSearching = query.length > 0
@@ -97,48 +141,23 @@ export default async function AppsPage({ searchParams }: Props) {
       )
     : allApps
 
-  return (
-    <Page>
-      <ResourceToolbar
-        title="Apps"
-        titleFilter={
-          <StatusFilterHeading
-            label="Apps"
-            value={selectedStatus}
-            options={APP_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="New App"
-        primaryHref="/apps/new"
-        primaryVariant="info"
-        refresh
-      />
-
-      <div className="mb-4 max-w-sm">
-        <Suspense>
-          <AppsSearchBar />
-        </Suspense>
-      </div>
-
-      {apps.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <LayoutDashboard className="text-blue-600 dark:text-blue-400" />
-            </EmptyMedia>
-            <EmptyTitle>{isSearching ? 'No results' : 'No apps'}</EmptyTitle>
-            <EmptyDescription>
-              {isSearching
-                ? `No applications matched "${q}".`
-                : `No ${
-                    selectedStatus === 'all' ? 'registered' : selectedStatus
-                  } applications found.`}
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <AppsTable data={apps} hasMore={false} firstId={null} lastId={null} />
-      )}
-    </Page>
+  return apps.length === 0 ? (
+    <Empty>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <LayoutDashboard className="text-blue-600 dark:text-blue-400" />
+        </EmptyMedia>
+        <EmptyTitle>{isSearching ? 'No results' : 'No apps'}</EmptyTitle>
+        <EmptyDescription>
+          {isSearching
+            ? `No applications matched "${q}".`
+            : `No ${
+                selectedStatus === 'all' ? 'registered' : selectedStatus
+              } applications found.`}
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  ) : (
+    <AppsTable data={apps} hasMore={false} firstId={null} lastId={null} />
   )
 }

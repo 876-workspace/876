@@ -26,8 +26,12 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }))
 
-import CustomersPage from '../customers/page'
-import ItemsPage from '../items/page'
+// The page shell is a sync component whose data lives in an async child behind
+// <Suspense>; rendering the shell would only produce fallbacks. These tests
+// target that data boundary directly, which is the unit they have always
+// exercised: fetch resolution plus table rendering.
+import { CustomersTableData } from '../customers/page'
+import { ItemsTableData } from '../items/page'
 
 const context = {
   orgId: 'org_123',
@@ -88,7 +92,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
     // The organization's primary contact renders beside the business name.
@@ -104,7 +110,9 @@ describe('Couriers finance-backed pages', () => {
   it('does not call the registry at all when no customer is enrolled', async () => {
     mocks.listProfiles.mockResolvedValue([])
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     // A party who is a customer of this org in another 876 app must never leak
     // into Couriers, so with no local profiles there is nothing to resolve.
@@ -136,7 +144,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(screen.getByText('Ada Lovelace')).toBeVisible()
     expect(screen.getByText('ada@example.test')).toBeVisible()
@@ -186,7 +196,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
       limit: 100,
@@ -225,7 +237,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(screen.getByText('Pat')).toBeVisible()
     expect(screen.getByText('pat@solo.test')).toBeVisible()
@@ -259,7 +273,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
       limit: 100,
@@ -279,7 +295,9 @@ describe('Couriers finance-backed pages', () => {
     ])
     mocks.listCustomers.mockResolvedValue(listResult([]))
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     // Name and email both fall back to the opaque id when identity is missing.
     expect(screen.getAllByText('cus_missing').length).toBeGreaterThanOrEqual(1)
@@ -312,7 +330,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(screen.getByText('nia@biz.test')).toBeVisible()
     expect(screen.queryByText('ap@biz.test')).toBeNull()
@@ -344,7 +364,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(screen.getByText('ap@biz.test')).toBeVisible()
     expect(screen.getByText('Nia Campbell')).toBeVisible()
@@ -376,7 +398,9 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(screen.getByText('—')).toBeVisible()
     expect(screen.getByText('contact@biz.test')).toBeVisible()
@@ -405,7 +429,7 @@ describe('Couriers finance-backed pages', () => {
     )
 
     render(
-      await CustomersPage({
+      await CustomersTableData({
         params,
         searchParams: Promise.resolve({ status: 'suspended' }),
       })
@@ -419,7 +443,7 @@ describe('Couriers finance-backed pages', () => {
     mocks.listProfiles.mockResolvedValue([])
 
     render(
-      await CustomersPage({
+      await CustomersTableData({
         params,
         searchParams: Promise.resolve({ status: 'suspended' }),
       })
@@ -444,7 +468,9 @@ describe('Couriers finance-backed pages', () => {
       error: { message: 'Finance customers are temporarily unavailable.' },
     })
 
-    render(await CustomersPage({ params, searchParams: emptySearchParams }))
+    render(
+      await CustomersTableData({ params, searchParams: emptySearchParams })
+    )
 
     expect(
       screen.getByText('Finance customers are temporarily unavailable.')
@@ -481,7 +507,7 @@ describe('Couriers finance-backed pages', () => {
       ])
     )
 
-    render(await ItemsPage({ params, searchParams: emptySearchParams }))
+    render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
     expect(screen.getByText('Same-day delivery')).toBeVisible()
     expect(screen.getByText('Connected app')).toBeVisible()
@@ -497,7 +523,7 @@ describe('Couriers finance-backed pages', () => {
     mocks.listItems.mockResolvedValue(listResult([]))
 
     render(
-      await ItemsPage({
+      await ItemsTableData({
         params,
         searchParams: Promise.resolve({ status: 'inactive' }),
       })
@@ -517,7 +543,7 @@ describe('Couriers finance-backed pages', () => {
       error: { message: 'The shared catalog could not be loaded.' },
     })
 
-    render(await ItemsPage({ params, searchParams: emptySearchParams }))
+    render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
     expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
     expect(

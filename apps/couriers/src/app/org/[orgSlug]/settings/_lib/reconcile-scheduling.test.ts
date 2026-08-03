@@ -23,8 +23,11 @@ vi.mock('@/lib/auth/manage-context', () => ({
 
 vi.mock('@/lib/service', () => ({ service: mockService }))
 
-import BranchesSettingsPage from '../locations/page'
-import WarehousesSettingsPage from '../warehouses/page'
+// Each page shell is a sync component that renders its data child behind
+// <Suspense>, so awaiting the shell never runs the fetch that schedules the
+// reconcile. Target the data boundary, which is where after() is called.
+import { LocationsData } from '../locations/page'
+import { WarehousesData } from '../warehouses/page'
 
 const TENANT_ID = 'ten_rocketship'
 const ORG_ID = 'org_rocketship'
@@ -35,8 +38,8 @@ const ORG_ID = 'org_rocketship'
  * indefinitely if only the Locations page scheduled it.
  */
 describe.each([
-  ['Branches', BranchesSettingsPage],
-  ['Warehouses', WarehousesSettingsPage],
+  ['Branches', LocationsData],
+  ['Warehouses', WarehousesData],
 ])('%s settings page', (_name, Page) => {
   beforeEach(() => {
     vi.clearAllMocks()

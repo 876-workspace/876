@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import type { AdminUser, AdminUserApp } from '@876/admin'
 import { Users } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
 
 import {
   Empty,
@@ -22,6 +24,7 @@ import {
 import { USER_STATUSES, isUserStatus } from '@/lib/user-status'
 import { UserSearchBar } from './_components/user-search-bar'
 import { UsersTable } from './_components/users-table'
+import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
 
 export const metadata = { title: 'Users' }
 
@@ -43,7 +46,62 @@ type Props = {
   }>
 }
 
-export default async function UsersPage({ searchParams }: Props) {
+export default function UsersPage({ searchParams }: Props) {
+  return (
+    <Page>
+      <ResourceToolbar
+        title="Users"
+        titleFilter={
+          <Suspense fallback={<Skeleton className="h-7 w-40" />}>
+            <UsersStatusFilter searchParams={searchParams} />
+          </Suspense>
+        }
+        primaryLabel="Add"
+        primaryHref="/users/new"
+        primaryVariant="info"
+        refresh
+        dropdownActions={[
+          { label: 'Import', icon: 'import' },
+          { label: 'Export', icon: 'export' },
+          {
+            label: 'Delete users',
+            icon: 'delete',
+            destructive: true,
+            separator: true,
+          },
+        ]}
+      />
+      <div className="mb-4 max-w-sm">
+        <Suspense>
+          <UserSearchBar />
+        </Suspense>
+      </div>
+      <Suspense
+        fallback={<DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />}
+      >
+        <UsersTableData searchParams={searchParams} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function UsersStatusFilter({
+  searchParams,
+}: Pick<Props, 'searchParams'>) {
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'all' || !isUserStatus(status) ? 'all' : status
+
+  return (
+    <StatusFilterHeading
+      label="Users"
+      value={selectedStatus}
+      options={USER_STATUS_OPTIONS}
+    />
+  )
+}
+
+async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
   const { after, before, q, status } = await searchParams
 
   const isSearching = Boolean(q?.trim())
@@ -85,43 +143,13 @@ export default async function UsersPage({ searchParams }: Props) {
     }
   }
 
+  // TODO(perf): add a batch users.listAppsByUsers endpoint so enrollments do not block this table.
   return (
-    <Page>
+    <>
       <TrackMCEventOnMount
         event={AnalyticsEvent.UserListViewed}
         properties={{ filter_applied: Boolean(q || after || before || status) }}
       />
-      <ResourceToolbar
-        title="Users"
-        titleFilter={
-          <StatusFilterHeading
-            label="Users"
-            value={selectedStatus}
-            options={USER_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="Add"
-        primaryHref="/users/new"
-        primaryVariant="info"
-        refresh
-        dropdownActions={[
-          { label: 'Import', icon: 'import' },
-          { label: 'Export', icon: 'export' },
-          {
-            label: 'Delete users',
-            icon: 'delete',
-            destructive: true,
-            separator: true,
-          },
-        ]}
-      />
-
-      <div className="mb-4 max-w-sm">
-        <Suspense>
-          <UserSearchBar />
-        </Suspense>
-      </div>
-
       {users.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -144,6 +172,6 @@ export default async function UsersPage({ searchParams }: Props) {
           lastId={users[users.length - 1]?.id ?? null}
         />
       )}
-    </Page>
+    </>
   )
 }

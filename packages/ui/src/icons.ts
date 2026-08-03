@@ -15,6 +15,7 @@ import {
   BuildingOffice2Icon,
   CalendarDaysIcon,
   ChartBarIcon,
+  ChartPieIcon,
   CheckCircleIcon,
   CheckIcon,
   ChevronDownIcon,
@@ -57,6 +58,8 @@ import {
   PhoneIcon,
   PlusIcon,
   QueueListIcon,
+  RectangleGroupIcon,
+  RectangleStackIcon,
   ShieldCheckIcon,
   ShareIcon,
   SignalIcon,
@@ -65,6 +68,7 @@ import {
   SunIcon,
   TableCellsIcon,
   TrashIcon,
+  TruckIcon,
   UserCircleIcon,
   UserIcon,
   UserPlusIcon,
@@ -97,6 +101,7 @@ export {
   BuildingOffice2Icon,
   CalendarDaysIcon,
   ChartBarIcon,
+  ChartPieIcon,
   CheckCircleIcon,
   CheckIcon,
   ChevronDownIcon,
@@ -133,12 +138,14 @@ export {
   MoonIcon,
   PlusIcon,
   QueueListIcon,
+  RectangleStackIcon,
   ShieldCheckIcon,
   ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
   SunIcon,
   TableCellsIcon,
+  TruckIcon,
   AdjustmentsHorizontalIcon,
   PaintBrushIcon,
   WrenchScrewdriverIcon,
@@ -211,6 +218,7 @@ export const PanelLeftIcon = Bars3BottomLeftIcon
 export const Pencil = PencilSquareIcon
 export const Plus = PlusIcon
 export const RefreshCw = ArrowPathIcon
+export const RectangleGroup = RectangleGroupIcon
 export const SearchIcon = MagnifyingGlassIcon
 export const Settings = Cog6ToothIcon
 export const Shield = ShieldCheckIcon
