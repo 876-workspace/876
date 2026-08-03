@@ -15,6 +15,7 @@ export const sdk876CurrentUserSchema = z.strictObject({
   last_name: z.string(),
   middle_name: nullableString,
   avatar: nullableString,
+  avatar_file_id: nullableString.optional(),
   status: z.string(),
   banned: z.boolean(),
   created_at: z.number(),
@@ -58,6 +59,7 @@ export const sdk876ConsumerProfileSchema = z.strictObject({
   middle_name: nullableString,
   nickname: nullableString,
   avatar: nullableString,
+  avatar_file_id: nullableString.optional(),
   gender: sdk876GenderSchema.nullable(),
   phone_number: nullableString,
   date_of_birth: nullableString,
@@ -136,6 +138,7 @@ export const sdk876ConsumerContactUserSchema = z.strictObject({
   last_name: z.string(),
   middle_name: nullableString,
   avatar: nullableString,
+  avatar_file_id: nullableString.optional(),
 })
 
 export const sdk876ConsumerContactSchema = z.strictObject({

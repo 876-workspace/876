@@ -34,6 +34,7 @@ export const sdk876AppSchema = z.object({
   allowed_redirect_uris: z.array(z.string()),
   allowed_logout_uris: z.array(z.string()),
   logo_url: z.string().nullable(),
+  logo_file_id: z.string().nullable().optional(),
   homepage_url: z.string().nullable(),
   type: z.string(),
   scopes_allowed: z.array(z.string()),
