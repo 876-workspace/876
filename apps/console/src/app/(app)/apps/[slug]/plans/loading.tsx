@@ -5,7 +5,7 @@ export default function Loading() {
   return (
     <div className="space-y-5">
       <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Plans</h2>
+        <h2 className="876-page-title">Plans</h2>
       </div>
       <DataTableSkeleton columns={PLANS_SKELETON_COLUMNS} />
     </div>

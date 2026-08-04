@@ -18,35 +18,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${app.name} • Subscribers - Apps` }
 }
 
-export default function AppSubscribersPage({ params }: Props) {
+export default async function AppSubscribersPage({ params }: Props) {
+  const { slug } = await params
+
   return (
     <div className="space-y-5">
+      <div className="mb-2">
+        <h2 className="876-page-title">Subscribers</h2>
+      </div>
       <Suspense
         fallback={<DataTableSkeleton columns={SUBSCRIBERS_SKELETON_COLUMNS} />}
       >
-        <AppSubscribersShell params={params} />
+        <AppSubscribersShell slug={slug} />
       </Suspense>
     </div>
   )
 }
 
-async function AppSubscribersShell({ params }: Props) {
-  const { slug } = await params
+async function AppSubscribersShell({ slug }: { slug: string }) {
   const app = await resolveApp(slug)
   if (!app || app.app_kind !== 'product') notFound()
 
-  return (
-    <>
-      <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Subscribers</h2>
-      </div>
-      <Suspense
-        fallback={<DataTableSkeleton columns={SUBSCRIBERS_SKELETON_COLUMNS} />}
-      >
-        <SubscribersTableData app={app} />
-      </Suspense>
-    </>
-  )
+  return <SubscribersTableData app={app} />
 }
 
 async function SubscribersTableData({ app }: { app: AdminApp }) {
