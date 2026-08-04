@@ -40,16 +40,20 @@ function ValueList({ values }: { values: string[] }) {
   )
 }
 
-export default function AppSettingsPage({ params }: Props) {
+export default async function AppSettingsPage({ params }: Props) {
+  const { slug } = await params
+
   return (
-    <Suspense fallback={<SettingsSkeleton />}>
-      <AppSettingsData params={params} />
-    </Suspense>
+    <div>
+      <h1 className="876-page-title mb-5">Settings</h1>
+      <Suspense fallback={<SettingsSkeleton />}>
+        <AppSettingsData slug={slug} />
+      </Suspense>
+    </div>
   )
 }
 
-async function AppSettingsData({ params }: Props) {
-  const { slug } = await params
+async function AppSettingsData({ slug }: { slug: string }) {
   const app = await resolveApp(slug)
   if (!app) notFound()
 
@@ -85,64 +89,57 @@ async function AppSettingsContent({ app }: { app: AdminApp }) {
   }
 
   return (
-    <div>
-      <h1 className="876-page-title mb-5">Settings</h1>
+    <div className="space-y-5">
+      <IconSection app={app} />
 
-      <div className="space-y-5">
-        <IconSection app={app} />
+      <GeneralSection app={app} />
 
-        <GeneralSection app={app} />
+      <OwnershipSection app={app} orgs={orgs} />
 
-        <OwnershipSection app={app} orgs={orgs} />
+      <InfoSection title="Identifiers" icon={Fingerprint}>
+        <Field label="Slug" value={app.slug} mono />
+        <Field label="Platform ID" value={app.id} mono />
+        <Field label="Client ID" value={app.client_id} mono />
+        <Field
+          label="Client type"
+          value={<span className="capitalize">{app.client_type}</span>}
+        />
+      </InfoSection>
 
-        <InfoSection title="Identifiers" icon={Fingerprint}>
-          <Field label="Slug" value={app.slug} mono />
-          <Field label="Platform ID" value={app.id} mono />
-          <Field label="Client ID" value={app.client_id} mono />
-          <Field
-            label="Client type"
-            value={<span className="capitalize">{app.client_type}</span>}
-          />
-        </InfoSection>
+      <InfoSection title="OAuth" icon={KeyRound}>
+        <Field
+          label="Redirect URIs"
+          value={<ValueList values={app.allowed_redirect_uris} />}
+          mono
+        />
+        <Field
+          label="Logout URIs"
+          value={<ValueList values={app.allowed_logout_uris} />}
+          mono
+        />
+        <Field
+          label="Scopes"
+          value={<ValueList values={app.scopes_allowed} />}
+          mono
+        />
+      </InfoSection>
 
-        <InfoSection title="OAuth" icon={KeyRound}>
-          <Field
-            label="Redirect URIs"
-            value={<ValueList values={app.allowed_redirect_uris} />}
-            mono
-          />
-          <Field
-            label="Logout URIs"
-            value={<ValueList values={app.allowed_logout_uris} />}
-            mono
-          />
-          <Field
-            label="Scopes"
-            value={<ValueList values={app.scopes_allowed} />}
-            mono
-          />
-        </InfoSection>
+      <InfoSection title="Timeline" icon={Calendar}>
+        <Field label="Registered" value={formatDate(app.created_at)} />
+        <Field label="Last updated" value={formatDate(app.updated_at)} />
+      </InfoSection>
 
-        <InfoSection title="Timeline" icon={Calendar}>
-          <Field label="Registered" value={formatDate(app.created_at)} />
-          <Field label="Last updated" value={formatDate(app.updated_at)} />
-        </InfoSection>
-
-        <DangerSection app={app} />
-      </div>
+      <DangerSection app={app} />
     </div>
   )
 }
 
 function SettingsSkeleton() {
   return (
-    <div>
-      <Skeleton className="mb-5 h-8 w-28" />
-      <div className="space-y-5">
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-72 w-full" />
-      </div>
+    <div className="space-y-5">
+      <Skeleton className="h-40 w-full" />
+      <Skeleton className="h-64 w-full" />
+      <Skeleton className="h-72 w-full" />
     </div>
   )
 }

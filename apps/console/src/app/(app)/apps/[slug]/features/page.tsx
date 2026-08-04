@@ -31,23 +31,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${app.name} • Features - Apps` }
 }
 
-export default function AppFeaturesPage({ params, searchParams }: Props) {
+export default async function AppFeaturesPage({ params, searchParams }: Props) {
+  const { slug } = await params
+
   return (
     <div className="space-y-5">
       <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Feature Flags</h2>
+        <h2 className="876-page-title">Feature Flags</h2>
       </div>
       <Suspense
         fallback={<DataTableSkeleton columns={FEATURES_SKELETON_COLUMNS} />}
       >
-        <FeaturesTableData params={params} searchParams={searchParams} />
+        <FeaturesTableData slug={slug} searchParams={searchParams} />
       </Suspense>
     </div>
   )
 }
 
-async function FeaturesTableData({ params, searchParams }: Props) {
-  const { slug } = await params
+async function FeaturesTableData({
+  slug,
+  searchParams,
+}: {
+  slug: string
+  searchParams: Props['searchParams']
+}) {
   const { after, before } = await searchParams
 
   const app = await resolveApp(slug)

@@ -10,29 +10,13 @@ import {
 } from '@876/ui/empty'
 
 import { $876 } from '@/lib/876'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
-import { APP_STATUSES } from '@/lib/app-status'
 import { AppsTable } from './_components/apps-table'
 import { Page } from '@876/ui/page'
 import { AppsSearchBar } from './_components/apps-search-bar'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 import { APPS_SKELETON_COLUMNS } from './_components/apps-skeleton-columns'
-
-type AppStatusFilterValue = 'all' | AdminAppStatus
-
-const APP_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Apps' },
-  ...APP_STATUSES.map((status) => ({
-    value: status,
-    label: status.charAt(0).toUpperCase() + status.slice(1),
-    headingLabel: `${status.charAt(0).toUpperCase() + status.slice(1)} Apps`,
-  })),
-]
+import { AppsToolbar } from './_components/apps-toolbar'
+import { resolveStatusFilter } from './_lib/app-status-filter'
 
 export const metadata = {
   title: 'Apps',
@@ -51,26 +35,13 @@ type Props = {
   }>
 }
 
-function resolveStatusFilter(status?: string): AppStatusFilterValue {
-  if (status === 'all' || status === 'inactive') return status
-  return 'active'
-}
+export default async function AppsPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = resolveStatusFilter(status)
 
-export default function AppsPage({ searchParams }: Props) {
   return (
     <Page>
-      <ResourceToolbar
-        title="Apps"
-        titleFilter={
-          <Suspense fallback={<Skeleton className="h-7 w-32" />}>
-            <AppsStatusFilter searchParams={searchParams} />
-          </Suspense>
-        }
-        primaryLabel="New App"
-        primaryHref="/apps/new"
-        primaryVariant="info"
-        refresh
-      />
+      <AppsToolbar status={selectedStatus} />
       <div className="mb-4 max-w-sm">
         <Suspense>
           <AppsSearchBar />
@@ -82,18 +53,6 @@ export default function AppsPage({ searchParams }: Props) {
         <AppsTableData searchParams={searchParams} />
       </Suspense>
     </Page>
-  )
-}
-
-async function AppsStatusFilter({ searchParams }: Pick<Props, 'searchParams'>) {
-  const { status } = await searchParams
-  const selectedStatus = resolveStatusFilter(status)
-  return (
-    <StatusFilterHeading
-      label="Apps"
-      value={selectedStatus}
-      options={APP_STATUS_OPTIONS}
-    />
   )
 }
 

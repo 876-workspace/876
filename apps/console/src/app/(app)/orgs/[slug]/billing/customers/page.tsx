@@ -5,7 +5,6 @@ import type { AdminOrganization } from '@876/admin'
 import { Button } from '@876/ui/button'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
 
 import { $876 } from '@/lib/876'
@@ -20,28 +19,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org?.name ?? slug} • Billing Customers` }
 }
 
-export default function OrganizationBillingCustomersPage({ params }: Props) {
+export default async function OrganizationBillingCustomersPage({
+  params,
+}: Props) {
+  const { slug } = await params
+
   return (
     <div className="space-y-5">
-      <Suspense fallback={<CustomersChromeSkeleton />}>
-        <BillingCustomersShell params={params} />
-      </Suspense>
-    </div>
-  )
-}
-
-async function BillingCustomersShell({ params }: Props) {
-  const { slug } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
-  return (
-    <>
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="876-page-title">Billing customers</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Billing-owned customer records linked to {org.name ?? org.slug}.
+            Billing-owned customer records.
           </p>
         </div>
         <Button render={<Link href={`/orgs/${slug}/billing/customers/new`} />}>
@@ -51,10 +40,17 @@ async function BillingCustomersShell({ params }: Props) {
       <Suspense
         fallback={<DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} />}
       >
-        <BillingCustomersData org={org} />
+        <BillingCustomersShell slug={slug} />
       </Suspense>
-    </>
+    </div>
   )
+}
+
+async function BillingCustomersShell({ slug }: { slug: string }) {
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
+
+  return <BillingCustomersData org={org} />
 }
 
 async function BillingCustomersData({ org }: { org: AdminOrganization }) {
@@ -97,21 +93,6 @@ async function BillingCustomersData({ org }: { org: AdminOrganization }) {
           No Billing customers have been created for this organization.
         </div>
       )}
-    </>
-  )
-}
-
-function CustomersChromeSkeleton() {
-  return (
-    <>
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="876-page-title">Billing customers</h1>
-          <Skeleton className="mt-1 h-5 w-72" />
-        </div>
-        <Skeleton className="h-9 w-28" />
-      </div>
-      <DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} />
     </>
   )
 }

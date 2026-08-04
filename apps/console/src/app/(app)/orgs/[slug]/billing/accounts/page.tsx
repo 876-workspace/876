@@ -4,7 +4,6 @@ import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 import { ACCOUNTS_SKELETON_COLUMNS } from './_components/accounts-skeleton-columns'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../_data'
@@ -38,26 +37,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function OrganizationBillingAccountsPage({
+export default async function OrganizationBillingAccountsPage({
   params,
   searchParams,
 }: Props) {
+  const { slug } = await params
+
   return (
     <div className="space-y-5">
-      <Suspense fallback={<AccountsChromeSkeleton />}>
-        <BillingAccountsShell params={params} searchParams={searchParams} />
-      </Suspense>
-    </div>
-  )
-}
-
-async function BillingAccountsShell({ params, searchParams }: Props) {
-  const { slug } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
-  return (
-    <>
       <div>
         <PageBreadcrumb
           href={`/orgs/${slug}/billing`}
@@ -69,13 +56,24 @@ async function BillingAccountsShell({ params, searchParams }: Props) {
       <Suspense
         fallback={<DataTableSkeleton columns={ACCOUNTS_SKELETON_COLUMNS} />}
       >
-        <BillingAccountsData
-          org={org}
-          slug={slug}
-          searchParams={searchParams}
-        />
+        <BillingAccountsShell slug={slug} searchParams={searchParams} />
       </Suspense>
-    </>
+    </div>
+  )
+}
+
+async function BillingAccountsShell({
+  slug,
+  searchParams,
+}: {
+  slug: string
+  searchParams: Props['searchParams']
+}) {
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
+
+  return (
+    <BillingAccountsData org={org} slug={slug} searchParams={searchParams} />
   )
 }
 
@@ -100,17 +98,5 @@ async function BillingAccountsData({
       accounts={accounts?.data ?? []}
       view={view}
     />
-  )
-}
-
-function AccountsChromeSkeleton() {
-  return (
-    <>
-      <div>
-        <Skeleton className="mb-2 h-7 w-24" />
-        <h1 className="876-page-title mt-2">Accounts</h1>
-      </div>
-      <DataTableSkeleton columns={ACCOUNTS_SKELETON_COLUMNS} />
-    </>
   )
 }

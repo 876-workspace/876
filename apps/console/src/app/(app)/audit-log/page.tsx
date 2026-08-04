@@ -1,8 +1,5 @@
-import Link from 'next/link'
-
 import { Activity } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
-import { buttonVariants } from '@876/ui/button'
 import {
   Empty,
   EmptyDescription,
@@ -10,7 +7,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Input } from '@876/ui/input'
 import {
   Table,
   TableBody,
@@ -29,8 +25,8 @@ import { formatDateTime } from '@/lib/format'
 import { Page } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 import { AUDIT_LOG_SKELETON_COLUMNS } from './_components/audit-log-skeleton-columns'
+import { AuditLogFilters } from './_components/audit-log-filters'
 
 export const metadata = { title: 'Audit Log' }
 
@@ -53,54 +49,19 @@ const APP_LABELS: Record<string, string> = {
   '876-couriers': 'Couriers',
 }
 
-export default function AuditLogPage({ searchParams }: Props) {
+export default async function AuditLogPage({ searchParams }: Props) {
+  const filters = cleanFilters(await searchParams)
+
   return (
     <Page>
       <ResourceToolbar title="Audit Log" refresh />
-      <Suspense fallback={<Skeleton className="mb-4 h-10 w-full" />}>
-        <AuditLogFilters searchParams={searchParams} />
-      </Suspense>
+      <AuditLogFilters filters={filters} />
       <Suspense
         fallback={<DataTableSkeleton columns={AUDIT_LOG_SKELETON_COLUMNS} />}
       >
         <AuditLogTableData searchParams={searchParams} />
       </Suspense>
     </Page>
-  )
-}
-
-async function AuditLogFilters({ searchParams }: Pick<Props, 'searchParams'>) {
-  const params = await searchParams
-  const filters = cleanFilters(params)
-
-  return (
-    <form className="mb-4 grid gap-3 lg:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto_auto]">
-      <Input
-        name="q"
-        placeholder="Search events, paths, users, request IDs"
-        defaultValue={filters.q ?? ''}
-      />
-      <Input
-        name="app_name"
-        placeholder="App"
-        defaultValue={filters.app_name ?? ''}
-      />
-      <Input
-        name="event"
-        placeholder="Event"
-        defaultValue={filters.event ?? ''}
-      />
-      <Input name="path" placeholder="Path" defaultValue={filters.path ?? ''} />
-      <button className={buttonVariants({ variant: 'brand' })} type="submit">
-        Query
-      </button>
-      <Link
-        href="/audit-log"
-        className={buttonVariants({ variant: 'outline' })}
-      >
-        Clear
-      </Link>
-    </form>
   )
 }
 

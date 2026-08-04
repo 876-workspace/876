@@ -3,7 +3,6 @@ import type { AdminUser, AdminUserApp } from '@876/admin'
 import { Users } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 
 import {
   Empty,
@@ -16,26 +15,13 @@ import {
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
-import { USER_STATUSES, isUserStatus } from '@/lib/user-status'
+import { isUserStatus } from '@/lib/user-status'
 import { UserSearchBar } from './_components/user-search-bar'
 import { UsersTable } from './_components/users-table'
 import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
+import { UsersToolbar } from './_components/users-toolbar'
 
 export const metadata = { title: 'Users' }
-
-const USER_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Users' },
-  ...USER_STATUSES.map((status) => ({
-    value: status,
-    label: status.charAt(0).toUpperCase() + status.slice(1),
-    headingLabel: `${status.charAt(0).toUpperCase() + status.slice(1)} Users`,
-  })),
-]
 
 type Props = {
   searchParams: Promise<{
@@ -46,31 +32,14 @@ type Props = {
   }>
 }
 
-export default function UsersPage({ searchParams }: Props) {
+export default async function UsersPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'all' || !isUserStatus(status) ? 'all' : status
+
   return (
     <Page>
-      <ResourceToolbar
-        title="Users"
-        titleFilter={
-          <Suspense fallback={<Skeleton className="h-7 w-40" />}>
-            <UsersStatusFilter searchParams={searchParams} />
-          </Suspense>
-        }
-        primaryLabel="Add"
-        primaryHref="/users/new"
-        primaryVariant="info"
-        refresh
-        dropdownActions={[
-          { label: 'Import', icon: 'import' },
-          { label: 'Export', icon: 'export' },
-          {
-            label: 'Delete users',
-            icon: 'delete',
-            destructive: true,
-            separator: true,
-          },
-        ]}
-      />
+      <UsersToolbar status={selectedStatus} />
       <div className="mb-4 max-w-sm">
         <Suspense>
           <UserSearchBar />
@@ -82,22 +51,6 @@ export default function UsersPage({ searchParams }: Props) {
         <UsersTableData searchParams={searchParams} />
       </Suspense>
     </Page>
-  )
-}
-
-async function UsersStatusFilter({
-  searchParams,
-}: Pick<Props, 'searchParams'>) {
-  const { status } = await searchParams
-  const selectedStatus =
-    status === 'all' || !isUserStatus(status) ? 'all' : status
-
-  return (
-    <StatusFilterHeading
-      label="Users"
-      value={selectedStatus}
-      options={USER_STATUS_OPTIONS}
-    />
   )
 }
 

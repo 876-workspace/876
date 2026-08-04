@@ -18,25 +18,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${org.name ?? org.slug} • Billing - Organizations` }
 }
 
-export default function OrganizationBillingPage({ params }: Props) {
+export default async function OrganizationBillingPage({ params }: Props) {
+  const { slug } = await params
+
   return (
-    <Suspense fallback={<BillingSkeleton />}>
-      <OrganizationBillingData params={params} />
-    </Suspense>
+    <div className="space-y-5">
+      <h1 className="876-page-title">Billing</h1>
+      <Suspense fallback={<BillingSkeleton />}>
+        <OrganizationBillingData slug={slug} />
+      </Suspense>
+    </div>
   )
 }
 
-async function OrganizationBillingData({ params }: Props) {
-  const { slug } = await params
+async function OrganizationBillingData({ slug }: { slug: string }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
   const base = `/orgs/${slug}/billing`
 
   return (
-    <div className="space-y-5">
-      <h1 className="876-page-title">Billing</h1>
-
+    <>
       <Suspense fallback={<Skeleton className="h-24 w-full" />}>
         <BillingWorkspace orgId={org.id} />
       </Suspense>
@@ -61,7 +63,7 @@ async function OrganizationBillingData({ params }: Props) {
           description="Assign plans, switch prices, and update subscription statuses."
         />
       </div>
-    </div>
+    </>
   )
 }
 
@@ -84,7 +86,6 @@ async function BillingWorkspace({ orgId }: { orgId: string }) {
 function BillingSkeleton() {
   return (
     <div className="space-y-5">
-      <Skeleton className="h-8 w-24" />
       <Skeleton className="h-24 w-full" />
       <div className="grid gap-4 lg:grid-cols-3">
         <Skeleton className="h-44" />

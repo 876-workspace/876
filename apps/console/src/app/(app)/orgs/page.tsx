@@ -13,31 +13,17 @@ import {
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
-import { ORG_STATUSES, isOrgStatus } from '@/lib/org-status'
+import { isOrgStatus } from '@/lib/org-status'
 import { OrgSearchBar } from './_components/org-search-bar'
 import { OrgTable } from './_components/org-table'
 import { Page } from '@876/ui/page'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { ORGS_SKELETON_COLUMNS } from './_components/orgs-skeleton-columns'
+import { OrgsToolbar } from './_components/orgs-toolbar'
 
 export const metadata = { title: 'Organizations' }
-
-const ORG_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Organizations' },
-  ...ORG_STATUSES.map((status) => ({
-    value: status,
-    label: status.charAt(0).toUpperCase() + status.slice(1),
-    headingLabel: `${status.charAt(0).toUpperCase() + status.slice(1)} Organizations`,
-  })),
-]
 
 type Props = {
   searchParams: Promise<{
@@ -48,32 +34,15 @@ type Props = {
   }>
 }
 
-export default function OrganizationsPage({ searchParams }: Props) {
+export default async function OrganizationsPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'all' || !isOrgStatus(status) ? 'all' : status
+
   return (
     <Page>
       <TrackMCEventOnMount event={AnalyticsEvent.OrgListViewed} />
-      <ResourceToolbar
-        title="Organizations"
-        titleFilter={
-          <Suspense fallback={<Skeleton className="h-7 w-48" />}>
-            <OrganizationsStatusFilter searchParams={searchParams} />
-          </Suspense>
-        }
-        primaryLabel="Add"
-        primaryHref="/org/new"
-        primaryVariant="info"
-        refresh
-        dropdownActions={[
-          { label: 'Import', icon: 'import' },
-          { label: 'Export', icon: 'export' },
-          {
-            label: 'Delete organizations',
-            icon: 'delete',
-            destructive: true,
-            separator: true,
-          },
-        ]}
-      />
+      <OrgsToolbar status={selectedStatus} />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="w-full max-w-sm">
           <Suspense>
@@ -93,21 +62,6 @@ export default function OrganizationsPage({ searchParams }: Props) {
         <OrganizationsTableData searchParams={searchParams} />
       </Suspense>
     </Page>
-  )
-}
-
-async function OrganizationsStatusFilter({
-  searchParams,
-}: Pick<Props, 'searchParams'>) {
-  const { status } = await searchParams
-  const selectedStatus =
-    status === 'all' || !isOrgStatus(status) ? 'all' : status
-  return (
-    <StatusFilterHeading
-      label="Organizations"
-      value={selectedStatus}
-      options={ORG_STATUS_OPTIONS}
-    />
   )
 }
 
