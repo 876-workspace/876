@@ -248,6 +248,72 @@ Before recommending an approach for user-facing patterns (auth flows, RBAC, prov
 - If results are thin or generic, say so and note that your recommendation leans on built-in knowledge.
 - For code-mechanics questions (how to call a specific API, what a flag does), built-in knowledge is usually sufficient — don't search unless there's a known recency risk (e.g. a package that releases often).
 
+### Browserbase is the only web-search path
+
+**All web search and page fetching goes through the Browserbase `browse` CLI.**
+Do not use a harness-native `WebSearch`/`WebFetch` tool, `curl`, or any other
+fetcher for research. Browserbase is the sanctioned path because it renders the
+real page — so it returns **screenshots/images**, not just extracted text, which
+is what makes it usable for verifying UI and reading docs that carry meaning in
+their figures.
+
+```bash
+browse cloud search "<narrow query>" --num-results 5   # discovery
+browse cloud fetch  https://example.com                # read one page
+browse open https://example.com --local && browse screenshot --path page.png
+```
+
+`BROWSERBASE_API_KEY` is persisted in the gitignored root `.env` and exported
+from `~/.bashrc` / `~/.zshrc`, so `browse` works in any shell without setup. If
+a command reports missing credentials, re-export from root `.env` rather than
+falling back to another tool. `browse doctor` diagnoses the install.
+
+Next.js questions are the one case that does **not** start with a search: read
+the version-matched docs bundled at `node_modules/next/dist/docs/` first — they
+match the exact installed version, which a web result may not.
+
+## Loading States & Suspense Placement
+
+Read this before adding a `<Suspense>` boundary, a `loading.tsx`, or a skeleton
+to any page in Console, Couriers, or any future sidebar-style app.
+
+**Chrome is never a skeleton.** The page's static chrome — the
+`ResourceToolbar` (title, status-filter heading, Add button, `···` dropdown),
+the `PageBreadcrumb`, and a data table's **column header row** — is known
+without fetching anything. It must render immediately, on both a hard load and
+a client navigation. Only the parts genuinely waiting on I/O shimmer.
+
+The target for a list page:
+
+| Element                                | While data is in flight |
+| -------------------------------------- | ----------------------- |
+| Toolbar title + status-filter dropdown | **real, interactive**   |
+| Add button, `···` dropdown, breadcrumb | **real, interactive**   |
+| Data table `<thead>` column labels     | **real text**           |
+| Data table body rows                   | shimmering skeleton     |
+
+Rules:
+
+- **Never wrap a toolbar, heading, or breadcrumb in `<Suspense>` just because it
+  awaits `params`/`searchParams`.** Those promises carry no I/O. `await` them at
+  the top of an `async` page component and pass plain values down, then put the
+  boundary only around the component that actually fetches.
+- **A `<Suspense>` fallback for a table is always `DataTableSkeleton` with that
+  table's real column set** — never a bare `<Skeleton className="h-96 w-full">`.
+  The skeleton renders the true `<thead>`; keep its column list in a
+  `*-skeleton-columns.ts` beside the table so the fallback and the loaded table
+  cannot drift.
+- **A `loading.tsx` must render the same chrome the page does**, not a grey bar
+  where the toolbar goes. It is a route-level Suspense fallback, so a `*-page-shell`
+  that skeletons the toolbar produces exactly the flash this rule forbids.
+- **Push boundaries down, not up.** A boundary wrapping the whole page satisfies
+  "it streams" while replacing everything on every navigation. Next's own
+  guidance: keep as much real content visible as possible and fall back only
+  where data is in flight (`node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md`).
+- **Do not read `useSearchParams()` inside a `loading.tsx`** — it suspends during
+  prerender and the fallback has no boundary above it. Read `useParams()` (which
+  does not suspend) and default the status filter to `all`.
+
 ## Antigravity Rules
 
 - Always create and maintain the implementation plan (`implementation_plan.md`) in the root project directory.

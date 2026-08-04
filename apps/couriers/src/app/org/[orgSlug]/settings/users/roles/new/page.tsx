@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 
@@ -12,8 +14,6 @@ export default async function NewRolePage({
   params: Promise<{ orgSlug: string }>
 }) {
   const { orgSlug } = await params
-  const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant) return null
 
   return (
     <Page>
@@ -25,7 +25,20 @@ export default async function NewRolePage({
       <PageHeader>
         <PageTitle>Add role</PageTitle>
       </PageHeader>
-      <RoleForm orgSlug={orgSlug} />
+      <Suspense fallback={<FormSkeleton />}>
+        <NewRoleData orgSlug={orgSlug} />
+      </Suspense>
     </Page>
   )
+}
+
+async function NewRoleData({ orgSlug }: { orgSlug: string }) {
+  const ctx = await getManageContext(orgSlug)
+  if (!ctx?.tenant) return null
+
+  return <RoleForm orgSlug={orgSlug} />
+}
+
+function FormSkeleton() {
+  return <Skeleton className="h-80 w-full" />
 }

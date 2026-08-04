@@ -1,37 +1,28 @@
 import { defineSettingsNav } from '@876/settings/nav'
-import type { SettingsNavItem } from '@876/settings/types'
-
-import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
-
-const coreModuleKeys = new Set(['customers', 'items', 'packages', 'pre_alerts'])
 
 /**
- * A module-preference entry, titled "<Module> settings".
+ * The complete Couriers settings navigation — every group, every item, written
+ * out literally.
  *
- * The bare module label collides with the records it governs — the catalog's
- * "Warehouse" sat one card away from Organization's "Warehouses", and its
- * "Customer portal" duplicated the Customer portal card outright. Naming every
- * generated entry for what it is keeps any future module from colliding too.
+ * **This file is hand-maintained on purpose.** To add a settings page, add one
+ * object to the relevant group's `items` array below and nothing else. Do not
+ * reintroduce generated entries (a `.filter().map()` over the module catalog
+ * spread in with `...items`): the point of this file is that the full nav can
+ * be read and edited here without opening another module, so an item's title,
+ * href, and permission are all visible at the line you are changing.
+ *
+ * Two conventions the entries follow:
+ *
+ * - A module-preference item is titled `"<Module> settings"`, never the bare
+ *   module label. The bare label collides with the records it governs —
+ *   catalog "Warehouse" sat one card away from Organization's "Warehouses",
+ *   and "Customer portal" duplicated the Customer portal card outright.
+ * - A module-preference item's `href` is `/settings/modules/<key>`, its
+ *   `module` is that same `<key>`, and its `permission` is `<key>.view`. The
+ *   `<key>` must match a module key in `@/lib/modules` (`COURIERS_MODULE_CATALOG`)
+ *   — that is the only coupling left, and it is checked by
+ *   `settings-groups.test.ts` rather than by importing the catalog here.
  */
-const toPreferenceItem = (module: {
-  key: string
-  label: string
-}): SettingsNavItem => ({
-  title: `${module.label} settings`,
-  href: `/settings/modules/${module.key}`,
-  status: 'available',
-  permission: `${module.key}.view`,
-  module: module.key,
-})
-
-const corePreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
-  (module) => coreModuleKeys.has(module.key)
-).map(toPreferenceItem)
-
-const opsPreferenceItems: SettingsNavItem[] = COURIERS_MODULE_CATALOG.filter(
-  (module) => module.key !== 'general' && !coreModuleKeys.has(module.key)
-).map(toPreferenceItem)
-
 export const SETTINGS_NAV = defineSettingsNav([
   {
     key: 'organization',
@@ -83,14 +74,84 @@ export const SETTINGS_NAV = defineSettingsNav([
     icon: 'modules_core',
     items: [
       { title: 'General', href: '/settings/general', status: 'available' },
-      ...corePreferenceItems,
+      {
+        title: 'Customers settings',
+        href: '/settings/modules/customers',
+        status: 'available',
+        permission: 'customers.view',
+        module: 'customers',
+      },
+      {
+        title: 'Items settings',
+        href: '/settings/modules/items',
+        status: 'available',
+        permission: 'items.view',
+        module: 'items',
+      },
+      {
+        title: 'Packages settings',
+        href: '/settings/modules/packages',
+        status: 'available',
+        permission: 'packages.view',
+        module: 'packages',
+      },
+      {
+        title: 'Pre-alerts settings',
+        href: '/settings/modules/pre_alerts',
+        status: 'available',
+        permission: 'pre_alerts.view',
+        module: 'pre_alerts',
+      },
     ],
   },
   {
     key: 'modules_ops',
     title: 'Operations & fulfillment',
     icon: 'modules_ops',
-    items: [...opsPreferenceItems],
+    items: [
+      {
+        title: 'Warehouse settings',
+        href: '/settings/modules/warehouse',
+        status: 'available',
+        permission: 'warehouse.view',
+        module: 'warehouse',
+      },
+      {
+        title: 'Manifests settings',
+        href: '/settings/modules/manifests',
+        status: 'available',
+        permission: 'manifests.view',
+        module: 'manifests',
+      },
+      {
+        title: 'Deliveries settings',
+        href: '/settings/modules/deliveries',
+        status: 'available',
+        permission: 'deliveries.view',
+        module: 'deliveries',
+      },
+      {
+        title: 'Invoices settings',
+        href: '/settings/modules/invoices',
+        status: 'available',
+        permission: 'invoices.view',
+        module: 'invoices',
+      },
+      {
+        title: 'Payments settings',
+        href: '/settings/modules/payments',
+        status: 'available',
+        permission: 'payments.view',
+        module: 'payments',
+      },
+      {
+        title: 'Customer portal settings',
+        href: '/settings/modules/portal',
+        status: 'available',
+        permission: 'portal.view',
+        module: 'portal',
+      },
+    ],
   },
   {
     key: 'portal',
