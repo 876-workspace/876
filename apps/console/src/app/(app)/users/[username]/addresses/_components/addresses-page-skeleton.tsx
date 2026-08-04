@@ -25,7 +25,14 @@ export function AddressesPageSkeleton({ username }: { username: string }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:w-80 lg:w-96">
           <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          {/* Inert: this fallback is unmounted the moment the real manager
+              streams in, so anything typed here would be silently discarded.
+              Keeping the box at full size holds the row's height steady. */}
           <Input
+            readOnly
+            disabled
+            tabIndex={-1}
+            aria-hidden="true"
             placeholder="Search addresses…"
             className="pl-9"
             aria-label="Search addresses"

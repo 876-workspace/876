@@ -16,8 +16,7 @@ import { AppsSearchBar } from './_components/apps-search-bar'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { APPS_SKELETON_COLUMNS } from './_components/apps-skeleton-columns'
 import { AppsToolbar } from './_components/apps-toolbar'
-
-type AppStatusFilterValue = 'all' | AdminAppStatus
+import { resolveStatusFilter } from './_lib/app-status-filter'
 
 export const metadata = {
   title: 'Apps',
@@ -34,11 +33,6 @@ type Props = {
     q?: string
     status?: string
   }>
-}
-
-function resolveStatusFilter(status?: string): AppStatusFilterValue {
-  if (status === 'all' || status === 'inactive') return status
-  return 'active'
 }
 
 export default async function AppsPage({ searchParams }: Props) {
