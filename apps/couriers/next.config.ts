@@ -1,6 +1,8 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
+import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
+
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -19,6 +21,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
+  webpack: externalizePrismaWasm,
   // Allow HMR websocket connections from Ona/Gitpod and GitHub Codespaces preview URLs.
   allowedDevOrigins: ['127.0.0.1', '**.gitpod.dev', '*.app.github.dev'],
   async headers() {
