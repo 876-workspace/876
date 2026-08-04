@@ -11,8 +11,8 @@ overrides:
   '@hono/node-server': '1.19.13'
   postcss: '8.5.10'
 
-# Current transitive pins from Netlify CLI and Serwist. Keep these exact so pnpm
-# reports any newly introduced deprecated version while upstream migrations land.
+# Current transitive pins from Serwist. Keep these exact so pnpm reports any
+# newly introduced deprecated version while upstream migrations land.
 allowedDeprecatedVersions:
   glob: '10.5.0'
   node-domexception: '1.0.0'
@@ -28,7 +28,6 @@ allowBuilds:
   esbuild: true
   msgpackr-extract: false
   msw: true
-  netlify-cli: true
   opencode-ai: true
   prisma: true
   protobufjs: true

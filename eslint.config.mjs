@@ -10,13 +10,10 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     '.next/**',
     'apps/*/.next/**',
-    '.netlify/**',
-    'apps/*/.netlify/**',
     'apps/*/.open-next/**',
     'apps/*/.wrangler/**',
     'apps/*/public/sw.js',
     'apps/*/public/sw.js.map',
-    'packages/*/.netlify/**',
     'packages/*/dist/**',
     'packages/*/node_modules/**',
     'coverage/**',

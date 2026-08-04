@@ -127,7 +127,6 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.0",
     "jsdom": "29.1.1",
-    "netlify-cli": "26.0.2",
     "opencode-ai": "1.17.13",
     "prettier": "3.8.3",
     "prettier-plugin-tailwindcss": "0.8.0",

@@ -218,7 +218,7 @@ def internal_app_logout_uris(slug: str) -> list[str]:
             os.environ.get("CONSOLE_URL"),
             dev_preview_origin(3002),
             "http://localhost:3002",
-            "https://876-misc.vercel.app",
+            "https://876-console.1876.workers.dev",
         ]
     elif slug == "876-couriers":
         origins = [os.environ.get("COURIERS_URL"), dev_preview_origin(3003), "http://localhost:3003"]
@@ -250,7 +250,7 @@ def internal_app_redirect_uris(slug: str) -> list[str]:
             configured_url,
             dev_preview_origin(3002),
             "http://localhost:3002",
-            "https://876-misc.vercel.app",
+            "https://876-console.1876.workers.dev",
         ]
     elif slug == "876-couriers":
         configured_url = os.environ.get("COURIERS_URL")

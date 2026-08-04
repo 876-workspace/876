@@ -53,9 +53,6 @@ yarn-error.log*
 !.env.example
 !.env.development
 
-# vercel
-.vercel
-
 # Cloudflare / OpenNext build output
 .open-next
 .wrangler
@@ -74,9 +71,6 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
-
-# Local Netlify folder
-.netlify
 
 # Claude Code workflow scratch worktrees (transient, auto-cleaned)
 .claude/worktrees/
