@@ -4,7 +4,6 @@ import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Skeleton } from '@876/ui/skeleton'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from './_components/subscriptions-skeleton-columns'
 
 import { $876 } from '@/lib/876'
@@ -27,25 +26,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function OrganizationBillingSubscriptionsPage({
+export default async function OrganizationBillingSubscriptionsPage({
   params,
 }: Props) {
+  const { slug } = await params
+
   return (
     <div className="space-y-5">
-      <Suspense fallback={<SubscriptionsChromeSkeleton />}>
-        <BillingSubscriptionsShell params={params} />
-      </Suspense>
-    </div>
-  )
-}
-
-async function BillingSubscriptionsShell({ params }: Props) {
-  const { slug } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
-
-  return (
-    <>
       <div>
         <PageBreadcrumb
           href={`/orgs/${slug}/billing`}
@@ -59,10 +46,17 @@ async function BillingSubscriptionsShell({ params }: Props) {
           <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
         }
       >
-        <BillingSubscriptionsData org={org} slug={slug} />
+        <BillingSubscriptionsShell slug={slug} />
       </Suspense>
-    </>
+    </div>
   )
+}
+
+async function BillingSubscriptionsShell({ slug }: { slug: string }) {
+  const org = await resolveOrg(slug)
+  if (!org) notFound()
+
+  return <BillingSubscriptionsData org={org} slug={slug} />
 }
 
 async function BillingSubscriptionsData({
@@ -85,17 +79,5 @@ async function BillingSubscriptionsData({
       subscriptions={subscriptions ?? []}
       products={productsResult.data?.data ?? []}
     />
-  )
-}
-
-function SubscriptionsChromeSkeleton() {
-  return (
-    <>
-      <div>
-        <Skeleton className="mb-2 h-7 w-24" />
-        <h1 className="876-page-title mt-2">Subscriptions</h1>
-      </div>
-      <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
-    </>
   )
 }
