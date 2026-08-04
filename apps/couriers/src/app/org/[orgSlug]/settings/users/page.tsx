@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
-import { Skeleton } from '@876/ui/skeleton'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -33,21 +32,44 @@ type Props = {
   searchParams: Promise<{ status?: string; user?: string }>
 }
 
-export default function UsersSettingsPage({ params, searchParams }: Props) {
+export default async function UsersSettingsPage({
+  params,
+  searchParams,
+}: Props) {
+  const [{ orgSlug }, query] = await Promise.all([params, searchParams])
+  const selectedStatus = isTeamMemberStatus(query.status) ? query.status : 'all'
+
+  // The invite dialog lives in the toolbar and needs the role list, so the
+  // toolbar can only render outside Suspense if roles resolve here. That is
+  // cheap: `getManageContext` is `React.cache`d and `service.roles.list` is a
+  // single tenant-scoped query. What actually makes this page slow — the member
+  // list and its per-member identity lookups — stays behind the boundary below.
+  const inviteRoles = await listInviteRoles(orgSlug)
+
   return (
     <Page>
+      <UsersToolbar
+        orgSlug={orgSlug}
+        roles={inviteRoles}
+        status={selectedStatus}
+      />
       <Suspense
-        fallback={
-          <>
-            <Skeleton className="mb-6 h-9 w-full" />
-            <DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />
-          </>
-        }
+        fallback={<DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />}
       >
         <UsersSettingsData params={params} searchParams={searchParams} />
       </Suspense>
     </Page>
   )
+}
+
+async function listInviteRoles(
+  orgSlug: string
+): Promise<Array<{ id: string; name: string }>> {
+  const ctx = await getManageContext(orgSlug)
+  if (!ctx?.tenant) return []
+
+  const roleViews = await service.roles.list(ctx.tenant.id)
+  return roleViews.map(({ id, name }) => ({ id, name }))
 }
 
 async function UsersSettingsData({ params, searchParams }: Props) {
@@ -123,11 +145,6 @@ async function UsersSettingsData({ params, searchParams }: Props) {
 
   return (
     <>
-      <UsersToolbar
-        orgSlug={orgSlug}
-        roles={roles.map(({ id, name }) => ({ id, name }))}
-        status={selectedStatus}
-      />
       <UsersSplit
         rows={rows}
         roles={roles}

@@ -1,12 +1,10 @@
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page, PageBreadcrumb } from '@876/ui/page'
-
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { Skeleton } from '@876/ui/skeleton'
+import { Page } from '@876/ui/page'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
+import { RolesShell } from './_components/roles-shell'
 import { RolesTable } from './_components/roles-table'
 import { ROLES_SKELETON_COLUMNS } from './_components/roles-skeleton-columns'
 
@@ -14,38 +12,18 @@ export const metadata = { title: 'Roles — Settings' }
 
 type Props = { params: Promise<{ orgSlug: string }> }
 
-export default function RolesSettingsPage({ params }: Props) {
+export default async function RolesSettingsPage({ params }: Props) {
+  const { orgSlug } = await params
+
   return (
     <Page>
-      <Suspense fallback={<Skeleton className="mb-4 h-5 w-16" />}>
-        <RolesChrome params={params} />
-      </Suspense>
+      <RolesShell orgSlug={orgSlug} />
       <Suspense
         fallback={<DataTableSkeleton columns={ROLES_SKELETON_COLUMNS} />}
       >
         <RolesData params={params} />
       </Suspense>
     </Page>
-  )
-}
-
-async function RolesChrome({ params }: Props) {
-  const { orgSlug } = await params
-  return (
-    <>
-      <PageBreadcrumb
-        href={`/org/${orgSlug}/settings/users`}
-        label="Users"
-        className="mb-4"
-      />
-      <ResourceToolbar
-        title="Roles"
-        primaryLabel="Add"
-        primaryVariant="info"
-        primaryHref={`/org/${orgSlug}/settings/users/roles/new`}
-        refresh
-      />
-    </>
   )
 }
 

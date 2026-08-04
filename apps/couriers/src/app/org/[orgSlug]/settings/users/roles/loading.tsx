@@ -1,13 +1,18 @@
+'use client'
+
+import { useParams } from 'next/navigation'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
-import { Skeleton } from '@876/ui/skeleton'
+
+import { RolesShell } from './_components/roles-shell'
 import { ROLES_SKELETON_COLUMNS } from './_components/roles-skeleton-columns'
 
 export default function Loading() {
+  const { orgSlug } = useParams<{ orgSlug: string }>()
+
   return (
     <Page>
-      <Skeleton className="mb-4 h-5 w-16" />
-      <Skeleton className="mb-6 h-9 w-full" />
+      <RolesShell orgSlug={orgSlug} />
       <DataTableSkeleton columns={ROLES_SKELETON_COLUMNS} />
     </Page>
   )
