@@ -23,7 +23,7 @@ vi.mock('@876/ui/topbar-search', () => ({
   }) => {
     mocks.topbarSearch(props)
     const teamSettings = props.items.find(
-      (item) => item.href === '/org/island-logistics/settings/team'
+      (item) => item.href === '/island-logistics/settings/team'
     )
     return (
       <button
@@ -108,7 +108,7 @@ describe('Couriers topbar wrappers', () => {
     )
 
     expect(mocks.push).toHaveBeenCalledTimes(1)
-    expect(mocks.push).toHaveBeenCalledWith('/org/montego-express')
+    expect(mocks.push).toHaveBeenCalledWith('/montego-express')
   })
 
   it('does not push when the current organization is selected', async () => {
@@ -135,94 +135,94 @@ describe('Couriers topbar wrappers', () => {
   })
 
   it('builds the exact prefixed search directory for navigation, package children, and settings', () => {
-    render(<TopbarSearch basePath="/org/island-logistics" />)
+    render(<TopbarSearch basePath="/island-logistics" />)
 
     expect(mocks.topbarSearch).toHaveBeenCalledTimes(1)
     expect(mocks.topbarSearch.mock.calls[0]?.[0].items).toEqual([
       {
         group: 'Navigation',
         title: 'Dashboard',
-        href: '/org/island-logistics',
+        href: '/island-logistics',
       },
       {
         group: 'Navigation',
         title: 'Items',
-        href: '/org/island-logistics/items',
+        href: '/island-logistics/items',
       },
       {
         group: 'Navigation',
         title: 'Customers',
-        href: '/org/island-logistics/customers',
+        href: '/island-logistics/customers',
       },
       {
         group: 'Navigation',
         title: 'Packages',
-        href: '/org/island-logistics/packages',
+        href: '/island-logistics/packages',
       },
       {
         group: 'Navigation',
         title: 'Deliveries',
-        href: '/org/island-logistics/deliveries',
+        href: '/island-logistics/deliveries',
       },
       {
         group: 'Navigation',
         title: 'Warehouse',
-        href: '/org/island-logistics/warehouse',
+        href: '/island-logistics/warehouse',
       },
       {
         group: 'Navigation',
         title: 'Reports',
-        href: '/org/island-logistics/reports',
+        href: '/island-logistics/reports',
       },
       {
         group: 'Navigation',
         title: 'Documents',
-        href: '/org/island-logistics/documents',
+        href: '/island-logistics/documents',
       },
       {
         group: 'Navigation',
         title: 'Settings',
-        href: '/org/island-logistics/settings',
+        href: '/island-logistics/settings',
       },
       {
         group: 'Packages',
         title: 'Pre-alerts',
-        href: '/org/island-logistics/packages/pre-alerts',
+        href: '/island-logistics/packages/pre-alerts',
       },
       {
         group: 'Packages',
         title: 'Manifests',
-        href: '/org/island-logistics/packages/manifest',
+        href: '/island-logistics/packages/manifest',
       },
       {
         group: 'Transactions',
         title: 'Invoices',
-        href: '/org/island-logistics/invoices',
+        href: '/island-logistics/invoices',
       },
       {
         group: 'Transactions',
         title: 'Payments',
-        href: '/org/island-logistics/payments',
+        href: '/island-logistics/payments',
       },
       {
         group: 'Settings',
         title: 'General',
-        href: '/org/island-logistics/settings/general',
+        href: '/island-logistics/settings/general',
       },
       {
         group: 'Settings',
         title: 'Billing',
-        href: '/org/island-logistics/settings/billing',
+        href: '/island-logistics/settings/billing',
       },
       {
         group: 'Settings',
         title: 'Notifications',
-        href: '/org/island-logistics/settings/notifications',
+        href: '/island-logistics/settings/notifications',
       },
       {
         group: 'Settings',
         title: 'Team',
-        href: '/org/island-logistics/settings/team',
+        href: '/island-logistics/settings/team',
       },
     ])
     expect(mocks.push).not.toHaveBeenCalled()
@@ -230,7 +230,7 @@ describe('Couriers topbar wrappers', () => {
 
   it('pushes the exact href selected by topbar search', async () => {
     const user = userEvent.setup()
-    render(<TopbarSearch basePath="/org/island-logistics" />)
+    render(<TopbarSearch basePath="/island-logistics" />)
 
     await user.click(
       screen.getByRole('button', { name: 'Navigate to team settings' })
@@ -238,16 +238,14 @@ describe('Couriers topbar wrappers', () => {
 
     expect(mocks.topbarSearch).toHaveBeenCalledTimes(1)
     expect(mocks.push).toHaveBeenCalledTimes(1)
-    expect(mocks.push).toHaveBeenCalledWith(
-      '/org/island-logistics/settings/team'
-    )
+    expect(mocks.push).toHaveBeenCalledWith('/island-logistics/settings/team')
   })
 
   it('posts logout exactly once and navigates to login after sign-out', async () => {
     const userEventDriver = userEvent.setup()
     const menuUser = createUser()
     vi.stubGlobal('location', {
-      href: 'https://couriers.876.test/org/island-logistics',
+      href: 'https://couriers.876.test/island-logistics',
     })
     render(<UserMenu user={menuUser} showThemeSwitcher={true} />)
 

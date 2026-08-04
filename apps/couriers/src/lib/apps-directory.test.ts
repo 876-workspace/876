@@ -14,12 +14,12 @@ describe('getAppsDirectory', () => {
   it('marks Couriers current and uses the organization base path', () => {
     vi.stubEnv('NEXT_PUBLIC_BILLING_URL', 'https://billing.internal.876.test')
 
-    const result = getAppsDirectory('/org/island-logistics')
+    const result = getAppsDirectory('/island-logistics')
 
     expect(result).toEqual([
       {
         name: '876 Couriers',
-        url: '/org/island-logistics',
+        url: '/island-logistics',
         current: true,
       },
       {
@@ -35,12 +35,12 @@ describe('getAppsDirectory', () => {
       'https://billing.staging.876.test/workspace'
     )
 
-    const result = getAppsDirectory('/org/montego-express')
+    const result = getAppsDirectory('/montego-express')
 
     expect(result).toEqual([
       {
         name: '876 Couriers',
-        url: '/org/montego-express',
+        url: '/montego-express',
         current: true,
       },
       {
@@ -53,12 +53,12 @@ describe('getAppsDirectory', () => {
   it('falls back to the public Billing URL when the environment variable is absent', () => {
     vi.stubEnv('NEXT_PUBLIC_BILLING_URL', undefined)
 
-    const result = getAppsDirectory('/org/portland-freight')
+    const result = getAppsDirectory('/portland-freight')
 
     expect(result).toEqual([
       {
         name: '876 Couriers',
-        url: '/org/portland-freight',
+        url: '/portland-freight',
         current: true,
       },
       {

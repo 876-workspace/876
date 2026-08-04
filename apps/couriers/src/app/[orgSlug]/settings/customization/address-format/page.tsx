@@ -12,7 +12,7 @@ export default async function AddressFormatSettingsPage({
   return (
     <Page>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/settings`}
+        href={`/${orgSlug}/settings`}
         label="Settings"
         className="mb-4"
       />

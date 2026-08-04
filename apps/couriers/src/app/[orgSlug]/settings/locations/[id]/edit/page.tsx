@@ -18,7 +18,7 @@ export default async function EditBranchPage({ params }: Props) {
   return (
     <Page>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/settings/locations`}
+        href={`/${orgSlug}/settings/locations`}
         label="Locations"
         className="mb-4"
       />

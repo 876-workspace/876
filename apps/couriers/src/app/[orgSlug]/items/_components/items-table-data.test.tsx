@@ -16,7 +16,7 @@ vi.mock('@/lib/876', () => ({
   get876Client: mocks.get876Client,
 }))
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/org/island-logistics/items',
+  usePathname: () => '/island-logistics/items',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ refresh: vi.fn() }),
 }))

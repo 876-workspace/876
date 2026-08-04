@@ -47,6 +47,23 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  // The management workspace moved from /org/<slug>/… to /<slug>/…. Both rules
+  // are needed: the `:path*` form does not reliably match the bare
+  // /org/<slug> dashboard URL, which is the one most likely to be bookmarked.
+  async redirects() {
+    return [
+      {
+        source: '/org/:orgSlug',
+        destination: '/:orgSlug',
+        permanent: true,
+      },
+      {
+        source: '/org/:orgSlug/:path*',
+        destination: '/:orgSlug/:path*',
+        permanent: true,
+      },
+    ]
+  },
   transpilePackages: [
     '@876/billing',
     '@876/sdk',

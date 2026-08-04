@@ -79,7 +79,7 @@ export default async function PackagesPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/packages/new`}
+        primaryHref={`/${orgSlug}/packages/new`}
         primaryVariant="info"
         refresh
         dropdownActions={[

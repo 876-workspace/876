@@ -10,5 +10,5 @@ export default async function HomePage() {
   const ctx = await getManageContext()
   if (!ctx) redirect('/onboarding')
 
-  redirect(`/org/${ctx.orgSlug}`)
+  redirect(`/${ctx.orgSlug}`)
 }

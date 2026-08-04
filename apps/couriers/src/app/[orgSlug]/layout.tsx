@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
@@ -8,6 +8,7 @@ import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { Shell } from '@/components/shell/shell'
 import { getAppsDirectory } from '@/lib/apps-directory'
 import { getFeatures } from '@/lib/features'
+import { isReservedOrgSlug } from '@/lib/reserved-slugs'
 
 export default async function OrgLayout({
   children,
@@ -17,10 +18,12 @@ export default async function OrgLayout({
   params: Promise<{ orgSlug: string }>
 }) {
   const { orgSlug } = await params
+  if (isReservedOrgSlug(orgSlug)) notFound()
+
   const session = await getAuthSession()
   if (!isSignedSession(session)) {
     const loginParams = new URLSearchParams({
-      [AUTH_RETURN_TO_PARAM]: `/org/${orgSlug}`,
+      [AUTH_RETURN_TO_PARAM]: `/${orgSlug}`,
     })
     redirect(`/login?${loginParams.toString()}`)
   }
@@ -40,7 +43,7 @@ export default async function OrgLayout({
     organizationId: ctx.orgId,
   })
 
-  const basePath = `/org/${orgSlug}`
+  const basePath = `/${orgSlug}`
   // Management shell shows the live identity org name (the source of truth the
   // org profile edits), so a rename propagates everywhere. `Tenant.name` is the
   // couriers-local portal brand, not the management display name.

@@ -60,7 +60,7 @@ export default async function PaymentsPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/payments/new`}
+        primaryHref={`/${orgSlug}/payments/new`}
         primaryVariant="info"
         refresh
         dropdownActions={[

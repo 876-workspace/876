@@ -23,7 +23,7 @@ vi.mock('next/link', () => ({
 }))
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/org/island-logistics',
+  usePathname: () => '/island-logistics',
 }))
 
 import { Sidebar } from './sidebar'
@@ -57,7 +57,7 @@ describe('Sidebar organization logo', () => {
     const logoUrl = 'https://assets.876.test/island.png'
 
     const { container } = renderSidebar({
-      basePath: '/org/island-logistics',
+      basePath: '/island-logistics',
       tenantName: 'Island Logistics',
       logoUrl,
     })
@@ -68,12 +68,12 @@ describe('Sidebar organization logo', () => {
     expect(img).toHaveAttribute('alt', '')
     expect(
       screen.getByRole('link', { name: /Island Logistics/i })
-    ).toHaveAttribute('href', '/org/island-logistics')
+    ).toHaveAttribute('href', '/island-logistics')
   })
 
   it('falls back to initials when no logo URL is provided', () => {
     const { container } = renderSidebar({
-      basePath: '/org/island-logistics',
+      basePath: '/island-logistics',
       tenantName: 'Island Logistics',
       logoUrl: null,
     })
@@ -86,7 +86,7 @@ describe('Sidebar organization logo', () => {
 
   it('treats a missing logoUrl prop the same as null', () => {
     const { container } = renderSidebar({
-      basePath: '/org/montego-express',
+      basePath: '/montego-express',
       tenantName: 'Montego Express',
     })
 
@@ -98,26 +98,26 @@ describe('Sidebar organization logo', () => {
 describe('Sidebar navigation', () => {
   it('renders the grouped navigation without visible group labels', () => {
     renderSidebar({
-      basePath: '/org/island-logistics',
+      basePath: '/island-logistics',
       tenantName: 'Island Logistics',
     })
 
     expect(screen.queryByRole('group')).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Warehouse' })).toHaveAttribute(
       'href',
-      '/org/island-logistics/warehouse'
+      '/island-logistics/warehouse'
     )
     expect(screen.getByRole('link', { name: 'Deliveries' })).toHaveAttribute(
       'href',
-      '/org/island-logistics/deliveries'
+      '/island-logistics/deliveries'
     )
     expect(screen.getByRole('link', { name: 'Documents' })).toHaveAttribute(
       'href',
-      '/org/island-logistics/documents'
+      '/island-logistics/documents'
     )
     expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
       'href',
-      '/org/island-logistics/settings'
+      '/island-logistics/settings'
     )
     expect(screen.getByRole('button', { name: 'Transactions' })).toBeVisible()
     expect(

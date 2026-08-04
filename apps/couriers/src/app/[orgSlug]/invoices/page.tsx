@@ -57,7 +57,7 @@ export default async function InvoicesPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/invoices/new`}
+        primaryHref={`/${orgSlug}/invoices/new`}
         primaryVariant="info"
         refresh
         dropdownActions={[

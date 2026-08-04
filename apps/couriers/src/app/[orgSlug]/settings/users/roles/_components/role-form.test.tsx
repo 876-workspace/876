@@ -82,7 +82,7 @@ describe('RoleForm', () => {
       permissions: ['packages.view'],
     })
     expect(mocks.push).toHaveBeenCalledWith(
-      '/org/island-logistics/settings/users/roles'
+      '/island-logistics/settings/users/roles'
     )
     expect(mocks.refresh).toHaveBeenCalledTimes(1)
   })

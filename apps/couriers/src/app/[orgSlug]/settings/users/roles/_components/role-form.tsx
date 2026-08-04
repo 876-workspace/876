@@ -35,7 +35,7 @@ export function RoleForm({ orgSlug, role }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const readOnly = role?.isDefault ?? false
-  const listHref = `/org/${orgSlug}/settings/users/roles`
+  const listHref = `/${orgSlug}/settings/users/roles`
 
   function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()

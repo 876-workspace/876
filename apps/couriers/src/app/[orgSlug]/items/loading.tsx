@@ -27,7 +27,7 @@ export default function Loading() {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/items/new`}
+        primaryHref={`/${orgSlug}/items/new`}
         primaryVariant="info"
         refresh
         dropdownActions={ITEMS_DROPDOWN_ACTIONS}

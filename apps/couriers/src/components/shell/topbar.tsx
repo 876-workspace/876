@@ -38,7 +38,7 @@ export function OrgSwitcher({
     <OrgSwitcherRoot
       current={current}
       orgs={orgs}
-      onSelect={(org) => router.push(`/org/${org.slug}`)}
+      onSelect={(org) => router.push(`/${org.slug}`)}
     />
   )
 }

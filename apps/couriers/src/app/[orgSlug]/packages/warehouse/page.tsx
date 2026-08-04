@@ -6,5 +6,5 @@ type Props = {
 
 export default async function LegacyWarehousePage({ params }: Props) {
   const { orgSlug } = await params
-  redirect(`/org/${orgSlug}/warehouse`)
+  redirect(`/${orgSlug}/warehouse`)
 }

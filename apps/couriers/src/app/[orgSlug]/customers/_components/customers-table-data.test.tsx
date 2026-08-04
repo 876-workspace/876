@@ -20,7 +20,7 @@ vi.mock('@/lib/service', () => ({
   service: { customerProfiles: { list: mocks.listProfiles } },
 }))
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/org/island-logistics/customers',
+  usePathname: () => '/island-logistics/customers',
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ refresh: vi.fn() }),
 }))

@@ -7,14 +7,14 @@ export function WarehousesShell({ orgSlug }: Props) {
   return (
     <>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/settings`}
+        href={`/${orgSlug}/settings`}
         label="Settings"
         className="mb-4"
       />
       <ResourceToolbar
         title="Warehouses"
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/settings/warehouses/new`}
+        primaryHref={`/${orgSlug}/settings/warehouses/new`}
         primaryVariant="info"
         refresh
       />

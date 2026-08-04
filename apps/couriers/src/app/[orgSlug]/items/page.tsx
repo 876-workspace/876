@@ -34,7 +34,7 @@ export default async function ItemsPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/items/new`}
+        primaryHref={`/${orgSlug}/items/new`}
         primaryVariant="info"
         refresh
         dropdownActions={ITEMS_DROPDOWN_ACTIONS}

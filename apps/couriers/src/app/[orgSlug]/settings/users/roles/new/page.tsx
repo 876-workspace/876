@@ -18,7 +18,7 @@ export default async function NewRolePage({
   return (
     <Page>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/settings/users/roles`}
+        href={`/${orgSlug}/settings/users/roles`}
         label="Roles"
         className="mb-4"
       />

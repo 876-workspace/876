@@ -147,12 +147,12 @@ describe('LegacyAppRedirect', () => {
     })
 
     await expect(action).rejects.toMatchObject({
-      path: '/org/island-logistics',
+      path: '/island-logistics',
     })
     expect(mocks.getManageContext).toHaveBeenCalledTimes(1)
     expect(mocks.getManageContext).toHaveBeenCalledWith()
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
-    expect(mocks.redirect).toHaveBeenCalledWith('/org/island-logistics')
+    expect(mocks.redirect).toHaveBeenCalledWith('/island-logistics')
   })
 
   it('uses an empty rest array when the optional catch-all is omitted', async () => {
@@ -162,12 +162,12 @@ describe('LegacyAppRedirect', () => {
     const action = LegacyAppRedirect({ params: Promise.resolve({}) })
 
     await expect(action).rejects.toMatchObject({
-      path: '/org/island-logistics',
+      path: '/island-logistics',
     })
     expect(mocks.getManageContext).toHaveBeenCalledTimes(1)
     expect(mocks.getManageContext).toHaveBeenCalledWith()
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
-    expect(mocks.redirect).toHaveBeenCalledWith('/org/island-logistics')
+    expect(mocks.redirect).toHaveBeenCalledWith('/island-logistics')
   })
 
   it('preserves all legacy path segments below the organization root', async () => {
@@ -179,13 +179,13 @@ describe('LegacyAppRedirect', () => {
     })
 
     await expect(action).rejects.toMatchObject({
-      path: '/org/island-logistics/packages/pre-alerts',
+      path: '/island-logistics/packages/pre-alerts',
     })
     expect(mocks.getManageContext).toHaveBeenCalledTimes(1)
     expect(mocks.getManageContext).toHaveBeenCalledWith()
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).toHaveBeenCalledWith(
-      '/org/island-logistics/packages/pre-alerts'
+      '/island-logistics/packages/pre-alerts'
     )
   })
 
@@ -200,14 +200,14 @@ describe('LegacyAppRedirect', () => {
       })
 
       await expect(action).rejects.toMatchObject({
-        path: `/org/island-logistics/${segment}`,
+        path: `/island-logistics/${segment}`,
       })
       expect(mocks.getAuthSession).toHaveBeenCalledTimes(1)
       expect(mocks.getManageContext).toHaveBeenCalledTimes(1)
       expect(mocks.getManageContext).toHaveBeenCalledWith()
       expect(mocks.redirect).toHaveBeenCalledTimes(1)
       expect(mocks.redirect).toHaveBeenCalledWith(
-        `/org/island-logistics/${segment}`
+        `/island-logistics/${segment}`
       )
     }
   )

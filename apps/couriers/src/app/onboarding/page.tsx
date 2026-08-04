@@ -74,7 +74,7 @@ export default async function OnboardingPage() {
 
   const ctx = await getManageContext()
   if (ctx && ctx.tenant && ctx.accessStatus === 'active')
-    redirect(`/org/${ctx.orgSlug}`)
+    redirect(`/${ctx.orgSlug}`)
 
   const platform = await getPlatformClient()
   let wizardProps: ComponentProps<typeof OnboardingWizard> | null = null

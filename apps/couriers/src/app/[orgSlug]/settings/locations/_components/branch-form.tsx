@@ -75,7 +75,7 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const listHref = `/org/${orgSlug}/settings/locations`
+  const listHref = `/${orgSlug}/settings/locations`
   // Clearing the flag on the current default is refused server-side; promote
   // another branch instead. The control says so rather than failing on submit.
   const lockedDefault = branch?.isDefault === true || isFirstBranch === true

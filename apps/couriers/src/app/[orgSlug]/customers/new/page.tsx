@@ -10,7 +10,7 @@ export default async function NewCustomerPage({ params }: Props) {
   return (
     <Page>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/customers`}
+        href={`/${orgSlug}/customers`}
         label="Customers"
         className="mb-4"
       />

@@ -51,7 +51,7 @@ export function RolesTable({
         data={roles}
         onRowClick={(role) =>
           router.push(
-            `/org/${orgSlug}/settings/users/roles/${encodeURIComponent(role.id)}`
+            `/${orgSlug}/settings/users/roles/${encodeURIComponent(role.id)}`
           )
         }
         emptyState={

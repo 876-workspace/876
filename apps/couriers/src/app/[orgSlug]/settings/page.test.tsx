@@ -118,7 +118,7 @@ describe('Couriers settings page', () => {
       (module) => module.key !== 'general'
     ).map((module) => ({
       title: `${module.label} settings`,
-      href: `/org/island-logistics/settings/modules/${module.key}`,
+      href: `/island-logistics/settings/modules/${module.key}`,
     }))
 
     const rendered = expected.map((item) => ({
@@ -134,10 +134,10 @@ describe('Couriers settings page', () => {
 
     expect(
       screen.getByRole('link', { name: 'Locations' }).getAttribute('href')
-    ).toBe('/org/island-logistics/settings/locations')
+    ).toBe('/island-logistics/settings/locations')
     expect(
       screen.getByRole('link', { name: 'Warehouses' }).getAttribute('href')
-    ).toBe('/org/island-logistics/settings/warehouses')
+    ).toBe('/island-logistics/settings/warehouses')
   })
 
   it('gives every rendered item a real destination, never a dead link', async () => {
@@ -148,8 +148,8 @@ describe('Couriers settings page', () => {
       .map((link) => link.getAttribute('href'))
 
     expect(hrefs.length).toBeGreaterThan(0)
-    expect(
-      hrefs.every((href) => href?.startsWith('/org/island-logistics/'))
-    ).toBe(true)
+    expect(hrefs.every((href) => href?.startsWith('/island-logistics/'))).toBe(
+      true
+    )
   })
 })

@@ -127,7 +127,7 @@ describe('HomePage', () => {
     const action = HomePage()
 
     await expect(action).rejects.toMatchObject({
-      path: '/org/island-logistics',
+      path: '/island-logistics',
     })
     expect(mocks.getAuthSession).toHaveBeenCalledTimes(1)
     expect(mocks.isSignedSession).toHaveBeenCalledTimes(1)
@@ -135,6 +135,6 @@ describe('HomePage', () => {
     expect(mocks.getManageContext).toHaveBeenCalledTimes(1)
     expect(mocks.getManageContext).toHaveBeenCalledWith()
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
-    expect(mocks.redirect).toHaveBeenCalledWith('/org/island-logistics')
+    expect(mocks.redirect).toHaveBeenCalledWith('/island-logistics')
   })
 })

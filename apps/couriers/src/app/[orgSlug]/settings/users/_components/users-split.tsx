@@ -56,7 +56,7 @@ export function UsersSplit({ rows, roles, selectedId, orgSlug }: Props) {
     else next.delete('user')
 
     const query = next.toString()
-    router.push(query ? `?${query}` : `/org/${orgSlug}/settings/users`)
+    router.push(query ? `?${query}` : `/${orgSlug}/settings/users`)
   }
 
   if (!selected)

@@ -66,7 +66,7 @@ export default async function ManifestsPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/packages/manifest/new`}
+        primaryHref={`/${orgSlug}/packages/manifest/new`}
         primaryVariant="info"
         refresh
         dropdownActions={[

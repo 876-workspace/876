@@ -18,7 +18,7 @@ export default async function NewWarehousePage({ params }: Props) {
   return (
     <Page>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/settings/warehouses`}
+        href={`/${orgSlug}/settings/warehouses`}
         label="Warehouses"
         className="mb-4"
       />

@@ -25,7 +25,7 @@ export function WarehousesCards({ warehouses, orgSlug, emptyState }: Props) {
               size="sm"
               render={
                 <Link
-                  href={`/org/${orgSlug}/settings/warehouses/${warehouse.id}/edit`}
+                  href={`/${orgSlug}/settings/warehouses/${warehouse.id}/edit`}
                 />
               }
             >

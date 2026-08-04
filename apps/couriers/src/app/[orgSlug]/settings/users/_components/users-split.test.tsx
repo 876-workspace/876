@@ -177,8 +177,6 @@ describe('UsersSplit', () => {
 
     await user.click(screen.getByRole('button', { name: 'Close user details' }))
 
-    expect(mocks.push).toHaveBeenCalledWith(
-      '/org/island-logistics/settings/users'
-    )
+    expect(mocks.push).toHaveBeenCalledWith('/island-logistics/settings/users')
   })
 })

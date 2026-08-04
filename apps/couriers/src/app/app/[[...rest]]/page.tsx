@@ -20,5 +20,5 @@ export default async function LegacyAppRedirect({
   if (!ctx) redirect('/onboarding')
 
   const suffix = rest.length ? `/${rest.join('/')}` : ''
-  redirect(`/org/${ctx.orgSlug}${suffix}`)
+  redirect(`/${ctx.orgSlug}${suffix}`)
 }

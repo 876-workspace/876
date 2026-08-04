@@ -60,7 +60,7 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
           <li key={item.title}>
             {item.href ? (
               <Link
-                href={`/org/${orgSlug}${item.href}`}
+                href={`/${orgSlug}${item.href}`}
                 className="group/item hover:bg-muted flex items-center justify-between rounded-md py-1.5 pr-2.5 pl-6 text-sm transition-colors"
               >
                 <span className="text-foreground/90 group-hover/item:text-foreground">

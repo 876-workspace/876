@@ -7,7 +7,7 @@ export function RolesShell({ orgSlug }: Props) {
   return (
     <>
       <PageBreadcrumb
-        href={`/org/${orgSlug}/settings/users`}
+        href={`/${orgSlug}/settings/users`}
         label="Users"
         className="mb-4"
       />
@@ -15,7 +15,7 @@ export function RolesShell({ orgSlug }: Props) {
         title="Roles"
         primaryLabel="Add"
         primaryVariant="info"
-        primaryHref={`/org/${orgSlug}/settings/users/roles/new`}
+        primaryHref={`/${orgSlug}/settings/users/roles/new`}
         refresh
       />
     </>

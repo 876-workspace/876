@@ -59,7 +59,7 @@ export default async function PreAlertsPage({ params, searchParams }: Props) {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/org/${orgSlug}/packages/pre-alerts/new`}
+        primaryHref={`/${orgSlug}/packages/pre-alerts/new`}
         primaryVariant="info"
         refresh
         dropdownActions={[

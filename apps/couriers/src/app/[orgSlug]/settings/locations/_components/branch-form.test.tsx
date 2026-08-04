@@ -116,7 +116,7 @@ describe('BranchForm', () => {
       },
     })
     expect(mocks.push).toHaveBeenCalledWith(
-      '/org/island-logistics/settings/locations'
+      '/island-logistics/settings/locations'
     )
   })
 

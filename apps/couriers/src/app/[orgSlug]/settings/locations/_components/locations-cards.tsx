@@ -26,7 +26,7 @@ export function LocationsCards({ branches, orgSlug, emptyState }: Props) {
               size="sm"
               render={
                 <Link
-                  href={`/org/${orgSlug}/settings/locations/${branch.id}/edit`}
+                  href={`/${orgSlug}/settings/locations/${branch.id}/edit`}
                 />
               }
             >
