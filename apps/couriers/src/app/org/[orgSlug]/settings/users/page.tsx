@@ -16,6 +16,7 @@ import { PendingInvites } from './_components/pending-invites'
 import { UsersSplit } from './_components/users-split'
 import { UsersToolbar } from './_components/users-toolbar'
 import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
+import { listTeamRoles } from './_lib/team-roles'
 
 export const metadata = { title: 'Users — Settings' }
 
@@ -41,9 +42,11 @@ export default async function UsersSettingsPage({
 
   // The invite dialog lives in the toolbar and needs the role list, so the
   // toolbar can only render outside Suspense if roles resolve here. That is
-  // cheap: `getManageContext` is `React.cache`d and `service.roles.list` is a
-  // single tenant-scoped query. What actually makes this page slow — the member
-  // list and its per-member identity lookups — stays behind the boundary below.
+  // cheap: `getManageContext` is `React.cache`d, and `listTeamRoles` wraps the
+  // role query in `React.cache` so the streamed member table below reuses this
+  // exact promise rather than querying the tenant twice. What actually makes
+  // this page slow — the member list and its per-member identity lookups —
+  // stays behind the boundary below.
   const inviteRoles = await listInviteRoles(orgSlug)
 
   return (
@@ -68,7 +71,7 @@ async function listInviteRoles(
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return []
 
-  const roleViews = await service.roles.list(ctx.tenant.id)
+  const roleViews = await listTeamRoles(ctx.tenant.id)
   return roleViews.map(({ id, name }) => ({ id, name }))
 }
 
@@ -93,7 +96,7 @@ async function UsersSettingsData({ params, searchParams }: Props) {
   const platform = await getPlatformClient()
   const [members, roleViews, invitesResult] = await Promise.all([
     service.team.list(ctx.tenant.id, { status }),
-    service.roles.list(ctx.tenant.id),
+    listTeamRoles(ctx.tenant.id),
     platform.invites.list(ctx.orgId),
   ])
 

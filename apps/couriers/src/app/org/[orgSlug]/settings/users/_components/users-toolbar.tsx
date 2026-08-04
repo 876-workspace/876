@@ -36,6 +36,10 @@ export function UsersToolbar({ orgSlug, roles, status }: Props) {
         }
         primaryLabel="Invite"
         primaryVariant="info"
+        // The loading fallback renders this toolbar for real and interactively,
+        // so Invite must stay disabled until roles exist — the dialog has no
+        // role to assign without them, and its submit would be dead anyway.
+        primaryDisabled={roles.length === 0}
         onPrimaryAction={() => setInviteOpen(true)}
         refresh
       />
