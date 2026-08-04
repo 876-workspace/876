@@ -9,7 +9,6 @@ export default defineConfig([
   ...appStructureRules,
   globalIgnores([
     '.next/**',
-    '.netlify/**',
     'coverage/**',
     'out/**',
     'build/**',

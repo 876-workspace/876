@@ -38,8 +38,7 @@ const nextConfig: NextConfig = {
         '127.0.0.1:3000',
         '*.app.github.dev',
         '**.gitpod.dev',
-        '876-app.vercel.app',
-        '876-app.netlify.app',
+        '876-app.1876.workers.dev',
       ],
     },
   },
@@ -64,8 +63,6 @@ export default withSentryConfig(nextConfig, {
   },
 
   webpack: {
-    automaticVercelMonitors: true,
-
     treeshake: {
       removeDebugLogging: true,
     },

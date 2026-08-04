@@ -9,7 +9,6 @@ const eslintConfig = defineConfig([
   ...appStructureRules,
   globalIgnores([
     '.next/**',
-    '.netlify/**',
     '.open-next/**',
     '.wrangler/**',
     'coverage/**',

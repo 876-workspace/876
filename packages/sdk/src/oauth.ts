@@ -279,7 +279,7 @@ export type {
 
 /** Options for the public "Sign in with 876" OAuth client. */
 export type SignInWith876Options = {
-  /** Issuer origin, e.g. `https://876-app.vercel.app`. */
+  /** Issuer origin, e.g. `https://876-app.1876.workers.dev`. */
   baseUrl: string
   /** The registered OAuth client ID. */
   clientId: string

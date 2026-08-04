@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
         '127.0.0.1:3002',
         '*.app.github.dev',
         '**.gitpod.dev',
-        '876-misc.vercel.app',
+        '876-console.1876.workers.dev',
       ],
     },
   },

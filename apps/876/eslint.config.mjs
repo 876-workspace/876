@@ -26,7 +26,6 @@ const eslintConfig = defineConfig([
   ...createAppStructureRules({ extraPatterns: [consoleIsolation] }),
   globalIgnores([
     '.next/**',
-    '.netlify/**',
     'coverage/**',
     'out/**',
     'build/**',
