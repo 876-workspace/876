@@ -1,13 +1,14 @@
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
-import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
-import { Skeleton } from '@876/ui/skeleton'
+import { Page } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFeatures } from '@/lib/features'
 import { buildSections } from './_lib/field-spec'
 import { ProfileForm, type ProfileFormValues } from './_components/profile-form'
+import { ProfileSettingsShell } from './_components/profile-settings-shell'
+import { ProfileSkeleton } from './_components/profile-skeleton'
 
 export const metadata = { title: 'Organization profile — Settings' }
 
@@ -18,9 +19,12 @@ function str(value: string | null | undefined): string {
 
 type Props = { params: Promise<{ orgSlug: string }> }
 
-export default function ProfileSettingsPage({ params }: Props) {
+export default async function ProfileSettingsPage({ params }: Props) {
+  const { orgSlug } = await params
+
   return (
     <Page>
+      <ProfileSettingsShell orgSlug={orgSlug} />
       <Suspense fallback={<ProfileSkeleton />}>
         <ProfileSettingsData params={params} />
       </Suspense>
@@ -43,21 +47,9 @@ async function ProfileSettingsData({ params }: Props) {
 
   if (result.error)
     return (
-      <>
-        <PageBreadcrumb
-          href={`/org/${orgSlug}/settings`}
-          label="Settings"
-          className="mb-4"
-        />
-
-        <PageHeader className="mb-8">
-          <PageTitle>Organization profile</PageTitle>
-        </PageHeader>
-
-        <div className="876-empty-dashed max-w-2xl">
-          We couldn&apos;t load your organization profile. Please try again.
-        </div>
-      </>
+      <div className="876-empty-dashed max-w-2xl">
+        We couldn&apos;t load your organization profile. Please try again.
+      </div>
     )
 
   const profile = result.data
@@ -95,47 +87,13 @@ async function ProfileSettingsData({ params }: Props) {
   const sections = buildSections(parishes)
 
   return (
-    <>
-      <PageBreadcrumb
-        href={`/org/${orgSlug}/settings`}
-        label="Settings"
-        className="mb-4"
-      />
-
-      <PageHeader className="mb-6">
-        <PageTitle>Organization profile</PageTitle>
-      </PageHeader>
-
-      <ProfileForm
-        orgSlug={orgSlug}
-        canEdit={canEdit}
-        logoUrl={profile.logo_url}
-        logoUploadEnabled={features.storageOrgLogoUpload}
-        initial={initial}
-        sections={sections}
-      />
-    </>
-  )
-}
-
-function ProfileSkeleton() {
-  return (
-    <>
-      <Skeleton className="mb-4 h-5 w-16" />
-      <PageHeader className="mb-6">
-        <PageTitle>Organization profile</PageTitle>
-      </PageHeader>
-      <div className="space-y-6">
-        {Array.from({ length: 4 }, (_, index) => (
-          <div key={index} className="876-card space-y-4 p-5">
-            <Skeleton className="h-5 w-40" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Skeleton className="h-9 w-full" />
-              <Skeleton className="h-9 w-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+    <ProfileForm
+      orgSlug={orgSlug}
+      canEdit={canEdit}
+      logoUrl={profile.logo_url}
+      logoUploadEnabled={features.storageOrgLogoUpload}
+      initial={initial}
+      sections={sections}
+    />
   )
 }
