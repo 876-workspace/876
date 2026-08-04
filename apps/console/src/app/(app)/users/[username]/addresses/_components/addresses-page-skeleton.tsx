@@ -1,18 +1,68 @@
-import { Skeleton } from '@876/ui/skeleton'
+import Link from 'next/link'
 
-/**
- * The complete route shell for the addresses tab.
- *
- * Shared by `loading.tsx` and the page's outermost Suspense fallback so the two
- * are the same element. If the outer fallback were body-only, the toolbar
- * placeholder `loading.tsx` had already painted would disappear the moment the
- * page took over, and the panel would jump upward mid-navigation.
- */
-export function AddressesPageSkeleton() {
+import { buttonVariants } from '@876/ui/button'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import {
+  ArrowDownFromLine,
+  ArrowUpFromLine,
+  MoreHorizontalIcon,
+  Plus,
+  SearchIcon,
+} from '@876/ui/icons'
+import { Input } from '@876/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@876/ui/dropdown-menu'
+
+import { ADDRESSES_SKELETON_COLUMNS } from './addresses-skeleton-columns'
+
+export function AddressesPageSkeleton({ username }: { username: string }) {
   return (
-    <div className="space-y-5">
-      <Skeleton className="h-9 w-32" />
-      <Skeleton className="h-96 w-full" />
-    </div>
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:w-80 lg:w-96">
+          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            placeholder="Search addresses…"
+            className="pl-9"
+            aria-label="Search addresses"
+          />
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href={`/users/${username}/addresses/new`}
+            className={buttonVariants({ variant: 'info', size: 'sm' })}
+          >
+            <Plus className="size-4" strokeWidth={2.25} />
+            Add address
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={buttonVariants({
+                variant: 'outline',
+                size: 'icon-sm',
+              })}
+              aria-label="More actions"
+            >
+              <MoreHorizontalIcon className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto min-w-40">
+              <DropdownMenuItem disabled>
+                <ArrowUpFromLine className="size-4" />
+                Import addresses
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                <ArrowDownFromLine className="size-4" />
+                Export addresses
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      <DataTableSkeleton columns={ADDRESSES_SKELETON_COLUMNS} />
+    </section>
   )
 }
