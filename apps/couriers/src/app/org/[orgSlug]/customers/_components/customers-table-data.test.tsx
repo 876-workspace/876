@@ -8,7 +8,6 @@ const mocks = vi.hoisted(() => ({
   get876Client: vi.fn(),
   listProfiles: vi.fn(),
   listCustomers: vi.fn(),
-  listItems: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -30,8 +29,7 @@ vi.mock('next/navigation', () => ({
 // <Suspense>; rendering the shell would only produce fallbacks. These tests
 // target that data boundary directly, which is the unit they have always
 // exercised: fetch resolution plus table rendering.
-import { CustomersTableData } from '../customers/page'
-import { ItemsTableData } from '../items/page'
+import { CustomersTableData } from './customers-table-data'
 
 const context = {
   orgId: 'org_123',
@@ -54,14 +52,11 @@ function listResult<T>(data: T[], hasMore = false) {
   }
 }
 
-describe('Couriers finance-backed pages', () => {
+describe('Couriers customers page data', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue(context)
     mocks.get876Client.mockResolvedValue({
-      billing: {
-        customers: { list: mocks.listCustomers },
-        items: { list: mocks.listItems },
-      },
+      billing: { customers: { list: mocks.listCustomers } },
     })
     mocks.listProfiles.mockResolvedValue([])
   })
@@ -479,76 +474,5 @@ describe('Couriers finance-backed pages', () => {
     // so the customer id stands in for both the name and the email.
     expect(screen.getAllByText('cus_business')).toHaveLength(2)
     expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
-  })
-
-  it('when catalog items exist, formats minor-unit prices and identifies their source', async () => {
-    mocks.listItems.mockResolvedValue(
-      listResult([
-        {
-          id: 'item_1',
-          name: 'Same-day delivery',
-          sku: 'DELIVERY-SAME-DAY',
-          description: null,
-          type: 'SERVICE',
-          sourceAppId: '876-couriers',
-          defaultSellingAmount: '125000',
-          defaultSellingCurrency: 'JMD',
-        },
-        {
-          id: 'item_2',
-          name: 'Packaging sleeve',
-          sku: null,
-          description: 'Reusable mailer',
-          type: 'GOOD',
-          sourceAppId: null,
-          defaultSellingAmount: null,
-          defaultSellingCurrency: null,
-        },
-      ])
-    )
-
-    render(await ItemsTableData({ params, searchParams: emptySearchParams }))
-
-    expect(screen.getByText('Same-day delivery')).toBeVisible()
-    expect(screen.getByText('Connected app')).toBeVisible()
-    expect(screen.getByText('Billing workspace')).toBeVisible()
-    expect(screen.getByText(/1,250/)).toBeVisible()
-    expect(screen.getByText('—')).toBeVisible()
-    expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
-      active: undefined,
-    })
-  })
-
-  it('threads the inactive item status filter into the finance list call', async () => {
-    mocks.listItems.mockResolvedValue(listResult([]))
-
-    render(
-      await ItemsTableData({
-        params,
-        searchParams: Promise.resolve({ status: 'inactive' }),
-      })
-    )
-
-    expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
-      active: false,
-    })
-    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
-    expect(screen.getByText('No items')).toBeVisible()
-    expect(screen.getByText('No inactive items.')).toBeVisible()
-  })
-
-  it('when the item service fails, still renders the table shell with the service message', async () => {
-    mocks.listItems.mockResolvedValue({
-      data: null,
-      error: { message: 'The shared catalog could not be loaded.' },
-    })
-
-    render(await ItemsTableData({ params, searchParams: emptySearchParams }))
-
-    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
-    expect(
-      screen.getByText('The shared catalog could not be loaded.')
-    ).toBeVisible()
-    expect(screen.getByText('No items')).toBeVisible()
   })
 })

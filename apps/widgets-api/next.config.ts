@@ -1,9 +1,12 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
+import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
+  webpack: externalizePrismaWasm,
   allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
 }
 

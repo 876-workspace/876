@@ -8,7 +8,6 @@ const { mockAfter, mockReconcile, mockGetManageContext, mockService } =
       mockReconcile,
       mockGetManageContext: vi.fn(),
       mockService: {
-        branches: { list: vi.fn().mockResolvedValue([]) },
         warehouses: { list: vi.fn().mockResolvedValue([]) },
         orgLocations: { reconcile: mockReconcile },
       },
@@ -23,36 +22,32 @@ vi.mock('@/lib/auth/manage-context', () => ({
 
 vi.mock('@/lib/service', () => ({ service: mockService }))
 
-// Each page shell is a sync component that renders its data child behind
+// The page shell is a sync component that renders this data child behind
 // <Suspense>, so awaiting the shell never runs the fetch that schedules the
 // reconcile. Target the data boundary, which is where after() is called.
-import { LocationsData } from '../locations/page'
-import { WarehousesData } from '../warehouses/page'
+import { WarehousesData } from './warehouses-data'
 
 const TENANT_ID = 'ten_rocketship'
 const ORG_ID = 'org_rocketship'
 
 /**
- * Both pages must schedule the repair pass. The warehouse form redirects to the
- * Warehouses page, so a warehouse whose mirror failed would stay unlinked
- * indefinitely if only the Locations page scheduled it.
+ * The warehouse form redirects here, so a warehouse whose mirror failed would
+ * stay unlinked indefinitely if only the Locations page scheduled the repair.
  */
-describe.each([
-  ['Branches', LocationsData],
-  ['Warehouses', WarehousesData],
-])('%s settings page', (_name, Page) => {
+describe('Warehouses settings page data', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetManageContext.mockResolvedValue({
       tenant: { id: TENANT_ID, orgId: ORG_ID },
       role: 'owner',
     })
-    mockService.branches.list.mockResolvedValue([])
     mockService.warehouses.list.mockResolvedValue([])
   })
 
   it('schedules the org-location reconcile after the response', async () => {
-    await Page({ params: Promise.resolve({ orgSlug: 'island-logistics' }) })
+    await WarehousesData({
+      params: Promise.resolve({ orgSlug: 'island-logistics' }),
+    })
 
     expect(mockAfter).toHaveBeenCalledTimes(1)
     expect(mockReconcile).not.toHaveBeenCalled()
@@ -66,7 +61,9 @@ describe.each([
   it('does not schedule a reconcile when there is no tenant', async () => {
     mockGetManageContext.mockResolvedValue(null)
 
-    await Page({ params: Promise.resolve({ orgSlug: 'island-logistics' }) })
+    await WarehousesData({
+      params: Promise.resolve({ orgSlug: 'island-logistics' }),
+    })
 
     expect(mockAfter).not.toHaveBeenCalled()
   })
