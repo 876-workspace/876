@@ -1,9 +1,11 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 
 import { buttonVariants } from '@876/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@876/ui/card'
 import { ChevronLeft } from '@876/ui/icons'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { PackageStatusBadge } from '@/features/portal/components/package-status-badge'
 import { PackageTimeline } from '@/features/portal/components/package-timeline'
@@ -26,6 +28,24 @@ export default async function PortalPackageDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+
+  return (
+    <div className="space-y-6">
+      <Link
+        href="/portal/packages"
+        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+      >
+        <ChevronLeft className="size-4" />
+        Packages
+      </Link>
+      <Suspense fallback={<PackageDetailsSkeleton />}>
+        <PackageDetailsData id={id} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function PackageDetailsData({ id }: { id: string }) {
   const returnTo = `/portal/packages/${id}`
   const { tenant, profile } = await requirePortalCustomer(returnTo)
   const packageItem = await service.packages.retrieve({
@@ -38,15 +58,7 @@ export default async function PortalPackageDetailPage({
     packageItem.description || packageItem.trackingNum || 'Package details'
 
   return (
-    <div className="space-y-6">
-      <Link
-        href="/portal/packages"
-        className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-      >
-        <ChevronLeft className="size-4" />
-        Packages
-      </Link>
-
+    <>
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {title}
@@ -110,7 +122,40 @@ export default async function PortalPackageDetailPage({
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
+  )
+}
+
+function PackageDetailsSkeleton() {
+  return (
+    <>
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          Package details
+        </h1>
+      </div>
+      <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_18rem]">
+        <Card>
+          <CardHeader>
+            <CardTitle>Package details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Tracking progress</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </CardContent>
+        </Card>
+      </div>
+    </>
   )
 }
 
