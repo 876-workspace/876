@@ -10,13 +10,13 @@ import {
 } from '@876/ui/empty'
 
 import { $876 } from '@/lib/876'
-import { AppsTable } from './_components/apps-table'
+import { AppsTable } from '../_components/apps-table'
 import { Page } from '@876/ui/page'
-import { AppsSearchBar } from './_components/apps-search-bar'
+import { AppsSearchBar } from '../_components/apps-search-bar'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { APPS_SKELETON_COLUMNS } from './_components/apps-skeleton-columns'
-import { AppsToolbar } from './_components/apps-toolbar'
-import { resolveStatusFilter } from './_lib/app-status-filter'
+import { APPS_SKELETON_COLUMNS } from '../_components/apps-skeleton-columns'
+import { AppsToolbar } from '../_components/apps-toolbar'
+import { resolveStatusFilter } from '../_lib/app-status-filter'
 
 export const metadata = {
   title: 'Apps',

@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 import { Page } from '@876/ui/page'
 
-import { LocationsCardsSkeleton } from './_components/locations-cards-skeleton'
-import { LocationsData } from './_components/locations-data'
-import { LocationsShell } from './_components/locations-shell'
+import { LocationsCardsSkeleton } from '../_components/locations-cards-skeleton'
+import { LocationsData } from '../_components/locations-data'
+import { LocationsShell } from '../_components/locations-shell'
 
 export const metadata = { title: 'Locations — Settings' }
 

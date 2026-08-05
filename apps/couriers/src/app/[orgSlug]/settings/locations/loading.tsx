@@ -1,18 +1,16 @@
-'use client'
+import { Skeleton } from '@876/ui/skeleton'
 
-import { useParams } from 'next/navigation'
-import { Page } from '@876/ui/page'
-
-import { LocationsCardsSkeleton } from './_components/locations-cards-skeleton'
-import { LocationsShell } from './_components/locations-shell'
-
+/**
+ * Fallback for the detail and create routes under this segment. The list keeps
+ * its own table/card skeleton in `(list)/loading.tsx`: a list fallback here
+ * would be the nearest boundary above a child route's layout, so opening a row
+ * would blank the list and re-render it before the record appeared.
+ */
 export default function Loading() {
-  const { orgSlug } = useParams<{ orgSlug: string }>()
-
   return (
-    <Page>
-      <LocationsShell orgSlug={orgSlug} />
-      <LocationsCardsSkeleton />
-    </Page>
+    <div className="space-y-4 px-4 pt-5 pb-8 sm:px-6 lg:px-8">
+      <Skeleton className="h-8 w-56" />
+      <Skeleton className="h-96 w-full rounded-lg" />
+    </div>
   )
 }

@@ -1,22 +1,16 @@
-'use client'
+import { Skeleton } from '@876/ui/skeleton'
 
-import { useParams } from 'next/navigation'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page } from '@876/ui/page'
-
-import { UsersToolbar } from './_components/users-toolbar'
-import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
-
+/**
+ * Fallback for the detail and create routes under this segment. The list keeps
+ * its own table/card skeleton in `(list)/loading.tsx`: a list fallback here
+ * would be the nearest boundary above a child route's layout, so opening a row
+ * would blank the list and re-render it before the record appeared.
+ */
 export default function Loading() {
-  const { orgSlug } = useParams<{ orgSlug: string }>()
-
   return (
-    <Page>
-      {/* Roles are only needed once the invite dialog opens, which cannot
-          happen from a loading fallback — an empty list keeps the real toolbar
-          on screen without fetching anything. */}
-      <UsersToolbar orgSlug={orgSlug} roles={[]} status="all" />
-      <DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />
-    </Page>
+    <div className="space-y-4 px-4 pt-5 pb-8 sm:px-6 lg:px-8">
+      <Skeleton className="h-8 w-56" />
+      <Skeleton className="h-96 w-full rounded-lg" />
+    </div>
   )
 }
