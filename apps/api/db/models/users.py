@@ -227,7 +227,19 @@ class UserIdentification(Base):
         String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     type: Mapped[str] = mapped_column(String, nullable=False)
+    # Legacy plaintext. New rows leave it empty and write `value_ciphertext`
+    # instead; it stays only until the backfill has sealed every existing row
+    # and a follow-up migration drops it.
     value: Mapped[str] = mapped_column(String, nullable=False)
+    value_ciphertext: Mapped[str | None] = mapped_column(Text, nullable=True)
+    value_key_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    value_provider: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Last four characters, kept in the clear so a masked read never has to
+    # decrypt — masking is the common path and must not need the key.
+    value_last4: Mapped[str | None] = mapped_column(String(4), nullable=True)
+    # HMAC of the normalized value under a server pepper. Duplicate detection
+    # compares hashes, so finding an existing record never decrypts anything.
+    value_hash: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     verified_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)

@@ -736,6 +736,38 @@ def ensure_session_telemetry_columns(conn: Connection) -> None:
             exec_isolated(conn, f"sessions.{name}", f"ALTER TABLE sessions ADD COLUMN {column}")
 
 
+def ensure_user_identification_encryption_columns(conn: Connection) -> None:
+    """Add the sealed-value columns to an existing user_identifications table.
+
+    `create_all` never alters an existing table, so without this the ORM would
+    INSERT columns the live table does not have and every identification write
+    would fail. The plaintext `value` column is deliberately left in place: the
+    backfill seals rows into the new columns first, and only a later migration
+    drops it.
+    """
+    inspector: Any = sa_inspect(conn)
+    if "user_identifications" not in set(inspector.get_table_names()):
+        return
+    columns = {column["name"] for column in inspector.get_columns("user_identifications")}
+
+    for column in (
+        "value_ciphertext TEXT",
+        "value_key_id VARCHAR",
+        "value_provider VARCHAR",
+        "value_last4 VARCHAR(4)",
+        "value_hash VARCHAR",
+    ):
+        name = column.split()[0]
+        if name not in columns:
+            exec_isolated(conn, f"user_identifications.{name}", f"ALTER TABLE user_identifications ADD COLUMN {column}")
+
+    exec_isolated(
+        conn,
+        "user_identifications.value_hash_index",
+        "CREATE INDEX IF NOT EXISTS ix_user_identifications_value_hash ON user_identifications (value_hash)",
+    )
+
+
 def ensure_organizations_logo_file_id_column(conn: Connection) -> None:
     """Add the canonical Storage file reference to existing organizations."""
     inspector: Any = sa_inspect(conn)

@@ -51,7 +51,13 @@ class AuthAttemptRecord:
     context: AttemptContext | None = None
 
 
-def _decode_signal(value: str | None) -> _Signal | None:
+def decode_device_signal(value: str | None) -> _Signal | None:
+    """Decodes the `x-876-device` blob, or returns None for anything malformed.
+
+    Shared with the identification-disclosure audit trail, which records the
+    device a raw identifier was disclosed to.
+    """
+
     if value is None or len(value) > 8192:
         return None
     try:
@@ -79,7 +85,7 @@ class AuthTelemetryService:
     ) -> AuthAttemptRecord:
         try:
             ctx = resolve_request_context(request)
-            signal = _decode_signal(ctx.device_signal)
+            signal = decode_device_signal(ctx.device_signal)
             parsed = refine_with_client_hints(parse_user_agent(ctx.user_agent), signal.hints if signal else None)
             now = now_unix_seconds()
             device_id: str | None = None

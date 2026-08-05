@@ -1,20 +1,20 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Path, Query, status
+from fastapi import APIRouter, Depends, Path, Query, Request, status
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from core.config import get_settings
+from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.id import generate_id, generate_platform_owner_user_id
 from core.identifications import (
     IDENTIFICATION_TYPES,
     is_valid_identification_value,
-    mask_identification_value,
     normalize_identification_value,
 )
 from core.logging import get_logger
+from core.request_context import RequestContext, resolve_request_context
 from core.responses import ListObject
 from core.security import AdminDep, SessionDep
 from core.timestamps import now_unix_seconds
@@ -76,6 +76,11 @@ from domains.users.schemas import (
 from providers.workos.adapter import get_auth_provider
 from providers.workos.client import get_workos_client
 from services.features import FeatureService
+from services.identification_secrets import (
+    disclose_identification_value,
+    masked_identification_value,
+    seal_identification_value,
+)
 from services.identity_sync import delete_provider_user
 from services.provisioning import resolve_member_permissions
 
@@ -237,6 +242,18 @@ def _serialize_consumer_contact(row: Any) -> ConsumerContactResponse:
     )
 
 
+def _disclosure_device_fingerprint(context: RequestContext) -> str | None:
+    """The device fingerprint of the caller, when the signal decodes.
+
+    Best-effort: a malformed or absent signal must never block a disclosure the
+    entitlement checks have already allowed.
+    """
+    from services.auth_telemetry import decode_device_signal
+
+    signal = decode_device_signal(context.device_signal)
+    return signal.visitorId if signal else None
+
+
 def _serialize_user_identification(row: Any) -> UserIdentificationResponse:
     config = IDENTIFICATION_TYPES.get(row.type)
     return UserIdentificationResponse(
@@ -245,7 +262,9 @@ def _serialize_user_identification(row: Any) -> UserIdentificationResponse:
         type=row.type,
         label=config.label if config else row.type,
         country_code=row.country_code,
-        value_masked=mask_identification_value(row.value),
+        # Masked from the stored last four, so a list read never needs the
+        # decryption key. Legacy plaintext rows fall back inside the helper.
+        value_masked=masked_identification_value(row),
         verified=row.verified,
         verified_at=row.verified_at,
         created_at=row.created_at,
@@ -2096,6 +2115,7 @@ async def create_user_identification(
     body: UserIdentificationCreate,
     _admin: AdminDep,
     db: Annotated[AsyncSession, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> UserIdentificationResponse:
     await _require_user(db, user_id)
 
@@ -2124,12 +2144,26 @@ async def create_user_identification(
             http_status_code=status.HTTP_409_CONFLICT,
         )
 
+    sealed = await seal_identification_value(
+        settings,
+        user_id=user_id,
+        identification_type=body.type,
+        normalized_value=normalized_value,
+    )
+
     now = now_unix_seconds()
     row = await repo.create(
         id=generate_id("userIdentification"),
         user_id=user_id,
         type=body.type,
-        value=normalized_value,
+        # The plaintext column is no longer written; the sealed value is the
+        # record of truth from this point on.
+        value="",
+        value_ciphertext=sealed.ciphertext,
+        value_key_id=sealed.key_id,
+        value_provider=sealed.provider,
+        value_last4=sealed.last4,
+        value_hash=sealed.value_hash,
         country_code=body.country_code if body.country_code is not None else config.country_code,
         verified=False,
         verified_at=None,
@@ -2241,8 +2275,10 @@ async def disclose_user_identification(
     user_id: str,
     type: str,
     body: UserIdentificationDiscloseRequest,
+    request: Request,
     _admin: AdminDep,
     db: Annotated[AsyncSession, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> UserIdentificationDisclosureResponse:
     identification = await UserIdentificationRepository(db).get_by_type(user_id, type)
     if not identification:
@@ -2269,6 +2305,8 @@ async def disclose_user_identification(
         )
 
     now = now_unix_seconds()
+    disclosure_context = resolve_request_context(request)
+    disclosure_fingerprint = _disclosure_device_fingerprint(disclosure_context)
     await AuditEventRepository(db).create(
         id=generate_id("auditEvent"),
         event="user_identification.disclosed",
@@ -2288,6 +2326,12 @@ async def disclose_user_identification(
             "app_slug": body.app_slug,
             "identification_type": type,
             "reason": body.reason,
+            # Who asked, from where and on what device. A disclosure is the one
+            # moment a raw identifier leaves the system, so the audit row
+            # records the request context alongside the entitlement that
+            # allowed it.
+            "ip_address": disclosure_context.ip,
+            "device_fingerprint": disclosure_fingerprint,
         },
         created_at=now,
     )
@@ -2302,7 +2346,7 @@ async def disclose_user_identification(
 
     return UserIdentificationDisclosureResponse(
         type=type,
-        value=identification.value,
+        value=await disclose_identification_value(settings, identification),
         country_code=identification.country_code,
         verified=identification.verified,
         disclosed_at=now,
