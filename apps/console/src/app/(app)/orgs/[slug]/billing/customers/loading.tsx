@@ -1,28 +1,10 @@
-'use client'
+import { TabContentSkeleton } from '@/components/patterns/detail/tab-content-skeleton'
 
-import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { Button } from '@876/ui/button'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
-
+/**
+ * Fallback for the routes below this segment. The page itself keeps its own
+ * shaped skeleton inside its route group — left here, it would be the nearest
+ * boundary above every child layout and would replay this page on the way in.
+ */
 export default function Loading() {
-  const { slug } = useParams<{ slug: string }>()
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="876-page-title">Billing customers</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Billing-owned customer records.
-          </p>
-        </div>
-        <Button render={<Link href={`/orgs/${slug}/billing/customers/new`} />}>
-          Add customer
-        </Button>
-      </div>
-      <DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} />
-    </div>
-  )
+  return <TabContentSkeleton />
 }

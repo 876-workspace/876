@@ -4,12 +4,12 @@ import { Suspense } from 'react'
 
 import type { AdminConsumerContact, AdminUser } from '@876/admin'
 
-import { resolveUser, resolveUserContacts } from '../_data'
+import { resolveUser, resolveUserContacts } from '../../_data'
 import {
   ContactsManager,
   type ContactsView,
-} from './_components/contacts-manager'
-import { ContactsPageSkeleton } from './_components/contacts-page-skeleton'
+} from '../_components/contacts-manager'
+import { ContactsPageSkeleton } from '../_components/contacts-page-skeleton'
 
 type Props = {
   params: Promise<{ username: string }>

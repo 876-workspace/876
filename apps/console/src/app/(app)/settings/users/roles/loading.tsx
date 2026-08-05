@@ -1,11 +1,10 @@
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page } from '@876/ui/page'
-import { ROLES_SKELETON_COLUMNS } from './_components/roles-skeleton-columns'
+import { TabContentSkeleton } from '@/components/patterns/detail/tab-content-skeleton'
 
+/**
+ * Fallback for the routes below this segment. The page itself keeps its own
+ * shaped skeleton inside its route group — left here, it would be the nearest
+ * boundary above every child layout and would replay this page on the way in.
+ */
 export default function Loading() {
-  return (
-    <Page>
-      <DataTableSkeleton columns={ROLES_SKELETON_COLUMNS} />
-    </Page>
-  )
+  return <TabContentSkeleton />
 }

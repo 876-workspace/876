@@ -13,11 +13,11 @@ import {
 } from '@876/ui/empty'
 
 import { $876 } from '@/lib/876'
-import { resolveApp } from '../_data'
-import { AppFeaturesTable } from './_components/features-table'
+import { resolveApp } from '../../_data'
+import { AppFeaturesTable } from '../_components/features-table'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { FEATURES_SKELETON_COLUMNS } from './_components/features-skeleton-columns'
+import { FEATURES_SKELETON_COLUMNS } from '../_components/features-skeleton-columns'
 
 type Props = {
   params: Promise<{ slug: string }>

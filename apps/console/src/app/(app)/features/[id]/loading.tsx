@@ -1,11 +1,10 @@
-import { Skeleton } from '@876/ui/skeleton'
+import { TabContentSkeleton } from '@/components/patterns/detail/tab-content-skeleton'
 
+/**
+ * Fallback for the routes below this segment. The page itself keeps its own
+ * shaped skeleton inside its route group — left here, it would be the nearest
+ * boundary above every child layout and would replay this page on the way in.
+ */
 export default function Loading() {
-  return (
-    <div className="grid gap-5 lg:grid-cols-2">
-      <Skeleton className="h-64" />
-      <Skeleton className="h-64" />
-      <Skeleton className="h-48" />
-    </div>
-  )
+  return <TabContentSkeleton />
 }

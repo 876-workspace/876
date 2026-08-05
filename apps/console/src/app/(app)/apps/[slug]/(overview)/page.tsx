@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { ArrowRight } from '@876/ui/icons'
 
-import { resolveApp } from './_data'
+import { resolveApp } from '../_data'
 import {
   Card,
   CardContent,

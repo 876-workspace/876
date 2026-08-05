@@ -1,13 +1,10 @@
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { SUBSCRIBERS_SKELETON_COLUMNS } from './_components/subscribers-skeleton-columns'
+import { TabContentSkeleton } from '@/components/patterns/detail/tab-content-skeleton'
 
+/**
+ * Fallback for the routes below this segment. The page itself keeps its own
+ * shaped skeleton inside its route group — left here, it would be the nearest
+ * boundary above every child layout and would replay this page on the way in.
+ */
 export default function Loading() {
-  return (
-    <div className="space-y-5">
-      <div className="mb-2">
-        <h2 className="876-page-title">Subscribers</h2>
-      </div>
-      <DataTableSkeleton columns={SUBSCRIBERS_SKELETON_COLUMNS} />
-    </div>
-  )
+  return <TabContentSkeleton />
 }

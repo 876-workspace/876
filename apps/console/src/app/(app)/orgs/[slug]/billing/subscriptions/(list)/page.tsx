@@ -4,7 +4,7 @@ import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { SUBSCRIPTIONS_SKELETON_COLUMNS } from './_components/subscriptions-skeleton-columns'
+import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
 
 import { $876 } from '@/lib/876'
 
@@ -12,7 +12,7 @@ import {
   resolveOrg,
   resolveOrgBillingAccounts,
   resolveOrgSubscriptions,
-} from '../../_data'
+} from '../../../_data'
 import { SubscriptionsManager } from '@/app/(app)/orgs/[slug]/billing/_components/subscriptions-manager'
 
 type Props = { params: Promise<{ slug: string }> }

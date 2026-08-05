@@ -4,12 +4,12 @@ import { Suspense } from 'react'
 
 import type { AdminAddress, AdminUser } from '@876/admin'
 
-import { resolveUser, resolveUserAddresses } from '../_data'
+import { resolveUser, resolveUserAddresses } from '../../_data'
 import {
   AddressesManager,
   type AddressesView,
-} from './_components/addresses-manager'
-import { AddressesPageSkeleton } from './_components/addresses-page-skeleton'
+} from '../_components/addresses-manager'
+import { AddressesPageSkeleton } from '../_components/addresses-page-skeleton'
 
 type Props = {
   params: Promise<{ username: string }>

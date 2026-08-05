@@ -4,9 +4,9 @@ import type { AdminOrganization } from '@876/admin'
 import { PageBreadcrumb } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { ACCOUNTS_SKELETON_COLUMNS } from './_components/accounts-skeleton-columns'
+import { ACCOUNTS_SKELETON_COLUMNS } from '../_components/accounts-skeleton-columns'
 
-import { resolveOrg, resolveOrgBillingAccounts } from '../../_data'
+import { resolveOrg, resolveOrgBillingAccounts } from '../../../_data'
 import {
   AccountsManager,
   type AccountsView,
