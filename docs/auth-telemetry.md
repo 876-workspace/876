@@ -63,8 +63,8 @@ If an unauthenticated or direct client caller includes `x-876-*` headers, `resol
 | `browser_version`    | `String \| None`    | Web browser version string.                                               |
 | `is_bot`             | `Boolean`           | True if User-Agent matched bot/crawler signatures.                        |
 | `context_trusted`    | `Boolean`           | True if IP and geo metadata came from a validated API key.                |
-| `risk_score`         | `Integer \| None`   | Reserved for risk engine score.                                           |
-| `risk_reasons`       | `JSON \| None`      | Reserved for risk engine factor list.                                     |
+| `risk_score`         | `Integer \| None`   | Risk engine score for this attempt.                                       |
+| `risk_reasons`       | `JSON \| None`      | Risk engine factor list.                                                  |
 | `request_id`         | `String \| None`    | Trace identifier (`x-request-id`).                                        |
 | `created_at`         | `BigInteger`        | Unix timestamp in seconds when recorded.                                  |
 
@@ -135,6 +135,7 @@ If an unauthenticated or direct client caller includes `x-876-*` headers, `resol
 | `refresh`           | Access token refreshed via refresh token (`POST /auth/refresh`).                                         |
 | `session_switch`    | Active account switched within the signed-in set (`POST /auth/sessions/switch`).                         |
 | `signout`           | One account signed out of the set (`POST /auth/sessions/{sid}/signout`).                                 |
+| `pin_verify`        | Account PIN check attempted (`POST /users/{user_id}/pin/verify`).                                        |
 
 ### `outcome` vocabulary
 
@@ -143,6 +144,77 @@ If an unauthenticated or direct client caller includes `x-876-*` headers, `resol
 | `succeeded` | Authentication succeeded and session/tokens were minted.                                                     |
 | `failed`    | Authentication failed due to invalid credentials, expired tokens, or rate limits.                            |
 | `pending`   | Step succeeded but legitimately does not authenticate anyone yet (OTP send, recovery mail, social hand-off). |
+
+---
+
+## Admin API
+
+All endpoints below require `AdminDep` (a valid admin session header). They are mounted under the API's internal base URL.
+
+| Method   | Path                             | Purpose                                                       |
+| -------- | -------------------------------- | ------------------------------------------------------------- |
+| `GET`    | `/devices`                       | List devices across all users, with filtering.                |
+| `GET`    | `/devices/{device_id}`           | Retrieve a single device record.                              |
+| `POST`   | `/devices/{device_id}`           | Update a device (label, trusted flag, blocked flag).          |
+| `GET`    | `/devices/{device_id}/attempts`  | List auth attempts that used a specific device.               |
+| `GET`    | `/devices/{device_id}/users`     | List all users who have signed in from a device fingerprint.  |
+| `GET`    | `/users/{user_id}/devices`       | List devices for a specific user.                             |
+| `GET`    | `/auth-attempts`                 | List auth attempts across all users, with filtering.          |
+| `GET`    | `/auth-attempts/summary`         | Aggregated attempt counts for a `24h`, `7d`, or `30d` window. |
+| `GET`    | `/auth-attempts/{attempt_id}`    | Retrieve a single auth attempt record.                        |
+| `GET`    | `/users/{user_id}/auth-attempts` | List auth attempts for a specific user.                       |
+| `GET`    | `/sessions`                      | List sessions across all users, with filtering.               |
+| `GET`    | `/sessions/{session_id}`         | Retrieve a single session record.                             |
+| `DELETE` | `/sessions/{session_id}`         | Revoke a session.                                             |
+| `DELETE` | `/users/{user_id}/sessions`      | Revoke all sessions for a user.                               |
+| `GET`    | `/users/{user_id}/sessions`      | List sessions for a specific user.                            |
+
+---
+
+## Self-service API
+
+Three endpoints under `/auth/me/*` are session-scoped — they operate on the caller's own account and require only a valid session cookie. No admin key is needed.
+
+| Method   | Path                             | SDK method                       | Purpose                                             |
+| -------- | -------------------------------- | -------------------------------- | --------------------------------------------------- |
+| `GET`    | `/auth/me/devices`               | `$876.auth.me.listDevices()`     | List devices the signed-in account has used.        |
+| `GET`    | `/auth/me/sessions`              | `$876.auth.me.listSessions()`    | List the signed-in account's active sessions.       |
+| `DELETE` | `/auth/me/sessions/{session_id}` | `$876.auth.me.revokeSession(id)` | Revoke one of the signed-in account's own sessions. |
+
+The session tier deliberately omits `device_fingerprint` and `ip_address` from both the API response (`apps/api/domains/auth/me_schemas.py`) and the SDK type (`MyDeviceResponse`, `MySessionResponse`). A device fingerprint identifies a device across accounts, and both the fingerprint and the raw IP are fraud-investigation data that belong to the admin tier only. Omitting them is what lets any app in the ecosystem build an account-security screen without holding an internal admin key.
+
+---
+
+## Risk scoring
+
+`assess_risk` in `apps/api/core/risk.py` is pure and synchronous — no I/O runs inside it. `AuthTelemetryService._assess` gathers signals over a **15-minute** failure window (`RISK_WINDOW_SECONDS = 15 * 60`) and then calls `assess_risk`. The score is clamped to `MAX_SCORE = 100`.
+
+| Factor                    | Constant                   | Points |
+| ------------------------- | -------------------------- | ------ |
+| New device for this user  | `NEW_DEVICE_POINTS`        | 15     |
+| New country for this user | `NEW_COUNTRY_POINTS`       | 20     |
+| Bot user agent            | `BOT_POINTS`               | 30     |
+| Untrusted request context | `UNTRUSTED_CONTEXT_POINTS` | 10     |
+| Identifier failure burst  | `IDENTIFIER_BURST_POINTS`  | 20     |
+| IP failure burst          | `IP_BURST_POINTS`          | 25     |
+| Shared device fingerprint | `SHARED_DEVICE_POINTS`     | 25     |
+| Impossible travel         | `IMPOSSIBLE_TRAVEL_POINTS` | 35     |
+
+Burst thresholds: `IDENTIFIER_BURST_THRESHOLD = 3` failures, `IP_BURST_THRESHOLD = 10` failures, `SHARED_DEVICE_THRESHOLD = 3` distinct users. Impossible travel fires when the implied speed between the current and previous attempt location exceeds `IMPOSSIBLE_TRAVEL_KMH = 800.0` km/h.
+
+**Enforcement is off.** `AUTH_RISK_BLOCK_THRESHOLD` defaults to `0` in `apps/api/core/config.py`. `should_block` in `apps/api/core/risk.py` returns `False` whenever the threshold is `<= 0`, so no attempt is ever blocked at the default value. The score is recorded on the attempt row and visible in Console; no auth request is affected until the threshold is explicitly raised.
+
+---
+
+## Analytics
+
+`AuthTelemetryService._emit` in `apps/api/services/auth_telemetry.py` fires a `auth_attempt` PostHog event after each recorded attempt. The call is fire-and-forget and fully isolated — an analytics outage never affects a login.
+
+Privacy constraints applied before emission:
+
+- **Raw IP**: never sent. The IP is replaced by a 16-character salted SHA-256 digest (`ip_hash`). The salt is `IDENTIFICATION_HASH_PEPPER` when configured, falling back to `"876"`. This allows two attempts from one address to be correlated in analytics without the address itself being stored there.
+- **Submitted identifier**: never sent.
+- **`$geoip_disable: true`**: PostHog is instructed not to derive geo from the server's outbound IP, since the event carries explicit `country_code`, `region`, `city`, and `timezone` fields taken from the Cloudflare edge metadata.
 
 ---
 
@@ -167,6 +239,12 @@ Telemetry enforces strict privacy boundaries prior to storage:
 
 ---
 
+## Console
+
+Device data for a specific user lives on their **Security tab** at `/users/[username]/security`. The `/security` route holds only two cross-account views: sign-ins (auth attempts) and sessions. There is deliberately no Console devices list page — device records are accessed either through the Security tab of the owning user or via the Admin API.
+
+---
+
 ## Operating it
 
 The database migration `ensure_session_telemetry_columns` in `apps/api/db/migrate.py` adds the telemetry columns (`device_id`, `ip_country_code`, `ip_region`, `ip_city`, `ip_asn`, `ip_as_organization`, `last_seen_at`, `revoked_at`, `revoked_by`) to existing `sessions` tables. Standard `Base.metadata.create_all` creates new tables (`auth_attempts`, `user_devices`), but does not modify pre-existing tables. Because session creation in `establish_session` runs outside telemetry failure isolation (a session row is non-optional), a missing column on `sessions` would fail every login attempt. Running `ensure_session_telemetry_columns` at startup guarantees these columns exist.
@@ -175,11 +253,6 @@ Client device fingerprinting can be disabled in client applications by setting `
 
 ---
 
-## Not yet built
+## Outstanding
 
-- Admin API endpoints (`/devices`, `/auth-attempts`, `/sessions` — all `AdminDep`)
-- Console UI (device management, session inspection, sign-in history)
-- WorkOS Vault encryption
-- Account PINs
-- Risk scoring and threat engine (`risk_score`, `risk_reasons`)
-- PostHog telemetry event emission
+WorkOS Vault key custody in production is not yet in place. The local AES-256-GCM provider (`SECURE_FIELD_KEY`) is the only sealing backend available today. See `docs/sensitive-field-encryption.md` for the full encryption architecture.
