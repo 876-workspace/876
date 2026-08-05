@@ -12,14 +12,17 @@ from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.logging import get_logger
 from core.rate_limit import enforce_rate_limit
+from core.request_context import resolve_request_context
 from core.responses import ErrorEnvelope, ListObject
-from core.security import AdminDep
+from core.security import AdminDep, SessionDep
 from core.session import seal_session, select_account
 from db.models import App, Membership, Organization, Session, User
 from db.repositories.auth_providers import AuthProviderRepository
 from db.repositories.sessions import SessionRepository
+from db.repositories.user_devices import UserDeviceRepository
 from db.repositories.users import UserRepository
 from db.session import get_db
+from domains.auth.me_schemas import MyDeviceResponse, MySessionDeleted, MySessionResponse
 from domains.auth.schemas import (
     AuthEventResponse,
     AuthRefreshResponse,
@@ -82,7 +85,7 @@ from domains.auth.session_state import (
 )
 from domains.oauth.tokens import verify_provider_jwt
 from services.auth import AuthServiceDep, ServiceAuthPending
-from services.auth_telemetry import AuthTelemetryService
+from services.auth_telemetry import AuthTelemetryService, decode_device_signal
 from services.provisioning import resolve_member_permissions
 
 from . import docs
@@ -1073,3 +1076,151 @@ async def get_routing_memberships(
         for m in results
     ]
     return RoutingMembershipsResponse(data=data)
+
+
+# ── Self-service account security ─────────────────────────────────────────────
+#
+# Session-scoped views of the caller's own devices and sessions, so any app in
+# the ecosystem can build an account-security screen through `@876/sdk` without
+# the internal key. Every one of these is scoped to `principal.user_id` in the
+# query itself — a caller cannot name another user, so there is no id to
+# tamper with.
+
+
+def _serialize_my_device(row: Any, current_fingerprint: str | None) -> MyDeviceResponse:
+    name = row.label or " ".join(filter(None, [row.device_brand, row.device_model])) or row.device_type
+    return MyDeviceResponse(
+        id=row.id,
+        name=name,
+        device_type=row.device_type,
+        os_name=row.os_name,
+        browser_name=row.browser_name,
+        last_country_code=row.last_country_code,
+        trusted=row.trusted,
+        sign_in_count=row.sign_in_count,
+        first_seen_at=row.first_seen_at,
+        last_seen_at=row.last_seen_at,
+        is_current=current_fingerprint is not None and row.fingerprint == current_fingerprint,
+    )
+
+
+def _serialize_my_session(row: Any, current_session_id: str | None) -> MySessionResponse:
+    return MySessionResponse(
+        id=row.id,
+        device_id=row.device_id,
+        city=row.ip_city,
+        country_code=row.ip_country_code,
+        created_at=row.created_at,
+        last_seen_at=row.last_seen_at,
+        expires_at=row.expires_at,
+        is_current=current_session_id is not None and row.id == current_session_id,
+    )
+
+
+@router.get(
+    "/me/devices",
+    response_model=ListObject[MyDeviceResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List my devices",
+    description=(
+        "Returns the devices the authenticated account has signed in from. "
+        "Fingerprints and IP addresses are deliberately omitted — they are "
+        "fraud-investigation data available only on the admin tier."
+    ),
+)
+async def list_my_devices(
+    request: Request,
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> ListObject[MyDeviceResponse]:
+    user_id = principal.user_id
+    if not user_id:
+        raise AppHTTPException(
+            code="auth/no-session",
+            message="No active session.",
+            http_status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    signal = decode_device_signal(resolve_request_context(request).device_signal)
+    rows = await UserDeviceRepository(db).list_for_user(user_id, limit=50)
+
+    return ListObject(
+        data=[_serialize_my_device(row, signal.visitorId if signal else None) for row in rows],
+        has_more=False,
+        url="/auth/me/devices",
+        total_count=len(rows),
+    )
+
+
+@router.get(
+    "/me/sessions",
+    response_model=ListObject[MySessionResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List my sessions",
+    description="Returns the authenticated account's active sessions, newest first.",
+)
+async def list_my_sessions(
+    request: Request,
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ListObject[MySessionResponse]:
+    user_id = principal.user_id
+    if not user_id:
+        raise AppHTTPException(
+            code="auth/no-session",
+            message="No active session.",
+            http_status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    rows, _ = await SessionRepository(db).list(user_id=user_id, status="active", limit=50)
+
+    current_sid: str | None = None
+    cookie_secret = settings.resolved_session_cookie_secret
+    if cookie_secret:
+        payload = _read_session_payload(request, settings, cookie_secret)
+        current_sid = payload.get("sid") if payload else None
+
+    return ListObject(
+        data=[_serialize_my_session(row, current_sid) for row in rows],
+        has_more=False,
+        url="/auth/me/sessions",
+        total_count=len(rows),
+    )
+
+
+@router.delete(
+    "/me/sessions/{session_id}",
+    response_model=MySessionDeleted,
+    status_code=status.HTTP_200_OK,
+    summary="Revoke one of my sessions",
+    description="Signs the authenticated account out of one of its own sessions.",
+)
+async def revoke_my_session(
+    session_id: str,
+    principal: SessionDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> MySessionDeleted:
+    user_id = principal.user_id
+    if not user_id:
+        raise AppHTTPException(
+            code="auth/no-session",
+            message="No active session.",
+            http_status_code=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    row = await db.get(Session, session_id)
+    # Ownership is checked before anything else, and a session belonging to
+    # someone else is reported as missing rather than forbidden — otherwise the
+    # response distinguishes "not yours" from "does not exist", which turns
+    # this into an oracle for enumerating live session ids.
+    if row is None or row.user_id != user_id:
+        raise AppHTTPException(
+            code="auth/session-not-found",
+            message="That session does not exist.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    await SessionRepository(db).revoke(session_id, user_id)
+    logger.info("auth.me.session_revoked", user_id=user_id, session_id=session_id)
+    return MySessionDeleted(id=session_id)

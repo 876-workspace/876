@@ -31,6 +31,9 @@ import type {
   VerifyMagicOtpResult,
 } from '../types/auth.ts'
 import {
+  myDeviceListSchema,
+  mySessionDeletedSchema,
+  mySessionListSchema,
   auth876GetSessionResponseSchema,
   auth876ListProvidersResponseSchema,
   auth876LoginParamsSchema,
@@ -79,6 +82,8 @@ const apiEndpoints = {
   resolve: '/auth/resolve',
   sendMagicOtp: '/auth/magic-otp/send',
   verifyMagicOtp: '/auth/magic-otp/verify',
+  myDevices: '/auth/me/devices',
+  mySessions: '/auth/me/sessions',
 } as const
 
 /** `$876.auth.*` — login, registration, social login, session, OTP flows. */
@@ -563,6 +568,71 @@ export function createAuthResource(runtime: SdkRuntime) {
         auth876VerifyMagicOtpResponseSchema,
         requestOptions
       )
+    },
+
+    /**
+     * `$876.auth.me.*` — the signed-in account's own security surface.
+     *
+     * Session-scoped, so any 876 app can build an account-security screen
+     * without the internal key. The API scopes every one of these to the
+     * caller's own user id and omits device fingerprints and IP addresses —
+     * those are fraud-investigation data and stay on the admin tier.
+     */
+    me: {
+      /**
+       * Lists the devices the signed-in account has used.
+       *
+       * @param requestOptions - Optional per-request fetch options.
+       * @returns A `{ data, error }` result envelope.
+       * @see GET /auth/me/devices
+       */
+      listDevices(requestOptions?: RequestOptions) {
+        return sendAuthRequest(
+          runtime,
+          'GET',
+          apiEndpoints.myDevices,
+          undefined,
+          myDeviceListSchema,
+          requestOptions
+        )
+      },
+
+      /**
+       * Lists the signed-in account's active sessions.
+       *
+       * @param requestOptions - Optional per-request fetch options.
+       * @returns A `{ data, error }` result envelope.
+       * @see GET /auth/me/sessions
+       */
+      listSessions(requestOptions?: RequestOptions) {
+        return sendAuthRequest(
+          runtime,
+          'GET',
+          apiEndpoints.mySessions,
+          undefined,
+          mySessionListSchema,
+          requestOptions
+        )
+      },
+
+      /**
+       * Signs the account out of one of its own sessions.
+       *
+       * @param sessionId - The session to revoke.
+       * @param requestOptions - Optional per-request fetch options.
+       * @returns A `{ data, error }` result envelope.
+       * @see DELETE /auth/me/sessions/{session_id}
+       */
+      revokeSession(sessionId: string, requestOptions?: RequestOptions) {
+        return sendAuthRequest(
+          runtime,
+          'DELETE',
+          `${apiEndpoints.mySessions}/${encodeURIComponent(sessionId)}`,
+          undefined,
+          mySessionDeletedSchema,
+          requestOptions
+        )
+      },
     },
   }
 }
