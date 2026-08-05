@@ -67,6 +67,10 @@
       "types": "./src/fetch/bridge.ts",
       "default": "./src/fetch/bridge.ts"
     },
+    "./request-context": {
+      "types": "./src/request-context/index.ts",
+      "default": "./src/request-context/index.ts"
+    },
     "./api": {
       "types": "./src/api.ts",
       "default": "./src/api.ts"
