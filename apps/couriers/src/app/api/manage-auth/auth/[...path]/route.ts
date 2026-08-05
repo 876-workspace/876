@@ -6,6 +6,10 @@ import {
   copyBridgeResponse,
   fetchApiBridge,
 } from '@876/core/fetch/bridge'
+import {
+  extractRequestContext,
+  requestContextHeaders,
+} from '@876/core/request-context'
 
 import { getRequestOrigin } from '@/lib/auth/request-origin'
 
@@ -62,6 +66,11 @@ function buildForwardHeaders(request: NextRequest): Headers {
   if (cookie) headers.set('cookie', cookie)
   if (origin) headers.set('x-876-origin', origin)
   if (requestId) headers.set('x-request-id', requestId)
+  for (const [key, value] of Object.entries(
+    requestContextHeaders(extractRequestContext(request))
+  )) {
+    headers.set(key, value)
+  }
   if (API_KEY) headers.set('X-876-API-Key', API_KEY)
   // Management surface users are org admins — enterprise realm.
   headers.set('X-876-Realm', 'enterprise')

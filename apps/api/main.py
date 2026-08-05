@@ -672,7 +672,12 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
 
     return (
         # Revision 3 adds apps.logo_file_id and users.avatar_file_id.
-        BootstrapStep("identity_tables", 3, _seed_identity_tables),
+        # Revision 4 adds the session telemetry columns and the identification
+        # encryption columns. A step is skipped when its recorded revision
+        # matches, so adding an `ensure_*` call inside an existing step without
+        # bumping this leaves the migration permanently unrun — the columns
+        # never appear and every session insert fails.
+        BootstrapStep("identity_tables", 4, _seed_identity_tables),
         BootstrapStep("platform_apps", 1, _seed_platform_apps),
         BootstrapStep("geo_regions", 2, seed_geo_catalog),
         BootstrapStep("provisioning", 1, _ensure_provisioning_tables),
