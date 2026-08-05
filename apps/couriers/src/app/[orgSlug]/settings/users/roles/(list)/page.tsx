@@ -4,9 +4,9 @@ import { Page } from '@876/ui/page'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { service } from '@/lib/service'
 
-import { RolesShell } from './_components/roles-shell'
-import { RolesTable } from './_components/roles-table'
-import { ROLES_SKELETON_COLUMNS } from './_components/roles-skeleton-columns'
+import { RolesShell } from '../_components/roles-shell'
+import { RolesTable } from '../_components/roles-table'
+import { ROLES_SKELETON_COLUMNS } from '../_components/roles-skeleton-columns'
 
 export const metadata = { title: 'Roles — Settings' }
 

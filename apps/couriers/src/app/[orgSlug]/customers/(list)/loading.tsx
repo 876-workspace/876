@@ -6,11 +6,11 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
-import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
+import { CUSTOMERS_SKELETON_COLUMNS } from '../_components/customers-skeleton-columns'
 import {
   CUSTOMER_STATUS_OPTIONS,
   CUSTOMERS_DROPDOWN_ACTIONS,
-} from './_lib/customers-list-config'
+} from '../_lib/customers-list-config'
 
 export default function Loading() {
   const { orgSlug } = useParams<{ orgSlug: string }>()

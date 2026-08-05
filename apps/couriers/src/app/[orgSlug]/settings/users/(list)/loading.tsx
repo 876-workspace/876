@@ -4,8 +4,8 @@ import { useParams } from 'next/navigation'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 
-import { UsersToolbar } from './_components/users-toolbar'
-import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
+import { UsersToolbar } from '../_components/users-toolbar'
+import { USERS_SKELETON_COLUMNS } from '../_components/users-skeleton-columns'
 
 export default function Loading() {
   const { orgSlug } = useParams<{ orgSlug: string }>()

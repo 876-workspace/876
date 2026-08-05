@@ -12,11 +12,11 @@ import type {
   TeamRoleOption,
 } from '@/types/team'
 
-import { PendingInvites } from './_components/pending-invites'
-import { UsersSplit } from './_components/users-split'
-import { UsersToolbar } from './_components/users-toolbar'
-import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
-import { listTeamRoles } from './_lib/team-roles'
+import { PendingInvites } from '../_components/pending-invites'
+import { UsersSplit } from '../_components/users-split'
+import { UsersToolbar } from '../_components/users-toolbar'
+import { USERS_SKELETON_COLUMNS } from '../_components/users-skeleton-columns'
+import { listTeamRoles } from '../_lib/team-roles'
 
 export const metadata = { title: 'Users — Settings' }
 
