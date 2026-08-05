@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@876/ui/skeleton'
 import { resolveUser } from '../_data'
+import { isExpired } from '@876/admin'
 import { $876 } from '@/lib/876'
 import { AccountStatusSection } from './_components/account-status-section'
 import { AuthMethodsSection } from './_components/auth-methods-section'
@@ -116,7 +117,6 @@ async function DevicesData({ userId }: { userId: string }) {
 
 async function SessionsData({ userId }: { userId: string }) {
   const result = await $876.users.listSessions(userId, { limit: 20 })
-  const now = Math.floor(Date.now() / 1000)
   const sessions: SessionRow[] = result.error
     ? []
     : result.data.data.map((session) => ({
@@ -124,7 +124,7 @@ async function SessionsData({ userId }: { userId: string }) {
         deviceLabel: session.user_agent,
         location: formatLocation(session.ip_city, session.ip_country_code),
         ipAddress: session.ip_address,
-        isActive: session.revoked_at === null && session.expires_at > now,
+        isActive: session.revoked_at === null && !isExpired(session),
         isRevoked: session.revoked_at !== null,
         createdAt: session.created_at,
         lastSeenAt: session.last_seen_at,

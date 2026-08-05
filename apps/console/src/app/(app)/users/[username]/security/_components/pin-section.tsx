@@ -1,5 +1,6 @@
 'use client'
 
+import { nowUnixSeconds } from '@876/core/timestamps'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import type { AdminUserPin } from '@876/admin'
@@ -24,9 +25,10 @@ export function PinSection({ userId, pin }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [pinValue, setPinValue] = useState('')
 
+  // `nowUnixSeconds` keeps the clock read behind a function boundary; a bare
+  // `Date.now()` here is an impure call during render.
   const isLocked =
-    pin.locked_until !== null &&
-    pin.locked_until > Math.floor(Date.now() / 1000)
+    pin.locked_until !== null && pin.locked_until > nowUnixSeconds()
 
   function handleSet(e: React.FormEvent) {
     e.preventDefault()

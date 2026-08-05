@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@876/ui/table'
 
+import { isExpired } from '@876/admin'
 import { $876 } from '@/lib/876'
 import { SESSIONS_SKELETON_COLUMNS } from './_components/sessions-skeleton-columns'
 
@@ -63,27 +64,20 @@ async function SessionsTable({
   params: Awaited<Props['searchParams']>
   status: string
 }) {
+  // The API separates revoked from expired, so the filter belongs in the query.
+  // Splitting the rows here instead would leave has_more describing the
+  // unsplit set and silently break pagination.
   const result = await $876.sessions.list({
     limit: 25,
     startingAfter: params.after,
     endingBefore: params.before,
-    active:
-      status === 'active'
-        ? true
-        : status === 'revoked' || status === 'expired'
-          ? false
-          : undefined,
+    status:
+      status === 'active' || status === 'revoked' || status === 'expired'
+        ? status
+        : undefined,
   })
   if (result.error) throw new Error(result.error.message)
-  const now = Math.floor(Date.now() / 1000)
-  const rows =
-    status === 'revoked'
-      ? result.data.data.filter((row) => row.revoked_at)
-      : status === 'expired'
-        ? result.data.data.filter(
-            (row) => !row.revoked_at && row.expires_at <= now
-          )
-        : result.data.data
+  const rows = result.data.data
   return (
     <div className="876-card">
       <Table>
@@ -112,14 +106,12 @@ async function SessionsTable({
               <TableCell>
                 <Badge
                   variant={
-                    row.revoked_at || row.expires_at <= now
-                      ? 'secondary'
-                      : 'default'
+                    row.revoked_at || isExpired(row) ? 'secondary' : 'default'
                   }
                 >
                   {row.revoked_at
                     ? 'Revoked'
-                    : row.expires_at <= now
+                    : isExpired(row)
                       ? 'Expired'
                       : 'Active'}
                 </Badge>
