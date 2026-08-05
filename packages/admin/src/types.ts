@@ -1649,3 +1649,26 @@ import type {
   ProvisioningValidation,
   ProvisioningValueType,
 } from '@876/core/types/provisioning'
+
+export type AdminUserPin = {
+  object: 'pin'
+  user_id: string
+  scope: string
+  is_set: boolean
+  set_at: number | null
+  last_verified_at: number | null
+  failed_attempts: number
+  locked_until: number | null
+}
+
+export type AdminUserPinVerification = {
+  object: 'pin_verification'
+  verified: boolean
+  locked_until: number | null
+}
+
+export type AdminDeletedUserPin = {
+  object: 'pin'
+  user_id: string
+  deleted: true
+}

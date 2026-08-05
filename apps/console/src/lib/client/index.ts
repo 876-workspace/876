@@ -14,6 +14,7 @@ import { provisioning } from './provisioning'
 import { provisioningRuns } from './provisioning-runs'
 import { reservedUsernames } from './reserved-usernames'
 import { roles } from './roles'
+import { pin } from './pin'
 import { sessions } from './sessions'
 import { users } from './users'
 import { widgets } from './widgets'
@@ -37,6 +38,7 @@ export const client = {
   provisioningRuns,
   reservedUsernames,
   roles,
+  pin,
   sessions,
   users,
   widgets,
@@ -56,6 +58,7 @@ export { products } from './products'
 export { provisioning } from './provisioning'
 export { provisioningRuns } from './provisioning-runs'
 export { reservedUsernames } from './reserved-usernames'
+export { pin } from './pin'
 export { roles } from './roles'
 export { users } from './users'
 export { widgets } from './widgets'

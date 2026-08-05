@@ -5,6 +5,9 @@ import type { AdminRuntime } from '../runtime'
 import type {
   AdminAccount,
   AdminAuthAttempt,
+  AdminDeletedUserPin,
+  AdminUserPin,
+  AdminUserPinVerification,
   AdminAddress,
   AdminAddressCreateParams,
   AdminAddressUpdateParams,
@@ -594,6 +597,41 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
           method: 'POST',
           path: `/users/${userId}/identifications/${type}/verify`,
           body: { verified_by: params.verifiedBy },
+        })
+      },
+    },
+
+    /**
+     * `$876.users.pin.*` — the account PIN. Status reads never carry the hash;
+     * the API returns only whether one is set and its lockout state.
+     */
+    pin: {
+      retrieve(userId: string, scope = 'account') {
+        return adminRequest<AdminUserPin>(runtime, {
+          method: 'GET',
+          path: `/users/${userId}/pin`,
+          query: { scope },
+        })
+      },
+      set(userId: string, params: { pin: string; scope?: string }) {
+        return adminRequest<AdminUserPin>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/pin`,
+          body: { pin: params.pin, scope: params.scope ?? 'account' },
+        })
+      },
+      verify(userId: string, params: { pin: string; scope?: string }) {
+        return adminRequest<AdminUserPinVerification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/pin/verify`,
+          body: { pin: params.pin, scope: params.scope ?? 'account' },
+        })
+      },
+      delete(userId: string, scope = 'account') {
+        return adminRequest<AdminDeletedUserPin>(runtime, {
+          method: 'DELETE',
+          path: `/users/${userId}/pin`,
+          query: { scope },
         })
       },
     },

@@ -15,6 +15,8 @@ import {
   SignInActivitySection,
   type AttemptRow,
 } from './_components/sign-in-activity-section'
+import { IdentificationsSection } from './_components/identifications-section'
+import { PinSection } from './_components/pin-section'
 
 type Props = { params: Promise<{ username: string }> }
 
@@ -55,6 +57,12 @@ async function SecurityData({ params }: Props) {
       </Suspense>
       <Suspense fallback={<Skeleton className="h-48 w-full" />}>
         <SignInActivityData userId={user.id} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+        <IdentificationsData userId={user.id} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+        <PinData userId={user.id} />
       </Suspense>
     </div>
   )
@@ -143,6 +151,18 @@ async function SignInActivityData({ userId }: { userId: string }) {
       }))
 
   return <SignInActivitySection attempts={attempts} />
+}
+
+async function IdentificationsData({ userId }: { userId: string }) {
+  const result = await $876.identifications.list(userId)
+  const identifications = result.error ? [] : result.data.data
+  return <IdentificationsSection identifications={identifications} />
+}
+
+async function PinData({ userId }: { userId: string }) {
+  const result = await $876.users.pin.retrieve(userId)
+  if (result.error) return null
+  return <PinSection userId={userId} pin={result.data} />
 }
 
 function SecuritySkeleton() {
