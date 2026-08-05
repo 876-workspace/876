@@ -37,25 +37,71 @@ logger = get_logger(__name__)
 # is what admits a user to it (assignments are still written for consistency).
 ENTERPRISE_APP_SLUG = "876-enterprise"
 
+# Billing is the organization's financial plane — invoices, payment methods and
+# the customer registry all hang off it — so an org has it from the moment it
+# exists, the same way a Google account reaches Drive without a separate
+# sign-up. Heavier surfaces stay behind explicit setup.
+BILLING_APP_SLUG = "876-billing"
 
-async def provision_organization(db: AsyncSession, org_id: str, now: int) -> dict[str, OrganizationRole]:
-    """Idempotently provision an org: default roles + Enterprise entitlement.
+# Provisioned for every new organization regardless of where it signed up.
+DEFAULT_ORG_APP_SLUGS: tuple[str, ...] = (ENTERPRISE_APP_SLUG, BILLING_APP_SLUG)
+
+
+async def provision_org_apps(db: AsyncSession, org_id: str, *, source_app_id: str | None = None) -> list[str]:
+    """Subscribe an org to its default apps plus the app it signed up through.
+
+    Every organization gets Enterprise (where it manages itself) and Billing
+    (its financial plane) without asking, and additionally the product app the
+    signup came from — a courier company that registers through Couriers should
+    land in Couriers, not be told it has no subscription.
+
+    Idempotent, and never fails provisioning: a missing app row means a
+    partially seeded environment, which is worth shouting about but is not a
+    reason to fail somebody's signup.
+
+    Returns the app ids actually subscribed.
+    """
+    apps = AppRepository(db)
+    subscriptions = SubscriptionRepository(db)
+    prices = PriceRepository(db)
+
+    app_ids: list[str] = []
+    for slug in DEFAULT_ORG_APP_SLUGS:
+        app = await apps.get_by_slug(slug)
+        if app is None:
+            logger.error("provisioning.default_app_missing", org_id=org_id, slug=slug)
+            continue
+        app_ids.append(app.id)
+
+    # The source app is identified by the API key the request authenticated
+    # with, so it cannot be spoofed by a client claiming to be another app.
+    if source_app_id is not None and source_app_id not in app_ids:
+        app_ids.append(source_app_id)
+
+    provisioned: list[str] = []
+    for app_id in app_ids:
+        if await subscriptions.get(org_id, app_id) is not None:
+            continue
+        default_price = await prices.get_default_for_app(app_id)
+        await subscriptions.provision(org_id, app_id, default_price.id if default_price else None)
+        provisioned.append(app_id)
+
+    if provisioned:
+        logger.info("provisioning.org_apps", org_id=org_id, app_ids=provisioned)
+    return provisioned
+
+
+async def provision_organization(
+    db: AsyncSession, org_id: str, now: int, *, source_app_id: str | None = None
+) -> dict[str, OrganizationRole]:
+    """Idempotently provision an org: default roles + app entitlements.
 
     Returns the org's system roles keyed by name so callers can link the
     creator's membership without a second query.
     """
     roles = await OrganizationRoleRepository(db).seed_defaults(org_id, now)
 
-    enterprise_app = await AppRepository(db).get_by_slug(ENTERPRISE_APP_SLUG)
-    if enterprise_app is None:
-        # Platform-app seeding runs at startup; missing row means a partially
-        # seeded environment. The org still works — log loudly, don't fail signup.
-        logger.error("provisioning.enterprise_app_missing", org_id=org_id, slug=ENTERPRISE_APP_SLUG)
-    else:
-        subscriptions = SubscriptionRepository(db)
-        if await subscriptions.get(org_id, enterprise_app.id) is None:
-            default_price = await PriceRepository(db).get_default_for_app(enterprise_app.id)
-            await subscriptions.provision(org_id, enterprise_app.id, default_price.id if default_price else None)
+    await provision_org_apps(db, org_id, source_app_id=source_app_id)
 
     organization = (await db.scalars(select(Organization).where(Organization.id == org_id))).first()
     if organization is not None:
