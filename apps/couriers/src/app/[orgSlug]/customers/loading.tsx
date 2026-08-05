@@ -1,38 +1,16 @@
-'use client'
+import { Skeleton } from '@876/ui/skeleton'
 
-import { useParams } from 'next/navigation'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { Page } from '@876/ui/page'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { StatusFilterHeading } from '@876/ui/status-filter-heading'
-
-import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
-import {
-  CUSTOMER_STATUS_OPTIONS,
-  CUSTOMERS_DROPDOWN_ACTIONS,
-} from './_lib/customers-list-config'
-
+/**
+ * Fallback for the detail and create routes under this segment. The list keeps
+ * its own table/card skeleton in `(list)/loading.tsx`: a list fallback here
+ * would be the nearest boundary above a child route's layout, so opening a row
+ * would blank the list and re-render it before the record appeared.
+ */
 export default function Loading() {
-  const { orgSlug } = useParams<{ orgSlug: string }>()
-
   return (
-    <Page>
-      <ResourceToolbar
-        title="Customers"
-        titleFilter={
-          <StatusFilterHeading
-            label="Customers"
-            value="all"
-            options={CUSTOMER_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="Add"
-        primaryHref={`/${orgSlug}/customers/new`}
-        primaryVariant="info"
-        refresh
-        dropdownActions={CUSTOMERS_DROPDOWN_ACTIONS}
-      />
-      <DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} />
-    </Page>
+    <div className="space-y-4 px-4 pt-5 pb-8 sm:px-6 lg:px-8">
+      <Skeleton className="h-8 w-56" />
+      <Skeleton className="h-96 w-full rounded-lg" />
+    </div>
   )
 }

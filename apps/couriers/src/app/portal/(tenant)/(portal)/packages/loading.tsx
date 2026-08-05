@@ -1,19 +1,16 @@
 import { Skeleton } from '@876/ui/skeleton'
 
+/**
+ * Fallback for the detail and create routes under this segment. The list keeps
+ * its own table/card skeleton in `(list)/loading.tsx`: a list fallback here
+ * would be the nearest boundary above a child route's layout, so opening a row
+ * would blank the list and re-render it before the record appeared.
+ */
 export default function Loading() {
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-        Packages
-      </h1>
-      <div className="space-y-4">
-        {Array.from({ length: 4 }, (_, index) => (
-          <div key={index} className="rounded-xl border p-5">
-            <Skeleton className="h-5 w-1/3" />
-            <Skeleton className="mt-3 h-4 w-2/3" />
-          </div>
-        ))}
-      </div>
+    <div className="space-y-4 px-4 pt-5 pb-8 sm:px-6 lg:px-8">
+      <Skeleton className="h-8 w-56" />
+      <Skeleton className="h-96 w-full rounded-lg" />
     </div>
   )
 }
