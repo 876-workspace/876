@@ -2,6 +2,7 @@ import { apiKeys } from './api-keys'
 import { apps } from './apps'
 import { billing } from './billing'
 import { billingIntegrations } from './billing-integrations'
+import { devices } from './devices'
 import { features } from './features'
 import { financeProvisioning } from './finance-provisioning'
 import { invites, organizations, subscriptions } from './orgs'
@@ -13,6 +14,7 @@ import { provisioning } from './provisioning'
 import { provisioningRuns } from './provisioning-runs'
 import { reservedUsernames } from './reserved-usernames'
 import { roles } from './roles'
+import { sessions } from './sessions'
 import { users } from './users'
 import { widgets } from './widgets'
 
@@ -21,6 +23,7 @@ export const client = {
   apps,
   billing,
   billingIntegrations,
+  devices,
   features,
   financeProvisioning,
   organizations,
@@ -34,6 +37,7 @@ export const client = {
   provisioningRuns,
   reservedUsernames,
   roles,
+  sessions,
   users,
   widgets,
 }
