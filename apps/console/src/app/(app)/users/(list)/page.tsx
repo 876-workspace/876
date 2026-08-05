@@ -16,10 +16,10 @@ import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isUserStatus } from '@/lib/user-status'
-import { UserSearchBar } from './_components/user-search-bar'
-import { UsersTable } from './_components/users-table'
-import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
-import { UsersToolbar } from './_components/users-toolbar'
+import { UserSearchBar } from '../_components/user-search-bar'
+import { UsersTable } from '../_components/users-table'
+import { USERS_SKELETON_COLUMNS } from '../_components/users-skeleton-columns'
+import { UsersToolbar } from '../_components/users-toolbar'
 
 export const metadata = { title: 'Users' }
 

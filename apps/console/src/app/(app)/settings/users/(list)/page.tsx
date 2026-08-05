@@ -18,11 +18,11 @@ import { service } from '@/lib/service'
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { TeamTableRow } from './_components/member-row'
+import { TeamTableRow } from '../_components/member-row'
 import { Page } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { TEAM_SKELETON_COLUMNS } from './_components/team-skeleton-columns'
+import { TEAM_SKELETON_COLUMNS } from '../_components/team-skeleton-columns'
 
 export const metadata = { title: 'Team - Settings' }
 

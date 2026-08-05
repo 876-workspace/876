@@ -1,8 +1,8 @@
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { SearchInputPlaceholder } from '@876/ui/search-input'
-import { USERS_SKELETON_COLUMNS } from './_components/users-skeleton-columns'
-import { UsersToolbar } from './_components/users-toolbar'
+import { USERS_SKELETON_COLUMNS } from '../_components/users-skeleton-columns'
+import { UsersToolbar } from '../_components/users-toolbar'
 
 export default function Loading() {
   return (

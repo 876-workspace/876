@@ -1,8 +1,8 @@
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
-import { APPS_SKELETON_COLUMNS } from './_components/apps-skeleton-columns'
-import { AppsToolbar } from './_components/apps-toolbar'
-import { resolveStatusFilter } from './_lib/app-status-filter'
+import { APPS_SKELETON_COLUMNS } from '../_components/apps-skeleton-columns'
+import { AppsToolbar } from '../_components/apps-toolbar'
+import { resolveStatusFilter } from '../_lib/app-status-filter'
 
 export default function Loading() {
   return (

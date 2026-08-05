@@ -14,14 +14,14 @@ import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isOrgStatus } from '@/lib/org-status'
-import { OrgSearchBar } from './_components/org-search-bar'
-import { OrgTable } from './_components/org-table'
+import { OrgSearchBar } from '../_components/org-search-bar'
+import { OrgTable } from '../_components/org-table'
 import { Page } from '@876/ui/page'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
-import { ORGS_SKELETON_COLUMNS } from './_components/orgs-skeleton-columns'
-import { OrgsToolbar } from './_components/orgs-toolbar'
+import { ORGS_SKELETON_COLUMNS } from '../_components/orgs-skeleton-columns'
+import { OrgsToolbar } from '../_components/orgs-toolbar'
 
 export const metadata = { title: 'Organizations' }
 
