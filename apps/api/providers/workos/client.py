@@ -203,6 +203,16 @@ class WorkOSClient:
             },
         )
 
+    async def send_verification_email(self, *, user_id: str) -> dict[str, Any]:
+        """Ask WorkOS to email a fresh email-verification code.
+
+        Needed when an existing unverified account is adopted during a repeat
+        registration: the account already exists so no code is issued
+        automatically, and without this the user is asked for a code that was
+        never sent (or expired days ago).
+        """
+        return await self._post(f"/user_management/users/{user_id}/email_verification/send", {})
+
     async def authenticate_with_email_verification(
         self,
         code: str,
