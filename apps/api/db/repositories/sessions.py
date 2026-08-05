@@ -78,19 +78,37 @@ class SessionRepository(BaseRepository):
         user_id: str | None = None,
         device_id: str | None = None,
         active: bool | None = None,
+        status: str | None = None,
     ) -> tuple[list[Session], bool]:
         """Newest-first session list for the admin surface.
 
-        ``active`` means unexpired **and** unrevoked — a revoked row keeps its
-        future ``expires_at``, so expiry alone is not the liveness test.
+        ``status`` is the precise filter: ``active`` (unexpired and unrevoked),
+        ``revoked`` (cut off deliberately), or ``expired`` (simply timed out).
+        Revoked and expired are genuinely different facts — one is an
+        administrative act, the other is the clock — and a caller that can only
+        say ``active=false`` has to separate them after the query, which breaks
+        pagination because ``has_more`` was computed over the unsplit set.
+
+        ``active`` is kept as the coarse two-state form; ``status`` wins when
+        both are given.
         """
         filters: list[ColumnElement[bool]] = []
         if user_id is not None:
             filters.append(Session.user_id == user_id)
         if device_id is not None:
             filters.append(Session.device_id == device_id)
-        if active is not None:
-            now = int(time.time())
+
+        now = int(time.time())
+        if status is not None:
+            if status == "active":
+                filters.append(Session.expires_at > now)
+                filters.append(Session.revoked_at.is_(None))
+            elif status == "revoked":
+                filters.append(Session.revoked_at.is_not(None))
+            elif status == "expired":
+                filters.append(Session.revoked_at.is_(None))
+                filters.append(Session.expires_at <= now)
+        elif active is not None:
             if active:
                 filters.append(Session.expires_at > now)
                 filters.append(Session.revoked_at.is_(None))

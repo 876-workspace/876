@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,6 +44,7 @@ async def list_sessions(
     ending_before: str | None = None,
     user_id: str | None = None,
     active: bool | None = None,
+    status_filter: Annotated[Literal["active", "revoked", "expired"] | None, Query(alias="status")] = None,
     device_id: str | None = None,
 ) -> ListObject[SessionResponse]:
     rows, has_more = await SessionRepository(db).list(
@@ -52,6 +53,7 @@ async def list_sessions(
         ending_before=ending_before,
         user_id=user_id,
         active=active,
+        status=status_filter,
         device_id=device_id,
     )
     return ListObject(data=[serialize_session(row) for row in rows], has_more=has_more, url="/sessions")
@@ -109,9 +111,15 @@ async def list_user_sessions(
     starting_after: str | None = None,
     ending_before: str | None = None,
     active: bool | None = None,
+    status_filter: Annotated[Literal["active", "revoked", "expired"] | None, Query(alias="status")] = None,
 ) -> ListObject[SessionResponse]:
     rows, has_more = await SessionRepository(db).list(
-        limit=limit, starting_after=starting_after, ending_before=ending_before, user_id=user_id, active=active
+        limit=limit,
+        starting_after=starting_after,
+        ending_before=ending_before,
+        user_id=user_id,
+        active=active,
+        status=status_filter,
     )
     return ListObject(
         data=[serialize_session(row) for row in rows], has_more=has_more, url=f"/users/{user_id}/sessions"

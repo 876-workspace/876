@@ -63,12 +63,19 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
 
     listSessions(
       userId: string,
-      params?: CursorPageParams & { active?: boolean }
+      params?: CursorPageParams & {
+        active?: boolean
+        status?: 'active' | 'revoked' | 'expired'
+      }
     ) {
       return adminRequest<AdminListResponse<AdminSession>>(runtime, {
         method: 'GET',
         path: `/users/${userId}/sessions`,
-        query: { ...toCursorQuery(params), active: params?.active },
+        query: {
+          ...toCursorQuery(params),
+          active: params?.active,
+          status: params?.status,
+        },
       })
     },
 

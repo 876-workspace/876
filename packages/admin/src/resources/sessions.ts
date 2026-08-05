@@ -15,6 +15,7 @@ export function createAdminSessionsResource(runtime: AdminRuntime) {
       params?: CursorPageParams & {
         userId?: string
         active?: boolean
+        status?: 'active' | 'revoked' | 'expired'
         deviceId?: string
       }
     ) {
@@ -25,6 +26,7 @@ export function createAdminSessionsResource(runtime: AdminRuntime) {
           ...toCursorQuery(params),
           user_id: params?.userId,
           active: params?.active,
+          status: params?.status,
           device_id: params?.deviceId,
         },
       })
