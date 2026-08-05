@@ -10,3 +10,4 @@ uvicorn[standard]>=0.34,<1
 python-multipart
 beautifulsoup4>=4.12,<5
 twilio>=9.0,<10
+ua-parser>=1.0,<2

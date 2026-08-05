@@ -82,6 +82,7 @@ from domains.auth.session_state import (
 )
 from domains.oauth.tokens import verify_provider_jwt
 from services.auth import AuthServiceDep, ServiceAuthPending
+from services.auth_telemetry import AuthTelemetryService
 from services.provisioning import resolve_member_permissions
 
 from . import docs
@@ -97,6 +98,38 @@ _VALIDATION: dict[int | str, dict[str, Any]] = {
 }
 
 router = APIRouter(tags=["Auth"])
+
+
+async def _record_auth_failure(
+    request: Request,
+    db: AsyncSession,
+    *,
+    event: str,
+    identifier: str | None,
+    failure_code: str | None = None,
+    outcome: str = "failed",
+    user_id: str | None = None,
+) -> None:
+    """Records a non-session-minting authentication attempt.
+
+    Failed attempts are the substance of the fraud plane — a credential-stuffing
+    run produces nothing but these — so every branch that declines to mint a
+    session records one. Steps that legitimately do not authenticate anyone yet
+    (sending an OTP, requesting a recovery email, generating a social
+    authorization URL) record `outcome="pending"` instead, so the funnel from
+    "code requested" to "code verified" is visible rather than inferred.
+
+    `AuthTelemetryService.record` is failure-isolated, so this never affects the
+    response the caller is about to return.
+    """
+    await AuthTelemetryService(db).record(
+        request=request,
+        event=event,
+        outcome=outcome,
+        identifier=identifier,
+        user_id=user_id,
+        failure_code=failure_code,
+    )
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -181,8 +214,11 @@ async def login(
     result = await service.login(identifier=body.identifier, password=body.password)
     if isinstance(result, ServiceAuthPending):
         logger.info("auth.login.pending", reason=result.event.kind)
+        await _record_auth_failure(
+            request, db, event="login", identifier=body.identifier, failure_code=result.event.kind
+        )
         return _auth_event_dict(result.event)
-    session = await _complete_auth(request, response, result, db, settings)
+    session = await _complete_auth(request, response, result, db, settings, event="login")
     logger.info("auth.login.succeeded", user_id=session["user"]["id"], method="password")
     return session
 
@@ -208,6 +244,7 @@ async def create_session_from_oauth(
 ) -> AuthSessionResponse | dict[str, Any]:
     claims = verify_provider_jwt(body.id_token, settings)
     if not claims or claims.get("token_use") != "id":
+        await _record_auth_failure(request, db, event="callback", identifier=None, failure_code="auth/invalid-token")
         raise AppHTTPException(
             code="auth/invalid-token",
             message="The id token is invalid.",
@@ -226,6 +263,14 @@ async def create_session_from_oauth(
                 client_id=app.client_id,
                 user_id=claims.get("sub"),
             )
+            await _record_auth_failure(
+                request,
+                db,
+                event="callback",
+                identifier=None,
+                failure_code="auth/forbidden",
+                user_id=claims.get("sub"),
+            )
             raise AppHTTPException(
                 code="auth/forbidden",
                 message="The id token was not issued to this client.",
@@ -234,13 +279,14 @@ async def create_session_from_oauth(
 
     user = await db.get(User, claims.get("sub"))
     if not user:
+        await _record_auth_failure(request, db, event="callback", identifier=None, failure_code="auth/no-session")
         raise AppHTTPException(
             code="auth/no-session",
             message="The account is no longer available.",
             http_status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
-    await _establish_session(request, response, user, None, db, settings)
+    await _establish_session(request, response, user, None, db, settings, event="callback")
     logger.info("auth.oauth_session.established", user_id=user.id, app_id=app_id)
     return _session_dict(user)
 
@@ -273,8 +319,9 @@ async def register(
         last_name=body.last_name,
     )
     if isinstance(result, ServiceAuthPending):
+        await _record_auth_failure(request, db, event="register", identifier=body.email, failure_code=result.event.kind)
         return _auth_event_dict(result.event)
-    return await _complete_auth(request, response, result, db, settings)
+    return await _complete_auth(request, response, result, db, settings, event="register")
 
 
 @router.post(
@@ -307,8 +354,11 @@ async def register_business(
         organization_slug=body.organization_slug,
     )
     if isinstance(result, ServiceAuthPending):
+        await _record_auth_failure(
+            request, db, event="register_business", identifier=body.email, failure_code=result.event.kind
+        )
         return _auth_event_dict(result.event)
-    return await _complete_auth(request, response, result, db, settings)
+    return await _complete_auth(request, response, result, db, settings, event="register_business")
 
 
 @router.post(
@@ -332,6 +382,9 @@ async def social_login(
     service: AuthServiceDep,
 ) -> SocialLoginResponse:
     if not body.provider or not body.provider.strip():
+        await _record_auth_failure(
+            request, db, event="social", identifier=body.login_hint, failure_code="auth/provider-disabled"
+        )
         raise AppHTTPException(
             code="auth/provider-disabled",
             message="This sign-in method is currently unavailable. Please try another method.",
@@ -339,6 +392,9 @@ async def social_login(
         )
     provider = await AuthProviderRepository(db).get_enabled_by_id(body.provider.strip().lower())
     if not provider or not provider.workos_provider_id:
+        await _record_auth_failure(
+            request, db, event="social", identifier=body.login_hint, failure_code="auth/provider-disabled"
+        )
         raise AppHTTPException(
             code="auth/provider-disabled",
             message="This sign-in method is currently unavailable. Please try another method.",
@@ -350,6 +406,10 @@ async def social_login(
         login_hint=body.login_hint,
         redirect_origin=request.headers.get("x-876-origin"),
     )
+    # The user has not authenticated yet — they are being handed off to the
+    # provider — so this is the opening half of a flow that completes at
+    # /callback, recorded as pending rather than succeeded.
+    await _record_auth_failure(request, db, event="social", identifier=body.login_hint, outcome="pending")
     return SocialLoginResponse(url=url)
 
 
@@ -407,9 +467,17 @@ async def list_providers(
 )
 async def send_magic_otp(
     body: MagicOtpSendRequest,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
     service: AuthServiceDep,
 ) -> MagicOtpSendResponse:
-    data = await service.send_otp(email=body.email)
+    try:
+        data = await service.send_otp(email=body.email)
+    except AppHTTPException as error:
+        await _record_auth_failure(request, db, event="otp_send", identifier=body.email, failure_code=error.app_code)
+        raise
+
+    await _record_auth_failure(request, db, event="otp_send", identifier=body.email, outcome="pending")
     return MagicOtpSendResponse(email=data["email"], canResendAt=data["canResendAt"])
 
 
@@ -443,8 +511,11 @@ async def verify_magic_otp(
     )
     result = await service.verify_otp(code=body.code, email=body.email)
     if isinstance(result, ServiceAuthPending):
+        await _record_auth_failure(
+            request, db, event="otp_verify", identifier=body.email, failure_code=result.event.kind
+        )
         return _auth_event_dict(result.event)
-    session = await _complete_auth(request, response, result, db, settings)
+    session = await _complete_auth(request, response, result, db, settings, event="otp_verify")
     return {"user": session["user"]}
 
 
@@ -468,16 +539,26 @@ async def verify_magic_otp(
 )
 async def recover(
     body: RecoverRequest,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
     service: AuthServiceDep,
 ) -> RecoverResponse:
-    # Caps recovery-email flooding to a target inbox.
-    enforce_rate_limit(
-        "auth.recover",
-        body.email.strip().lower(),
-        max_attempts=3,
-        window_seconds=900,
-    )
-    email = await service.send_recovery(email=body.email)
+    try:
+        # Caps recovery-email flooding to a target inbox.
+        enforce_rate_limit(
+            "auth.recover",
+            body.email.strip().lower(),
+            max_attempts=3,
+            window_seconds=900,
+        )
+        email = await service.send_recovery(email=body.email)
+    except AppHTTPException as error:
+        await _record_auth_failure(
+            request, db, event="password_recover", identifier=body.email, failure_code=error.app_code
+        )
+        raise
+
+    await _record_auth_failure(request, db, event="password_recover", identifier=body.email, outcome="pending")
     return RecoverResponse(email=email)
 
 
@@ -498,17 +579,27 @@ async def recover(
 )
 async def reset_password(
     body: ResetPasswordRequest,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
     service: AuthServiceDep,
 ) -> ResetPasswordResponse:
-    # Caps guesses against a stolen/enumerated reset token.
-    enforce_rate_limit(
-        "auth.reset_password",
-        body.token,
-        max_attempts=5,
-        window_seconds=300,
-    )
-    email = await service.reset_password(token=body.token, new_password=body.password)
+    try:
+        # Caps guesses against a stolen/enumerated reset token.
+        enforce_rate_limit(
+            "auth.reset_password",
+            body.token,
+            max_attempts=5,
+            window_seconds=300,
+        )
+        email = await service.reset_password(token=body.token, new_password=body.password)
+    except AppHTTPException as error:
+        # The identifier is unknown on a bad token — the attempt is still worth
+        # recording, since token-guessing is exactly what this endpoint attracts.
+        await _record_auth_failure(request, db, event="password_reset", identifier=None, failure_code=error.app_code)
+        raise
+
     logger.info("auth.password_reset.completed", email=email)
+    await _record_auth_failure(request, db, event="password_reset", identifier=email, outcome="succeeded")
     return ResetPasswordResponse(email=email)
 
 
@@ -553,9 +644,10 @@ async def verify_email(
         pending_authentication_token=body.pending_authentication_token,
     )
     if isinstance(result, ServiceAuthPending):
+        await _record_auth_failure(request, db, event="verify_email", identifier=None, failure_code=result.event.kind)
         return _auth_event_dict(result.event)
 
-    session = await _complete_auth(request, response, result, db, settings)
+    session = await _complete_auth(request, response, result, db, settings, event="verify_email")
     return {"user": session["user"]}
 
 
@@ -598,18 +690,20 @@ async def callback(
         )
     except Exception:
         logger.warning("auth.callback.failed", exc_info=True)
+        await _record_auth_failure(request, db, event="callback", identifier=None, failure_code="auth/oauth-failed")
         raise AppHTTPException(
             code="auth/oauth-failed",
             message="OAuth authentication failed. Please try again.",
             http_status_code=401,
         )
     if isinstance(result, ServiceAuthPending):
+        await _record_auth_failure(request, db, event="callback", identifier=None, failure_code=result.event.kind)
         raise AppHTTPException(
             code="auth/oauth-failed",
             message="OAuth authentication failed. Please try again.",
             http_status_code=401,
         )
-    return await _complete_auth(request, response, result, db, settings)
+    return await _complete_auth(request, response, result, db, settings, event="callback")
 
 
 @router.get(
@@ -661,6 +755,8 @@ async def get_session(
 )
 async def refresh(
     body: RefreshRequest,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
     service: AuthServiceDep,
 ) -> AuthRefreshResponse | dict[str, Any]:
     try:
@@ -670,18 +766,23 @@ async def refresh(
         )
     except Exception:
         logger.warning("auth.refresh.failed", exc_info=True)
+        await _record_auth_failure(request, db, event="refresh", identifier=None, failure_code="auth/oauth-failed")
         raise AppHTTPException(
             code="auth/oauth-failed",
             message="OAuth authentication failed. Please try again.",
             http_status_code=401,
         )
     if isinstance(result, ServiceAuthPending):
+        await _record_auth_failure(request, db, event="refresh", identifier=None, failure_code=result.event.kind)
         raise AppHTTPException(
             code="auth/oauth-failed",
             message="OAuth authentication failed. Please try again.",
             http_status_code=401,
         )
     s = result.session
+    await _record_auth_failure(
+        request, db, event="refresh", identifier=s.user.email, outcome="succeeded", user_id=s.user.id
+    )
     return {
         "accessToken": s.access_token,
         "refreshToken": s.refresh_token,
@@ -758,6 +859,9 @@ async def switch_session(
     if target is None:
         # The sid is not part of THIS caller's account set — never trust a
         # client-supplied sid beyond the accounts the cookie already vouches for.
+        await _record_auth_failure(
+            request, db, event="session_switch", identifier=None, failure_code="auth/session-not-found"
+        )
         raise AppHTTPException(
             code="auth/session-not-found",
             message="That account is not signed in on this device.",
@@ -766,6 +870,9 @@ async def switch_session(
 
     row = await db.get(Session, body.sid)
     if row is None or row.expires_at < int(time.time()):
+        await _record_auth_failure(
+            request, db, event="session_switch", identifier=None, failure_code="auth/session-expired"
+        )
         raise AppHTTPException(
             code="auth/session-expired",
             message="That session has expired. Please sign in again.",
@@ -784,6 +891,14 @@ async def switch_session(
         cross_realm=bool(target.get("crossRealm")),
     )
     _set_session_cookie(response, sealed, settings)
+    await _record_auth_failure(
+        request,
+        db,
+        event="session_switch",
+        identifier=target.get("email"),
+        outcome="succeeded",
+        user_id=row.user_id,
+    )
     return {"object": "session", "active_sid": body.sid, "user": target}
 
 
@@ -817,12 +932,26 @@ async def signout_session(
         )
 
     accounts = payload.get("accounts") or []
-    if select_account(accounts, sid) is None:
+    account = select_account(accounts, sid)
+    if account is None:
+        await _record_auth_failure(request, db, event="signout", identifier=None, failure_code="auth/session-not-found")
         raise AppHTTPException(
             code="auth/session-not-found",
             message="That account is not signed in on this device.",
             http_status_code=status.HTTP_404_NOT_FOUND,
         )
+
+    # Recorded before the row is deleted so the attempt can still resolve the
+    # account it belonged to.
+    signed_out = await db.get(Session, sid)
+    await _record_auth_failure(
+        request,
+        db,
+        event="signout",
+        identifier=account.get("email"),
+        outcome="succeeded",
+        user_id=signed_out.user_id if signed_out else None,
+    )
 
     await SessionRepository(db).delete(sid)
     remaining = [a for a in accounts if a.get("sid") != sid]

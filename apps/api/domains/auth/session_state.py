@@ -20,6 +20,7 @@ from db.repositories.user_app_enrollments import UserAppEnrollmentRepository
 from db.repositories.users import UserRepository
 from providers.protocol import AuthEvent
 from services.auth import ServiceAuthOk
+from services.auth_telemetry import AuthTelemetryService
 from services.provisioning import assign_member_apps, link_membership_role
 
 logger = get_logger(__name__)
@@ -138,6 +139,7 @@ async def establish_session(
     *,
     realm: str = "consumer",
     org_id: str | None = None,
+    event: str = "login",
 ) -> None:
     """Create a DB-backed session row and write the multi-account cookie.
 
@@ -145,6 +147,11 @@ async def establish_session(
     the calling app via ``X-876-Realm`` and forwarded through ``complete_auth``.
     It is stamped into the sealed session cookie so the app's proxy.ts can enforce
     the realm gate without an API round-trip.
+
+    ``event`` names the entry point for the auth-attempt record. This is the
+    single mint point for every successful authentication, so recording here
+    covers login, register, OAuth callback, OTP, and email verification without
+    each route having to remember to.
     """
     ensure_not_banned(local_user)
     cookie_secret = require_cookie_secret(settings)
@@ -153,6 +160,20 @@ async def establish_session(
     app_id: str | None = getattr(request.state, "app_id", None)
     session_id = generate_id("session")
     raw_token = secrets.token_urlsafe(32)
+
+    # Telemetry is failure-isolated internally: a telemetry outage must never
+    # stop a user signing in, so this never raises and degrades to null columns.
+    attempt = await AuthTelemetryService(db).record(
+        request=request,
+        event=event,
+        outcome="succeeded",
+        user_id=local_user.id,
+        app_id=app_id,
+        session_id=session_id,
+        identifier=local_user.email,
+    )
+    ctx = attempt.context
+
     db.add(
         Session(
             id=session_id,
@@ -161,6 +182,15 @@ async def establish_session(
             token=None,
             token_hash=hashlib.sha256(raw_token.encode()).hexdigest(),
             expires_at=now + SESSION_TTL_SECONDS,
+            ip_address=ctx.ip if ctx else None,
+            user_agent=ctx.user_agent if ctx else None,
+            ip_country_code=ctx.country_code if ctx else None,
+            ip_region=ctx.region if ctx else None,
+            ip_city=ctx.city if ctx else None,
+            ip_asn=ctx.asn if ctx else None,
+            ip_as_organization=ctx.as_organization if ctx else None,
+            device_id=attempt.device_id,
+            last_seen_at=now,
             created_at=now,
             updated_at=now,
         )
@@ -238,6 +268,7 @@ async def complete_auth(
     settings: Settings,
     *,
     realm: str | None = None,
+    event: str = "login",
 ) -> dict[str, Any]:
     """Ensure local user exists, establish a DB session + cookie, return session dict.
 
@@ -261,9 +292,15 @@ async def complete_auth(
             await _ensure_org_membership(db, user_id=local_user.id, org_id=org.id)
 
     await establish_session(
-        request, response, local_user, result.session.access_token, db, settings,
+        request,
+        response,
+        local_user,
+        result.session.access_token,
+        db,
+        settings,
         realm=realm,
         org_id=org_id,
+        event=event,
     )
     return session_dict(local_user)
 
