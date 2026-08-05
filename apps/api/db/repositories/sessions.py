@@ -1,7 +1,9 @@
+import time
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import ColumnElement, delete, select, update
 
+from core.timestamps import now_unix_seconds
 from db.models import Session
 from db.repositories.base import BaseRepository
 
@@ -66,6 +68,98 @@ class SessionRepository(BaseRepository):
         stmt = delete(Session).where(Session.token_hash == token_hash)
         result = await self.db.execute(stmt)
         return bool(getattr(result, "rowcount", 0) > 0)
+
+    async def list(
+        self,
+        *,
+        limit: int = 25,
+        starting_after: str | None = None,
+        ending_before: str | None = None,
+        user_id: str | None = None,
+        device_id: str | None = None,
+        active: bool | None = None,
+        status: str | None = None,
+    ) -> tuple[list[Session], bool]:
+        """Newest-first session list for the admin surface.
+
+        ``status`` is the precise filter: ``active`` (unexpired and unrevoked),
+        ``revoked`` (cut off deliberately), or ``expired`` (simply timed out).
+        Revoked and expired are genuinely different facts — one is an
+        administrative act, the other is the clock — and a caller that can only
+        say ``active=false`` has to separate them after the query, which breaks
+        pagination because ``has_more`` was computed over the unsplit set.
+
+        ``active`` is kept as the coarse two-state form; ``status`` wins when
+        both are given.
+        """
+        filters: list[ColumnElement[bool]] = []
+        if user_id is not None:
+            filters.append(Session.user_id == user_id)
+        if device_id is not None:
+            filters.append(Session.device_id == device_id)
+
+        now = int(time.time())
+        if status is not None:
+            if status == "active":
+                filters.append(Session.expires_at > now)
+                filters.append(Session.revoked_at.is_(None))
+            elif status == "revoked":
+                filters.append(Session.revoked_at.is_not(None))
+            elif status == "expired":
+                filters.append(Session.revoked_at.is_(None))
+                filters.append(Session.expires_at <= now)
+        elif active is not None:
+            if active:
+                filters.append(Session.expires_at > now)
+                filters.append(Session.revoked_at.is_(None))
+            else:
+                filters.append((Session.expires_at <= now) | (Session.revoked_at.is_not(None)))
+
+        return await self.cursor_paginate_filtered(
+            Session,
+            filters,
+            "created_at",
+            limit,
+            starting_after=starting_after,
+            ending_before=ending_before,
+        )
+
+    async def revoke(self, session_id: str, revoked_by: str | None = None) -> Session | None:
+        """Marks a session revoked without deleting it.
+
+        The row is kept so Console can still show where and on what device the
+        session was established after it has been cut off — deleting it would
+        erase exactly the evidence an investigation needs.
+        """
+        row = await self.db.get(Session, session_id)
+        if row is None:
+            return None
+
+        now = now_unix_seconds()
+        row.revoked_at = now
+        row.revoked_by = revoked_by
+        row.expires_at = min(row.expires_at, now)
+        row.updated_at = now
+        await self.db.flush()
+        await self.db.refresh(row)
+        return row
+
+    async def touch_last_seen(self, session_id: str) -> None:
+        row = await self.db.get(Session, session_id)
+        if row is None:
+            return
+
+        row.last_seen_at = now_unix_seconds()
+        await self.db.flush()
+
+    async def revoke_all_for_user(self, user_id: str, revoked_by: str | None = None) -> int:
+        now = now_unix_seconds()
+        result = await self.db.execute(
+            update(Session)
+            .where(Session.user_id == user_id, Session.revoked_at.is_(None))
+            .values(revoked_at=now, revoked_by=revoked_by, expires_at=now, updated_at=now)
+        )
+        return int(getattr(result, "rowcount", 0) or 0)
 
     async def delete_all_for_user(self, user_id: str) -> int:
         """Revoke every session for a user (e.g. on ban). Returns rows deleted."""

@@ -4,6 +4,10 @@ import {
   copyBridgeResponse,
   fetchApiBridge,
 } from '@876/core/fetch/bridge'
+import {
+  extractRequestContext,
+  requestContextHeaders,
+} from '@876/core/request-context'
 import type { NextRequest } from 'next/server'
 
 import { getRequestOrigin } from '@/lib/auth/request-origin'
@@ -38,6 +42,11 @@ async function proxyAuthRequest(
   if (contentType) headers.set('content-type', contentType)
   if (cookie) headers.set('cookie', cookie)
   if (requestId) headers.set('x-request-id', requestId)
+  for (const [key, value] of Object.entries(
+    requestContextHeaders(extractRequestContext(request))
+  )) {
+    headers.set(key, value)
+  }
   headers.set('x-876-origin', getRequestOrigin(request))
   if (API_KEY) headers.set('X-876-API-Key', API_KEY)
 

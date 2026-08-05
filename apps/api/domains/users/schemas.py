@@ -617,3 +617,47 @@ class UserIdentificationDisclosureResponse(BaseModel):
 
 class UserIdentificationVerifyRequest(BaseModel):
     verified_by: str = Field(description="Opaque actor id recorded as the verifier.")
+
+
+class UserPinSetRequest(BaseModel):
+    pin: str = Field(description="The new PIN. 4-8 digits; trivial sequences are rejected.", examples=["8213"])
+    scope: str = Field(default="account", description="Which PIN this is. Only 'account' exists today.")
+
+
+class UserPinVerifyRequest(BaseModel):
+    pin: str = Field(description="The PIN to check.", examples=["8213"])
+    scope: str = Field(default="account", description="Which PIN to check against.")
+
+
+class UserPinResponse(BaseModel):
+    """PIN status only. The hash is never serialized under any circumstances."""
+
+    object: Literal["pin"] = Field(
+        default="pin",
+        description="String representing the object's type. Always 'pin'.",
+    )
+    user_id: str = Field(description="The user this PIN belongs to.")
+    scope: str = Field(description="Which PIN this is.")
+    is_set: bool = Field(description="Whether a PIN is currently set.")
+    set_at: int | None = Field(default=None, description="Unix timestamp when the PIN was last set.")
+    last_verified_at: int | None = Field(default=None, description="Unix timestamp of the last successful check.")
+    failed_attempts: int = Field(default=0, description="Consecutive failed checks since the last success.")
+    locked_until: int | None = Field(default=None, description="Unix timestamp until which checks are refused.")
+
+
+class UserPinVerificationResponse(BaseModel):
+    object: Literal["pin_verification"] = Field(
+        default="pin_verification",
+        description="String representing the object's type. Always 'pin_verification'.",
+    )
+    verified: bool = Field(description="Whether the supplied PIN matched.")
+    locked_until: int | None = Field(
+        default=None,
+        description="Unix timestamp until which further checks are refused, when the lockout threshold was reached.",
+    )
+
+
+class UserPinDeleted(BaseModel):
+    object: Literal["pin"] = Field(default="pin", description="String representing the object's type. Always 'pin'.")
+    user_id: str = Field(description="The user whose PIN was cleared.")
+    deleted: Literal[True] = Field(default=True, description="Always true.")

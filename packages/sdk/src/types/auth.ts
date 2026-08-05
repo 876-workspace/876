@@ -561,3 +561,64 @@ export type RegisterBusinessParams = z.infer<
 
 /** A register-business response. */
 export type RegisterBusinessResult = RegisterResult
+
+/**
+ * Session-scoped account-security views.
+ *
+ * Deliberately narrower than the admin shapes: no device fingerprint and no IP
+ * address, because those identify a device across accounts and belong to the
+ * admin tier only. Per-tier serializers are an API concern — see
+ * `.claude/rules/sdk-conventions.md`.
+ */
+export const myDeviceSchema = z.strictObject({
+  object: z.literal('my_device'),
+  id: z.string(),
+  name: z.string(),
+  device_type: z.string(),
+  os_name: z.string().nullable().optional(),
+  browser_name: z.string().nullable().optional(),
+  last_country_code: z.string().nullable().optional(),
+  trusted: z.boolean(),
+  sign_in_count: z.number(),
+  first_seen_at: z.number(),
+  last_seen_at: z.number(),
+  is_current: z.boolean(),
+})
+
+export type MyDevice = z.infer<typeof myDeviceSchema>
+
+export const mySessionSchema = z.strictObject({
+  object: z.literal('my_session'),
+  id: z.string(),
+  device_id: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  country_code: z.string().nullable().optional(),
+  created_at: z.number(),
+  last_seen_at: z.number().nullable().optional(),
+  expires_at: z.number(),
+  is_current: z.boolean(),
+})
+
+export type MySession = z.infer<typeof mySessionSchema>
+
+export const myDeviceListSchema = z.strictObject({
+  object: z.literal('list'),
+  data: z.array(myDeviceSchema),
+  has_more: z.boolean(),
+  url: z.string(),
+  total_count: z.number().nullable().optional(),
+})
+
+export const mySessionListSchema = z.strictObject({
+  object: z.literal('list'),
+  data: z.array(mySessionSchema),
+  has_more: z.boolean(),
+  url: z.string(),
+  total_count: z.number().nullable().optional(),
+})
+
+export const mySessionDeletedSchema = z.strictObject({
+  object: z.literal('my_session'),
+  id: z.string(),
+  deleted: z.literal(true),
+})

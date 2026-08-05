@@ -8,13 +8,14 @@ place the raw value is returned, gated by (1) the type's app allowlist in
 always writes an audit event that never carries the value.
 """
 
+import base64
 from collections.abc import AsyncIterator
 from types import SimpleNamespace
 from typing import Any
 
 from httpx import ASGITransport, AsyncClient
 
-from core.config import Settings
+from core.config import Settings, get_settings
 from core.security import require_api_key
 from db.repositories.audit_events import AuditEventRepository
 from db.repositories.subscriptions import SubscriptionRepository
@@ -35,13 +36,26 @@ class _MockDb:
 
 
 def _app_with_db() -> Any:
-    app = create_app(Settings(internal_key="test-internal-key"))
+    app = create_app(
+        Settings(
+            internal_key="test-internal-key",
+            secure_field_key=base64.b64encode(b"k" * 32).decode("ascii"),
+            identification_hash_pepper="test-pepper",
+        )
+    )
 
     async def fake_db() -> AsyncIterator[_MockDb]:
         yield _MockDb()
 
     app.dependency_overrides[get_db] = fake_db
     app.dependency_overrides[require_api_key] = lambda: True
+    # `get_settings()` builds from the environment, so the sealing key has to be
+    # overridden explicitly for the routes that depend on it.
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        internal_key="test-internal-key",
+        secure_field_key=base64.b64encode(b"k" * 32).decode("ascii"),
+        identification_hash_pepper="test-pepper",
+    )
     return app
 
 
@@ -101,13 +115,14 @@ async def test_list_user_identifications_masks_values(monkeypatch: Any) -> None:
     assert len(rows) == 2
 
     trn_row = next(r for r in rows if r["type"] == "trn")
-    assert trn_row["value_masked"] == "••••••789"
+    # Fixed-width mask: the bullet run must not disclose the value's length.
+    assert trn_row["value_masked"] == "••••789"
     assert "value" not in trn_row
     assert "123456" not in trn_row["value_masked"]
     assert trn_row["label"] == "Taxpayer Registration Number"
 
     passport_row = next(r for r in rows if r["type"] == "passport")
-    assert passport_row["value_masked"] == "••••••567"
+    assert passport_row["value_masked"] == "••••567"
     assert "value" not in passport_row
 
 
@@ -161,10 +176,15 @@ async def test_create_user_identification_happy_path(monkeypatch: Any) -> None:
     assert resp.status_code == 201
     body = resp.json()["data"]
     assert body["type"] == "trn"
-    assert body["value_masked"] == "••••••789"
+    assert body["value_masked"] == "••••789"
     assert "value" not in body
-    # Dashes stripped; TRN keeps digits only.
-    assert created["value"] == "123456789"
+    # The plaintext column is no longer written; the sealed value replaces it.
+    assert created["value"] == ""
+    assert created["value_ciphertext"].startswith("la1:")
+    assert "123456789" not in created["value_ciphertext"]
+    assert created["value_last4"] == "6789"
+    assert created["value_hash"]
+    assert created["value_provider"] == "local_aesgcm"
     # Country code defaults from the type registry when omitted.
     assert created["country_code"] == "JM"
     assert created["verified"] is False
@@ -444,6 +464,10 @@ async def test_disclose_user_identification_happy_path(monkeypatch: Any) -> None
         "app_slug": "876-couriers",
         "identification_type": "trn",
         "reason": "JCA customs clearance",
+        # A disclosure is the one moment a raw identifier leaves the system, so
+        # the audit row records who asked and from where.
+        "ip_address": "127.0.0.1",
+        "device_fingerprint": None,
     }
     # The raw value must never be written to the audit trail.
     assert "123456789" not in str(call)

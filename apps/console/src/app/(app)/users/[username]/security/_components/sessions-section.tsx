@@ -1,20 +1,47 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
+import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { LogOut } from '@876/ui/icons'
-import { users } from '@/lib/client'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@876/ui/table'
+import { client } from '@/lib/client'
+
+export type SessionRow = {
+  id: string
+  deviceLabel: string | null
+  location: string | null
+  ipAddress: string | null
+  isActive: boolean
+  isRevoked: boolean
+  createdAt: number
+  lastSeenAt: number | null
+}
 
 type Props = {
   userId: string
+  sessions: SessionRow[]
 }
 
-export function SessionsSection({ userId }: Props) {
+function formatWhen(seconds: number | null) {
+  if (seconds === null) return '—'
+  return new Date(seconds * 1000).toLocaleString()
+}
+
+export function SessionsSection({ userId, sessions }: Props) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
 
-  function handleRevokeSessions() {
+  function handleRevokeAll() {
     if (
       !window.confirm(
         'Revoke all active sessions for this user? They will be signed out from all devices immediately.'
@@ -23,53 +50,103 @@ export function SessionsSection({ userId }: Props) {
       return
     }
     setError(null)
-    setSuccess(null)
     startTransition(async () => {
-      const result = await users.revokeSessions(userId)
-      if (result.error) {
-        setError(result.error.message)
-      } else {
-        const count = result.data?.sessions_revoked ?? 0
-        setSuccess(
-          `${count} session${count === 1 ? '' : 's'} revoked successfully.`
-        )
-        setTimeout(() => setSuccess(null), 5000)
-      }
+      const result = await client.users.revokeSessions(userId)
+      if (result.error) setError(result.error.message)
+      else router.refresh()
     })
   }
 
+  function handleRevoke(sessionId: string) {
+    if (!window.confirm('Revoke this session?')) return
+    setError(null)
+    startTransition(async () => {
+      const result = await client.sessions.revoke(sessionId)
+      if (result.error) setError(result.error.message)
+      else router.refresh()
+    })
+  }
+
+  const hasActive = sessions.some((session) => session.isActive)
+
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
-        <LogOut className="text-muted-foreground size-4" />
-        Active Sessions
-      </h2>
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm">Force logout this user from all devices</p>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Invalidates all active sessions and refresh tokens immediately.
-            Suspension alone does not sign the user out — use this alongside a
-            status change when needed.
-          </p>
-        </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          disabled={isPending}
-          onClick={handleRevokeSessions}
-        >
-          Revoke all sessions
-        </Button>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
+          <LogOut className="text-muted-foreground size-4" />
+          Sessions
+        </h2>
+        {hasActive && (
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={isPending}
+            onClick={handleRevokeAll}
+          >
+            Revoke all
+          </Button>
+        )}
       </div>
-      {(error || success) && (
-        <div className="mt-4 text-sm">
-          {error && <p className="text-destructive">{error}</p>}
-          {success && (
-            <p className="text-emerald-600 dark:text-emerald-400">{success}</p>
-          )}
+
+      {sessions.length === 0 ? (
+        <p className="text-muted-foreground text-sm">No sessions recorded.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Device</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>IP</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Last seen</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell className="font-medium">
+                    {session.deviceLabel ?? 'Unknown device'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {session.location ?? '—'}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums">
+                    {session.ipAddress ?? '—'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={session.isActive ? 'success' : 'secondary'}>
+                      {session.isActive
+                        ? 'Active'
+                        : session.isRevoked
+                          ? 'Revoked'
+                          : 'Expired'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {formatWhen(session.lastSeenAt ?? session.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {session.isActive && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleRevoke(session.id)}
+                      >
+                        Revoke
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
+
+      {error && <p className="text-destructive mt-4 text-sm">{error}</p>}
     </div>
   )
 }

@@ -1,20 +1,22 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Path, Query, status
+from fastapi import APIRouter, Depends, Path, Query, Request, status
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from core.config import get_settings
+from core.config import Settings, get_settings
 from core.errors import AppHTTPException
 from core.id import generate_id, generate_platform_owner_user_id
 from core.identifications import (
     IDENTIFICATION_TYPES,
     is_valid_identification_value,
-    mask_identification_value,
     normalize_identification_value,
 )
 from core.logging import get_logger
+from core.pin import PinPolicyError, is_locked, validate_pin, verify_pin
+from core.rate_limit import enforce_rate_limit
+from core.request_context import RequestContext, resolve_request_context
 from core.responses import ListObject
 from core.security import AdminDep, SessionDep
 from core.timestamps import now_unix_seconds
@@ -30,6 +32,7 @@ from db.repositories.user_app_enrollments import UserAppEnrollmentRepository
 from db.repositories.user_contacts import UserContactRepository
 from db.repositories.user_features import UserFeatureRepository
 from db.repositories.user_identifications import UserIdentificationRepository
+from db.repositories.user_pins import UserPinRepository
 from db.repositories.users import UserRepository
 from db.session import get_db
 from domains.addresses.schemas import AddressDeleteResponse, AddressResponse
@@ -69,13 +72,24 @@ from domains.users.schemas import (
     UserIdentificationVerifyRequest,
     UsernameAvailabilityResponse,
     UserOAuthGrantRevokeResponse,
+    UserPinDeleted,
+    UserPinResponse,
+    UserPinSetRequest,
+    UserPinVerificationResponse,
+    UserPinVerifyRequest,
     UserResponse,
     UserSessionRevokeResponse,
     UserUpdate,
 )
 from providers.workos.adapter import get_auth_provider
 from providers.workos.client import get_workos_client
+from services.auth_telemetry import AuthTelemetryService
 from services.features import FeatureService
+from services.identification_secrets import (
+    disclose_identification_value,
+    masked_identification_value,
+    seal_identification_value,
+)
 from services.identity_sync import delete_provider_user
 from services.provisioning import resolve_member_permissions
 
@@ -237,6 +251,18 @@ def _serialize_consumer_contact(row: Any) -> ConsumerContactResponse:
     )
 
 
+def _disclosure_device_fingerprint(context: RequestContext) -> str | None:
+    """The device fingerprint of the caller, when the signal decodes.
+
+    Best-effort: a malformed or absent signal must never block a disclosure the
+    entitlement checks have already allowed.
+    """
+    from services.auth_telemetry import decode_device_signal
+
+    signal = decode_device_signal(context.device_signal)
+    return signal.visitorId if signal else None
+
+
 def _serialize_user_identification(row: Any) -> UserIdentificationResponse:
     config = IDENTIFICATION_TYPES.get(row.type)
     return UserIdentificationResponse(
@@ -245,7 +271,9 @@ def _serialize_user_identification(row: Any) -> UserIdentificationResponse:
         type=row.type,
         label=config.label if config else row.type,
         country_code=row.country_code,
-        value_masked=mask_identification_value(row.value),
+        # Masked from the stored last four, so a list read never needs the
+        # decryption key. Legacy plaintext rows fall back inside the helper.
+        value_masked=masked_identification_value(row),
         verified=row.verified,
         verified_at=row.verified_at,
         created_at=row.created_at,
@@ -2096,6 +2124,7 @@ async def create_user_identification(
     body: UserIdentificationCreate,
     _admin: AdminDep,
     db: Annotated[AsyncSession, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> UserIdentificationResponse:
     await _require_user(db, user_id)
 
@@ -2124,12 +2153,26 @@ async def create_user_identification(
             http_status_code=status.HTTP_409_CONFLICT,
         )
 
+    sealed = await seal_identification_value(
+        settings,
+        user_id=user_id,
+        identification_type=body.type,
+        normalized_value=normalized_value,
+    )
+
     now = now_unix_seconds()
     row = await repo.create(
         id=generate_id("userIdentification"),
         user_id=user_id,
         type=body.type,
-        value=normalized_value,
+        # The plaintext column is no longer written; the sealed value is the
+        # record of truth from this point on.
+        value="",
+        value_ciphertext=sealed.ciphertext,
+        value_key_id=sealed.key_id,
+        value_provider=sealed.provider,
+        value_last4=sealed.last4,
+        value_hash=sealed.value_hash,
         country_code=body.country_code if body.country_code is not None else config.country_code,
         verified=False,
         verified_at=None,
@@ -2241,8 +2284,10 @@ async def disclose_user_identification(
     user_id: str,
     type: str,
     body: UserIdentificationDiscloseRequest,
+    request: Request,
     _admin: AdminDep,
     db: Annotated[AsyncSession, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> UserIdentificationDisclosureResponse:
     identification = await UserIdentificationRepository(db).get_by_type(user_id, type)
     if not identification:
@@ -2269,6 +2314,8 @@ async def disclose_user_identification(
         )
 
     now = now_unix_seconds()
+    disclosure_context = resolve_request_context(request)
+    disclosure_fingerprint = _disclosure_device_fingerprint(disclosure_context)
     await AuditEventRepository(db).create(
         id=generate_id("auditEvent"),
         event="user_identification.disclosed",
@@ -2288,6 +2335,12 @@ async def disclose_user_identification(
             "app_slug": body.app_slug,
             "identification_type": type,
             "reason": body.reason,
+            # Who asked, from where and on what device. A disclosure is the one
+            # moment a raw identifier leaves the system, so the audit row
+            # records the request context alongside the entitlement that
+            # allowed it.
+            "ip_address": disclosure_context.ip,
+            "device_fingerprint": disclosure_fingerprint,
         },
         created_at=now,
     )
@@ -2302,7 +2355,7 @@ async def disclose_user_identification(
 
     return UserIdentificationDisclosureResponse(
         type=type,
-        value=identification.value,
+        value=await disclose_identification_value(settings, identification),
         country_code=identification.country_code,
         verified=identification.verified,
         disclosed_at=now,
@@ -2343,3 +2396,204 @@ async def verify_user_identification(
         )
     logger.info("users.identifications.verify", user_id=user_id, type=type, verified_by=body.verified_by)
     return _serialize_user_identification(updated)
+
+
+# ── Account PIN ───────────────────────────────────────────────────────────────
+
+
+def _serialize_pin(user_id: str, row: Any | None, scope: str = "account") -> UserPinResponse:
+    """Status only — the hash never leaves the database."""
+    if row is None:
+        return UserPinResponse(user_id=user_id, scope=scope, is_set=False)
+    return UserPinResponse(
+        user_id=user_id,
+        scope=row.scope,
+        is_set=True,
+        set_at=row.set_at,
+        last_verified_at=row.last_verified_at,
+        failed_attempts=row.failed_attempts,
+        locked_until=row.locked_until,
+    )
+
+
+async def _record_pin_attempt(
+    db: AsyncSession,
+    request: Request,
+    *,
+    user_id: str,
+    outcome: str,
+    failure_code: str | None = None,
+) -> None:
+    """Mirrors a PIN check into the auth-attempt plane.
+
+    A PIN is an authentication factor, so its failures belong in the same
+    history as password failures rather than in a separate silo — a guessing
+    run against a PIN should be visible in exactly the place someone
+    investigating an account already looks.
+    """
+    await AuthTelemetryService(db).record(
+        request=request,
+        event="pin_verify",
+        outcome=outcome,
+        user_id=user_id,
+        failure_code=failure_code,
+    )
+
+
+@router.get(
+    "/{user_id}/pin",
+    response_model=UserPinResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve PIN status",
+    description="Returns whether a PIN is set and its lockout state. Never returns the PIN or its hash.",
+)
+async def retrieve_user_pin(
+    user_id: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    scope: str = "account",
+) -> UserPinResponse:
+    await _require_user(db, user_id)
+    return _serialize_pin(user_id, await UserPinRepository(db).retrieve(user_id, scope), scope)
+
+
+@router.post(
+    "/{user_id}/pin",
+    response_model=UserPinResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Set or replace the account PIN",
+    description="Sets the account PIN, replacing any existing one and clearing its lockout.",
+)
+async def set_user_pin(
+    user_id: str,
+    body: UserPinSetRequest,
+    request: Request,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserPinResponse:
+    user = await _require_user(db, user_id)
+
+    profile = getattr(user, "profile", None)
+    try:
+        validate_pin(body.pin, date_of_birth=getattr(profile, "date_of_birth", None))
+    except PinPolicyError as exc:
+        raise AppHTTPException(
+            code="pin/rejected",
+            message=str(exc),
+            http_status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        ) from exc
+
+    row = await UserPinRepository(db).set_pin(user_id, body.pin, body.scope)
+
+    now = now_unix_seconds()
+    await AuditEventRepository(db).create(
+        id=generate_id("auditEvent"),
+        event="user_pin.set",
+        source="server",
+        app_name="876",
+        app_id=None,
+        user_id=user_id,
+        path=f"/users/{user_id}/pin",
+        search=None,
+        referrer=None,
+        title=None,
+        request_id=None,
+        session_id=None,
+        distinct_id=None,
+        properties={"scope": body.scope},
+        created_at=now,
+    )
+    # The PIN itself is never logged, only the fact that one was set.
+    logger.info("users.pin.set", user_id=user_id, scope=body.scope)
+    return _serialize_pin(user_id, row, body.scope)
+
+
+@router.post(
+    "/{user_id}/pin/verify",
+    response_model=UserPinVerificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Verify the account PIN",
+    description="Checks a PIN. Five consecutive failures lock further checks for fifteen minutes.",
+)
+async def verify_user_pin(
+    user_id: str,
+    body: UserPinVerifyRequest,
+    request: Request,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserPinVerificationResponse:
+    await _require_user(db, user_id)
+
+    # A PIN has a tiny keyspace, so the rate limit is doing real work here, not
+    # just protecting the endpoint from load.
+    enforce_rate_limit("users.pin.verify", user_id, max_attempts=10, window_seconds=300)
+
+    repo = UserPinRepository(db)
+    row = await repo.retrieve(user_id, body.scope)
+    if row is None:
+        await _record_pin_attempt(db, request, user_id=user_id, outcome="failed", failure_code="pin/not-set")
+        raise AppHTTPException(
+            code="pin/not-set",
+            message="No PIN is set for this account.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    now = now_unix_seconds()
+    if is_locked(row.locked_until, now):
+        await _record_pin_attempt(db, request, user_id=user_id, outcome="blocked", failure_code="pin/locked")
+        return UserPinVerificationResponse(verified=False, locked_until=row.locked_until)
+
+    if not verify_pin(body.pin, row.pin_hash):
+        await repo.record_failure(row)
+        await _record_pin_attempt(db, request, user_id=user_id, outcome="failed", failure_code="pin/incorrect")
+        logger.info("users.pin.verify_failed", user_id=user_id, scope=body.scope)
+        return UserPinVerificationResponse(verified=False, locked_until=row.locked_until)
+
+    await repo.record_success(row)
+    await _record_pin_attempt(db, request, user_id=user_id, outcome="succeeded")
+    return UserPinVerificationResponse(verified=True, locked_until=None)
+
+
+@router.delete(
+    "/{user_id}/pin",
+    response_model=UserPinDeleted,
+    status_code=status.HTTP_200_OK,
+    summary="Clear the account PIN",
+    description="Removes the account PIN.",
+)
+async def delete_user_pin(
+    user_id: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    scope: str = "account",
+) -> UserPinDeleted:
+    await _require_user(db, user_id)
+
+    cleared = await UserPinRepository(db).clear(user_id, scope)
+    if not cleared:
+        raise AppHTTPException(
+            code="pin/not-set",
+            message="No PIN is set for this account.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    now = now_unix_seconds()
+    await AuditEventRepository(db).create(
+        id=generate_id("auditEvent"),
+        event="user_pin.cleared",
+        source="server",
+        app_name="876",
+        app_id=None,
+        user_id=user_id,
+        path=f"/users/{user_id}/pin",
+        search=None,
+        referrer=None,
+        title=None,
+        request_id=None,
+        session_id=None,
+        distinct_id=None,
+        properties={"scope": scope},
+        created_at=now,
+    )
+    logger.info("users.pin.cleared", user_id=user_id, scope=scope)
+    return UserPinDeleted(user_id=user_id)

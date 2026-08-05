@@ -81,11 +81,7 @@ async def resolve_principal(
     from domains.oauth.tokens import verify_provider_jwt
 
     settings = getattr(request.app.state, "settings", None) or _get_settings()
-    if (
-        settings.internal_key
-        and internal_key
-        and hmac.compare_digest(internal_key, settings.internal_key)
-    ):
+    if settings.internal_key and internal_key and hmac.compare_digest(internal_key, settings.internal_key):
         bind_actor(internal=True)
         return Principal(internal=True)
     if bearer_token:
@@ -143,9 +139,7 @@ async def require_api_key(
     request.state.api_key_id = None
 
     if not api_key:
-        logger.warning(
-            "api_key.rejected", reason="missing", path=_request_path(request), client_ip=_client_ip(request)
-        )
+        logger.warning("api_key.rejected", reason="missing", path=_request_path(request), client_ip=_client_ip(request))
         raise AppHTTPException(
             code="api-key/missing",
             message="An API key is required.",
@@ -215,6 +209,9 @@ async def require_api_key(
 
     request.state.app_id = record.app_id
     request.state.api_key_id = record.id
+    # Auth bridges are server-side and attach this validated credential.  Downstream
+    # request-context resolution may therefore trust their x-876-* metadata.
+    request.state.api_key = record
     bind_actor(app_id=record.app_id, api_key_id=record.id)
     return True
 

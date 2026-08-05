@@ -55,6 +55,7 @@
     "prepublishOnly": "pnpm check"
   },
   "dependencies": {
+    "@876/device": "workspace:*",
     "@876/core": "workspace:*",
     "@876/types": "workspace:*",
     "zod": "4.4.3"

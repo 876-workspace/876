@@ -49,6 +49,7 @@ export const auth876ClientOptionsSchema = z.strictObject({
   accessToken: optionalNonEmptyStringSchema,
   fetch: auth876FetchSchema.optional(),
   credentials: auth876CredentialsSchema.default('include'),
+  collectDeviceSignal: z.boolean().default(true),
   oauth: auth876OAuthOptionsSchema.optional(),
 })
 
@@ -112,6 +113,7 @@ export type AuthCredentials = z.infer<typeof auth876CredentialsSchema>
  * @property fetch - Optional fetch implementation (defaults to globalThis.fetch).
  * @property credentials - Optional credentials mode for fetch requests (defaults to `include`).
  * @property oauth - Optional OAuth/OIDC config enabling the `$876.oauth.*` namespace.
+ * @property collectDeviceSignal - Enables bounded browser device telemetry for auth mutations.
  */
 export type ClientOptions = z.input<typeof auth876ClientOptionsSchema>
 

@@ -4,6 +4,10 @@ import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
   AdminAccount,
+  AdminAuthAttempt,
+  AdminDeletedUserPin,
+  AdminUserPin,
+  AdminUserPinVerification,
   AdminAddress,
   AdminAddressCreateParams,
   AdminAddressUpdateParams,
@@ -18,8 +22,10 @@ import type {
   AdminDeletedUser,
   AdminDeletedUserFeature,
   AdminDeletedUserIdentification,
+  AdminDevice,
   AdminListResponse,
   AdminOAuthGrant,
+  AdminSession,
   AdminUserApp,
   AdminSearchResponse,
   SessionRevoke,
@@ -42,6 +48,40 @@ import type {
 /** `$876.users.*` — platform-wide user administration (internal-key tier). */
 export function createAdminUsersResource(runtime: AdminRuntime) {
   return {
+    listDevices(userId: string, params?: CursorPageParams) {
+      return adminRequest<AdminListResponse<AdminDevice>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/devices`,
+        query: toCursorQuery(params),
+      })
+    },
+
+    listAuthAttempts(userId: string, params?: CursorPageParams) {
+      return adminRequest<AdminListResponse<AdminAuthAttempt>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/auth-attempts`,
+        query: toCursorQuery(params),
+      })
+    },
+
+    listSessions(
+      userId: string,
+      params?: CursorPageParams & {
+        active?: boolean
+        status?: 'active' | 'revoked' | 'expired'
+      }
+    ) {
+      return adminRequest<AdminListResponse<AdminSession>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/sessions`,
+        query: {
+          ...toCursorQuery(params),
+          active: params?.active,
+          status: params?.status,
+        },
+      })
+    },
+
     /**
      * Creates a user object.
      *
@@ -557,6 +597,41 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
           method: 'POST',
           path: `/users/${userId}/identifications/${type}/verify`,
           body: { verified_by: params.verifiedBy },
+        })
+      },
+    },
+
+    /**
+     * `$876.users.pin.*` — the account PIN. Status reads never carry the hash;
+     * the API returns only whether one is set and its lockout state.
+     */
+    pin: {
+      retrieve(userId: string, scope = 'account') {
+        return adminRequest<AdminUserPin>(runtime, {
+          method: 'GET',
+          path: `/users/${userId}/pin`,
+          query: { scope },
+        })
+      },
+      set(userId: string, params: { pin: string; scope?: string }) {
+        return adminRequest<AdminUserPin>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/pin`,
+          body: { pin: params.pin, scope: params.scope ?? 'account' },
+        })
+      },
+      verify(userId: string, params: { pin: string; scope?: string }) {
+        return adminRequest<AdminUserPinVerification>(runtime, {
+          method: 'POST',
+          path: `/users/${userId}/pin/verify`,
+          body: { pin: params.pin, scope: params.scope ?? 'account' },
+        })
+      },
+      delete(userId: string, scope = 'account') {
+        return adminRequest<AdminDeletedUserPin>(runtime, {
+          method: 'DELETE',
+          path: `/users/${userId}/pin`,
+          query: { scope },
         })
       },
     },

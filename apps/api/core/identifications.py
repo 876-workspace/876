@@ -51,6 +51,39 @@ IDENTIFICATION_TYPES: dict[str, IdentificationTypeConfig] = {
         pattern=r"^[A-Z0-9]{5,20}$",  # normalized: uppercased, alnum
         disclosure_app_slugs=frozenset({COURIERS_APP_SLUG}),
     ),
+    "national_id": IdentificationTypeConfig(
+        label="National ID",
+        country_code=None,
+        pattern=r"^[A-Z0-9]{5,20}$",
+        disclosure_app_slugs=frozenset({COURIERS_APP_SLUG}),
+    ),
+    # The types below are recorded but not disclosable to any app yet. An empty
+    # allowlist is the safe default: a type becomes disclosable when a product
+    # can justify needing it, never merely because it exists.
+    "voters_id": IdentificationTypeConfig(
+        label="Voter's ID",
+        country_code="JM",
+        pattern=r"^[A-Z0-9]{5,20}$",
+        disclosure_app_slugs=frozenset(),
+    ),
+    "nis": IdentificationTypeConfig(
+        label="National Insurance Scheme Number",
+        country_code="JM",
+        pattern=r"^[A-Z0-9]{5,20}$",
+        disclosure_app_slugs=frozenset(),
+    ),
+    "tax_id": IdentificationTypeConfig(
+        label="Tax Identification Number",
+        country_code=None,
+        pattern=r"^[A-Z0-9]{5,20}$",
+        disclosure_app_slugs=frozenset(),
+    ),
+    "work_permit": IdentificationTypeConfig(
+        label="Work Permit Number",
+        country_code=None,
+        pattern=r"^[A-Z0-9]{5,20}$",
+        disclosure_app_slugs=frozenset(),
+    ),
 }
 
 

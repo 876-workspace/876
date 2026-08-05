@@ -1,4 +1,8 @@
 import { apiJson } from '@876/core/api'
+import {
+  extractRequestContext,
+  requestContextHeaders,
+} from '@876/core/request-context'
 import type { NextRequest } from 'next/server'
 
 import {
@@ -64,6 +68,11 @@ function buildForwardHeaders(request: NextRequest): Headers {
   // (`{origin}/callback`), so social returns to this app's own `/callback`.
   if (origin) headers.set('x-876-origin', origin)
   if (requestId) headers.set('x-request-id', requestId)
+  for (const [key, value] of Object.entries(
+    requestContextHeaders(extractRequestContext(request))
+  )) {
+    headers.set(key, value)
+  }
   if (API_KEY) headers.set('X-876-API-Key', API_KEY)
 
   return headers

@@ -7,6 +7,7 @@ from sqlalchemy import (
     CheckConstraint,
     ForeignKey,
     Index,
+    Integer,
     String,
     Text,
     UniqueConstraint,
@@ -217,7 +218,11 @@ class UserIdentification(Base):
             postgresql_where=sa_text("deleted_at IS NULL"),
         ),
         CheckConstraint(
-            "type IN ('trn', 'passport', 'drivers_license')",
+            # Kept in lockstep with `core.identifications.IDENTIFICATION_TYPES`
+            # by `tests/test_identification_registry.py` — the constraint and
+            # the registry drifting apart would reject a type the API accepts.
+            "type IN ('trn', 'passport', 'drivers_license', 'national_id', "
+            "'voters_id', 'nis', 'tax_id', 'work_permit')",
             name="user_identifications_type_check",
         ),
     )
@@ -227,7 +232,19 @@ class UserIdentification(Base):
         String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     type: Mapped[str] = mapped_column(String, nullable=False)
+    # Legacy plaintext. New rows leave it empty and write `value_ciphertext`
+    # instead; it stays only until the backfill has sealed every existing row
+    # and a follow-up migration drops it.
     value: Mapped[str] = mapped_column(String, nullable=False)
+    value_ciphertext: Mapped[str | None] = mapped_column(Text, nullable=True)
+    value_key_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    value_provider: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Last four characters, kept in the clear so a masked read never has to
+    # decrypt — masking is the common path and must not need the key.
+    value_last4: Mapped[str | None] = mapped_column(String(4), nullable=True)
+    # HMAC of the normalized value under a server pepper. Duplicate detection
+    # compares hashes, so finding an existing record never decrypts anything.
+    value_hash: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     verified_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
@@ -239,6 +256,33 @@ class UserIdentification(Base):
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="identifications")
+
+
+class UserPin(Base):
+    """A short numeric PIN on an account, for step-up confirmation.
+
+    Stored as a scrypt hash with a per-row salt — never reversibly. A PIN has a
+    tiny keyspace (four to eight digits), so the parameters are deliberately
+    expensive and `failed_attempts`/`locked_until` cap online guessing; neither
+    protection is optional here the way it would be for a long password.
+    """
+
+    __tablename__ = "user_pins"
+    __table_args__ = (UniqueConstraint("user_id", "scope", name="uq_user_pins_user_scope"),)
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    scope: Mapped[str] = mapped_column(String, nullable=False, server_default="account")
+    pin_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    algorithm: Mapped[str] = mapped_column(String, nullable=False, server_default="scrypt")
+    failed_attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    locked_until: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    last_verified_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    set_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
 
 class ReservedUsername(Base):

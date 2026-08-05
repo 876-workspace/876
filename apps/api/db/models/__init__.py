@@ -40,6 +40,7 @@ from db.models.contacts import (
     UserContact,
     UserSocialProfile,
 )
+from db.models.devices import AuthAttempt, UserDevice
 from db.models.directory import (
     Bank,
     BankAccount,
@@ -90,6 +91,7 @@ from db.models.users import (
     UserEmail,
     UserIdentification,
     UserMobileNumber,
+    UserPin,
     UserProfile,
 )
 
@@ -103,6 +105,7 @@ __all__ = [
     "AuditEvent",
     "AuthEmailOtpChallenge",
     "AuthProvider",
+    "AuthAttempt",
     "AuthorizationCode",
     "Bank",
     "BankAccount",
@@ -164,11 +167,13 @@ __all__ = [
     "University",
     "UniversityCampus",
     "User",
+    "UserDevice",
     "UserAppEnrollment",
     "UserContact",
     "UserEmail",
     "UserFeature",
     "UserIdentification",
+    "UserPin",
     "UserMobileNumber",
     "UserProfile",
     "UserSocialProfile",

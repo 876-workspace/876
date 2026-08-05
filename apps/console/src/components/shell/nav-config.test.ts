@@ -7,7 +7,7 @@ describe('navConfig', () => {
     expect(
       navConfig.map((group) => group.items.map((item) => item.title))
     ).toEqual([
-      ['Dashboards', 'Users', 'Organizations'],
+      ['Dashboards', 'Users', 'Organizations', 'Security'],
       ['Apps', 'Widgets', 'Storage'],
       ['Reports', 'Settings'],
     ])

@@ -6,6 +6,9 @@ import httpx
 from fastapi import status
 
 from core.errors import AppHTTPException
+from core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class PostHogClient:
@@ -144,3 +147,39 @@ def get_posthog_client(settings: Any) -> PostHogClient:
         project_id=settings.posthog_project_id,
         personal_api_key=settings.posthog_personal_api_key,
     )
+
+
+async def capture_event(
+    settings: Any,
+    *,
+    distinct_id: str,
+    event: str,
+    properties: dict[str, Any],
+) -> None:
+    """Sends one analytics event, best-effort.
+
+    Uses the project (publishable) key against PostHog's capture endpoint,
+    which is a different credential and endpoint from the feature-flag
+    management API above. Every failure is swallowed: analytics is never
+    allowed to affect the request that produced the event.
+    """
+    api_key = getattr(settings, "posthog_project_api_key", "")
+    if not api_key:
+        return
+
+    host = str(getattr(settings, "posthog_host", "")).rstrip("/")
+    if not host:
+        return
+
+    payload = {
+        "api_key": api_key,
+        "event": event,
+        "distinct_id": distinct_id,
+        "properties": {k: v for k, v in properties.items() if v is not None},
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            await client.post(f"{host}/capture/", json=payload)
+    except Exception:
+        logger.warning("posthog.capture_failed", event=event, exc_info=True)

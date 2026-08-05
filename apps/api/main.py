@@ -40,8 +40,10 @@ from db.migrate import (
     ensure_organizations_logo_file_id_column,
     ensure_organizations_stripe_customer_id,
     ensure_provisioning_v1_cutover,
+    ensure_session_telemetry_columns,
     ensure_subscription_lifecycle_columns,
     ensure_tax_catalog_schema,
+    ensure_user_identification_encryption_columns,
     ensure_user_profile_country_column,
     ensure_users_avatar_file_id_column,
 )
@@ -84,6 +86,8 @@ async def _seed_identity_tables(engine: object) -> None:
         await conn.run_sync(ensure_apps_logo_file_id_column)
         await conn.run_sync(ensure_users_avatar_file_id_column)
         await conn.run_sync(ensure_user_profile_country_column)
+        await conn.run_sync(ensure_session_telemetry_columns)
+        await conn.run_sync(ensure_user_identification_encryption_columns)
         await conn.run_sync(
             lambda c: Base.metadata.create_all(
                 c,
@@ -456,6 +460,28 @@ async def _ensure_user_identifications_table(engine: object) -> None:
         )
 
 
+async def _ensure_auth_telemetry_tables(engine: object) -> None:
+    """Create the device / auth-attempt / PIN tables.
+
+    Without this the telemetry tables never exist in a deployed database, and
+    because `AuthTelemetryService.record` swallows every exception by design,
+    the failure is completely silent: logins keep working, and not one attempt
+    is ever recorded.
+    """
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[
+                    Base.metadata.tables["user_devices"],
+                    Base.metadata.tables["auth_attempts"],
+                    Base.metadata.tables["user_pins"],
+                ],
+                checkfirst=True,
+            )
+        )
+
+
 async def _ensure_subscription_items_table(engine: object) -> None:
     """Create the subscription_items table (line items on a subscription)."""
     async with engine.begin() as conn:  # type: ignore[attr-defined]
@@ -646,7 +672,12 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
 
     return (
         # Revision 3 adds apps.logo_file_id and users.avatar_file_id.
-        BootstrapStep("identity_tables", 3, _seed_identity_tables),
+        # Revision 4 adds the session telemetry columns and the identification
+        # encryption columns. A step is skipped when its recorded revision
+        # matches, so adding an `ensure_*` call inside an existing step without
+        # bumping this leaves the migration permanently unrun — the columns
+        # never appear and every session insert fails.
+        BootstrapStep("identity_tables", 4, _seed_identity_tables),
         BootstrapStep("platform_apps", 1, _seed_platform_apps),
         BootstrapStep("geo_regions", 2, seed_geo_catalog),
         BootstrapStep("provisioning", 1, _ensure_provisioning_tables),
@@ -673,6 +704,7 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("billing_plan_assignments", 1, backfill_billing_plan_assignments),
         BootstrapStep("org_access_backfill", 1, _backfill_org_access),
         BootstrapStep("user_identifications", 1, _ensure_user_identifications_table),
+        BootstrapStep("auth_telemetry_tables", 1, _ensure_auth_telemetry_tables),
     )
 
 
