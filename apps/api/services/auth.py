@@ -220,7 +220,31 @@ class AuthService:
             adopted_user = await self._provider.get_user_by_email(email=email)
             if adopted_user is None:
                 raise registration_error
+
+            if login_result.kind == "email_verification_required":
+                # The account already existed, so no verification code was
+                # issued by the failed create. Without an explicit resend the
+                # user is prompted for a code that was never sent — or one from
+                # an abandoned signup days earlier — and every attempt comes
+                # back as `invalid_one_time_code`.
+                await self._send_verification_email(adopted_user)
+
             return adopted_user, False
+
+    async def _send_verification_email(self, user: ProviderUser) -> None:
+        """Resend the verification code, best-effort.
+
+        A failure here must not fail the registration: the account is usable
+        and the user can request another code, whereas raising would strand a
+        signup that has otherwise succeeded.
+        """
+        sender = getattr(self._provider, "send_verification_email", None)
+        if sender is None:
+            return
+        try:
+            await sender(user_id=user.id)
+        except Exception:
+            logger.warning("auth.verification_email.resend_failed", exc_info=True)
 
     # ── Public auth operations ────────────────────────────────────────────────
 
@@ -330,6 +354,7 @@ class AuthService:
         last_name: str,
         organization_name: str,
         organization_slug: str | None,
+        source_app_id: str | None = None,
     ) -> ServiceAuthResult:
         self._check_required(email, "auth/missing-email", "Please enter your email address.")
         first_name = self._check_required(first_name, "auth/missing-first-name", "Please enter your first name.")
@@ -417,7 +442,7 @@ class AuthService:
                 created_at=now,
                 updated_at=now,
             )
-            org_roles = await provision_organization(self._db, local_org.id, now)
+            org_roles = await provision_organization(self._db, local_org.id, now, source_app_id=source_app_id)
             owner_role = org_roles.get(OWNER_ROLE_NAME)
 
             login_result = await self._provider.login(

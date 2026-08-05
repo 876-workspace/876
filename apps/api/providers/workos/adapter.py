@@ -177,6 +177,13 @@ class WorkOSAuthProvider:
         except httpx.HTTPStatusError as exc:
             raise normalize_workos_error(exc) from exc
 
+    async def send_verification_email(self, *, user_id: str) -> None:
+        """Best-effort resend of the email-verification code."""
+        try:
+            await self._client.send_verification_email(user_id=user_id)
+        except httpx.HTTPStatusError as exc:
+            self._handle_http_error(exc)
+
     async def verify_email(
         self,
         *,

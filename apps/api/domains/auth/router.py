@@ -305,6 +305,9 @@ async def register_business(
         last_name=body.last_name,
         organization_name=body.organization_name,
         organization_slug=body.organization_slug,
+        # Which app the signup came through, taken from the API key the request
+        # authenticated with rather than anything the client supplied.
+        source_app_id=getattr(request.state, "app_id", None),
     )
     if isinstance(result, ServiceAuthPending):
         return _auth_event_dict(result.event)
