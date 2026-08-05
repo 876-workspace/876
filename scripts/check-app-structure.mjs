@@ -241,6 +241,69 @@ for (const app of APPS) {
       fail(app, 'components-imports-features', file)
     }
   }
+
+  // ---- 6. page-shaped loading.tsx covering child routes -------------------
+  // A segment's loading.tsx is the nearest Suspense boundary above every child
+  // route's *layout* (a layout renders outside its own loading.tsx). So a list
+  // or overview skeleton left at a segment with children replays that page's
+  // shape on the way into anything beneath it — clicking a row blanks the table
+  // and re-renders it before the record appears.
+  //
+  // The fix is a (list) / (overview) route group holding the page and its
+  // skeleton, leaving the parent a shape-neutral fallback. This check fails the
+  // build when a fallback is page-shaped and has children to cover, which is
+  // the only combination that produces the flash.
+  for (const file of walk(appDir)) {
+    if (relative(appDir, file).split(sep).at(-1) !== 'loading.tsx') continue
+
+    const dir = dirname(file)
+    if (!hasChildRoutes(dir)) continue
+    if (!isPageShapedFallback(readFileSync(file, 'utf8'))) continue
+
+    fail(
+      app,
+      'page-shaped-loading-covers-children',
+      `apps/${app}/src/app/${relative(appDir, file)}`
+    )
+  }
+}
+
+/** Does this segment have a child route directory (excluding route groups)? */
+function hasChildRoutes(dir) {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return false
+  }
+
+  return entries.some((e) => {
+    if (!e.isDirectory()) return false
+    if (e.name.startsWith('_') || e.name.startsWith('.')) return false
+    // A route group is where the segment's own page now lives, so it is the
+    // fix rather than a child that needs covering.
+    if (e.name.startsWith('(')) return false
+    return walk(join(dir, e.name)).some((f) => {
+      const name = f.split(sep).at(-1)
+      return name === 'page.tsx' || name === 'route.ts' || name === 'route.tsx'
+    })
+  })
+}
+
+/**
+ * Does this fallback render a recognisable page rather than neutral filler?
+ *
+ * A full table, a page title, or a named `*PageSkeleton` is something the user
+ * can recognise as "the list I was just on", which is exactly what must not
+ * flash. A bare `<Skeleton>` block is neutral and allowed.
+ */
+function isPageShapedFallback(source) {
+  return (
+    /DataTableSkeleton/.test(source) ||
+    /876-page-title/.test(source) ||
+    /\bResourceToolbar\b/.test(source) ||
+    /\b\w*PageSkeleton\b/.test(source)
+  )
 }
 
 if (failures.length === 0) {
