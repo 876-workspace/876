@@ -9,6 +9,7 @@ ENTITY_PREFIXES = {
     "auditEvent": "aud",
     "apiKey": "876_app_key",
     "authProvider": "aup",
+    "authAttempt": "atmp",
     "authorizationCode": "auc",
     "billingAccount": "ba",
     "billingCustomerEvent": "bce",

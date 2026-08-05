@@ -38,15 +38,24 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[str] = mapped_column(
-        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
-    )
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     app_id: Mapped[str | None] = mapped_column(String, ForeignKey("apps.id", ondelete="CASCADE"), nullable=True)
     token: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
     token_hash: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     expires_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     ip_address: Mapped[str | None] = mapped_column(String, nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String, nullable=True)
+    device_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("user_devices.id", ondelete="SET NULL"), nullable=True
+    )
+    ip_country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    ip_region: Mapped[str | None] = mapped_column(String, nullable=True)
+    ip_city: Mapped[str | None] = mapped_column(String, nullable=True)
+    ip_asn: Mapped[str | None] = mapped_column(String, nullable=True)
+    ip_as_organization: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_seen_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    revoked_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    revoked_by: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
@@ -68,9 +77,7 @@ class InviteToken(Base):
     expires_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     # App the invite was issued from (e.g. Couriers). On accept the new member
     # is auto-assigned to this app in addition to the Enterprise directory app.
-    source_app_id: Mapped[str | None] = mapped_column(
-        String, ForeignKey("apps.id", ondelete="SET NULL"), nullable=True
-    )
+    source_app_id: Mapped[str | None] = mapped_column(String, ForeignKey("apps.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 

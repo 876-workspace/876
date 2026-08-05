@@ -704,6 +704,38 @@ def ensure_org_business_identity_columns(conn: Connection) -> None:
             exec_isolated(conn, f"organizations.{name}", f"ALTER TABLE organizations ADD COLUMN {column}")
 
 
+def ensure_session_telemetry_columns(conn: Connection) -> None:
+    """Add the device/geo telemetry columns to an existing sessions table.
+
+    `Base.metadata.create_all` creates the new `user_devices` / `auth_attempts`
+    tables on its own, but it never alters an existing one — so without this the
+    ORM would INSERT columns the live `sessions` table does not have and **every
+    login would fail**. Session creation is outside the telemetry service's
+    failure isolation on purpose (a session row is not optional), which is
+    exactly why the column adds have to be guaranteed here.
+    """
+    inspector: Any = sa_inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "sessions" not in tables:
+        return
+    columns = {column["name"] for column in inspector.get_columns("sessions")}
+
+    for column in (
+        "device_id VARCHAR",
+        "ip_country_code VARCHAR(2)",
+        "ip_region VARCHAR",
+        "ip_city VARCHAR",
+        "ip_asn VARCHAR",
+        "ip_as_organization VARCHAR",
+        "last_seen_at BIGINT",
+        "revoked_at BIGINT",
+        "revoked_by VARCHAR",
+    ):
+        name = column.split()[0]
+        if name not in columns:
+            exec_isolated(conn, f"sessions.{name}", f"ALTER TABLE sessions ADD COLUMN {column}")
+
+
 def ensure_organizations_logo_file_id_column(conn: Connection) -> None:
     """Add the canonical Storage file reference to existing organizations."""
     inspector: Any = sa_inspect(conn)
