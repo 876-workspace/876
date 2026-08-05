@@ -51,6 +51,14 @@ class Settings(BaseSettings):
     session_cookie_secret: str = Field(default="", validation_alias="SESSION_COOKIE_SECRET")
     workos_cookie_password: str = Field(default="", validation_alias="WORKOS_COOKIE_PASSWORD")
     is_production: bool = Field(default=False, validation_alias="IS_PRODUCTION")
+
+    # Sensitive-column encryption. Vault is the production provider; the local
+    # AES-GCM key is what lets dev and CI run without Vault credentials. With
+    # neither set, sealing raises rather than storing plaintext.
+    workos_vault_enabled: bool = Field(default=False, validation_alias="WORKOS_VAULT_ENABLED")
+    workos_vault_key_context: str = Field(default="876", validation_alias="WORKOS_VAULT_KEY_CONTEXT")
+    secure_field_key: str = Field(default="", validation_alias="SECURE_FIELD_KEY")
+    identification_hash_pepper: str = Field(default="", validation_alias="IDENTIFICATION_HASH_PEPPER")
     cookie_secure: bool | None = Field(default=None, validation_alias="COOKIE_SECURE")
     sentry_dsn: str = Field(default="", validation_alias="SENTRY_DSN")
     posthog_personal_api_key: str = Field(default="", validation_alias="POSTHOG_PERSONAL_API_KEY")
