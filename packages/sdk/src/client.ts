@@ -58,6 +58,7 @@ export function create876Client(options: ClientOptions = {}) {
     accessToken: parsed.accessToken,
     fetch: parsed.fetch ?? globalThis.fetch.bind(globalThis),
     credentials: parsed.credentials,
+    collectDeviceSignal: parsed.collectDeviceSignal,
   }
 
   const oauthConfig = parsed.oauth

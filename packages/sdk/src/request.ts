@@ -1,4 +1,5 @@
 import { sendClientRequest } from '@876/core/client'
+import { collectDeviceSignal, encodeDeviceSignal } from '@876/device'
 import type { ClientHttpMethod } from '@876/core/client'
 import type { z } from 'zod'
 
@@ -13,6 +14,7 @@ export type SdkRuntime = {
   accessToken: string | undefined
   fetch: typeof fetch
   credentials: RequestCredentials
+  collectDeviceSignal: boolean
 }
 
 type RuntimeOptions = SdkRuntime
@@ -47,13 +49,23 @@ export async function sendAuthRequest<TSuccess>(
       error: createAuthError('auth/client-not-configured'),
     }
 
+  const headers = getAuthHeaders(runtime, options)
+  if (runtime.collectDeviceSignal && isDeviceAuthMutation(path)) {
+    const signal = await Promise.race([
+      collectDeviceSignal(),
+      new Promise<null>((resolve) =>
+        globalThis.setTimeout(() => resolve(null), 400)
+      ),
+    ])
+    if (signal) headers['x-876-device'] = encodeDeviceSignal(signal)
+  }
   const result = await sendClientRequest(
     { baseUrl: runtime.baseUrl, fetch: runtime.fetch },
     {
       method,
       path,
       body,
-      headers: getAuthHeaders(runtime, options),
+      headers,
       credentials: runtime.credentials,
       signal: options?.signal,
     }
@@ -78,6 +90,21 @@ export async function sendAuthRequest<TSuccess>(
   if (!parsed.success) return authInvalidResponse()
 
   return parsed.data
+}
+
+function isDeviceAuthMutation(path: string): boolean {
+  return new Set([
+    '/auth/login',
+    '/auth/register',
+    '/auth/register-business',
+    '/auth/callback',
+    '/auth/magic-otp/send',
+    '/auth/magic-otp/verify',
+    '/auth/recover',
+    '/auth/reset-password',
+    '/auth/verify-email',
+    '/auth/social',
+  ]).has(path)
 }
 
 /** Returns request headers for optional server-side SDK authentication. */
