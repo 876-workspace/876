@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from 'react'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Calendar, Trash } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
@@ -18,9 +19,22 @@ import {
   DetailHeaderActions,
   DetailHeaderTabs,
 } from '@876/ui/detail-header'
-import { formatDate, statusBadgeClass } from '@/lib/format'
-import { resolveUser, resolveUserAddresses, resolveUserContacts } from './_data'
+import { formatDate } from '@/lib/format'
+import {
+  accountShapeClass,
+  accountShapeLabel,
+  enforcementTags,
+} from './_lib/enforcement'
 import { userTabs } from './_lib/user-tabs'
+import {
+  resolveAccountShape,
+  resolveUser,
+  resolveUserAddresses,
+  resolveUserContacts,
+  resolveUserMemberships,
+} from './_data'
+import { EnforcementTags } from './_components/account/enforcement-tags'
+import { VariantSwitcher } from './_components/variant-switcher'
 import { UserActions } from './_components/user-actions'
 
 type Props = {
@@ -80,9 +94,14 @@ export default async function UserDetailLayout({ children, params }: Props) {
             </DetailHeaderMain>
 
             <DetailHeaderActions>
-              <Suspense fallback={<ActionsFallback />}>
-                <HeaderActions username={username} />
-              </Suspense>
+              {/* The switcher is client-only and reads the variant from the URL,
+                  so it needs no data and renders with the frame. */}
+              <div className="flex w-full items-start gap-2 sm:w-auto sm:justify-end">
+                <VariantSwitcher base={base} />
+                <Suspense fallback={<ActionsFallback />}>
+                  <HeaderActions username={username} />
+                </Suspense>
+              </div>
             </DetailHeaderActions>
           </DetailHeaderTop>
 
@@ -166,7 +185,7 @@ async function Identity({ username }: { username: string }) {
   return (
     <>
       <Suspense
-        fallback={<Skeleton className="h-14 w-2 self-center sm:h-16" />}
+        fallback={<Skeleton className="h-[4.5rem] w-2 self-center sm:h-20" />}
       >
         <UserCountryFlag userId={user.id} />
       </Suspense>
@@ -181,7 +200,7 @@ async function Identity({ username }: { username: string }) {
       >
         <Avatar
           size="lg"
-          className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
+          className="ring-876-surface size-[4.5rem] shrink-0 text-xl shadow-sm ring-2 sm:size-20 sm:text-2xl"
         >
           {user.avatar && <AvatarImage src={user.avatar} alt={displayName} />}
           <AvatarFallback>{initialsOf(user)}</AvatarFallback>
@@ -191,37 +210,25 @@ async function Identity({ username }: { username: string }) {
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
           <h1 className="876-page-title truncate">{displayName}</h1>
-          {user.banned ? (
-            <span
-              className={cn(
-                badgeBase,
-                'border-red-400/40 bg-red-400/10 text-red-700 dark:text-red-400'
-              )}
-            >
-              banned
-            </span>
-          ) : (
-            <span className={cn(badgeBase, statusBadgeClass(user.status))}>
-              {user.status}
-            </span>
-          )}
+          <Suspense fallback={<Skeleton className="h-[1.375rem] w-20" />}>
+            <AccountShapeBadge userId={user.id} />
+          </Suspense>
+        </div>
+
+        {/* Every standing fact at once, Twitter-panel style: an agent should
+            never have to open a dialog to learn the account is both banned and
+            unverified. */}
+        <div className="mb-2">
+          <EnforcementTags tags={enforcementTags(user)} />
         </div>
 
         <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4 sm:text-sm">
           {user.username && <span className="truncate">@{user.username}</span>}
-          {user.company && (
-            <span className="flex min-w-0 items-center gap-1.5">
-              <OrgAvatar
-                name={user.company}
-                src={user.company_logo}
-                size="sm"
-                className="size-4 shrink-0 rounded-[5px] text-[0.5rem]"
-              />
-              <span className="max-w-[160px] truncate sm:max-w-[200px]">
-                {user.company_short_name || user.company}
-              </span>
-            </span>
-          )}
+          <Suspense
+            fallback={user.company ? <Skeleton className="h-4 w-28" /> : null}
+          >
+            <PrimaryOrgLink userId={user.id} />
+          </Suspense>
           <span className="flex items-center gap-1.5">
             <Calendar className="size-3.5 shrink-0" />
             Joined {formatDate(user.created_at)}
@@ -236,13 +243,14 @@ async function Identity({ username }: { username: string }) {
 function IdentityFallback() {
   return (
     <>
-      <Skeleton className="h-14 w-2 self-center sm:h-16" />
-      <Skeleton className="size-14 shrink-0 rounded-full sm:size-16" />
+      <Skeleton className="h-[4.5rem] w-2 self-center sm:h-20" />
+      <Skeleton className="size-[4.5rem] shrink-0 rounded-full sm:size-20" />
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex items-center gap-x-2">
           <Skeleton className="h-7 w-44 max-w-full" />
-          <Skeleton className="h-[1.375rem] w-16 rounded-md" />
+          <Skeleton className="h-[1.375rem] w-20 rounded-md" />
         </div>
+        <Skeleton className="mb-2 h-[1.375rem] w-28 rounded-md" />
         <Skeleton className="h-5 w-60 max-w-full" />
       </div>
     </>
@@ -257,7 +265,7 @@ async function HeaderActions({ username }: { username: string }) {
 
 function ActionsFallback() {
   return (
-    <div className="flex w-full gap-2 sm:w-auto sm:justify-end">
+    <div className="flex gap-2">
       <Skeleton className="h-8 w-[4.5rem] rounded-md" />
       <Skeleton className="h-8 w-8 rounded-md" />
     </div>
@@ -278,6 +286,55 @@ async function UserTabs({
   return <RouteTabs tabs={userTabs(base, contacts.length > 0)} />
 }
 
+/**
+ * Consumer / Enterprise / both, derived from membership. Streamed because it
+ * costs a membership lookup and the name beside it does not need to wait.
+ */
+async function AccountShapeBadge({ userId }: { userId: string }) {
+  const shape = await resolveAccountShape(userId)
+  return (
+    <span className={cn(badgeBase, accountShapeClass(shape))}>
+      {accountShapeLabel(shape)}
+    </span>
+  )
+}
+
+/**
+ * The organization an enterprise member belongs to, as a real link.
+ *
+ * `user.company` is a denormalised name with no slug, so it can only ever be
+ * text. Resolving the membership gives the slug, which is what makes the org
+ * reachable from the person — the one direction that has to work now that
+ * `/users` is the front door.
+ */
+async function PrimaryOrgLink({ userId }: { userId: string }) {
+  const memberships = await resolveUserMemberships(userId)
+  const primary = memberships.find(({ org }) => org !== null)
+  if (!primary?.org) return null
+
+  const { org } = primary
+  const label = org.short_name || org.name || org.slug
+  const extra = memberships.length - 1
+
+  return (
+    <span className="flex min-w-0 items-center gap-1.5">
+      <OrgAvatar
+        name={org.name}
+        src={org.logo_url}
+        size="sm"
+        className="size-4 shrink-0 rounded-[5px] text-[0.5rem]"
+      />
+      <Link
+        href={`/orgs/${org.slug}`}
+        className="hover:text-foreground max-w-[160px] truncate hover:underline sm:max-w-[200px]"
+      >
+        {label}
+      </Link>
+      {extra > 0 && <span className="shrink-0">+{extra}</span>}
+    </span>
+  )
+}
+
 async function UserCountryFlag({ userId }: { userId: string }) {
   const addresses = await resolveUserAddresses(userId)
   const countryCode =
@@ -285,7 +342,7 @@ async function UserCountryFlag({ userId }: { userId: string }) {
   return (
     <FlagStripe
       countryCode={countryCode}
-      className="h-14 self-center sm:h-16"
+      className="h-[4.5rem] self-center sm:h-20"
     />
   )
 }
