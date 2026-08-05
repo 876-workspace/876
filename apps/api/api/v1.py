@@ -6,8 +6,12 @@ from domains.apps.router import public_router as apps_public_router
 from domains.apps.router import router as apps_router
 from domains.audit_events.router import router as audit_events_router
 from domains.auth.router import router as auth_router
+from domains.auth_attempts.router import router as auth_attempts_router
+from domains.auth_attempts.router import user_router as user_auth_attempts_router
 from domains.billing.router import router as billing_router
 from domains.communications.router import router as communications_router
+from domains.devices.router import router as devices_router
+from domains.devices.router import user_router as user_devices_router
 from domains.directory.router import router as directory_router
 from domains.features.router import router as features_router
 from domains.geo.router import router as geo_router
@@ -22,6 +26,7 @@ from domains.organizations.router import router as organizations_router
 from domains.organizations.structure import router as org_structure_router
 from domains.products.router import router as products_router
 from domains.provisioning.router import router as provisioning_router
+from domains.sessions.router import router as sessions_router
 from domains.twilio_webhooks.router import router as twilio_webhooks_router
 from domains.users.router import router as users_router
 
@@ -45,6 +50,8 @@ router.include_router(twilio_webhooks_router)
 protected_router.include_router(addresses_router)
 protected_router.include_router(audit_events_router)
 protected_router.include_router(auth_router, prefix="/auth")
+protected_router.include_router(auth_attempts_router)
+protected_router.include_router(devices_router)
 protected_router.include_router(directory_router)
 protected_router.include_router(organizations_router)
 protected_router.include_router(org_structure_router)
@@ -58,6 +65,9 @@ protected_router.include_router(provisioning_router)
 protected_router.include_router(billing_router)
 protected_router.include_router(apps_router)
 protected_router.include_router(users_router)
+protected_router.include_router(user_auth_attempts_router)
+protected_router.include_router(user_devices_router)
+protected_router.include_router(sessions_router)
 protected_router.include_router(mobile_numbers_router)
 protected_router.include_router(communications_router)
 router.include_router(protected_router)

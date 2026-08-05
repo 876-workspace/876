@@ -1,0 +1,1 @@
+"""Administrative session domain."""

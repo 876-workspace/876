@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import ColumnElement, select
+from sqlalchemy import ColumnElement, or_, select
 
 from core.id import generate_id
 from core.timestamps import now_unix_seconds
@@ -69,6 +69,7 @@ class UserDeviceRepository(BaseRepository):
         device_type: str | None = None,
         trusted: bool | None = None,
         blocked: bool | None = None,
+        query: str | None = None,
     ) -> tuple[list[UserDevice], bool]:
         """Most-recently-seen-first device list for the admin surface."""
         filters: list[ColumnElement[bool]] = []
@@ -82,6 +83,17 @@ class UserDeviceRepository(BaseRepository):
             filters.append(UserDevice.trusted.is_(trusted))
         if blocked is not None:
             filters.append(UserDevice.blocked_at.is_not(None) if blocked else UserDevice.blocked_at.is_(None))
+        if query:
+            needle = f"%{query.strip()}%"
+            filters.append(
+                or_(
+                    UserDevice.fingerprint.ilike(needle),
+                    UserDevice.label.ilike(needle),
+                    UserDevice.device_brand.ilike(needle),
+                    UserDevice.device_model.ilike(needle),
+                    UserDevice.last_ip.ilike(needle),
+                )
+            )
 
         return await self.cursor_paginate_filtered(
             UserDevice,

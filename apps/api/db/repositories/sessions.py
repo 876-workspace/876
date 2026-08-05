@@ -1,7 +1,7 @@
 import time
 from typing import Any
 
-from sqlalchemy import ColumnElement, delete, select
+from sqlalchemy import ColumnElement, delete, select, update
 
 from core.timestamps import now_unix_seconds
 from db.models import Session
@@ -133,6 +133,15 @@ class SessionRepository(BaseRepository):
 
         row.last_seen_at = now_unix_seconds()
         await self.db.flush()
+
+    async def revoke_all_for_user(self, user_id: str, revoked_by: str | None = None) -> int:
+        now = now_unix_seconds()
+        result = await self.db.execute(
+            update(Session)
+            .where(Session.user_id == user_id, Session.revoked_at.is_(None))
+            .values(revoked_at=now, revoked_by=revoked_by, expires_at=now, updated_at=now)
+        )
+        return int(getattr(result, "rowcount", 0) or 0)
 
     async def delete_all_for_user(self, user_id: str) -> int:
         """Revoke every session for a user (e.g. on ban). Returns rows deleted."""

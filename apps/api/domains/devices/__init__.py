@@ -1,0 +1,1 @@
+"""Administrative device telemetry domain."""
