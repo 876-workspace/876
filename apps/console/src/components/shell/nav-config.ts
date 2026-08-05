@@ -53,6 +53,16 @@ export const navConfig: NavGroup[] = [
         icon: Building2,
         color: 'var(--876-gold)',
       },
+      {
+        title: 'Security',
+        href: '/security',
+        icon: KeyRound,
+        color: 'var(--876-blue)',
+        children: [
+          { title: 'Sign-ins', href: '/security/sign-ins' },
+          { title: 'Sessions', href: '/sessions' },
+        ],
+      },
     ],
   },
   {
