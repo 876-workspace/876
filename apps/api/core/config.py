@@ -64,6 +64,10 @@ class Settings(BaseSettings):
     posthog_personal_api_key: str = Field(default="", validation_alias="POSTHOG_PERSONAL_API_KEY")
     posthog_project_id: int = Field(default=0, validation_alias="POSTHOG_PROJECT_ID")
     posthog_host: str = Field(default="https://us.i.posthog.com", validation_alias="POSTHOG_HOST")
+    # Event capture uses the project (publishable) key, not the personal API
+    # key — they are different credentials against different endpoints.
+    posthog_project_api_key: str = Field(default="", validation_alias="POSTHOG_PROJECT_API_KEY")
+    auth_risk_block_threshold: int = Field(default=0, validation_alias="AUTH_RISK_BLOCK_THRESHOLD")
     log_level: str = Field(default="info", validation_alias="LOG_LEVEL")
     environment: str = Field(default="production", validation_alias="ENVIRONMENT")
     deletion_mode: str = Field(default="hard", validation_alias="DELETION_MODE")
