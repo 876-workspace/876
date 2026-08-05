@@ -10,12 +10,12 @@ import { service } from '@/lib/service'
 
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
-import { RolesTableRow } from './_components/roles-table-row'
+import { RolesTableRow } from '../_components/roles-table-row'
 import type { RoleView } from '@/types/role'
 import { Page } from '@876/ui/page'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { ROLES_SKELETON_COLUMNS } from './_components/roles-skeleton-columns'
+import { ROLES_SKELETON_COLUMNS } from '../_components/roles-skeleton-columns'
 
 export const metadata = { title: 'Roles & Permissions - Settings' }
 

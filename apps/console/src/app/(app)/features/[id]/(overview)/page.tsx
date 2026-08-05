@@ -6,7 +6,7 @@ import { Skeleton } from '@876/ui/skeleton'
 import { Fingerprint, Settings, Calendar } from '@876/ui/icons'
 import { InfoSection, Field } from '@/components/patterns/detail/info-section'
 import { formatDate } from '@/lib/format'
-import { resolveFeature } from './_data'
+import { resolveFeature } from '../_data'
 
 type Props = { params: Promise<{ id: string }> }
 

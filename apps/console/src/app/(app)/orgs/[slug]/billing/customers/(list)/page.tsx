@@ -5,10 +5,10 @@ import type { AdminOrganization } from '@876/admin'
 import { Button } from '@876/ui/button'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { CUSTOMERS_SKELETON_COLUMNS } from './_components/customers-skeleton-columns'
+import { CUSTOMERS_SKELETON_COLUMNS } from '../_components/customers-skeleton-columns'
 
 import { $876 } from '@/lib/876'
-import { resolveOrg } from '../../_data'
+import { resolveOrg } from '../../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
 

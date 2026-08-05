@@ -16,7 +16,7 @@ import { Separator } from '@876/ui/separator'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
-import { resolveApp } from '../../_data'
+import { resolveApp } from '../../../_data'
 import { formatDate } from '@/lib/format'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }

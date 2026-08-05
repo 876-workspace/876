@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation'
 import type { AdminApp } from '@876/admin'
 
 import { $876 } from '@/lib/876'
-import { resolveApp } from '../_data'
-import { PlansTable } from './_components/plans-table'
+import { resolveApp } from '../../_data'
+import { PlansTable } from '../_components/plans-table'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { PLANS_SKELETON_COLUMNS } from './_components/plans-skeleton-columns'
+import { PLANS_SKELETON_COLUMNS } from '../_components/plans-skeleton-columns'
 
 type Props = { params: Promise<{ slug: string }> }
 

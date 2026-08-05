@@ -7,7 +7,7 @@ import { ArrowRight, CreditCard, Users } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
-import { resolveOrg } from '../_data'
+import { resolveOrg } from '../../_data'
 
 type Props = { params: Promise<{ slug: string }> }
 
