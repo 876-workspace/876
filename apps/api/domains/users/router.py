@@ -14,6 +14,8 @@ from core.identifications import (
     normalize_identification_value,
 )
 from core.logging import get_logger
+from core.pin import PinPolicyError, is_locked, validate_pin, verify_pin
+from core.rate_limit import enforce_rate_limit
 from core.request_context import RequestContext, resolve_request_context
 from core.responses import ListObject
 from core.security import AdminDep, SessionDep
@@ -30,6 +32,7 @@ from db.repositories.user_app_enrollments import UserAppEnrollmentRepository
 from db.repositories.user_contacts import UserContactRepository
 from db.repositories.user_features import UserFeatureRepository
 from db.repositories.user_identifications import UserIdentificationRepository
+from db.repositories.user_pins import UserPinRepository
 from db.repositories.users import UserRepository
 from db.session import get_db
 from domains.addresses.schemas import AddressDeleteResponse, AddressResponse
@@ -69,12 +72,18 @@ from domains.users.schemas import (
     UserIdentificationVerifyRequest,
     UsernameAvailabilityResponse,
     UserOAuthGrantRevokeResponse,
+    UserPinDeleted,
+    UserPinResponse,
+    UserPinSetRequest,
+    UserPinVerificationResponse,
+    UserPinVerifyRequest,
     UserResponse,
     UserSessionRevokeResponse,
     UserUpdate,
 )
 from providers.workos.adapter import get_auth_provider
 from providers.workos.client import get_workos_client
+from services.auth_telemetry import AuthTelemetryService
 from services.features import FeatureService
 from services.identification_secrets import (
     disclose_identification_value,
@@ -2387,3 +2396,204 @@ async def verify_user_identification(
         )
     logger.info("users.identifications.verify", user_id=user_id, type=type, verified_by=body.verified_by)
     return _serialize_user_identification(updated)
+
+
+# ── Account PIN ───────────────────────────────────────────────────────────────
+
+
+def _serialize_pin(user_id: str, row: Any | None, scope: str = "account") -> UserPinResponse:
+    """Status only — the hash never leaves the database."""
+    if row is None:
+        return UserPinResponse(user_id=user_id, scope=scope, is_set=False)
+    return UserPinResponse(
+        user_id=user_id,
+        scope=row.scope,
+        is_set=True,
+        set_at=row.set_at,
+        last_verified_at=row.last_verified_at,
+        failed_attempts=row.failed_attempts,
+        locked_until=row.locked_until,
+    )
+
+
+async def _record_pin_attempt(
+    db: AsyncSession,
+    request: Request,
+    *,
+    user_id: str,
+    outcome: str,
+    failure_code: str | None = None,
+) -> None:
+    """Mirrors a PIN check into the auth-attempt plane.
+
+    A PIN is an authentication factor, so its failures belong in the same
+    history as password failures rather than in a separate silo — a guessing
+    run against a PIN should be visible in exactly the place someone
+    investigating an account already looks.
+    """
+    await AuthTelemetryService(db).record(
+        request=request,
+        event="pin_verify",
+        outcome=outcome,
+        user_id=user_id,
+        failure_code=failure_code,
+    )
+
+
+@router.get(
+    "/{user_id}/pin",
+    response_model=UserPinResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve PIN status",
+    description="Returns whether a PIN is set and its lockout state. Never returns the PIN or its hash.",
+)
+async def retrieve_user_pin(
+    user_id: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    scope: str = "account",
+) -> UserPinResponse:
+    await _require_user(db, user_id)
+    return _serialize_pin(user_id, await UserPinRepository(db).retrieve(user_id, scope), scope)
+
+
+@router.post(
+    "/{user_id}/pin",
+    response_model=UserPinResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Set or replace the account PIN",
+    description="Sets the account PIN, replacing any existing one and clearing its lockout.",
+)
+async def set_user_pin(
+    user_id: str,
+    body: UserPinSetRequest,
+    request: Request,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserPinResponse:
+    user = await _require_user(db, user_id)
+
+    profile = getattr(user, "profile", None)
+    try:
+        validate_pin(body.pin, date_of_birth=getattr(profile, "date_of_birth", None))
+    except PinPolicyError as exc:
+        raise AppHTTPException(
+            code="pin/rejected",
+            message=str(exc),
+            http_status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        ) from exc
+
+    row = await UserPinRepository(db).set_pin(user_id, body.pin, body.scope)
+
+    now = now_unix_seconds()
+    await AuditEventRepository(db).create(
+        id=generate_id("auditEvent"),
+        event="user_pin.set",
+        source="server",
+        app_name="876",
+        app_id=None,
+        user_id=user_id,
+        path=f"/users/{user_id}/pin",
+        search=None,
+        referrer=None,
+        title=None,
+        request_id=None,
+        session_id=None,
+        distinct_id=None,
+        properties={"scope": body.scope},
+        created_at=now,
+    )
+    # The PIN itself is never logged, only the fact that one was set.
+    logger.info("users.pin.set", user_id=user_id, scope=body.scope)
+    return _serialize_pin(user_id, row, body.scope)
+
+
+@router.post(
+    "/{user_id}/pin/verify",
+    response_model=UserPinVerificationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Verify the account PIN",
+    description="Checks a PIN. Five consecutive failures lock further checks for fifteen minutes.",
+)
+async def verify_user_pin(
+    user_id: str,
+    body: UserPinVerifyRequest,
+    request: Request,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> UserPinVerificationResponse:
+    await _require_user(db, user_id)
+
+    # A PIN has a tiny keyspace, so the rate limit is doing real work here, not
+    # just protecting the endpoint from load.
+    enforce_rate_limit("users.pin.verify", user_id, max_attempts=10, window_seconds=300)
+
+    repo = UserPinRepository(db)
+    row = await repo.retrieve(user_id, body.scope)
+    if row is None:
+        await _record_pin_attempt(db, request, user_id=user_id, outcome="failed", failure_code="pin/not-set")
+        raise AppHTTPException(
+            code="pin/not-set",
+            message="No PIN is set for this account.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    now = now_unix_seconds()
+    if is_locked(row.locked_until, now):
+        await _record_pin_attempt(db, request, user_id=user_id, outcome="blocked", failure_code="pin/locked")
+        return UserPinVerificationResponse(verified=False, locked_until=row.locked_until)
+
+    if not verify_pin(body.pin, row.pin_hash):
+        await repo.record_failure(row)
+        await _record_pin_attempt(db, request, user_id=user_id, outcome="failed", failure_code="pin/incorrect")
+        logger.info("users.pin.verify_failed", user_id=user_id, scope=body.scope)
+        return UserPinVerificationResponse(verified=False, locked_until=row.locked_until)
+
+    await repo.record_success(row)
+    await _record_pin_attempt(db, request, user_id=user_id, outcome="succeeded")
+    return UserPinVerificationResponse(verified=True, locked_until=None)
+
+
+@router.delete(
+    "/{user_id}/pin",
+    response_model=UserPinDeleted,
+    status_code=status.HTTP_200_OK,
+    summary="Clear the account PIN",
+    description="Removes the account PIN.",
+)
+async def delete_user_pin(
+    user_id: str,
+    _admin: AdminDep,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    scope: str = "account",
+) -> UserPinDeleted:
+    await _require_user(db, user_id)
+
+    cleared = await UserPinRepository(db).clear(user_id, scope)
+    if not cleared:
+        raise AppHTTPException(
+            code="pin/not-set",
+            message="No PIN is set for this account.",
+            http_status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    now = now_unix_seconds()
+    await AuditEventRepository(db).create(
+        id=generate_id("auditEvent"),
+        event="user_pin.cleared",
+        source="server",
+        app_name="876",
+        app_id=None,
+        user_id=user_id,
+        path=f"/users/{user_id}/pin",
+        search=None,
+        referrer=None,
+        title=None,
+        request_id=None,
+        session_id=None,
+        distinct_id=None,
+        properties={"scope": scope},
+        created_at=now,
+    )
+    logger.info("users.pin.cleared", user_id=user_id, scope=scope)
+    return UserPinDeleted(user_id=user_id)
