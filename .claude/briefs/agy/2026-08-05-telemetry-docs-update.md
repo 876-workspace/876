@@ -79,7 +79,7 @@ Read first: `apps/api/core/secure_field.py`,
 Required sections, in this order:
 
 1. **What is encrypted** — which columns on `user_identifications`, and that
-   the PIN is *hashed* (scrypt) rather than encrypted, because it is verified
+   the PIN is _hashed_ (scrypt) rather than encrypted, because it is verified
    and never read back.
 2. **The two providers** — WorkOS Vault and local AES-256-GCM, how one is
    selected, and the `wv1:` / `la1:` ciphertext prefixes.

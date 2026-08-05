@@ -144,9 +144,9 @@ cannot be written against a client that does not exist yet).
 count DESC LIMIT 10` in the repository. `auth_attempts` grows without bound;
    a Python-side count over the window will fall over in production.
 4. **Never serialize `UserDevice.signal["components"]`** — that is the raw
-   fingerprinting substrate. The admin surface shows the *derived* identity. Add
+   fingerprinting substrate. The admin surface shows the _derived_ identity. Add
    a test asserting `components` never appears in any device response.
-5. **Never return a full `x-forwarded-for` chain.** IPs *are* returned to
+5. **Never return a full `x-forwarded-for` chain.** IPs _are_ returned to
    Console — that is the point of a fraud surface — but only because every route
    is `AdminDep`.
 6. **Revoke is soft** (`.claude/rules/deletions.md`): tombstone

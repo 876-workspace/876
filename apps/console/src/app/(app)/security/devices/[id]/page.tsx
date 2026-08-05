@@ -43,8 +43,9 @@ export default async function DevicePage({ params }: Props) {
         <div>
           <h1 className="876-page-title">{name || device.device_type}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {[device.os_name, device.browser_name].filter(Boolean).join(' · ') ||
-              'Unknown platform'}
+            {[device.os_name, device.browser_name]
+              .filter(Boolean)
+              .join(' · ') || 'Unknown platform'}
           </p>
         </div>
         <DeviceActions
@@ -64,10 +65,7 @@ export default async function DevicePage({ params }: Props) {
           <Field label="First seen" value={formatWhen(device.first_seen_at)} />
           <Field label="Last seen" value={formatWhen(device.last_seen_at)} />
           <Field label="Last IP" value={device.last_ip ?? '—'} mono />
-          <Field
-            label="Last country"
-            value={device.last_country_code ?? '—'}
-          />
+          <Field label="Last country" value={device.last_country_code ?? '—'} />
           <Field label="Sign-ins" value={String(device.sign_in_count)} />
           <Field
             label="Status"

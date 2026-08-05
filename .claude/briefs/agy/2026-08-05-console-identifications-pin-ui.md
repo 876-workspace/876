@@ -38,22 +38,40 @@ stage, branch or stash.
 Server-side, from `@/lib/876`:
 
 ```ts
-$876.users.identifications.list(userId)   // { data: { data: [...] } }
-$876.users.pin.retrieve(userId)           // AdminUserPin
+$876.users.identifications.list(userId) // { data: { data: [...] } }
+$876.users.pin.retrieve(userId) // AdminUserPin
 ```
 
 An identification serializes as:
 
 ```ts
-{ id, user_id, type, label, country_code, value_masked, verified, verified_at,
-  created_at, updated_at }
+{
+  ;(id,
+    user_id,
+    type,
+    label,
+    country_code,
+    value_masked,
+    verified,
+    verified_at,
+    created_at,
+    updated_at)
+}
 ```
 
 `AdminUserPin` is:
 
 ```ts
-{ object: 'pin', user_id, scope, is_set, set_at, last_verified_at,
-  failed_attempts, locked_until }
+{
+  object: ('pin',
+    user_id,
+    scope,
+    is_set,
+    set_at,
+    last_verified_at,
+    failed_attempts,
+    locked_until)
+}
 ```
 
 **`value_masked` is the only value form that exists.** There is no unmasked
@@ -81,13 +99,13 @@ those, following `apps/console/src/lib/client/sessions.ts` exactly.
 A `876-card p-5` with an `<h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">`
 heading (match `devices-section.tsx` exactly), then a table:
 
-| Column   | Content                                                  | Style                            |
-| -------- | -------------------------------------------------------- | -------------------------------- |
-| Type     | `label` (e.g. "Taxpayer Registration Number")            | `font-medium` — the row subject  |
-| Value    | `value_masked`                                           | `font-mono text-muted-foreground` |
-| Country  | `country_code` or an em dash                             | `text-muted-foreground`          |
-| Status   | `<Badge variant="success">Verified</Badge>` or `<Badge variant="secondary">Unverified</Badge>` | — |
-| Added    | `created_at` formatted                                   | `text-muted-foreground`          |
+| Column  | Content                                                                                        | Style                             |
+| ------- | ---------------------------------------------------------------------------------------------- | --------------------------------- |
+| Type    | `label` (e.g. "Taxpayer Registration Number")                                                  | `font-medium` — the row subject   |
+| Value   | `value_masked`                                                                                 | `font-mono text-muted-foreground` |
+| Country | `country_code` or an em dash                                                                   | `text-muted-foreground`           |
+| Status  | `<Badge variant="success">Verified</Badge>` or `<Badge variant="secondary">Unverified</Badge>` | —                                 |
+| Added   | `created_at` formatted                                                                         | `text-muted-foreground`           |
 
 Empty state: `<p className="text-muted-foreground text-sm">No identifications recorded.</p>`
 — a bare sentence, no heading, no description paragraph.

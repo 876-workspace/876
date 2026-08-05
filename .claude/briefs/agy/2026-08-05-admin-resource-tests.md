@@ -25,7 +25,7 @@ Create exactly three files:
   `packages/admin`. Another agent is editing `apps/api` and `apps/console`
   right now — staying inside your three files is what keeps that safe.
 - **Do not commit, stage, branch, or stash.**
-- If a test you write fails because the *resource* is wrong, do not fix the
+- If a test you write fails because the _resource_ is wrong, do not fix the
   resource. Leave the test failing and report it — a real defect found is the
   most valuable thing you can produce here.
 
