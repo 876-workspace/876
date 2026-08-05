@@ -870,6 +870,119 @@ export type AdminListResponse<T> = {
   total_count: number | null
 }
 
+export type AdminDevice = {
+  object: 'device'
+  id: string
+  user_id: string
+  fingerprint: string
+  confidence: string
+  device_type: string
+  device_brand: string | null
+  device_model: string | null
+  os_name: string | null
+  os_version: string | null
+  browser_name: string | null
+  browser_version: string | null
+  is_bot: boolean
+  label: string | null
+  trusted: boolean
+  trusted_at: number | null
+  trusted_by: string | null
+  blocked_at: number | null
+  blocked_by: string | null
+  block_reason: string | null
+  first_seen_at: number
+  last_seen_at: number
+  last_ip: string | null
+  last_country_code: string | null
+  sign_in_count: number
+  created_at: number
+  updated_at: number
+}
+
+export type AdminAuthAttempt = {
+  object: 'auth_attempt'
+  id: string
+  event: string
+  outcome: string
+  failure_code: string | null
+  identifier: string | null
+  user_id: string | null
+  app_id: string | null
+  session_id: string | null
+  realm: string | null
+  device_id: string | null
+  device_fingerprint: string | null
+  ip_address: string | null
+  ip_country_code: string | null
+  ip_region_code: string | null
+  ip_region: string | null
+  ip_city: string | null
+  ip_postal_code: string | null
+  ip_timezone: string | null
+  ip_latitude: string | null
+  ip_longitude: string | null
+  ip_asn: string | null
+  ip_as_organization: string | null
+  user_agent: string | null
+  device_type: string | null
+  device_brand: string | null
+  device_model: string | null
+  os_name: string | null
+  os_version: string | null
+  browser_name: string | null
+  browser_version: string | null
+  is_bot: boolean
+  context_trusted: boolean
+  risk_score: number | null
+  risk_reasons: string[] | null
+  request_id: string | null
+  created_at: number
+}
+
+export type AdminSession = {
+  object: 'session'
+  id: string
+  user_id: string
+  app_id: string | null
+  expires_at: number
+  ip_address: string | null
+  user_agent: string | null
+  device_id: string | null
+  ip_country_code: string | null
+  ip_region: string | null
+  ip_city: string | null
+  ip_asn: string | null
+  ip_as_organization: string | null
+  last_seen_at: number | null
+  revoked_at: number | null
+  revoked_by: string | null
+  created_at: number
+  updated_at: number
+}
+
+export type AdminAuthAttemptSummary = {
+  object: 'auth_attempt_summary'
+  window: '24h' | '7d' | '30d'
+  total: number
+  outcomes: Record<string, number>
+  top_countries: { value: string; count: number }[]
+  top_failure_codes: { value: string; count: number }[]
+  top_failure_ips: { value: string; count: number }[]
+}
+
+export type AdminDeletedSession = {
+  object: 'session'
+  id: string
+  deleted: true
+}
+export type AdminDeletedUserSessions = {
+  object: 'session_list'
+  user_id: string
+  deleted: true
+  revoked_count: number
+}
+
 export type AdminSearchResponse<T> = Omit<AdminListResponse<T>, 'object'> & {
   object: 'search_result'
 }

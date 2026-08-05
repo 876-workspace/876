@@ -4,6 +4,7 @@ import { adminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import type {
   AdminAccount,
+  AdminAuthAttempt,
   AdminAddress,
   AdminAddressCreateParams,
   AdminAddressUpdateParams,
@@ -18,8 +19,10 @@ import type {
   AdminDeletedUser,
   AdminDeletedUserFeature,
   AdminDeletedUserIdentification,
+  AdminDevice,
   AdminListResponse,
   AdminOAuthGrant,
+  AdminSession,
   AdminUserApp,
   AdminSearchResponse,
   SessionRevoke,
@@ -42,6 +45,33 @@ import type {
 /** `$876.users.*` — platform-wide user administration (internal-key tier). */
 export function createAdminUsersResource(runtime: AdminRuntime) {
   return {
+    listDevices(userId: string, params?: CursorPageParams) {
+      return adminRequest<AdminListResponse<AdminDevice>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/devices`,
+        query: toCursorQuery(params),
+      })
+    },
+
+    listAuthAttempts(userId: string, params?: CursorPageParams) {
+      return adminRequest<AdminListResponse<AdminAuthAttempt>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/auth-attempts`,
+        query: toCursorQuery(params),
+      })
+    },
+
+    listSessions(
+      userId: string,
+      params?: CursorPageParams & { active?: boolean }
+    ) {
+      return adminRequest<AdminListResponse<AdminSession>>(runtime, {
+        method: 'GET',
+        path: `/users/${userId}/sessions`,
+        query: { ...toCursorQuery(params), active: params?.active },
+      })
+    },
+
     /**
      * Creates a user object.
      *

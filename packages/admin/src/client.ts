@@ -31,6 +31,8 @@ import { createAdminApiKeysResource } from './resources/api-keys'
 import { createAdminAppsResource } from './resources/apps'
 import { createAdminAuditEventsResource } from './resources/audit-events'
 import { createAdminAuthResource } from './resources/auth'
+import { createAdminAuthAttemptsResource } from './resources/auth-attempts'
+import { createAdminDevicesResource } from './resources/devices'
 import { createAdminFeaturesResource } from './resources/features'
 import { createAdminMembershipsResource } from './resources/memberships'
 import { createAdminModulesResource } from './resources/modules'
@@ -40,6 +42,7 @@ import { createAdminPricesResource } from './resources/prices'
 import { createAdminProductsResource } from './resources/products'
 import { createAdminProvisioningResource } from './resources/provisioning'
 import { createAdminReservedUsernamesResource } from './resources/reserved-usernames'
+import { createAdminSessionsResource } from './resources/sessions'
 import { createAdminUsersResource } from './resources/users'
 import { createAdminBillingAccountsResource } from './resources/billing-accounts'
 import { createAdminCommunicationsResource } from './resources/communications'
@@ -95,6 +98,9 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     users,
     identifications,
     auth: createAdminAuthResource(runtime),
+    authAttempts: createAdminAuthAttemptsResource(runtime),
+    devices: createAdminDevicesResource(runtime),
+    sessions: createAdminSessionsResource(runtime),
     apps,
     appFeatures,
     appSubscriptions,
