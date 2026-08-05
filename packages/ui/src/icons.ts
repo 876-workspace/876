@@ -10,6 +10,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowUpTrayIcon,
   AtSymbolIcon,
+  BanknotesIcon,
   Bars3BottomLeftIcon,
   BoltIcon,
   BuildingOffice2Icon,
@@ -48,6 +49,7 @@ import {
   HomeIcon,
   InformationCircleIcon,
   KeyIcon,
+  LifebuoyIcon,
   LinkIcon,
   LockClosedIcon,
   MagnifyingGlassIcon,
@@ -70,6 +72,7 @@ import {
   SunIcon,
   TagIcon,
   TableCellsIcon,
+  TicketIcon,
   TrashIcon,
   TruckIcon,
   UserCircleIcon,
@@ -133,6 +136,7 @@ export {
   HomeIcon,
   InformationCircleIcon,
   KeyIcon,
+  LifebuoyIcon,
   LinkIcon,
   LockClosedIcon,
   MagnifyingGlassIcon,
@@ -151,6 +155,7 @@ export {
   SunIcon,
   TagIcon,
   TableCellsIcon,
+  TicketIcon,
   TruckIcon,
   AdjustmentsHorizontalIcon,
   PaintBrushIcon,
@@ -168,6 +173,9 @@ export const PaintBrush = PaintBrushIcon
 export const Activity = BoltIcon
 export const AppWindow = WindowIcon
 export const ArrowDownFromLine = ArrowDownTrayIcon
+export const Banknotes = BanknotesIcon
+export const LifeBuoy = LifebuoyIcon
+export const Ticket = TicketIcon
 export const ArrowLeft = ArrowLeftIcon
 export const ArrowRight = ArrowRightIcon
 export const ArrowUpFromLine = ArrowUpTrayIcon
