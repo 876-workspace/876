@@ -707,8 +707,8 @@ def ensure_org_business_identity_columns(conn: Connection) -> None:
 def ensure_session_telemetry_columns(conn: Connection) -> None:
     """Add the device/geo telemetry columns to an existing sessions table.
 
-    `Base.metadata.create_all` creates the new `user_devices` / `auth_attempts`
-    tables on its own, but it never alters an existing one — so without this the
+    The `auth_telemetry_tables` bootstrap step creates the new `user_devices` /
+    `auth_attempts` tables, but `create_all` never alters an existing one — so without this the
     ORM would INSERT columns the live `sessions` table does not have and **every
     login would fail**. Session creation is outside the telemetry service's
     failure isolation on purpose (a session row is not optional), which is

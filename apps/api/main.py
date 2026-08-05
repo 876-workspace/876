@@ -460,6 +460,28 @@ async def _ensure_user_identifications_table(engine: object) -> None:
         )
 
 
+async def _ensure_auth_telemetry_tables(engine: object) -> None:
+    """Create the device / auth-attempt / PIN tables.
+
+    Without this the telemetry tables never exist in a deployed database, and
+    because `AuthTelemetryService.record` swallows every exception by design,
+    the failure is completely silent: logins keep working, and not one attempt
+    is ever recorded.
+    """
+    async with engine.begin() as conn:  # type: ignore[attr-defined]
+        await conn.run_sync(
+            lambda c: Base.metadata.create_all(
+                c,
+                tables=[
+                    Base.metadata.tables["user_devices"],
+                    Base.metadata.tables["auth_attempts"],
+                    Base.metadata.tables["user_pins"],
+                ],
+                checkfirst=True,
+            )
+        )
+
+
 async def _ensure_subscription_items_table(engine: object) -> None:
     """Create the subscription_items table (line items on a subscription)."""
     async with engine.begin() as conn:  # type: ignore[attr-defined]
@@ -677,6 +699,7 @@ def get_bootstrap_steps() -> tuple[BootstrapStep, ...]:
         BootstrapStep("billing_plan_assignments", 1, backfill_billing_plan_assignments),
         BootstrapStep("org_access_backfill", 1, _backfill_org_access),
         BootstrapStep("user_identifications", 1, _ensure_user_identifications_table),
+        BootstrapStep("auth_telemetry_tables", 1, _ensure_auth_telemetry_tables),
     )
 
 
