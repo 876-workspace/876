@@ -109,6 +109,74 @@ describe('Console auth guards', () => {
     expect(mocks.retrieveTeamMember).not.toHaveBeenCalled()
   })
 
+  it('bootstraps from the sealed session without calling the identity API', async () => {
+    mocks.getAuthSession.mockResolvedValue({
+      user: { id: 'user_bootstrap', email: '  RaheemDevs@gmail.com ' },
+    })
+
+    const result = await findConsoleAccess('user_bootstrap')
+
+    expect(result).toEqual({
+      id: 'user_bootstrap',
+      role: 'super_admin',
+      permissions: permissionsForRole('super_admin'),
+      status: 'active',
+    })
+    // The guard runs in every segment layout ahead of any paint, so the
+    // address must not cost a round trip when the session already carries it.
+    expect(mocks.retrieveUser).not.toHaveBeenCalled()
+    expect(mocks.retrieveTeamMember).not.toHaveBeenCalled()
+  })
+
+  it('ignores the session address when checking a different user', async () => {
+    mocks.getAuthSession.mockResolvedValue({
+      user: { id: 'user_bootstrap', email: 'raheemdevs@gmail.com' },
+    })
+    mocks.retrieveUser.mockResolvedValue({
+      data: { email: 'someone.else@example.com' },
+      error: null,
+    })
+    mocks.retrieveTeamMember.mockResolvedValue(null)
+
+    const result = await findConsoleAccess('user_other')
+
+    // The signed-in operator's own address must never grant super-admin to the
+    // id they happen to be looking at.
+    expect(result).toBeNull()
+    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_other')
+  })
+
+  it('falls back to the identity API when the session carries no address', async () => {
+    mocks.getAuthSession.mockResolvedValue({
+      user: { id: 'user_bootstrap', email: '' },
+    })
+    mocks.retrieveUser.mockResolvedValue({
+      data: { email: 'raheemdevs@gmail.com' },
+      error: null,
+    })
+
+    const result = await findConsoleAccess('user_bootstrap')
+
+    expect(result?.role).toBe('super_admin')
+    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_bootstrap')
+  })
+
+  it('does not consult the identity API for an unsigned session', async () => {
+    mocks.isSignedSession.mockReturnValue(false)
+    mocks.retrieveUser.mockResolvedValue({
+      data: { email: 'raheemdevs@gmail.com' },
+      error: null,
+    })
+    mocks.retrieveTeamMember.mockResolvedValue(null)
+
+    const result = await findConsoleAccess('user_bootstrap')
+
+    // An unsigned session cannot vouch for an address, so the authoritative
+    // read still happens and still decides.
+    expect(result?.role).toBe('super_admin')
+    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_bootstrap')
+  })
+
   it.each([null, { email: '' }, { email: 'operator@example.com' }])(
     'falls back to a persisted access grant for identity %j',
     async (identity) => {
@@ -137,21 +205,16 @@ describe('Console auth guards', () => {
   })
 
   it('hydrates an authorized Console account with identity display fields', async () => {
-    mocks.retrieveUser
-      .mockResolvedValueOnce({
-        data: { email: 'operator@example.com' },
-        error: null,
-      })
-      .mockResolvedValueOnce({
-        data: {
-          first_name: 'Alejandra',
-          last_name: 'Reyes',
-          email: 'alejandra@example.com',
-          avatar: 'https://cdn.example.com/avatar.png',
-          banned: 1,
-        },
-        error: null,
-      })
+    mocks.retrieveUser.mockResolvedValueOnce({
+      data: {
+        first_name: 'Alejandra',
+        last_name: 'Reyes',
+        email: 'alejandra@example.com',
+        avatar: 'https://cdn.example.com/avatar.png',
+        banned: 1,
+      },
+      error: null,
+    })
     mocks.retrieveTeamMember.mockResolvedValue({
       userId: activeAccess.id,
       roleName: activeAccess.role,
@@ -169,7 +232,9 @@ describe('Console auth guards', () => {
       avatar: 'https://cdn.example.com/avatar.png',
       banned: true,
     })
-    expect(mocks.retrieveUser).toHaveBeenCalledTimes(2)
+    // Once, for display hydration. The bootstrap check reads the address off
+    // the sealed session when it is the session's own id, so it costs nothing.
+    expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
 
@@ -192,13 +257,11 @@ describe('Console auth guards', () => {
       avatar: null,
       banned: false,
     })
-    expect(mocks.retrieveUser).toHaveBeenCalledTimes(2)
+    expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
   })
 
   it('uses safe display defaults when identity hydration throws', async () => {
-    mocks.retrieveUser
-      .mockResolvedValueOnce({ data: null, error: null })
-      .mockRejectedValueOnce(new Error('API unavailable'))
+    mocks.retrieveUser.mockRejectedValueOnce(new Error('API unavailable'))
     mocks.retrieveTeamMember.mockResolvedValue({
       userId: activeAccess.id,
       roleName: activeAccess.role,
@@ -216,7 +279,7 @@ describe('Console auth guards', () => {
       avatar: null,
       banned: false,
     })
-    expect(mocks.retrieveUser).toHaveBeenCalledTimes(2)
+    expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
   })
 
   it('uses the verified session identity when API hydration is unavailable', async () => {

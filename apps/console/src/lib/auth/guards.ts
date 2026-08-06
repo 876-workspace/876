@@ -60,11 +60,34 @@ export const findConsoleAccess = cache(async function findConsoleAccess(
   }
 })
 
+/**
+ * The bootstrap super-admin grant, resolved without a network call where it can
+ * be.
+ *
+ * This runs inside the permission guard of every segment layout, and a guard
+ * cannot stream — content must not render before we know the viewer may see it.
+ * So the guard has to be *cheap* rather than non-blocking, and fetching the
+ * platform user to test one address against a one-entry set was the opposite:
+ * a Worker -> FastAPI -> Neon round trip on every navigation, ahead of any
+ * paint.
+ *
+ * When the id being checked is the session's own, the sealed cookie already
+ * carries that address. It is signed by the API and is the same trust root as
+ * `session.user.id`, which authorization here already relies on completely — so
+ * reading the address from it adds no attack surface. Forging one means holding
+ * the sealing secret, and anyone holding that can simply claim a different id.
+ *
+ * The narrow trade-off: if this account's address changes, the grant survives
+ * on an already-issued session until it expires, where the fetch would have
+ * dropped it at once. A stale address can only ever *fail to match* the set, so
+ * a mismatch withholds the grant rather than widening it.
+ *
+ * Checking another user's id still takes the authoritative path.
+ */
 async function findBootstrapSuperAdminAccess(
   userId: string
 ): Promise<Access | null> {
-  const data = await retrieveUser(userId)
-  const email = data?.email?.trim().toLowerCase()
+  const email = await resolveEmailForBootstrapCheck(userId)
   if (!email || !BOOTSTRAP_SUPER_ADMIN_EMAILS.has(email)) return null
 
   return {
@@ -73,6 +96,19 @@ async function findBootstrapSuperAdminAccess(
     permissions: permissionsForRole('super_admin'),
     status: 'active',
   }
+}
+
+async function resolveEmailForBootstrapCheck(
+  userId: string
+): Promise<string | undefined> {
+  const session = await getAuthSession()
+  if (isSignedSession(session) && session.user.id === userId) {
+    const sessionEmail = session.user.email?.trim().toLowerCase()
+    if (sessionEmail) return sessionEmail
+  }
+
+  const data = await retrieveUser(userId)
+  return data?.email?.trim().toLowerCase()
 }
 
 async function hydrateDisplay(
