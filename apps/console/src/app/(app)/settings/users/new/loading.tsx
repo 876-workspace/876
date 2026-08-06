@@ -1,9 +1,8 @@
 import { Skeleton } from '@876/ui/skeleton'
 
 /**
- * Fallback for the team member detail and roles pages. The roster list keeps
- * its own table skeleton in `(list)/loading.tsx`, so navigating into a member
- * no longer clears the roster and re-renders it as a table.
+ * Scoped to this route. Held at the segment above, this fallback also covered
+ * the sibling route group and the detail layout, which now streams on its own.
  */
 export default function Loading() {
   return (

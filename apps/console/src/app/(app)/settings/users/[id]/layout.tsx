@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
+import { Skeleton } from '@876/ui/skeleton'
 import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
 import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import {
@@ -47,13 +48,18 @@ export async function generateMetadata({ params }: Props) {
   return { title: `${name} - Team` }
 }
 
+/**
+ * The team-member shell.
+ *
+ * Awaits `params` only. A layout renders outside its own `loading.tsx`, so an
+ * await here suspends into the *parent* segment's boundary — the members list
+ * you just clicked from — and nothing this route owns can catch it.
+ *
+ * The tab strip does not depend on the member, so it stays real and clickable
+ * throughout; only the identity band streams.
+ */
 export default async function TeamMemberLayout({ children, params }: Props) {
   const { id } = await params
-  const [grant, identity] = await Promise.all([
-    resolveMemberGrant(id),
-    resolveMemberIdentity(id),
-  ])
-  if (!grant) notFound()
 
   const base = `/settings/users/${id}`
   const tabs: DetailTab[] = [
@@ -63,6 +69,36 @@ export default async function TeamMemberLayout({ children, params }: Props) {
     { label: 'Notes', href: `${base}/notes` },
     { label: 'Audit', href: `${base}/audit` },
   ]
+
+  return (
+    <div>
+      <DetailChromeGate>
+        <DetailHeader className="sm:static sm:z-auto">
+          <DetailHeaderTop>
+            <DetailHeaderMain className="gap-3.5">
+              <Suspense fallback={<MemberIdentityFallback />}>
+                <MemberIdentity id={id} />
+              </Suspense>
+            </DetailHeaderMain>
+          </DetailHeaderTop>
+          <DetailHeaderTabs>
+            <RouteTabs tabs={tabs} />
+          </DetailHeaderTabs>
+        </DetailHeader>
+      </DetailChromeGate>
+
+      <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+    </div>
+  )
+}
+
+/** Decides the route exists, so `notFound()` belongs here rather than the shell. */
+async function MemberIdentity({ id }: { id: string }) {
+  const [grant, identity] = await Promise.all([
+    resolveMemberGrant(id),
+    resolveMemberIdentity(id),
+  ])
+  if (!grant) notFound()
 
   const displayName =
     [identity?.first_name, identity?.last_name].filter(Boolean).join(' ') ||
@@ -76,50 +112,51 @@ export default async function TeamMemberLayout({ children, params }: Props) {
       .toUpperCase() || (identity?.email?.[0] ?? '?').toUpperCase()
 
   return (
-    <div>
-      <DetailChromeGate>
-        <DetailHeader className="sm:static sm:z-auto">
-          <DetailHeaderTop>
-            <DetailHeaderMain className="gap-3.5">
-              <Avatar className="ring-876-surface size-11 shrink-0 shadow-sm ring-2">
-                {identity?.avatar && (
-                  <AvatarImage src={identity.avatar} alt="" />
-                )}
-                <AvatarFallback className="text-sm">{initials}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <h2 className="truncate text-base font-semibold tracking-tight">
-                    {displayName}
-                  </h2>
-                  <Badge
-                    variant="outline"
-                    className={ROLE_BADGE_CLASS[grant.roleName] ?? ''}
-                  >
-                    {ROLE_LABELS[grant.roleName] ?? grant.roleName}
-                  </Badge>
-                  {grant.status !== 'active' && (
-                    <Badge
-                      variant="outline"
-                      className="border-red-400/40 bg-red-400/10 text-red-700 dark:text-red-400"
-                    >
-                      {grant.status}
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-muted-foreground mt-0.5 truncate text-sm">
-                  {identity?.email}
-                </p>
-              </div>
-            </DetailHeaderMain>
-          </DetailHeaderTop>
-          <DetailHeaderTabs>
-            <RouteTabs tabs={tabs} />
-          </DetailHeaderTabs>
-        </DetailHeader>
-      </DetailChromeGate>
+    <>
+      <Avatar className="ring-876-surface size-11 shrink-0 shadow-sm ring-2">
+        {identity?.avatar && <AvatarImage src={identity.avatar} alt="" />}
+        <AvatarFallback className="text-sm">{initials}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h2 className="truncate text-base font-semibold tracking-tight">
+            {displayName}
+          </h2>
+          <Badge
+            variant="outline"
+            className={ROLE_BADGE_CLASS[grant.roleName] ?? ''}
+          >
+            {ROLE_LABELS[grant.roleName] ?? grant.roleName}
+          </Badge>
+          {grant.status !== 'active' && (
+            <Badge
+              variant="outline"
+              className="border-red-400/40 bg-red-400/10 text-red-700 dark:text-red-400"
+            >
+              {grant.status}
+            </Badge>
+          )}
+        </div>
+        <p className="text-muted-foreground mt-0.5 truncate text-sm">
+          {identity?.email}
+        </p>
+      </div>
+    </>
+  )
+}
 
-      <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
-    </div>
+/** Sized to the resolved identity band so nothing shifts on hand-off. */
+function MemberIdentityFallback() {
+  return (
+    <>
+      <Skeleton className="size-11 shrink-0 rounded-full" />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-5 w-16 rounded-md" />
+        </div>
+        <Skeleton className="mt-1 h-4 w-52" />
+      </div>
+    </>
   )
 }
