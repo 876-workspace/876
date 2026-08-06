@@ -1,0 +1,43 @@
+// App — table `apps`.
+// Module: apps. Registered apps, API keys, app assignments, and per-user app enrollment.
+
+model App {
+  id                  String              @id @db.VarChar
+  name                String              @db.VarChar
+  slug                String              @unique @db.VarChar
+  organizationId      String?             @map("organization_id") @db.VarChar
+  clientId            String              @unique @map("client_id") @db.VarChar
+  clientSecretHash    String?             @map("client_secret_hash") @db.VarChar
+  clientType          String              @default("public") @map("client_type") @db.VarChar
+  appKind             String              @default("external") @map("app_kind") @db.VarChar
+  status              String              @default("active") @db.VarChar
+  allowedRedirectUris String[]            @map("allowed_redirect_uris") @db.VarChar
+  allowedLogoutUris   String[]            @default([]) @map("allowed_logout_uris") @db.VarChar
+  logoUrl             String?             @map("logo_url") @db.VarChar
+  homepageUrl         String?             @map("homepage_url") @db.VarChar
+  type                String              @default("web") @db.VarChar
+  scopesAllowed       String[]            @default(["openid", "profile", "email"]) @map("scopes_allowed") @db.VarChar
+  deletedAt           BigInt?             @map("deleted_at")
+  deletedBy           String?             @map("deleted_by") @db.VarChar
+  deletionReason      String?             @map("deletion_reason")
+  createdAt           BigInt              @map("created_at")
+  updatedAt           BigInt              @map("updated_at")
+  logoFileId          String?             @map("logo_file_id") @db.VarChar
+  apiKeys             ApiKey[]
+  appAssignments      AppAssignment[]
+  applicationModules  ApplicationModule[]
+  organization        Organization?       @relation(fields: [organizationId], references: [id], onUpdate: NoAction)
+  auditEvents         AuditEvent[]
+  authAttempts        AuthAttempt[]
+  authorizationCodes  AuthorizationCode[]
+  features            Feature[]
+  inviteTokens        InviteToken[]
+  oauthGrants         OauthGrant[]
+  oauthRefreshTokens  OauthRefreshToken[]
+  products            Product[]
+  sessions            Session[]
+  subscriptions       Subscription[]
+  userAppEnrollments  UserAppEnrollment[]
+
+  @@map("apps")
+}

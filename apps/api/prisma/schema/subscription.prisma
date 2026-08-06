@@ -1,0 +1,44 @@
+// Subscription — table `subscriptions`.
+// Module: subscriptions. Org to platform-app entitlements (the `subscriptions` table) and their items.
+
+model Subscription {
+  id                      String             @id @db.VarChar
+  billingAccountId        String?            @map("billing_account_id") @db.VarChar
+  organizationId          String             @map("organization_id") @db.VarChar
+  appId                   String             @map("app_id") @db.VarChar
+  status                  String             @default("active") @db.VarChar
+  providerStatus          String?            @map("provider_status") @db.VarChar
+  statusReason            String?            @map("status_reason") @db.VarChar
+  collectionMethod        String             @default("charge_automatically") @map("collection_method") @db.VarChar
+  billingCycleAnchor      BigInt?            @map("billing_cycle_anchor")
+  currentPeriodStart      BigInt?            @map("current_period_start")
+  currentPeriodEnd        BigInt?            @map("current_period_end")
+  cancelAt                BigInt?            @map("cancel_at")
+  cancelAtPeriodEnd       Boolean            @default(false) @map("cancel_at_period_end")
+  canceledAt              BigInt?            @map("canceled_at")
+  endedAt                 BigInt?            @map("ended_at")
+  pauseCollection         Json?              @map("pause_collection") @db.Json
+  trialStart              BigInt?            @map("trial_start")
+  trialEnd                BigInt?            @map("trial_end")
+  startDate               BigInt?            @map("start_date")
+  defaultPaymentMethodId  String?            @map("default_payment_method_id") @db.VarChar
+  latestInvoiceId         String?            @map("latest_invoice_id") @db.VarChar
+  pendingUpdate           Json?              @map("pending_update") @db.Json
+  scheduleId              String?            @map("schedule_id") @db.VarChar
+  metadata                Json?              @db.Json
+  createdAt               BigInt             @map("created_at")
+  updatedAt               BigInt             @map("updated_at")
+  stripeSubscriptionId    String?            @unique @map("stripe_subscription_id") @db.VarChar
+  financeLifecycleVersion Int                @map("finance_lifecycle_version")
+  subscriptionItems       SubscriptionItem[]
+  app                     App                @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  billingAccount          BillingAccount?    @relation(fields: [billingAccountId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  organization            Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([appId], map: "ix_subscriptions_app_id")
+  @@index([billingAccountId], map: "ix_subscriptions_billing_account_id")
+  @@index([financeLifecycleVersion], map: "ix_subscriptions_finance_lifecycle_version")
+  @@index([organizationId, appId], map: "ix_subscriptions_org_app")
+  @@index([organizationId], map: "ix_subscriptions_organization_id")
+  @@map("subscriptions")
+}

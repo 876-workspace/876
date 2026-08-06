@@ -1,0 +1,26 @@
+// Membership — table `memberships`.
+// Module: organizations. Organizations, memberships, org roles, locations, contacts, and departments.
+
+model Membership {
+  id                                  String            @id @db.VarChar
+  organizationId                      String            @map("organization_id") @db.VarChar
+  userId                              String            @map("user_id") @db.VarChar
+  workosMembershipId                  String?           @unique @map("workos_membership_id") @db.VarChar
+  roleId                              String?           @map("role_id") @db.VarChar
+  role                                String            @default("member") @db.VarChar
+  status                              String            @default("active") @db.VarChar
+  deletedAt                           BigInt?           @map("deleted_at")
+  deletedBy                           String?           @map("deleted_by") @db.VarChar
+  deletionReason                      String?           @map("deletion_reason")
+  createdAt                           BigInt            @map("created_at")
+  updatedAt                           BigInt            @map("updated_at")
+  employeeProfilesAsManagerMembership EmployeeProfile[] @relation("employee_profiles_manager_membership_idTomemberships")
+  employeeProfilesMembership          EmployeeProfile?  @relation("employee_profiles_membership_idTomemberships")
+  organization                        Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  organizationRole                    OrganizationRole? @relation(fields: [roleId], references: [id], onUpdate: NoAction)
+  user                                User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  orgDepartments                      OrgDepartment[]
+
+  @@unique([organizationId, userId])
+  @@map("memberships")
+}

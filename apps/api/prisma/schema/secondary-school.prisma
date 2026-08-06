@@ -1,0 +1,22 @@
+// SecondarySchool — table `secondary_schools`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model SecondarySchool {
+  id               String           @id @db.VarChar
+  name             String           @db.VarChar
+  principal        String?          @db.VarChar
+  schoolType       String?          @map("school_type") @db.VarChar
+  logoUrl          String?          @map("logo_url") @db.VarChar
+  addressId        String           @map("address_id") @db.VarChar
+  contactNumber    String?          @map("contact_number") @db.VarChar
+  email            String?          @db.VarChar
+  deletedAt        BigInt?          @map("deleted_at")
+  deletedBy        String?          @map("deleted_by") @db.VarChar
+  deletionReason   String?          @map("deletion_reason")
+  createdAt        BigInt           @map("created_at")
+  updatedAt        BigInt           @map("updated_at")
+  directoryAddress DirectoryAddress @relation(fields: [addressId], references: [id], onUpdate: NoAction)
+
+  @@index([addressId], map: "ix_secondary_schools_address_id")
+  @@map("secondary_schools")
+}

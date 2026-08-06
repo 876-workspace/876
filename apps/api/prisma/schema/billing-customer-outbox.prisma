@@ -1,0 +1,37 @@
+// BillingCustomerOutbox — table `billing_customer_outbox`.
+// Module: billing. References into the Billing bounded context: account mirrors, the customer
+// outbox, provider object mirrors, and the finance-provisioning outbox. The
+// financial records themselves live in apps/billing-api.
+
+model BillingCustomerOutbox {
+  id               String  @id @db.VarChar
+  eventType        String  @map("event_type") @db.VarChar
+  subjectType      String  @map("subject_type") @db.VarChar
+  subjectId        String  @map("subject_id") @db.VarChar
+  name             String  @db.VarChar
+  email            String? @db.VarChar
+  occurredAt       BigInt  @map("occurred_at")
+  status           String  @db.VarChar
+  attemptCount     Int     @map("attempt_count")
+  availableAt      BigInt  @map("available_at")
+  lockedAt         BigInt? @map("locked_at")
+  deliveredAt      BigInt? @map("delivered_at")
+  lastError        String? @map("last_error")
+  createdAt        BigInt  @map("created_at")
+  updatedAt        BigInt  @map("updated_at")
+  customerKind     String? @map("customer_kind") @db.VarChar
+  companyName      String? @map("company_name") @db.VarChar
+  firstName        String? @map("first_name") @db.VarChar
+  lastName         String? @map("last_name") @db.VarChar
+  phone            String? @db.VarChar
+  contactUserId    String? @map("contact_user_id") @db.VarChar
+  contactFirstName String? @map("contact_first_name") @db.VarChar
+  contactLastName  String? @map("contact_last_name") @db.VarChar
+  contactEmail     String? @map("contact_email") @db.VarChar
+  contactPhone     String? @map("contact_phone") @db.VarChar
+  payloadHash      String? @map("payload_hash") @db.VarChar
+
+  @@index([status, availableAt, createdAt], map: "ix_billing_customer_outbox_delivery")
+  @@index([subjectType, subjectId], map: "ix_billing_customer_outbox_subject")
+  @@map("billing_customer_outbox")
+}

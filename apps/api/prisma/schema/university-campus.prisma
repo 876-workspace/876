@@ -1,0 +1,23 @@
+// UniversityCampus — table `university_campuses`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model UniversityCampus {
+  id               String           @id @db.VarChar
+  universityId     String           @map("university_id") @db.VarChar
+  name             String           @db.VarChar
+  isMainCampus     Boolean          @default(false) @map("is_main_campus")
+  addressId        String           @map("address_id") @db.VarChar
+  contactNumber    String?          @map("contact_number") @db.VarChar
+  email            String?          @db.VarChar
+  deletedAt        BigInt?          @map("deleted_at")
+  deletedBy        String?          @map("deleted_by") @db.VarChar
+  deletionReason   String?          @map("deletion_reason")
+  createdAt        BigInt           @map("created_at")
+  updatedAt        BigInt           @map("updated_at")
+  directoryAddress DirectoryAddress @relation(fields: [addressId], references: [id], onUpdate: NoAction)
+  university       University       @relation(fields: [universityId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([addressId], map: "ix_university_campuses_address_id")
+  @@index([universityId], map: "ix_university_campuses_university_id")
+  @@map("university_campuses")
+}

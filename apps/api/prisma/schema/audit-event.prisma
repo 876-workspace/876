@@ -1,0 +1,28 @@
+// AuditEvent — table `audit_events`.
+// Module: audit. Platform audit trail.
+
+model AuditEvent {
+  id         String  @id @db.VarChar
+  event      String  @db.VarChar
+  source     String  @default("client") @db.VarChar
+  appName    String  @map("app_name") @db.VarChar
+  appId      String? @map("app_id") @db.VarChar
+  userId     String? @map("user_id") @db.VarChar
+  path       String? @db.VarChar
+  search     String? @db.VarChar
+  referrer   String?
+  title      String? @db.VarChar
+  requestId  String? @map("request_id") @db.VarChar
+  sessionId  String? @map("session_id") @db.VarChar
+  distinctId String? @map("distinct_id") @db.VarChar
+  properties Json    @default("{}") @db.Json
+  createdAt  BigInt  @map("created_at")
+  app        App?    @relation(fields: [appId], references: [id], onUpdate: NoAction)
+  user       User?   @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([appName, createdAt], map: "ix_audit_events_app_name_created_at")
+  @@index([createdAt], map: "ix_audit_events_created_at")
+  @@index([event, createdAt], map: "ix_audit_events_event_created_at")
+  @@index([userId, createdAt], map: "ix_audit_events_user_id_created_at")
+  @@map("audit_events")
+}

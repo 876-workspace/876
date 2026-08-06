@@ -1,0 +1,22 @@
+// UserMobileNumber — table `user_mobile_numbers`.
+// Module: users. User accounts, profiles, emails, mobile numbers, PINs, and identifications.
+
+model UserMobileNumber {
+  id                 String        @id @db.VarChar
+  userId             String        @unique(map: "uq_user_mobile_numbers_primary_per_user", where: raw("is_primary")) @map("user_id") @db.VarChar
+  number             String        @db.VarChar
+  type               String        @default("mobile") @db.VarChar
+  isPrimary          Boolean       @default(false) @map("is_primary")
+  verificationStatus String        @default("unverified") @map("verification_status") @db.VarChar
+  verificationId     String?       @map("verification_id") @db.VarChar
+  verifiedAt         BigInt?       @map("verified_at")
+  createdAt          BigInt        @map("created_at")
+  updatedAt          BigInt        @map("updated_at")
+  carrierName        String?       @map("carrier_name") @db.VarChar
+  lineType           String?       @map("line_type") @db.VarChar
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  verification       Verification? @relation(fields: [verificationId], references: [id], onUpdate: NoAction)
+
+  @@unique([userId, number])
+  @@map("user_mobile_numbers")
+}

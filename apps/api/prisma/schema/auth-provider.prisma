@@ -1,0 +1,19 @@
+// AuthProvider — table `auth_providers`.
+// Module: auth. Sessions, auth providers, OAuth grants/codes/tokens, SSO, OTP, and login attempts.
+
+model AuthProvider {
+  id               String          @id @db.VarChar
+  label            String          @db.VarChar
+  iconSlug         String          @map("icon_slug") @db.VarChar
+  providerType     String          @default("oauth") @map("provider_type") @db.VarChar
+  workosProviderId String?         @unique @map("workos_provider_id") @db.VarChar
+  isEnabled        Boolean         @default(true) @map("is_enabled")
+  sortOrder        Int             @default(0) @map("sort_order")
+  createdAt        BigInt          @map("created_at")
+  updatedAt        BigInt          @map("updated_at")
+  accounts         Account[]
+  ssoConnections   SsoConnection[]
+  ssoIdentities    SsoIdentity[]
+
+  @@map("auth_providers")
+}

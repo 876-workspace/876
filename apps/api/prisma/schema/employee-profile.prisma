@@ -1,0 +1,35 @@
+// EmployeeProfile — table `employee_profiles`.
+// Module: organizations. Organizations, memberships, org roles, locations, contacts, and departments.
+
+model EmployeeProfile {
+  id                  String         @id @db.VarChar
+  membershipId        String         @unique @map("membership_id") @db.VarChar
+  organizationId      String         @map("organization_id") @db.VarChar
+  employeeNumber      String?        @map("employee_number") @db.VarChar
+  jobTitle            String?        @map("job_title") @db.VarChar
+  departmentId        String?        @map("department_id") @db.VarChar
+  locationId          String?        @map("location_id") @db.VarChar
+  managerMembershipId String?        @map("manager_membership_id") @db.VarChar
+  employmentType      String?        @map("employment_type") @db.VarChar
+  employmentStatus    String         @default("active") @map("employment_status") @db.VarChar
+  division            String?        @db.VarChar
+  costCenter          String?        @map("cost_center") @db.VarChar
+  workEmail           String?        @map("work_email") @db.VarChar
+  workPhone           String?        @map("work_phone") @db.VarChar
+  startDate           BigInt?        @map("start_date")
+  endDate             BigInt?        @map("end_date")
+  metadata            Json?          @db.Json
+  deletedAt           BigInt?        @map("deleted_at")
+  deletedBy           String?        @map("deleted_by") @db.VarChar
+  deletionReason      String?        @map("deletion_reason")
+  createdAt           BigInt         @map("created_at")
+  updatedAt           BigInt         @map("updated_at")
+  orgDepartment       OrgDepartment? @relation(fields: [departmentId], references: [id], onUpdate: NoAction)
+  orgLocation         OrgLocation?   @relation(fields: [locationId], references: [id], onUpdate: NoAction)
+  managerMembership   Membership?    @relation("employee_profiles_manager_membership_idTomemberships", fields: [managerMembershipId], references: [id], onUpdate: NoAction)
+  membership          Membership     @relation("employee_profiles_membership_idTomemberships", fields: [membershipId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  organization        Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([organizationId, employeeNumber])
+  @@map("employee_profiles")
+}

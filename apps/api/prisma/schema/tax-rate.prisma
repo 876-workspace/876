@@ -1,0 +1,23 @@
+// TaxRate — table `tax_rates`.
+// Module: catalog. Entitlement plans, prices, and tax catalog.
+
+model TaxRate {
+  id                String  @id @db.VarChar
+  displayName       String  @map("display_name") @db.VarChar
+  description       String?
+  percentage        Float
+  inclusive         Boolean @default(false)
+  active            Boolean @default(true)
+  country           String? @db.VarChar(2)
+  state             String? @db.VarChar
+  jurisdiction      String? @db.VarChar
+  jurisdictionLevel String? @map("jurisdiction_level") @db.VarChar
+  taxType           String? @map("tax_type") @db.VarChar
+  rateType          String? @map("rate_type") @db.VarChar
+  flatAmount        Json?   @map("flat_amount") @db.Json
+  metadata          Json?   @db.Json
+  createdAt         BigInt  @map("created_at")
+  updatedAt         BigInt  @map("updated_at")
+
+  @@map("tax_rates")
+}

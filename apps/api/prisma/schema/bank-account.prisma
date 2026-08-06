@@ -1,0 +1,23 @@
+// BankAccount — table `bank_accounts`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model BankAccount {
+  id             String      @id @db.VarChar
+  accountHolder  String      @map("account_holder") @db.VarChar
+  bankId         String      @map("bank_id") @db.VarChar
+  branchId       String?     @map("branch_id") @db.VarChar
+  accountNumber  String      @map("account_number") @db.VarChar
+  accountType    String      @default("savings") @map("account_type") @db.VarChar
+  currency       String      @default("JMD") @db.VarChar(3)
+  deletedAt      BigInt?     @map("deleted_at")
+  deletedBy      String?     @map("deleted_by") @db.VarChar
+  deletionReason String?     @map("deletion_reason")
+  createdAt      BigInt      @map("created_at")
+  updatedAt      BigInt      @map("updated_at")
+  bank           Bank        @relation(fields: [bankId], references: [id], onUpdate: NoAction)
+  bankBranch     BankBranch? @relation(fields: [branchId], references: [id], onUpdate: NoAction)
+
+  @@index([bankId], map: "ix_bank_accounts_bank_id")
+  @@index([branchId], map: "ix_bank_accounts_branch_id")
+  @@map("bank_accounts")
+}

@@ -1,0 +1,36 @@
+// CommunicationCall — table `communication_calls`.
+// Module: communications. Outbound messages, calls, phone lookups, and provider webhook events.
+//
+// This table is declared by the SQLAlchemy model and queried by
+// CommunicationCallRepository, but it was never created in the database — the
+// FastAPI service builds schema from ad-hoc `ensure_*` functions and this one
+// was missed, so every call path against it raises today. The migration
+// `20260806000001_create_communication_calls` creates it.
+
+model CommunicationCall {
+  id                String  @id @db.VarChar
+  provider          String  @db.VarChar
+  providerSid       String? @map("provider_sid") @db.VarChar
+  direction         String  @default("outbound") @db.VarChar
+  status            String  @db.VarChar
+  toNumber          String  @map("to_number") @db.VarChar
+  fromNumber        String? @map("from_number") @db.VarChar
+  templateKey       String  @map("template_key") @db.VarChar
+  userId            String? @map("user_id") @db.VarChar
+  organizationId    String? @map("organization_id") @db.VarChar
+  appId             String? @map("app_id") @db.VarChar
+  clientReference   String? @map("client_reference") @db.VarChar
+  idempotencyScope  String  @map("idempotency_scope") @db.VarChar
+  idempotencyKey    String  @map("idempotency_key") @db.VarChar
+  durationSeconds   Int?    @map("duration_seconds")
+  providerErrorCode String? @map("provider_error_code") @db.VarChar
+  startedAt         BigInt? @map("started_at")
+  answeredAt        BigInt? @map("answered_at")
+  completedAt       BigInt? @map("completed_at")
+  createdAt         BigInt  @map("created_at")
+  updatedAt         BigInt  @map("updated_at")
+
+  @@unique([idempotencyScope, idempotencyKey], map: "uq_communication_calls_idempotency")
+  @@index([providerSid], map: "ix_communication_calls_provider_sid")
+  @@map("communication_calls")
+}

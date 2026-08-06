@@ -1,0 +1,17 @@
+// OauthGrant — table `oauth_grants`.
+// Module: auth. Sessions, auth providers, OAuth grants/codes/tokens, SSO, OTP, and login attempts.
+
+model OauthGrant {
+  id        String   @id @db.VarChar
+  userId    String   @map("user_id") @db.VarChar
+  appId     String   @map("app_id") @db.VarChar
+  scopes    String[] @db.VarChar
+  revokedAt BigInt?  @map("revoked_at")
+  createdAt BigInt   @map("created_at")
+  updatedAt BigInt   @map("updated_at")
+  app       App      @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([userId, appId])
+  @@map("oauth_grants")
+}

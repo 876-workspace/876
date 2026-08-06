@@ -1,0 +1,27 @@
+// OrgDepartment — table `org_departments`.
+// Module: organizations. Organizations, memberships, org roles, locations, contacts, and departments.
+
+model OrgDepartment {
+  id                             String            @id @db.VarChar
+  organizationId                 String            @map("organization_id") @db.VarChar
+  name                           String            @db.VarChar
+  code                           String?           @db.VarChar
+  description                    String?
+  parentDepartmentId             String?           @map("parent_department_id") @db.VarChar
+  headMembershipId               String?           @map("head_membership_id") @db.VarChar
+  status                         String            @default("active") @db.VarChar
+  metadata                       Json?             @db.Json
+  deletedAt                      BigInt?           @map("deleted_at")
+  deletedBy                      String?           @map("deleted_by") @db.VarChar
+  deletionReason                 String?           @map("deletion_reason")
+  createdAt                      BigInt            @map("created_at")
+  updatedAt                      BigInt            @map("updated_at")
+  employeeProfiles               EmployeeProfile[]
+  membership                     Membership?       @relation(fields: [headMembershipId], references: [id], onUpdate: NoAction)
+  organization                   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  orgDepartments                 OrgDepartment?    @relation("org_departmentsToorg_departments", fields: [parentDepartmentId], references: [id], onUpdate: NoAction)
+  orgDepartmentsAsOrgDepartments OrgDepartment[]   @relation("org_departmentsToorg_departments")
+
+  @@unique([organizationId, code])
+  @@map("org_departments")
+}

@@ -1,0 +1,10 @@
+// ReservedUsername — table `reserved_usernames`.
+// Module: users. User accounts, profiles, emails, mobile numbers, PINs, and identifications.
+
+model ReservedUsername {
+  username  String  @id @db.VarChar
+  reason    String? @db.VarChar
+  createdAt BigInt  @map("created_at")
+
+  @@map("reserved_usernames")
+}

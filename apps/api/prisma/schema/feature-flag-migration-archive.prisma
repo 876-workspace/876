@@ -1,0 +1,17 @@
+// FeatureFlagMigrationArchive — table `feature_flag_migration_archives`.
+// Module: features. Feature-flag registry, per-org and per-user grants, and provider sync state.
+
+model FeatureFlagMigrationArchive {
+  id             String  @id @db.VarChar
+  sourceProvider String  @map("source_provider") @db.VarChar
+  targetProvider String  @map("target_provider") @db.VarChar
+  checksum       String  @unique(map: "ix_feature_flag_migration_archives_checksum") @db.VarChar
+  status         String  @default("captured") @db.VarChar
+  counts         Json    @db.Json
+  snapshot       Json    @db.Json
+  result         Json?   @db.Json
+  createdAt      BigInt  @map("created_at")
+  completedAt    BigInt? @map("completed_at")
+
+  @@map("feature_flag_migration_archives")
+}

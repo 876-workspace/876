@@ -1,0 +1,16 @@
+// OnboardingAnswer — table `onboarding_answers`.
+// Module: onboarding. Onboarding sessions and steps.
+
+model OnboardingAnswer {
+  id                String            @id @db.VarChar
+  sessionId         String            @map("session_id") @db.VarChar
+  fieldKey          String            @map("field_key") @db.VarChar
+  value             Json?             @db.Json
+  createdAt         BigInt            @map("created_at")
+  updatedAt         BigInt            @map("updated_at")
+  onboardingSession OnboardingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([sessionId, fieldKey])
+  @@index([sessionId], map: "ix_onboarding_answers_session_id")
+  @@map("onboarding_answers")
+}

@@ -1,0 +1,33 @@
+// CommunicationMessage — table `communication_messages`.
+// Module: communications. Outbound messages, calls, phone lookups, and provider webhook events.
+
+model CommunicationMessage {
+  id                  String  @id @db.VarChar
+  provider            String  @db.VarChar
+  providerSid         String? @map("provider_sid") @db.VarChar
+  channel             String  @db.VarChar
+  direction           String  @default("outbound") @db.VarChar
+  status              String  @db.VarChar
+  toNumber            String  @map("to_number") @db.VarChar
+  fromNumber          String? @map("from_number") @db.VarChar
+  messagingServiceSid String? @map("messaging_service_sid") @db.VarChar
+  contentSid          String? @map("content_sid") @db.VarChar
+  bodyPreview         String? @map("body_preview") @db.VarChar(160)
+  bodyHash            String  @map("body_hash") @db.VarChar(64)
+  userId              String? @map("user_id") @db.VarChar
+  organizationId      String? @map("organization_id") @db.VarChar
+  appId               String? @map("app_id") @db.VarChar
+  clientReference     String? @map("client_reference") @db.VarChar
+  idempotencyKey      String  @map("idempotency_key") @db.VarChar
+  providerErrorCode   String? @map("provider_error_code") @db.VarChar
+  sentAt              BigInt? @map("sent_at")
+  deliveredAt         BigInt? @map("delivered_at")
+  readAt              BigInt? @map("read_at")
+  failedAt            BigInt? @map("failed_at")
+  createdAt           BigInt  @map("created_at")
+  updatedAt           BigInt  @map("updated_at")
+
+  @@unique([appId, idempotencyKey], map: "uq_communication_messages_app_idempotency")
+  @@index([providerSid], map: "ix_communication_messages_provider_sid")
+  @@map("communication_messages")
+}

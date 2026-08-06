@@ -1,0 +1,62 @@
+// User — table `users`.
+// Module: users. User accounts, profiles, emails, mobile numbers, PINs, and identifications.
+
+model User {
+  id                        String               @id @db.VarChar
+  workosUserId              String               @unique @map("workos_user_id") @db.VarChar
+  stripeCustomerId          String?              @unique @map("stripe_customer_id") @db.VarChar
+  email                     String               @unique @db.VarChar
+  username                  String?              @unique @db.VarChar
+  emailVerified             Boolean              @default(false) @map("email_verified")
+  firstName                 String               @map("first_name") @db.VarChar
+  lastName                  String               @map("last_name") @db.VarChar
+  middleName                String?              @map("middle_name") @db.VarChar
+  avatar                    String?              @db.VarChar
+  role                      String               @default("user") @db.VarChar
+  platformRole              String?              @map("platform_role") @db.VarChar
+  status                    String               @default("active") @db.VarChar
+  name                      String?              @db.VarChar
+  phone                     String?              @db.VarChar
+  phoneVerified             Boolean              @default(false) @map("phone_verified")
+  metadata                  Json?                @db.Json
+  privateMetadata           Json?                @map("private_metadata") @db.Json
+  banned                    Boolean              @default(false)
+  bannedReason              String?              @map("banned_reason") @db.VarChar
+  deletedAt                 BigInt?              @map("deleted_at")
+  deletedBy                 String?              @map("deleted_by") @db.VarChar
+  deletionReason            String?              @map("deletion_reason")
+  createdAt                 BigInt               @map("created_at")
+  updatedAt                 BigInt               @map("updated_at")
+  flagsmithIdentityId       BigInt?              @map("flagsmith_identity_id")
+  flagsmithIdentifier       String?              @unique(map: "uq_users_flagsmith_identifier", where: raw("(flagsmith_identifier IS NOT NULL)")) @map("flagsmith_identifier") @db.VarChar
+  flagsmithEnvironmentId    String?              @map("flagsmith_environment_id") @db.VarChar
+  flagsmithIdentitySyncedAt BigInt?              @map("flagsmith_identity_synced_at")
+  avatarFileId              String?              @map("avatar_file_id") @db.VarChar
+  accounts                  Account[]
+  addresses                 Address[]
+  appAssignments            AppAssignment[]
+  auditEvents               AuditEvent[]
+  authAttempts              AuthAttempt[]
+  authorizationCodes        AuthorizationCode[]
+  contactsAsContactUser     Contact[]            @relation("contacts_contact_user_idTousers")
+  contactsAsOwnerUser       Contact[]            @relation("contacts_owner_user_idTousers")
+  memberships               Membership[]
+  oauthGrants               OauthGrant[]
+  oauthRefreshTokens        OauthRefreshToken[]
+  orgContacts               OrgContact[]
+  organizations             Organization[]
+  sessions                  Session[]
+  ssoIdentities             SsoIdentity[]
+  userAppEnrollments        UserAppEnrollment[]
+  userDevices               UserDevice[]
+  userEmails                UserEmail[]
+  userFeatures              UserFeature[]
+  userIdentifications       UserIdentification[]
+  userMobileNumber          UserMobileNumber?
+  userPins                  UserPin[]
+  userProfile               UserProfile?
+  userSocialProfiles        UserSocialProfile[]
+
+  @@index([flagsmithIdentityId], map: "ix_users_flagsmith_identity_id")
+  @@map("users")
+}

@@ -1,0 +1,27 @@
+// ProvisioningRunStep — table `provisioning_run_steps`.
+// Module: provisioning. Provisioning manifests, revisions, resources, properties, steps, and runs.
+
+model ProvisioningRunStep {
+  id              String          @id @db.VarChar
+  runId           String          @map("run_id") @db.VarChar
+  targetType      String          @map("target_type") @db.VarChar
+  targetKey       String          @map("target_key") @db.VarChar
+  revisionId      String          @map("revision_id") @db.VarChar
+  revision        Int
+  stepKey         String          @map("step_key") @db.VarChar
+  description     String
+  position        Int
+  status          String          @db.VarChar
+  attemptCount    Int             @default(0) @map("attempt_count")
+  startedAt       BigInt?         @map("started_at")
+  completedAt     BigInt?         @map("completed_at")
+  lastError       String?         @map("last_error")
+  createdAt       BigInt          @map("created_at")
+  updatedAt       BigInt          @map("updated_at")
+  provisioningRun ProvisioningRun @relation(fields: [runId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([runId, position])
+  @@unique([runId, targetType, targetKey, stepKey])
+  @@index([runId], map: "ix_provisioning_run_steps_run_id")
+  @@map("provisioning_run_steps")
+}

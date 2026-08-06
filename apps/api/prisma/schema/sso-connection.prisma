@@ -1,0 +1,23 @@
+// SsoConnection — table `sso_connections`.
+// Module: auth. Sessions, auth providers, OAuth grants/codes/tokens, SSO, OTP, and login attempts.
+
+model SsoConnection {
+  id                     String        @id @db.VarChar
+  providerId             String        @map("provider_id") @db.VarChar
+  organizationId         String?       @map("organization_id") @db.VarChar
+  externalConnectionId   String        @map("external_connection_id") @db.VarChar
+  externalOrganizationId String?       @map("external_organization_id") @db.VarChar
+  name                   String?       @db.VarChar
+  domain                 String?       @db.VarChar
+  status                 String        @default("active") @db.VarChar
+  rawProviderData        Json?         @map("raw_provider_data") @db.Json
+  lastSyncedAt           BigInt?       @map("last_synced_at")
+  createdAt              BigInt        @map("created_at")
+  updatedAt              BigInt        @map("updated_at")
+  organization           Organization? @relation(fields: [organizationId], references: [id], onUpdate: NoAction)
+  authProvider           AuthProvider  @relation(fields: [providerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ssoIdentities          SsoIdentity[]
+
+  @@unique([providerId, externalConnectionId])
+  @@map("sso_connections")
+}
