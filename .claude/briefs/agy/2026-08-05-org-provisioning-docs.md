@@ -77,7 +77,7 @@ A short operational doc. Read
    rather than failing the signup.
 4. **Adding an app to the default set** — the one-line change to
    `DEFAULT_ORG_APP_SLUGS`, and the caution that it grants the app to every
-   *new* org but does not backfill existing ones.
+   _new_ org but does not backfill existing ones.
 5. **Backfilling an existing org** — state plainly that there is no script for
    this yet and that it is done through Console's provisioning controls or a
    one-off call to `provision_org_apps`. Do not invent a script name.
