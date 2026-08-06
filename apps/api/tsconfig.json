@@ -2,9 +2,12 @@
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023"],
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
-    "types": ["node"],
+    // The service is bundled by tsup and run by tsx in dev; both resolve
+    // tsconfig `paths` and extensionless imports. `bundler` matches that, and
+    // is what lets the whole codebase use `@/…` without `.js` suffixes.
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node", "vitest/globals"],
 
     "outDir": "dist",
     "rootDir": ".",
