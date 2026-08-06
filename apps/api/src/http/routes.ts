@@ -6,6 +6,7 @@ import { createAuditEventsRouter } from '@/modules/audit-events'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
+import { createSessionsRouter } from '@/modules/sessions'
 
 /**
  * Router composition. The only file in `http/` allowed to import a module —
@@ -30,6 +31,7 @@ export function buildRoutes(): Router {
   root.use(geoRouter)
 
   root.use(createAuditEventsRouter(resolveGuards))
+  root.use(createSessionsRouter(resolveGuards))
 
   return root
 }
