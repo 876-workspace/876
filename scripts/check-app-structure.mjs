@@ -20,7 +20,7 @@
  * Usage: node scripts/check-app-structure.mjs [app...]
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, dirname, sep } from 'node:path'
 
 const APPS = process.argv.slice(2).length
@@ -266,6 +266,56 @@ for (const app of APPS) {
       `apps/${app}/src/app/${relative(appDir, file)}`
     )
   }
+
+  // ---- 7. a segment fallback stacked on top of a route group's own ---------
+  // Check 6 deliberately treats a route group as "the fix, not a child". That
+  // is true for the group's *shape*, but not for its boundary: `loading.tsx`
+  // wraps nested layouts, so a group is covered by the segment above it. When
+  // both carry a fallback, one navigation paints two different ones in
+  // sequence — the parent's first, then the group's, then the page.
+  //
+  // That is what put a 9-tab detail header in front of the apps *list*: the
+  // segment fallback was written for `[slug]` and documented as covering
+  // "everything except the list", an exception Next.js has no way to honour.
+  //
+  // The fix is to delete the segment fallback and let each leaf own its shape.
+  // A detail layout only needs a boundary above it if it awaits data itself —
+  // one that awaits `params` and streams the rest does not.
+  //
+  // Only a *page-shaped* parent fails here. Stacking a neutral fallback over a
+  // group is a wasted paint, not a wrong one, and several of those neutral
+  // parents are currently the only boundary above child pages that still await
+  // at their top level — failing them would trade a grey flash for a hard
+  // block. Give those children their own fallbacks first, then delete the
+  // parent; this check is what stops a recognisable page going back on top.
+  for (const file of walk(appDir)) {
+    if (relative(appDir, file).split(sep).at(-1) !== 'loading.tsx') continue
+    if (!isPageShapedFallback(readFileSync(file, 'utf8'))) continue
+
+    const dir = dirname(file)
+    for (const group of routeGroupsWithOwnLoading(dir)) {
+      fail(
+        app,
+        'loading-stacked-over-route-group',
+        `apps/${app}/src/app/${relative(appDir, file)} (also covers ${group}/loading.tsx)`
+      )
+    }
+  }
+}
+
+/** Route-group children of `dir` that carry their own `loading.tsx`. */
+function routeGroupsWithOwnLoading(dir) {
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return []
+  }
+
+  return entries
+    .filter((e) => e.isDirectory() && e.name.startsWith('('))
+    .filter((e) => existsSync(join(dir, e.name, 'loading.tsx')))
+    .map((e) => e.name)
 }
 
 /** Does this segment have a child route directory (excluding route groups)? */
@@ -293,15 +343,22 @@ function hasChildRoutes(dir) {
 /**
  * Does this fallback render a recognisable page rather than neutral filler?
  *
- * A full table, a page title, or a named `*PageSkeleton` is something the user
- * can recognise as "the list I was just on", which is exactly what must not
- * flash. A bare `<Skeleton>` block is neutral and allowed.
+ * A full table, a page title, an entity header, or a named `*PageSkeleton` is
+ * something the user can recognise as "the page I was just on" — or worse, as
+ * a page they never asked for. That is exactly what must not flash. A bare
+ * `<Skeleton>` block is neutral and allowed.
+ *
+ * `DetailHeaderSkeleton` belongs here: an avatar, a name and a tab strip read
+ * unmistakably as a record's page. Leaving it out is why three segment
+ * fallbacks shaped like detail headers sat above list route groups for months
+ * without failing this check.
  */
 function isPageShapedFallback(source) {
   return (
     /DataTableSkeleton/.test(source) ||
     /876-page-title/.test(source) ||
     /\bResourceToolbar\b/.test(source) ||
+    /\bDetailHeaderSkeleton\b/.test(source) ||
     /\b\w*PageSkeleton\b/.test(source)
   )
 }
