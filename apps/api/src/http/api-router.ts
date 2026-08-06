@@ -190,7 +190,11 @@ export function createApiRouter(options: {
       },
     ]
 
-    router[method](spec.path, ...chain)
+    // The Express path and the documented path are both built from `fullPath`.
+    // Registering `spec.path` here instead would leave the prefix applied to the
+    // OpenAPI document only, so the spec would describe a URL the service does
+    // not serve unless every mount site remembered to repeat the prefix.
+    router[method](fullPath, ...chain)
     return api
   }
 
