@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/nextjs'
 import { isWidgetEnabled } from '@876/widgets'
 
 import { $876 } from '@/lib/876'
+import { listConsoleApps } from '@/lib/apps-catalog'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 import { logger } from '@/lib/logger'
 import type { ConsoleFeatureRequest, ConsoleFeatures } from '@/types/features'
@@ -25,16 +26,16 @@ export async function getConsoleFeatures({
   userId,
   widgets,
 }: ConsoleFeatureRequest): Promise<ConsoleFeatures> {
-  const { data: appList, error: appError } = await $876.apps.list({
-    limit: 100,
-    clientType: 'public',
-  })
-  if (appError || !appList) {
+  // Through the shared per-request catalog: the app detail routes resolve their
+  // slug from the identical list, and this used to be a second round trip for
+  // the same answer on every app page.
+  const apps = await listConsoleApps()
+  if (!apps) {
     const message = 'Feature flag outage: apps.list failed'
     const context = {
       call: 'apps.list',
-      errorCode: appError?.code ?? null,
-      errorMessage: appError?.message ?? null,
+      errorCode: null,
+      errorMessage: null,
       appSlug: CONSOLE_APP_SLUG,
     }
     Sentry.captureMessage(message, {
@@ -46,7 +47,7 @@ export async function getConsoleFeatures({
     return DISABLED_FEATURES
   }
 
-  const consoleApp = appList.data.find((app) => app.slug === CONSOLE_APP_SLUG)
+  const consoleApp = apps.find((app) => app.slug === CONSOLE_APP_SLUG)
   if (!consoleApp) {
     const message =
       'Feature flag configuration drift: Console app missing from apps.list'

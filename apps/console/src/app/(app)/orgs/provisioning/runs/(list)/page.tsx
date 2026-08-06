@@ -14,8 +14,8 @@ import {
 import { $876 } from '@/lib/876'
 import { formatDateTime } from '@/lib/format'
 import { ProvisioningNav } from '@/app/(app)/orgs/provisioning/_components/provisioning-nav'
-import { ReconcileRunsButton } from './_components/run-actions'
-import { RunStatus } from './_components/run-status'
+import { ReconcileRunsButton } from '../_components/run-actions'
+import { RunStatus } from '../_components/run-status'
 
 export const metadata = { title: 'Provisioning runs' }
 export const dynamic = 'force-dynamic'

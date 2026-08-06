@@ -8,6 +8,7 @@ import { UserMenu } from '@/components/shell/user-menu'
 import { TopbarActions } from '@/components/shell/topbar-actions'
 import { TopbarSearch } from '@/components/shell/topbar-search'
 import { Logo } from '@876/ui/logo'
+import { NavProgress } from '@876/ui/nav-progress'
 import { SidebarTrigger } from '@876/ui/sidebar'
 import {
   AppShell,
@@ -62,6 +63,7 @@ export async function Shell({
 
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
+      <NavProgress />
       <AppShellSidebarArea className="hidden md:contents">
         <Sidebar />
       </AppShellSidebarArea>

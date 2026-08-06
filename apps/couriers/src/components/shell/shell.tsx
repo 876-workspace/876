@@ -13,6 +13,7 @@ import {
 import { Button } from '@876/ui/button'
 import { PlusIcon } from '@876/ui/icons'
 import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
+import { NavProgress } from '@876/ui/nav-progress'
 import { SidebarTrigger } from '@876/ui/sidebar'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 import { SharedWidgetDock } from '@876/widgets/react'
@@ -59,6 +60,7 @@ export async function Shell({
 
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
+      <NavProgress />
       <AppShellSidebarArea>
         <Sidebar
           basePath={basePath}
