@@ -5,6 +5,7 @@ import { createAuthGuards, type AuthGuards } from '@/http/auth'
 import { createAuditEventsRouter } from '@/modules/audit-events'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
+import { createDevicesRouter } from '@/modules/devices'
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
 import { createSessionsRouter } from '@/modules/sessions'
@@ -33,6 +34,7 @@ export function buildRoutes(): Router {
 
   root.use(createAuditEventsRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
+  root.use(createDevicesRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
 
   return root

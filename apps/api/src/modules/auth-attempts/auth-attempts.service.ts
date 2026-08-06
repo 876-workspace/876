@@ -50,6 +50,26 @@ export async function listUserAuthAttempts(
   })
 }
 
+/**
+ * The attempts recorded against one device.
+ *
+ * Returned unwrapped rather than as a list object: the devices module owns the
+ * `/devices/:id/attempts` URL, and this module has no business naming it. This
+ * is the sanctioned cross-module read — devices calls the owner of the
+ * auth_attempts table rather than querying it.
+ */
+export async function listAuthAttemptsForDevice(
+  deviceId: string,
+  query: ListAuthAttemptsQuery
+): Promise<{ data: AuthAttempt[]; hasMore: boolean }> {
+  const { data, hasMore } = await repository.list(
+    query,
+    repository.buildWhere({ device_id: deviceId })
+  )
+
+  return { data: data.map(serializeAuthAttempt), hasMore }
+}
+
 export async function retrieveAuthAttempt(
   attemptId: string
 ): Promise<AuthAttempt> {
