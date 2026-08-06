@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Building2, CreditCard, Mail, ShieldCheck } from '@876/ui/icons'
-import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
+import { Building2 } from '@876/ui/icons'
 
 import { MetricCard } from '@/components/patterns/metric-card'
 import {
@@ -12,8 +11,10 @@ import {
 } from '@/components/patterns/detail/detail-accordion'
 import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { formatDate } from '@/lib/format'
-import { resolveCustomerParty, type PrimaryContact } from './_data'
+
+import { resolveCustomerParty } from './_data'
+import { CustomerContactCard } from './_components/customer-contact-card'
+import { CustomerBillingCard } from './_components/customer-billing-card'
 
 interface Props {
   params: Promise<{ customerId: string }>
@@ -22,24 +23,6 @@ interface Props {
 export const metadata: Metadata = {
   title: 'Customer details',
   description: 'Customer billing activity and subscriptions.',
-}
-
-const SOURCE_LABEL: Record<PrimaryContact['source'], string> = {
-  'org-owner': 'Organization owner',
-  'org-member': 'Organization member',
-  user: '876 user',
-  self: 'Customer',
-}
-
-function initialsOf(name: string): string {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('') || '?'
-  )
 }
 
 export default async function CustomerDetailPage({ params }: Props) {
@@ -51,7 +34,6 @@ export default async function CustomerDetailPage({ params }: Props) {
   if (!customer) notFound()
 
   const party = await resolveCustomerParty(customer)
-  const contact = party.contact
   const currency = (
     customer.defaultCurrency ?? context.tenant.defaultCurrency
   ).toUpperCase()
@@ -65,55 +47,14 @@ export default async function CustomerDetailPage({ params }: Props) {
     <div className="grid gap-6 lg:grid-cols-[minmax(0,32%)_1fr]">
       <div className="min-w-0">
         <DetailAccordion defaultOpen="contact">
-          <DetailAccordionCard title="Contact" icon={Mail} tone="sky">
-            {!contact ? (
-              <p className="text-muted-foreground py-2 text-sm">
-                No contact details.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-10 text-sm">
-                    {contact.avatar ? (
-                      <AvatarImage src={contact.avatar} alt="" />
-                    ) : null}
-                    <AvatarFallback>{initialsOf(contact.name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {contact.name}
-                    </p>
-                    <p className="text-muted-foreground flex items-center gap-1 truncate text-xs">
-                      {contact.role ? (
-                        <>
-                          <ShieldCheck className="size-3 shrink-0" />
-                          {contact.role}
-                          <span aria-hidden="true">·</span>
-                        </>
-                      ) : null}
-                      {SOURCE_LABEL[contact.source]}
-                    </p>
-                  </div>
-                </div>
-                <FactGrid>
-                  <Fact label="Email" value={contact.email || '—'} />
-                  <Fact label="Phone" value={contact.phone || '—'} />
-                </FactGrid>
-              </div>
-            )}
-          </DetailAccordionCard>
+          <CustomerContactCard contact={party.contact} />
 
-          <DetailAccordionCard title="Billing" icon={CreditCard} tone="violet">
-            <FactGrid>
-              <Fact
-                label="Type"
-                value={formatCustomerType(customer.customerType)}
-              />
-              <Fact label="Currency" value={currency} />
-              <Fact label="Reference" value={reference} mono />
-              <Fact label="Added" value={formatDate(customer.createdAt)} />
-            </FactGrid>
-          </DetailAccordionCard>
+          <CustomerBillingCard
+            customerType={customer.customerType}
+            currency={currency}
+            reference={reference}
+            createdAt={customer.createdAt}
+          />
 
           {party.org ? (
             <DetailAccordionCard
@@ -164,15 +105,4 @@ export default async function CustomerDetailPage({ params }: Props) {
       </div>
     </div>
   )
-}
-
-function formatCustomerType(type: string): string {
-  switch (type) {
-    case 'CORE_ORGANIZATION':
-      return '876 organization'
-    case 'CORE_USER':
-      return '876 user'
-    default:
-      return 'External customer'
-  }
 }

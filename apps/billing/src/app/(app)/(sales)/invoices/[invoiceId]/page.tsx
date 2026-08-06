@@ -2,33 +2,37 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { Badge } from '@876/ui/badge'
 import { ArrowLeft } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import {
-  DocumentView,
+  DocumentDetailsGrid,
+  DocumentFooter,
   DocumentHeader,
   DocumentHeaderTop,
-  DocumentTitle,
-  DocumentDetailsGrid,
-  DocumentRecipient,
-  DocumentMetaList,
-  DocumentMeta,
   DocumentLines,
-  DocumentSummaryGrid,
+  DocumentMeta,
+  DocumentMetaList,
   DocumentNotes,
+  DocumentRecipient,
+  DocumentSummaryGrid,
   DocumentSummaryList,
   DocumentSummaryRow,
+  DocumentTitle,
   DocumentTotalRow,
-  DocumentFooter,
+  DocumentView,
 } from '@876/ui/document-view'
 
 import { resolveInvoice } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
-import type { InvoiceStatus } from '@/types/invoice'
 
 import { InvoiceActions } from './_components/invoice-actions'
+import { InvoiceStatusBadge } from './_components/invoice-status-badge'
+import {
+  countryName,
+  formatAddressLocality,
+  invoiceAddressSnapshot,
+} from './_lib/invoice-format'
 
 interface Props {
   params: Promise<{ invoiceId: string }>
@@ -308,60 +312,4 @@ export default async function InvoiceDetailPage({ params }: Props) {
       </DocumentView>
     </Page>
   )
-}
-
-function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
-  const variant =
-    status === 'PAID'
-      ? 'success'
-      : status === 'OVERDUE' || status === 'UNCOLLECTIBLE'
-        ? 'destructive'
-        : status === 'OPEN' || status === 'SENT' || status === 'PARTIALLY_PAID'
-          ? 'info'
-          : 'secondary'
-
-  return (
-    <Badge variant={variant} className="capitalize">
-      {status.toLowerCase().replaceAll('_', ' ')}
-    </Badge>
-  )
-}
-
-function formatAddressLocality(address: {
-  city: string | null
-  state: string | null
-  postalCode: string | null
-  countryCode: string | null
-}) {
-  return [address.city, address.state, address.postalCode, address.countryCode]
-    .filter(Boolean)
-    .join(', ')
-}
-
-function countryName(countryCode: string) {
-  try {
-    return (
-      new Intl.DisplayNames(['en'], { type: 'region' }).of(countryCode) ??
-      countryCode
-    )
-  } catch {
-    return countryCode
-  }
-}
-
-function invoiceAddressSnapshot(value: unknown) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
-  const record = value as Record<string, unknown>
-  const read = (key: string) =>
-    typeof record[key] === 'string' ? record[key] : null
-
-  return {
-    attention: read('attention'),
-    line1: read('line1'),
-    line2: read('line2'),
-    city: read('city'),
-    state: read('state'),
-    postalCode: read('postalCode'),
-    countryCode: read('countryCode'),
-  }
 }
