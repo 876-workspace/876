@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { redirect } from 'next/navigation'
+import { cache } from 'react'
 import { $876 } from '@/lib/876'
 import { permissionsForRole } from '@/lib/permissions'
 import { service } from '@/lib/service'
@@ -25,7 +26,25 @@ export async function requireSession(returnTo: string) {
   return session.user
 }
 
-export async function findConsoleAccess(
+/**
+ * The platform user record, memoized for the lifetime of one request.
+ *
+ * A single render reaches for this record from three unrelated places: the
+ * bootstrap super-admin check, the shell's display hydration, and the
+ * permission guard in whichever segment layout is being entered. Each one is a
+ * Worker → FastAPI → Neon round trip, and they all run *above* the nearest
+ * `loading.tsx`, so the user waits on every one of them before a skeleton can
+ * paint. Memoizing collapses them to a single trip.
+ *
+ * See `.claude/rules/performance-server-side.md` §3.9 — `cache()` is per
+ * request, which is exactly the scope a session-derived read wants.
+ */
+const retrieveUser = cache(async function retrieveUser(userId: string) {
+  const { data } = await $876.users.retrieve(userId)
+  return data ?? null
+})
+
+export const findConsoleAccess = cache(async function findConsoleAccess(
   userId: string
 ): Promise<Access | null> {
   const bootstrapAccess = await findBootstrapSuperAdminAccess(userId)
@@ -39,12 +58,12 @@ export async function findConsoleAccess(
     permissions: row.role.permissions,
     status: row.status,
   }
-}
+})
 
 async function findBootstrapSuperAdminAccess(
   userId: string
 ): Promise<Access | null> {
-  const { data } = await $876.users.retrieve(userId)
+  const data = await retrieveUser(userId)
   const email = data?.email?.trim().toLowerCase()
   if (!email || !BOOTSTRAP_SUPER_ADMIN_EMAILS.has(email)) return null
 
@@ -69,7 +88,7 @@ async function hydrateDisplay(
     banned: false,
   }
   try {
-    const { data } = await $876.users.retrieve(access.id)
+    const data = await retrieveUser(access.id)
     if (!data) return base
     return {
       ...base,
