@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaNeon } from '@prisma/adapter-neon'
+import { PrismaNeonHttp } from '@prisma/adapter-neon'
 import {
   createQueryGuard,
   createRequestScopedResolver,
@@ -55,15 +55,28 @@ function createPrisma() {
     /([?&]sslmode=)(require|prefer|verify-ca)\b/,
     '$1verify-full'
   )
-  const adapter = new PrismaNeon(
-    { connectionString },
-    {
-      // Neon surfaces connection-level failures on the pool rather than
-      // rejecting the in-flight query. Unhandled, that is exactly how a broken
-      // connection becomes a Worker that hangs with nothing reported.
-      onPoolError: (error) => reportDbFailure(error, { stage: 'pool' }),
-    }
-  )
+  // Neon over HTTP rather than the WebSocket pool.
+  //
+  // Console's whole data surface is ten single-model reads and writes on two
+  // tables — no interactive transaction anywhere — which is precisely the shape
+  // the one-shot HTTP driver serves. Opening a WebSocket bought nothing and
+  // cost a handshake on every request, because the pool is request-scoped: its
+  // socket belongs to the request that opened it and reusing it from the next
+  // one hangs workerd.
+  //
+  // Measured against this database (us-east-1), cold client per request as the
+  // Worker does it, running the guard's own `member.findUnique … include role`:
+  //
+  //     WebSocket   p50 68ms   max 652ms
+  //     HTTP        p50 45ms   max  67ms
+  //
+  // The p50 is the smaller half of it. The tail is what made navigation feel
+  // unpredictable — a handshake that occasionally took half a second, ahead of
+  // a guard that has to finish before anything paints.
+  //
+  // There is no pool to fail, so `onPoolError` has no counterpart here; the
+  // query guard below still reports failures with their consequence attached.
+  const adapter = new PrismaNeonHttp(connectionString, {})
   return new PrismaClient({ adapter })
     .$extends({
       query: {
@@ -127,10 +140,13 @@ const resolvePrisma = createRequestScopedResolver<ConsolePrisma>({
  * the connection string a build-time requirement — and the Cloudflare build
  * environment has no `CONSOLE_DATABASE_URL`, only the Worker runtime does.
  *
- * On Cloudflare Workers the client is also scoped to the in-flight request:
- * the Neon pool's socket belongs to the request that opened it, and reusing it
- * from the next request on the same isolate hangs the Worker. See
- * `@876/core/db`.
+ * The client is also scoped to the in-flight request. That was mandatory under
+ * the WebSocket driver, where a pool's socket belongs to the request that
+ * opened it and reusing it from the next request on the same isolate hangs the
+ * Worker. Over HTTP there is no socket to strand, so the scoping is now
+ * belt-and-braces rather than load-bearing — kept because a throwaway HTTP
+ * client per request costs nothing measurable, and because it keeps this app's
+ * shape identical to the datastores still on the pool. See `@876/core/db`.
  */
 export const prisma = new Proxy({} as ConsolePrisma, {
   get(_target, property) {
