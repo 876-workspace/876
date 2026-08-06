@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { createAuthGuards, type AuthGuards } from '@/http/auth'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
+import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
 
 /**
@@ -21,6 +22,9 @@ export function buildRoutes(): Router {
   const root = Router()
 
   root.use(healthRouter)
+  // Geo reference data is public: a sign-up form needs the country and currency
+  // lists before the visitor has any credential to present.
+  root.use(geoRouter)
 
   // Protected modules are mounted here as they are migrated, each built with
   // `guards.requireApiKey` passed to its `createApiRouter({ guards })`.
