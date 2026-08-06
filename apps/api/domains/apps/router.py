@@ -143,20 +143,25 @@ async def list_apps(
     responses=docs.CREATE_APP_RESPONSES,
 )
 async def create_app_endpoint(
-    request: Request,
     body: AppCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
+    _admin: AdminDep,
 ) -> AppCreatedResponse:
-    if not body.organization_id:
-        settings = get_settings()
-        internal_key = request.headers.get("x-internal-key")
-        if not settings.internal_key or internal_key != settings.internal_key:
-            raise AppHTTPException(
-                code="provider/invalid-request",
-                message="organizationId is required.",
-                http_status_code=status.HTTP_400_BAD_REQUEST,
-            )
+    """Register an OAuth client. Admin-only — see the note below.
 
+    Registration is `AdminDep` for every call, including one that names an
+    `organizationId`. The endpoint has no session principal, so it has no way to
+    establish that the caller may act for the organization it names: gating only
+    the org-less branch meant any holder of an app API key — the lowest-trust,
+    most widely distributed credential on the platform — could register a client
+    against an arbitrary organization, choose a first-party `appKind`, and
+    thereby obtain a client whose `/authorize` flow skips the consent screen
+    (`FIRST_PARTY_APP_KINDS` in `domains/oauth/router.py`).
+
+    Self-service registration, when the developer portal is built, must add a
+    `SessionDep` principal and verify `owner`/`admin` membership in
+    `body.organization_id` — not relax this dependency.
+    """
     scopes = body.scopes_allowed if body.scopes_allowed is not None else ["openid", "profile", "email"]
     for s in scopes:
         if s not in ALLOWED_SCOPES:

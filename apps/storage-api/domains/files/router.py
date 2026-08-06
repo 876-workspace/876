@@ -12,6 +12,7 @@ from db.repositories.files import FileRepository
 from db.repositories.upload_sessions import UploadSessionRepository
 from db.session import get_db
 from domains.files import docs
+from domains.files.authorization import CallerDep, authorize_file_delete, authorize_file_read
 from domains.files.schemas import FileDeleteResponse, FileResponse, ReadUrlRequest, ReadUrlResponse
 from domains.files.serialization import public_asset_url, serialize_file
 from domains.uploads.quota import release_file_usage
@@ -41,11 +42,13 @@ async def delete_file(
     file_id: str,
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
+    caller: CallerDep,
 ) -> FileDeleteResponse:
     repository = FileRepository(db)
     row = await repository.get_by_id(file_id)
     if row is None:
         raise _not_found()
+    authorize_file_delete(row, caller)
     upload_session = (await UploadSessionRepository(db).latest_by_file_ids([row.id])).get(row.id)
     context = StorageOperationContext(
         source_app_id=row.source_app_id,
@@ -102,10 +105,12 @@ async def create_file_read_url(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
     provider: StorageProviderDep,
+    caller: CallerDep,
 ) -> ReadUrlResponse:
     row = await FileRepository(db).get_by_id(file_id)
     if row is None or row.status != "ready":
         raise _not_found()
+    authorize_file_read(row, caller)
     settings = request.app.state.settings
     if row.audience == "public":
         return ReadUrlResponse(url=public_asset_url(settings, row), expires_at=None)
@@ -140,10 +145,12 @@ async def retrieve_file(
     file_id: str,
     request: Request,
     db: Annotated[AsyncSession, Depends(get_db)],
+    caller: CallerDep,
 ) -> FileResponse:
     row = await FileRepository(db).get_by_id(file_id)
     if row is None:
         raise _not_found()
+    authorize_file_read(row, caller)
     return serialize_file(row, request.app.state.settings)
 
 

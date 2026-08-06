@@ -34,6 +34,15 @@ def expect_json(response: httpx.Response, expected_status: int) -> dict[str, Any
 def run(base_url: str, internal_key: str, owner_id: str, actor_user_id: str, source_app_id: str) -> None:
     image = generated_png()
     headers = {"x-internal-key": internal_key}
+    # The files domain authorizes the principal a caller acts for, not just the
+    # service key. The checker owns the file it creates, so it asserts exactly
+    # the owner and actor it opened the upload session with.
+    file_headers = {
+        **headers,
+        "x-876-source-app-id": source_app_id,
+        "x-876-actor-user-id": actor_user_id,
+        "x-876-actor-org-id": owner_id,
+    }
     with httpx.Client(timeout=30.0) as client:
         print("1. Sign: opening organization.primaryLogo upload session")
         opened = expect_json(
@@ -78,7 +87,7 @@ def run(base_url: str, internal_key: str, owner_id: str, actor_user_id: str, sou
         read_payload = expect_json(
             client.post(
                 f"{base_url}/v1/files/{opened['file_id']}/read-url",
-                headers=headers,
+                headers=file_headers,
                 json={"expires_in": 300},
             ),
             200,
@@ -90,7 +99,7 @@ def run(base_url: str, internal_key: str, owner_id: str, actor_user_id: str, sou
 
         print("5. Delete: soft-deleting file metadata")
         deleted = expect_json(
-            client.delete(f"{base_url}/v1/files/{opened['file_id']}", headers=headers),
+            client.delete(f"{base_url}/v1/files/{opened['file_id']}", headers=file_headers),
             200,
         )
         if deleted != {"object": "file", "id": opened["file_id"], "deleted": True}:

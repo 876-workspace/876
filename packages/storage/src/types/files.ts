@@ -97,6 +97,24 @@ export const fileReadUrlCreateParamsSchema = z.strictObject({
   expires_in: z.int().positive().max(3600).optional(),
 })
 
+/**
+ * Schema validating the caller assertion sent with a file access request.
+ *
+ * Storage authenticates a service, not a person: the internal key proves only
+ * that *some* 876 service is calling. The calling app therefore names the
+ * principal it is acting for, and Storage checks that principal against the
+ * file's `owner_type`/`owner_id`/`audience`. Without it, any key holder could
+ * reach any file on the platform.
+ */
+export const fileCallerAssertionSchema = z.strictObject({
+  /** Identifier of the app making the request. Compared against the file's `source_app_id`. */
+  sourceAppId: z.string().min(1),
+  /** Identifier of the user the app is acting for. Required for `private` and `app` audiences. */
+  actorUserId: z.string().min(1).optional(),
+  /** Identifier of the organization the app is acting for. Required for the `organization` audience. */
+  actorOrgId: z.string().min(1).optional(),
+})
+
 /** Schema validating a deleted file tombstone response. */
 export const deletedFileSchema = z.strictObject({
   /** String representing the object's type. Always `file`. */
@@ -141,6 +159,9 @@ export type ReadUrl = z.infer<typeof readUrlSchema>
 export type FileReadUrlCreateParams = z.infer<
   typeof fileReadUrlCreateParamsSchema
 >
+
+/** The principal a calling app asserts when reaching a file. */
+export type FileCallerAssertion = z.infer<typeof fileCallerAssertionSchema>
 
 /** Soft-deleted file tombstone payload returned by `files.delete()`. */
 export type DeletedFile = z.infer<typeof deletedFileSchema>

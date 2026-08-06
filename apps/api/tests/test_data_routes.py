@@ -954,9 +954,12 @@ async def test_apps_routes(monkeypatch) -> None:
         assert resp.json()["data"]["data"][0]["status"] == "active"
         assert resp.json()["data"]["data"][0]["feature_prefix"] == "oauth_test_app"
 
-        # Create app
+        # Create app. Registration is admin-only for every call, including one
+        # that names an organization: the route has no session principal, so it
+        # cannot establish that the caller may act for that organization.
         resp = await client.post(
             "/apps",
+            headers={"x-internal-key": "test-internal-key"},
             json={
                 "organizationId": "org_test",
                 "name": "My App",

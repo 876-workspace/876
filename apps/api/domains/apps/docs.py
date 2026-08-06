@@ -26,13 +26,17 @@ CREATE_API_KEY_RESPONSES: dict = {
 
 CREATE_APP_SUMMARY = "Create an app"
 CREATE_APP_DESCRIPTION = """
-Registers a new application.
+Registers a new application. **Admin only** — including when `organizationId`
+is supplied, because this route has no session principal and so cannot
+establish that the caller may act for the organization it names.
 
 * For `confidential` clients: generates a `clientSecret` returned **once** in
   the response. Store it securely — it cannot be retrieved again.
 * Validates each `redirect_uri` for safety.
 * Defaults `scopes_allowed` to `["openid", "profile", "email"]` if omitted.
-* Set `appKind` to `"internal"` for first-party 876 applications.
+* Set `appKind` to `"internal"` for first-party 876 applications. A first-party
+  kind suppresses the OAuth consent screen, which is why it may only be chosen
+  by an admin caller.
 
 The `client_id` is auto-generated.
 """
@@ -40,6 +44,14 @@ CREATE_APP_RESPONSES: dict = {
     status.HTTP_400_BAD_REQUEST: {
         "model": ErrorEnvelope,
         "description": "Invalid scope or unsafe redirect URI.",
+    },
+    status.HTTP_401_UNAUTHORIZED: {
+        "model": ErrorEnvelope,
+        "description": "No admin credential presented.",
+    },
+    status.HTTP_403_FORBIDDEN: {
+        "model": ErrorEnvelope,
+        "description": "The principal is not an admin.",
     },
 }
 

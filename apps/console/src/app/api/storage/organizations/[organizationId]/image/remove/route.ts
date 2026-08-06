@@ -45,7 +45,10 @@ export async function DELETE(_request: NextRequest, context: Context) {
   // A logo predating 876 Storage has a URL but no file to delete.
   if (!fileId) return apiJson({ data: null })
 
-  const deleteResult = await $876.storage.files.delete(fileId)
+  const deleteResult = await $876.storage.files.delete(fileId, {
+    sourceAppId: '876-console',
+    actorOrgId: organizationId,
+  })
   if (deleteResult.error || !deleteResult.data)
     return apiJson(
       { error: deleteResult.error ?? 'Failed to delete the image file.' },

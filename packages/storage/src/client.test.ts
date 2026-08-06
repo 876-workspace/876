@@ -5,6 +5,23 @@ import type { DeletedFile, File as StorageFile, ReadUrl } from './types/files'
 import type { StorageErrorCode } from './types/common'
 import type { UploadCreateParams, UploadSession } from './types/uploads'
 
+/**
+ * The principal a calling app asserts when reaching a file. Storage refuses a
+ * non-public file without it, so every files call in these tests carries one.
+ */
+const CALLER = {
+  sourceAppId: '876-couriers',
+  actorUserId: 'user_456',
+  actorOrgId: 'org_123',
+} as const
+
+/** The wire form of CALLER, as the files resource serializes it. */
+const CALLER_HEADERS = {
+  'x-876-source-app-id': CALLER.sourceAppId,
+  'x-876-actor-user-id': CALLER.actorUserId,
+  'x-876-actor-org-id': CALLER.actorOrgId,
+} as const
+
 function createFile(overrides: Partial<StorageFile> = {}): StorageFile {
   return {
     object: 'file',
@@ -183,7 +200,7 @@ describe('create876StorageClient', () => {
     })
 
     // ACT
-    const result = await client.files.retrieve('file/with space')
+    const result = await client.files.retrieve('file/with space', CALLER)
 
     // ASSERT
     expect(result).toEqual({ data: file, error: null })
@@ -195,6 +212,7 @@ describe('create876StorageClient', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-internal-key': 'storage-service-secret',
+          ...CALLER_HEADERS,
         },
       }
     )
@@ -215,7 +233,7 @@ describe('create876StorageClient', () => {
     })
 
     // ACT
-    const result = await client.files.createReadUrl('file_01J8XYZ', {
+    const result = await client.files.createReadUrl('file_01J8XYZ', CALLER, {
       expires_in: 600,
     })
 
@@ -229,6 +247,7 @@ describe('create876StorageClient', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-internal-key': 'storage-service-secret',
+          ...CALLER_HEADERS,
         },
         body: JSON.stringify({ expires_in: 600 }),
       }
@@ -250,7 +269,7 @@ describe('create876StorageClient', () => {
     })
 
     // ACT
-    const result = await client.files.createReadUrl('file_01J8XYZ')
+    const result = await client.files.createReadUrl('file_01J8XYZ', CALLER)
 
     // ASSERT
     expect(result).toEqual({ data: readUrl, error: null })
@@ -262,6 +281,7 @@ describe('create876StorageClient', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-internal-key': 'storage-service-secret',
+          ...CALLER_HEADERS,
         },
         body: '{}',
       }
@@ -283,7 +303,7 @@ describe('create876StorageClient', () => {
     })
 
     // ACT
-    const result = await client.files.delete('file/with space')
+    const result = await client.files.delete('file/with space', CALLER)
 
     // ASSERT
     expect(result).toEqual({ data: deletedFile, error: null })
@@ -295,6 +315,7 @@ describe('create876StorageClient', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-internal-key': 'storage-service-secret',
+          ...CALLER_HEADERS,
         },
       }
     )
@@ -362,7 +383,7 @@ describe('create876StorageClient', () => {
     })
 
     // ACT
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
 
     // ASSERT
     expect(result).toEqual({
@@ -389,7 +410,7 @@ describe('create876StorageClient', () => {
     })
 
     // ACT
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
 
     // ASSERT
     expect(result).toEqual({
@@ -407,6 +428,7 @@ describe('create876StorageClient', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-internal-key': 'storage-service-secret',
+          ...CALLER_HEADERS,
         },
       }
     )

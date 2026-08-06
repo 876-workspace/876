@@ -3,19 +3,26 @@ from typing import Any
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from core.config import Settings
 from core.security import require_api_key
 from main import create_app
 
 
 @pytest.mark.asyncio
 async def test_validation_error_envelope() -> None:
-    app = create_app()
+    app = create_app(Settings(internal_key="test-internal-key"))
     app.dependency_overrides[require_api_key] = lambda: True
     transport = ASGITransport(app=app)
 
     async with AsyncClient(transport=transport, base_url="http://testserver") as client:
-        # POST to /apps with invalid payload to trigger RequestValidationError
-        resp = await client.post("/apps", json={"name": 1234})
+        # POST to /apps with an invalid payload to trigger RequestValidationError.
+        # Registration is admin-only, so the request must clear that gate first
+        # or it never reaches validation.
+        resp = await client.post(
+            "/apps",
+            headers={"x-internal-key": "test-internal-key"},
+            json={"name": 1234},
+        )
 
     assert resp.status_code == 422
     data = resp.json()

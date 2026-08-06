@@ -4,6 +4,16 @@ import { create876StorageClient } from './client'
 import type { File as StorageFile, ReadUrl } from './types/files'
 import type { UploadSession } from './types/uploads'
 
+/**
+ * The principal a calling app asserts when reaching a file. Storage refuses a
+ * non-public file without it, so every files call in these tests carries one.
+ */
+const CALLER = {
+  sourceAppId: '876-couriers',
+  actorUserId: 'user_456',
+  actorOrgId: 'org_123',
+} as const
+
 function readyFile(overrides: Partial<StorageFile> = {}): StorageFile {
   return {
     object: 'file',
@@ -64,7 +74,7 @@ describe('resource path contracts', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    await client.files.retrieve(id)
+    await client.files.retrieve(id, CALLER)
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
       `https://storage.example.test${path}`
     )
@@ -103,7 +113,9 @@ describe('resource path contracts', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    await client.files.createReadUrl('file/with space', { expires_in: 30 })
+    await client.files.createReadUrl('file/with space', CALLER, {
+      expires_in: 30,
+    })
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
       'https://storage.example.test/v1/files/file%2Fwith%20space/read-url'
     )
@@ -128,7 +140,7 @@ describe('resource path contracts', () => {
     fetchMock.mockResolvedValueOnce(
       Response.json({ object: 'file', id: 'file_01J8XYZ', deleted: true })
     )
-    await client.files.delete('file_01J8XYZ/extra')
+    await client.files.delete('file_01J8XYZ/extra', CALLER)
     expect(String(fetchMock.mock.calls[0]?.[0])).toContain(
       '/v1/files/file_01J8XYZ%2Fextra'
     )
