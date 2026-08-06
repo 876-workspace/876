@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
+import type { GuardResolver } from '@/http/api-router'
 import { createAuthGuards, type AuthGuards } from '@/http/auth'
+import { createAuditEventsRouter } from '@/modules/audit-events'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
@@ -16,23 +18,18 @@ import { healthRouter } from '@/modules/health'
  *   - public routers first (health, OAuth, geo, webhooks) — each enforces its
  *     own credential rules, because an OIDC client or a Twilio webhook cannot
  *     present a first-party 876 API key;
- *   - then the protected modules, each built with the API-key guard.
+ *   - then the protected modules, each built with the guard resolver.
  */
 export function buildRoutes(): Router {
   const root = Router()
+  const resolveGuards = createGuardResolver(buildAuthGuards())
 
   root.use(healthRouter)
   // Geo reference data is public: a sign-up form needs the country and currency
   // lists before the visitor has any credential to present.
   root.use(geoRouter)
 
-  // Protected modules are mounted here as they are migrated, each built with
-  // `guards.requireApiKey` passed to its `createApiRouter({ guards })`.
-  //
-  // The guard is attached per route rather than with `router.use`, so it runs
-  // only after a path matches — the same order FastAPI's router-level
-  // dependency runs in. Mounting it as middleware would answer every unknown
-  // path with 401 instead of 404.
+  root.use(createAuditEventsRouter(resolveGuards))
 
   return root
 }
@@ -40,9 +37,33 @@ export function buildRoutes(): Router {
 /**
  * The auth guards, wired to the `apps` module's credential lookup.
  *
- * Exposed separately so a module router is built with exactly the tiers it
- * needs, and so a test can build the same guards over a stub lookup.
+ * Exposed separately so a test can build the same guards over a stub lookup.
  */
 export function buildAuthGuards(): AuthGuards {
   return createAuthGuards({ findApiKeyByHash, markApiKeyUsed })
+}
+
+/**
+ * The tier → middleware mapping, mirroring how api/v1.py composes its routers:
+ * every protected route sits behind the app API key, and the session and admin
+ * dependencies stack on top of it rather than replacing it.
+ *
+ * The guards are attached per route rather than with `router.use`, so they run
+ * only after a path matches — the same order FastAPI's router-level dependency
+ * runs in. Mounted as middleware they would answer every unknown path with 401
+ * instead of 404.
+ */
+export function createGuardResolver(guards: AuthGuards): GuardResolver {
+  return (security) => {
+    switch (security) {
+      case 'public':
+        return []
+      case 'apiKey':
+        return [guards.requireApiKey]
+      case 'session':
+        return [guards.requireApiKey, guards.requireSession]
+      case 'admin':
+        return [guards.requireApiKey, guards.requireAdmin]
+    }
+  }
 }

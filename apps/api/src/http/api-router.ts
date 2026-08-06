@@ -103,6 +103,16 @@ export type ApiRouter = {
   delete<S extends ValidationSchemas>(spec: RouteSpec<S>): ApiRouter
 }
 
+/**
+ * Turns a declared tier into the middleware that enforces it.
+ *
+ * The composition root supplies one of these, built from the auth guards. It is
+ * what makes `security` a single declaration rather than two: the tier written
+ * on the route is both what the OpenAPI document advertises and what actually
+ * runs, so a route cannot be documented `admin` while enforcing `apiKey`.
+ */
+export type GuardResolver = (security: Security) => RequestHandler[]
+
 export function createApiRouter(options: {
   /** OpenAPI tag applied to every operation on this router. */
   tag: string
@@ -110,8 +120,11 @@ export function createApiRouter(options: {
   prefix?: string
   /** Default auth tier for operations that do not override it. */
   security?: Security
-  /** Guards prepended to every route — the auth middleware for this tier. */
-  guards?: RequestHandler[]
+  /**
+   * Resolves each route's declared tier to its guards. Omitted on a fully
+   * public router, where every tier resolves to no middleware anyway.
+   */
+  resolveGuards?: GuardResolver
 }): ApiRouter {
   const router = Router({ mergeParams: true })
   const prefix = options.prefix ?? ''
@@ -175,7 +188,7 @@ export function createApiRouter(options: {
     registerOperation({ method, path: toOpenApiPath(fullPath), operation })
 
     const chain: RequestHandler[] = [
-      ...(options.guards ?? []),
+      ...(options.resolveGuards?.(security) ?? []),
       ...(spec.middleware ?? []),
       ...(spec.request ? [validate(spec.request)] : []),
       async (req, res, next) => {
