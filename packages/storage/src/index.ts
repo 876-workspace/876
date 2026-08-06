@@ -76,6 +76,7 @@ export type {
 export {
   deletedFileSchema,
   fileAudienceSchema,
+  fileCallerAssertionSchema,
   fileCategorySchema,
   fileOwnerTypeSchema,
   fileReadUrlCreateParamsSchema,
@@ -87,6 +88,7 @@ export type {
   DeletedFile,
   File,
   FileAudience,
+  FileCallerAssertion,
   FileCategory,
   FileOwnerType,
   FileReadUrlCreateParams,

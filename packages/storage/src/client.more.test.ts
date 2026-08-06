@@ -4,6 +4,16 @@ import { create876StorageClient } from './client'
 import type { File as StorageFile, ReadUrl } from './types/files'
 import type { UploadCreateParams, UploadSession } from './types/uploads'
 
+/**
+ * The principal a calling app asserts when reaching a file. Storage refuses a
+ * non-public file without it, so every files call in these tests carries one.
+ */
+const CALLER = {
+  sourceAppId: '876-couriers',
+  actorUserId: 'user_456',
+  actorOrgId: 'org_123',
+} as const
+
 function createFile(overrides: Partial<StorageFile> = {}): StorageFile {
   return {
     object: 'file',
@@ -100,7 +110,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
 
     expect(result).toEqual({
       data: null,
@@ -122,7 +132,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
 
     expect(result).toEqual({ data: pending, error: null })
   })
@@ -142,7 +152,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
 
     expect(result).toEqual({ data: privateFile, error: null })
   })
@@ -160,7 +170,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.files.createReadUrl('file_01J8XYZ')
+    const result = await client.files.createReadUrl('file_01J8XYZ', CALLER)
 
     expect(result.error?.code).toBe('storage/provider-error')
   })
@@ -180,7 +190,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.files.createReadUrl('file_01J8XYZ')
+    const result = await client.files.createReadUrl('file_01J8XYZ', CALLER)
 
     expect(result).toEqual({ data: readUrl, error: null })
   })
@@ -198,7 +208,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.files.delete('file_01J8XYZ')
+    const result = await client.files.delete('file_01J8XYZ', CALLER)
 
     expect(result.error?.code).toBe('storage/provider-error')
   })
@@ -213,9 +223,9 @@ describe('create876StorageClient additional contracts', () => {
     const results = await Promise.all([
       client.uploads.create(createUploadParams()),
       client.uploads.complete('upl_1'),
-      client.files.retrieve('file_1'),
-      client.files.createReadUrl('file_1'),
-      client.files.delete('file_1'),
+      client.files.retrieve('file_1', CALLER),
+      client.files.createReadUrl('file_1', CALLER),
+      client.files.delete('file_1', CALLER),
     ])
 
     for (const result of results) {
@@ -235,7 +245,7 @@ describe('create876StorageClient additional contracts', () => {
       fetch: fetchMock,
     })
 
-    await client.files.retrieve('file_01J8XYZ')
+    await client.files.retrieve('file_01J8XYZ', CALLER)
 
     const init = fetchMock.mock.calls[0]?.[1] as RequestInit
     const headers = init.headers as Record<string, string>

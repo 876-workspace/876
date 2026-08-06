@@ -17,6 +17,8 @@ interface StorageRequestInit {
   path: string
   /** Optional JSON request payload body. */
   body?: unknown
+  /** Extra request headers merged over the credential headers. */
+  headers?: Record<string, string>
 }
 
 const notConfiguredError = {
@@ -61,6 +63,7 @@ export async function storageRequest<T>(
       headers: {
         'x-internal-key': runtime.internalKey,
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
+        ...init.headers,
       },
       retry: false,
     }

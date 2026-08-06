@@ -4,6 +4,16 @@ import { create876StorageClient } from './client'
 import type { File as StorageFile, ReadUrl } from './types/files'
 import type { UploadSession } from './types/uploads'
 
+/**
+ * The principal a calling app asserts when reaching a file. Storage refuses a
+ * non-public file without it, so every files call in these tests carries one.
+ */
+const CALLER = {
+  sourceAppId: '876-couriers',
+  actorUserId: 'user_456',
+  actorOrgId: 'org_123',
+} as const
+
 function file(overrides: Partial<StorageFile> = {}): StorageFile {
   return {
     object: 'file',
@@ -72,7 +82,7 @@ describe('client exhaustive method coverage', () => {
         internalKey: 'k',
         fetch: fetchMock,
       })
-      const result = await client.files.retrieve('file_1')
+      const result = await client.files.retrieve('file_1', CALLER)
       expect(result).toEqual({ data: null, error: { code, message: 'x' } })
       expect(result.error).not.toHaveProperty('httpStatus')
     }
@@ -113,7 +123,7 @@ describe('client exhaustive method coverage', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    const result = await client.files.delete('file_x')
+    const result = await client.files.delete('file_x', CALLER)
     expect(result.error?.code).toBe(code)
   })
 
@@ -128,7 +138,7 @@ describe('client exhaustive method coverage', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    const result = await client.files.createReadUrl('file_x')
+    const result = await client.files.createReadUrl('file_x', CALLER)
     expect(result.error?.code).toBe(code)
   })
 
@@ -156,7 +166,7 @@ describe('client exhaustive method coverage', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
     expect(result.error?.code).toBe('storage/provider-error')
   })
 
@@ -197,7 +207,7 @@ describe('client exhaustive method coverage', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    const result = await client.files.retrieve('file_01J8XYZ')
+    const result = await client.files.retrieve('file_01J8XYZ', CALLER)
     expect(result).toEqual({ data: f, error: null })
   })
 
@@ -211,7 +221,7 @@ describe('client exhaustive method coverage', () => {
       requestId: 'req_xyz',
       fetch: fetchMock,
     })
-    await client.files.retrieve('file_01J8XYZ')
+    await client.files.retrieve('file_01J8XYZ', CALLER)
     const headers = (fetchMock.mock.calls[0]?.[1] as RequestInit)
       .headers as Record<string, string>
     expect(headers['x-request-id']).toBe('req_xyz')
@@ -231,7 +241,7 @@ describe('client exhaustive method coverage', () => {
       internalKey: 'k',
       fetch: fetchMock,
     })
-    const result = await client.files.createReadUrl('file_01J8XYZ')
+    const result = await client.files.createReadUrl('file_01J8XYZ', CALLER)
     expect(result.error?.code).toBe('storage/provider-error')
   })
 })
