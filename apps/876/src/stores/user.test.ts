@@ -9,7 +9,7 @@ import {
   useIsAuthenticated,
   useIsUserLoading,
   useUserStore,
-} from '../user'
+} from './user'
 
 beforeEach(() => {
   useUserStore.setState({ user: null, isAuthenticated: false, isLoading: true })

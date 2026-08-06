@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { AccountShell } from '@/features/account/components/account-shell'
+import { AccountShell } from '@/components/shell/account-shell'
 import {
   getEnabledConsumerFeatureSlugs,
   requireActiveUser,
