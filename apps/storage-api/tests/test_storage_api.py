@@ -15,7 +15,17 @@ from main import create_app
 from providers.base import CreateReadUrlInput, CreateUploadUrlInput, DeleteObjectInput, HeadObjectInput
 from tests.conftest import NOW, InMemoryObjectStorageProvider, StorageHarness, make_settings
 
-AUTH_HEADERS = {"x-internal-key": "storage-test-key"}
+INTERNAL_KEY_HEADERS = {"x-internal-key": "storage-test-key"}
+# The caller assertion the files domain authorizes against. These values match
+# the owner and actor in VALID_UPLOAD, so AUTH_HEADERS is the *authorized*
+# caller for the files these tests create. A test proving a denial narrows or
+# drops one of these fields rather than adding them.
+FILE_CALLER_HEADERS = {
+    "x-876-source-app-id": "876-couriers",
+    "x-876-actor-user-id": "user_456",
+    "x-876-actor-org-id": "org_123",
+}
+AUTH_HEADERS = {**INTERNAL_KEY_HEADERS, **FILE_CALLER_HEADERS}
 VALID_UPLOAD: dict[str, Any] = {
     "route_key": "organization.primaryLogo",
     "owner_type": "organization",
