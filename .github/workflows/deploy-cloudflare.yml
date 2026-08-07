@@ -96,6 +96,11 @@ jobs:
               - *shared
             api:
               - 'apps/api/**'
+              # The image builds from the repository root and installs from the
+              # root lockfile, so a dependency bump changes the image without
+              # touching apps/api. Without this the deploy silently goes stale.
+              - *shared
+              - '.dockerignore'
             billing-api:
               - 'apps/billing-api/**'
             storage-api:
