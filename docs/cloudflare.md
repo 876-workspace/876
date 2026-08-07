@@ -24,12 +24,20 @@ Neon Postgres databases.
 
 **Databases:** Neon (already production).
 
-| Neon endpoint       | Used by            | Env var                  |
-| ------------------- | ------------------ | ------------------------ |
-| `ep-muddy-cell`     | api + billing-api  | `(BILLING_)DATABASE_URL` |
-| `ep-purple-brook`   | Console app-local  | `CONSOLE_DATABASE_URL`   |
-| `ep-rough-darkness` | Couriers app-local | `DATABASE_URL`           |
-| `ep-falling-flower` | Widgets only       | `WIDGETS_DATABASE_URL`   |
+| Neon endpoint       | Used by                     | Runtime env var          | CI secret               |
+| ------------------- | --------------------------- | ------------------------ | ----------------------- |
+| `ep-muddy-cell`     | api + billing-api + storage | `(BILLING_)DATABASE_URL` | `API_DATABASE_URL`      |
+| `ep-purple-brook`   | Console app-local           | `CONSOLE_DATABASE_URL`   | `CONSOLE_DATABASE_URL`  |
+| `ep-rough-darkness` | Couriers app-local          | `DATABASE_URL`           | `COURIERS_DATABASE_URL` |
+| `ep-falling-flower` | Widgets only                | `WIDGETS_DATABASE_URL`   | `WIDGETS_DATABASE_URL`  |
+
+Two services read a variable literally named `DATABASE_URL` at runtime — the
+identity API and Couriers — so the **CI secret names are always prefixed**, and
+the workflow step maps the prefixed secret onto whatever the tool expects. The
+repository secret `API_DATABASE_URL` exists because the unprefixed
+`DATABASE_URL` secret held the _courier_ connection string, and the identity
+deploy spent a day trying to build the identity schema inside the couriers
+database. Do not add an unprefixed database secret back.
 
 **Hyperdrive is not used.** The Worker-side Prisma clients use
 `@prisma/adapter-neon` (Neon's serverless driver, HTTP/WebSocket), which pools
@@ -353,12 +361,12 @@ Build that lands before its migration job does not break.
 
 ### Required GitHub configuration
 
-| Kind     | Name                                                                                                              |
-| -------- | ----------------------------------------------------------------------------------------------------------------- |
-| Secret   | `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit + Containers), `CLOUDFLARE_ACCOUNT_ID` (manual deploys only)         |
-| Secret   | `WIDGETS_DATABASE_URL`, `CONSOLE_DATABASE_URL`, `BILLING_DATABASE_URL`, `COURIERS_DATABASE_URL` (migrations only) |
-| Secret   | `NEXT_PUBLIC_876_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`                                                              |
-| Variable | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`                                      |
+| Kind     | Name                                                                                                                                                          |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Secret   | `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit + Containers), `CLOUDFLARE_ACCOUNT_ID` (manual deploys only)                                                     |
+| Secret   | `API_DATABASE_URL`, `WIDGETS_DATABASE_URL`, `CONSOLE_DATABASE_URL`, `BILLING_DATABASE_URL`, `COURIERS_DATABASE_URL`, `STORAGE_DATABASE_URL` (migrations only) |
+| Secret   | `NEXT_PUBLIC_876_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`                                                                                                          |
+| Variable | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`                                                                                  |
 
 Only build-time (`NEXT_PUBLIC_*`) values and migration URLs belong in GitHub.
 Every runtime secret is set with `wrangler secret put` and read from the Worker
