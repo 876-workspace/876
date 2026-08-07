@@ -20,6 +20,7 @@ import { createMobileNumbersRouter } from '@/modules/mobile-numbers'
 import { createOnboardingRouter } from '@/modules/onboarding'
 import { createProductsRouter } from '@/modules/products'
 import { createSessionsRouter } from '@/modules/sessions'
+import { createTwilioWebhooksRouter } from '@/modules/twilio-webhooks'
 
 /**
  * Router composition. The only file in `http/` allowed to import a module —
@@ -42,6 +43,11 @@ export function buildRoutes(): Router {
   // Geo reference data is public: a sign-up form needs the country and currency
   // lists before the visitor has any credential to present.
   root.use(geoRouter)
+  // Twilio cannot present a first-party 876 API key, so these routes are public
+  // and authenticate on the request signature instead. They need no special
+  // mounting order: Twilio's scheme signs the URL plus the sorted form
+  // parameters, not the raw bytes, so parsing the body first is harmless.
+  root.use(createTwilioWebhooksRouter(resolveGuards))
 
   root.use(createAddressesRouter(resolveGuards))
   root.use(createAuditEventsRouter(resolveGuards))
