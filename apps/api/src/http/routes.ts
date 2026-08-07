@@ -6,6 +6,7 @@ import { createAddressesRouter } from '@/modules/addresses'
 import { createAuditEventsRouter } from '@/modules/audit-events'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
+import { createCommunicationsRouter } from '@/modules/communications'
 import { createDevicesRouter } from '@/modules/devices'
 import {
   registerEducationRoutes,
@@ -15,6 +16,7 @@ import {
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
 import { createModulesRouter } from '@/modules/modules'
+import { createMobileNumbersRouter } from '@/modules/mobile-numbers'
 import { createOnboardingRouter } from '@/modules/onboarding'
 import { createProductsRouter } from '@/modules/products'
 import { createSessionsRouter } from '@/modules/sessions'
@@ -44,11 +46,13 @@ export function buildRoutes(): Router {
   root.use(createAddressesRouter(resolveGuards))
   root.use(createAuditEventsRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
+  root.use(createCommunicationsRouter(resolveGuards))
   root.use(createDevicesRouter(resolveGuards))
   root.use(registerFinancialRoutes(resolveGuards))
   root.use(registerGovernmentRoutes(resolveGuards))
   root.use(registerEducationRoutes(resolveGuards))
   root.use(createModulesRouter(resolveGuards))
+  root.use(createMobileNumbersRouter(resolveGuards))
   root.use(createOnboardingRouter(resolveGuards))
   root.use(createProductsRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
