@@ -1,1 +1,0 @@
-"""Administrative authentication-attempt domain."""
