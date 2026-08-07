@@ -145,8 +145,7 @@ jobs:
     # datastore — only the deploy *step* is gated on who the deployer is. Gating
     # the whole job on DEPLOY_FROM_ACTIONS is how the migration step below
     # silently never ran: the job skipped, and the schema sat behind the code.
-    if:
-      (github.event_name == 'push' && needs.changes.outputs.api == 'true')
+    if: (github.event_name == 'push' && needs.changes.outputs.api == 'true')
       || inputs.app == 'all' || inputs.app == 'api'
     runs-on: ubuntu-latest
     steps:
@@ -160,14 +159,22 @@ jobs:
       # that schema. Applying it would fail on `relation "addresses" already
       # exists`, which is what broke the first deploy. This resolves the
       # baseline once per environment and is a no-op afterwards.
+      #
+      # `API_DATABASE_URL`, not `DATABASE_URL`: every other service here names
+      # its secret after itself, and the one unprefixed name is the one that
+      # ended up holding a *courier* connection string — so this job spent a day
+      # trying to build the identity schema inside the couriers database. A
+      # prefixed name cannot be mistaken for "the database" in general. The step
+      # still exports it as DATABASE_URL because that is what prisma.config.ts
+      # reads.
       - name: Baseline the database
         run: pnpm --filter @876/api run db:baseline
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
       - name: Apply migrations
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
       # Containers build and push the Dockerfile image; the runner's Docker
       # daemon is used directly by wrangler. The build context is the repository
       # root (`image_build_context` in wrangler.jsonc), which is why this runs
