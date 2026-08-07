@@ -277,63 +277,49 @@ organization already has. The test pins all four.
 **Batch A is complete.** Every unit was verified against its Python source
 before being committed; the methods are recorded in §2.
 
-### What is left, in the order it unblocks
+### What is left — the finish plan
 
-**19,730 lines under `domains/`** plus **~5,500 under `services/`**. Every
-remaining module already has its `*.docs.ts` translated and a directory under
-`src/modules/` — except `billing` and `twilio-webhooks`, whose prose must be
-written rather than translated.
+**The service layer is done.** Nine of the ten service prerequisites are ported
+and green; only `services/auth.py` remains. Everything below is now unblocked,
+so the rest of the port is four phases and can run mostly in parallel.
 
-**Nothing is mounted until you add it to `src/http/routes.ts`.** That is the one
-shared file; forgetting it shows up as every test 404ing.
+| Phase | Work                             | Lanes                                  |
+| ----- | -------------------------------- | -------------------------------------- |
+| **1** | `services/auth.py` (787)         | primary agent only — security-critical |
+| **2** | the 8 remaining route groups     | 3 delegate lanes + primary             |
+| **3** | `workers/` and the startup seeds | 1 delegate lane + primary              |
+| **4** | cutover                          | primary agent only                     |
 
-#### Every module with no unported prerequisites is done
+#### Phase 1 — the last service (do this first)
 
-What remains is blocked on the services below. Port those first.
+`services/auth.py` (787 lines) gates the `auth` module. It is the login,
+registration, and session-issuing path, so per `.claude/rules/cli.md` it stays
+with the primary agent and is **not** delegated. Everything it needs is already
+ported: `platform/session.ts`, `platform/pin.ts`, `platform/rate-limit.ts`,
+`providers/workos/**`, `services/auth-telemetry.ts`, `services/provisioning.ts`,
+`services/identity-sync.ts`.
 
-#### Then the service prerequisites, each gating several modules
+#### Phase 2 — the remaining route groups
 
-Port these before the modules that need them. The right-hand column is why.
-They live in `src/services/`, outside `src/modules/`, because they are shared by
-several modules and belong to none of them. `identity-sync.ts` is the worked
-example: it takes the **narrow provider surface it needs** as a parameter rather
-than importing the adapter, so a test drives it without standing up WorkOS.
+Every prerequisite is in place. Split by **non-overlapping module directories**;
+the only shared file is `src/http/routes.ts`, which the primary agent edits once
+at the end of the phase.
 
-| Service                              | Lines | Gates                                           |
-| ------------------------------------ | ----- | ----------------------------------------------- |
-| ~~`services/identity_sync.py`~~      | 207   | **done** — `src/services/identity-sync.ts`      |
-| `services/provisioning.py`           | 190   | memberships, organizations, users, auth         |
-| `services/features.py`               | 585   | features, users                                 |
-| `services/finance_provisioning.py`   | 319   | apps CRUD, provisioning, organizations, billing |
-| `services/provisioning_catalog.py`   | 359   | provisioning                                    |
-| `services/organization_bootstrap.py` | 204   | organizations                                   |
-| `services/auth_telemetry.py`         | 350   | users, auth                                     |
-| `services/identification_secrets.py` | 118   | users                                           |
-| `services/auth.py`                   | 787   | auth                                            |
-| `services/billing_customer_sync.py`  | 294   | billing                                         |
-
-`services/provisioning.py` holds `resolve_member_permissions` — the DB-backed
-resolver that pairs with the pure `platform/permissions.ts` catalog. Two
-functions in it, `link_membership_role` and `assign_member_apps`, are called
-from the memberships create/update paths.
-
-#### Then the remaining modules, cheapest first
-
-| Module          | Routes | Lines | Blocked on                                                                                  |
-| --------------- | ------ | ----- | ------------------------------------------------------------------------------------------- |
-| `memberships`   | 5      | 468   | `identity_sync`, `provisioning`                                                             |
-| `billing`       | 4      | 925   | `billing_customer_sync`, `finance_provisioning` — **and its OpenAPI prose must be written** |
-| `apps` CRUD     | 13     | 991   | `finance_provisioning` (credential lookup is already done)                                  |
-| `provisioning`  | 15     | 1,082 | `provisioning_catalog`, `finance_provisioning`                                              |
-| `features`      | 16     | 1,189 | `services/features.py`                                                                      |
-| `auth`          | 22     | 2,566 | `services/auth.py`, `auth_telemetry`, `provisioning` — **primary agent only**               |
-| `organizations` | 28     | 4,508 | `identity_sync`, `provisioning`, `organization_bootstrap`, `finance_provisioning`           |
-| `users`         | 64     | 3,927 | `identity_sync`, `provisioning`, `features`, `auth_telemetry`, `identification_secrets`     |
+| Module          | Routes | Lines | Lane        | Why                                                  |
+| --------------- | ------ | ----- | ----------- | ---------------------------------------------------- |
+| `memberships`   | 5      | 468   | delegate A  | plain CRUD over ported services                      |
+| `billing`       | 4      | 925   | delegate A  | **its OpenAPI prose must be written** — no `docs.py` |
+| `apps` CRUD     | 13     | 991   | delegate B  | credential lookup already done                       |
+| `provisioning`  | 15     | 1,082 | delegate B  | catalog service already ported                       |
+| `features`      | 16     | 1,189 | delegate C  | `services/features.ts` already ported                |
+| `organizations` | 28     | 4,508 | delegate C  | largest non-auth surface                             |
+| `users`         | 64     | 3,927 | **primary** | touches identification disclosure (PII)              |
+| `auth`          | 22     | 2,566 | **primary** | login, sessions, credentials                         |
 
 `users` is the largest surface at 64 routes. Split it the way `directory` was —
-per-resource-group files sharing one prefix — rather than one flat set.
+per-resource-group files sharing one prefix — rather than one flat file set.
 
-#### Last: Batch H, the cutover
+#### Phase 3 — workers and seeds
 
 - `workers/` — the background loops the FastAPI app owned:
   `services/billing_customer_dispatch.py` (205),
@@ -341,13 +327,67 @@ per-resource-group files sharing one prefix — rather than one flat set.
   `services/feature_flag_migration.py` (204).
 - Startup seeds: `services/feature_seeds.py` (547),
   `services/provisioning_seeds.py` (361), `services/plan_seeds.py` (186),
-  `services/geo_seeds.py` (184), `services/bootstrap.py` (167). Consider moving
-  these to a CLI or a migration rather than a boot path — the Express service
+  `services/geo_seeds.py` (184), `services/bootstrap.py` (167).
+  **Move these to a CLI or a migration, not a boot path** — the Express service
   must not run DDL or seeds at startup (`.claude/rules/express-api.md`).
-- Dockerfile and `wrangler.jsonc` pointed at the Node entry point.
-- Package scripts flipped from `node:*` to the plain names.
-- `@876/sdk`, `@876/admin`, and every app smoke-tested against the new service.
-- The FastAPI tree deleted, in its own commit, only once the above is green.
+
+#### Phase 4 — cutover
+
+See §8. Primary agent only: it deletes the FastAPI tree, and a mistake there is
+not recoverable from the diff alone.
+
+### Running the delegate lanes
+
+Both delegate tools work and were used for the whole service layer in one pass
+(2026-08-07): four lanes produced seven services in about five minutes.
+
+```bash
+# muse — the better of the two for a module port
+cd apps/api && muse exec --trust-workspace --reasoning-effort high \
+  --prompt-file /workspaces/876/.claude/briefs/muse/<brief>.md
+
+# agy — Gemini only; the Claude/GPT bucket is separate and usually empty
+agy --model=gemini-3.6-flash-high --print-timeout 45m \
+    --output-format stream-json --dangerously-skip-permissions \
+    --print "$(cat .claude/briefs/muse/<brief>.md)"
+```
+
+**Neither tool can run a command in this container** — muse's bash is sandboxed
+through bubblewrap, which cannot create a namespace here. They write blind and
+say so. **The orchestrator owns every verification**, without exception.
+
+What that cost on the service layer, and what to expect again:
+
+- **240 typecheck errors, 232 of them in the delegates' test files.** Only 8
+  were in source. The single biggest cause is one mistake, now fixed once and
+  for all in `src/test/mocked.ts`: a mock helper typed
+  `T & Record<string, ReturnType<typeof vi.fn>>` does **not** expose
+  `.mockResolvedValue` on a named method, because TypeScript resolves a named
+  property from the declared member and ignores the index signature. Use
+  `Mocked<T>` from `@/test/mocked`. **Put that in every delegate brief.**
+- **3 runtime failures out of 1,228.** Two were fixtures that violated a rule
+  the implementation correctly enforced (a platform feature key must start with
+  `platform_`); one was an unstubbed return value. In every case the _code_ was
+  right and the _test_ was wrong — check which before "fixing" either.
+- Delegates also reliably forget to freeze the clock. A fixture written against
+  a frozen `NOW` constant is already expired against the real clock.
+
+### The brief that works
+
+Reuse `.claude/briefs/muse/2026-08-07-port-features.md` as the template. The
+parts that earn their place:
+
+1. **Point at the worked example**, not just the rules —
+   `src/services/identity-sync.ts` for a service, `src/modules/geo/**` for a
+   simple module, `src/modules/directory/**` for a large one.
+2. **List the files it may create, and the files it must not touch**, naming the
+   directories other lanes are writing concurrently.
+3. **State the conventions that actually break**: repository-only `@/db/client`,
+   `BigInt` timestamps, exact Python error codes, `Mocked<T>`, freeze the clock,
+   `Prisma.DbNull` for a cleared Json column, Python's `int()`/`float()` raise
+   where JavaScript coerces.
+4. **Tell it that it cannot run commands and must not claim it did.**
+5. **Forbid `git commit`.** The orchestrator commits.
 
 ### Verify every module the same way
 
