@@ -18,12 +18,12 @@ git switch feat/api-express-foundation
 pnpm node:typecheck && pnpm node:lint && pnpm node:test && pnpm node:boundaries
 ```
 
-Expect **1,228 passing in 41 files, 0 boundary errors**. If that is what you
+Expect **1,412 passing in 48 files, 0 boundary errors**. If that is what you
 see, the tree is where this document says it is.
 
-Then: **§5 → "What is left — the finish plan"**. It is four phases. Start
-Phase 1 (`services/auth.py`) yourself and launch Phase 2's delegate lanes in
-parallel — the lane table names exactly which module goes to which lane and why.
+Then: **§5 → "What is left — the finish plan"**. Phases 1 and 2 are done except
+for `users` and `auth`; Phase 3 is half done. Start with `users` or `auth` —
+both stay with the primary agent.
 
 Three things that will otherwise cost you an hour each:
 
@@ -48,7 +48,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 1,228 passing, 41 files
+pnpm node:test          # 1,412 passing, 48 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -69,15 +69,25 @@ command is how a session ends up narrating a pass that never happened
 | Docs                | All 20 `domains/*/docs.py` translated to `src/modules/*/*.docs.ts` (759 constants)                                                                                                                                                                                                                |
 | Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
 | Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
-| Services            | **9 of 10** in `src/services/` — `identity-sync`, `provisioning`, `identification-secrets`, `features`, `provisioning-catalog`, `organization-bootstrap`, `finance-provisioning`, `billing-customer-sync`, `auth-telemetry`. Only `services/auth.py` remains.                                     |
+| Services            | **All 10** in `src/services/` — `identity-sync`, `provisioning`, `identification-secrets`, `features`, `provisioning-catalog`, `organization-bootstrap`, `finance-provisioning`, `billing-customer-sync`, `auth-telemetry`, `auth`                                                                |
+| Workers             | `src/workers/` — `billing-customer-dispatch`, `finance-provisioning-dispatch`. Exported but **not wired into the boot path**.                                                                                                                                                                     |
 | Test helpers        | `src/test/mocked.ts` — `Mocked<T>`, the only correct way to type a mocked repository or provider in this repo                                                                                                                                                                                     |
 
-### Modules migrated (16 of 22)
+### Modules migrated (20 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
 `addresses`, `modules`, `directory` (all 50 routes), `onboarding`, `products`,
-`communications`, `mobile-numbers`, `twilio-webhooks`, `oauth`, and `apps`
-(credential lookup only — its CRUD routes are still outstanding).
+`communications`, `mobile-numbers`, `twilio-webhooks`, `oauth`, `apps` (all 13
+CRUD routes plus the credential lookup), `memberships`, `billing` (17 routes,
+not the 4 an earlier draft of this document claimed), `provisioning`,
+`features`, and `organizations` (all 28 routes across its three routers).
+
+**Only `users` (64 routes) and `auth` (22 routes) remain.** Both stay with the
+primary agent: `users` touches identification disclosure (PII) and `auth` is the
+login and session-issuing surface.
+
+The six modules in the 2026-08-07 batch were verified by diffing
+`/openapi.json` against the FastAPI routers: **130 operations, 0 missing.**
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
 `src/modules/directory/**` is the example for a **large** module: three resource
@@ -311,14 +321,14 @@ before being committed; the methods are recorded in §2.
 and green; only `services/auth.py` remains. Everything below is now unblocked,
 so the rest of the port is four phases and can run mostly in parallel.
 
-| Phase | Work                             | Lanes                                  |
-| ----- | -------------------------------- | -------------------------------------- |
-| **1** | `services/auth.py` (787)         | primary agent only — security-critical |
-| **2** | the 8 remaining route groups     | 3 delegate lanes + primary             |
-| **3** | `workers/` and the startup seeds | 1 delegate lane + primary              |
-| **4** | cutover                          | primary agent only                     |
+| Phase | Work                             | State                                      |
+| ----- | -------------------------------- | ------------------------------------------ |
+| **1** | `services/auth.py` (787)         | **done** — 81 tests                        |
+| **2** | the 8 remaining route groups     | **6 of 8 done**; `users` and `auth` remain |
+| **3** | `workers/` and the startup seeds | workers **done**; seeds remain             |
+| **4** | cutover                          | not started                                |
 
-#### Phase 1 — the last service (do this first)
+#### Phase 1 — the last service (**done**)
 
 `services/auth.py` (787 lines) gates the `auth` module. It is the login,
 registration, and session-issuing path, so per `.claude/rules/cli.md` it stays
@@ -333,26 +343,26 @@ Every prerequisite is in place. Split by **non-overlapping module directories**;
 the only shared file is `src/http/routes.ts`, which the primary agent edits once
 at the end of the phase.
 
-| Module          | Routes | Lines | Lane        | Why                                                  |
-| --------------- | ------ | ----- | ----------- | ---------------------------------------------------- |
-| `memberships`   | 5      | 468   | delegate A  | plain CRUD over ported services                      |
-| `billing`       | 4      | 925   | delegate A  | **its OpenAPI prose must be written** — no `docs.py` |
-| `apps` CRUD     | 13     | 991   | delegate B  | credential lookup already done                       |
-| `provisioning`  | 15     | 1,082 | delegate B  | catalog service already ported                       |
-| `features`      | 16     | 1,189 | delegate C  | `services/features.ts` already ported                |
-| `organizations` | 28     | 4,508 | delegate C  | largest non-auth surface                             |
-| `users`         | 64     | 3,927 | **primary** | touches identification disclosure (PII)              |
-| `auth`          | 22     | 2,566 | **primary** | login, sessions, credentials                         |
+| Module          | Routes | Lines | Lane        | Why                                                     |
+| --------------- | ------ | ----- | ----------- | ------------------------------------------------------- |
+| `memberships`   | 5      | 468   | delegate A  | plain CRUD over ported services                         |
+| `billing`       | 4      | 925   | delegate A  | **its OpenAPI prose must be written** — no `docs.py`    |
+| `apps` CRUD     | 13     | 991   | delegate B  | credential lookup already done                          |
+| `provisioning`  | 15     | 1,082 | delegate B  | catalog service already ported                          |
+| `features`      | 16     | 1,189 | delegate C  | `services/features.ts` already ported                   |
+| `organizations` | 28     | 4,508 | delegate C  | largest non-auth surface                                |
+| `users`         | 64     | 3,927 | **primary** | touches identification disclosure (PII) — **remaining** |
+| `auth`          | 22     | 2,566 | **primary** | login, sessions, credentials — **remaining**            |
 
 `users` is the largest surface at 64 routes. Split it the way `directory` was —
 per-resource-group files sharing one prefix — rather than one flat file set.
 
 #### Phase 3 — workers and seeds
 
-- `workers/` — the background loops the FastAPI app owned:
-  `services/billing_customer_dispatch.py` (205),
-  `services/finance_provisioning_dispatch.py` (226),
-  `services/feature_flag_migration.py` (204).
+- `workers/` — **two of three done.** `billing-customer-dispatch` and
+  `finance-provisioning-dispatch` are ported and tested; they are exported but
+  **deliberately not wired into the boot path**, so whoever does the cutover
+  chooses where they start. `services/feature_flag_migration.py` (204) remains.
 - Startup seeds: `services/feature_seeds.py` (547),
   `services/provisioning_seeds.py` (361), `services/plan_seeds.py` (186),
   `services/geo_seeds.py` (184), `services/bootstrap.py` (167).
@@ -491,6 +501,37 @@ output rather than the exit code.
 - Delegates never commit. The orchestrating agent stages and commits.
 
 ## 6. Traps already hit
+
+Added by the 2026-08-07 module batch:
+
+- **Two modules declaring the same OpenAPI schema id takes `/openapi.json` down
+  with a 500** — for every consumer, not just those routes. `billing` and
+  `organizations` both declared `Subscription`. Only one module may own a shared
+  contract; the other imports it through that module's `index.ts`, exactly as
+  `domains/billing/router.py` imports `SubscriptionResponse` from the
+  organizations domain. Nothing in the test suite catches this except a test
+  that actually fetches `/openapi.json`.
+- **A Zod `transform` in a _response_ schema cannot be rendered** into the
+  OpenAPI output document, and fails the whole document the same way. A response
+  schema describes what the serializer already produced; transforms belong on the
+  request side.
+- **`vi.mock('@/services/x', () => ({ … }))` blanks that module's exported
+  constants too.** A partial factory replaces the whole module, so a constant
+  read at module scope by an unrelated importer becomes `undefined` and crashes
+  every suite that pulls it into the graph — not just the one that wrote the
+  mock. Use `importOriginal` and override only what you stub.
+- **A delegate will emit an entire module twice** in one file when a run
+  restarts, with the second copy unreachable and using different names. Check
+  `grep -c '^export async function' ` against the route count before reviewing
+  the logic.
+- **A delegate will "handle" a missing dependency with `try { await import(…) }
+catch { return zeros }`.** That reports a broken queue as a clean run. Any
+  swallow-everything catch around a service call is a defect, not defensiveness.
+- **Watch for a cursor `loadAnchor` cast to `Promise<never>`.** It is how a
+  delegate satisfies the paginator when the anchor's projection is narrower than
+  the page's, and it disables the only type check that would catch the mismatch.
+
+Earlier:
 
 - **Forgetting to mount the router** in `routes.ts` → every test 404s.
 - **`T & Record<string, ReturnType<typeof vi.fn>>` does not type a mock.**
