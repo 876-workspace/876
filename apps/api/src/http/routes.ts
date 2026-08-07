@@ -9,6 +9,7 @@ import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
 import { createDevicesRouter } from '@/modules/devices'
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
+import { createModulesRouter } from '@/modules/modules'
 import { createSessionsRouter } from '@/modules/sessions'
 
 /**
@@ -37,6 +38,7 @@ export function buildRoutes(): Router {
   root.use(createAuditEventsRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
   root.use(createDevicesRouter(resolveGuards))
+  root.use(createModulesRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
 
   return root
