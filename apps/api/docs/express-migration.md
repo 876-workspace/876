@@ -590,7 +590,7 @@ time the same endpoint before asserting an improvement.
       them; a hand-managed environment will not have them.
 - [ ] `@876/sdk`, `@876/admin` and every app smoke-tested against the new service
 - [ ] **`/oauth/token` still enveloped.** Its success and error bodies are
-      wrapped in `{data, error}` in *both* services — a deviation from RFC 6749,
+      wrapped in `{data, error}` in _both_ services — a deviation from RFC 6749,
       and the contract every existing 876 client is coded against. Do not
       "correct" it during cutover; that is a separate, versioned change.
 - [ ] FastAPI tree deleted in its own commit, after the above is green
