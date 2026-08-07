@@ -16,6 +16,7 @@ import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
 import { createModulesRouter } from '@/modules/modules'
 import { createOnboardingRouter } from '@/modules/onboarding'
+import { createProductsRouter } from '@/modules/products'
 import { createSessionsRouter } from '@/modules/sessions'
 
 /**
@@ -49,6 +50,7 @@ export function buildRoutes(): Router {
   root.use(registerEducationRoutes(resolveGuards))
   root.use(createModulesRouter(resolveGuards))
   root.use(createOnboardingRouter(resolveGuards))
+  root.use(createProductsRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
 
   return root
