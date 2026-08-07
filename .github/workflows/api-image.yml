@@ -1,0 +1,104 @@
+name: API container image
+
+# Builds the `@876/api` container image on pull requests that can affect it.
+#
+# The deploy workflow builds this image too, but only on `main` — so an image
+# that cannot build is discovered after merge, during a deploy, with the Worker
+# already pointed at it. Every one of the five defects that broke the first Node
+# image (missing lockfile, `prisma generate` without a datasource URL, generate
+# ordering, a prune that emptied node_modules, and a flattened pnpm tree) would
+# have been caught here for the price of one build.
+#
+# It builds and boots the image. It does not push it: the deploy workflow and
+# Workers Builds own that.
+
+on:
+  pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.dockerignore'
+      - '.github/workflows/api-image.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: api-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # The context is the repository root, matching `image_build_context` in
+      # apps/api/wrangler.jsonc — pnpm keeps one lockfile for the workspace and
+      # a `--frozen-lockfile` install cannot find it from a package context.
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: false
+          load: true
+          tags: 876-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Building proves it compiles; this proves it runs. A missing runtime
+      # dependency or a broken symlink only shows up on the first import, which
+      # a build alone never reaches.
+      - name: Boot the image and serve
+        run: |
+          docker run -d --name api-ci \
+            -e DATABASE_URL='postgresql://u:p@127.0.0.1:1/db' \
+            -e API_INTERNAL_KEY='ci-internal-key' \
+            -e PORT=4000 \
+            -p 4000:4000 \
+            876-api:ci
+
+          for i in $(seq 1 30); do
+            if curl -sf -m 3 http://localhost:4000/health >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "${ready:-0}" != "1" ]; then
+            echo "::error::the container never became healthy"
+            docker logs api-ci
+            exit 1
+          fi
+
+          echo "--- /health ---"
+          curl -sf -m 5 http://localhost:4000/health
+          echo
+
+          # The spec is generated from the Zod contracts at request time, so
+          # serving it exercises every module's route registration. A module
+          # that fails to register, or two that collide on a schema id, fails
+          # here rather than silently 500ing for every consumer in production.
+          echo "--- /openapi.json ---"
+          ops=$(curl -sf -m 30 http://localhost:4000/openapi.json \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print(sum(len(v) for v in d["paths"].values()))')
+          echo "operations: $ops"
+          if [ "$ops" -lt 340 ]; then
+            echo "::error::expected the full route surface, got $ops operations"
+            docker logs api-ci
+            exit 1
+          fi
+
+          # An unauthenticated privileged route must not answer.
+          code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 http://localhost:4000/users)
+          echo "GET /users unauthenticated -> $code"
+          if [ "$code" != "401" ]; then
+            echo "::error::expected 401 from an unauthenticated admin route, got $code"
+            docker logs api-ci
+            exit 1
+          fi
+
+      - name: Container logs
+        if: always()
+        run: docker logs api-ci || true
