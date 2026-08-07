@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 1,023 passing, 34 files
+pnpm node:test          # 1,228 passing, 41 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
