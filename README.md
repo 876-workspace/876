@@ -1,6 +1,6 @@
 # 876 Monorepo
 
-876 is a pnpm/Turborepo workspace for the 876 identity platform — one account that unlocks the consumer app, Enterprise org workspace, internal Console, and Couriers, all backed by a shared FastAPI core and shared packages.
+876 is a pnpm/Turborepo workspace for the 876 identity platform — one account that unlocks the consumer app, Enterprise org workspace, internal Console, and Couriers, all backed by a shared Express API core and shared packages.
 
 ---
 
@@ -14,7 +14,7 @@
 | `@876/couriers`    | `apps/couriers`    | 3003 | Couriers SaaS app — multitenant courier management platform, own Prisma datastore.                          |
 | `@876/billing-app` | `apps/billing`     | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
 | `@876/widgets-api` | `apps/widgets-api` | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
-| `@876/api`         | `apps/api`         | 4000 | FastAPI backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
+| `@876/api`         | `apps/api`         | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
 | `@876/billing-api` | `apps/billing-api` | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
 | `@876/storage-api` | `apps/storage-api` | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
 
@@ -51,17 +51,17 @@ pnpm install
 pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 ```
 
-| App                 | URL                        |
-| ------------------- | -------------------------- |
-| 876 app             | http://localhost:3000      |
-| Enterprise          | http://localhost:3001      |
-| Console             | http://localhost:3002      |
-| Couriers            | http://localhost:3003      |
-| Billing             | http://localhost:3004      |
-| Widgets API         | http://localhost:3005      |
-| FastAPI core (docs) | http://localhost:4000/docs |
-| Billing API (docs)  | http://localhost:4004/docs |
-| Storage API (docs)  | http://localhost:4005/docs |
+| App                | URL                                |
+| ------------------ | ---------------------------------- |
+| 876 app            | http://localhost:3000              |
+| Enterprise         | http://localhost:3001              |
+| Console            | http://localhost:3002              |
+| Couriers           | http://localhost:3003              |
+| Billing            | http://localhost:3004              |
+| Widgets API        | http://localhost:3005              |
+| API core (spec)    | http://localhost:4000/openapi.json |
+| Billing API (docs) | http://localhost:4004/docs         |
+| Storage API (docs) | http://localhost:4005/docs         |
 
 ---
 
@@ -70,7 +70,7 @@ pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 ```bash
 # Development
 pnpm dev                             # Product apps + API + Widgets API
-pnpm dev:api                         # FastAPI only (uvicorn --reload)
+pnpm dev:api                         # API core only (tsx watch)
 pnpm dev:876                         # 876 consumer app + API
 pnpm dev:enterprise                  # Enterprise app + API
 pnpm dev:console                     # Console + API + Widgets API
@@ -81,7 +81,7 @@ pnpm dev:widgets                     # Widgets API only
 # Quality
 pnpm check                           # format:check + lint + typecheck + test
 pnpm format                          # Prettier across all workspaces
-pnpm lint                            # ESLint + Ruff
+pnpm lint                            # ESLint (+ Ruff in the remaining Python services)
 pnpm typecheck                       # tsc --noEmit across all TS workspaces
 
 # Per-workspace
@@ -95,13 +95,18 @@ pnpm --filter @876/api typecheck
 pnpm --filter @876/sdk typecheck
 pnpm --filter @876/core typecheck
 pnpm --filter @876/storage typecheck
-pnpm --filter @876/api test          # pytest
+pnpm --filter @876/api test          # vitest
 pnpm --filter @876/sdk test          # vitest
 pnpm --filter @876/storage test      # vitest
 pnpm --filter @876/billing-api test  # pytest
 pnpm --filter @876/storage-api test  # pytest
 
-# Storage service (Alembic; core apps/api instead uses idempotent bootstrap DDL)
+# Core API schema (Prisma). The service applies no DDL at startup — migrations
+# run in CI, and the seeds are an explicit CLI.
+pnpm --filter @876/api db:deploy     # prisma migrate deploy
+pnpm --filter @876/api seed          # feature/geo/plan/provisioning/bootstrap seeds
+
+# Storage service (Alembic)
 pnpm --filter @876/storage-api db:migrate
 pnpm dev:storage                     # 876 Storage service alone on :4005
 
@@ -127,7 +132,7 @@ Browser / Next.js Apps (876, Enterprise, Console, Couriers)
        │  @876/admin (server-only, internal-key tier)
        │
        ▼
-  apps/api  (FastAPI — identity/platform source of truth)
+  apps/api  (Express — identity/platform source of truth)
        │
        ▼
   PostgreSQL (identity/platform DB, SQLAlchemy)
@@ -141,7 +146,7 @@ to identity. Core entities are referenced by opaque ID only,
 resolved through @876/admin.
 ```
 
-**Core boundary:** All identity/platform database access, provider calls, and business logic live in `apps/api`. Next.js apps never make raw fetches to FastAPI — they call typed methods on `@876/sdk` or `@876/admin`. An app may still own a database for data local to itself (e.g. Console's and Couriers' in-app Prisma datastores) as long as it never duplicates identity tables and references core entities by opaque ID only.
+**Core boundary:** All identity/platform database access, provider calls, and business logic live in `apps/api`. Next.js apps never make raw fetches to the API — they call typed methods on `@876/sdk` or `@876/admin`. An app may still own a database for data local to itself (e.g. Console's and Couriers' in-app Prisma datastores) as long as it never duplicates identity tables and references core entities by opaque ID only.
 
 ### API Auth Tiers
 
@@ -174,7 +179,7 @@ agent rules live in `.claude/rules/` and are mirrored in `.agents/rules/` and
 ## Key Rules
 
 1. **pnpm only** — never `npm` or `yarn`.
-2. **All data/provider logic in `apps/api`** — Next.js apps must not contain raw `fetch` calls to FastAPI or direct DB access.
+2. **All data/provider logic in `apps/api`** — Next.js apps must not contain raw `fetch` calls to the API or direct DB access.
 3. **`@876/admin` is server-only** — never import it in browser code. The secret service key (`API_876_SERVICE_KEY`, legacy alias `API_INTERNAL_KEY`) must never appear in a client bundle.
 4. **`@876/sdk` is request-only** — it does not own cookies, session stores, or navigation.
 5. **App-local datastores (Console, Couriers) are server-only and identity-free** — they must never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only, resolved through `$876`.

@@ -36,7 +36,14 @@ What is **not** done, and cannot be done from a dev container:
    commit), but no environment has run it yet.
 3. **Nobody has measured the two services against each other.** §7 explains why
    the performance claim is not automatic.
-4. **Two runbooks lost their script** when the Python tree was deleted:
+4. **The interactive API docs UI was not ported.** FastAPI served Swagger UI at
+   `/docs` and ReDoc at `/redoc` for free. The Express service serves the spec
+   at `/openapi.json` and nothing at `/docs`. An equivalent means loading a
+   renderer from a CDN — a third-party script inside the identity service, which
+   is a decision to take deliberately rather than as a migration side effect.
+   `http/middleware/envelope.ts` already exempts both paths, so adding one is a
+   route and a decision, not a refactor.
+5. **Two runbooks lost their script** when the Python tree was deleted:
    `scripts/reconcile_workos.py` (`docs/workos-sync.md`) and
    `scripts/prune_billing_customer_outbox.py`
    (`.claude/rules/customer-architecture.md`). Both are recoverable at `9c4c30b`
