@@ -10,6 +10,32 @@ Companion rules: `.claude/rules/express-api.md` (the contract),
 
 ---
 
+## 0. Picking this up cold
+
+```bash
+cd /workspaces/876/apps/api
+git switch feat/api-express-foundation
+pnpm node:typecheck && pnpm node:lint && pnpm node:test && pnpm node:boundaries
+```
+
+Expect **1,228 passing in 41 files, 0 boundary errors**. If that is what you
+see, the tree is where this document says it is.
+
+Then: **§5 → "What is left — the finish plan"**. It is four phases. Start
+Phase 1 (`services/auth.py`) yourself and launch Phase 2's delegate lanes in
+parallel — the lane table names exactly which module goes to which lane and why.
+
+Three things that will otherwise cost you an hour each:
+
+1. **Run every verification command in the foreground.** Backgrounding one is
+   how a session ends up narrating a pass that never happened.
+2. **The delegate tools cannot run any command in this container.** They write
+   blind. You own every check.
+3. **Put `Mocked<T>` from `@/test/mocked` in every brief.** One mistyped mock
+   helper produced 232 of the 240 typecheck errors in the last delegate batch.
+
+---
+
 ## 1. Where things stand
 
 **Branch:** `feat/api-express-foundation` (treat as the feature integration
@@ -43,6 +69,8 @@ command is how a session ends up narrating a pass that never happened
 | Docs                | All 20 `domains/*/docs.py` translated to `src/modules/*/*.docs.ts` (759 constants)                                                                                                                                                                                                                |
 | Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
 | Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
+| Services            | **9 of 10** in `src/services/` — `identity-sync`, `provisioning`, `identification-secrets`, `features`, `provisioning-catalog`, `organization-bootstrap`, `finance-provisioning`, `billing-customer-sync`, `auth-telemetry`. Only `services/auth.py` remains.                                     |
+| Test helpers        | `src/test/mocked.ts` — `Mocked<T>`, the only correct way to type a mocked repository or provider in this repo                                                                                                                                                                                     |
 
 ### Modules migrated (16 of 22)
 
@@ -336,41 +364,24 @@ per-resource-group files sharing one prefix — rather than one flat file set.
 See §8. Primary agent only: it deletes the FastAPI tree, and a mistake there is
 not recoverable from the diff alone.
 
-### Running the delegate lanes
+### What delegating actually cost, and will cost again
 
-Both delegate tools work and were used for the whole service layer in one pass
-(2026-08-07): four lanes produced seven services in about five minutes.
+Both delegate tools work; the exact invocations and their traps are in **Tool
+state** below. On 2026-08-07 four lanes produced seven services in about five
+minutes — and then took roughly as long again to review. Budget for both halves.
 
-```bash
-# muse — the better of the two for a module port
-cd apps/api && muse exec --trust-workspace --reasoning-effort high \
-  --prompt-file /workspaces/876/.claude/briefs/muse/<brief>.md
-
-# agy — Gemini only; the Claude/GPT bucket is separate and usually empty
-agy --model=gemini-3.6-flash-high --print-timeout 45m \
-    --output-format stream-json --dangerously-skip-permissions \
-    --print "$(cat .claude/briefs/muse/<brief>.md)"
-```
-
-**Neither tool can run a command in this container** — muse's bash is sandboxed
-through bubblewrap, which cannot create a namespace here. They write blind and
-say so. **The orchestrator owns every verification**, without exception.
-
-What that cost on the service layer, and what to expect again:
-
-- **240 typecheck errors, 232 of them in the delegates' test files.** Only 8
-  were in source. The single biggest cause is one mistake, now fixed once and
-  for all in `src/test/mocked.ts`: a mock helper typed
-  `T & Record<string, ReturnType<typeof vi.fn>>` does **not** expose
-  `.mockResolvedValue` on a named method, because TypeScript resolves a named
-  property from the declared member and ignores the index signature. Use
-  `Mocked<T>` from `@/test/mocked`. **Put that in every delegate brief.**
-- **3 runtime failures out of 1,228.** Two were fixtures that violated a rule
-  the implementation correctly enforced (a platform feature key must start with
-  `platform_`); one was an unstubbed return value. In every case the _code_ was
-  right and the _test_ was wrong — check which before "fixing" either.
-- Delegates also reliably forget to freeze the clock. A fixture written against
-  a frozen `NOW` constant is already expired against the real clock.
+- **240 typecheck errors, 232 of them in the delegates' test files.** Only 8 were
+  in source, which is the real signal: the _logic_ was largely sound. The single
+  biggest cause was one mistake, now fixed once and for all in
+  `src/test/mocked.ts` — see §6. **Name `Mocked<T>` in every brief.**
+- **3 runtime failures out of 1,228.** Two were fixtures that violated a rule the
+  implementation correctly enforced; one was an unstubbed return value. In every
+  case the _code_ was right and the _test_ was wrong — establish which before
+  changing either.
+- **One circular import** (`auth-telemetry` ↔ its repository), caught only by
+  `pnpm node:boundaries`. Run it; the other four checks pass straight through it.
+- Delegates reliably forget to freeze the clock, and reliably stack
+  `mockResolvedValueOnce` values they never consume.
 
 ### The brief that works
 
@@ -415,75 +426,100 @@ Two checks, both cheap, both catching things a passing suite cannot:
   — that is what caught the two deviations. A delegation you do not inspect is
   not a delegation.
 
-### Tool state
+### Tool state — verified 2026-08-07
 
-Both delegation routes were exhausted on 2026-08-07. **Check both before
-planning around either.**
+| Tool             | State                                       | Use it for                                       |
+| ---------------- | ------------------------------------------- | ------------------------------------------------ |
+| **Muse Code**    | **working**                                 | module and service ports — the best of the three |
+| **agy** (Gemini) | **working**                                 | a second lane; Gemini models only                |
+| **Codex**        | **exhausted** until `Aug 8th, 2026 4:03 AM` | the larger module ports once it returns          |
 
-- **Codex** (`codex exec -m gpt-5.6-terra`): usage limit reached. The CLI itself
-  reported `try again at Aug 8th, 2026 4:03 AM` when probed at 04:17Z on
-  2026-08-07 — note that is the **8th**, not later the same day, which an earlier
-  draft of this file got wrong. Best tool for the larger module ports once it is
-  back. Probe it with `codex exec -m gpt-5.6-terra "Reply with exactly:
-CODEX_OK"`; an exhausted quota still exits 0 and prints the limit message, so
-  read the output rather than the exit code.
-- **agy** capacity is **per model group, and it is not unlimited** — an earlier
-  draft of this file and of `.claude/rules/cli.md` both claimed it was. Measured
-  2026-08-07: Gemini 95% weekly / 98% five-hour, Claude+GPT **7% weekly / 0%
-  five-hour**. The Claude tier resets five-hourly. Query it before delegating —
-  it costs no agent turn:
+#### Muse Code — the primary delegate
 
-  ```bash
-  agy --output-format json --print-timeout 60s -p "/quota"
-  ```
+```bash
+cd apps/api && muse exec --trust-workspace --reasoning-effort high \
+  --prompt-file /workspaces/876/.claude/briefs/muse/<brief>.md
+```
 
-  An exhausted bucket surfaces only as `"status":"ERROR"` with `"error":
-"Individual quota reached…"` in the stream-json result. Under plain `--print` it
-  looks identical to a model that read its context and gave up. **Send agy work
-  to Gemini**, which is also what the Models table above says.
+- **`--trust-workspace` is required.** Without it Muse prints a single warning
+  that the workspace is untrusted and **silently skips `AGENTS.md`** — it runs
+  without the project rules.
+- **It cannot run any command here.** Its bash is sandboxed through bubblewrap,
+  which cannot create a namespace in this container. It says so honestly rather
+  than claiming green checks, but it means it writes blind.
+- **Monitor at 60–90s, not 5 minutes.** It finishes a whole module in about five
+  minutes, so a five-minute check fires once, after the run is over.
+- Measured throughput: four lanes produced seven services in ~5 minutes.
 
-  `--effort` is rejected for the Claude models — passing it kills the run
-  instantly.
+#### agy — the second lane, Gemini only
 
-  **`--print-timeout` defaults to `5m0s`, and that was the whole problem.** Four
-  briefs on 2026-08-07 looked like model failures and were not: the flag killed
-  each run at five minutes. Tool calls had already executed, so the refresh of
-  this document **applied all seven of its edits while printing nothing and
-  exiting 0** — the run that looked most like a failure was the one that worked.
-  Nothing was wrong with the briefs, and splitting them further would not have
-  helped.
+```bash
+agy --model=gemini-3.6-flash-high --print-timeout 45m \
+    --output-format stream-json --dangerously-skip-permissions \
+    --print "$(cat .claude/briefs/muse/<brief>.md)"
+```
 
-  The working invocation for any run longer than a few minutes:
+- **Capacity is per model group and is not unlimited.** Measured 2026-08-07:
+  Gemini 95% weekly / 98% five-hour; Claude+GPT **7% weekly / 0% five-hour**.
+  **Send agy work to Gemini.** Check first — it costs no agent turn:
+  `agy --output-format json --print-timeout 60s -p "/quota"`.
+- An exhausted bucket surfaces only as `"status":"ERROR"` with
+  `"error":"Individual quota reached…"` in the stream-json result. Under plain
+  `--print` it looks identical to a model that read its context and gave up.
+- **`--print-timeout` defaults to `5m0s`.** Always set it above the real
+  duration; the default kills a run mid-flight, having already executed its tool
+  calls, and exits 0 with nothing on stdout.
+- **`--print` comes last**, because it takes the prompt as its value.
+- `--effort` is rejected by the Claude models and kills the run instantly.
+- Plain `--print` to a redirect can produce an empty file even on success
+  ([antigravity-cli#408](https://github.com/google-antigravity/antigravity-cli/issues/408),
+  still open) — hence `--output-format stream-json`.
 
-  ```bash
-  agy --model=claude-sonnet-4-6 \
-      --print-timeout 50m \
-      --output-format stream-json \
-      --dangerously-skip-permissions \
-      --print "$(cat .claude/briefs/agy/<brief>.md)"
-  ```
+#### Codex
 
-  - **`--print-timeout`** must exceed the real duration of the work. This is the
-    single flag that makes agy usable for a module port.
-  - **`--output-format stream-json`** emits typed NDJSON (`init`,
-    `step_update`, terminal `result` with a `status`) incrementally, so progress
-    is visible during the run and the outcome is machine-checkable at the end.
-    Plain `--print` to a redirect can produce an empty file even on success —
-    [issue #408](https://github.com/google-antigravity/antigravity-cli/issues/408),
-    still open: stdout is dropped when it is not a TTY.
-  - **`--print` comes last**, because it takes the prompt as its value.
+Probe with `codex exec -m gpt-5.6-terra "Reply with exactly: CODEX_OK"`. An
+exhausted quota still **exits 0** and prints the limit message, so read the
+output rather than the exit code.
 
-  Even with the right flags, **confirm what it did with `git status` and
-  `git diff`** rather than from its own report.
+#### Whichever tool
 
-- Background long runs and start a 5-minute `Monitor` alongside each one
-  (`pgrep -f "bin/cod[e]x"` — bracket the letter, or the monitor matches itself).
-
----
+- Background long runs and start a `Monitor` alongside each. Bracket a letter in
+  the `pgrep` pattern (`bin/cod[e]x`, `prompt-fil[e]`) or the monitor matches its
+  own command line and reports "still running" forever.
+- **Confirm what it did with `git status` and `git diff`**, never from its own
+  report.
+- Delegates never commit. The orchestrating agent stages and commits.
 
 ## 6. Traps already hit
 
 - **Forgetting to mount the router** in `routes.ts` → every test 404s.
+- **`T & Record<string, ReturnType<typeof vi.fn>>` does not type a mock.**
+  TypeScript resolves a named property from the declared member and ignores the
+  index signature, so `repo.findUser.mockResolvedValue(...)` fails to compile
+  even though it works at runtime. Use **`Mocked<T>` from `@/test/mocked`**,
+  which maps over `keyof T`. This one mistake produced 232 of the 240 typecheck
+  errors in the 2026-08-07 delegate batch.
+- **A repository type belongs in the repository file.** Declaring
+  `XRepository` in `x.ts` and importing it from `x.repository.ts` — while `x.ts`
+  imports the factory back — is a circular dependency that `node:boundaries`
+  fails on. `auth-telemetry` shipped with exactly that and had to be untangled.
+- **A fixture with a frozen `NOW` needs a frozen clock.** Against the real clock
+  every `expiresAt: NOW + 600` fixture is already in the past. Use
+  `vi.useFakeTimers({ toFake: ['Date'] })` — faking timers wholesale stalls
+  supertest, which drives real sockets.
+- **`clearMocks` does not drain the `mockResolvedValueOnce` queue.** Values
+  queued and not consumed leak into the next test and silently override its
+  stub. One such leak disabled a cross-user authorization assertion entirely.
+- **When a delegate's test fails, check which of the two is wrong.** In the
+  2026-08-07 batch, two of three runtime failures were fixtures violating a rule
+  the implementation correctly enforced. The code was right and the test was
+  wrong; "fixing" the code would have removed a real check.
+- **`prisma migrate` is the only way to change the schema.** The FastAPI service
+  builds its schema from `ensure_*` functions replayed at boot, and those only
+  create a table that is **absent** — they never alter an existing one. That is
+  why `communication_calls` did not exist and `communication_messages` was
+  missing `idempotency_scope`. Assume any column the SQLAlchemy model declares
+  but the baseline lacks is simply not in the live database.
 - **`agy`'s flag order**: `--print` takes the prompt, so it must come last.
 - **Vitest module stubs**: `vi.spyOn(config, 'getSettings')` works, but a test
   asserting "rejects when unset" must present a credential that _would_ work
@@ -547,5 +583,14 @@ time the same endpoint before asserting an improvement.
 - [ ] Dockerfile and `wrangler.jsonc` pointed at the Node entry point
 - [ ] Package scripts flipped: `dev`/`build`/`start`/`test`/`lint` to the
       `node:*` equivalents
+- [ ] **Prisma migrations applied to every environment.** Two exist beyond the
+      baseline and both fix a table the FastAPI service never created properly:
+      `20260806000001_create_communication_calls` and
+      `20260807000001_add_communication_message_idempotency_scope`. CI applies
+      them; a hand-managed environment will not have them.
 - [ ] `@876/sdk`, `@876/admin` and every app smoke-tested against the new service
+- [ ] **`/oauth/token` still enveloped.** Its success and error bodies are
+      wrapped in `{data, error}` in *both* services — a deviation from RFC 6749,
+      and the contract every existing 876 client is coded against. Do not
+      "correct" it during cutover; that is a separate, versioned change.
 - [ ] FastAPI tree deleted in its own commit, after the above is green
