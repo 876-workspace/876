@@ -44,11 +44,12 @@ command is how a session ends up narrating a pass that never happened
 | Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
 | Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
 
-### Modules migrated (12 of 22)
+### Modules migrated (14 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
 `addresses`, `modules`, `directory` (all 50 routes), `onboarding`, `products`,
-and `apps` (credential lookup only — its CRUD routes are still outstanding).
+`communications`, `mobile-numbers`, and `apps` (credential lookup only — its
+CRUD routes are still outstanding).
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
 `src/modules/directory/**` is the example for a **large** module: three resource
@@ -97,6 +98,19 @@ methods are worth reusing, because two of them found real divergences:
   `active`) but whose columns are NOT NULL: sending null to any of them reaches
   either `.strip()` or the constraint and raises, so the Zod schemas reject it
   as a 422 instead of reproducing a 500.
+- **`communications` and `mobile-numbers`** were verified together the same way
+  — **15 operations, 0 differences**. Porting `communications` also surfaced a
+  live-schema defect: `communication_messages` has no `idempotency_scope`
+  column, although the SQLAlchemy model has always declared one plus a
+  `(scope, key)` unique constraint. The FastAPI service builds its schema from
+  `ensure_*` functions replayed at boot, and those only create an absent table —
+  they never alter an existing one — so every send path raises today. This is
+  the same defect the preceding migration fixed for `communication_calls`, which
+  was missing entirely. Migration `20260807000001` adds the column, backfills it
+  by the same `app → org → user → 'platform'` precedence the service computes,
+  and adds the unique index. The pre-existing `(app_id, idempotency_key)` index
+  is left in place: it is redundant when `app_id` is set and constrains nothing
+  when it is null, since Postgres treats each NULL as distinct.
 - **`directory`** was verified by generating `/openapi.json` from the built app
   and diffing it against the FastAPI router operation by operation: **50
   operations, 0 differences** in method, path, or `operationId`. Do this for
@@ -254,17 +268,20 @@ written rather than translated.
 **Nothing is mounted until you add it to `src/http/routes.ts`.** That is the one
 shared file; forgetting it shows up as every test 404ing.
 
-#### Start here — four modules with no unported prerequisites
+#### Start here — two modules with no unported prerequisites
 
-Their only dependencies are providers that are already done. Any of these can be
+Their only dependencies are providers that are already done. Either can be
 picked up cold.
 
-| Module            | Routes | Lines | Depends on                                         |
-| ----------------- | ------ | ----- | -------------------------------------------------- |
-| `oauth`           | 11     | 1,836 | nothing                                            |
-| `communications`  | 7      | 576   | `providers/twilio` ✓, `providers/communications` ✓ |
-| `mobile-numbers`  | 8      | 684   | `providers/twilio` ✓, `platform/phone` ✓           |
-| `twilio-webhooks` | 5      | 247   | `providers/twilio/signatures` ✓                    |
+| Module            | Routes | Lines | Depends on                      |
+| ----------------- | ------ | ----- | ------------------------------- |
+| `oauth`           | 11     | 1,836 | nothing                         |
+| `twilio-webhooks` | 5      | 247   | `providers/twilio/signatures` ✓ |
+
+`twilio-webhooks` also needs `buildVoiceTwimlUrl` / `voiceTemplateSignature`
+from `@/modules/communications` — the webhook re-computes the signature and
+refuses a mismatch, which is what stops a TwiML URL being edited into serving a
+different template. Both are exported from that module's `index.ts`.
 
 `twilio-webhooks` is **public** and verifies a raw-body signature, so it must be
 mounted **before `express.json()`** — the signature is over the exact bytes, and
