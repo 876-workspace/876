@@ -1,4 +1,5 @@
 export {
+  attachPrincipal,
   createAuthGuards,
   type AuthDependencies,
   type AuthGuards,

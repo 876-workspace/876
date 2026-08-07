@@ -72,6 +72,24 @@ function isRealm(value: unknown): value is Realm {
 }
 
 /**
+ * Populate the principal without demanding anything of it.
+ *
+ * The faithful equivalent of a FastAPI route taking
+ * `principal: Annotated[Principal, Depends(resolve_principal)]` while its router
+ * only carries `require_api_key`. Several read routes do exactly that so they
+ * can widen what they return for a platform caller — the directory's
+ * `include_deleted` is the first — and without this the `apiKey` tier never
+ * resolves the internal key, so `principal.internal` would read `false` for a
+ * caller that genuinely holds platform authority.
+ *
+ * This grants nothing on its own. It is attached as route `middleware`, after
+ * the tier's guard, so the tier still decides who may call at all.
+ */
+export const attachPrincipal: RequestHandler = guard(async (req) => {
+  setPrincipal(req, await resolvePrincipal(req))
+})
+
+/**
  * Resolve the caller from the credentials on the request.
  *
  * Order matters: the internal key wins, because a server-to-server call that
