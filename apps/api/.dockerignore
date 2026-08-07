@@ -1,0 +1,35 @@
+# Build output and local state — never in the image, and excluding them keeps
+# the build context small enough that a rebuild is not dominated by upload time.
+node_modules
+dist
+.open-next
+.wrangler
+coverage
+
+# The FastAPI service. Kept in the tree until the cutover commit deletes it, but
+# it must not enter the Node image.
+.venv
+__pycache__
+*.pyc
+api/
+core/
+db/
+domains/
+providers/
+schemas/
+services/
+utils/
+tests/
+scripts/
+main.py
+requirements.txt
+pyproject.toml
+
+# Secrets and local env files.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+*.log
