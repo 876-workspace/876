@@ -9,6 +9,11 @@ name: API database baseline
 # hence a dispatchable job with a dry run that changes nothing.
 #
 # This deploys nothing. It only touches the `_prisma_migrations` bookkeeping.
+#
+# The target is `API_DATABASE_URL`. The unprefixed `DATABASE_URL` secret held a
+# courier connection string, which is how identity DDL was aimed at another
+# service's database; the dry run below now refuses outright when the target
+# carries none of the identity tables.
 
 on:
   workflow_dispatch:
@@ -33,16 +38,16 @@ jobs:
         if: inputs.mode == 'dry-run'
         run: pnpm --filter @876/api run db:baseline -- --dry-run
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
 
       - name: Resolve the baseline
         if: inputs.mode == 'apply'
         run: pnpm --filter @876/api run db:baseline
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
 
       - name: Show migration status
         if: always()
         run: pnpm --filter @876/api exec prisma migrate status || true
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
