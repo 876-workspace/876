@@ -1,0 +1,43 @@
+name: Fetch Workers Build logs (temporary)
+
+# TEMPORARY DIAGNOSTIC — delete once the 876-api Workers Build is green.
+#
+# The Workers Builds log is not reachable from a dev container: the wrangler
+# OAuth token there has no `workers_builds` scope, so the failure can only be
+# inferred. This job runs where `CLOUDFLARE_API_TOKEN` exists and prints the
+# recent builds plus the failing build's log, so the next fix is based on what
+# the build actually said rather than on a guess.
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/api-build-logs.yml'
+  workflow_dispatch:
+
+jobs:
+  logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch recent builds and logs
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -u
+          base="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID"
+          get() {
+            echo "----- GET $1 -----"
+            curl -s -m 60 -H "Authorization: Bearer $CF_API_TOKEN" "$base/$1" | head -c 6000
+            echo
+          }
+
+          # The Workers Builds surface has moved between preview paths; try each
+          # rather than failing on the first miss.
+          get "builds/builds?per_page=10"
+          get "builds/repos"
+          get "workers/scripts/876-api/builds?per_page=10"
+
+          for id in dfb29a51-17bc-45ff-abcb-3d74d44867f5 02f9f4de-7e74-4cdc-a185-a9be8b361425; do
+            get "builds/builds/$id"
+            get "builds/builds/$id/logs"
+          done
