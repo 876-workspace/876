@@ -20,6 +20,11 @@
  * `src/db/baseline.ts` and is unit-tested there: no Postgres is reachable from
  * a dev container, and the wrong answer either fails every deploy or silently
  * skips real tables. This file is only the I/O around it.
+ *
+ * `--dry-run` reports the decision and the evidence behind it and writes
+ * nothing. **An unknown flag is rejected rather than ignored** — a mistyped
+ * `--dry-run` that silently performed the real resolve is exactly how this
+ * script first ran against a database nobody meant to touch.
  */
 import { spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
@@ -37,14 +42,21 @@ const BASELINE = '00000000000000_baseline'
  *
  * All present means a pre-Prisma database; none present means an empty one.
  * A mix is the state this refuses to act on.
+ *
+ * Every name here belongs to the identity schema and to no other database on
+ * the platform, so "none of these, but the database is not empty" identifies a
+ * connection string aimed at the wrong service. `addresses` used to be in this
+ * list and is deliberately not: couriers has an `addresses` table too, which is
+ * precisely the collision that made a misaimed deploy look like a schema
+ * conflict rather than the wrong database.
  */
 const SAMPLE_TABLES = [
   'users',
   'organizations',
   'memberships',
   'apps',
-  'addresses',
   'features',
+  'user_identifications',
 ] as const
 
 function prismaResolve(flag: '--applied' | '--rolled-back'): void {
@@ -72,6 +84,15 @@ async function readDatabaseState(databaseUrl: string) {
       [[...SAMPLE_TABLES]]
     )
 
+    // Counted so "none of the identity tables are here" can be told apart from
+    // "there is nothing here at all". The first is the wrong database; the
+    // second is a fresh one that `migrate deploy` should build normally.
+    const total = await client.query<{ count: string }>(
+      `SELECT count(*) AS count FROM information_schema.tables
+        WHERE table_schema = 'public'`
+    )
+    const publicTableCount = Number(total.rows[0]?.count ?? 0)
+
     const migrationsTable = await client.query(
       `SELECT 1 FROM information_schema.tables
         WHERE table_schema = 'public' AND table_name = '_prisma_migrations'`
@@ -80,6 +101,7 @@ async function readDatabaseState(databaseUrl: string) {
     if (migrationsTable.rows.length === 0) {
       return {
         presentTables: present.rows.map((row) => row.table_name),
+        publicTableCount,
         baselineRow: null,
       }
     }
@@ -96,6 +118,7 @@ async function readDatabaseState(databaseUrl: string) {
 
     return {
       presentTables: present.rows.map((entry) => entry.table_name),
+      publicTableCount,
       baselineRow: row
         ? { finishedAt: row.finished_at, rolledBackAt: row.rolled_back_at }
         : null,
@@ -106,18 +129,62 @@ async function readDatabaseState(databaseUrl: string) {
 }
 
 async function main(): Promise<void> {
+  // A bare `--` is pnpm's argument separator, not something a caller typed:
+  // `pnpm run db:baseline -- --dry-run` forwards it through verbatim. Dropping
+  // it is not a loosening of the check below — the workflow's dry run failed
+  // outright with `Unknown argument(s): --` until it was handled.
+  const args = process.argv.slice(2).filter((arg) => arg !== '--')
+  const unknown = args.filter((arg) => arg !== '--dry-run')
+  if (unknown.length > 0) {
+    console.error(
+      `Unknown argument(s): ${unknown.join(', ')}\n` +
+        'Usage: baseline-database.ts [--dry-run]'
+    )
+    process.exit(1)
+  }
+  const dryRun = args.includes('--dry-run')
+
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) {
     console.error('DATABASE_URL is not set.')
     process.exit(1)
   }
 
-  const { presentTables, baselineRow } = await readDatabaseState(databaseUrl)
+  const { presentTables, publicTableCount, baselineRow } =
+    await readDatabaseState(databaseUrl)
   const decision = decideBaselineAction({
     presentTables,
     sampleTables: SAMPLE_TABLES,
+    publicTableCount,
     baselineRow,
   })
+
+  // Print the evidence on every run, dry or not: a decision about a production
+  // schema should be readable in the log without re-running anything.
+  console.log(
+    `Host: ${new URL(databaseUrl).host}${dryRun ? '  (dry run — nothing will be written)' : ''}`
+  )
+  console.log(
+    `Identity tables present: ${presentTables.length}/${SAMPLE_TABLES.length}` +
+      (presentTables.length ? ` — ${[...presentTables].sort().join(', ')}` : '')
+  )
+  console.log(`Tables in the public schema: ${publicTableCount}`)
+  console.log(
+    `Baseline migration record: ${
+      baselineRow
+        ? `finished_at=${baselineRow.finishedAt?.toISOString() ?? 'null'}, ` +
+          `rolled_back_at=${baselineRow.rolledBackAt?.toISOString() ?? 'null'}`
+        : 'none'
+    }`
+  )
+  console.log(`Decision: ${JSON.stringify(decision)}`)
+
+  if (dryRun) {
+    console.log('Dry run — nothing was written.')
+    // A refusal is still a failure, so a dry run surfaces it before a deploy.
+    if (decision.action === 'refuse') process.exit(1)
+    return
+  }
 
   if (decision.action === 'skip') {
     console.log(
@@ -130,10 +197,17 @@ async function main(): Promise<void> {
 
   if (decision.action === 'refuse') {
     console.error(
-      'Refusing to baseline a partially-built schema.\n' +
-        `  missing: ${decision.missing.join(', ')}\n` +
-        'Marking the baseline applied would permanently skip those tables, and\n' +
-        'applying it would fail on the ones that exist. Resolve by hand.'
+      decision.reason === 'foreign-database'
+        ? `This is not the identity database.\n` +
+            `  host: ${new URL(databaseUrl).host}\n` +
+            `  it holds ${publicTableCount} tables and none of: ${decision.missing.join(', ')}\n` +
+            'DATABASE_URL points at another service. Applying the identity\n' +
+            'migrations here would build the whole schema inside someone\n' +
+            "else's database. Point it at the identity database instead."
+        : 'Refusing to baseline a partially-built schema.\n' +
+            `  missing: ${decision.missing.join(', ')}\n` +
+            'Marking the baseline applied would permanently skip those tables, and\n' +
+            'applying it would fail on the ones that exist. Resolve by hand.'
     )
     process.exit(1)
   }
