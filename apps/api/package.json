@@ -25,6 +25,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "node scripts/guard-migrate.mjs",
     "db:deploy": "prisma migrate deploy",
+    "db:baseline": "tsx scripts/baseline-database.ts",
     "db:pull": "prisma db pull",
     "db:studio": "prisma studio",
     "db:validate": "prisma validate",

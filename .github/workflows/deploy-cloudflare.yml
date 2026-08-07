@@ -155,6 +155,15 @@ jobs:
       # The Express service applies no DDL at boot, unlike the FastAPI service
       # it replaces, which rebuilt its schema from `ensure_*` functions on every
       # start. Migrations are applied here or they are not applied at all.
+      # The identity database predates Prisma — the FastAPI service built it
+      # from `ensure_*` functions, and the baseline migration only *describes*
+      # that schema. Applying it would fail on `relation "addresses" already
+      # exists`, which is what broke the first deploy. This resolves the
+      # baseline once per environment and is a no-op afterwards.
+      - name: Baseline the database
+        run: pnpm --filter @876/api run db:baseline
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Apply migrations
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
