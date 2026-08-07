@@ -18,12 +18,29 @@ git switch feat/api-express-foundation
 pnpm node:typecheck && pnpm node:lint && pnpm node:test && pnpm node:boundaries
 ```
 
-Expect **1,412 passing in 48 files, 0 boundary errors**. If that is what you
-see, the tree is where this document says it is.
+Expect **1,435 passing in 49 files, 0 boundary errors, 0 typecheck errors**.
 
-Then: **§5 → "What is left — the finish plan"**. Phases 1 and 2 are done except
-for `users` and `auth`; Phase 3 is half done. Start with `users` or `auth` —
-both stay with the primary agent.
+**The migration is complete.** All 22 modules are ported and mounted, the
+FastAPI tree is deleted, and `pnpm dev/build/test/lint/typecheck` in this package
+mean the Express service. The route surface was verified by diffing the
+generated `/openapi.json` against every FastAPI router at the last commit that
+had both: **344 operations on each side, zero missing and zero extra.**
+
+What is **not** done, and cannot be done from a dev container:
+
+1. **No app has been smoke-tested against the new service.** `@876/sdk`,
+   `@876/admin`, and the four Next.js apps talk to this API and none of them has
+   been exercised against it. Do this before any deploy.
+2. **The two migrations beyond the baseline have not been applied anywhere.**
+   CI now applies them (that step did not exist before — see the `ci(api)`
+   commit), but no environment has run it yet.
+3. **Nobody has measured the two services against each other.** §7 explains why
+   the performance claim is not automatic.
+4. **Two runbooks lost their script** when the Python tree was deleted:
+   `scripts/reconcile_workos.py` (`docs/workos-sync.md`) and
+   `scripts/prune_billing_customer_outbox.py`
+   (`.claude/rules/customer-architecture.md`). Both are recoverable at `9c4c30b`
+   and need a Node equivalent.
 
 Three things that will otherwise cost you an hour each:
 
@@ -48,7 +65,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 1,412 passing, 48 files
+pnpm node:test          # 1,435 passing, 49 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -73,7 +90,7 @@ command is how a session ends up narrating a pass that never happened
 | Workers             | `src/workers/` — `billing-customer-dispatch`, `finance-provisioning-dispatch`. Exported but **not wired into the boot path**.                                                                                                                                                                     |
 | Test helpers        | `src/test/mocked.ts` — `Mocked<T>`, the only correct way to type a mocked repository or provider in this repo                                                                                                                                                                                     |
 
-### Modules migrated (20 of 22)
+### Modules migrated (22 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
 `addresses`, `modules`, `directory` (all 50 routes), `onboarding`, `products`,
@@ -82,12 +99,11 @@ CRUD routes plus the credential lookup), `memberships`, `billing` (17 routes,
 not the 4 an earlier draft of this document claimed), `provisioning`,
 `features`, and `organizations` (all 28 routes across its three routers).
 
-**Only `users` (64 routes) and `auth` (22 routes) remain.** Both stay with the
-primary agent: `users` touches identification disclosure (PII) and `auth` is the
-login and session-issuing surface.
+…plus `users` (64 routes, split across seven resource groups) and `auth` (22
+routes over the already-ported `services/auth.ts`).
 
-The six modules in the 2026-08-07 batch were verified by diffing
-`/openapi.json` against the FastAPI routers: **130 operations, 0 missing.**
+Verified by diffing the generated `/openapi.json` against every FastAPI router:
+**344 operations on each side, 0 missing and 0 extra.**
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
 `src/modules/directory/**` is the example for a **large** module: three resource
@@ -501,6 +517,21 @@ output rather than the exit code.
 - Delegates never commit. The orchestrating agent stages and commits.
 
 ## 6. Traps already hit
+
+Added by the final batch (`users`, `auth`, seeds):
+
+- **A delegate will invent a fallback identity rather than fail.** `createUser`
+  generated a local id when WorkOS was unreachable, producing a user row whose
+  `workos_user_id` points at nothing — an account that exists, looks healthy,
+  and can never sign in. Any `catch` that substitutes a made-up value for a
+  provider's answer is a defect.
+- **Deleting a user must delete the provider user.** WorkOS has no disable
+  state, so that call _is_ the credential revocation; swallowing its failure
+  leaves a tombstoned account able to authenticate.
+- **Check every column name against the schema, not against the usual pair.**
+  `user_app_enrollments` has `enrolled_at`/`last_seen_at`, not
+  `created_at`/`updated_at`, and only the latter moves on a repeat visit.
+- **`vi.mock` of a service blanks its constants** — see below; this bit twice.
 
 Added by the 2026-08-07 module batch:
 
