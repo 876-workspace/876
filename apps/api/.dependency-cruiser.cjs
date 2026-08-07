@@ -32,9 +32,14 @@ module.exports = {
         'Only a *.repository.ts file may import the Prisma client. A service or controller ' +
         "that queries directly puts a module's table access outside the file that owns it.",
       severity: 'error',
-      // server.ts is the composition root and owns the connection lifecycle —
-      // it calls disconnectDb() on shutdown. It never issues a query.
-      from: { pathNot: '(\\.repository\\.ts$|^src/db/|^src/server\\.ts$)' },
+      // Two composition roots own a connection lifecycle and call
+      // disconnectDb() on shutdown without ever issuing a query: the HTTP
+      // server, and the seed CLI, which must close the pool or the process
+      // never exits.
+      from: {
+        pathNot:
+          '(\\.repository\\.ts$|^src/db/|^src/server\\.ts$|^src/seeds/cli\\.ts$)',
+      },
       to: { path: '^src/db/client\\.ts$' },
     },
     {

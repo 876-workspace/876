@@ -21,6 +21,7 @@
     "node:test:watch": "vitest",
     "node:lint": "eslint src",
     "node:boundaries": "depcruise src --config .dependency-cruiser.cjs",
+    "node:seed": "tsx src/seeds/cli.ts",
     "db:generate": "prisma generate",
     "db:migrate": "node scripts/guard-migrate.mjs",
     "db:deploy": "prisma migrate deploy",
