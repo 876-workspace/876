@@ -12,6 +12,7 @@
     "lint": "eslint src",
     "boundaries": "depcruise src --config .dependency-cruiser.cjs",
     "seed": "tsx src/seeds/cli.ts",
+    "generate": "node scripts/prisma-generate.mjs",
     "node:dev": "tsx watch --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local src/server.ts",
     "node:build": "tsup",
     "node:start": "node dist/server.js",
@@ -30,7 +31,11 @@
     "db:drift": "prisma migrate diff --from-schema prisma/schema --to-config-datasource --script",
     "deploy": "wrangler deploy",
     "preview": "wrangler dev",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "prebuild": "pnpm generate",
+    "pretypecheck": "pnpm generate",
+    "pretest": "pnpm generate",
+    "predev": "pnpm generate"
   },
   "dependencies": {
     "@cloudflare/containers": "0.3.7",

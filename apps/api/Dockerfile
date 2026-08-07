@@ -36,20 +36,17 @@ RUN pnpm install --frozen-lockfile --ignore-scripts --filter @876/api...
 WORKDIR /repo/apps/api
 
 COPY apps/api/prisma ./prisma
+COPY apps/api/scripts ./scripts
 COPY apps/api/prisma.config.ts apps/api/tsconfig.json apps/api/tsup.config.ts ./
 COPY apps/api/src ./src
 
-# `generate` runs *after* `src` is copied, because the client is generated into
-# `src/db/generated/` (see the generator block) — generating first and copying
-# after would depend on `.dockerignore` excluding that directory to avoid
-# clobbering it. The schema argument is a *directory*: a Prisma 7 multi-file
-# schema silently ignores its siblings when pointed at a single file.
-# `prisma.config.ts` resolves `DATABASE_URL` through Prisma's `env()` helper,
-# which throws when it is unset — correct for `migrate`, which must never run
-# against an accidental database, but `generate` only reads the schema and
-# needs no connection. The placeholder is scoped to this one step and is never
-# in the image or the runtime environment.
-RUN DATABASE_URL='postgresql://placeholder/placeholder' pnpm exec prisma generate
+# `build` runs `prebuild`, which generates the Prisma client — the generated
+# directory is gitignored, so it is absent here exactly as it is in a fresh
+# clone. `scripts/prisma-generate.mjs` supplies the placeholder `DATABASE_URL`
+# that `prisma.config.ts` demands; nothing here opens a connection.
+#
+# Generation happens after `src` is copied, because the client is generated
+# *into* `src/db/generated/`.
 RUN pnpm run build
 
 # No prune step, deliberately. `pnpm prune --prod` re-links against the *whole*

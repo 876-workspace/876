@@ -141,9 +141,13 @@ jobs:
 
   api:
     needs: changes
+    # The job runs on any matching push, like every other service that owns a
+    # datastore — only the deploy *step* is gated on who the deployer is. Gating
+    # the whole job on DEPLOY_FROM_ACTIONS is how the migration step below
+    # silently never ran: the job skipped, and the schema sat behind the code.
     if:
-      (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'api'))
-      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.api == 'true')
+      (github.event_name == 'push' && needs.changes.outputs.api == 'true')
+      || inputs.app == 'all' || inputs.app == 'api'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -156,8 +160,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       # Containers build and push the Dockerfile image; the runner's Docker
-      # daemon is used directly by wrangler.
+      # daemon is used directly by wrangler. The build context is the repository
+      # root (`image_build_context` in wrangler.jsonc), which is why this runs
+      # from a full checkout rather than a sparse one.
       - name: Deploy container Worker
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/api
         run: pnpm exec wrangler deploy
 
