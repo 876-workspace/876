@@ -1,15 +1,18 @@
 services:
   - type: web
     name: 876-api
-    runtime: python
+    runtime: node
     rootDir: apps/api
-    buildCommand: pip install .
-    startCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    # Prisma's client must be generated before the bundle is built; `migrate
+    # deploy` is deliberately not here, because a build step is the wrong place
+    # to change a schema every replica shares.
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm run build
+    startCommand: pnpm run start
     healthCheckPath: /health
     plan: free
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.10
+      - key: NODE_VERSION
+        value: 22
       - key: ENVIRONMENT
         value: production
       - key: LOG_LEVEL
