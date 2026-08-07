@@ -5,9 +5,16 @@ import { createAuthGuards, type AuthGuards } from '@/http/auth'
 import { createAddressesRouter } from '@/modules/addresses'
 import { createAuditEventsRouter } from '@/modules/audit-events'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
-import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
+import { createBillingRouter } from '@/modules/billing'
+import {
+  createAppsPublicRouter,
+  createAppsRouter,
+  findApiKeyByHash,
+  markApiKeyUsed,
+} from '@/modules/apps'
 import { createCommunicationsRouter } from '@/modules/communications'
 import { createDevicesRouter } from '@/modules/devices'
+import { createFeaturesRouter } from '@/modules/features'
 import {
   registerEducationRoutes,
   registerFinancialRoutes,
@@ -15,11 +22,18 @@ import {
 } from '@/modules/directory'
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
+import { createMembershipsRouter } from '@/modules/memberships'
 import { createModulesRouter } from '@/modules/modules'
 import { createMobileNumbersRouter } from '@/modules/mobile-numbers'
 import { createOAuthRouter } from '@/modules/oauth'
 import { createOnboardingRouter } from '@/modules/onboarding'
+import {
+  registerOrgAccessRoutes,
+  registerOrganizationRoutes,
+  registerOrgStructureRoutes,
+} from '@/modules/organizations'
 import { createProductsRouter } from '@/modules/products'
+import { createProvisioningRouter } from '@/modules/provisioning'
 import { createSessionsRouter } from '@/modules/sessions'
 import { createTwilioWebhooksRouter } from '@/modules/twilio-webhooks'
 
@@ -52,6 +66,9 @@ export function buildRoutes(): Router {
   // client cannot present a first-party 876 API key. Each endpoint carries its
   // own credential rule.
   root.use(createOAuthRouter(resolveGuards))
+  // The app-metadata lookup an OAuth client hits before it holds any
+  // credential, mounted outside the protected router exactly as api/v1.py does.
+  root.use(createAppsPublicRouter())
   root.use(createTwilioWebhooksRouter(resolveGuards))
 
   root.use(createAddressesRouter(resolveGuards))
@@ -62,10 +79,18 @@ export function buildRoutes(): Router {
   root.use(registerFinancialRoutes(resolveGuards))
   root.use(registerGovernmentRoutes(resolveGuards))
   root.use(registerEducationRoutes(resolveGuards))
+  root.use(createAppsRouter(resolveGuards))
+  root.use(createBillingRouter(resolveGuards))
+  root.use(createFeaturesRouter(resolveGuards))
+  root.use(createMembershipsRouter(resolveGuards))
   root.use(createModulesRouter(resolveGuards))
   root.use(createMobileNumbersRouter(resolveGuards))
   root.use(createOnboardingRouter(resolveGuards))
+  root.use(registerOrganizationRoutes(resolveGuards))
+  root.use(registerOrgStructureRoutes(resolveGuards))
+  root.use(registerOrgAccessRoutes(resolveGuards))
   root.use(createProductsRouter(resolveGuards))
+  root.use(createProvisioningRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
 
   return root
