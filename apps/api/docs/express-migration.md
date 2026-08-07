@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 814 passing, 29 files
+pnpm node:test          # 1,002 passing, 33 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -44,12 +44,12 @@ command is how a session ends up narrating a pass that never happened
 | Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
 | Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
 
-### Modules migrated (15 of 22)
+### Modules migrated (16 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
 `addresses`, `modules`, `directory` (all 50 routes), `onboarding`, `products`,
-`communications`, `mobile-numbers`, `twilio-webhooks`, and `apps` (credential
-lookup only — its CRUD routes are still outstanding).
+`communications`, `mobile-numbers`, `twilio-webhooks`, `oauth`, and `apps`
+(credential lookup only — its CRUD routes are still outstanding).
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
 `src/modules/directory/**` is the example for a **large** module: three resource
@@ -98,6 +98,16 @@ methods are worth reusing, because two of them found real divergences:
   `active`) but whose columns are NOT NULL: sending null to any of them reaches
   either `.strip()` or the constraint and raises, so the Zod schemas reject it
   as a 422 instead of reproducing a 500.
+- **`oauth`** — 11 operations, 0 differences. Porting it found a defect in the
+  shared response envelope: the message was read from the error value itself, so
+  an RFC 6749 body (`{ error, error_description }`) came out with the code
+  repeated as the message and the description dropped. The FastAPI envelope
+  reads the message from the _whole_ payload in that case. Fixed in
+  `http/middleware/envelope.ts`; every OAuth grant failure was about to lose its
+  explanation. Worth noting for the cutover: `/token` is **not** exempt from the
+  envelope in either service, so its bodies are wrapped. That deviates from
+  RFC 6749 and is the contract existing clients are coded against — do not
+  "fix" it without versioning the change.
 - **`twilio-webhooks`** — 5 operations, 0 differences. Two corrections to
   earlier drafts of this document came out of it. First, these routes do **not**
   need mounting before `express.json()`: Twilio's scheme signs the URL plus the
@@ -277,15 +287,9 @@ written rather than translated.
 **Nothing is mounted until you add it to `src/http/routes.ts`.** That is the one
 shared file; forgetting it shows up as every test 404ing.
 
-#### Start here — one module with no unported prerequisites
+#### Every module with no unported prerequisites is done
 
-| Module  | Routes | Lines | Depends on |
-| ------- | ------ | ----- | ---------- |
-| `oauth` | 11     | 1,836 | nothing    |
-
-`oauth` is the OAuth Authorization Server. It is dormant in production but it is
-security-critical code; per `.claude/rules/cli.md` it stays with the primary
-agent.
+What remains is blocked on the services below. Port those first.
 
 #### Then the service prerequisites, each gating several modules
 
