@@ -1,0 +1,17 @@
+// ProvisioningManifest — table `provisioning_manifests`.
+// Module: provisioning. Provisioning manifests, revisions, resources, properties, steps, and runs.
+
+model ProvisioningManifest {
+  id                           String                        @id @db.VarChar
+  targetType                   String                        @map("target_type") @db.VarChar
+  targetKey                    String                        @map("target_key") @db.VarChar
+  manifestVersion              Int                           @default(1) @map("manifest_version")
+  createdAt                    BigInt                        @map("created_at")
+  updatedAt                    BigInt                        @map("updated_at")
+  provisioningManifestRevision ProvisioningManifestRevision?
+  provisioningNotes            ProvisioningNote[]
+
+  @@unique([targetType, targetKey])
+  @@index([targetType], map: "ix_provisioning_manifests_target_type")
+  @@map("provisioning_manifests")
+}

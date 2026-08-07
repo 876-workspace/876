@@ -1,0 +1,11 @@
+// PlatformBootstrapState — table `platform_bootstrap_state`.
+// Module: platform. Platform bootstrap bookkeeping. Created in raw SQL by services/bootstrap.py;
+// it has no ORM model but is owned by this service.
+
+model PlatformBootstrapState {
+  step        String @id @db.VarChar(100)
+  revision    Int
+  completedAt BigInt @map("completed_at")
+
+  @@map("platform_bootstrap_state")
+}

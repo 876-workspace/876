@@ -1,0 +1,17 @@
+// CommunicationWebhookEvent — table `communication_webhook_events`.
+// Module: communications. Outbound messages, calls, phone lookups, and provider webhook events.
+
+model CommunicationWebhookEvent {
+  id              String  @id @db.VarChar
+  provider        String  @db.VarChar
+  eventType       String  @map("event_type") @db.VarChar
+  providerSid     String  @map("provider_sid") @db.VarChar
+  payloadHash     String  @map("payload_hash") @db.VarChar(64)
+  signatureValid  Boolean @map("signature_valid")
+  processedAt     BigInt? @map("processed_at")
+  processingError String? @map("processing_error")
+  createdAt       BigInt  @map("created_at")
+
+  @@unique([providerSid, eventType, payloadHash], map: "uq_communication_webhook_event")
+  @@map("communication_webhook_events")
+}

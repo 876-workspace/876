@@ -1,0 +1,13 @@
+// Currency — table `currencies`.
+// Module: geo. Geographic reference data: countries, regions, currencies.
+
+model Currency {
+  code          String         @id @db.VarChar(3)
+  name          String         @db.VarChar
+  symbol        String         @db.VarChar
+  decimalPlaces Int            @default(2) @map("decimal_places")
+  isEnabled     Boolean        @default(true) @map("is_enabled")
+  organizations Organization[]
+
+  @@map("currencies")
+}

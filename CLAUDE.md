@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Platform & Ecosystem
 
-876 is **one identity that unlocks many product apps.** A single 876 account (consumer or enterprise) signs a user into every 876 surface. The FastAPI core (`@876/api`) owns identity, accounts, organizations, OAuth, and platform data; product apps build their own domains on top of it.
+876 is **one identity that unlocks many product apps.** A single 876 account (consumer or enterprise) signs a user into every 876 surface. The Express core (`@876/api`) owns identity, accounts, organizations, OAuth, and platform data; product apps build their own domains on top of it.
 
-**Auth is embedded, not centralized.** Each app hosts its own email-first login UI (built on `@876/ui/auth`) and authenticates **directly** against the FastAPI core through its own thin `/api/auth` bridge route — there is no central auth app to redirect to. The API seals the session and sets the cookie on each app's own origin. (Social/SSO, which needs a provider-registered callback, is deferred.)
+**Auth is embedded, not centralized.** Each app hosts its own email-first login UI (built on `@876/ui/auth`) and authenticates **directly** against the API core through its own thin `/api/auth` bridge route — there is no central auth app to redirect to. The API seals the session and sets the cookie on each app's own origin. (Social/SSO, which needs a provider-registered callback, is deferred.)
 
 - **`@876/app`** — the user-facing app where consumers and enterprise members manage their account and access features. Hosts consumer-mode embedded auth.
 - **`@876/enterprise`** — the enterprise org workspace app (org dashboards, member management, billing). Hosts member sign-in plus business-onboarding sign-up (creates owner account + org + membership).
 - **`@876/console`** — the internal 876 admin console used to manage and support the whole platform (users, orgs, roles/permissions, settings). Privileged; invite-only embedded sign-in.
-- **`@876/api`** — the FastAPI core that owns all DB/provider access and business logic, including the OAuth Authorization Server (`/oauth`, dormant — reserved for future third-party "Sign in with 876").
+- **`@876/api`** — the Express core that owns all DB/provider access and business logic, including the OAuth Authorization Server (`/oauth`, dormant — reserved for future third-party "Sign in with 876").
 
 Future apps (e.g. an "876 Eats" ordering app, an "876 Commerce" storefront platform, native/mobile clients) consume 876 for login and account data through the same client surface, adding their own API services and SDK packages. **All clients use the standardized `$876.<resource>.<verb>()` surface, tiered by API auth so admin-only operations never reach consumer apps.** See `.claude/rules/sdk-conventions.md` — read it before changing any client/data-access code.
 
@@ -27,7 +27,7 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 | `@876/enterprise` | `apps/enterprise` | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding); org dashboards. |
 | `@876/console`    | `apps/console`    | 3002 | Internal Console — embedded admin sign-in; platform admin console.                        |
 | `@876/couriers`   | `apps/couriers`   | 3003 | Couriers SaaS app — multitenant courier management platform.                              |
-| `@876/api`        | `apps/api`        | 4000 | FastAPI backend; owns database/provider server calls + OAuth Authorization Server.        |
+| `@876/api`        | `apps/api`        | 4000 | Express backend; owns database/provider server calls + OAuth Authorization Server.        |
 
 ### Shared packages
 
@@ -40,7 +40,7 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ## Cloudflare Deployment
 
-Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). FastAPI services (`@876/api`, `@876/billing-api`) deploy as **Cloudflare Containers** (Dockerfile + Worker front door). See `docs/cloudflare.md` for the full layout.
+Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). The container services (`@876/api`, now Express; `@876/billing-api`, still FastAPI) deploy as **Cloudflare Containers** (Dockerfile + Worker front door). See `docs/cloudflare.md` for the full layout.
 
 **Adapter:** `@opennextjs/cloudflare` v1.20+ (installed in all four Next.js apps). Do NOT use the deprecated `@cloudflare/next-on-pages`.
 
@@ -72,11 +72,16 @@ pnpm --filter @876/app deploy    # deploy to Cloudflare Workers
 API also runs directly from `apps/api`:
 
 ```bash
-python -m uvicorn main:app --host 0.0.0.0 --port 4000 --reload
-python -m pytest
-python -m mypy . tests
-python -m ruff check .
+pnpm dev          # tsx watch src/server.ts on :4000
+pnpm test         # vitest
+pnpm typecheck    # tsc --noEmit
+pnpm lint         # eslint src
+pnpm boundaries   # dependency-cruiser — the module boundaries are a build error
+pnpm seed         # the startup seeds, which the service does NOT run at boot
 ```
+
+See `.claude/rules/express-api.md` for the module shape and layer rules, and
+`apps/api/docs/express-migration.md` for how the port was done.
 
 ## Rules Directory
 
@@ -118,14 +123,14 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
   - **Advanced/critical implementation** → an Opus sub-agent at high reasoning depth.
   - **General, routine updates** → an Opus sub-agent at medium reasoning depth.
   - **Design decisions and the highest-stakes/security-sensitive code** → **Fable, executed directly by the primary agent, never delegated to a sub-agent** at medium/high effort. A low-effort Fable sub-agent is the only exception, and only after asking the user first.
-  - **Docs-only work** → `agy` (Sonnet 4.6 Thinking, existing convention) or `opencode`/Command Code with DeepSeek V4.
+  - **Docs-only work** → `agy` on a **Gemini** model (its Claude/GPT quota is a separate, easily exhausted bucket — check `agy -p "/quota"` first) or `opencode`/Command Code with DeepSeek V4. Always pass `--print-timeout`; it defaults to 5 minutes and kills longer runs with exit code 0.
   - **Trivial/mechanical/mass-simple changes** (e.g. a renamed function and all its call sites) → orchestrate `opencode` or Command Code with DeepSeek V4, run in parallel across non-overlapping file sets.
   - See `.claude/rules/cli.md` for the exact non-interactive invocation of each CLI.
   - For the exact Codex/agy invocation commands, briefing format, and split ratio, see the `sub-agent-delegation` skill.
 
 ## Boundaries
 
-- **Core identity & shared-platform data, provider calls, and platform business logic belong in `apps/api` (FastAPI).** Next.js apps must not contain raw `fetch` calls to FastAPI or any direct access to identity/platform data or providers.
+- **Core identity & shared-platform data, provider calls, and platform business logic belong in `apps/api` (Express).** Next.js apps must not contain raw `fetch` calls to the API or any direct access to identity/platform data or providers.
 - **App-local operational data may use the app's own datastore.** An app that owns a bounded context (e.g. Console's admin-internal state) may run its own database — Console uses an in-app Prisma 7 datastore (`apps/console/prisma/`) — provided it (1) never stores or duplicates identity/platform tables, (2) references core 876 entities by **opaque ID only** (no cross-DB foreign keys), resolving identity details through `$876`, and (3) stays server-only. This is a deliberate, scoped exception to the rule above; see `.claude/rules/platform-services.md`.
 - `@876/app` and `@876/console` fetch data exclusively through `@876/sdk` (consumer/auth) or `@876/admin` (Console server components).
 - **No server actions.** Client-initiated mutations go through a thin pure-transport route handler (`app/api/...`) that authorizes and calls `$876`, invoked via the app's typed browser client (`client` from `@/lib/client`). Route handlers contain no business logic. See `.claude/rules/api-access.md` and `.claude/rules/sdk-conventions.md`.
@@ -162,24 +167,35 @@ Permission helpers live in each app's `src/lib/auth/guards.ts`:
 - `@876/app`: `requireSession`, `requireConsumerAccount`, `requireEnterpriseMembership`, `requireConsumerFeature`, `hasPermission`
 - `@876/console`: `requireConsoleAccount`, `requireConsolePermission`, `hasPermission`
 
-Platform permissions are derived from `users.role` via `apps/api/core/permissions.py`. The API returns a `permissions: string[]` field on every user response.
+Platform permissions are derived from `users.role` via `apps/api/src/platform/permissions.ts`. The API returns a `permissions: string[]` field on every user response.
 
-## API Architecture (FastAPI)
+## API Architecture (Express)
 
-Entry: `main.py` → `api/v1.py`. Domain routers live in `domains/<name>/router.py`; route-level OpenAPI docs live in matching `docs.py`; Pydantic contracts live in matching `schemas.py`.
+Entry: `src/server.ts` → `src/app.ts` → `src/http/routes.ts`. Modules live in
+`src/modules/<name>/`, split by layer inside the module —
+`<module>.{routes,controller,service,repository,schemas,serializers,docs}.ts`.
+Zod is the single source of truth for every contract: request validation,
+response types, and the generated OpenAPI document all come from the same
+schema. See `.claude/rules/express-api.md`.
 
-| Domain        | Path prefix      | Auth                                                                    |
-| ------------- | ---------------- | ----------------------------------------------------------------------- |
-| auth          | `/auth`          | Public / session                                                        |
-| oauth         | `/oauth`         | Public / bearer                                                         |
-| users         | `/users`         | AdminDep (internal key) except `/oauth-grants`, `/ensure` (app API key) |
-| organizations | `/organizations` | AdminDep                                                                |
-| memberships   | `/memberships`   | AdminDep                                                                |
-| features      | `/features`      | AdminDep                                                                |
-| apps          | `/apps`          | ApiKeyDep + AdminDep where required                                     |
-| health        | `/health`        | Public                                                                  |
+| Domain        | Path prefix      | Auth                                                                 |
+| ------------- | ---------------- | -------------------------------------------------------------------- |
+| auth          | `/auth`          | App key / session                                                    |
+| oauth         | `/oauth`         | Public / bearer                                                      |
+| users         | `/users`         | admin (internal key) except `/oauth-grants`, `/ensure` (app API key) |
+| organizations | `/organizations` | admin, plus session-tier org-scoped routes                           |
+| memberships   | `/memberships`   | admin                                                                |
+| features      | `/features`      | admin, plus `session` on `/evaluate/me`                              |
+| apps          | `/apps`          | apiKey, with admin on mutations; `/apps/public/:client_id` is public |
+| billing       | `/billing`       | admin                                                                |
+| provisioning  | `/provisioning`  | admin                                                                |
+| health        | `/health`        | Public                                                               |
 
-`require_api_key` protects the top-level protected router and validates `876_app_secret_*` API keys. `AdminDep` requires the `x-internal-key` header to match `API_INTERNAL_KEY`; when `API_INTERNAL_KEY` is empty, admin routes reject all requests. DB models live in `db/models.py`; repositories in `db/repositories/`. See `.claude/rules/api-backend.md` for backend route, schema, docs, auth, and testing rules.
+The tier names are the Express guards. `AdminDep` in the SDK rules below is the
+same tier under its FastAPI name — the auth-tier gating rule for `@876/sdk` vs
+`@876/admin` is unchanged by the port.
+
+`requireApiKey` protects every protected route and validates `876_app_secret_*` API keys. `requireAdmin` requires the `x-internal-key` header to match `API_INTERNAL_KEY`; when that key is empty, admin routes reject every request. Tiers stack rather than replace: `session` = apiKey + session, `admin` = apiKey + admin. Guards attach **per route**, never with `router.use`, so an unknown path still 404s instead of 401ing. Prisma models live in `prisma/schema/`; only a `*.repository.ts` may query them. See `.claude/rules/express-api.md`.
 
 ## Data Fetching Pattern
 
@@ -207,7 +223,7 @@ The consumer app uses an API-key-tier `$876` at `apps/876/src/lib/876.ts` for se
 
 Adding a new API operation (see `.claude/rules/sdk-conventions.md` for the full recipe):
 
-1. Add the endpoint to `apps/api` (FastAPI router + repository method) with its auth dependency.
+1. Add the endpoint to `apps/api` (module route + repository method) with its auth tier.
 2. Add the typed method to the correct tier: `@876/admin` (`packages/admin/src/client.ts`) if `AdminDep`, and/or `@876/sdk` (`packages/sdk/src/client.ts`) if API-key/session and self-scoped.
 3. Call through the package's `$876` in the Next.js app — never fetch directly.
 

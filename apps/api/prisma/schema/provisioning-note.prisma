@@ -1,0 +1,15 @@
+// ProvisioningNote — table `provisioning_notes`.
+// Module: provisioning. Provisioning manifests, revisions, resources, properties, steps, and runs.
+
+model ProvisioningNote {
+  id                   String               @id @db.VarChar
+  manifestId           String               @map("manifest_id") @db.VarChar
+  body                 String
+  authorUserId         String?              @map("author_user_id") @db.VarChar
+  createdAt            BigInt               @map("created_at")
+  updatedAt            BigInt               @map("updated_at")
+  provisioningManifest ProvisioningManifest @relation(fields: [manifestId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([manifestId], map: "ix_provisioning_notes_manifest_id")
+  @@map("provisioning_notes")
+}

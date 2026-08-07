@@ -1,0 +1,27 @@
+// Verification — table `verifications`.
+// Module: auth. Sessions, auth providers, OAuth grants/codes/tokens, SSO, OTP, and login attempts.
+
+model Verification {
+  id                String             @id @db.VarChar
+  identifier        String             @db.VarChar
+  value             String             @db.VarChar
+  type              String             @db.VarChar
+  expiresAt         BigInt             @map("expires_at")
+  createdAt         BigInt             @map("created_at")
+  updatedAt         BigInt             @map("updated_at")
+  provider          String?            @db.VarChar
+  providerSid       String?            @map("provider_sid") @db.VarChar
+  subjectType       String?            @map("subject_type") @db.VarChar
+  subjectId         String?            @map("subject_id") @db.VarChar
+  channel           String?            @db.VarChar
+  status            String?            @db.VarChar
+  attemptCount      Int?               @map("attempt_count")
+  lastSentAt        BigInt?            @map("last_sent_at")
+  canResendAt       BigInt?            @map("can_resend_at")
+  verifiedAt        BigInt?            @map("verified_at")
+  metadata          Json?              @db.Json
+  userEmails        UserEmail[]
+  userMobileNumbers UserMobileNumber[]
+
+  @@map("verifications")
+}

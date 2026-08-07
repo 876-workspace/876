@@ -1,0 +1,34 @@
+// 876 identity & platform core database (Prisma 7, multi-file schema).
+//
+// This is the platform's core bounded context: users, organizations,
+// memberships, apps, auth, OAuth, features, provisioning, billing references,
+// directory reference data, and geo. See .claude/rules/platform-services.md
+// for what belongs here and what belongs to an app-local datastore.
+//
+// Layout: one <module>.prisma beside this file, which holds the generator and
+// datasource blocks and nothing else. prisma.config.ts points `schema` at this
+// DIRECTORY — pointing it at this file makes Prisma 7 silently ignore every
+// sibling (prisma/prisma#28673).
+//
+// The database is snake_case and predates Prisma; every model carries @@map and
+// every renamed column @map. Table and column names are contracts and are never
+// renamed (.claude/rules/naming.md).
+//
+// IMPORTANT — this database is shared. apps/billing-api owns the 76 `billing_*`
+// tables and apps/storage-api owns the `storage_*` tables, both under Alembic.
+// They are deliberately absent from this schema. Because of that, NEVER run
+// `prisma migrate dev` against a database that carries them: drift detection
+// sees tables with no migration and offers to reset. Author migrations against
+// a scratch database and apply them with `prisma migrate deploy`.
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../../src/db/generated/prisma"
+  // users.flagsmith_identifier carries a partial unique index.
+  previewFeatures = ["partialIndexes"]
+  runtime         = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}

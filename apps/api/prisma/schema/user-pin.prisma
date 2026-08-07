@@ -1,0 +1,21 @@
+// UserPin — table `user_pins`.
+// Module: users. User accounts, profiles, emails, mobile numbers, PINs, and identifications.
+
+model UserPin {
+  id             String  @id @db.VarChar
+  userId         String  @map("user_id") @db.VarChar
+  scope          String  @default("account") @db.VarChar
+  pinHash        String  @map("pin_hash")
+  algorithm      String  @default("scrypt") @db.VarChar
+  failedAttempts Int     @default(0) @map("failed_attempts")
+  lockedUntil    BigInt? @map("locked_until")
+  lastVerifiedAt BigInt? @map("last_verified_at")
+  setAt          BigInt  @map("set_at")
+  createdAt      BigInt  @map("created_at")
+  updatedAt      BigInt  @map("updated_at")
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([userId, scope], map: "uq_user_pins_user_scope")
+  @@index([userId], map: "ix_user_pins_user_id")
+  @@map("user_pins")
+}

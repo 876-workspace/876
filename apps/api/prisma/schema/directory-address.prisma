@@ -1,0 +1,24 @@
+// DirectoryAddress — table `directory_addresses`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model DirectoryAddress {
+  id                  String               @id @db.VarChar
+  line1               String               @db.VarChar
+  line2               String?              @db.VarChar
+  city                String               @db.VarChar
+  state               String               @db.VarChar
+  postalCode          String?              @map("postal_code") @db.VarChar
+  country             String               @default("JM") @db.VarChar(2)
+  latitude            Float
+  longitude           Float
+  createdAt           BigInt               @map("created_at")
+  updatedAt           BigInt               @map("updated_at")
+  bankBranches        BankBranch[]
+  creditUnionBranches CreditUnionBranch[]
+  ministryDepartments MinistryDepartment[]
+  secondarySchools    SecondarySchool[]
+  universityCampuses  UniversityCampus[]
+
+  @@index([state, city], map: "ix_directory_addresses_state_city")
+  @@map("directory_addresses")
+}

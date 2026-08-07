@@ -1,0 +1,38 @@
+// Feature — table `features`.
+// Module: features. Feature-flag registry, per-org and per-user grants, and provider sync state.
+
+model Feature {
+  id                     String              @id @db.VarChar
+  provider               String              @default("flagsmith") @db.VarChar
+  providerFeatureId      String?             @map("provider_feature_id") @db.VarChar
+  providerEnvironmentId  String?             @map("provider_environment_id") @db.VarChar
+  slug                   String              @unique @db.VarChar
+  name                   String              @db.VarChar
+  description            String?
+  tags                   String[]            @default([]) @db.VarChar
+  enabled                Boolean             @default(false)
+  defaultValue           Boolean             @default(false) @map("default_value")
+  valueType              String?             @map("value_type") @db.VarChar
+  value                  Json?               @db.Json
+  serverSideOnly         Boolean             @default(true) @map("server_side_only")
+  archivedAt             BigInt?             @map("archived_at")
+  parentFeatureId        String?             @map("parent_feature_id") @db.VarChar
+  providerMetadata       Json?               @map("provider_metadata") @db.Json
+  consumerDefaultEnabled Boolean             @default(false) @map("consumer_default_enabled")
+  scope                  String              @default("global") @db.VarChar
+  appId                  String?             @map("app_id") @db.VarChar
+  syncedAt               BigInt              @map("synced_at")
+  createdAt              BigInt              @map("created_at")
+  updatedAt              BigInt              @map("updated_at")
+  applicationModules     ApplicationModule[]
+  app                    App?                @relation(fields: [appId], references: [id], onUpdate: NoAction)
+  features               Feature?            @relation("featuresTofeatures", fields: [parentFeatureId], references: [id], onUpdate: NoAction)
+  featuresAsFeatures     Feature[]           @relation("featuresTofeatures")
+  orgFeatures            OrgFeature[]
+  userFeatures           UserFeature[]
+
+  @@index([appId], map: "ix_features_app_id")
+  @@index([parentFeatureId], map: "ix_features_parent_feature_id")
+  @@index([providerFeatureId], map: "ix_features_provider_feature_id")
+  @@map("features")
+}

@@ -1,0 +1,7 @@
+export { registerUserCoreRoutes } from './users.routes'
+export { registerSelfRoutes } from './self.routes'
+export { registerProfileRoutes } from './profiles.routes'
+export { registerAddressRoutes } from './addresses.routes'
+export { registerContactRoutes } from './contacts.routes'
+export { registerIdentificationRoutes } from './identifications.routes'
+export { registerPinRoutes } from './pins.routes'

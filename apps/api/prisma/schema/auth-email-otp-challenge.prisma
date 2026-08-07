@@ -1,0 +1,18 @@
+// AuthEmailOtpChallenge — table `auth_email_otps`.
+// Module: auth. Sessions, auth providers, OAuth grants/codes/tokens, SSO, OTP, and login attempts.
+
+model AuthEmailOtpChallenge {
+  email               String  @id @db.VarChar
+  pendingAuthToken    String  @map("pending_auth_token") @db.VarChar
+  emailVerificationId String  @map("email_verification_id") @db.VarChar
+  workosUserId        String? @map("workos_user_id") @db.VarChar
+  lastSentAt          BigInt? @map("last_sent_at")
+  canResendAt         BigInt? @map("can_resend_at")
+  expiresAt           BigInt  @map("expires_at")
+  sendCount           Int     @default(0) @map("send_count")
+  verifiedAt          BigInt? @map("verified_at")
+  createdAt           BigInt  @map("created_at")
+  updatedAt           BigInt  @map("updated_at")
+
+  @@map("auth_email_otps")
+}

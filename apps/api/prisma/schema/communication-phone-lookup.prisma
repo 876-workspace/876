@@ -1,0 +1,18 @@
+// CommunicationPhoneLookup — table `communication_phone_lookups`.
+// Module: communications. Outbound messages, calls, phone lookups, and provider webhook events.
+
+model CommunicationPhoneLookup {
+  number            String  @id @db.VarChar
+  valid             Boolean
+  e164              String? @db.VarChar
+  nationalFormat    String? @map("national_format") @db.VarChar
+  countryCode       String? @map("country_code") @db.VarChar(2)
+  carrierName       String? @map("carrier_name") @db.VarChar
+  lineType          String? @map("line_type") @db.VarChar
+  mobileCountryCode String? @map("mobile_country_code") @db.VarChar
+  mobileNetworkCode String? @map("mobile_network_code") @db.VarChar
+  lineTypeRequested Boolean @default(false) @map("line_type_requested")
+  createdAt         BigInt  @map("created_at")
+
+  @@map("communication_phone_lookups")
+}

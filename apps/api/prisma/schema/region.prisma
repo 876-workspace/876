@@ -1,0 +1,17 @@
+// Region — table `regions`.
+// Module: geo. Geographic reference data: countries, regions, currencies.
+
+model Region {
+  id            String         @id @db.VarChar
+  countryCode   String         @map("country_code") @db.VarChar(2)
+  code          String         @db.VarChar
+  name          String         @db.VarChar
+  type          String         @default("parish") @db.VarChar
+  isEnabled     Boolean        @default(true) @map("is_enabled")
+  addresses     Address[]
+  orgLocations  OrgLocation[]
+  organizations Organization[]
+  country       Country        @relation(fields: [countryCode], references: [code], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("regions")
+}

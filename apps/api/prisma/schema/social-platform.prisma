@@ -1,0 +1,17 @@
+// SocialPlatform — table `social_platforms`.
+// Module: contacts. Addresses, contacts, and social profiles owned by users and organizations.
+
+model SocialPlatform {
+  id                 String              @id @db.VarChar
+  slug               String              @unique @db.VarChar
+  name               String              @db.VarChar
+  iconSlug           String              @map("icon_slug") @db.VarChar
+  profileUrlTemplate String?             @map("profile_url_template") @db.VarChar
+  isEnabled          Boolean             @default(true) @map("is_enabled")
+  sortOrder          Int                 @default(0) @map("sort_order")
+  createdAt          BigInt              @map("created_at")
+  updatedAt          BigInt              @map("updated_at")
+  userSocialProfiles UserSocialProfile[]
+
+  @@map("social_platforms")
+}

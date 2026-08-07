@@ -1,0 +1,21 @@
+// BillingProviderObject — table `billing_provider_objects`.
+// Module: billing. References into the Billing bounded context: account mirrors, the customer
+// outbox, provider object mirrors, and the finance-provisioning outbox. The
+// financial records themselves live in apps/billing-api.
+
+model BillingProviderObject {
+  id                 String  @id @db.VarChar
+  provider           String  @db.VarChar
+  providerObjectType String  @map("provider_object_type") @db.VarChar
+  providerObjectId   String  @map("provider_object_id") @db.VarChar
+  internalObjectType String  @map("internal_object_type") @db.VarChar
+  internalObjectId   String  @map("internal_object_id") @db.VarChar
+  livemode           Boolean @default(false)
+  syncedAt           BigInt? @map("synced_at")
+  rawPayload         Json?   @map("raw_payload") @db.Json
+  createdAt          BigInt  @map("created_at")
+  updatedAt          BigInt  @map("updated_at")
+
+  @@unique([provider, providerObjectType, providerObjectId], map: "uq_provider_object")
+  @@map("billing_provider_objects")
+}

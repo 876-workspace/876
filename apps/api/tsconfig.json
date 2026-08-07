@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    // The service is bundled by tsup and run by tsx in dev; both resolve
+    // tsconfig `paths` and extensionless imports. `bundler` matches that, and
+    // is what lets the whole codebase use `@/…` without `.js` suffixes.
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node", "vitest/globals"],
+
+    "outDir": "dist",
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["src/**/*.ts", "prisma.config.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "src/**/generated/**"]
+}

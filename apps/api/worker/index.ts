@@ -1,9 +1,9 @@
 import { Container, getContainer } from '@cloudflare/containers'
 
 /**
- * Cloudflare Containers front door for the FastAPI identity API.
+ * Cloudflare Containers front door for the 876 identity API.
  *
- * The container image is built from apps/api/Dockerfile (uvicorn on PORT).
+ * The container image is built from apps/api/Dockerfile (Express on PORT).
  * Secrets and plain env vars are set on the Worker via wrangler secret / vars
  * and forwarded into the container process by `toContainerEnv` below.
  *

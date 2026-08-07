@@ -173,7 +173,11 @@ Worker.
 
 ### Identity API (`876-api`)
 
-- Image: `apps/api/Dockerfile` (uvicorn on `PORT`, default 4000).
+- Image: `apps/api/Dockerfile` (Node/Express on `PORT`, default 4000). It builds
+  from the **repository root** (`image_build_context` in `wrangler.jsonc`),
+  because pnpm keeps one lockfile for the whole workspace and a
+  `--frozen-lockfile` install cannot find it from a package-level context. The
+  root `.dockerignore` keeps that context at ~110MB instead of ~6GB.
 - Worker: `apps/api/worker/index.ts` → Durable Object Container class `ApiContainer`.
 - Config: `apps/api/wrangler.jsonc`.
 

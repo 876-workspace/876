@@ -96,6 +96,11 @@ jobs:
               - *shared
             api:
               - 'apps/api/**'
+              # The image builds from the repository root and installs from the
+              # root lockfile, so a dependency bump changes the image without
+              # touching apps/api. Without this the deploy silently goes stale.
+              - *shared
+              - '.dockerignore'
             billing-api:
               - 'apps/billing-api/**'
             storage-api:
@@ -143,6 +148,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # The Express service applies no DDL at boot, unlike the FastAPI service
+      # it replaces, which rebuilt its schema from `ensure_*` functions on every
+      # start. Migrations are applied here or they are not applied at all.
+      - name: Apply migrations
+        run: pnpm --filter @876/api exec prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       # Containers build and push the Dockerfile image; the runner's Docker
       # daemon is used directly by wrangler.
       - name: Deploy container Worker

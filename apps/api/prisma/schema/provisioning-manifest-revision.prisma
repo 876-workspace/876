@@ -1,0 +1,24 @@
+// ProvisioningManifestRevision — table `provisioning_manifest_revisions`.
+// Module: provisioning. Provisioning manifests, revisions, resources, properties, steps, and runs.
+
+model ProvisioningManifestRevision {
+  id                      String                 @id @db.VarChar
+  manifestId              String                 @unique(map: "uq_provisioning_manifest_revisions_draft", where: raw("((status)::text = 'draft'::text)")) @map("manifest_id") @db.VarChar
+  revision                Int
+  status                  String                 @db.VarChar
+  reconciliation          String                 @default("create_missing") @db.VarChar
+  preserveTenantOverrides Boolean                @default(true) @map("preserve_tenant_overrides")
+  financeDependency       String                 @default("none") @map("finance_dependency") @db.VarChar
+  financeScopes           String[]               @default([]) @map("finance_scopes") @db.VarChar
+  publishedAt             BigInt?                @map("published_at")
+  createdAt               BigInt                 @map("created_at")
+  updatedAt               BigInt                 @map("updated_at")
+  provisioningManifest    ProvisioningManifest   @relation(fields: [manifestId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  provisioningResources   ProvisioningResource[]
+  provisioningSteps       ProvisioningStep[]
+
+  @@unique([manifestId, revision])
+  @@unique([manifestId], map: "uq_provisioning_manifest_revisions_published", where: raw("((status)::text = 'published'::text)"))
+  @@index([manifestId], map: "ix_provisioning_manifest_revisions_manifest_id")
+  @@map("provisioning_manifest_revisions")
+}

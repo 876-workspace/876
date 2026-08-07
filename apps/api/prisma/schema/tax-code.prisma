@@ -1,0 +1,15 @@
+// TaxCode — table `tax_codes`.
+// Module: catalog. Entitlement plans, prices, and tax catalog.
+
+model TaxCode {
+  id           String    @id @db.VarChar
+  name         String    @db.VarChar
+  description  String?
+  requirements Json?     @db.Json
+  active       Boolean   @default(true)
+  createdAt    BigInt    @map("created_at")
+  updatedAt    BigInt    @map("updated_at")
+  products     Product[]
+
+  @@map("tax_codes")
+}

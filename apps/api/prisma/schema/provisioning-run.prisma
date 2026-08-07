@@ -1,0 +1,31 @@
+// ProvisioningRun — table `provisioning_runs`.
+// Module: provisioning. Provisioning manifests, revisions, resources, properties, steps, and runs.
+
+model ProvisioningRun {
+  id                    String                @id @db.VarChar
+  organizationId        String                @map("organization_id") @db.VarChar
+  appId                 String                @map("app_id") @db.VarChar
+  subscriptionId        String?               @map("subscription_id") @db.VarChar
+  outboxEventId         String?               @unique @map("outbox_event_id") @db.VarChar
+  trigger               String                @db.VarChar
+  status                String                @db.VarChar
+  manifestVersion       Int                   @default(1) @map("manifest_version")
+  financeRevisionId     String?               @map("finance_revision_id") @db.VarChar
+  financeRevision       Int?                  @map("finance_revision")
+  applicationRevisionId String?               @map("application_revision_id") @db.VarChar
+  applicationRevision   Int?                  @map("application_revision")
+  attemptCount          Int                   @default(0) @map("attempt_count")
+  availableAt           BigInt                @map("available_at")
+  startedAt             BigInt?               @map("started_at")
+  completedAt           BigInt?               @map("completed_at")
+  lastError             String?               @map("last_error")
+  createdAt             BigInt                @map("created_at")
+  updatedAt             BigInt                @map("updated_at")
+  provisioningRunSteps  ProvisioningRunStep[]
+
+  @@index([appId], map: "ix_provisioning_runs_app_id")
+  @@index([status, availableAt, createdAt], map: "ix_provisioning_runs_delivery")
+  @@index([organizationId, createdAt], map: "ix_provisioning_runs_org_created")
+  @@index([organizationId], map: "ix_provisioning_runs_organization_id")
+  @@map("provisioning_runs")
+}

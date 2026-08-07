@@ -1,0 +1,56 @@
+// AuthAttempt — table `auth_attempts`.
+// Module: devices. User device registry and session telemetry.
+
+model AuthAttempt {
+  id                String      @id @db.VarChar
+  event             String      @db.VarChar
+  outcome           String      @db.VarChar
+  failureCode       String?     @map("failure_code") @db.VarChar
+  identifier        String?     @db.VarChar
+  userId            String?     @map("user_id") @db.VarChar
+  appId             String?     @map("app_id") @db.VarChar
+  sessionId         String?     @map("session_id") @db.VarChar
+  realm             String?     @db.VarChar
+  deviceId          String?     @map("device_id") @db.VarChar
+  deviceFingerprint String?     @map("device_fingerprint") @db.VarChar
+  ipAddress         String?     @map("ip_address") @db.VarChar
+  ipCountryCode     String?     @map("ip_country_code") @db.VarChar(2)
+  ipRegionCode      String?     @map("ip_region_code") @db.VarChar
+  ipRegion          String?     @map("ip_region") @db.VarChar
+  ipCity            String?     @map("ip_city") @db.VarChar
+  ipPostalCode      String?     @map("ip_postal_code") @db.VarChar
+  ipTimezone        String?     @map("ip_timezone") @db.VarChar
+  ipLatitude        String?     @map("ip_latitude") @db.VarChar
+  ipLongitude       String?     @map("ip_longitude") @db.VarChar
+  ipAsn             String?     @map("ip_asn") @db.VarChar
+  ipAsOrganization  String?     @map("ip_as_organization") @db.VarChar
+  userAgent         String?     @map("user_agent")
+  deviceType        String?     @map("device_type") @db.VarChar
+  deviceBrand       String?     @map("device_brand") @db.VarChar
+  deviceModel       String?     @map("device_model") @db.VarChar
+  osName            String?     @map("os_name") @db.VarChar
+  osVersion         String?     @map("os_version") @db.VarChar
+  browserName       String?     @map("browser_name") @db.VarChar
+  browserVersion    String?     @map("browser_version") @db.VarChar
+  isBot             Boolean     @default(false) @map("is_bot")
+  contextTrusted    Boolean     @default(false) @map("context_trusted")
+  riskScore         Int?        @map("risk_score")
+  riskReasons       Json?       @map("risk_reasons") @db.Json
+  requestId         String?     @map("request_id") @db.VarChar
+  createdAt         BigInt      @map("created_at")
+  app               App?        @relation(fields: [appId], references: [id], onUpdate: NoAction)
+  userDevice        UserDevice? @relation(fields: [deviceId], references: [id], onUpdate: NoAction)
+  user              User?       @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([createdAt], map: "ix_auth_attempts_created_at")
+  @@index([deviceFingerprint], map: "ix_auth_attempts_device_fingerprint")
+  @@index([identifier], map: "ix_auth_attempts_identifier")
+  @@index([identifier, createdAt], map: "ix_auth_attempts_identifier_created")
+  @@index([ipAddress], map: "ix_auth_attempts_ip_address")
+  @@index([ipCountryCode], map: "ix_auth_attempts_ip_country_code")
+  @@index([ipAddress, createdAt], map: "ix_auth_attempts_ip_created")
+  @@index([outcome, createdAt], map: "ix_auth_attempts_outcome_created")
+  @@index([userId, createdAt], map: "ix_auth_attempts_user_created")
+  @@index([userId], map: "ix_auth_attempts_user_id")
+  @@map("auth_attempts")
+}

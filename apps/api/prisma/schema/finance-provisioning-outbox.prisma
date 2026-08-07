@@ -1,0 +1,37 @@
+// FinanceProvisioningOutbox — table `finance_provisioning_outbox`.
+// Module: billing. References into the Billing bounded context: account mirrors, the customer
+// outbox, provider object mirrors, and the finance-provisioning outbox. The
+// financial records themselves live in apps/billing-api.
+
+model FinanceProvisioningOutbox {
+  id                       String   @id @db.VarChar
+  eventType                String   @map("event_type") @db.VarChar
+  contractVersion          Int      @map("contract_version")
+  aggregateId              String   @map("aggregate_id") @db.VarChar
+  organizationId           String   @map("organization_id") @db.VarChar
+  organizationName         String   @map("organization_name") @db.VarChar
+  organizationSlug         String   @map("organization_slug") @db.VarChar
+  organizationCountryCode  String?  @map("organization_country_code") @db.VarChar(2)
+  organizationCurrencyCode String   @map("organization_currency_code") @db.VarChar(3)
+  sourceAppId              String   @map("source_app_id") @db.VarChar
+  entitlementReference     String   @map("entitlement_reference") @db.VarChar
+  provisioningVersion      Int      @map("provisioning_version")
+  lifecycleVersion         Int      @map("lifecycle_version")
+  desiredStatus            String   @map("desired_status") @db.VarChar
+  scopes                   String[] @db.VarChar
+  occurredAt               BigInt   @map("occurred_at")
+  status                   String   @db.VarChar
+  attemptCount             Int      @map("attempt_count")
+  availableAt              BigInt   @map("available_at")
+  lockedAt                 BigInt?  @map("locked_at")
+  deliveredAt              BigInt?  @map("delivered_at")
+  lastError                String?  @map("last_error")
+  createdAt                BigInt   @map("created_at")
+  updatedAt                BigInt   @map("updated_at")
+  runId                    String?  @unique(map: "uq_finance_provisioning_outbox_run_id", where: raw("(run_id IS NOT NULL)")) @map("run_id") @db.VarChar
+
+  @@unique([aggregateId, lifecycleVersion])
+  @@index([aggregateId, lifecycleVersion], map: "ix_finance_provisioning_outbox_aggregate")
+  @@index([status, availableAt, createdAt], map: "ix_finance_provisioning_outbox_delivery")
+  @@map("finance_provisioning_outbox")
+}

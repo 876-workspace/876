@@ -1,0 +1,34 @@
+// Price — table `prices`.
+// Module: catalog. Entitlement plans, prices, and tax catalog.
+
+model Price {
+  id                String             @id @db.VarChar
+  productId         String             @map("product_id") @db.VarChar
+  billingInterval   String?            @map("billing_interval") @db.VarChar
+  intervalCount     Int?               @map("interval_count")
+  status            String             @default("active") @db.VarChar
+  unitAmount        BigInt?            @map("unit_amount")
+  unitAmountDecimal String?            @map("unit_amount_decimal") @db.VarChar
+  currency          String             @default("jmd") @db.VarChar(3)
+  lookupKey         String?            @unique @map("lookup_key") @db.VarChar
+  name              String?            @db.VarChar
+  nickname          String?            @db.VarChar
+  type              String             @default("recurring") @db.VarChar
+  billingScheme     String             @default("per_unit") @map("billing_scheme") @db.VarChar
+  tiersMode         String?            @map("tiers_mode") @db.VarChar
+  tiers             Json?              @db.Json
+  recurring         Json?              @db.Json
+  taxBehavior       String?            @map("tax_behavior") @db.VarChar
+  transformQuantity Json?              @map("transform_quantity") @db.Json
+  trialPeriodDays   Int?               @map("trial_period_days")
+  active            Boolean            @default(true)
+  metadata          Json?              @db.Json
+  createdAt         BigInt             @map("created_at")
+  updatedAt         BigInt             @map("updated_at")
+  archivedAt        BigInt?            @map("archived_at")
+  product           Product            @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  subscriptionItems SubscriptionItem[]
+
+  @@index([productId], map: "ix_prices_product_id")
+  @@map("prices")
+}

@@ -1,0 +1,28 @@
+// Product — table `products`.
+// Module: catalog. Entitlement plans, prices, and tax catalog.
+
+model Product {
+  id                  String       @id @db.VarChar
+  slug                String       @unique @db.VarChar
+  name                String       @db.VarChar
+  description         String?
+  appId               String?      @map("app_id") @db.VarChar
+  status              String       @default("active") @db.VarChar
+  active              Boolean      @default(true)
+  statementDescriptor String?      @map("statement_descriptor") @db.VarChar
+  unitLabel           String?      @map("unit_label") @db.VarChar
+  taxCodeId           String?      @map("tax_code_id") @db.VarChar
+  lookupKey           String?      @unique @map("lookup_key") @db.VarChar
+  metadata            Json?        @db.Json
+  createdAt           BigInt       @map("created_at")
+  updatedAt           BigInt       @map("updated_at")
+  archivedAt          BigInt?      @map("archived_at")
+  planModules         PlanModule[]
+  prices              Price[]
+  taxCode             TaxCode?     @relation(fields: [taxCodeId], references: [id], onUpdate: NoAction, map: "fk_products_tax_code_id_tax_codes")
+  app                 App?         @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([appId], map: "ix_products_app_id")
+  @@index([taxCodeId], map: "ix_products_tax_code_id")
+  @@map("products")
+}

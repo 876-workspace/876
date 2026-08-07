@@ -1,0 +1,26 @@
+// BankBranch — table `bank_branches`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model BankBranch {
+  id               String           @id @db.VarChar
+  bankId           String           @map("bank_id") @db.VarChar
+  name             String           @db.VarChar
+  transitNumber    String           @map("transit_number") @db.VarChar
+  routingNumber    String?          @map("routing_number") @db.VarChar
+  addressId        String           @map("address_id") @db.VarChar
+  contactNumber    String?          @map("contact_number") @db.VarChar
+  operatingHours   String?          @map("operating_hours") @db.VarChar
+  deletedAt        BigInt?          @map("deleted_at")
+  deletedBy        String?          @map("deleted_by") @db.VarChar
+  deletionReason   String?          @map("deletion_reason")
+  createdAt        BigInt           @map("created_at")
+  updatedAt        BigInt           @map("updated_at")
+  bankAccounts     BankAccount[]
+  directoryAddress DirectoryAddress @relation(fields: [addressId], references: [id], onUpdate: NoAction)
+  bank             Bank             @relation(fields: [bankId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([bankId, transitNumber])
+  @@index([addressId], map: "ix_bank_branches_address_id")
+  @@index([bankId], map: "ix_bank_branches_bank_id")
+  @@map("bank_branches")
+}

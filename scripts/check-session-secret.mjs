@@ -29,8 +29,8 @@ const APPS = ['api', '876', 'enterprise', 'console', 'couriers', 'billing']
 // Highest precedence last, matching how Next.js and pydantic-settings load them.
 const ENV_FILES = ['.env.development', '.env', '.env.development.local']
 
-// Mirrors `resolveSessionCookieSecret()` in @876/core and
-// `resolved_session_cookie_secret` in apps/api/core/config.py.
+// Mirrors `resolveSessionCookieSecret()` in @876/core and the
+// `session.cookieSecret` resolution in apps/api/src/config/index.ts.
 const SECRET_KEYS = ['SESSION_COOKIE_SECRET', 'WORKOS_COOKIE_PASSWORD']
 const DEV_DEFAULT = 'dev-only-session-cookie-secret-change-before-production'
 

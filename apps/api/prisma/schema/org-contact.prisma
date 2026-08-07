@@ -1,0 +1,27 @@
+// OrgContact — table `org_contacts`.
+// Module: organizations. Organizations, memberships, org roles, locations, contacts, and departments.
+
+model OrgContact {
+  id             String       @id @db.VarChar
+  organizationId String       @map("organization_id") @db.VarChar
+  userId         String?      @map("user_id") @db.VarChar
+  firstName      String       @map("first_name") @db.VarChar
+  lastName       String?      @map("last_name") @db.VarChar
+  title          String?      @db.VarChar
+  type           String       @default("general") @db.VarChar
+  isPrimary      Boolean      @default(false) @map("is_primary")
+  email          String?      @db.VarChar
+  phone          String?      @db.VarChar
+  mobile         String?      @db.VarChar
+  notes          String?
+  metadata       Json?        @db.Json
+  deletedAt      BigInt?      @map("deleted_at")
+  deletedBy      String?      @map("deleted_by") @db.VarChar
+  deletionReason String?      @map("deletion_reason")
+  createdAt      BigInt       @map("created_at")
+  updatedAt      BigInt       @map("updated_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user           User?        @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@map("org_contacts")
+}

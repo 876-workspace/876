@@ -1,0 +1,17 @@
+// Country — table `countries`.
+// Module: geo. Geographic reference data: countries, regions, currencies.
+
+model Country {
+  code                String         @id @db.VarChar(2)
+  name                String         @db.VarChar
+  phonePrefix         String?        @map("phone_prefix") @db.VarChar
+  defaultCurrencyCode String?        @map("default_currency_code") @db.VarChar(3)
+  isEnabled           Boolean        @default(true) @map("is_enabled")
+  addresses           Address[]
+  orgLocations        OrgLocation[]
+  organizations       Organization[]
+  regions             Region[]
+  userProfiles        UserProfile[]
+
+  @@map("countries")
+}

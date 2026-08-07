@@ -1,0 +1,18 @@
+// CreditUnion — table `credit_unions`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model CreditUnion {
+  id                  String              @id @db.VarChar
+  name                String              @db.VarChar
+  shortName           String?             @map("short_name") @db.VarChar
+  logoUrl             String?             @map("logo_url") @db.VarChar
+  headquarters        String?             @db.VarChar
+  deletedAt           BigInt?             @map("deleted_at")
+  deletedBy           String?             @map("deleted_by") @db.VarChar
+  deletionReason      String?             @map("deletion_reason")
+  createdAt           BigInt              @map("created_at")
+  updatedAt           BigInt              @map("updated_at")
+  creditUnionBranches CreditUnionBranch[]
+
+  @@map("credit_unions")
+}

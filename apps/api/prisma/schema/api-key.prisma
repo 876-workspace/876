@@ -1,0 +1,16 @@
+// ApiKey — table `api_keys`.
+// Module: apps. Registered apps, API keys, app assignments, and per-user app enrollment.
+
+model ApiKey {
+  id         String  @id @db.VarChar
+  appId      String  @map("app_id") @db.VarChar
+  keyHash    String  @unique @map("key_hash") @db.VarChar
+  name       String? @db.VarChar
+  lastUsedAt BigInt? @map("last_used_at")
+  expiresAt  BigInt? @map("expires_at")
+  revoked    Boolean @default(false)
+  createdAt  BigInt  @map("created_at")
+  app        App     @relation(fields: [appId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("api_keys")
+}

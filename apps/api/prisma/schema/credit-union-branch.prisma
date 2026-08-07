@@ -1,0 +1,22 @@
+// CreditUnionBranch — table `credit_union_branches`.
+// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+
+model CreditUnionBranch {
+  id               String           @id @db.VarChar
+  creditUnionId    String           @map("credit_union_id") @db.VarChar
+  name             String           @db.VarChar
+  addressId        String           @map("address_id") @db.VarChar
+  contactNumber    String?          @map("contact_number") @db.VarChar
+  email            String?          @db.VarChar
+  deletedAt        BigInt?          @map("deleted_at")
+  deletedBy        String?          @map("deleted_by") @db.VarChar
+  deletionReason   String?          @map("deletion_reason")
+  createdAt        BigInt           @map("created_at")
+  updatedAt        BigInt           @map("updated_at")
+  directoryAddress DirectoryAddress @relation(fields: [addressId], references: [id], onUpdate: NoAction)
+  creditUnion      CreditUnion      @relation(fields: [creditUnionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([addressId], map: "ix_credit_union_branches_address_id")
+  @@index([creditUnionId], map: "ix_credit_union_branches_credit_union_id")
+  @@map("credit_union_branches")
+}
