@@ -19,6 +19,13 @@
 import { listObject, type ListObject } from '@/http/envelope'
 import { AppHttpError } from '@/http/errors'
 
+import {
+  noFieldsToUpdate,
+  notFound,
+  resolveIncludeDeleted,
+  sentFields,
+} from './directory.service'
+
 import type {
   ListDirectoryQuery,
   RetrieveDirectoryQuery,
@@ -49,51 +56,11 @@ import {
   serializeCreditUnionBranch,
 } from './financial.serializers'
 
-/**
- * Honour `include_deleted` only for an internal caller.
- *
- * Everything else reads live rows, whatever the query string said.
- */
-export function resolveIncludeDeleted(
-  requested: boolean,
-  isInternal: boolean
-): boolean {
-  return isInternal ? requested : false
-}
-
-function notFound(object: string, message: string): AppHttpError {
-  return new AppHttpError({
-    code: `${object}/not-found`,
-    message,
-    httpStatus: 404,
-  })
-}
-
 function duplicate(object: string, message: string): AppHttpError {
   return new AppHttpError({
     code: `${object}/duplicate-code`,
     message,
     httpStatus: 409,
-  })
-}
-
-/** Drop the keys the caller did not send, so a PATCH never nulls a field by omission. */
-function sentFields<T extends object>(
-  body: T,
-  omit: string[] = []
-): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(body).filter(
-      ([key, value]) => value !== undefined && !omit.includes(key)
-    )
-  )
-}
-
-function noFieldsToUpdate(): AppHttpError {
-  return new AppHttpError({
-    code: 'provider/invalid-request',
-    message: 'No fields to update.',
-    httpStatus: 400,
   })
 }
 

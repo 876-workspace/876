@@ -17,6 +17,12 @@ import { deletionValues, shouldSoftDelete } from '@/platform/deletion'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
+import {
+  addressCreateData,
+  addressUpdateData,
+  liveOnly,
+  nameSearch,
+} from './directory.repository'
 import type {
   DirectoryAddressCreate,
   DirectoryAddressUpdate,
@@ -33,43 +39,6 @@ import {
   type CreditUnionBranchRow,
   type CreditUnionRow,
 } from './financial.serializers'
-
-/** `deleted_at IS NULL` unless the caller is allowed to see tombstones. */
-function liveOnly(includeDeleted: boolean): { deletedAt: null } | object {
-  return includeDeleted ? {} : { deletedAt: null }
-}
-
-function addressCreateData(input: DirectoryAddressCreate, now: bigint) {
-  return {
-    id: generateId('directoryAddress'),
-    line1: input.line1,
-    line2: input.line2 ?? null,
-    city: input.city,
-    state: input.state,
-    postalCode: input.postal_code ?? null,
-    country: input.country,
-    latitude: input.latitude,
-    longitude: input.longitude,
-    createdAt: now,
-    updatedAt: now,
-  }
-}
-
-/** Only the address fields that were actually sent. */
-function addressUpdateData(input: DirectoryAddressUpdate, now: bigint) {
-  const data: Record<string, unknown> = { updatedAt: now }
-
-  if (input.line1 != null) data['line1'] = input.line1
-  if (input.line2 !== undefined) data['line2'] = input.line2
-  if (input.city != null) data['city'] = input.city
-  if (input.state != null) data['state'] = input.state
-  if (input.postal_code !== undefined) data['postalCode'] = input.postal_code
-  if (input.country != null) data['country'] = input.country
-  if (input.latitude != null) data['latitude'] = input.latitude
-  if (input.longitude != null) data['longitude'] = input.longitude
-
-  return data
-}
 
 // --- Banks ---
 
@@ -101,9 +70,7 @@ export function listBanks(
 ): Promise<{ data: BankRow[]; hasMore: boolean }> {
   const where = {
     ...liveOnly(options.includeDeleted),
-    ...(options.search
-      ? { name: { contains: options.search, mode: 'insensitive' as const } }
-      : {}),
+    ...nameSearch(options.search),
   }
 
   return paginateByCursor<BankRow>({
@@ -207,9 +174,7 @@ export function listBankBranches(
   const where = {
     bankId,
     ...liveOnly(options.includeDeleted),
-    ...(options.search
-      ? { name: { contains: options.search, mode: 'insensitive' as const } }
-      : {}),
+    ...nameSearch(options.search),
   }
 
   return paginateByCursor<BankBranchRow>({
@@ -427,9 +392,7 @@ export function listCreditUnions(
 ): Promise<{ data: CreditUnionRow[]; hasMore: boolean }> {
   const where = {
     ...liveOnly(options.includeDeleted),
-    ...(options.search
-      ? { name: { contains: options.search, mode: 'insensitive' as const } }
-      : {}),
+    ...nameSearch(options.search),
   }
 
   return paginateByCursor<CreditUnionRow>({
@@ -525,9 +488,7 @@ export function listCreditUnionBranches(
   const where = {
     creditUnionId,
     ...liveOnly(options.includeDeleted),
-    ...(options.search
-      ? { name: { contains: options.search, mode: 'insensitive' as const } }
-      : {}),
+    ...nameSearch(options.search),
   }
 
   return paginateByCursor<CreditUnionBranchRow>({
