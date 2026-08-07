@@ -204,22 +204,23 @@ import('@/app')`. Per route: happy path with a **full body assertion**, one
 
 ## 5. Remaining work
 
-### Batch A — platform primitives and vendor adapters (10 of 12 done)
+### Batch A — platform primitives and vendor adapters (complete)
 
-| Unit                          | Source                                                                                                | State         |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
-| `platform/secure-field.ts`    | `core/secure_field.py`                                                                                | **done**      |
-| `platform/phone.ts`           | `core/phone.py` (45)                                                                                  | **done**      |
-| `platform/pin.ts`             | `core/pin.py` (125)                                                                                   | **done**      |
-| `platform/rate-limit.ts`      | `core/rate_limit.py` (87)                                                                             | **done**      |
-| `platform/risk.ts`            | `core/risk.py` (148)                                                                                  | **done**      |
-| `platform/user-agent.ts`      | `core/user_agent.py` (209)                                                                            | **done**      |
-| `providers/communications.ts` | `providers/communications.py`                                                                         | **done**      |
-| `providers/twilio/`           | `providers/twilio/*.py` (585)                                                                         | **done**      |
-| `providers/posthog/`          | `providers/posthog/client.py` (185)                                                                   | **done**      |
-| `platform/permissions.ts`     | `core/org_permissions.py` — a pure catalog plus the default role definitions                          | **done**      |
-| `platform/session.ts`         | `core/session.py` — iron-session sealing, must stay compatible with `unsealSession876` in `@876/core` | primary agent |
-| `providers/workos/`           | `providers/workos/*.py` (~900)                                                                        | primary agent |
+| Unit                          | Source                                                                       | State    |
+| ----------------------------- | ---------------------------------------------------------------------------- | -------- |
+| `platform/secure-field.ts`    | `core/secure_field.py`                                                       | **done** |
+| `platform/phone.ts`           | `core/phone.py` (45)                                                         | **done** |
+| `platform/pin.ts`             | `core/pin.py` (125)                                                          | **done** |
+| `platform/rate-limit.ts`      | `core/rate_limit.py` (87)                                                    | **done** |
+| `platform/risk.ts`            | `core/risk.py` (148)                                                         | **done** |
+| `platform/user-agent.ts`      | `core/user_agent.py` (209)                                                   | **done** |
+| `providers/communications.ts` | `providers/communications.py`                                                | **done** |
+| `providers/twilio/`           | `providers/twilio/*.py` (585)                                                | **done** |
+| `providers/posthog/`          | `providers/posthog/client.py` (185)                                          | **done** |
+| `platform/permissions.ts`     | `core/org_permissions.py` — a pure catalog plus the default role definitions | **done** |
+| `platform/deletion.ts`        | `core/deletion.py`                                                           | **done** |
+| `platform/session.ts`         | `core/session.py` — HMAC-SHA256 cookie sealing (**not** iron-session)        | **done** |
+| `providers/workos/`           | `providers/workos/*.py` (~1,100), incl. the auth adapter                     | **done** |
 
 **The permissions unit was mis-scoped in an earlier draft and is now resolved.**
 `core/permissions.py` does not exist. The platform primitive is
@@ -237,23 +238,101 @@ organization already has. The test pins all four.
 **Batch A is complete.** Every unit was verified against its Python source
 before being committed; the methods are recorded in §2.
 
-### Batches B–H
+### What is left, in the order it unblocks
 
-| Batch | Modules                                                                                                                                                             | FastAPI lines | Suggested owner                                                                |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
-| **B** | communications, mobile-numbers, memberships, onboarding                                                                                                             | ~1,270        | Codex                                                                          |
-| **C** | products, apps CRUD, features                                                                                                                                       | ~2,470        | Codex                                                                          |
-| **D** | directory                                                                                                                                                           | 1,678         | Codex — 50 routes, 10 resources x 5 verbs (agy attempt failed, see Tool state) |
-| **E** | provisioning, organizations (+ `access.py`, `structure.py`)                                                                                                         | ~3,480        | Codex, primary agent reviews                                                   |
-| **F** | users                                                                                                                                                               | 3,262         | Codex, primary agent reviews                                                   |
-| **G** | auth, oauth                                                                                                                                                         | ~2,670        | **primary agent only** (`.claude/rules/cli.md`)                                |
-| **H** | `workers/` (billing dispatch, finance provisioning, feature-flag migration), startup seeds (`services/*_seeds.py`), Dockerfile + wrangler cutover, retire `main.py` | —             | primary agent                                                                  |
+**19,730 lines under `domains/`** plus **~5,500 under `services/`**. Every
+remaining module already has its `*.docs.ts` translated and a directory under
+`src/modules/` — except `billing` and `twilio-webhooks`, whose prose must be
+written rather than translated.
 
-`billing` (565 + 191) has **no `docs.py`** — its OpenAPI prose has to be written,
-not translated. Slot it into C or E and budget for that.
+**Nothing is mounted until you add it to `src/http/routes.ts`.** That is the one
+shared file; forgetting it shows up as every test 404ing.
 
-`twilio_webhooks` (93) is public and needs raw-body signature verification
-_before_ JSON parsing — mount it before `express.json()`.
+#### Start here — five modules with no unported prerequisites
+
+Their only dependencies are providers that are already done. Any of these can be
+picked up cold.
+
+| Module            | Routes | Lines | Depends on                                         |
+| ----------------- | ------ | ----- | -------------------------------------------------- |
+| `products`        | 10     | 731   | nothing                                            |
+| `oauth`           | 11     | 1,836 | nothing                                            |
+| `communications`  | 7      | 576   | `providers/twilio` ✓, `providers/communications` ✓ |
+| `mobile-numbers`  | 8      | 684   | `providers/twilio` ✓, `platform/phone` ✓           |
+| `twilio-webhooks` | 5      | 247   | `providers/twilio/signatures` ✓                    |
+
+`twilio-webhooks` is **public** and verifies a raw-body signature, so it must be
+mounted **before `express.json()`** — the signature is over the exact bytes, and
+a parsed-then-restringified body will not match. It has no `docs.py`.
+
+`oauth` is the OAuth Authorization Server. It is dormant in production but it is
+security-critical code; per `.claude/rules/cli.md` it stays with the primary
+agent.
+
+#### Then the service prerequisites, each gating several modules
+
+Port these before the modules that need them. The right-hand column is why.
+
+| Service                              | Lines | Gates                                           |
+| ------------------------------------ | ----- | ----------------------------------------------- |
+| `services/identity_sync.py`          | 207   | memberships, organizations, users               |
+| `services/provisioning.py`           | 190   | memberships, organizations, users, auth         |
+| `services/features.py`               | 585   | features, users                                 |
+| `services/finance_provisioning.py`   | 319   | apps CRUD, provisioning, organizations, billing |
+| `services/provisioning_catalog.py`   | 359   | provisioning                                    |
+| `services/organization_bootstrap.py` | 204   | organizations                                   |
+| `services/auth_telemetry.py`         | 350   | users, auth                                     |
+| `services/identification_secrets.py` | 118   | users                                           |
+| `services/auth.py`                   | 787   | auth                                            |
+| `services/billing_customer_sync.py`  | 294   | billing                                         |
+
+`services/provisioning.py` holds `resolve_member_permissions` — the DB-backed
+resolver that pairs with the pure `platform/permissions.ts` catalog. Two
+functions in it, `link_membership_role` and `assign_member_apps`, are called
+from the memberships create/update paths.
+
+#### Then the remaining modules, cheapest first
+
+| Module          | Routes | Lines | Blocked on                                                                                  |
+| --------------- | ------ | ----- | ------------------------------------------------------------------------------------------- |
+| `memberships`   | 5      | 468   | `identity_sync`, `provisioning`                                                             |
+| `billing`       | 4      | 925   | `billing_customer_sync`, `finance_provisioning` — **and its OpenAPI prose must be written** |
+| `apps` CRUD     | 13     | 991   | `finance_provisioning` (credential lookup is already done)                                  |
+| `provisioning`  | 15     | 1,082 | `provisioning_catalog`, `finance_provisioning`                                              |
+| `features`      | 16     | 1,189 | `services/features.py`                                                                      |
+| `auth`          | 22     | 2,566 | `services/auth.py`, `auth_telemetry`, `provisioning` — **primary agent only**               |
+| `organizations` | 28     | 4,508 | `identity_sync`, `provisioning`, `organization_bootstrap`, `finance_provisioning`           |
+| `users`         | 64     | 3,927 | `identity_sync`, `provisioning`, `features`, `auth_telemetry`, `identification_secrets`     |
+
+`users` is the largest surface at 64 routes. Split it the way `directory` was —
+per-resource-group files sharing one prefix — rather than one flat set.
+
+#### Last: Batch H, the cutover
+
+- `workers/` — the background loops the FastAPI app owned:
+  `services/billing_customer_dispatch.py` (205),
+  `services/finance_provisioning_dispatch.py` (226),
+  `services/feature_flag_migration.py` (204).
+- Startup seeds: `services/feature_seeds.py` (547),
+  `services/provisioning_seeds.py` (361), `services/plan_seeds.py` (186),
+  `services/geo_seeds.py` (184), `services/bootstrap.py` (167). Consider moving
+  these to a CLI or a migration rather than a boot path — the Express service
+  must not run DDL or seeds at startup (`.claude/rules/express-api.md`).
+- Dockerfile and `wrangler.jsonc` pointed at the Node entry point.
+- Package scripts flipped from `node:*` to the plain names.
+- `@876/sdk`, `@876/admin`, and every app smoke-tested against the new service.
+- The FastAPI tree deleted, in its own commit, only once the above is green.
+
+### Verify every module the same way
+
+Two checks, both cheap, both catching things a passing suite cannot:
+
+1. **Diff `/openapi.json` against the FastAPI router**, operation by operation.
+   This is the only check that catches a route which was written but never
+   mounted. `directory` was verified this way — 50 operations, 0 differences.
+2. **For anything data-heavy or algorithmic, dump both implementations and
+   diff.** `onboarding` was checked at 70 catalog fields and 267 validation
+   issues; `user-agent` at 120 field comparisons.
 
 ### How to delegate well
 
@@ -272,11 +351,33 @@ _before_ JSON parsing — mount it before `express.json()`.
 
 ### Tool state
 
-- **Codex** (`codex exec -m gpt-5.6-terra`): hit its usage limit 2026-08-06,
-  resets **2026-08-08 04:00Z**. Best tool for batches B, C, E, F.
-- **agy** (`agy --model=claude-sonnet-4-6` / `--model=gemini-3.6-flash-high`):
-  unlimited capacity, but **`--effort` is rejected for the Sonnet model** —
-  passing it kills the run instantly.
+Both delegation routes were exhausted on 2026-08-07. **Check both before
+planning around either.**
+
+- **Codex** (`codex exec -m gpt-5.6-terra`): usage limit reached. The CLI itself
+  reported `try again at Aug 8th, 2026 4:03 AM` when probed at 04:17Z on
+  2026-08-07 — note that is the **8th**, not later the same day, which an earlier
+  draft of this file got wrong. Best tool for the larger module ports once it is
+  back. Probe it with `codex exec -m gpt-5.6-terra "Reply with exactly:
+CODEX_OK"`; an exhausted quota still exits 0 and prints the limit message, so
+  read the output rather than the exit code.
+- **agy** capacity is **per model group, and it is not unlimited** — an earlier
+  draft of this file and of `.claude/rules/cli.md` both claimed it was. Measured
+  2026-08-07: Gemini 95% weekly / 98% five-hour, Claude+GPT **7% weekly / 0%
+  five-hour**. The Claude tier resets five-hourly. Query it before delegating —
+  it costs no agent turn:
+
+  ```bash
+  agy --output-format json --print-timeout 60s -p "/quota"
+  ```
+
+  An exhausted bucket surfaces only as `"status":"ERROR"` with `"error":
+"Individual quota reached…"` in the stream-json result. Under plain `--print` it
+  looks identical to a model that read its context and gave up. **Send agy work
+  to Gemini**, which is also what the Models table above says.
+
+  `--effort` is rejected for the Claude models — passing it kills the run
+  instantly.
 
   **`--print-timeout` defaults to `5m0s`, and that was the whole problem.** Four
   briefs on 2026-08-07 looked like model failures and were not: the flag killed
