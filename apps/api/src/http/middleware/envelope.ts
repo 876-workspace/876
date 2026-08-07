@@ -88,12 +88,26 @@ export function envelopePayload(payload: unknown, status: number): unknown {
 
   if (status < 400) return { data: payload, error: null }
 
+  const isRecord = typeof payload === 'object' && payload !== null
   const rawError =
-    typeof payload === 'object' && payload !== null && 'error' in payload
+    isRecord && 'error' in payload
       ? (payload as Record<string, unknown>).error
       : payload
 
-  return { data: null, error: clientSafeError(rawError, status) }
+  if (typeof rawError === 'object' && rawError !== null)
+    return { data: null, error: clientSafeError(rawError, status) }
+
+  // When the error is a bare string, the message is read from the *whole*
+  // payload rather than from the string. That is what lets an RFC 6749 body —
+  // `{ error: "invalid_grant", error_description: "..." }` — keep its
+  // description instead of reporting the code twice.
+  return {
+    data: null,
+    error: {
+      code: errorCode(rawError, status),
+      message: errorMessage(isRecord ? payload : rawError),
+    },
+  }
 }
 
 export function envelope(
