@@ -367,7 +367,7 @@ describe('assignMemberApps', () => {
       string,
       Record<string, unknown>
     >
-    expect(call.create.appId).toBe('app_876-enterprise')
+    expect(call.create?.appId).toBe('app_876-enterprise')
   })
 
   it('additionally assigns the source app', async () => {
@@ -399,6 +399,6 @@ describe('assignMemberApps', () => {
       string,
       Record<string, unknown>
     >
-    expect(call.update.status).toBe('active')
+    expect(call.update?.status).toBe('active')
   })
 })
