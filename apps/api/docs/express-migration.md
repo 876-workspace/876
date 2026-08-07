@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 753 passing, 28 files
+pnpm node:test          # 814 passing, 29 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -44,11 +44,11 @@ command is how a session ends up narrating a pass that never happened
 | Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
 | Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
 
-### Modules migrated (11 of 22)
+### Modules migrated (12 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
-`addresses`, `modules`, `directory` (all 50 routes), `onboarding`, and `apps`
-(credential lookup only — its CRUD routes are still outstanding).
+`addresses`, `modules`, `directory` (all 50 routes), `onboarding`, `products`,
+and `apps` (credential lookup only — its CRUD routes are still outstanding).
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
 `src/modules/directory/**` is the example for a **large** module: three resource
@@ -91,6 +91,12 @@ methods are worth reusing, because two of them found real divergences:
   validation issues across 25 answer sets, 0 differences**. The second diff is
   what earns confidence in the validator, whose rules port almost-right very
   easily.
+- **`products`** was verified the same way as `directory` — **10 operations, 0
+  differences** against the FastAPI router. Its port also tightened three
+  request fields the Pydantic model typed as nullable (`slug`, `name`,
+  `active`) but whose columns are NOT NULL: sending null to any of them reaches
+  either `.strip()` or the constraint and raises, so the Zod schemas reject it
+  as a 422 instead of reproducing a 500.
 - **`directory`** was verified by generating `/openapi.json` from the built app
   and diffing it against the FastAPI router operation by operation: **50
   operations, 0 differences** in method, path, or `operationId`. Do this for
@@ -248,14 +254,13 @@ written rather than translated.
 **Nothing is mounted until you add it to `src/http/routes.ts`.** That is the one
 shared file; forgetting it shows up as every test 404ing.
 
-#### Start here — five modules with no unported prerequisites
+#### Start here — four modules with no unported prerequisites
 
 Their only dependencies are providers that are already done. Any of these can be
 picked up cold.
 
 | Module            | Routes | Lines | Depends on                                         |
 | ----------------- | ------ | ----- | -------------------------------------------------- |
-| `products`        | 10     | 731   | nothing                                            |
 | `oauth`           | 11     | 1,836 | nothing                                            |
 | `communications`  | 7      | 576   | `providers/twilio` ✓, `providers/communications` ✓ |
 | `mobile-numbers`  | 8      | 684   | `providers/twilio` ✓, `platform/phone` ✓           |
