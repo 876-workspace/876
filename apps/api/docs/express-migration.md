@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 572 passing, 23 files
+pnpm node:test          # 753 passing, 28 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -33,22 +33,22 @@ command is how a session ends up narrating a pass that never happened
 
 ### Landed
 
-| Area                | State                                                                                                                                                                                                                                          |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Toolchain           | Express 5, TS ESM strict, Vitest + supertest, tsup, dependency-cruiser, pino                                                                                                                                                                   |
-| Prisma              | Multi-file schema baselined against the live DB; `scripts/guard-migrate.mjs` refuses `migrate dev` when another service's tables are present                                                                                                   |
-| Platform core       | `config/` (zod, parsed once at boot), `platform/logger.ts` (pino + AsyncLocalStorage request context), `http/envelope.ts` (`{data,error}`, list object, cursor pagination), `http/errors.ts`, `http/openapi/registry.ts`, `http/api-router.ts` |
-| Auth                | `http/auth/` — `requireApiKey`, `requireSession`, `requireAdmin`, consumer/enterprise realm guards; `platform/jwt.ts` (RS256 sign/verify/JWKS)                                                                                                 |
-| Crypto              | `platform/secure-field.ts` — envelope encryption, verified against a Python-sealed fixture                                                                                                                                                     |
-| Docs                | All 20 `domains/*/docs.py` translated to `src/modules/*/*.docs.ts` (759 constants)                                                                                                                                                             |
-| Platform primitives | `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it                            |
-| Providers           | `providers/communications.ts` (the neutral contract), `providers/twilio/**` (client, adapter, errors, fake, webhook signatures), `providers/posthog/**`                                                                                        |
+| Area                | State                                                                                                                                                                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toolchain           | Express 5, TS ESM strict, Vitest + supertest, tsup, dependency-cruiser, pino                                                                                                                                                                                                                      |
+| Prisma              | Multi-file schema baselined against the live DB; `scripts/guard-migrate.mjs` refuses `migrate dev` when another service's tables are present                                                                                                                                                      |
+| Platform core       | `config/` (zod, parsed once at boot), `platform/logger.ts` (pino + AsyncLocalStorage request context), `http/envelope.ts` (`{data,error}`, list object, cursor pagination), `http/errors.ts`, `http/openapi/registry.ts`, `http/api-router.ts`                                                    |
+| Auth                | `http/auth/` — `requireApiKey`, `requireSession`, `requireAdmin`, consumer/enterprise realm guards; `platform/jwt.ts` (RS256 sign/verify/JWKS)                                                                                                                                                    |
+| Crypto              | `platform/secure-field.ts` — envelope encryption, verified against a Python-sealed fixture                                                                                                                                                                                                        |
+| Docs                | All 20 `domains/*/docs.py` translated to `src/modules/*/*.docs.ts` (759 constants)                                                                                                                                                                                                                |
+| Platform primitives | **Batch A complete** — `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `deletion`, `session` (cross-checked both directions), `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it |
+| Providers           | `providers/auth.ts` and `providers/communications.ts` (the neutral contracts), `providers/twilio/**`, `providers/posthog/**`, `providers/workos/**` (client, errors, JWKS, auth adapter)                                                                                                          |
 
-### Modules migrated (10 of 22)
+### Modules migrated (11 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
-`addresses`, `modules`, `directory` (all 50 routes), and `apps` (credential
-lookup only — its CRUD routes are still outstanding).
+`addresses`, `modules`, `directory` (all 50 routes), `onboarding`, and `apps`
+(credential lookup only — its CRUD routes are still outstanding).
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
 `src/modules/directory/**` is the example for a **large** module: three resource
@@ -81,6 +81,16 @@ methods are worth reusing, because two of them found real divergences:
 - **`risk.ts`** needed a fix found by reading: `Number(' ')` is `0` in
   JavaScript where Python's `float(' ')` raises, so a whitespace-only coordinate
   would have been read as the equator instead of "unknown".
+- **`session.ts`** was verified in **both** directions — the suite unseals a
+  cookie sealed by `core.session.seal_session`, and a cookie sealed by the port
+  was confirmed to unseal in Python. The wire format is a contract with
+  `@876/core`'s `verifySession876`, which every app reads, so a divergence would
+  surface at cutover as every user being logged out.
+- **`onboarding`** carries a 549-line field catalog. Both implementations were
+  dumped and diffed: **70 fields across 3 targets, 0 differences**, and **267
+  validation issues across 25 answer sets, 0 differences**. The second diff is
+  what earns confidence in the validator, whose rules port almost-right very
+  easily.
 - **`directory`** was verified by generating `/openapi.json` from the built app
   and diffing it against the FastAPI router operation by operation: **50
   operations, 0 differences** in method, path, or `operationId`. Do this for
@@ -224,9 +234,8 @@ declaration order. They are seeded into `organization_roles.permissions`, so
 sorting all four "for consistency" would change the rows every existing
 organization already has. The test pins all four.
 
-The two remaining Batch A units — `platform/session.ts` and `providers/workos/`
-— are auth- and credential-critical, so per `.claude/rules/cli.md` they stay
-with the primary agent and are not delegated.
+**Batch A is complete.** Every unit was verified against its Python source
+before being committed; the methods are recorded in §2.
 
 ### Batches B–H
 
