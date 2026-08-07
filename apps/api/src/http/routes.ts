@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import type { GuardResolver } from '@/http/api-router'
 import { createAuthGuards, type AuthGuards } from '@/http/auth'
+import { createAddressesRouter } from '@/modules/addresses'
 import { createAuditEventsRouter } from '@/modules/audit-events'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
@@ -32,6 +33,7 @@ export function buildRoutes(): Router {
   // lists before the visitor has any credential to present.
   root.use(geoRouter)
 
+  root.use(createAddressesRouter(resolveGuards))
   root.use(createAuditEventsRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
   root.use(createDevicesRouter(resolveGuards))
