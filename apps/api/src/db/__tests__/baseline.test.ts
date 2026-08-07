@@ -7,17 +7,19 @@ const SAMPLE = [
   'organizations',
   'memberships',
   'apps',
-  'addresses',
   'features',
+  'user_identifications',
 ] as const
 
 function decide(
   presentTables: readonly string[],
-  baselineRow: Parameters<typeof decideBaselineAction>[0]['baselineRow'] = null
+  baselineRow: Parameters<typeof decideBaselineAction>[0]['baselineRow'] = null,
+  publicTableCount = presentTables.length
 ) {
   return decideBaselineAction({
     presentTables,
     sampleTables: SAMPLE,
+    publicTableCount,
     baselineRow,
   })
 }
@@ -38,7 +40,10 @@ describe('decideBaselineAction', () => {
   })
 
   it('does nothing on an empty database, so migrate deploy creates the schema', () => {
-    expect(decide([])).toEqual({ action: 'skip', reason: 'empty-database' })
+    expect(decide([], null, 0)).toEqual({
+      action: 'skip',
+      reason: 'empty-database',
+    })
   })
 
   it('resolves the baseline on a pre-Prisma database carrying the full schema', () => {
@@ -73,35 +78,58 @@ describe('decideBaselineAction', () => {
 
   it('refuses a partially-built schema rather than guessing', () => {
     // Marking the baseline applied here would permanently skip `features` and
-    // `addresses`; applying it would fail on the tables that do exist.
-    const decision = decide(['users', 'organizations', 'memberships', 'apps'])
-
-    expect(decision.action).toBe('refuse')
-    expect(decision).toEqual({
+    // `user_identifications`; applying it would fail on the tables that exist.
+    expect(decide(['users', 'organizations', 'memberships', 'apps'])).toEqual({
       action: 'refuse',
-      missing: ['addresses', 'features'],
+      reason: 'partial-schema',
+      missing: ['features', 'user_identifications'],
     })
   })
 
   it('refuses a schema missing only one table', () => {
-    expect(decide(SAMPLE.filter((t) => t !== 'features'))).toEqual({
+    expect(decide(SAMPLE.filter((table) => table !== 'features'))).toEqual({
       action: 'refuse',
+      reason: 'partial-schema',
       missing: ['features'],
     })
   })
 
   it('does not treat a single present table as an empty database', () => {
-    const decision = decide(['users'])
-
-    expect(decision.action).toBe('refuse')
+    expect(decide(['users']).action).toBe('refuse')
   })
 
   it('treats an empty database with a failed record as still empty', () => {
     // Nothing was created, so there is nothing to baseline — `migrate deploy`
     // must be allowed to build the schema from scratch.
-    expect(decide([], FAILED)).toEqual({
+    expect(decide([], FAILED, 0)).toEqual({
       action: 'skip',
       reason: 'empty-database',
     })
+  })
+
+  it('refuses a populated database holding none of the identity tables', () => {
+    // The couriers database, which the deploy was pointed at for a day: 28
+    // tables, not one of them an identity table.
+    expect(decide([], null, 28)).toEqual({
+      action: 'refuse',
+      reason: 'foreign-database',
+      missing: [...SAMPLE],
+    })
+  })
+
+  it('refuses a foreign database even when it carries an applied baseline row', () => {
+    // A stray row from an earlier misaimed run must not be read as consent to
+    // keep writing to the wrong database.
+    expect(decide([], APPLIED, 28)).toEqual({
+      action: 'refuse',
+      reason: 'foreign-database',
+      missing: [...SAMPLE],
+    })
+  })
+
+  it('does not mistake a shared table name for the identity schema', () => {
+    // `addresses` exists in couriers too, which is why it is no longer sampled:
+    // it is invisible here, so a courier database still reads as foreign.
+    expect(decide([], null, 28).action).toBe('refuse')
   })
 })
