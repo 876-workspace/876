@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 1,002 passing, 33 files
+pnpm node:test          # 1,023 passing, 34 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -294,10 +294,14 @@ What remains is blocked on the services below. Port those first.
 #### Then the service prerequisites, each gating several modules
 
 Port these before the modules that need them. The right-hand column is why.
+They live in `src/services/`, outside `src/modules/`, because they are shared by
+several modules and belong to none of them. `identity-sync.ts` is the worked
+example: it takes the **narrow provider surface it needs** as a parameter rather
+than importing the adapter, so a test drives it without standing up WorkOS.
 
 | Service                              | Lines | Gates                                           |
 | ------------------------------------ | ----- | ----------------------------------------------- |
-| `services/identity_sync.py`          | 207   | memberships, organizations, users               |
+| ~~`services/identity_sync.py`~~      | 207   | **done** — `src/services/identity-sync.ts`      |
 | `services/provisioning.py`           | 190   | memberships, organizations, users, auth         |
 | `services/features.py`               | 585   | features, users                                 |
 | `services/finance_provisioning.py`   | 319   | apps CRUD, provisioning, organizations, billing |
