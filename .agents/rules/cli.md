@@ -17,7 +17,7 @@ turns probing**. Trust it; re-verify only if a command actually fails.
 | **Codex**               | `codex exec -m gpt-5.6-terra`              | ready                 | The model id is **`gpt-5.6-terra`**, run at `model_reasoning_effort=high` (both are already the defaults in `~/.codex/config.toml`). `~/.codex/config.toml` sets `approval_policy = "never"`, `sandbox_mode = "danger-full-access"`, and marks `/workspaces/876` trusted, so `--dangerously-bypass-approvals-and-sandbox` runs unattended. |
 | **opencode**            | `opencode run -m deepseek/deepseek-v4-pro` | ready                 | Trivial/mechanical tier. See below.                                                                                                                                                                                                                                                                                                        |
 | **Command Code**        | `command-code -p --yolo`                   | ready                 | Alternative to opencode, same tier.                                                                                                                                                                                                                                                                                                        |
-| **agy** (Antigravity)   | `agy`                                      | ready                 | **Effectively unlimited usage** — its plan has no practical cap, so prefer it for any high-volume non-critical work. Capable but literal: it needs step-by-step instructions with a worked example, and its output must always be reviewed. Models via `agy models`.                                                                       |
+| **agy** (Antigravity)   | `agy`                                      | ready                 | **High capacity on Gemini models, small and easily exhausted on Claude/GPT models — separate quota buckets.** Check with `agy -p "/quota"` before delegating. Prefer it for high-volume non-critical work, on Gemini. Capable but literal: it needs step-by-step instructions with a worked example, and its output must always be reviewed. Models via `agy models`. |
 | **Cloudflare Wrangler** | `npx wrangler`                             | **authenticated**     | OAuth as `raheemforschool@gmail.com`, account `b033115f2e5e7382047b69539b971105`. Scopes include `workers:write`, `workers_scripts:write`, `workers_kv:write`, `workers_routes:write`. Can deploy Workers, read/set secrets, and `wrangler tail` live logs.                                                                                |
 | **GitHub CLI**          | `gh`                                       | **authenticated**     | Account `876-workspace`, scopes `repo`, `workflow`, `read:org`, `gist`. Can open/merge PRs, dispatch workflows, read Actions logs.                                                                                                                                                                                                         |
 | **Sentry**              | `sentry`                                   | **authenticated**     | v0.38.0 at `~/.local/bin/sentry`, org **`efesto`** (Efesto-Technologies), team `efesto-technologies`. Token auto-refreshes.                                                                                                                                                                                                                |
@@ -111,12 +111,35 @@ See the root `CLAUDE.md` "Sub-Agent Delegation (Codex)" section for the
 `codex exec` invocation. Codex remains the default for non-trivial
 well-scoped implementation chunks that don't need Opus/Fable-level judgment.
 
-## `agy` (Antigravity) — unlimited-capacity tier for non-critical work
+## `agy` (Antigravity) — high-capacity **Gemini** tier for non-critical work
 
-**Antigravity usage is effectively unlimited** under its current plan, so it is the
-default tool for any high-volume work that does not need to be correct on the first
-try: documentation, Markdown, placeholder scaffolding, mechanical file generation,
-and bulk repetitive edits.
+Antigravity is the default tool for high-volume work that does not need to be
+correct on the first try: documentation, Markdown, placeholder scaffolding,
+mechanical file generation, and bulk repetitive edits.
+
+**Its capacity is large on Gemini models and small on Claude/GPT models — they
+are separate quota buckets.** "Effectively unlimited" was recorded here from the
+Gemini experience and is not true of the whole tool. Measured 2026-08-07:
+
+| Bucket                | Weekly | 5-hour |
+| --------------------- | ------ | ------ |
+| Gemini models         | 95%    | 98%    |
+| Claude and GPT models | 7%     | **0%** |
+
+**Check before delegating, never guess** — quota state is a one-line query that
+costs nothing and needs no agent turn:
+
+```bash
+agy --output-format json --print-timeout 60s -p "/quota"
+```
+
+An exhausted bucket does not fail loudly. It returns `"status":"ERROR"` with
+`"error":"Individual quota reached…"` in the `stream-json` result — and under
+plain `--print` it can look exactly like a model that read its context and gave
+up. Two hours were lost to that on 2026-08-07 before the quota was checked.
+
+**So: send agy work to Gemini.** This reinforces the Models table below — route
+Claude-model work through the `Agent` tool, which does not share this bucket.
 
 The trade-off is that it follows instructions literally rather than inferring
 intent. A brief that would be enough for Codex is not enough for `agy`. Give it:
@@ -132,16 +155,42 @@ the result unread is not delegation.
 ### Invocation
 
 ```bash
-agy --model=<model> --effort=<low|medium|high> --dangerously-skip-permissions \
-  --print "<task prompt>"
+agy --model=gemini-3.1-pro-high \
+    --print-timeout 50m \
+    --output-format stream-json \
+    --dangerously-skip-permissions \
+    --print "$(cat .claude/briefs/agy/<brief>.md)"
 ```
+
+**`--print-timeout` defaults to `5m0s`. Always set it.** Anything longer than a
+few minutes is killed mid-run, and because tool calls have already executed, the
+result is the worst possible failure: files half-written, **exit code 0**, and
+nothing on stdout. On 2026-08-07 this was misread as four separate model
+failures; one of those "failures" had in fact applied every edit it was asked
+for. Set it above the real duration of the work.
+
+**Use `--output-format stream-json` for anything non-trivial.** It emits typed
+NDJSON (`init`, `step_update`, terminal `result` with `status` and `error`)
+incrementally, so a quota rejection or a stall is visible during the run instead
+of being inferred afterwards. Plain `--print` writes **nothing** to a pipe or a
+redirect on some versions — [antigravity-cli#408](https://github.com/google-antigravity/antigravity-cli/issues/408),
+open as of 2026-08-07 — so an empty log file is not evidence of an empty result.
 
 **Flag order matters.** `--print` (alias `-p` / `--prompt`) takes the prompt as its
 value, so it must come **last**, immediately before the prompt string. Writing
 `agy --print --model=X "<prompt>"` makes `agy` treat the model name as the prompt
 and silently answer the wrong question — it exits 0 and writes nothing.
 
-Note the `=` in `--model=` and `--effort=`; use that form.
+Note the `=` in `--model=`; use that form. **`--effort` is rejected by the
+Claude models** — passing it kills the run instantly.
+
+**Never put the invocation command inside the brief as a bare `Tool:` line.** The
+delegate reads it as an instruction and spends its turn shelling out to a nested
+`agy` instead of doing the work. Label it explicitly as an orchestrator note, or
+leave it out of the brief entirely.
+
+Whatever the flags, **confirm what it did with `git status` and `git diff`**, not
+from its own report.
 
 ### Models
 
