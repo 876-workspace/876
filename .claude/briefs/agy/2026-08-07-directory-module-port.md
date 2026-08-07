@@ -1,8 +1,16 @@
 # Brief — port the `directory` module from FastAPI to Express
 
-**Tool:** `agy --model=claude-sonnet-4-6` (do **not** pass `--effort`; the Sonnet
-model rejects it and the run dies instantly)
 **Scope:** create `apps/api/src/modules/directory/**`. Nothing else.
+
+> **You are the agent executing this brief.** Do the work yourself with your own
+> file tools. Do **not** shell out to `agy`, `codex`, or any other CLI — a
+> previous run read this header as an instruction to launch a nested agent and
+> spent its whole turn doing that instead of the port.
+>
+> Orchestrator note (not an instruction to you): launch with
+> `--model=gemini-3.1-pro-high --print-timeout 50m --output-format stream-json`.
+> The Claude-model quota on agy is a separate, much smaller bucket and is
+> routinely exhausted; Gemini is the tier with capacity.
 
 ## Read these first, in this order
 

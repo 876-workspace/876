@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 478 passing, 19 files
+pnpm node:test          # 572 passing, 23 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -44,13 +44,19 @@ command is how a session ends up narrating a pass that never happened
 | Platform primitives | `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it                            |
 | Providers           | `providers/communications.ts` (the neutral contract), `providers/twilio/**` (client, adapter, errors, fake, webhook signatures), `providers/posthog/**`                                                                                        |
 
-### Modules migrated (9 of 22)
+### Modules migrated (10 of 22)
 
 `health`, `geo`, `audit-events`, `sessions`, `auth-attempts`, `devices`,
-`addresses`, `modules`, and `apps` (credential lookup only — its CRUD routes are
-still outstanding).
+`addresses`, `modules`, `directory` (all 50 routes), and `apps` (credential
+lookup only — its CRUD routes are still outstanding).
 
 `src/modules/geo/**` is the worked example — copy its shape exactly.
+`src/modules/directory/**` is the example for a **large** module: three resource
+groups sharing one prefix, split as `<group>.{schemas,serializers,repository,
+service,controller,routes}.ts` with `directory.{schemas,serializers,repository,
+service}.ts` holding what all three share. Ten resources in one flat file set
+would have been unreadable; a `schemas/` subdirectory with barrels was tried and
+removed, because a barrel hides which module a route actually depends on.
 
 ---
 
@@ -75,6 +81,14 @@ methods are worth reusing, because two of them found real divergences:
 - **`risk.ts`** needed a fix found by reading: `Number(' ')` is `0` in
   JavaScript where Python's `float(' ')` raises, so a whitespace-only coordinate
   would have been read as the equator instead of "unknown".
+- **`directory`** was verified by generating `/openapi.json` from the built app
+  and diffing it against the FastAPI router operation by operation: **50
+  operations, 0 differences** in method, path, or `operationId`. Do this for
+  every module from here on — it is a few lines of script, and it catches the
+  one defect a passing test suite cannot, which is a route that was written and
+  never mounted. Extract the Python side with a regex over
+  `@router.<verb>(\n  "<path>" … async def <name>(`, and remember the OpenAPI
+  document uses `{param}`, not Express's `:param`.
 
 The lesson to carry forward: a round-trip test proves a port is
 self-consistent, not that it agrees with the service it replaces. Anything
@@ -255,20 +269,36 @@ _before_ JSON parsing — mount it before `express.json()`.
   unlimited capacity, but **`--effort` is rejected for the Sonnet model** —
   passing it kills the run instantly.
 
-  **Treat its exit code as meaningless and its stdout as unreliable.** On
-  2026-08-07 it was given four briefs. Three produced nothing: one died with
-  `Error: timeout waiting for response`, and two exited **0** having printed only
-  "now I'll apply the edits" without writing a file. The fourth — the refresh of
-  this document — **applied all seven of its edits correctly while printing
-  nothing at all**, so the run that looked most like a failure was the one that
-  worked.
+  **`--print-timeout` defaults to `5m0s`, and that was the whole problem.** Four
+  briefs on 2026-08-07 looked like model failures and were not: the flag killed
+  each run at five minutes. Tool calls had already executed, so the refresh of
+  this document **applied all seven of its edits while printing nothing and
+  exiting 0** — the run that looked most like a failure was the one that worked.
+  Nothing was wrong with the briefs, and splitting them further would not have
+  helped.
 
-  The only way to know what agy did is `git status` and `git diff`. A trivial
-  prompt (`--print "Reply with exactly OK"`) returns in seconds, so a smoke test
-  distinguishes "agy is broken" from "this brief is too long for it". Long,
-  multi-file briefs are what it fails at; the `directory` port was abandoned
-  after it read the context files and stopped. Give it one file and a numbered
-  edit list, then verify by diff.
+  The working invocation for any run longer than a few minutes:
+
+  ```bash
+  agy --model=claude-sonnet-4-6 \
+      --print-timeout 50m \
+      --output-format stream-json \
+      --dangerously-skip-permissions \
+      --print "$(cat .claude/briefs/agy/<brief>.md)"
+  ```
+
+  - **`--print-timeout`** must exceed the real duration of the work. This is the
+    single flag that makes agy usable for a module port.
+  - **`--output-format stream-json`** emits typed NDJSON (`init`,
+    `step_update`, terminal `result` with a `status`) incrementally, so progress
+    is visible during the run and the outcome is machine-checkable at the end.
+    Plain `--print` to a redirect can produce an empty file even on success —
+    [issue #408](https://github.com/google-antigravity/antigravity-cli/issues/408),
+    still open: stdout is dropped when it is not a TTY.
+  - **`--print` comes last**, because it takes the prompt as its value.
+
+  Even with the right flags, **confirm what it did with `git status` and
+  `git diff`** rather than from its own report.
 
 - Background long runs and start a 5-minute `Monitor` alongside each one
   (`pgrep -f "bin/cod[e]x"` — bracket the letter, or the monitor matches itself).
@@ -292,6 +322,18 @@ _before_ JSON parsing — mount it before `express.json()`.
 - **A test comment claiming a fixture came from the other implementation is not
   evidence.** Regenerate it. The Twilio vectors were checked this way and were
   genuine, but the check is what made that a fact rather than an assumption.
+- **`z.coerce.boolean()` is `Boolean(value)`**, so the query string `'false'` —
+  non-empty — becomes **true**. Every boolean query parameter needs an explicit
+  parse of the recognised true spellings. `?include_deleted=false` returned
+  tombstoned rows before this was caught.
+- **A Prisma nested write needs the _checked_ create input.** Setting a relation's
+  scalar (`bankId`) selects the unchecked variant, which forbids
+  `directoryAddress: { create: … }`; use `bank: { connect: { id } }` instead. The
+  alternative — two writes — is what risks an orphan child row.
+- **The `apiKey` tier does not resolve the internal key.** A FastAPI read route
+  that takes `Depends(resolve_principal)` while its router carries only
+  `require_api_key` needs `attachPrincipal` as route middleware in Express, or
+  `principal.internal` silently reads `false` for a platform caller.
 
 ---
 
