@@ -1,59 +1,14 @@
 /**
- * The application error type.
+ * HTTP-facing error helpers.
  *
- * Errors are thrown, never returned. Express 5 propagates a rejection from an
- * async handler to the error middleware natively, so a handler throws and the
- * middleware owns the response shape — no try/catch + next(err) boilerplate.
- *
- * `httpStatus` is server-only. The error middleware uses it as the HTTP status
- * and strips it from the body: a client-facing error carries `code` and
- * `message` only (.claude/rules/stripe-api-pattern.md).
+ * The error *type* is a platform primitive (`@/platform/errors`) so leaf
+ * layers can raise it; this file owns the shared constructors, which are an
+ * HTTP concern because each one fixes a status code.
  */
-export class AppHttpError extends Error {
-  readonly code: string
-  readonly httpStatus: number
-  readonly description?: string
-  readonly param?: string
-  /** Extra fields merged into the error body — used by OAuth, which has its own spec-defined shape. */
-  readonly extra?: Record<string, unknown>
 
-  constructor(options: {
-    code: string
-    message: string
-    httpStatus?: number
-    description?: string
-    param?: string
-    extra?: Record<string, unknown>
-    cause?: unknown
-  }) {
-    super(options.message, options.cause ? { cause: options.cause } : undefined)
-    this.name = 'AppHttpError'
-    this.code = options.code
-    this.message = options.message
-    this.httpStatus = options.httpStatus ?? 500
-    if (options.description !== undefined)
-      this.description = options.description
-    if (options.param !== undefined) this.param = options.param
-    if (options.extra !== undefined) this.extra = options.extra
-  }
+import { AppHttpError } from '@/platform/errors'
 
-  /** The client-safe body. Never includes the HTTP status or the cause. */
-  toClientError(): Record<string, unknown> {
-    return {
-      code: this.code,
-      message: this.message,
-      ...(this.description !== undefined
-        ? { description: this.description }
-        : {}),
-      ...(this.param !== undefined ? { param: this.param } : {}),
-      ...(this.extra ?? {}),
-    }
-  }
-}
-
-export function isAppHttpError(value: unknown): value is AppHttpError {
-  return value instanceof AppHttpError
-}
+export { AppHttpError, isAppHttpError } from '@/platform/errors'
 
 /**
  * Constructors for the errors raised from more than one module.
