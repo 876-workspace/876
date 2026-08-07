@@ -18,6 +18,7 @@ model CommunicationMessage {
   organizationId      String? @map("organization_id") @db.VarChar
   appId               String? @map("app_id") @db.VarChar
   clientReference     String? @map("client_reference") @db.VarChar
+  idempotencyScope    String  @map("idempotency_scope") @db.VarChar
   idempotencyKey      String  @map("idempotency_key") @db.VarChar
   providerErrorCode   String? @map("provider_error_code") @db.VarChar
   sentAt              BigInt? @map("sent_at")
@@ -27,6 +28,12 @@ model CommunicationMessage {
   createdAt           BigInt  @map("created_at")
   updatedAt           BigInt  @map("updated_at")
 
+  // Two unique constraints, deliberately. The scope-based one is what the
+  // service enforces against; the app-based one predates it in the live
+  // database and is redundant whenever `app_id` is set, but `app_id` is
+  // nullable and Postgres treats each NULL as distinct, so it constrains
+  // nothing for a platform-scoped send.
+  @@unique([idempotencyScope, idempotencyKey], map: "uq_communication_messages_idempotency")
   @@unique([appId, idempotencyKey], map: "uq_communication_messages_app_idempotency")
   @@index([providerSid], map: "ix_communication_messages_provider_sid")
   @@map("communication_messages")
