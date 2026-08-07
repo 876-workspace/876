@@ -4,6 +4,7 @@ import type { GuardResolver } from '@/http/api-router'
 import { createAuthGuards, type AuthGuards } from '@/http/auth'
 import { createAddressesRouter } from '@/modules/addresses'
 import { createAuditEventsRouter } from '@/modules/audit-events'
+import { createAuthRouter } from '@/modules/auth'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
 import { createBillingRouter } from '@/modules/billing'
 import {
@@ -35,6 +36,15 @@ import {
 import { createProductsRouter } from '@/modules/products'
 import { createProvisioningRouter } from '@/modules/provisioning'
 import { createSessionsRouter } from '@/modules/sessions'
+import {
+  registerAddressRoutes,
+  registerContactRoutes,
+  registerIdentificationRoutes,
+  registerPinRoutes,
+  registerProfileRoutes,
+  registerSelfRoutes,
+  registerUserCoreRoutes,
+} from '@/modules/users'
 import { createTwilioWebhooksRouter } from '@/modules/twilio-webhooks'
 
 /**
@@ -73,6 +83,7 @@ export function buildRoutes(): Router {
 
   root.use(createAddressesRouter(resolveGuards))
   root.use(createAuditEventsRouter(resolveGuards))
+  root.use(createAuthRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
   root.use(createCommunicationsRouter(resolveGuards))
   root.use(createDevicesRouter(resolveGuards))
@@ -92,6 +103,15 @@ export function buildRoutes(): Router {
   root.use(createProductsRouter(resolveGuards))
   root.use(createProvisioningRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
+  // `self` and the literal-prefixed groups mount before the core router, whose
+  // `/:user_id` would otherwise match `me`, `username`, and friends as an id.
+  root.use(registerSelfRoutes(resolveGuards))
+  root.use(registerProfileRoutes(resolveGuards))
+  root.use(registerAddressRoutes(resolveGuards))
+  root.use(registerContactRoutes(resolveGuards))
+  root.use(registerIdentificationRoutes(resolveGuards))
+  root.use(registerPinRoutes(resolveGuards))
+  root.use(registerUserCoreRoutes(resolveGuards))
 
   return root
 }
