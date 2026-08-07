@@ -1,14 +1,19 @@
+import { getSettings } from '@/config'
 import { AppHttpError } from '@/http/errors'
 import { generateId, normalizeSlug } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { OWNER_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
+import { getAuthProvider } from '@/providers/workos/adapter'
+
+import * as repository from './organization-bootstrap.repository'
 import type {
   MembershipRow,
   OrganizationRow,
   UserRow,
 } from './organization-bootstrap.repository'
+import { provisionOrganization } from './provisioning'
 
 const log = getLogger('organization-bootstrap')
 
@@ -296,5 +301,64 @@ export class OrganizationBootstrapService {
     slug?: string | null
   }): Promise<OrganizationRow> {
     return bootstrapExistingUser(this.deps, params)
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Default wiring
+// ---------------------------------------------------------------------------
+
+/**
+ * Narrow a raw WorkOS record to the `{ id }` shape the service contracts
+ * declare. The adapter returns the vendor payload untyped, so the id is
+ * asserted here rather than being allowed to flow on as `undefined` and
+ * surface later as an organization row with a null provider link.
+ */
+function requireProviderId(
+  record: Record<string, unknown>,
+  resource: string
+): { id: string; metadata?: unknown } {
+  const id = record['id']
+  if (typeof id !== 'string' || !id) {
+    throw new AppHttpError({
+      code: 'auth/internal-error',
+      message:
+        'An unexpected error occurred during authentication. Please try again later.',
+      httpStatus: 502,
+      description: `WorkOS returned no id for ${resource}.`,
+    })
+  }
+  return { id, metadata: record['metadata'] }
+}
+
+/**
+ * The dependency set wired to the real repository, WorkOS adapter, and the
+ * ported provisioning service.
+ *
+ * Built per call rather than cached at module scope: `getSettings()` is
+ * resolved once at boot, but a test that reconfigures it must not be handed a
+ * provider bound to the previous credentials.
+ */
+export function createOrganizationBootstrapDeps(): OrganizationBootstrapDeps {
+  const workos = getAuthProvider(getSettings())
+
+  return {
+    provider: {
+      createOrganization: async (params) =>
+        requireProviderId(
+          await workos.createOrganization(params),
+          'organization'
+        ),
+      createOrganizationMembership: async (params) =>
+        requireProviderId(
+          await workos.createOrganizationMembership(params),
+          'organization membership'
+        ),
+      deleteOrganization: (organizationId) =>
+        workos.deleteOrganization(organizationId),
+    },
+    repository,
+    provisionOrganization: (organizationId, now) =>
+      provisionOrganization(organizationId, now),
   }
 }

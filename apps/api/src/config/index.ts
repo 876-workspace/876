@@ -104,6 +104,9 @@ const envSchema = z.object({
 
   AUTH_RISK_BLOCK_THRESHOLD: int(0),
   PLATFORM_OWNER_EMAIL: str(),
+  // Where a magic-auth OTP code is POSTed for delivery. Unset means the code is
+  // not delivered out-of-band, which is how a local environment runs.
+  EMAIL_AUTH_OTP_DELIVERY_URL: str(),
 
   STRIPE_SECRET_KEY: str(),
   STRIPE_WEBHOOK_SECRET: str(),
@@ -227,6 +230,7 @@ function build(env: NodeJS.ProcessEnv) {
 
     authRiskBlockThreshold: e.AUTH_RISK_BLOCK_THRESHOLD,
     platformOwnerEmail: e.PLATFORM_OWNER_EMAIL,
+    emailAuthOtpDeliveryUrl: e.EMAIL_AUTH_OTP_DELIVERY_URL.trim(),
 
     stripe: {
       secretKey: e.STRIPE_SECRET_KEY,
