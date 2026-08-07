@@ -7,6 +7,7 @@ import { createAuditEventsRouter } from '@/modules/audit-events'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
 import { findApiKeyByHash, markApiKeyUsed } from '@/modules/apps'
 import { createDevicesRouter } from '@/modules/devices'
+import { registerFinancialRoutes } from '@/modules/directory'
 import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
 import { createModulesRouter } from '@/modules/modules'
@@ -38,6 +39,7 @@ export function buildRoutes(): Router {
   root.use(createAuditEventsRouter(resolveGuards))
   root.use(createAuthAttemptsRouter(resolveGuards))
   root.use(createDevicesRouter(resolveGuards))
+  root.use(registerFinancialRoutes(resolveGuards))
   root.use(createModulesRouter(resolveGuards))
   root.use(createSessionsRouter(resolveGuards))
 
