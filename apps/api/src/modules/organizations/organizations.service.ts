@@ -3,13 +3,18 @@ import { randomBytes } from 'node:crypto'
 import { Prisma } from '@/db'
 
 import { AppHttpError } from '@/http/errors'
+import { getLogger } from '@/platform/logger'
 import { listObject, type ListObject } from '@/http/envelope'
 import { generateId, normalizeSlug } from '@/platform/ids'
-import { nowUnixSeconds } from '@/platform/timestamps'
+import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
-import { provisionOrganization } from '@/services/provisioning'
+import {
+  assignMemberApps,
+  linkMembershipRole,
+  provisionOrganization,
+} from '@/services/provisioning'
 import {
   deleteProviderOrganization,
   ensureProviderMembership,
@@ -42,6 +47,8 @@ import type {
   SubscriptionProvisionBody,
   SubscriptionUpdateBody,
 } from './organizations.schemas'
+
+const log = getLogger('organizations')
 
 function notFound(code: string, message: string): AppHttpError {
   return new AppHttpError({ code, message, httpStatus: 404 })
@@ -523,20 +530,26 @@ export async function deleteOrganization(
   }
   const workosId = org.workosOrganizationId
   await repository.deleteOrganization(organizationId, deletedBy, reason)
+  // Drop the WorkOS organization too, so the provider does not accumulate orgs
+  // no 876 record points at. This runs after the local write and its failure is
+  // *not* swallowed: the helper already treats an already-absent provider
+  // record as success, so anything left is a real outage, and failing here
+  // rolls the tombstone back instead of half-deleting the org.
   if (workosId) {
-    try {
-      const provider = getAuthProvider(getSettings())
-      await deleteProviderOrganization(
-        provider as unknown as Parameters<typeof deleteProviderOrganization>[0],
-        workosId,
-        {
-          localOrganizationId: organizationId,
-        }
-      )
-    } catch {
-      // provider errors propagate? Python flushes then calls provider; we swallow AlreadyGone via service
-    }
+    await deleteProviderOrganization(
+      getAuthProvider(getSettings()) as unknown as Parameters<
+        typeof deleteProviderOrganization
+      >[0],
+      workosId,
+      { localOrganizationId: organizationId }
+    )
   }
+
+  log.info(
+    { organization_id: organizationId, slug: org.slug },
+    'organizations.delete'
+  )
+
   return { object: 'organization', id: organizationId, deleted: true }
 }
 
@@ -552,21 +565,26 @@ export async function purgeOrganization(
     )
   const workosId = org.workosOrganizationId
   await repository.purgeOrganization(organizationId)
+  // Drop the WorkOS organization too, so the provider does not accumulate orgs
+  // no 876 record points at. This runs after the local write and its failure is
+  // *not* swallowed: the helper already treats an already-absent provider
+  // record as success, so anything left is a real outage, and failing here
+  // rolls the tombstone back instead of half-deleting the org.
   if (workosId) {
-    try {
-      const provider = getAuthProvider(getSettings())
-      await deleteProviderOrganization(
-        provider as unknown as Parameters<typeof deleteProviderOrganization>[0],
-        workosId,
-        {
-          localOrganizationId: organizationId,
-        }
-      )
-    } catch {
-      // ignore
-    }
+    await deleteProviderOrganization(
+      getAuthProvider(getSettings()) as unknown as Parameters<
+        typeof deleteProviderOrganization
+      >[0],
+      workosId,
+      { localOrganizationId: organizationId }
+    )
   }
-  void deletedBy
+
+  log.info(
+    { organization_id: organizationId, slug: org.slug, purged_by: deletedBy },
+    'organizations.purge'
+  )
+
   return { object: 'organization', id: organizationId, deleted: true }
 }
 
@@ -672,27 +690,15 @@ export async function createOrganizationMembership(
     createdAt: nowBig,
     updatedAt: nowBig,
   })
-  // Link role and assign apps best-effort
-  try {
-    const { linkMembershipRole, assignMemberApps } =
-      await import('@/services/provisioning')
-    await (
-      linkMembershipRole as unknown as (
-        m: unknown,
-        now: number
-      ) => Promise<void>
-    )(membership, now)
-    if (membership.status === 'active') {
-      await (assignMemberApps as unknown as (p: unknown) => Promise<void>)({
-        organizationId,
-        userId: body.user_id,
-        now,
-      })
-    }
-  } catch {
-    // ignore
+  await linkMembershipRole(membership, now)
+  if (membership.status === 'active') {
+    await assignMemberApps({
+      organizationId,
+      userId: body.user_id,
+      now,
+    })
   }
-  const { fromDbUnixSeconds: f } = await import('@/platform/timestamps')
+
   return {
     object: 'membership',
     id: membership.id,
@@ -700,8 +706,8 @@ export async function createOrganizationMembership(
     user_id: membership.userId,
     role: membership.role,
     status: membership.status,
-    created_at: f(membership.createdAt),
-    updated_at: f(membership.updatedAt),
+    created_at: fromDbUnixSeconds(membership.createdAt),
+    updated_at: fromDbUnixSeconds(membership.updatedAt),
   }
 }
 
@@ -895,29 +901,18 @@ export async function acceptInvite(
       updatedAt: nowBig,
     })
   }
-  try {
-    const { linkMembershipRole, assignMemberApps } =
-      await import('@/services/provisioning')
-    await (
-      linkMembershipRole as unknown as (
-        m: unknown,
-        now: number
-      ) => Promise<void>
-    )(membership, now)
-    await (assignMemberApps as unknown as (p: unknown) => Promise<void>)({
-      organizationId: invite.organizationId,
-      userId,
-      now,
-      sourceAppId: invite.sourceAppId,
-    })
-  } catch {
-    // ignore
-  }
+  await linkMembershipRole(membership, now)
+  await assignMemberApps({
+    organizationId: invite.organizationId,
+    userId,
+    now,
+    sourceAppId: invite.sourceAppId,
+  })
+
   await repository.updateInvite(invite.id, {
     status: 'accepted',
     updatedAt: nowBig,
   })
-  const { fromDbUnixSeconds: f } = await import('@/platform/timestamps')
   return {
     object: 'membership',
     id: membership.id,
@@ -925,8 +920,8 @@ export async function acceptInvite(
     user_id: membership.userId,
     role: membership.role,
     status: membership.status,
-    created_at: f(membership.createdAt),
-    updated_at: f(membership.updatedAt),
+    created_at: fromDbUnixSeconds(membership.createdAt),
+    updated_at: fromDbUnixSeconds(membership.updatedAt),
   }
 }
 
