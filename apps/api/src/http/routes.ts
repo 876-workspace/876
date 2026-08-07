@@ -17,6 +17,7 @@ import { geoRouter } from '@/modules/geo'
 import { healthRouter } from '@/modules/health'
 import { createModulesRouter } from '@/modules/modules'
 import { createMobileNumbersRouter } from '@/modules/mobile-numbers'
+import { createOAuthRouter } from '@/modules/oauth'
 import { createOnboardingRouter } from '@/modules/onboarding'
 import { createProductsRouter } from '@/modules/products'
 import { createSessionsRouter } from '@/modules/sessions'
@@ -47,6 +48,10 @@ export function buildRoutes(): Router {
   // and authenticate on the request signature instead. They need no special
   // mounting order: Twilio's scheme signs the URL plus the sorted form
   // parameters, not the raw bytes, so parsing the body first is harmless.
+  // The OAuth Authorization Server is public for the same reason: an OIDC
+  // client cannot present a first-party 876 API key. Each endpoint carries its
+  // own credential rule.
+  root.use(createOAuthRouter(resolveGuards))
   root.use(createTwilioWebhooksRouter(resolveGuards))
 
   root.use(createAddressesRouter(resolveGuards))
