@@ -1,0 +1,62 @@
+# Docker build context for the container services.
+#
+# This lives at the repository root because `apps/api`'s image builds from the
+# root context — pnpm keeps one lockfile for the whole workspace and a
+# `--frozen-lockfile` install cannot find it from a package-level context.
+#
+# Everything the image needs is copied explicitly by the Dockerfile, so this
+# list exists to keep the context small: without it every rebuild uploads the
+# whole monorepo, including four `.next` directories.
+
+# Dependencies and build output — reinstalled and rebuilt inside the image.
+node_modules
+**/node_modules
+dist
+**/dist
+.next
+**/.next
+.open-next
+**/.open-next
+.turbo
+**/.turbo
+.wrangler
+**/.wrangler
+coverage
+**/coverage
+
+# Python virtualenvs and caches. The remaining FastAPI services keep theirs in
+# the tree, and `apps/api/.venv` survives locally after the Express cutover;
+# together they are ~700MB of context that no image needs.
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+
+# Playwright and test artefacts.
+playwright-report
+**/playwright-report
+test-results
+**/test-results
+
+# Generated Prisma clients — regenerated in the image against its own platform.
+**/src/lib/db/generated
+**/src/db/generated
+
+# Secrets and local environment files.
+.env
+.env.*
+**/.env
+**/.env.*
+**/.dev.vars
+!**/.env.example
+
+# Local-only agent state. `.claude/worktrees` holds full checkouts of the repo,
+# so leaving it in doubles the context on its own.
+.claude/tracker
+.claude/worktrees
+
+.git
+.github
+*.log

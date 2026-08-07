@@ -11,6 +11,10 @@
       "name": "api-876",
       "class_name": "ApiContainer",
       "image": "./Dockerfile",
+      // The build context is the repository root because pnpm keeps a single
+      // lockfile there; a context of `apps/api` has none and the image's
+      // `--frozen-lockfile` install fails.
+      "image_build_context": "../../",
       // Raise after traffic validation; Containers are billed per instance-time.
       "max_instances": 5,
     },
