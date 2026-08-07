@@ -22,7 +22,7 @@ Green as of the last run:
 cd apps/api
 pnpm node:typecheck     # tsc --noEmit
 pnpm node:lint          # eslint src
-pnpm node:test          # 212 passing
+pnpm node:test          # 478 passing, 19 files
 pnpm node:boundaries    # 0 errors (warnings are docs.ts files without routes yet)
 npx prettier --check "src/**/*.ts"
 ```
@@ -33,14 +33,16 @@ command is how a session ends up narrating a pass that never happened
 
 ### Landed
 
-| Area | State |
-| --- | --- |
-| Toolchain | Express 5, TS ESM strict, Vitest + supertest, tsup, dependency-cruiser, pino |
-| Prisma | Multi-file schema baselined against the live DB; `scripts/guard-migrate.mjs` refuses `migrate dev` when another service's tables are present |
-| Platform core | `config/` (zod, parsed once at boot), `platform/logger.ts` (pino + AsyncLocalStorage request context), `http/envelope.ts` (`{data,error}`, list object, cursor pagination), `http/errors.ts`, `http/openapi/registry.ts`, `http/api-router.ts` |
-| Auth | `http/auth/` — `requireApiKey`, `requireSession`, `requireAdmin`, consumer/enterprise realm guards; `platform/jwt.ts` (RS256 sign/verify/JWKS) |
-| Crypto | `platform/secure-field.ts` — envelope encryption, verified against a Python-sealed fixture |
-| Docs | All 20 `domains/*/docs.py` translated to `src/modules/*/*.docs.ts` (759 constants) |
+| Area                | State                                                                                                                                                                                                                                          |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Toolchain           | Express 5, TS ESM strict, Vitest + supertest, tsup, dependency-cruiser, pino                                                                                                                                                                   |
+| Prisma              | Multi-file schema baselined against the live DB; `scripts/guard-migrate.mjs` refuses `migrate dev` when another service's tables are present                                                                                                   |
+| Platform core       | `config/` (zod, parsed once at boot), `platform/logger.ts` (pino + AsyncLocalStorage request context), `http/envelope.ts` (`{data,error}`, list object, cursor pagination), `http/errors.ts`, `http/openapi/registry.ts`, `http/api-router.ts` |
+| Auth                | `http/auth/` — `requireApiKey`, `requireSession`, `requireAdmin`, consumer/enterprise realm guards; `platform/jwt.ts` (RS256 sign/verify/JWKS)                                                                                                 |
+| Crypto              | `platform/secure-field.ts` — envelope encryption, verified against a Python-sealed fixture                                                                                                                                                     |
+| Docs                | All 20 `domains/*/docs.py` translated to `src/modules/*/*.docs.ts` (759 constants)                                                                                                                                                             |
+| Platform primitives | `phone`, `pin` (scrypt, cross-checked against a Python-generated hash), `rate-limit`, `risk`, `user-agent`, `permissions`, `secure-field`; `AppHttpError` moved to `platform/errors.ts` so leaf layers can raise it                            |
+| Providers           | `providers/communications.ts` (the neutral contract), `providers/twilio/**` (client, adapter, errors, fake, webhook signatures), `providers/posthog/**`                                                                                        |
 
 ### Modules migrated (9 of 22)
 
@@ -48,33 +50,36 @@ command is how a session ends up narrating a pass that never happened
 `addresses`, `modules`, and `apps` (credential lookup only — its CRUD routes are
 still outstanding).
 
-**`src/modules/geo/**` is the worked example.** Copy its shape exactly.
+`src/modules/geo/**` is the worked example — copy its shape exactly.
 
 ---
 
-## 2. Uncommitted work in the tree right now
+## 2. How the last batch was verified
 
-An agy (claude-sonnet-4-6) run was delegated the four leaf units of Batch A and
-**exited 0 without finishing**. Present but uncommitted and unreviewed:
+Batch A's platform primitives and vendor adapters are committed. Every port was
+checked against its Python source before it was committed, not after — the
+methods are worth reusing, because two of them found real divergences:
 
-- `src/platform/phone.ts` (45 lines) — appears complete
-- `src/platform/user-agent.ts` (377 lines) — appears complete
-- `src/providers/twilio/types.ts` (210 lines) — **only file; the adapter,
-  client, errors, fake and signatures are missing**
-- `src/providers/posthog/` — **empty directory**
+- **`user-agent.ts`** carries its own regex table (there is no maintained
+  JavaScript binding to uap-core). It was verified by running **both**
+  implementations over the same 15 user agents and diffing all 8 stored fields —
+  **120 comparisons, 0 differences.** Reproduce it by dumping
+  `parse_user_agent` from the venv and `parseUserAgent` from a throwaway Vitest
+  file, then diffing the JSON.
+- **`twilio/signatures.ts`** implements Twilio's HMAC-SHA1 scheme directly. All
+  four test vectors were **regenerated with the real Twilio Python SDK's**
+  `RequestValidator.compute_signature` and matched, and the live validator
+  accepts each one.
+- **`pin.ts`** verifies against a hash generated by `core.pin.hash_pin`, so the
+  two services can read each other's stored PINs.
+- **`risk.ts`** needed a fix found by reading: `Number(' ')` is `0` in
+  JavaScript where Python's `float(' ')` raises, so a whitespace-only coordinate
+  would have been read as the equator instead of "unknown".
 
-`tsc --noEmit` passes; prettier reports 3 files needing formatting.
-
-The run **failed with `Error: timeout waiting for response`** part-way through
-writing `providers/twilio/signatures.ts` — it was not a refusal or a logic
-failure, just a wall-clock timeout on a four-unit brief. Split it: one unit per
-agy invocation.
-
-**First decision next session:** read `phone.ts` and `user-agent.ts` line by
-line against `core/phone.py` and `core/user_agent.py`, keep them if faithful,
-then either finish Twilio/PostHog yourself or re-delegate those two with a
-narrower brief. Do not commit any of it unread. The brief it ran against is
-`.claude/briefs/agy/2026-08-07-platform-primitives-and-vendor-adapters.md`.
+The lesson to carry forward: a round-trip test proves a port is
+self-consistent, not that it agrees with the service it replaces. Anything
+carrying a hash, a signature, or a vendor's regex corpus needs a
+cross-implementation fixture.
 
 ---
 
@@ -83,8 +88,8 @@ narrower brief. Do not commit any of it unread. The brief it ran against is
 These were each paid for with a bug or a measurement.
 
 1. **Guards attach per route, never `router.use`.** Express middleware runs
-   *before* routing, so a guard mounted on a router answers every unknown path
-   with 401 instead of 404. FastAPI's router-level dependency runs *after* the
+   _before_ routing, so a guard mounted on a router answers every unknown path
+   with 401 instead of 404. FastAPI's router-level dependency runs _after_ the
    path matches. `createGuardResolver` in `http/routes.ts` reproduces that
    ordering. The health suite caught this.
 
@@ -117,7 +122,7 @@ These were each paid for with a bug or a measurement.
    literal segment (`summary`, `entitlements`, `attempts`) as an id.
 
 9. **Cross-module data goes through the owning module's service**, and comes
-   back *unwrapped* (`{data, hasMore}`), so the calling module owns its own list
+   back _unwrapped_ (`{data, hasMore}`), so the calling module owns its own list
    URL. See `devices.service.ts` reading attempt history from `auth-attempts`.
 
 10. **Prisma `BigInt` must be converted in the serializer.** Every timestamp
@@ -175,42 +180,57 @@ import('@/app')`. Per route: happy path with a **full body assertion**, one
 
 ## 5. Remaining work
 
-### Batch A — platform primitives and vendor adapters (in progress)
+### Batch A — platform primitives and vendor adapters (10 of 12 done)
 
-| Unit | Source | Owner |
-| --- | --- | --- |
-| `platform/phone.ts` | `core/phone.py` (45) | agy — **written, unreviewed** |
-| `platform/user-agent.ts` | `core/user_agent.py` (209) | agy — **written, unreviewed** |
-| `providers/twilio/` | `providers/twilio/*.py` (585) | agy — **incomplete, only types.ts** |
-| `providers/posthog/` | `providers/posthog/client.py` (185) | agy — **not started** |
-| `platform/secure-field.ts` | `core/secure_field.py` | **done, committed** |
-| `platform/pin.ts` | `core/pin.py` (125) | primary agent |
-| `platform/rate-limit.ts` | `core/rate_limit.py` (87) | primary agent |
-| `platform/risk.ts` | `core/risk.py` (148) | primary agent |
-| `platform/permissions.ts` | role → permission derivation (**find it first** — `core/permissions.py` does not exist; check `core/org_permissions.py`) | primary agent |
-| `platform/session.ts` | `core/session.py` — iron-session sealing, must stay compatible with `unsealSession876` in `@876/core` | primary agent |
-| `providers/workos/` | `providers/workos/*.py` (~900) | primary agent |
+| Unit                          | Source                                                                                                | State         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
+| `platform/secure-field.ts`    | `core/secure_field.py`                                                                                | **done**      |
+| `platform/phone.ts`           | `core/phone.py` (45)                                                                                  | **done**      |
+| `platform/pin.ts`             | `core/pin.py` (125)                                                                                   | **done**      |
+| `platform/rate-limit.ts`      | `core/rate_limit.py` (87)                                                                             | **done**      |
+| `platform/risk.ts`            | `core/risk.py` (148)                                                                                  | **done**      |
+| `platform/user-agent.ts`      | `core/user_agent.py` (209)                                                                            | **done**      |
+| `providers/communications.ts` | `providers/communications.py`                                                                         | **done**      |
+| `providers/twilio/`           | `providers/twilio/*.py` (585)                                                                         | **done**      |
+| `providers/posthog/`          | `providers/posthog/client.py` (185)                                                                   | **done**      |
+| `platform/permissions.ts`     | `core/org_permissions.py` — a pure catalog plus the default role definitions                          | **done**      |
+| `platform/session.ts`         | `core/session.py` — iron-session sealing, must stay compatible with `unsealSession876` in `@876/core` | primary agent |
+| `providers/workos/`           | `providers/workos/*.py` (~900)                                                                        | primary agent |
 
-Everything after this batch depends on some part of it, and it has no shared
-files — so it parallelizes cleanly.
+**The permissions unit was mis-scoped in an earlier draft and is now resolved.**
+`core/permissions.py` does not exist. The platform primitive is
+`core/org_permissions.py` — the org permission catalog and the default role
+definitions, pure data with no I/O. The DB-backed `resolve_member_permissions`
+lives in `services/provisioning.py` and belongs to **Batch E**, not here. Do not
+try to port it as a platform primitive; it needs a session.
+
+The permission arrays carry an asymmetry that looks like an inconsistency and is
+not: `owner` and `admin` are sorted, `billing_manager` and `member` are in
+declaration order. They are seeded into `organization_roles.permissions`, so
+sorting all four "for consistency" would change the rows every existing
+organization already has. The test pins all four.
+
+The two remaining Batch A units — `platform/session.ts` and `providers/workos/`
+— are auth- and credential-critical, so per `.claude/rules/cli.md` they stay
+with the primary agent and are not delegated.
 
 ### Batches B–H
 
-| Batch | Modules | FastAPI lines | Suggested owner |
-| --- | --- | --- | --- |
-| **B** | communications, mobile-numbers, memberships, onboarding | ~1,270 | Codex |
-| **C** | products, apps CRUD, features | ~2,470 | Codex |
-| **D** | directory | 1,678 | agy or Codex — 154 doc constants of repetitive CRUD |
-| **E** | provisioning, organizations (+ `access.py`, `structure.py`) | ~3,480 | Codex, primary agent reviews |
-| **F** | users | 3,262 | Codex, primary agent reviews |
-| **G** | auth, oauth | ~2,670 | **primary agent only** (`.claude/rules/cli.md`) |
-| **H** | `workers/` (billing dispatch, finance provisioning, feature-flag migration), startup seeds (`services/*_seeds.py`), Dockerfile + wrangler cutover, retire `main.py` | — | primary agent |
+| Batch | Modules                                                                                                                                                             | FastAPI lines | Suggested owner                                                                |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------ |
+| **B** | communications, mobile-numbers, memberships, onboarding                                                                                                             | ~1,270        | Codex                                                                          |
+| **C** | products, apps CRUD, features                                                                                                                                       | ~2,470        | Codex                                                                          |
+| **D** | directory                                                                                                                                                           | 1,678         | Codex — 50 routes, 10 resources x 5 verbs (agy attempt failed, see Tool state) |
+| **E** | provisioning, organizations (+ `access.py`, `structure.py`)                                                                                                         | ~3,480        | Codex, primary agent reviews                                                   |
+| **F** | users                                                                                                                                                               | 3,262         | Codex, primary agent reviews                                                   |
+| **G** | auth, oauth                                                                                                                                                         | ~2,670        | **primary agent only** (`.claude/rules/cli.md`)                                |
+| **H** | `workers/` (billing dispatch, finance provisioning, feature-flag migration), startup seeds (`services/*_seeds.py`), Dockerfile + wrangler cutover, retire `main.py` | —             | primary agent                                                                  |
 
 `billing` (565 + 191) has **no `docs.py`** — its OpenAPI prose has to be written,
 not translated. Slot it into C or E and budget for that.
 
 `twilio_webhooks` (93) is public and needs raw-body signature verification
-*before* JSON parsing — mount it before `express.json()`.
+_before_ JSON parsing — mount it before `express.json()`.
 
 ### How to delegate well
 
@@ -231,10 +251,25 @@ not translated. Slot it into C or E and budget for that.
 
 - **Codex** (`codex exec -m gpt-5.6-terra`): hit its usage limit 2026-08-06,
   resets **2026-08-08 04:00Z**. Best tool for batches B, C, E, F.
-- **agy** (`agy --model=claude-sonnet-4-6`): unlimited capacity, but **`--effort`
-  is rejected for the Sonnet model** — passing it kills the run instantly. It
-  also **exited 0 having finished only half its brief**, so always diff what it
-  actually produced against what was asked.
+- **agy** (`agy --model=claude-sonnet-4-6` / `--model=gemini-3.6-flash-high`):
+  unlimited capacity, but **`--effort` is rejected for the Sonnet model** —
+  passing it kills the run instantly.
+
+  **Treat its exit code as meaningless and its stdout as unreliable.** On
+  2026-08-07 it was given four briefs. Three produced nothing: one died with
+  `Error: timeout waiting for response`, and two exited **0** having printed only
+  "now I'll apply the edits" without writing a file. The fourth — the refresh of
+  this document — **applied all seven of its edits correctly while printing
+  nothing at all**, so the run that looked most like a failure was the one that
+  worked.
+
+  The only way to know what agy did is `git status` and `git diff`. A trivial
+  prompt (`--print "Reply with exactly OK"`) returns in seconds, so a smoke test
+  distinguishes "agy is broken" from "this brief is too long for it". Long,
+  multi-file briefs are what it fails at; the `directory` port was abandoned
+  after it read the context files and stopped. Give it one file and a numbered
+  edit list, then verify by diff.
+
 - Background long runs and start a 5-minute `Monitor` alongside each one
   (`pgrep -f "bin/cod[e]x"` — bracket the letter, or the monitor matches itself).
 
@@ -245,13 +280,18 @@ not translated. Slot it into C or E and budget for that.
 - **Forgetting to mount the router** in `routes.ts` → every test 404s.
 - **`agy`'s flag order**: `--print` takes the prompt, so it must come last.
 - **Vitest module stubs**: `vi.spyOn(config, 'getSettings')` works, but a test
-  asserting "rejects when unset" must present a credential that *would* work
+  asserting "rejects when unset" must present a credential that _would_ work
   otherwise, or it passes for the wrong reason.
 - **Node vs Python AES-GCM**: Python appends the auth tag to the ciphertext;
   Node returns it separately from `getAuthTag()`. Any new crypto port needs a
   cross-implementation fixture, not just a round-trip test.
 - **Node's base64 decoder is lenient** where Python's raises — validate by
   re-encoding and comparing.
+- **`Number(' ')` is `0`, but `float(' ')` raises.** Any Python-to-JS numeric
+  parse needs an explicit blank check, or a blank field silently becomes zero.
+- **A test comment claiming a fixture came from the other implementation is not
+  evidence.** Regenerate it. The Twilio vectors were checked this way and were
+  genuine, but the check is what made that a fact rather than an assumption.
 
 ---
 
