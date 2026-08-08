@@ -144,9 +144,9 @@ async function main(): Promise<void> {
   }
   const dryRun = args.includes('--dry-run')
 
-  const databaseUrl = process.env.DATABASE_URL
+  const databaseUrl = process.env.DIRECT_DATABASE_URL
   if (!databaseUrl) {
-    console.error('DATABASE_URL is not set.')
+    console.error('DIRECT_DATABASE_URL is not set.')
     process.exit(1)
   }
 
@@ -201,7 +201,7 @@ async function main(): Promise<void> {
         ? `This is not the identity database.\n` +
             `  host: ${new URL(databaseUrl).host}\n` +
             `  it holds ${publicTableCount} tables and none of: ${decision.missing.join(', ')}\n` +
-            'DATABASE_URL points at another service. Applying the identity\n' +
+            'DIRECT_DATABASE_URL points at another service. Applying the identity\n' +
             'migrations here would build the whole schema inside someone\n' +
             "else's database. Point it at the identity database instead."
         : 'Refusing to baseline a partially-built schema.\n' +

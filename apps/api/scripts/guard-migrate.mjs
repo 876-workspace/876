@@ -22,9 +22,9 @@ function main() {
         'guard-migrate: REFUSING to run `prisma migrate dev`.',
         '',
         '  `migrate dev` may reset its target when it detects drift.',
-        '  Point DATABASE_URL at a disposable scratch database and opt in:',
+        '  Point DIRECT_DATABASE_URL at a disposable scratch database and opt in:',
         '',
-        '    ALLOW_MIGRATE_DEV=1 DATABASE_URL=<scratch> pnpm --filter @876/api db:migrate',
+        '    ALLOW_MIGRATE_DEV=1 DIRECT_DATABASE_URL=<scratch> pnpm --filter @876/api db:migrate',
         '  then apply it with:',
         '    pnpm --filter @876/api db:deploy',
         '',
@@ -36,7 +36,7 @@ function main() {
   }
 
   console.warn(
-    'guard-migrate: ALLOW_MIGRATE_DEV=1 — confirm DATABASE_URL is disposable.'
+    'guard-migrate: ALLOW_MIGRATE_DEV=1 — confirm DIRECT_DATABASE_URL is disposable.'
   )
   run()
 }

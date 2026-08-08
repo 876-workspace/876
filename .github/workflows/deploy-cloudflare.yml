@@ -134,7 +134,7 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @876/widgets-api exec prisma migrate deploy
         env:
-          WIDGETS_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
+          WIDGETS_DIRECT_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/widgets-api run deploy
@@ -170,11 +170,11 @@ jobs:
       - name: Baseline the database
         run: pnpm --filter @876/api run db:baseline
         env:
-          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
       - name: Apply migrations
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
       # Containers build and push the Dockerfile image; the runner's Docker
       # daemon is used directly by wrangler. The build context is the repository
       # root (`image_build_context` in wrangler.jsonc), which is why this runs
@@ -234,7 +234,7 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @876/console exec prisma migrate deploy
         env:
-          CONSOLE_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
+          CONSOLE_DIRECT_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/console run deploy
@@ -255,7 +255,7 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @876/billing-app exec prisma migrate deploy
         env:
-          BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/billing-app run deploy
@@ -274,7 +274,7 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @876/couriers exec prisma migrate deploy
         env:
-          DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/couriers run deploy
