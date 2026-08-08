@@ -21,6 +21,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
+  // Auto-memoizes components/hooks to cut client re-render churn during
+  // navigation and interaction. Build-time transform only, so it is safe on
+  // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
+  // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
+  reactCompiler: true,
   webpack: externalizePrismaWasm,
   // Allow HMR websocket connections from Gitpod and GitHub Codespaces preview URLs.
   allowedDevOrigins: ['127.0.0.1', '**.gitpod.dev', '*.app.github.dev'],

@@ -6,7 +6,7 @@ what was measured on 2026-08-06 while fixing Console and Couriers, so the same
 defects are not rebuilt from first principles.
 
 Companion to the root `CLAUDE.md` → "Loading States & Suspense Placement"
-(which owns the _skeleton shape_ rules) and `.agents/rules/performance.md`.
+(which owns the _skeleton shape_ rules) and `.claude/rules/performance.md`.
 
 ## The two facts everything here follows from
 
@@ -150,6 +150,42 @@ streams. Nothing written in an app fixes either.
 Until #1225 closes, every app here runs classic App Router. That means Rules 1–3
 are the whole ceiling, and `"use cache"` / `export const instant` must not appear
 in app code.
+
+**`partialPrefetching` is blocked for the same reason** — it depends on the same
+prerendered-shell machinery #1225 corrupts. The Vercel `next-beats` demo gets its
+"data feels instant" from `cacheComponents` + `partialPrefetching` together;
+neither is available to us, so a `<Link>` prefetch here only ever warms the
+`loading.tsx` shell, never the dynamic data. The shell is already instant across
+console and couriers (re-verified 2026-08-08); the remaining felt latency on a
+navigation is the **query itself**, which is a data/query-optimization concern
+(batch the N+1s, trim `select`s, Rule 4 driver choice) — not a loading-strategy
+one. Do not reach for a config flag to fix query latency.
+
+**`reactCompiler: true` IS the standard, and IS safe.** It is a build-time source
+transform (needs `babel-plugin-react-compiler`), produces plain React, and has no
+relationship to #1225 — OpenNext just bundles its output. It is enabled in console
+and couriers and is the config baseline every new 876 Next app ships with. It cuts
+**client re-render** churn during interaction and streaming; it does **not** change
+navigation or data latency, so do not present it as a nav-speed fix.
+
+### The config baseline every 876 Next app ships with
+
+```ts
+// next.config.ts
+const nextConfig: NextConfig = {
+  reactCompiler: true, // adopted platform-wide — safe on Cloudflare
+  // cacheComponents / partialPrefetching: OFF — blocked by OpenNext #1225.
+  //   Re-enable both only once #1225 closes and a deploy is verified.
+}
+```
+
+The instant-navigation feel comes entirely from the **page shape** (Rules 1–3),
+not from flags: a non-async page renders chrome + `<Suspense>` synchronously, the
+async data component lives inside the boundary, `params`/`searchParams` are pushed
+down as promises (never awaited at the page top only to block the shell), and each
+boundary's fallback is the real chrome + a `DataTableSkeleton` with the true column
+set. This is what console and couriers already do; it is what every future app
+copies.
 
 ## Rule 6 — Give the click immediate feedback
 
