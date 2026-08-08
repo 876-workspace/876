@@ -17,6 +17,7 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { APPS_SKELETON_COLUMNS } from '../_components/apps-skeleton-columns'
 import { AppsToolbar } from '../_components/apps-toolbar'
 import { resolveStatusFilter } from '../_lib/app-status-filter'
+import { APP_DATABASE_FIELDS, DatabaseFieldsPreview } from '@/components/patterns/database-fields-preview'
 
 export const metadata = {
   title: 'Apps',
@@ -117,6 +118,6 @@ async function AppsTableData({ searchParams }: Pick<Props, 'searchParams'>) {
       </EmptyHeader>
     </Empty>
   ) : (
-    <AppsTable data={apps} hasMore={false} firstId={null} lastId={null} />
+    <><DatabaseFieldsPreview label="App" fields={APP_DATABASE_FIELDS} /><AppsTable data={apps} hasMore={false} firstId={null} lastId={null} /></>
   )
 }

@@ -90,11 +90,11 @@ export function makeUserColumns(
                 its border pseudo-element, the image and the fallback all
                 default to rounded-full, so overriding only some of them leaves
                 uploaded photos circular beside square monograms. */}
-            <Avatar className="size-6 shrink-0 rounded-md after:rounded-md">
+            <Avatar className="size-6 shrink-0 rounded-full after:rounded-full">
               {user.avatar && (
-                <AvatarImage src={user.avatar} alt="" className="rounded-md" />
+                <AvatarImage src={user.avatar} alt="" className="rounded-full" />
               )}
-              <AvatarFallback className="rounded-md text-[0.5625rem]">
+              <AvatarFallback className="rounded-full text-[0.5625rem]">
                 {initialsOf(user)}
               </AvatarFallback>
             </Avatar>
@@ -151,7 +151,7 @@ export function makeUserColumns(
         if (apps.length === 0)
           return <span className="text-muted-foreground text-[0.8125rem]">—</span>
         return (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {apps.slice(0, 3).map((app) => (
               <AppLogoChip key={app.id} app={app} />
             ))}

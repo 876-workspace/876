@@ -72,11 +72,11 @@ export function buildOrgColumns(
       ),
     },
     {
-      accessorKey: 'slug',
-      header: 'Slug',
+      accessorKey: 'primary_contact_user_id',
+      header: 'Primary Contact',
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs">
-          {row.original.slug}
+          {row.original.primary_contact_user_id ?? '—'}
         </span>
       ),
     },
@@ -85,6 +85,15 @@ export function buildOrgColumns(
       header: 'Apps',
       cell: ({ row }) => (
         <AppLogos access={subscriptionsMap[row.original.id] ?? []} />
+      ),
+    },
+    {
+      accessorKey: 'created_at',
+      header: 'Joined',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-[0.8125rem]">
+          {formatDate(row.original.created_at)}
+        </span>
       ),
     },
     {
@@ -98,15 +107,6 @@ export function buildOrgColumns(
           )}
         >
           {row.original.status}
-        </span>
-      ),
-    },
-    {
-      accessorKey: 'created_at',
-      header: 'Created',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-[0.8125rem]">
-          {formatDate(row.original.created_at)}
         </span>
       ),
     },

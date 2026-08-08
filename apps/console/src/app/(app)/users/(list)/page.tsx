@@ -20,6 +20,7 @@ import { UserSearchBar } from '../_components/user-search-bar'
 import { UsersTable } from '../_components/users-table'
 import { USERS_SKELETON_COLUMNS } from '../_components/users-skeleton-columns'
 import { UsersToolbar } from '../_components/users-toolbar'
+import { DatabaseFieldsPreview, USER_DATABASE_FIELDS } from '@/components/patterns/database-fields-preview'
 
 export const metadata = { title: 'Users' }
 
@@ -45,6 +46,7 @@ export default async function UsersPage({ searchParams }: Props) {
           <UserSearchBar />
         </Suspense>
       </div>
+      <DatabaseFieldsPreview label="User" fields={USER_DATABASE_FIELDS} />
       <Suspense
         fallback={<DataTableSkeleton columns={USERS_SKELETON_COLUMNS} rows={5} />}
       >

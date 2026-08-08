@@ -12,6 +12,7 @@ import {
 import { $876 } from '@/lib/876'
 
 import { WidgetsTable, type WidgetTableRow } from './_components/widgets-table'
+import { DatabaseFieldsPreview, WIDGET_FIELDS } from '@/components/patterns/database-fields-preview'
 
 export const metadata = { title: 'Widgets' }
 
@@ -116,6 +117,7 @@ export default async function WidgetsPage({
         refresh
       />
 
+      <DatabaseFieldsPreview label="Widget" fields={WIDGET_FIELDS} />
       <WidgetsTable data={[masterRow, ...widgetRows]} />
     </Page>
   )
