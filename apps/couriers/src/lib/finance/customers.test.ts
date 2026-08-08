@@ -1,8 +1,12 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BillingIntegrationClient } from '@876/billing/integration'
 
-import { ensureSharedCoreUserCustomer } from './customers'
+import {
+  createExternalCustomer,
+  ensureSharedCoreUserCustomer,
+  updateExternalCustomer,
+} from './customers'
 
 const sharedCustomer = {
   object: 'customer' as const,
@@ -245,5 +249,116 @@ describe('ensureSharedCoreUserCustomer', () => {
 
     expect(result.data?.id).toBe('cus_shared')
     expect(finance.customers.list).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('createExternalCustomer', () => {
+  it('creates an external registry customer with the profile retry anchor', async () => {
+    const finance = {
+      customers: {
+        create: vi
+          .fn()
+          .mockResolvedValue({ data: sharedCustomer, error: null }),
+      },
+    } as unknown as BillingIntegrationClient
+
+    await createExternalCustomer(finance, 'org_1', {
+      profileId: 'cus_profile_1',
+      customerKind: 'INDIVIDUAL',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      email: 'ada@example.test',
+    })
+
+    expect(finance.customers.create).toHaveBeenCalledWith(
+      'org_1',
+      expect.objectContaining({
+        customerType: 'EXTERNAL',
+        name: 'Ada Lovelace',
+        sourceExternalReference: 'couriers:profile:cus_profile_1',
+      }),
+      { idempotencyKey: 'couriers:profile:cus_profile_1' }
+    )
+  })
+})
+
+describe('updateExternalCustomer', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('derives a business name from the merged company name', async () => {
+    const finance = {
+      customers: {
+        update: vi
+          .fn()
+          .mockResolvedValue({ data: sharedCustomer, error: null }),
+      },
+    } as unknown as BillingIntegrationClient
+    const result = await updateExternalCustomer(finance, 'org_nkr', 'cus_nkr', {
+      customerKind: 'BUSINESS',
+      companyName: 'North Coast Imports Ltd.',
+      email: 'accounts@northcoast.jm',
+    })
+    expect(result).toEqual({ data: sharedCustomer, error: null })
+    expect(finance.customers.update).toHaveBeenCalledTimes(1)
+    expect(finance.customers.update).toHaveBeenCalledWith(
+      'org_nkr',
+      'cus_nkr',
+      {
+        companyName: 'North Coast Imports Ltd.',
+        email: 'accounts@northcoast.jm',
+        name: 'North Coast Imports Ltd.',
+      }
+    )
+  })
+
+  it('derives an individual name from merged first and last names', async () => {
+    const finance = {
+      customers: {
+        update: vi
+          .fn()
+          .mockResolvedValue({ data: sharedCustomer, error: null }),
+      },
+    } as unknown as BillingIntegrationClient
+    const result = await updateExternalCustomer(finance, 'org_nkr', 'cus_nkr', {
+      customerKind: 'INDIVIDUAL',
+      firstName: 'Marlon',
+      lastName: 'Brown',
+    })
+    expect(result).toEqual({ data: sharedCustomer, error: null })
+    expect(finance.customers.update).toHaveBeenCalledTimes(1)
+    expect(finance.customers.update).toHaveBeenCalledWith(
+      'org_nkr',
+      'cus_nkr',
+      { firstName: 'Marlon', lastName: 'Brown', name: 'Marlon Brown' }
+    )
+  })
+
+  it('omits name when no name can be derived instead of blanking the registry value', async () => {
+    const finance = {
+      customers: {
+        update: vi
+          .fn()
+          .mockResolvedValue({ data: sharedCustomer, error: null }),
+      },
+    } as unknown as BillingIntegrationClient
+    const result = await updateExternalCustomer(finance, 'org_nkr', 'cus_nkr', {
+      customerKind: 'INDIVIDUAL',
+      firstName: null,
+      lastName: null,
+      companyName: null,
+      phone: '+18765550142',
+    })
+    expect(result).toEqual({ data: sharedCustomer, error: null })
+    expect(finance.customers.update).toHaveBeenCalledTimes(1)
+    expect(finance.customers.update).toHaveBeenCalledWith(
+      'org_nkr',
+      'cus_nkr',
+      {
+        firstName: null,
+        lastName: null,
+        companyName: null,
+        phone: '+18765550142',
+      }
+    )
   })
 })

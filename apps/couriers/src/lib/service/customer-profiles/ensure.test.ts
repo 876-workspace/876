@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { profile, prisma } = vi.hoisted(() => {
   const profile = {
-    findUnique: vi.fn(),
+    findFirst: vi.fn(),
     update: vi.fn(),
     create: vi.fn(),
   }
@@ -35,7 +35,7 @@ describe('customerProfiles.ensure', () => {
   })
 
   it('creates an operational profile and mailbox for a shared customer', async () => {
-    profile.findUnique.mockResolvedValue(null)
+    profile.findFirst.mockResolvedValue(null)
 
     await ensure(params)
 
@@ -56,7 +56,7 @@ describe('customerProfiles.ensure', () => {
   })
 
   it('backfills a missing Billing reference without replacing operational data', async () => {
-    profile.findUnique.mockResolvedValue({
+    profile.findFirst.mockResolvedValue({
       id: 'cprof_1',
       billingCustomerId: null,
     })
@@ -71,7 +71,7 @@ describe('customerProfiles.ensure', () => {
   })
 
   it('refuses to relink a profile to a different Billing customer', async () => {
-    profile.findUnique.mockResolvedValue({
+    profile.findFirst.mockResolvedValue({
       id: 'cprof_1',
       billingCustomerId: 'cus_original',
     })

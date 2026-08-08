@@ -10,6 +10,7 @@
     "build:next": "pnpm build:sw && NEXT_TELEMETRY_DISABLED=1 next build --webpack",
     "start": "next start --port ${PORT:-3003}",
     "lint": "eslint",
+    "boundaries": "../api/node_modules/.bin/depcruise src --config .dependency-cruiser.cjs",
     "typecheck": "tsc --noEmit",
     "typecheck:db": "tsc --noEmit -p prisma",
     "test": "vitest run",

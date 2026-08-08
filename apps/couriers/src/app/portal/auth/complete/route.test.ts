@@ -94,6 +94,9 @@ function createPortalCustomer(
     firstSeenAt: 1_784_419_200,
     createdAt: 1_784_419_200,
     updatedAt: 1_784_419_200,
+    deletedAt: null,
+    deletedBy: null,
+    deletionReason: null,
     primaryMailboxNumber: 'RSJ1001',
     ...overrides,
   }

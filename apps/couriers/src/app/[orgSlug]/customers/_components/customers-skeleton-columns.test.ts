@@ -15,6 +15,7 @@ describe('CUSTOMERS_SKELETON_COLUMNS', () => {
       'Company',
       'Email',
       'Phone',
+      'Status',
     ])
   })
 

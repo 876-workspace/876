@@ -39,7 +39,7 @@ export async function create(
         // Resolved through the tenant so one tenant can never attach an address
         // to another tenant's customer.
         const customer = await tx.courierCustomerProfile.findFirst({
-          where: { id: input.customerId, tenantId },
+          where: { id: input.customerId, tenantId, deletedAt: null },
           select: { id: true },
         })
         if (!customer) throw new CustomerNotFoundError()
