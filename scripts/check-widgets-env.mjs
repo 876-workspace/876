@@ -42,6 +42,7 @@ function loadLocalEnv(appName) {
   if (useProcessEnv) {
     for (const key of [
       'WIDGETS_DATABASE_URL',
+      'WIDGETS_DIRECT_DATABASE_URL',
       'WIDGETS_API_URL',
       'WIDGETS_SERVICE_KEY',
     ]) {
@@ -63,6 +64,7 @@ function isUrl(value, protocols) {
 const issues = []
 const widgetsEnv = loadLocalEnv('widgets-api')
 const databaseUrl = widgetsEnv.WIDGETS_DATABASE_URL?.trim() ?? ''
+const directDatabaseUrl = widgetsEnv.WIDGETS_DIRECT_DATABASE_URL?.trim() ?? ''
 const serviceKey = widgetsEnv.WIDGETS_SERVICE_KEY?.trim() ?? ''
 
 const widgetsSource = useProcessEnv
@@ -71,8 +73,18 @@ const widgetsSource = useProcessEnv
 
 if (!databaseUrl) {
   issues.push(`${widgetsSource}: WIDGETS_DATABASE_URL is missing.`)
-} else if (!isUrl(databaseUrl, ['postgres:', 'postgresql:'])) {
-  issues.push(`${widgetsSource}: WIDGETS_DATABASE_URL must be a Postgres URL.`)
+} else if (!isUrl(databaseUrl, ['prisma:'])) {
+  issues.push(
+    `${widgetsSource}: WIDGETS_DATABASE_URL must be a Prisma Accelerate URL.`
+  )
+}
+
+if (!directDatabaseUrl) {
+  issues.push(`${widgetsSource}: WIDGETS_DIRECT_DATABASE_URL is missing.`)
+} else if (!isUrl(directDatabaseUrl, ['postgres:', 'postgresql:'])) {
+  issues.push(
+    `${widgetsSource}: WIDGETS_DIRECT_DATABASE_URL must be a Postgres URL.`
+  )
 }
 
 if (!serviceKey) {
