@@ -158,11 +158,11 @@ export async function deleteApp(appId: string): Promise<boolean> {
 export function listAppsByOrg(
   query: ListAppsQuery
 ): Promise<{ data: AppRow[]; hasMore: boolean }> {
-  const organizationId = (query as Record<string, unknown>)
-    .organization_id as string
-  const status = (query as Record<string, unknown>).status as string | undefined
-  const where: Record<string, unknown> = { organizationId, deletedAt: null }
-  if (status) (where as Record<string, unknown>).status = status
+  const where: Prisma.AppWhereInput = {
+    organizationId: query.organizationId,
+    deletedAt: null,
+  }
+  if (query.status) where.status = query.status
 
   return paginateByCursor<AppRow>({
     query: query as PaginationQuery,
@@ -186,12 +186,10 @@ export function listAppsByOrg(
 export function listAppsAll(
   query: ListAppsQuery
 ): Promise<{ data: AppRow[]; hasMore: boolean }> {
-  const q = query as Record<string, unknown>
-  const where: Record<string, unknown> = { deletedAt: null }
-  if (q.app_kind) (where as Record<string, unknown>).appKind = q.app_kind
-  if (q.client_type)
-    (where as Record<string, unknown>).clientType = q.client_type
-  if (q.status) (where as Record<string, unknown>).status = q.status
+  const where: Prisma.AppWhereInput = { deletedAt: null }
+  if (query.appKind) where.appKind = query.appKind
+  if (query.clientType) where.clientType = query.clientType
+  if (query.status) where.status = query.status
 
   return paginateByCursor<AppRow>({
     query: query as PaginationQuery,
