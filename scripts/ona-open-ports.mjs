@@ -43,7 +43,11 @@ const TARGETS = {
   app: ['app'],
   org: ['enterprise'],
   console: ['api', 'widgets-api', 'billing-api', 'billing-app', 'console'],
+  'console:min': ['api', 'billing-api', 'console'],
+  'console:core': ['api', 'console'],
   billing: ['api', 'widgets-api', 'billing-api', 'billing-app'],
+  'billing:min': ['api', 'billing-api', 'billing-app'],
+  'billing:core': ['billing-api', 'billing-app'],
   'billing:api': ['api', 'billing-api'],
   widgets: ['widgets-api'],
   'console:enterprise': [
@@ -61,6 +65,8 @@ const TARGETS = {
     'billing-app',
   ],
   couriers: ['api', 'widgets-api', 'billing-api', 'billing-app', 'couriers'],
+  'couriers:min': ['api', 'billing-api', 'couriers'],
+  'couriers:core': ['api', 'couriers'],
   'couriers:console': [
     'api',
     'widgets-api',
