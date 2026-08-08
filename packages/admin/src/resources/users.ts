@@ -27,6 +27,7 @@ import type {
   AdminOAuthGrant,
   AdminSession,
   AdminUserApp,
+  AdminUserAppsGroup,
   AdminSearchResponse,
   SessionRevoke,
   UnlinkedAccount,
@@ -113,6 +114,8 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         consoleAccess?: boolean
         /** Filter to users with this exact status (e.g. `active`, `inactive`, `suspended`). */
         status?: string
+        /** Filter to users whose IDs are in this set (batch). */
+        ids?: string[]
       }
     ) {
       return adminRequest<AdminListResponse<AdminUser>>(runtime, {
@@ -124,6 +127,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
           include_deleted: params?.includeDeleted,
           consoleAccess: params?.consoleAccess,
           status: params?.status,
+          ids: params?.ids?.join(','),
         },
       })
     },
@@ -470,6 +474,14 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
       return adminRequest<AdminListResponse<AdminUserApp>>(runtime, {
         method: 'GET',
         path: `/users/${userId}/apps`,
+      })
+    },
+
+    listAppsByUsers(userIds: string[]) {
+      return adminRequest<AdminListResponse<AdminUserAppsGroup>>(runtime, {
+        method: 'GET',
+        path: '/users/apps',
+        query: { user_ids: userIds.join(',') },
       })
     },
 
