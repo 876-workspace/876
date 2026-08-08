@@ -336,29 +336,44 @@ command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
   immediately. Backgrounding a two-second command costs a round trip and buys
   nothing. Whatever the mode, you still **read and verify the output** — a
   backgrounded delegation you never inspect is not delegation.
-- **Verification commands run in the FOREGROUND. Always.** `typecheck`, `lint`,
-  `test`, `prettier --check` — never `run_in_background`, never a background
-  wait-loop, no matter how slow they are. Background them and the result arrives
-  as a notification you may not act on, so you end up reporting "still waiting"
-  turn after turn with no actual information, and in the worst case narrating a
-  pass that never happened. The user named this directly on 2026-08-03: _"when
-  those check[s] run in the background they cause you to hallucinate and not
-  wake up or monitor sometimes."_ It is not hypothetical — that same session,
-  a backgrounded couriers typecheck sat unread while stale Next route types
-  masked a real failure, which surfaced within seconds of running it in the
-  foreground.
+- **Verify once, at the end, and block on the result.** `typecheck`, `lint`,
+  `test`, `prettier --check` are a gate you report on, so you must see the exit
+  status before you say anything about it — but seeing it does not require
+  holding the turn hostage.
 
-  A foreground run blocks the turn, which is the point: the exit status and the
-  output are in front of you before you say anything about them. Pass a generous
-  `timeout` (the console and couriers suites need 300000–420000 ms) rather than
-  reaching for the background to dodge a timeout. If a command genuinely cannot
-  finish in the maximum foreground timeout, split it (one package at a time)
-  instead of backgrounding it.
+  **Batch the work first.** The expensive mistake is not backgrounding; it is
+  running a 4-minute suite after every single edit. Make the whole set of
+  related changes, then verify once. If a run fails, fix every finding it
+  reported before re-running — never re-run to discover the next one.
 
-  This applies to your own verification and to re-verifying a delegated tool's
-  work. Backgrounding remains correct for the delegated _run itself_ (a `codex
-exec`), for CI polling, and for a long-lived dev server — things that are not
-  a pass/fail gate you are about to report on.
+  **Foreground a check that finishes in ~60s** (a single package's lint, a
+  `prettier --check`, one test file). The result is simply there, and a round
+  trip costs more than the wait.
+
+  **Background a long one** (a full suite, a Next app typecheck — 3–7 minutes)
+  and immediately block on it in the same turn with an until-loop on the output
+  file. That is not "fire and forget": you still stop and read the exit status
+  before reporting. What it buys is that the user can interrupt, and a slow run
+  does not burn a foreground timeout.
+
+  ```bash
+  # launch (run_in_background: true)
+  pnpm --filter @876/couriers typecheck 2>&1 | tail -20
+  # then, same turn, block until it lands
+  until grep -qE "Exit status|error TS|Tests " "$OUTPUT"; do sleep 20; done
+  ```
+
+  **Never report a pass you did not read**, and never narrate "still waiting"
+  across turns — if you are waiting, block; if you are not blocking, you are
+  done and must have the result. The 2026-08-03 failure this rule was written
+  for was not backgrounding as such: it was a backgrounded typecheck whose
+  output was never opened, so a real failure sat unread. Reading it is the
+  requirement; foreground was only ever one way to guarantee that.
+
+  **Attribute a failure before fixing it.** When a check fails on code you
+  touched, run the same check on the unmodified tree once before assuming you
+  caused it — a pre-existing failure fixed speculatively costs far more than the
+  one control run. Say plainly which it was.
 
 - **Every backgrounded Codex run gets a 5-minute monitor, started in the same
   turn that launches it.** Not on request — automatically, every time.
