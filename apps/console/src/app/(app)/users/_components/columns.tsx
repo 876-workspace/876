@@ -117,15 +117,6 @@ export function makeUserColumns(
       },
     },
     {
-      accessorKey: 'email',
-      header: 'Email',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-[0.8125rem]">
-          {row.original.email}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'company',
       header: 'Company',
       cell: ({ row }) =>
@@ -141,6 +132,15 @@ export function makeUserColumns(
         ) : (
           <span className="text-muted-foreground text-[0.8125rem]">—</span>
         ),
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-[0.8125rem]">
+          {row.original.email}
+        </span>
+      ),
     },
     {
       id: 'apps',

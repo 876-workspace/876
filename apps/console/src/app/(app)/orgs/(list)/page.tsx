@@ -22,7 +22,6 @@ import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { ORGS_SKELETON_COLUMNS } from '../_components/orgs-skeleton-columns'
 import { OrgsToolbar } from '../_components/orgs-toolbar'
-import { DatabaseFieldsPreview, ORG_DATABASE_FIELDS } from '@/components/patterns/database-fields-preview'
 
 export const metadata = { title: 'Organizations' }
 
@@ -129,13 +128,13 @@ async function OrganizationsTableData({
       </EmptyHeader>
     </Empty>
   ) : (
-    <><DatabaseFieldsPreview label="Organization" fields={ORG_DATABASE_FIELDS} /><OrgTable
+    <OrgTable
       data={orgs}
       subscriptionsMap={subscriptionsMap}
       isSearching={isSearching}
       hasMore={hasMore}
       firstId={orgs[0]?.id ?? null}
       lastId={orgs[orgs.length - 1]?.id ?? null}
-    /></>
+    />
   )
 }

@@ -12,12 +12,14 @@ import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 import { CursorPagination } from '@/components/patterns/cursor-pagination'
 import { statusBadgeClass } from '@/lib/format'
 
-function appKindBadgeVariant(
-  appKind: AdminApp['app_kind']
-): 'success' | 'info' | 'secondary' {
-  if (appKind === 'product') return 'success'
-  if (appKind === 'platform') return 'info'
-  return 'secondary'
+function appKindBadgeClass(appKind: AdminApp['app_kind']): string {
+  if (appKind === 'product')
+    return 'border-emerald-400'
+  if (appKind === 'platform')
+    return 'border-blue-400'
+  if (appKind === 'internal')
+    return 'border-violet-400'
+  return 'border-border'
 }
 
 const columns: ColumnDef<AdminApp, unknown>[] = [
@@ -42,12 +44,21 @@ const columns: ColumnDef<AdminApp, unknown>[] = [
     ),
   },
   {
+    accessorKey: 'homepage_url',
+    header: 'URL',
+    cell: ({ row }) => (
+      <span className="text-muted-foreground max-w-64 truncate text-[0.8125rem]">
+        {row.original.homepage_url ?? '—'}
+      </span>
+    ),
+  },
+  {
     accessorKey: 'app_kind',
     header: 'Type',
     cell: ({ row }) => (
       <Badge
-        variant={appKindBadgeVariant(row.original.app_kind)}
-        className="capitalize"
+        variant="outline"
+        className={`text-muted-foreground rounded-full border bg-transparent px-2 py-1 text-xs font-medium capitalize ${appKindBadgeClass(row.original.app_kind)}`}
       >
         {row.original.app_kind}
       </Badge>
