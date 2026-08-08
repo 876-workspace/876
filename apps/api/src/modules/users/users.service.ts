@@ -204,6 +204,30 @@ export async function requireUser(
   return user
 }
 
+export async function listUserAppsBatch(userIds: string[]) {
+  if (userIds.length > 100) {
+    throw new AppHttpError({
+      code: 'request/invalid',
+      message: 'Too many user_ids: maximum 100 allowed.',
+      httpStatus: 400,
+    })
+  }
+  const uniqueIds = [...new Set(userIds)]
+  if (uniqueIds.length === 0) return []
+  const rows = await repo.listUserAppsBatch(uniqueIds)
+  const grouped = new Map<string, typeof rows>()
+  for (const row of rows) {
+    const existing = grouped.get(row.userId)
+    if (existing) existing.push(row)
+    else grouped.set(row.userId, [row])
+  }
+  const result: Array<{ userId: string; enrollments: typeof rows }> = []
+  for (const uid of uniqueIds) {
+    result.push({ userId: uid, enrollments: grouped.get(uid) ?? [] })
+  }
+  return result
+}
+
 export async function requireUserIncludeDeleted(userId: string) {
   const user = await repo.findUserById(userId, true)
   if (!user)
