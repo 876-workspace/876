@@ -152,7 +152,7 @@ describe('customerAddresses.create', () => {
     expect(
       mockTxRef.current!.courierCustomerProfile.findFirst.mock.calls[0]![0]!
         .where
-    ).toEqual({ id: 'cus_alejandra', tenantId: TENANT_ID })
+    ).toEqual({ id: 'cus_alejandra', tenantId: TENANT_ID, deletedAt: null })
   })
 
   it('surfaces an invalid region without writing', async () => {
