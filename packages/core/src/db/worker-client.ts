@@ -2,7 +2,7 @@
  * `@876/core/db` — request-scoped database clients for Cloudflare Workers.
  *
  * Every 876 app with its own datastore (Console, Couriers, Billing,
- * Widgets API) builds a Prisma client over `@prisma/adapter-neon`, which opens
+ * Widgets API) builds a Prisma client over `@prisma/adapter-pg`, which opens
  * a Neon **WebSocket pool**. A socket on workerd belongs to the request that
  * opened it: reusing one from a later request on the same isolate throws
  * `Cannot perform I/O on behalf of a different request`, and because the

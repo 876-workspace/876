@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaNeonHttp } from '@prisma/adapter-neon'
+import { PrismaPg } from '@prisma/adapter-pg'
 import {
   createQueryGuard,
   createRequestScopedResolver,
@@ -37,7 +37,7 @@ function reportDbFailure(
       model: failure.model ?? null,
       operation: failure.operation ?? null,
       consequence: failure.crossRequestIo
-        ? 'A Neon pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
+        ? 'A pg pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
         : 'The request fails instead of rendering.',
     },
   })
@@ -48,35 +48,12 @@ function createPrisma() {
   if (!rawConnectionString) {
     throw new Error('CONSOLE_DATABASE_URL is not set; Console DB unavailable.')
   }
-  // pg-connection-string warns that sslmode=require/prefer/verify-ca are
-  // deprecated aliases for verify-full; normalize so the alias never reaches
-  // it regardless of what the configured env value supplies.
-  const connectionString = rawConnectionString.replace(
-    /([?&]sslmode=)(require|prefer|verify-ca)\b/,
-    '$1verify-full'
-  )
-  // Neon over HTTP rather than the WebSocket pool.
-  //
-  // Console's whole data surface is ten single-model reads and writes on two
-  // tables — no interactive transaction anywhere — which is precisely the shape
-  // the one-shot HTTP driver serves. Opening a WebSocket bought nothing and
-  // cost a handshake on every request, because the pool is request-scoped: its
+  // Prisma Postgres is reached over its pooled TCP endpoint via `@prisma/adapter-pg`.
+  // The client is request-scoped through `resolvePrisma` below, because a pg
   // socket belongs to the request that opened it and reusing it from the next
-  // one hangs workerd.
-  //
-  // Measured against this database (us-east-1), cold client per request as the
-  // Worker does it, running the guard's own `member.findUnique … include role`:
-  //
-  //     WebSocket   p50 68ms   max 652ms
-  //     HTTP        p50 45ms   max  67ms
-  //
-  // The p50 is the smaller half of it. The tail is what made navigation feel
-  // unpredictable — a handshake that occasionally took half a second, ahead of
-  // a guard that has to finish before anything paints.
-  //
-  // There is no pool to fail, so `onPoolError` has no counterpart here; the
-  // query guard below still reports failures with their consequence attached.
-  const adapter = new PrismaNeonHttp(connectionString, {})
+  // request on the same isolate hangs workerd.
+  const connectionString = rawConnectionString
+  const adapter = new PrismaPg({ connectionString })
   return new PrismaClient({ adapter })
     .$extends({
       query: {

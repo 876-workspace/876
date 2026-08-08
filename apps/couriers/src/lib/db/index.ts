@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaNeon } from '@prisma/adapter-neon'
+import { PrismaPg } from '@prisma/adapter-pg'
 import {
   createQueryGuard,
   createRequestScopedResolver,
@@ -63,7 +63,7 @@ function reportDbFailure(
       model: failure.model ?? null,
       operation: failure.operation ?? null,
       consequence: failure.crossRequestIo
-        ? 'A Neon pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
+        ? 'A pg pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
         : 'The request fails instead of rendering.',
     },
   })
@@ -74,15 +74,7 @@ function createPrisma() {
   if (!connectionString) {
     throw new Error('DATABASE_URL is not set; Couriers DB unavailable.')
   }
-  const adapter = new PrismaNeon(
-    { connectionString },
-    {
-      // Neon surfaces connection-level failures on the pool rather than
-      // rejecting the in-flight query. Unhandled, that is exactly how a broken
-      // connection becomes a Worker that hangs with nothing reported.
-      onPoolError: (error) => reportDbFailure(error, { stage: 'pool' }),
-    }
-  )
+  const adapter = new PrismaPg({ connectionString })
   return new PrismaClient({ adapter })
     .$extends({
       query: {
@@ -169,7 +161,7 @@ const resolvePrisma = createRequestScopedResolver<CouriersPrisma>({
  * environment has no `DATABASE_URL`, only the Worker runtime does.
  *
  * On Cloudflare Workers the client is also scoped to the in-flight request:
- * the Neon pool's socket belongs to the request that opened it, and reusing it
+ * the pg pool's socket belongs to the request that opened it, and reusing it
  * from the next request on the same isolate hangs the Worker. See
  * `@876/core/db`.
  */
