@@ -87,16 +87,19 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
 
   const enrollmentsMap: Record<string, AdminUserApp[]> = {}
   if (users.length > 0) {
-    const results = await Promise.all(
-      users.map((u) => $876.users.listApps(u.id))
-    )
-    for (let i = 0; i < users.length; i++) {
-      const r = results[i]
-      enrollmentsMap[users[i].id] = r.error ? [] : (r.data.data ?? [])
+    const result = await $876.users.listAppsByUsers(users.map((u) => u.id))
+    if (!result.error && result.data) {
+      for (const group of result.data.data) {
+        enrollmentsMap[group.user_id] = group.data ?? []
+      }
+      for (const u of users) {
+        if (!(u.id in enrollmentsMap)) enrollmentsMap[u.id] = []
+      }
+    } else {
+      for (const u of users) enrollmentsMap[u.id] = []
     }
   }
 
-  // TODO(perf): add a batch users.listAppsByUsers endpoint so enrollments do not block this table.
   return (
     <>
       <TrackMCEventOnMount

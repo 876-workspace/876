@@ -79,12 +79,16 @@ export async function listUsers(options: {
   includeDeleted: boolean
   status?: string | null
   search?: string | null
+  ids?: string[] | null
 }): Promise<{ data: UserRow[]; hasMore: boolean }> {
   if (options.search) {
     const rows = await prisma.user.findMany({
       where: {
         ...(options.status ? { status: options.status } : {}),
         ...(options.includeDeleted ? {} : { deletedAt: null }),
+        ...(options.ids && options.ids.length > 0
+          ? { id: { in: options.ids } }
+          : {}),
         OR: [
           { email: { contains: options.search, mode: 'insensitive' } },
           { username: { contains: options.search, mode: 'insensitive' } },
@@ -112,6 +116,9 @@ export async function listUsers(options: {
       const where: Record<string, unknown> = {
         ...(options.status ? { status: options.status } : {}),
         ...(options.includeDeleted ? {} : { deletedAt: null }),
+        ...(options.ids && options.ids.length > 0
+          ? { id: { in: options.ids } }
+          : {}),
         ...(cursor
           ? {
               createdAt:
@@ -138,11 +145,15 @@ export async function searchUsers(options: {
   limit: number
   status?: string | null
   includeDeleted?: boolean
+  ids?: string[] | null
 }): Promise<UserRow[]> {
   const rows = await prisma.user.findMany({
     where: {
       ...(options.status ? { status: options.status } : {}),
       ...(options.includeDeleted ? {} : { deletedAt: null }),
+      ...(options.ids && options.ids.length > 0
+        ? { id: { in: options.ids } }
+        : {}),
       OR: [
         { email: { contains: options.query, mode: 'insensitive' } },
         { username: { contains: options.query, mode: 'insensitive' } },
@@ -825,6 +836,16 @@ export async function revokeOauthGrant(
 export async function listUserApps(userId: string) {
   const rows = await prisma.userAppEnrollment.findMany({
     where: { userId },
+    include: { app: true },
+    orderBy: { enrolledAt: 'asc' },
+  })
+  return rows
+}
+
+export async function listUserAppsBatch(userIds: string[]) {
+  if (userIds.length === 0) return []
+  const rows = await prisma.userAppEnrollment.findMany({
+    where: { userId: { in: userIds } },
     include: { app: true },
     orderBy: { enrolledAt: 'asc' },
   })
