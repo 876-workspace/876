@@ -64,6 +64,9 @@ function createProfile(
     firstSeenAt: 1_784_419_200,
     createdAt: 1_784_419_200,
     updatedAt: 1_784_419_200,
+    deletedAt: null,
+    deletedBy: null,
+    deletionReason: null,
     ...overrides,
   }
 }
