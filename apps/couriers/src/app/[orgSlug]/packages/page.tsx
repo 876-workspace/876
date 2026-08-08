@@ -3,7 +3,6 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { PackagesTable } from './_components/packages-table'
-import { FAKE_PACKAGES } from './_lib/fake-packages'
 
 const PACKAGE_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Packages' },
@@ -79,7 +78,7 @@ export default async function PackagesPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <PackagesTable packages={FAKE_PACKAGES} />
+      <PackagesTable packages={[]} />
     </Page>
   )
 }

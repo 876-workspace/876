@@ -10,7 +10,6 @@ import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 import { ItemsTable } from './items-table'
-import { FAKE_ITEMS } from '../_lib/fake-items'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -26,7 +25,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
     selectedStatus === 'all' ? undefined : selectedStatus === 'active'
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant) return <ItemsTable items={FAKE_ITEMS} />
+  if (!ctx?.tenant) return <ItemsTable items={[]} emptyState={emptyState} />
 
   const $876 = await get876Client()
   const items = await $876.billing.items.list(ctx.orgId, {
@@ -47,8 +46,6 @@ export async function ItemsTableData({ params, searchParams }: Props) {
         description: item.description,
       }))
 
-  const displayRows = !items.error && rows.length === 0 ? FAKE_ITEMS : rows
-
   const emptyMessage =
     selectedStatus === 'all'
       ? 'No shared catalog items in this finance workspace yet.'
@@ -63,7 +60,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
       ) : null}
 
       <ItemsTable
-        items={displayRows}
+        items={rows}
         emptyState={
           <Empty className="border-0 py-6">
             <EmptyHeader>

@@ -20,7 +20,6 @@ const columns: ColumnDef<DeliveryTableRow, unknown>[] = [
   { accessorKey: 'dateTime', header: 'Date & Time' },
   { accessorKey: 'packages', header: 'Packages' },
   { accessorKey: 'status', header: 'Status', cell: ({ row }) => <span className="rounded-full bg-emerald-50 px-2 py-1 text-[0.6875rem] font-medium text-emerald-700">{row.original.status}</span> },
-  { accessorKey: 'scheduledFor', header: 'Scheduled' },
 ]
 
 export function DeliveriesTable({ deliveries }: { deliveries: DeliveryTableRow[] }) {

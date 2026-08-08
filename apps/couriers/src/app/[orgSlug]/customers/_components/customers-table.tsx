@@ -13,7 +13,6 @@ export type CustomerTableRow = {
   companyName: string | null
   email: string | null
   phone: string | null
-  mailboxNumber: string | null
 }
 
 type Props = {
@@ -83,16 +82,6 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
       ) : (
         <span className="text-muted-foreground">&mdash;</span>
       ),
-  },
-  {
-    accessorKey: 'mailboxNumber',
-    header: 'Mailbox ',
-    size: 96,
-    cell: ({ row }) => (
-      <span className="text-muted-foreground">
-        {row.original.mailboxNumber ?? '—'}
-      </span>
-    ),
   },
   {
     accessorKey: 'email',

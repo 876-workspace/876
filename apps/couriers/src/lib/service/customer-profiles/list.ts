@@ -11,12 +11,6 @@ import type { CustomerStatus } from '@/types/customer'
 export function list(tenantId: string, status?: CustomerStatus) {
   return prisma.courierCustomerProfile.findMany({
     where: { tenantId, ...(status ? { status } : {}) },
-    include: {
-      mailboxes: {
-        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
-        take: 1,
-      },
-    },
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   })
 }

@@ -3,7 +3,6 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { DeliveriesTable } from './_components/deliveries-table'
-import { FAKE_DELIVERIES } from './_lib/fake-deliveries'
 
 const DELIVERY_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Deliveries' },
@@ -73,7 +72,7 @@ export default async function DeliveriesPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <DeliveriesTable deliveries={FAKE_DELIVERIES} />
+      <DeliveriesTable deliveries={[]} />
     </Page>
   )
 }
