@@ -21,6 +21,10 @@ vi.mock('@/lib/client', () => ({
   client: { customers: { create: mocks.create, update: mocks.update } },
 }))
 import { CustomerForm } from './customer-form'
+
+function fill(label: string, value: string) {
+  fireEvent.change(screen.getByLabelText(label), { target: { value } })
+}
 function customer(overrides: Partial<CustomerRow> = {}): CustomerRow {
   return {
     id: 'cprof_nkr',
@@ -63,14 +67,16 @@ describe('CustomerForm', () => {
     ).toBeVisible()
     expect(mocks.create).not.toHaveBeenCalled()
   })
+  // The form renders a dial-code list per keystroke, so `user.type` on several
+  // fields is quadratic here and trips the 5s timeout. Setting values directly
+  // exercises the same submit path in a fraction of the time.
   it('creates an individual with exact customer params and no status', async () => {
-    const user = userEvent.setup({ delay: null })
     render(<CustomerForm orgSlug="nkr-express" branches={[]} />)
-    await user.type(screen.getByLabelText('First name'), 'Marlon')
-    await user.type(screen.getByLabelText('Last name'), 'Brown')
-    await user.type(screen.getByLabelText('Email'), 'marlon.brown@example.jm')
-    await user.type(screen.getByLabelText('TRN'), '123-456-789')
-    await user.click(screen.getByRole('button', { name: 'Add' }))
+    fill('First name', 'Marlon')
+    fill('Last name', 'Brown')
+    fill('Email', 'marlon.brown@example.jm')
+    fill('TRN', '123-456-789')
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create).toHaveBeenCalledTimes(1)
     expect(mocks.create).toHaveBeenCalledWith('nkr-express', {
@@ -85,13 +91,11 @@ describe('CustomerForm', () => {
     })
   })
   it('sends only courier fields and status when editing a CORE_USER', async () => {
-    const user = userEvent.setup({ delay: null })
     render(
       <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer()} />
     )
-    await user.clear(screen.getByLabelText('TRN'))
-    await user.type(screen.getByLabelText('TRN'), '987-654-321')
-    await user.click(screen.getByRole('button', { name: 'Save' }))
+    fill('TRN', '987-654-321')
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
     expect(mocks.update).toHaveBeenCalledTimes(1)
     expect(mocks.update).toHaveBeenCalledWith('nkr-express', 'cprof_nkr', {
@@ -105,8 +109,16 @@ describe('CustomerForm', () => {
     render(
       <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer()} />
     )
-    expect(screen.getByRole('radio', { name: 'Individual' })).toBeDisabled()
-    expect(screen.getByRole('radio', { name: 'Business' })).toBeDisabled()
+    // Base UI renders a radio as a span carrying aria-disabled, so the native
+    // `toBeDisabled` matcher never sees it.
+    expect(screen.getByRole('radio', { name: 'Individual' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
+    expect(screen.getByRole('radio', { name: 'Business' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
     expect(mocks.create).not.toHaveBeenCalled()
     expect(mocks.update).not.toHaveBeenCalled()
   })

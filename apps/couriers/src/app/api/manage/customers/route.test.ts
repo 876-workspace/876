@@ -52,7 +52,8 @@ describe('POST /api/manage/customers', () => {
     )
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
-      error: { message: 'Unauthorized.' },
+      data: null,
+      error: { code: 'auth/no-session', message: 'Unauthorized.' },
     })
     expect(mocks.createManagedCustomer).not.toHaveBeenCalled()
   })
