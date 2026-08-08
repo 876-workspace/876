@@ -393,10 +393,38 @@ export const userAccountUnlinkSchema = z.object({
   deleted: z.literal(true),
 })
 
+export const userAppsGroupSchema = z.object({
+  object: z.literal('user_apps'),
+  user_id: z.string(),
+  data: z.array(userAppSchema),
+})
+
+export const listUserAppsBatchQuerySchema = z.strictObject({
+  user_ids: z.string().transform((s) =>
+    s
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean)
+  ),
+})
+
+export type ListUserAppsBatchQuery = z.infer<
+  typeof listUserAppsBatchQuerySchema
+>
+
 export const listUsersQuerySchema = paginationQuerySchema.extend({
   search: z.string().optional(),
   include_deleted: z.stringbool().optional().default(false),
   status: z.string().optional(),
+  ids: z
+    .string()
+    .transform((s) =>
+      s
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean)
+    )
+    .optional(),
 })
 
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>

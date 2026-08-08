@@ -8,8 +8,10 @@ import {
   ensuredUserSchema,
   currentUserSchema,
   userAppSchema,
+  userAppsGroupSchema,
   userPinSchema,
   listUsersQuerySchema,
+  listUserAppsBatchQuerySchema,
   searchUsersQuerySchema,
   getByUsernameQuerySchema,
   retrieveUserQuerySchema,
@@ -246,6 +248,23 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
       409: docs.CREATE_USER_RESPONSES[409],
     },
     handler: controller.createUser,
+  })
+
+  // Batch apps by users (session tier) before generic :user_id — static /apps MUST be before /:user_id
+  api.get({
+    path: '/apps',
+    security: 'session',
+    operationId: 'users-list_user_apps_batch',
+    summary: docs.LIST_USER_APPS_BATCH_SUMMARY,
+    description: docs.LIST_USER_APPS_BATCH_DESCRIPTION,
+    request: { query: listUserAppsBatchQuerySchema },
+    responses: {
+      200: {
+        description: 'Apps grouped by user.',
+        schema: listObjectSchema(userAppsGroupSchema),
+      },
+    },
+    handler: controller.listUserAppsBatch,
   })
 
   // OAuth grants / apps (session tier) before generic :user_id

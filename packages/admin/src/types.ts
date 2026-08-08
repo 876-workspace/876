@@ -850,6 +850,12 @@ export type AdminUserApp = {
   last_seen_at: number
 }
 
+export type AdminUserAppsGroup = {
+  object: 'user_apps'
+  user_id: string
+  data: AdminUserApp[]
+}
+
 export type AdminOAuthGrant = {
   id: string
   appId: string

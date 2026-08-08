@@ -192,6 +192,14 @@ export const LIST_USER_APPS_RESPONSES = {
   404: { description: 'User not found.' },
 } as const
 
+export const LIST_USER_APPS_BATCH_SUMMARY = 'List apps for users (batch)'
+
+export const LIST_USER_APPS_BATCH_DESCRIPTION = `
+Returns apps grouped by user for a batch of user IDs. One query, grouped in memory — never a query per row. Each requested user ID is present in the response, with an empty \`data\` array when the user has no enrollments.
+`
+
+export const LIST_USER_APPS_BATCH_RESPONSES = {} as const
+
 export const LIST_USERS_SUMMARY = 'List users'
 
 export const LIST_USERS_DESCRIPTION = `

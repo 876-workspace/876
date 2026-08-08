@@ -56,16 +56,29 @@ async function MembersTableData({ slug }: { slug: string }) {
   })
   const memberships: AdminMembership[] = membershipsResult.data?.data ?? []
 
-  // Fetch user details for each member in parallel.
-  const userResults = await Promise.all(
-    memberships.map((m) => $876.users.retrieve(m.user_id))
-  )
+  const userIds = [...new Set(memberships.map((m) => m.user_id))]
+  const [usersResult, invitesResult] = await Promise.all([
+    userIds.length > 0
+      ? $876.users.list({ ids: userIds, limit: 100 })
+      : Promise.resolve({
+          data: {
+            object: 'list',
+            data: [],
+            has_more: false,
+            url: '/users',
+            total_count: 0,
+          },
+          error: null,
+        } as unknown as Awaited<ReturnType<typeof $876.users.list>>),
+    $876.invites.list(org.id),
+  ])
   const usersById: Record<string, AdminUser> = {}
-  for (const r of userResults) {
-    if (r.data) usersById[r.data.id] = r.data
+  if (usersResult.data) {
+    for (const u of usersResult.data.data) {
+      usersById[u.id] = u
+    }
   }
 
-  const invitesResult = await $876.invites.list(org.id)
   const invites = invitesResult.data?.data ?? []
 
   return (

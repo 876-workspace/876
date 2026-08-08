@@ -3,7 +3,7 @@ import type { Request, Response } from 'express'
 import { getSettings, isPlatformOwnerEmail } from '@/config'
 import { getPrincipal } from '@/http/auth'
 import { AppHttpError } from '@/http/errors'
-import { validBody } from '@/http/middleware/validate'
+import { validBody, validQuery } from '@/http/middleware/validate'
 import { generateId, generatePlatformOwnerUserId } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
@@ -46,6 +46,7 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     search?: string
     include_deleted?: string | boolean
     status?: string
+    ids?: string | string[]
   }
   const limit = query.limit ? Number(query.limit) : 20
   const includeDeletedRaw = query.include_deleted
@@ -54,12 +55,42 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
   const principal = getPrincipal(req)
   const resolvedIncludeDeleted = principal.internal ? includeDeleted : false
   const status = query.status ?? null
+  // Prefer validated ids (schema transforms csv → string[]), fallback to raw csv parsing.
+  const validated = (
+    req as unknown as { valid?: { query?: { ids?: string[] } } }
+  ).valid?.query as { ids?: string[] } | undefined
+  let ids: string[] | null = validated?.ids ?? null
+  if (!ids && query.ids !== undefined) {
+    if (typeof query.ids === 'string') {
+      ids = query.ids
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean)
+    } else if (Array.isArray(query.ids)) {
+      ids = query.ids
+        .flatMap((v) =>
+          v
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        )
+        .filter(Boolean)
+    }
+  }
+  if (ids && ids.length > 100) {
+    throw new AppHttpError({
+      code: 'request/invalid',
+      message: 'Too many ids: maximum 100 allowed.',
+      httpStatus: 400,
+    })
+  }
   if (query.search) {
     const rows = await repo.searchUsers({
       query: query.search,
       limit,
       status,
       includeDeleted: resolvedIncludeDeleted,
+      ids: ids ?? undefined,
     })
     const companies = await repo.companiesForUsers(rows.map((r) => r.id))
     const data = rows.map((r) =>
@@ -83,6 +114,7 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     ending_before: query.ending_before,
     includeDeleted: resolvedIncludeDeleted,
     status,
+    ids: ids ?? undefined,
   })
   const companies = await repo.companiesForUsers(rows.map((r) => r.id))
   const data = rows.map((r) =>
@@ -513,6 +545,29 @@ export async function listUserApps(req: Request, res: Response): Promise<void> {
     data,
     has_more: false,
     url: `/users/${user_id}/apps`,
+    total_count: data.length,
+  })
+}
+
+export async function listUserAppsBatch(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const query = validQuery<{ user_ids: string[] }>(req)
+  const userIds = (query as { user_ids: string[] }).user_ids
+  const groups = await service.listUserAppsBatch(userIds)
+  const data = groups.map((g) => ({
+    object: 'user_apps' as const,
+    user_id: g.userId,
+    data: (
+      g.enrollments as unknown as import('./users.serializers').UserAppEnrollmentRow[]
+    ).map((e) => serializers.serializeUserApp(e)),
+  }))
+  res.json({
+    object: 'list',
+    data,
+    has_more: false,
+    url: '/users/apps',
     total_count: data.length,
   })
 }
