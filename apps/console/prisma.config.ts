@@ -13,9 +13,9 @@ config({ path: ['.env.development.local', '.env'] })
  * `schema` points at the multi-file schema FOLDER (`prisma/schema/`), which
  * holds `schema.prisma` (generator + datasource provider) plus one `*.prisma`
  * file per model. In Prisma 7 the connection URL lives here (not in the schema)
- * and is used by Migrate; the runtime client connects via the `@prisma/adapter-pg`
- * driver adapter (see `src/lib/db/index.ts`). `CONSOLE_DATABASE_URL` is loaded
- * from the env above.
+ * and is used by Migrate. The runtime client uses Prisma Accelerate through
+ * `CONSOLE_DATABASE_URL` (see `src/lib/db/index.ts`), while this CLI-only
+ * configuration reads `CONSOLE_DIRECT_DATABASE_URL`.
  */
 export default defineConfig({
   schema: 'prisma/schema',
@@ -24,6 +24,6 @@ export default defineConfig({
     seed: 'tsx prisma/seed.ts',
   },
   datasource: {
-    url: env('CONSOLE_DATABASE_URL'),
+    url: env('CONSOLE_DIRECT_DATABASE_URL'),
   },
 })

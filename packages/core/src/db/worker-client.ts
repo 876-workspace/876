@@ -1,19 +1,16 @@
 /**
  * `@876/core/db` — request-scoped database clients for Cloudflare Workers.
  *
- * Every 876 app with its own datastore (Console, Couriers, Billing,
- * Widgets API) builds a Prisma client over `@prisma/adapter-pg`, which opens
- * a connection pool. A socket on workerd belongs to the request that opened
- * it: reusing one from a later request on the same isolate throws
- * `Cannot perform I/O on behalf of a different request`. If the query does not
- * settle, the runtime sees a Worker that can make no further progress and
- * cancels the invocation — surfacing as Cloudflare Error 1101 with no useful
- * application error.
+ * Every 876 app with its own datastore (Console, Couriers, Billing, Widgets
+ * API) resolves its Prisma client from the Worker request context. Prisma
+ * Accelerate owns the remote database pool, so these clients do not retain a
+ * local database socket across requests. The resolver still aligns the client
+ * lifecycle with the Worker invocation and the query guard reports any
+ * request-scoped I/O failure before Cloudflare turns it into Error 1101.
  *
- * The fix is to scope the client to the request instead of the isolate. This
- * module owns that resolution plus the observability that turns a silent hang
- * into a reported failure, so the four app datastores share one implementation
- * rather than four subtly different copies.
+ * This module owns that resolution plus the observability that turns a silent
+ * hang into a reported failure, so the four app datastores share one
+ * implementation rather than four subtly different copies.
  *
  * This module is intentionally a single file with no relative imports and no
  * dependencies — it is consumed as raw source through the package `exports`
@@ -82,7 +79,7 @@ export function isCrossRequestIoError(error: unknown): boolean {
 }
 
 /**
- * A database connection opened by an earlier request was reused by this one.
+ * A database I/O resource opened by an earlier request was reused by this one.
  *
  * Raised in place of the raw workerd error so the message names the cause and
  * the fix instead of describing the runtime constraint in the abstract.
@@ -96,9 +93,9 @@ export class DatabaseConnectionReusedError extends Error {
     override readonly cause?: unknown
   ) {
     super(
-      `Database connection reuse across requests (${operation}). The connection ` +
-        `pool was opened by an earlier request on this isolate; Cloudflare ` +
-        `Workers forbids reusing its socket, so the query can never complete. ` +
+      `Database I/O reuse across requests (${operation}). The resource was ` +
+        `opened by an earlier request on this isolate; Cloudflare Workers ` +
+        `forbids reusing it, so the query can never complete. ` +
         `The client must be created per request — see @876/core/db.`
     )
   }

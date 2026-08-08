@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaPg } from '@prisma/adapter-pg'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
@@ -24,7 +24,7 @@ export type {
  */
 function reportDbFailure(
   error: unknown,
-  failure: Partial<QueryFailure> & { stage: 'pool' | 'query' }
+  failure: Partial<QueryFailure> & { stage: 'query' }
 ): void {
   Sentry.captureException(error, {
     level: 'error',
@@ -41,20 +41,18 @@ function reportDbFailure(
       model: failure.model ?? null,
       operation: failure.operation ?? null,
       consequence: failure.crossRequestIo
-        ? 'A pg pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the request fails with Error 1101.'
+        ? 'A database request crossed its Worker request scope. The query never settles, so Cloudflare cancels the invocation and the request fails with Error 1101.'
         : 'The request fails instead of resolving.',
     },
   })
 }
 
 function createPrisma() {
-  const rawConnectionString = process.env.WIDGETS_DATABASE_URL
-  if (!rawConnectionString)
+  const accelerateUrl = process.env.WIDGETS_DATABASE_URL
+  if (!accelerateUrl)
     throw new Error('WIDGETS_DATABASE_URL is not set; Widgets DB unavailable.')
 
-  const connectionString = rawConnectionString
-  const adapter = new PrismaPg({ connectionString })
-  return new PrismaClient({ adapter })
+  const client = new PrismaClient({ accelerateUrl })
     .$extends({
       query: {
         notepadNote: {
@@ -93,6 +91,10 @@ function createPrisma() {
         }),
       },
     })
+
+  // Keep the existing service-facing extension type stable. Accelerate is
+  // applied at runtime for pooling; cacheStrategy is intentionally deferred.
+  return client.$extends(withAccelerate()) as unknown as typeof client
 }
 
 type WidgetsPrisma = ReturnType<typeof createPrisma>
@@ -128,10 +130,8 @@ const resolvePrisma = createRequestScopedResolver<WidgetsPrisma>({
  * the connection string a build-time requirement — and the Cloudflare build
  * environment has no `WIDGETS_DATABASE_URL`, only the Worker runtime does.
  *
- * On Cloudflare Workers the client is also scoped to the in-flight request:
- * the pg pool's socket belongs to the request that opened it, and reusing it
- * from the next request on the same isolate hangs the Worker. See
- * `@876/core/db`.
+ * On Cloudflare Workers the client is scoped to the in-flight request, while
+ * Accelerate owns the remote connection pool. See `@876/core/db`.
  */
 export const prisma = new Proxy({} as WidgetsPrisma, {
   get(_target, property) {
