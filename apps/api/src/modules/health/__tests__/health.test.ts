@@ -1,7 +1,20 @@
 import request from 'supertest'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { createApp } from '@/app'
+// Importing `@/app` pulls in every module, and therefore `@/db/client`, which
+// builds a real Prisma client at import. Nothing here touches the database —
+// /health is deliberately connection-free — but constructing the client is
+// enough to start an engine against the placeholder URL, and that engine's
+// start promise rejects outside any test's control. The suite then fails after
+// all 1453 tests have passed, reporting an unhandled error with no owning test.
+// Every other module test already mocks this module; this one is the gap.
+vi.mock('@/db/client', () => ({
+  prisma: {},
+  disconnectDb: vi.fn(),
+  pingDb: vi.fn(),
+}))
+
+const { createApp } = await import('@/app')
 
 describe('GET /health', () => {
   it('returns the liveness resource', async () => {
