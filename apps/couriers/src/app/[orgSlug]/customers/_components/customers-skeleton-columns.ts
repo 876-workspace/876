@@ -10,4 +10,5 @@ export const CUSTOMERS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Company', cell: 'avatar' },
   { label: 'Email' },
   { label: 'Phone' },
+  { label: 'Status' },
 ]

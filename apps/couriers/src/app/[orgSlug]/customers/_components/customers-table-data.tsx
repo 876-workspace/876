@@ -33,7 +33,14 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   )
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant) return <CustomersTable customers={[]} emptyState={emptyState} />
+  if (!ctx?.tenant)
+    return (
+      <CustomersTable
+        customers={[]}
+        orgSlug={orgSlug}
+        emptyState={emptyState}
+      />
+    )
 
   // Layer 3 first: this workspace's own enrolled customers are the list. The
   // shared registry is then read only for the identity of those customers.
@@ -42,7 +49,14 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     profileStatus
   )
 
-  if (profiles.length === 0) return <CustomersTable customers={[]} emptyState={emptyState} />
+  if (profiles.length === 0)
+    return (
+      <CustomersTable
+        customers={[]}
+        orgSlug={orgSlug}
+        emptyState={emptyState}
+      />
+    )
 
   const billingCustomerIds = profiles.flatMap((profile) =>
     profile.billingCustomerId ? [profile.billingCustomerId] : []
@@ -79,6 +93,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
       companyName: identity?.companyName ?? null,
       email: contact?.email ?? identity?.email ?? null,
       phone: identity?.phone ?? identity?.workPhone ?? null,
+      status: profile.status,
     }
   })
 
@@ -92,6 +107,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
       <CustomersTable
         customers={rows}
+        orgSlug={orgSlug}
         emptyState={emptyState}
       />
     </>

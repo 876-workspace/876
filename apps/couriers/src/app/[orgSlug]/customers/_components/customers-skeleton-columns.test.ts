@@ -13,6 +13,7 @@ describe('CUSTOMERS_SKELETON_COLUMNS', () => {
     expect(CUSTOMERS_SKELETON_COLUMNS.map((column) => column.label)).toEqual([
       'Name',
       'Company',
+      'Status',
       'Email',
       'Phone',
     ])
