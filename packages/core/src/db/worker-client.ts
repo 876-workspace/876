@@ -3,13 +3,12 @@
  *
  * Every 876 app with its own datastore (Console, Couriers, Billing,
  * Widgets API) builds a Prisma client over `@prisma/adapter-pg`, which opens
- * a Neon **WebSocket pool**. A socket on workerd belongs to the request that
- * opened it: reusing one from a later request on the same isolate throws
- * `Cannot perform I/O on behalf of a different request`, and because the
- * adapter reports that on the pool rather than rejecting the in-flight query,
- * the query promise never settles. The runtime then sees a Worker that can
- * make no further progress and cancels the invocation — surfacing as
- * Cloudflare Error 1101 with no application error anywhere.
+ * a connection pool. A socket on workerd belongs to the request that opened
+ * it: reusing one from a later request on the same isolate throws
+ * `Cannot perform I/O on behalf of a different request`. If the query does not
+ * settle, the runtime sees a Worker that can make no further progress and
+ * cancels the invocation — surfacing as Cloudflare Error 1101 with no useful
+ * application error.
  *
  * The fix is to scope the client to the request instead of the isolate. This
  * module owns that resolution plus the observability that turns a silent hang

@@ -1,33 +1,22 @@
 # @876/api database
 
 The identity and platform core: users, organizations, memberships, apps, auth,
-OAuth, features, provisioning, directory reference data, and geo. **80 tables**,
-managed by Prisma 7 with a multi-file schema.
+OAuth, features, provisioning, directory reference data, and geo, managed by
+Prisma 7 with a multi-file schema.
 
-## The database is shared — read this first
+## Database ownership and migration safety
 
-One Postgres instance (Neon) holds three services' tables:
+The identity API has an isolated Prisma Postgres database. Billing and Storage
+have separate databases and migration histories; never point this service's
+`DATABASE_URL` at either of them.
 
-| Owner                     | Tables                                                   | Migrations                          |
-| ------------------------- | -------------------------------------------------------- | ----------------------------------- |
-| `apps/api` (this service) | 80 identity/platform tables + `platform_bootstrap_state` | **Prisma** (`_prisma_migrations`)   |
-| `apps/billing-api`        | 76 `billing_*` tables, 66 `Billing*` enums               | Alembic (`alembic_version`)         |
-| `apps/storage-api`        | 6 `storage_*` tables                                     | Alembic (`storage_alembic_version`) |
-
-Prisma and Alembic coexist fine — they use different bookkeeping tables. What
-does **not** coexist is `prisma migrate dev`:
-
-> `migrate dev` compares the database against this service's migration history,
-> sees 82 tables that no Prisma migration created, reports drift, and offers to
-> **reset the database**. Accepting that prompt drops every billing and storage
-> table in the environment.
-
-`pnpm db:migrate` therefore runs through `scripts/guard-migrate.mjs`, which
-refuses when it finds another service's tables. To author a migration, point it
-at a scratch database (a Neon branch, or a local Postgres):
+`prisma migrate dev` can reset its target when it detects drift. `pnpm
+db:migrate` therefore runs through `scripts/guard-migrate.mjs` and requires an
+explicit opt-in. Author migrations only against a disposable scratch Postgres
+database:
 
 ```bash
-DATABASE_URL=<scratch-url> pnpm --filter @876/api db:migrate --name add_widget_flag
+ALLOW_MIGRATE_DEV=1 DATABASE_URL=<scratch-url> pnpm --filter @876/api db:migrate --name add_widget_flag
 ```
 
 Apply migrations in real environments with `migrate deploy`, which applies

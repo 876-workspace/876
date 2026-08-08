@@ -110,7 +110,7 @@ pnpm --filter @876/app deploy    # deploy to Cloudflare Workers
 4. Deploy command: `npx opennextjs-cloudflare deploy`
 5. Set build variables for the app's `NEXT_PUBLIC_*` keys (inlined at build time; Workers Builds does not inherit runtime secrets)
 
-**Prisma apps (console, couriers, billing, widgets-api):** these use `@prisma/adapter-neon` (Neon's serverless driver over HTTP/WebSocket), so **no Hyperdrive binding is needed** — the plain Neon URL as a Worker secret is enough. Migrations run in GitHub Actions, never in the Worker or the Cloudflare build. See `docs/cloudflare.md`.
+**Prisma apps (console, couriers, billing, widgets-api):** these use `@prisma/adapter-pg` with Prisma Postgres pooled connection URLs, so **no Hyperdrive binding is needed** — the owning app's database URL is supplied as a Worker secret. Migrations run in GitHub Actions, never in the Worker or the Cloudflare build. See `docs/cloudflare.md`.
 
 **`.open-next/` is gitignored** — it's the OpenNext build output directory.
 

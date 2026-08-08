@@ -5,11 +5,9 @@ import { prisma, type PrismaTransactionClient } from '@/lib/db'
 /**
  * How long a transaction may wait to acquire its connection.
  *
- * Prisma's default is 2000ms. Neon suspends a compute after ~5 minutes of
- * inactivity and takes several seconds to wake, so the first write after an
- * idle period routinely exceeds the default and the whole transaction is
- * rejected before it runs a single statement — which is exactly how an
- * organization ends up unable to add a branch on a Monday morning.
+ * Prisma's default is 2000ms. A cold serverless database connection can take
+ * longer to become available, so the first write after an idle period may
+ * exceed the default and reject before running a single statement.
  */
 export const TRANSACTION_MAX_WAIT_MS = 15_000
 
@@ -58,8 +56,8 @@ export function isColdStartError(error: unknown): boolean {
 }
 
 /**
- * Runs an interactive transaction with bounds that survive a cold Neon
- * compute, retrying once if the connection could not be acquired at all.
+ * Runs an interactive transaction with bounds that survive a cold database
+ * connection, retrying once if the connection could not be acquired at all.
  *
  * @param label - The `<resource>.<verb>` this transaction serves, e.g.
  *   `branches.create`. Recorded as a breadcrumb when a retry happens, so a
@@ -89,7 +87,7 @@ export async function runTransaction<T>(
     })
 
     // No backoff: the first attempt already waited out TRANSACTION_MAX_WAIT_MS,
-    // which is longer than a Neon wake-up. Sleeping on top of that only spends
+    // which already covers the cold-connection budget. Sleeping only spends
     // Worker wall-clock the second attempt needs.
     return prisma.$transaction(run, transactionOptions)
   }

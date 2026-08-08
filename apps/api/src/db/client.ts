@@ -25,9 +25,8 @@ function createClient(): PrismaClient {
 
   const adapter = new PrismaPg({
     connectionString: databaseUrl,
-    // Neon's pooled endpoint terminates idle connections; keeping our own idle
-    // timeout below theirs means we retire a socket rather than discover it
-    // dead mid-query.
+    // Retire idle pooled connections proactively rather than discovering a
+    // server-closed socket in the middle of a later query.
     idleTimeoutMillis: 30_000,
     max: 10,
   })

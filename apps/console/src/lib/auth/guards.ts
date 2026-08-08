@@ -32,7 +32,7 @@ export async function requireSession(returnTo: string) {
  * A single render reaches for this record from three unrelated places: the
  * bootstrap super-admin check, the shell's display hydration, and the
  * permission guard in whichever segment layout is being entered. Each one is a
- * Worker → FastAPI → Neon round trip, and they all run *above* the nearest
+ * Worker → FastAPI → Postgres round trip, and they all run *above* the nearest
  * `loading.tsx`, so the user waits on every one of them before a skeleton can
  * paint. Memoizing collapses them to a single trip.
  *
@@ -68,7 +68,7 @@ export const findConsoleAccess = cache(async function findConsoleAccess(
  * cannot stream — content must not render before we know the viewer may see it.
  * So the guard has to be *cheap* rather than non-blocking, and fetching the
  * platform user to test one address against a one-entry set was the opposite:
- * a Worker -> FastAPI -> Neon round trip on every navigation, ahead of any
+ * a Worker -> FastAPI -> Postgres round trip on every navigation, ahead of any
  * paint.
  *
  * When the id being checked is the session's own, the sealed cookie already

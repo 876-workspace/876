@@ -108,33 +108,22 @@ instead.
   `apps.list({ limit: 100, clientType: 'public' })` on the same render. A shared
   `cache()`d catalog module (`src/lib/apps-catalog.ts`) is the fix.
 
-## Rule 4 — Neon over HTTP, unless you need interactive transactions
+## Rule 4 — Scope pooled database clients to the Worker request
 
-Measured against a real `us-east-1` Neon instance, cold client per request as a
-Worker does it, running a `findUnique … include`:
+Console, Couriers, Billing, and Widgets API use `@prisma/adapter-pg` against
+their isolated Prisma Postgres pooled endpoints. Keep that adapter consistent
+across the Worker apps; do not reintroduce a provider-specific Neon transport.
 
-| Transport                     | p50  | max       |
-| ----------------------------- | ---- | --------- |
-| WebSocket pool (`PrismaNeon`) | 68ms | **652ms** |
-| HTTP (`PrismaNeonHttp`)       | 45ms | **67ms**  |
-
-Raw driver, same instance: `SELECT 1` over HTTP is **6ms**; a WebSocket pool
-costs ~30ms to open. **The database is not the cost — the handshake is**, and its
-tail is what makes navigation feel unpredictable rather than merely slow.
-
-- **Use `PrismaNeonHttp` when the app's data surface is single-model reads and
-  writes.** `create`, `update`, `delete`, `deleteMany` and `findUnique … include`
-  all work over HTTP; this was verified end-to-end against the real schema, not
-  inferred.
-- **Use `PrismaNeon` (WebSocket) when the app uses interactive `$transaction`.**
-  HTTP cannot do them. Couriers (`src/lib/service/transaction.ts`) and Billing
-  (`$transaction(async (tx) => …)`) both do, and must stay on the pool.
-- **Audit before swapping**: `grep -rn '\$transaction' <app>/src/lib/service`.
-  Console had none, which is why it was eligible and the others are not.
 - The request-scoped client resolver (`createRequestScopedResolver`) is
-  **mandatory** on the pool — a Neon socket belongs to the request that opened it
-  and reusing it hangs workerd (Error 1101). Over HTTP there is no socket to
-  strand, so it becomes belt-and-braces; keep it anyway.
+  **mandatory**. A pooled TCP socket belongs to the workerd request that opened
+  it, and reusing it from a later request on the same isolate can hang the query
+  until Cloudflare cancels the invocation with Error 1101.
+- Construct the adapter lazily. OpenNext imports route modules while building,
+  when runtime database secrets are deliberately unavailable.
+- Interactive `$transaction` calls are supported by `@prisma/adapter-pg`.
+  Keep the existing transaction bounds in Couriers and Billing.
+- The process-wide HMR singleton remains appropriate under Node development;
+  only workerd requires one client per request.
 
 ## Rule 5 — `cacheComponents` is blocked upstream; do not enable it
 
