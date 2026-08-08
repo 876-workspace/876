@@ -62,6 +62,92 @@ export async function ensureSharedCoreUserCustomer(
   return raceWinner.data ? raceWinner : created
 }
 
+type CustomerKind = 'INDIVIDUAL' | 'BUSINESS'
+
+type CustomerNameParts = {
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+}
+
+/**
+ * Derives the registry's single display name from the party's parts.
+ *
+ * A business is named by its company and a person by their given names, but each
+ * falls back to the other so a customer is never written with a blank name.
+ */
+function resolveCustomerName(
+  customerKind: CustomerKind,
+  parts: CustomerNameParts
+): string {
+  const person = [parts.firstName, parts.lastName]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(' ')
+  const company = parts.companyName?.trim() ?? ''
+
+  return customerKind === 'BUSINESS' ? company || person : person || company
+}
+
+export async function createExternalCustomer(
+  finance: BillingIntegrationClient,
+  organizationId: string,
+  params: {
+    profileId: string
+    customerKind: CustomerKind
+    firstName?: string | null
+    lastName?: string | null
+    companyName?: string | null
+    email?: string | null
+    phone?: string | null
+  }
+): Promise<IntegrationResult<BillingCustomer>> {
+  const name = resolveCustomerName(params.customerKind, params)
+  const key = `couriers:profile:${params.profileId}`
+
+  return finance.customers.create(
+    organizationId,
+    {
+      customerType: 'EXTERNAL',
+      customerKind: params.customerKind,
+      name,
+      firstName: params.firstName ?? null,
+      lastName: params.lastName ?? null,
+      companyName: params.companyName ?? null,
+      email: params.email ?? null,
+      phone: params.phone ?? null,
+      sourceExternalReference: key,
+    },
+    { idempotencyKey: key }
+  )
+}
+
+export async function updateExternalCustomer(
+  finance: BillingIntegrationClient,
+  organizationId: string,
+  customerId: string,
+  params: {
+    customerKind: CustomerKind
+    firstName?: string | null
+    lastName?: string | null
+    companyName?: string | null
+    email?: string | null
+    phone?: string | null
+  }
+): Promise<IntegrationResult<BillingCustomer>> {
+  const { customerKind, ...fields } = params
+
+  // The registry's single display name is derived, never sent by the caller, so
+  // renaming a person can't leave `name` showing the old spelling. An empty
+  // derivation is dropped rather than blanking the name the registry already has.
+  const name = resolveCustomerName(customerKind, fields)
+
+  return finance.customers.update(organizationId, customerId, {
+    ...fields,
+    ...(name ? { name } : {}),
+  })
+}
+
 async function findCoreUserCustomer(
   finance: BillingIntegrationClient,
   organizationId: string,
