@@ -18,12 +18,11 @@ export async function ensure(params: {
     return await runTransaction(
       'customerProfiles.ensure',
       async (transaction) => {
-        const existing = await transaction.courierCustomerProfile.findUnique({
+        const existing = await transaction.courierCustomerProfile.findFirst({
           where: {
-            courier_customer_profiles_tenant_user_key: {
-              tenantId: params.tenantId,
-              userId: params.userId,
-            },
+            tenantId: params.tenantId,
+            userId: params.userId,
+            deletedAt: null,
           },
         })
 

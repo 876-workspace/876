@@ -10,7 +10,7 @@ import type { CustomerStatus } from '@/types/customer'
  */
 export function list(tenantId: string, status?: CustomerStatus) {
   return prisma.courierCustomerProfile.findMany({
-    where: { tenantId, ...(status ? { status } : {}) },
+    where: { tenantId, deletedAt: null, ...(status ? { status } : {}) },
     orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
   })
 }
