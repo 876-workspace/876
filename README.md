@@ -73,9 +73,15 @@ pnpm dev                             # Product apps + API + Widgets API
 pnpm dev:api                         # API core only (tsx watch)
 pnpm dev:876                         # 876 consumer app + API
 pnpm dev:enterprise                  # Enterprise app + API
-pnpm dev:console                     # Console + API + Widgets API
-pnpm dev:couriers                    # Couriers app + API + Storage API
+pnpm dev:console                     # Console + API + Widgets API + Billing + Billing API
+pnpm dev:console:min                 # Console + API + Billing API (no Widgets/Billing app)
+pnpm dev:console:core                # Console + API only (no Billing backend)
+pnpm dev:couriers                    # Couriers app + API + Storage API + Billing + Widgets
+pnpm dev:couriers:min                # Couriers app + API + Billing API (no Widgets/Storage/Billing app)
+pnpm dev:couriers:core               # Couriers app + API only (no Billing backend)
 pnpm dev:billing                     # Billing + API + Widgets API
+pnpm dev:billing:min                 # Billing app + API + Billing API (no Widgets API)
+pnpm dev:billing:core                # Billing app + Billing API only (no core API/Widgets)
 pnpm dev:widgets                     # Widgets API only
 
 # Quality
