@@ -4,6 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
+  requireAccelerateUrl,
   type QueryFailure,
 } from '@876/core/db'
 import * as Sentry from '@sentry/nextjs'
@@ -48,9 +49,10 @@ function reportDbFailure(
 }
 
 function createPrisma() {
-  const accelerateUrl = process.env.WIDGETS_DATABASE_URL
-  if (!accelerateUrl)
-    throw new Error('WIDGETS_DATABASE_URL is not set; Widgets DB unavailable.')
+  const accelerateUrl = requireAccelerateUrl(process.env.WIDGETS_DATABASE_URL, {
+    variable: 'WIDGETS_DATABASE_URL',
+    datastore: 'Widgets',
+  })
 
   const client = new PrismaClient({ accelerateUrl })
     .$extends({

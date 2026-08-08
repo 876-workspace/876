@@ -4,6 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
+  requireAccelerateUrl,
   type QueryFailure,
 } from '@876/core/db'
 import * as Sentry from '@sentry/nextjs'
@@ -70,10 +71,11 @@ function reportDbFailure(
 }
 
 function createPrisma() {
-  const accelerateUrl = process.env.DATABASE_URL
-  if (!accelerateUrl) {
-    throw new Error('DATABASE_URL is not set; Couriers DB unavailable.')
-  }
+  const accelerateUrl = requireAccelerateUrl(process.env.DATABASE_URL, {
+    variable: 'DATABASE_URL',
+    datastore: 'Couriers',
+  })
+
   const client = new PrismaClient({ accelerateUrl })
     .$extends({
       query: {

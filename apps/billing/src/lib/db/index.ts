@@ -4,6 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
+  requireAccelerateUrl,
   type QueryFailure,
 } from '@876/core/db'
 import * as Sentry from '@sentry/nextjs'
@@ -91,12 +92,10 @@ function reportDbFailure(
 }
 
 function createPrisma() {
-  const accelerateUrl = process.env.BILLING_DATABASE_URL
-  if (!accelerateUrl) {
-    throw new Error(
-      'BILLING_DATABASE_URL is not set; 876 Billing DB unavailable.'
-    )
-  }
+  const accelerateUrl = requireAccelerateUrl(process.env.BILLING_DATABASE_URL, {
+    variable: 'BILLING_DATABASE_URL',
+    datastore: '876 Billing',
+  })
 
   const client = new PrismaClient({ accelerateUrl })
     .$extends({
