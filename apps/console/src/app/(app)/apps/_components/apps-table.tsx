@@ -33,7 +33,7 @@ const columns: ColumnDef<AdminApp, unknown>[] = [
         />
         <Link
           href={`/apps/${row.original.slug}`}
-          className="hover:text-primary font-medium"
+          className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
           onClick={(e) => e.stopPropagation()}
         >
           {row.original.name}

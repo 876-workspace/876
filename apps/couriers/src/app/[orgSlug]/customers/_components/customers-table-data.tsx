@@ -6,6 +6,7 @@ import { service } from '@/lib/service'
 import { customerStatusSchema } from '@/types/customer'
 
 import { CustomersTable, type CustomerTableRow } from './customers-table'
+import { FAKE_CUSTOMERS } from '../_lib/fake-customers'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -23,7 +24,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
       : customerStatusSchema.parse(selectedStatus.toUpperCase())
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant) return null
+  if (!ctx?.tenant) return <CustomersTable customers={FAKE_CUSTOMERS} />
 
   // Layer 3 first: this workspace's own enrolled customers are the list. The
   // shared registry is then read only for the identity of those customers.
@@ -31,6 +32,10 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     ctx.tenant.id,
     profileStatus
   )
+
+  if (profiles.length === 0) {
+    return <CustomersTable customers={FAKE_CUSTOMERS} />
+  }
 
   const billingCustomerIds = profiles.flatMap((profile) =>
     profile.billingCustomerId ? [profile.billingCustomerId] : []
@@ -51,21 +56,22 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   const rows: CustomerTableRow[] = profiles.map((profile) => {
     const identity = identityById.get(profile.billingCustomerId)
     const contact = identity?.primaryContact ?? null
-    const contactName =
-      [contact?.firstName, contact?.lastName]
+    const customerName =
+      [identity?.firstName, identity?.lastName]
         .filter(Boolean)
         .join(' ')
-        .trim() || null
+        .trim() ||
+      identity?.name ||
+      profile.billingCustomerId
 
     return {
       id: profile.id,
       billingCustomerId: profile.billingCustomerId,
-      name: identity?.name ?? profile.billingCustomerId,
-      contactName,
+      customerName,
+      companyName: identity?.companyName ?? null,
       email: contact?.email ?? identity?.email ?? null,
-      customerKind: identity?.customerKind ?? 'INDIVIDUAL',
-      status: profile.status,
-      isCommercial: profile.isCommercial,
+      phone: identity?.phone ?? identity?.workPhone ?? null,
+      mailboxNumber: profile.mailboxes?.[0]?.number ?? null,
     }
   })
 
