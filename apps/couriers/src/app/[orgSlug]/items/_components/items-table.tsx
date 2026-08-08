@@ -35,7 +35,7 @@ function itemLogoColor(name: string): string {
   return ITEM_LOGO_COLORS[Math.abs(hash) % ITEM_LOGO_COLORS.length]!
 }
 
-const columns: ColumnDef<ItemTableRow, unknown>[] = [
+export const columns: ColumnDef<ItemTableRow, unknown>[] = [
   {
     id: 'name',
     header: 'Name',
