@@ -14,7 +14,7 @@ export default async function NewBillingCustomerPage({ params }: Props) {
     <div className="space-y-5">
       <div>
         <h1 className="876-page-title">New Billing customer</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
+        <p className="text-muted-foreground mt-1 text-[0.8125rem]">
           Create a customer in {org.name ?? org.slug}&apos;s Billing workspace.
         </p>
       </div>

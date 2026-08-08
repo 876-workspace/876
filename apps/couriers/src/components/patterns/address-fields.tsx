@@ -242,7 +242,7 @@ export function AddressFields({
       <div>
         <Label htmlFor="address-country">Country</Label>
         {countryError ? (
-          <p className="text-destructive mt-2 text-sm">
+          <p className="text-destructive mt-2 text-[0.8125rem]">
             Country information could not be loaded.
           </p>
         ) : (

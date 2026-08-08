@@ -153,7 +153,7 @@ export function CreateFeatureForm({
           {lockApp ? (
             <div className="space-y-2">
               <Label>App</Label>
-              <div className="border-input bg-muted/40 rounded-md border px-3 py-2 text-sm">
+              <div className="border-input bg-muted/40 rounded-md border px-3 py-2 text-[0.8125rem]">
                 {selectedApp?.name ?? 'Current app'}
               </div>
             </div>
@@ -237,7 +237,7 @@ export function CreateFeatureForm({
           </div>
         </div>
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
       </div>
 
       <div className="border-876-surface-border flex justify-end gap-2 border-t px-5 py-4">

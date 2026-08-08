@@ -205,7 +205,7 @@ function OverrideSection({
   return (
     <section>
       <div className="mb-3">
-        <h3 className="flex items-center gap-2 text-sm font-semibold">
+        <h3 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
           {title}
           {rows.length > 0 && <Badge variant="secondary">{rows.length}</Badge>}
         </h3>
@@ -224,7 +224,7 @@ function OverrideSection({
           {rows.map((row) => (
             <li key={row.id} className="flex items-center gap-2 px-3 py-2.5">
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-medium">
+                <span className="block truncate text-[0.8125rem] font-medium">
                   {row.name}
                 </span>
                 <span className="text-muted-foreground block truncate text-xs">

@@ -63,7 +63,7 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
           <span className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-full text-xs font-semibold">
             1
           </span>
-          <span className="text-foreground text-sm font-medium">Details</span>
+          <span className="text-foreground text-[0.8125rem] font-medium">Details</span>
         </div>
         <span className="bg-border h-px flex-1" aria-hidden="true" />
         <div className="flex items-center gap-2">
@@ -79,8 +79,8 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
           <span
             className={
               step === 'modules'
-                ? 'text-foreground text-sm font-medium'
-                : 'text-muted-foreground text-sm font-medium'
+                ? 'text-foreground text-[0.8125rem] font-medium'
+                : 'text-muted-foreground text-[0.8125rem] font-medium'
             }
           >
             Modules
@@ -92,7 +92,7 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
         <section className="876-card p-5">
           <div className="mb-4 flex flex-col gap-1">
             <span className="876-eyebrow">Step 1 of 2</span>
-            <h3 className="text-foreground text-sm font-medium">
+            <h3 className="text-foreground text-[0.8125rem] font-medium">
               Catalog details and starting price
             </h3>
           </div>
@@ -165,7 +165,7 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
         <section className="space-y-3">
           <div>
             <span className="876-eyebrow">Step 2 of 2</span>
-            <h3 className="text-foreground mt-1 text-sm font-medium">
+            <h3 className="text-foreground mt-1 text-[0.8125rem] font-medium">
               Included modules
             </h3>
             <p className="text-muted-foreground mt-1 text-xs">
@@ -179,7 +179,7 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
             onSelectedModuleIdsChange={setSelectedModuleIds}
             disabled={isPending}
           />
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
         </section>
       )}
 

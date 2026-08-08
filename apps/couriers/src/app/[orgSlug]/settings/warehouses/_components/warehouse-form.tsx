@@ -143,7 +143,7 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
             {OPERATING_MODEL_OPTIONS.map((option) => (
               <label
                 key={option.value}
-                className="flex cursor-pointer items-center gap-2 text-sm"
+                className="flex cursor-pointer items-center gap-2 text-[0.8125rem]"
               >
                 <RadioGroupItem value={option.value} />
                 {option.label}
@@ -183,13 +183,13 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
 
         {isFirstWarehouse ? (
           <FormRow label="Primary">
-            <p className="text-muted-foreground pt-2 text-sm">
+            <p className="text-muted-foreground pt-2 text-[0.8125rem]">
               Your first warehouse is the primary warehouse.
             </p>
           </FormRow>
         ) : warehouse?.isPrimary ? (
           <FormRow label="Primary">
-            <p className="text-muted-foreground pt-2 text-sm">
+            <p className="text-muted-foreground pt-2 text-[0.8125rem]">
               This is the primary warehouse. Promote another warehouse to change
               it.
             </p>
@@ -296,11 +296,11 @@ export function WarehouseForm({ orgSlug, warehouse, isFirstWarehouse }: Props) {
             visible; `instructions` is intentionally not submitted from here,
             so an existing warehouse's value is left untouched on save. */}
         <TabsContent value="custom-fields" className="876-card p-5">
-          <p className="text-muted-foreground text-sm">No custom fields yet.</p>
+          <p className="text-muted-foreground text-[0.8125rem]">No custom fields yet.</p>
         </TabsContent>
       </Tabs>
 
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? <p className="text-destructive text-[0.8125rem]">{error}</p> : null}
 
       <div className="flex items-center gap-3">
         <Button

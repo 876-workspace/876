@@ -56,7 +56,7 @@ export function ArchivePlanDialog({
             no new subscriptions can be created.
           </DialogDescription>
         </DialogHeader>
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
         <DialogFooter>
           <Button
             variant="outline"

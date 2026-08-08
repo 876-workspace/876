@@ -43,7 +43,7 @@ function ContactAccordionItem({ contact }: { contact: AdminConsumerContact }) {
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-foreground truncate text-sm font-medium">
+            <span className="text-foreground truncate text-[0.8125rem] font-medium">
               {name}
             </span>
             {contact.nickname && (

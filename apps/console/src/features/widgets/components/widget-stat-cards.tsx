@@ -35,7 +35,7 @@ export async function WidgetStatCards({ widget }: { widget: WidgetMetadata }) {
   })
   if (error || !data) {
     return (
-      <p className="text-muted-foreground text-sm">
+      <p className="text-muted-foreground text-[0.8125rem]">
         Usage is unavailable right now.
       </p>
     )

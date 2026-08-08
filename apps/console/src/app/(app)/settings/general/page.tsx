@@ -78,7 +78,7 @@ export default function GeneralSettingsPage() {
                   className="flex items-start justify-between gap-4 px-5 py-4"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{field.name}</p>
+                    <p className="text-[0.8125rem] font-medium">{field.name}</p>
                     <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
                       {field.description}
                     </p>

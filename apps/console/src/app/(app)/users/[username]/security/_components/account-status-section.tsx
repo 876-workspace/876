@@ -51,7 +51,7 @@ export function AccountStatusSection({ user }: Props) {
 
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
         <Shield className="text-muted-foreground size-4" />
         Account Status
       </h2>
@@ -60,7 +60,7 @@ export function AccountStatusSection({ user }: Props) {
         <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Ban Status</span>
+              <span className="text-[0.8125rem] font-medium">Ban Status</span>
               {user.banned && (
                 <span className={cn(badgeBase, statusBadgeClass('banned'))}>
                   Banned
@@ -86,7 +86,7 @@ export function AccountStatusSection({ user }: Props) {
         <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Suspension Status</span>
+              <span className="text-[0.8125rem] font-medium">Suspension Status</span>
               {user.status === 'suspended' && (
                 <span className={cn(badgeBase, statusBadgeClass('suspended'))}>
                   suspended
@@ -112,7 +112,7 @@ export function AccountStatusSection({ user }: Props) {
         </div>
       </div>
       {(error || success) && (
-        <div className="mt-4 text-sm">
+        <div className="mt-4 text-[0.8125rem]">
           {error && <p className="text-destructive">{error}</p>}
           {success && (
             <p className="text-emerald-600 dark:text-emerald-400">{success}</p>

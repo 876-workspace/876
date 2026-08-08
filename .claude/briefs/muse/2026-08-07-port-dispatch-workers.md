@@ -8,10 +8,10 @@
 
 Port two background dispatch loops from FastAPI to the Express service:
 
-| Source                                       | Lines | Target                                    |
-| -------------------------------------------- | ----- | ----------------------------------------- |
-| `services/billing_customer_dispatch.py`      | 205   | `src/workers/billing-customer-dispatch.ts` |
-| `services/finance_provisioning_dispatch.py`  | 226   | `src/workers/finance-provisioning-dispatch.ts` |
+| Source                                      | Lines | Target                                         |
+| ------------------------------------------- | ----- | ---------------------------------------------- |
+| `services/billing_customer_dispatch.py`     | 205   | `src/workers/billing-customer-dispatch.ts`     |
+| `services/finance_provisioning_dispatch.py` | 226   | `src/workers/finance-provisioning-dispatch.ts` |
 
 These are **not modules** — they have no routes. Each exports a
 `dispatch<X>Once()` returning the summary shape its FastAPI counterpart
@@ -54,7 +54,7 @@ boot path — the orchestrating agent decides where they start.
 ## The parts that must be exact
 
 - **The claim query is the concurrency control.** `SELECT … FOR UPDATE SKIP
-  LOCKED`, the retryable predicate (`pending`/`failed`, plus `processing` rows
+LOCKED`, the retryable predicate (`pending`/`failed`, plus `processing` rows
   whose `locked_at` is older than the lock timeout), the `available_at <= now`
   filter, and the ordering. Getting this wrong means two workers deliver the
   same event twice, or a crashed worker's rows are stranded forever. Prisma
@@ -123,7 +123,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

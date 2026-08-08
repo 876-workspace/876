@@ -131,7 +131,7 @@ export function PromoteUserForm() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{displayName}</p>
+                  <p className="truncate text-[0.8125rem] font-medium">{displayName}</p>
                   <p className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </p>
@@ -154,7 +154,7 @@ export function PromoteUserForm() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">
+              <p className="text-[0.8125rem] font-medium">
                 {[selected.first_name, selected.last_name]
                   .filter(Boolean)
                   .join(' ') || selected.email}
@@ -196,8 +196,8 @@ export function PromoteUserForm() {
         <p
           className={
             feedback.type === 'success'
-              ? 'text-sm text-green-600 dark:text-green-400'
-              : 'text-destructive text-sm'
+              ? 'text-[0.8125rem] text-green-600 dark:text-green-400'
+              : 'text-destructive text-[0.8125rem]'
           }
         >
           {feedback.message}

@@ -97,7 +97,7 @@ function buildColumns(appSlug: string): ColumnDef<AdminFeature, unknown>[] {
       accessorKey: 'scope',
       header: 'Scope',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm capitalize">
+        <span className="text-muted-foreground text-[0.8125rem] capitalize">
           {row.original.scope}
         </span>
       ),
@@ -111,7 +111,7 @@ function buildColumns(appSlug: string): ColumnDef<AdminFeature, unknown>[] {
       accessorKey: 'updated_at',
       header: 'Updated',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}
         </span>
       ),

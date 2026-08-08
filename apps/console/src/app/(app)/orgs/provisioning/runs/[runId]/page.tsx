@@ -48,7 +48,7 @@ export default async function ProvisioningRunPage({ params }: Props) {
           <h1 className="876-page-title">{run.id}</h1>
           <RunStatus status={run.status} />
         </div>
-        <p className="text-muted-foreground mt-2 text-sm">
+        <p className="text-muted-foreground mt-2 text-[0.8125rem]">
           {organization?.name ?? run.organization_id} ·{' '}
           {app?.name ?? run.app_id}
         </p>
@@ -89,8 +89,8 @@ export default async function ProvisioningRunPage({ params }: Props) {
 
       {run.last_error ? (
         <section className="border-destructive/40 bg-destructive/5 rounded-lg border p-4">
-          <p className="text-sm font-medium">Last error</p>
-          <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
+          <p className="text-[0.8125rem] font-medium">Last error</p>
+          <p className="text-muted-foreground mt-1 text-[0.8125rem] whitespace-pre-wrap">
             {run.last_error}
           </p>
         </section>
@@ -101,7 +101,7 @@ export default async function ProvisioningRunPage({ params }: Props) {
       <section className="876-card overflow-hidden">
         <div className="border-b p-4">
           <p className="font-medium">Execution steps</p>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-[0.8125rem]">
             Steps are immutable snapshots of the published recipes used by this
             run.
           </p>
@@ -157,7 +157,7 @@ function Fact({ label, value }: { label: string; value: string }) {
       <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {label}
       </p>
-      <p className="mt-1 text-sm font-medium capitalize">{value}</p>
+      <p className="mt-1 text-[0.8125rem] font-medium capitalize">{value}</p>
     </div>
   )
 }

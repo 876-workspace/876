@@ -70,7 +70,7 @@ async function RolesTableData() {
             <TableRow>
               <TableCell
                 colSpan={4}
-                className="text-muted-foreground px-5 py-8 text-center text-sm"
+                className="text-muted-foreground px-5 py-8 text-center text-[0.8125rem]"
               >
                 No roles found.
               </TableCell>

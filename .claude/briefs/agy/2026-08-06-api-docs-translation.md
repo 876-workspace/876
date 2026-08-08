@@ -22,15 +22,15 @@ Translate each `apps/api/domains/<domain>/docs.py` into
 
 ### Transformation rules
 
-| Python | TypeScript |
-| --- | --- |
-| `FOO_SUMMARY = "text"` | `export const FOO_SUMMARY = 'text'` |
-| `FOO_DESCRIPTION = """multi\nline"""` | `export const FOO_DESCRIPTION = \`multi\nline\`` (template literal) |
+| Python                                                                           | TypeScript                                                             |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `FOO_SUMMARY = "text"`                                                           | `export const FOO_SUMMARY = 'text'`                                    |
+| `FOO_DESCRIPTION = """multi\nline"""`                                            | `export const FOO_DESCRIPTION = \`multi\nline\`` (template literal)    |
 | `FOO_RESPONSES: dict[int \| str, dict[str, Any]] = {200: {"description": "X."}}` | `export const FOO_RESPONSES = { 200: { description: 'X.' } } as const` |
-| `FOO_RESPONSES: dict = {}` | `export const FOO_RESPONSES = {} as const` |
-| `status.HTTP_200_OK` | `200` |
-| `True` / `False` / `None` | `true` / `false` / `null` |
-| `from typing import Any` (and every other import) | **delete — these files import nothing** |
+| `FOO_RESPONSES: dict = {}`                                                       | `export const FOO_RESPONSES = {} as const`                             |
+| `status.HTTP_200_OK`                                                             | `200`                                                                  |
+| `True` / `False` / `None`                                                        | `true` / `false` / `null`                                              |
+| `from typing import Any` (and every other import)                                | **delete — these files import nothing**                                |
 
 ### Hard rules
 
@@ -107,28 +107,28 @@ A second reference, already committed and hand-written:
 The module name is the domain name in kebab-case. The output directory may not
 exist yet; create it.
 
-| # | Input | Output | Constants |
-| --- | --- | --- | --- |
-| 1 | `domains/addresses/docs.py` | `src/modules/addresses/addresses.docs.ts` | 15 |
-| 2 | `domains/apps/docs.py` | `src/modules/apps/apps.docs.ts` | 42 |
-| 3 | `domains/audit_events/docs.py` | `src/modules/audit-events/audit-events.docs.ts` | 6 |
-| 4 | `domains/auth_attempts/docs.py` | `src/modules/auth-attempts/auth-attempts.docs.ts` | 9 |
-| 5 | `domains/auth/docs.py` | `src/modules/auth/auth.docs.ts` | 31 |
-| 6 | `domains/communications/docs.py` | `src/modules/communications/communications.docs.ts` | 21 |
-| 7 | `domains/devices/docs.py` | `src/modules/devices/devices.docs.ts` | 15 |
-| 8 | `domains/directory/docs.py` | `src/modules/directory/directory.docs.ts` | 154 |
-| 9 | `domains/features/docs.py` | `src/modules/features/features.docs.ts` | 40 |
-| 10 | `domains/geo/docs.py` | `src/modules/geo/geo.docs.ts` | 9 |
-| 11 | `domains/memberships/docs.py` | `src/modules/memberships/memberships.docs.ts` | 16 |
-| 12 | `domains/mobile_numbers/docs.py` | `src/modules/mobile-numbers/mobile-numbers.docs.ts` | 24 |
-| 13 | `domains/modules/docs.py` | `src/modules/modules/modules.docs.ts` | 8 |
-| 14 | `domains/oauth/docs.py` | `src/modules/oauth/oauth.docs.ts` | 17 |
-| 15 | `domains/onboarding/docs.py` | `src/modules/onboarding/onboarding.docs.ts` | 10 |
-| 16 | `domains/organizations/docs.py` | `src/modules/organizations/organizations.docs.ts` | 173 |
-| 17 | `domains/products/docs.py` | `src/modules/products/products.docs.ts` | 27 |
-| 18 | `domains/provisioning/docs.py` | `src/modules/provisioning/provisioning.docs.ts` | 12 |
-| 19 | `domains/sessions/docs.py` | `src/modules/sessions/sessions.docs.ts` | 12 |
-| 20 | `domains/users/docs.py` | `src/modules/users/users.docs.ts` | 131 |
+| #   | Input                            | Output                                              | Constants |
+| --- | -------------------------------- | --------------------------------------------------- | --------- |
+| 1   | `domains/addresses/docs.py`      | `src/modules/addresses/addresses.docs.ts`           | 15        |
+| 2   | `domains/apps/docs.py`           | `src/modules/apps/apps.docs.ts`                     | 42        |
+| 3   | `domains/audit_events/docs.py`   | `src/modules/audit-events/audit-events.docs.ts`     | 6         |
+| 4   | `domains/auth_attempts/docs.py`  | `src/modules/auth-attempts/auth-attempts.docs.ts`   | 9         |
+| 5   | `domains/auth/docs.py`           | `src/modules/auth/auth.docs.ts`                     | 31        |
+| 6   | `domains/communications/docs.py` | `src/modules/communications/communications.docs.ts` | 21        |
+| 7   | `domains/devices/docs.py`        | `src/modules/devices/devices.docs.ts`               | 15        |
+| 8   | `domains/directory/docs.py`      | `src/modules/directory/directory.docs.ts`           | 154       |
+| 9   | `domains/features/docs.py`       | `src/modules/features/features.docs.ts`             | 40        |
+| 10  | `domains/geo/docs.py`            | `src/modules/geo/geo.docs.ts`                       | 9         |
+| 11  | `domains/memberships/docs.py`    | `src/modules/memberships/memberships.docs.ts`       | 16        |
+| 12  | `domains/mobile_numbers/docs.py` | `src/modules/mobile-numbers/mobile-numbers.docs.ts` | 24        |
+| 13  | `domains/modules/docs.py`        | `src/modules/modules/modules.docs.ts`               | 8         |
+| 14  | `domains/oauth/docs.py`          | `src/modules/oauth/oauth.docs.ts`                   | 17        |
+| 15  | `domains/onboarding/docs.py`     | `src/modules/onboarding/onboarding.docs.ts`         | 10        |
+| 16  | `domains/organizations/docs.py`  | `src/modules/organizations/organizations.docs.ts`   | 173       |
+| 17  | `domains/products/docs.py`       | `src/modules/products/products.docs.ts`             | 27        |
+| 18  | `domains/provisioning/docs.py`   | `src/modules/provisioning/provisioning.docs.ts`     | 12        |
+| 19  | `domains/sessions/docs.py`       | `src/modules/sessions/sessions.docs.ts`             | 12        |
+| 20  | `domains/users/docs.py`          | `src/modules/users/users.docs.ts`                   | 131       |
 
 `domains/health/docs.py` is already done — do not touch it.
 

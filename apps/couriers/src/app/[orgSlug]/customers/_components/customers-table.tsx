@@ -74,21 +74,21 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
     header: 'Company',
     cell: ({ row }) =>
       row.original.companyName ? (
-        <span className="flex items-center gap-2.5 text-sm">
+        <span className="flex items-center gap-2.5">
           <span className="brightness-125">
             <OrgLogo name={row.original.companyName} size="sm" />
           </span>
           <span className="truncate">{row.original.companyName}</span>
         </span>
       ) : (
-        <span className="text-muted-foreground text-sm">&mdash;</span>
+        <span className="text-muted-foreground">&mdash;</span>
       ),
   },
   {
     accessorKey: 'mailboxNumber',
     header: 'Mailboxmake ',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground">
         {row.original.mailboxNumber ?? '—'}
       </span>
     ),
@@ -97,7 +97,7 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
     accessorKey: 'email',
     header: 'Email',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground">
         {row.original.email ?? '—'}
       </span>
     ),
@@ -106,7 +106,7 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
     accessorKey: 'phone',
     header: 'Phone',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground">
         {row.original.phone ?? '—'}
       </span>
     ),
@@ -120,6 +120,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
         columns={columns}
         data={customers}
         emptyState={emptyState}
+        className="text-[0.8125rem]"
         rowClassName="cursor-pointer"
       />
     </div>

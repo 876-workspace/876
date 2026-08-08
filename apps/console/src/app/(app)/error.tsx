@@ -40,7 +40,7 @@ export default function ConsoleError({
         <TriangleAlertIcon className="size-7 text-amber-600 dark:text-amber-400" />
       </div>
       <h1 className="876-page-title mb-2">Something went wrong</h1>
-      <p className="text-muted-foreground mb-8 max-w-sm text-sm">
+      <p className="text-muted-foreground mb-8 max-w-sm text-[0.8125rem]">
         We couldn&apos;t load this part of Console. This is usually a temporary
         problem reaching the platform - your access is unaffected. Try again in
         a moment.

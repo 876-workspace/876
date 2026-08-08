@@ -55,7 +55,7 @@ export function RolesTable({
           )
         }
         emptyState={
-          <div className="text-muted-foreground py-6 text-center text-sm">
+          <div className="text-muted-foreground py-6 text-center text-[0.8125rem]">
             No roles.
           </div>
         }

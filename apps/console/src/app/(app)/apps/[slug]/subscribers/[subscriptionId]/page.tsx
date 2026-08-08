@@ -63,7 +63,7 @@ export default async function SubscriptionDetailPage({ params }: Props) {
           <h1 className="text-foreground text-xl font-medium tracking-tight">
             {org?.name ?? org?.slug ?? subscription.organization_id}
           </h1>
-          <div className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
+          <div className="text-muted-foreground flex items-center gap-1.5 text-[0.8125rem] font-medium">
             <span
               className={cn(
                 'size-2 rounded-full',
@@ -133,7 +133,7 @@ export default async function SubscriptionDetailPage({ params }: Props) {
             <p className="text-muted-foreground font-medium">
               No invoices available
             </p>
-            <p className="text-muted-foreground/80 text-sm">
+            <p className="text-muted-foreground/80 text-[0.8125rem]">
               Invoices will appear here when the billing repository is
               implemented.
             </p>
@@ -149,7 +149,7 @@ export default async function SubscriptionDetailPage({ params }: Props) {
             <p className="text-muted-foreground font-medium">
               Usage tracking unavailable
             </p>
-            <p className="text-muted-foreground/80 text-sm">
+            <p className="text-muted-foreground/80 text-[0.8125rem]">
               Usage data will appear here when telemetry is wired up.
             </p>
           </div>

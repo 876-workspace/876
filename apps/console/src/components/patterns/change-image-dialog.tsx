@@ -443,7 +443,7 @@ export function ChangeImageDialog({
         </div>
 
         {error ? (
-          <p className="text-destructive text-sm" role="alert">
+          <p className="text-destructive text-[0.8125rem]" role="alert">
             {error}
           </p>
         ) : null}

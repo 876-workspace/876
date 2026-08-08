@@ -196,7 +196,7 @@ export function EditFeatureDialog({
             </Label>
           </div>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
           <DialogFooter>
             <Button
@@ -338,7 +338,7 @@ export function FeatureToolbar({
             onCheckedChange={toggleFeature}
             aria-label={`Toggle ${feature.name}`}
           />
-          <Label htmlFor="toolbar-toggle" className="mb-0 text-sm font-medium">
+          <Label htmlFor="toolbar-toggle" className="mb-0 text-[0.8125rem] font-medium">
             Enabled
           </Label>
         </div>

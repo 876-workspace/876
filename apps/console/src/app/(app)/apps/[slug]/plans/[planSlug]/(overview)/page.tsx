@@ -73,7 +73,7 @@ async function PlanDetailData({ params }: Props) {
       {/* Plan Details Card */}
       <Card className="876-card bg-[var(--876-surface)] ring-0">
         <CardHeader className="flex items-center justify-between px-5 py-4">
-          <CardTitle className="text-foreground text-sm font-semibold">
+          <CardTitle className="text-foreground text-[0.8125rem] font-semibold">
             Plan details
           </CardTitle>
           <CardAction>
@@ -130,7 +130,7 @@ async function PlanDetailData({ params }: Props) {
       {/* Metadata Card */}
       <Card className="876-card bg-[var(--876-surface)] ring-0">
         <CardHeader className="flex items-center justify-between px-5 py-4">
-          <CardTitle className="text-foreground text-sm font-semibold">
+          <CardTitle className="text-foreground text-[0.8125rem] font-semibold">
             Metadata
           </CardTitle>
           <CardAction>
@@ -151,7 +151,7 @@ async function PlanDetailData({ params }: Props) {
               <span className="text-foreground mb-1 text-base font-semibold">
                 No metadata
               </span>
-              <p className="text-muted-foreground mb-3 max-w-[360px] text-sm leading-relaxed">
+              <p className="text-muted-foreground mb-3 max-w-[360px] text-[0.8125rem] leading-relaxed">
                 Add metadata to store internal references or integration values.
               </p>
               <Button

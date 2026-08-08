@@ -34,7 +34,7 @@ export function AddressesListView({ addresses, actions, emptyState }: Props) {
             </div>
 
             <div className="flex w-32 min-w-0 flex-1 shrink-0 items-baseline gap-2 md:w-auto">
-              <span className="truncate text-sm font-medium">
+              <span className="truncate text-[0.8125rem] font-medium">
                 {formatAddressType(address.type)}
               </span>
               {address.label && (

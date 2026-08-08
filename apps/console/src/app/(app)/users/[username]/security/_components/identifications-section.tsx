@@ -19,13 +19,13 @@ function formatWhen(seconds: number) {
 export function IdentificationsSection({ identifications }: Props) {
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
         <Fingerprint className="text-muted-foreground size-4" />
         Identifications
       </h2>
 
       {identifications.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           No identifications recorded.
         </p>
       ) : (

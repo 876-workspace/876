@@ -367,7 +367,7 @@ export function DangerSection({ app }: { app: AdminApp }) {
         <h2 className="876-section-title text-destructive mb-4">Danger zone</h2>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-medium">Delete this app</p>
+            <p className="text-[0.8125rem] font-medium">Delete this app</p>
             <p className="text-muted-foreground text-[0.8125rem]">
               Permanently removes the app, its API keys, and configuration.
             </p>
@@ -421,7 +421,7 @@ export function DangerSection({ app }: { app: AdminApp }) {
             />
           </div>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>

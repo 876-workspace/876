@@ -27,7 +27,7 @@ export default async function EditOrgPage({ params }: Props) {
         className="mb-4 -ml-2.5"
       />
       <h1 className="876-page-title">Edit {org.name ?? org.slug}</h1>
-      <p className="text-muted-foreground mt-1 mb-6 text-sm">
+      <p className="text-muted-foreground mt-1 mb-6 text-[0.8125rem]">
         Update the organization&apos;s identity, contact info, and address.
       </p>
       <EditOrgForm org={org} />

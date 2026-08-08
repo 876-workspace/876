@@ -96,7 +96,7 @@ export function InviteMemberDialog({ orgId }: Props) {
           <div className="space-y-4">
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="invite_email"
               >
                 Email
@@ -112,7 +112,7 @@ export function InviteMemberDialog({ orgId }: Props) {
             </div>
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="invite_role"
               >
                 Role
@@ -121,7 +121,7 @@ export function InviteMemberDialog({ orgId }: Props) {
                 id="invite_role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="border-input bg-background text-foreground focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                className="border-input bg-background text-foreground focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-[0.8125rem] focus-visible:ring-2 focus-visible:outline-none"
               >
                 {ROLES.map((r) => (
                   <option key={r.value} value={r.value}>
@@ -130,7 +130,7 @@ export function InviteMemberDialog({ orgId }: Props) {
                 ))}
               </select>
             </div>
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => handleOpen(false)}>
                 Cancel
@@ -142,7 +142,7 @@ export function InviteMemberDialog({ orgId }: Props) {
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm">
+            <p className="text-[0.8125rem]">
               Invite created for{' '}
               <span className="font-medium">{created.email}</span>. Share the
               link below — it expires in 7 days.

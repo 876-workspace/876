@@ -195,7 +195,7 @@ async function AppPerformance({ appId }: { appId: string }) {
         </div>
         <aside aria-label="Additional info" className="lg:col-span-1">
           <div className="876-card flex h-64 items-center justify-center">
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-[0.8125rem]">
               More insights coming soon
             </span>
           </div>

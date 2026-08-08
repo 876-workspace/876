@@ -59,7 +59,7 @@ export function AddressEdit({ user, address }: Props) {
     <section className="876-card max-w-4xl">
       <div className="border-b px-5 py-4">
         <h2 className="text-lg font-medium">Edit address</h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           Update the details of this saved address.
         </p>
       </div>

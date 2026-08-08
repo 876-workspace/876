@@ -213,7 +213,7 @@ export function PricingTable({ prices, productId }: Props) {
           }
           return (
             <div className="flex flex-col gap-1">
-              <span className="text-foreground flex items-center gap-1.5 text-sm font-medium">
+              <span className="text-foreground flex items-center gap-1.5 text-[0.8125rem] font-medium">
                 {price.name || price.nickname || (
                   <span className="text-muted-foreground">—</span>
                 )}
@@ -229,7 +229,7 @@ export function PricingTable({ prices, productId }: Props) {
         cell: ({ row }) => {
           const price = row.original
           return (
-            <span className="text-foreground font-mono text-sm tabular-nums">
+            <span className="text-foreground font-mono text-[0.8125rem] tabular-nums">
               {formatMoney(price.unit_amount, price.currency)}
             </span>
           )
@@ -241,7 +241,7 @@ export function PricingTable({ prices, productId }: Props) {
         cell: ({ row }) => {
           const price = row.original
           return (
-            <span className="text-foreground text-sm capitalize">
+            <span className="text-foreground text-[0.8125rem] capitalize">
               {price.billing_interval || 'One-time'}
             </span>
           )
@@ -335,7 +335,7 @@ export function PricingTable({ prices, productId }: Props) {
                   <EmptyTitle className="text-foreground text-base font-semibold">
                     No prices configured
                   </EmptyTitle>
-                  <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-sm leading-relaxed">
+                  <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
                     Configure prices in Stripe or add one here to get started.
                   </EmptyDescription>
                 </EmptyHeader>
@@ -407,7 +407,7 @@ export function PricingTable({ prices, productId }: Props) {
                 <NativeSelectOption value="year">Yearly</NativeSelectOption>
               </NativeSelect>
             </div>
-            {addError && <p className="text-destructive text-sm">{addError}</p>}
+            {addError && <p className="text-destructive text-[0.8125rem]">{addError}</p>}
           </div>
 
           <DialogFooter>
@@ -441,7 +441,7 @@ export function PricingTable({ prices, productId }: Props) {
             </DialogDescription>
           </DialogHeader>
           {archiveError && (
-            <p className="text-destructive text-sm">{archiveError}</p>
+            <p className="text-destructive text-[0.8125rem]">{archiveError}</p>
           )}
           <DialogFooter>
             <Button

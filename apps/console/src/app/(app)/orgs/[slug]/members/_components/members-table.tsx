@@ -97,7 +97,7 @@ const memberColumns: ColumnDef<MemberRow, unknown>[] = [
     id: 'joined',
     header: 'Joined',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground text-[0.8125rem]">
         {formatDate(row.original.membership.created_at)}
       </span>
     ),
@@ -144,7 +144,7 @@ const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
     id: 'expires',
     header: 'Expires',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground text-[0.8125rem]">
         {formatDate(row.original.expires_at)}
       </span>
     ),

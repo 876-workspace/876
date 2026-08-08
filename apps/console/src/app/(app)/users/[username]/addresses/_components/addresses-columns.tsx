@@ -27,7 +27,7 @@ export function createAddressColumns(
 
         return (
           <div className="min-w-0">
-            <p className="text-sm font-medium">
+            <p className="text-[0.8125rem] font-medium">
               {formatAddressType(address.type)}
             </p>
             <p className="text-muted-foreground mt-1 truncate text-xs">
@@ -46,7 +46,7 @@ export function createAddressColumns(
 
         return (
           <div className="max-w-[24rem] min-w-0">
-            <p className="truncate text-sm">{address.line1 || '—'}</p>
+            <p className="truncate text-[0.8125rem]">{address.line1 || '—'}</p>
             <p className="text-muted-foreground mt-1 truncate text-xs">
               {addressSummary(address)}
             </p>
@@ -67,7 +67,7 @@ export function createAddressColumns(
             className="size-4 fill-current text-amber-500"
           />
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <span className="text-muted-foreground text-[0.8125rem]">—</span>
         )
       },
     },
@@ -76,7 +76,7 @@ export function createAddressColumns(
       accessorFn: (address) => address.created_at,
       header: () => <span className="block w-[9rem]">Created</span>,
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
         </span>
       ),

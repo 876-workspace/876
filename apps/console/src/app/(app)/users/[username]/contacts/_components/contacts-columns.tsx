@@ -39,7 +39,7 @@ export function createContactColumns(
               <AvatarFallback>{contactInitials(contact)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{contactName}</p>
+              <p className="truncate text-[0.8125rem] font-medium">{contactName}</p>
               <p className="text-muted-foreground truncate text-xs">
                 {contact.contact_user.email}
               </p>
@@ -52,7 +52,7 @@ export function createContactColumns(
       accessorKey: 'nickname',
       header: 'Nickname',
       cell: ({ row }) => (
-        <span className="text-sm">{row.original.nickname || '—'}</span>
+        <span className="text-[0.8125rem]">{row.original.nickname || '—'}</span>
       ),
     },
     {
@@ -60,7 +60,7 @@ export function createContactColumns(
       header: 'Notes',
       cell: ({ row }) => (
         <div className="max-w-[24rem] whitespace-normal">
-          <p className="text-muted-foreground line-clamp-2 text-sm">
+          <p className="text-muted-foreground line-clamp-2 text-[0.8125rem]">
             {row.original.notes || '—'}
           </p>
         </div>
@@ -70,7 +70,7 @@ export function createContactColumns(
       accessorKey: 'created_at',
       header: 'Added',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
         </span>
       ),

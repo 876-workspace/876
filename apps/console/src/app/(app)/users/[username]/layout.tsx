@@ -138,7 +138,7 @@ async function CondensedTitle({ username }: { username: string }) {
           <AvatarFallback>{initialsOf(user)}</AvatarFallback>
         </Avatar>
       </ChangeImageDialog>
-      <span className="truncate text-sm font-semibold">{displayName}</span>
+      <span className="truncate text-[0.8125rem] font-semibold">{displayName}</span>
     </>
   )
 }
@@ -207,7 +207,7 @@ async function Identity({ username }: { username: string }) {
           )}
         </div>
 
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4 sm:text-sm">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4 sm:text-[0.8125rem]">
           {user.username && <span className="truncate">@{user.username}</span>}
           {user.company && (
             <span className="flex min-w-0 items-center gap-1.5">

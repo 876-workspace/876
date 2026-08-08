@@ -42,7 +42,7 @@ export default async function DevicePage({ params }: Props) {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="876-page-title">{name || device.device_type}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-[0.8125rem]">
             {[device.os_name, device.browser_name]
               .filter(Boolean)
               .join(' · ') || 'Unknown platform'}
@@ -56,7 +56,7 @@ export default async function DevicePage({ params }: Props) {
       </div>
 
       <div className="876-card mb-6 p-5">
-        <h2 className="mb-4 text-sm font-semibold">Signal</h2>
+        <h2 className="mb-4 text-[0.8125rem] font-semibold">Signal</h2>
         <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
           <Field label="Fingerprint" value={device.fingerprint} mono />
           <Field label="Confidence" value={device.confidence} />
@@ -103,7 +103,7 @@ function Field({
   return (
     <div>
       <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className={`text-sm ${mono ? 'font-mono break-all' : ''}`}>
+      <dd className={`text-[0.8125rem] ${mono ? 'font-mono break-all' : ''}`}>
         {value}
       </dd>
     </div>
@@ -121,9 +121,9 @@ async function AccountsOnDevice({ deviceId }: { deviceId: string }) {
 
   return (
     <div className="876-card mb-6 p-5">
-      <h2 className="mb-4 text-sm font-semibold">Accounts on this device</h2>
+      <h2 className="mb-4 text-[0.8125rem] font-semibold">Accounts on this device</h2>
       {rows.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No accounts recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">No accounts recorded.</p>
       ) : (
         <>
           {rows.length > 2 && (
@@ -178,9 +178,9 @@ async function RecentAttempts({ deviceId }: { deviceId: string }) {
 
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 text-sm font-semibold">Recent attempts</h2>
+      <h2 className="mb-4 text-[0.8125rem] font-semibold">Recent attempts</h2>
       {rows.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No attempts recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">No attempts recorded.</p>
       ) : (
         <div className="overflow-x-auto">
           <Table>

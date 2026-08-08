@@ -30,13 +30,13 @@ function formatWhen(seconds: number) {
 export function DevicesSection({ devices }: Props) {
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
         <Monitor className="text-muted-foreground size-4" />
         Devices
       </h2>
 
       {devices.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No devices recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">No devices recorded.</p>
       ) : (
         <div className="overflow-x-auto">
           <Table>

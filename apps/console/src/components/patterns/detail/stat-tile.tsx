@@ -23,7 +23,7 @@ export function StatTile({
         <p className="text-muted-foreground text-[0.6875rem] tracking-wide uppercase">
           {label}
         </p>
-        <div className="truncate text-sm font-medium">{value}</div>
+        <div className="truncate text-[0.8125rem] font-medium">{value}</div>
       </div>
     </div>
   )

@@ -79,7 +79,7 @@ export function FeatureGroupsPanel({ appSlug, groups, features }: Props) {
                 <h2 className="truncate text-base font-semibold">
                   {group.title}
                 </h2>
-                <p className="text-muted-foreground mt-1 truncate text-sm">
+                <p className="text-muted-foreground mt-1 truncate text-[0.8125rem]">
                   {children.length} feature flags
                 </p>
               </div>
@@ -113,7 +113,7 @@ export function FeatureGroupsPanel({ appSlug, groups, features }: Props) {
                   className="grid gap-3 px-5 py-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{label}</p>
+                    <p className="truncate text-[0.8125rem] font-medium">{label}</p>
                     <p className="text-muted-foreground truncate font-mono text-xs">
                       {slug}
                     </p>

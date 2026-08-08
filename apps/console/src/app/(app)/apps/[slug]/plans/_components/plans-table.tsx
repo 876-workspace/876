@@ -49,7 +49,7 @@ function buildColumns(): ColumnDef<AdminProduct, unknown>[] {
       id: 'price',
       header: 'Price',
       cell: ({ row }) => (
-        <span className="text-sm">{formatPrice(row.original)}</span>
+        <span className="text-[0.8125rem]">{formatPrice(row.original)}</span>
       ),
     },
     {
@@ -70,7 +70,7 @@ function buildColumns(): ColumnDef<AdminProduct, unknown>[] {
       accessorKey: 'updated_at',
       header: 'Updated',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}
         </span>
       ),
@@ -129,7 +129,7 @@ export function PlansTable({ data, appSlug }: Props) {
                 <EmptyTitle className="text-foreground text-base font-semibold">
                   {query.trim() ? 'No matching plans' : 'No plans'}
                 </EmptyTitle>
-                <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-sm leading-relaxed">
+                <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
                   {query.trim()
                     ? 'No plans match the current search.'
                     : 'Plans for this application will appear here once created.'}

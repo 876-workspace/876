@@ -30,7 +30,7 @@ misread the task.
 
 ## Read these first
 
-- `apps/api/core/risk.py` — the source of truth. Port every comment's *intent*;
+- `apps/api/core/risk.py` — the source of truth. Port every comment's _intent_;
   the docstrings explain decisions worth keeping.
 - `apps/api/src/platform/user-agent.ts` — the worked example of a ported pure
   platform module in this codebase. Match its style: file-level JSDoc, named
@@ -38,16 +38,16 @@ misread the task.
 
 ## Translation rules
 
-| Python                          | TypeScript                                      |
-| ------------------------------- | ----------------------------------------------- |
-| `@dataclass(frozen=True)`       | `interface` with `readonly` fields              |
-| dataclass field defaults        | an exported `DEFAULT_RISK_INPUT` const, spread  |
-| `snake_case` fields             | `camelCase` fields                              |
-| `math.inf`                      | `Number.POSITIVE_INFINITY`                      |
-| `math.radians(x)`               | `(x * Math.PI) / 180`                           |
-| `float \| None`                 | `number \| null`                                |
-| `int \| None`                   | `number \| null`                                |
-| `list[str]`                     | `string[]`                                      |
+| Python                    | TypeScript                                     |
+| ------------------------- | ---------------------------------------------- |
+| `@dataclass(frozen=True)` | `interface` with `readonly` fields             |
+| dataclass field defaults  | an exported `DEFAULT_RISK_INPUT` const, spread |
+| `snake_case` fields       | `camelCase` fields                             |
+| `math.inf`                | `Number.POSITIVE_INFINITY`                     |
+| `math.radians(x)`         | `(x * Math.PI) / 180`                          |
+| `float \| None`           | `number \| null`                               |
+| `int \| None`             | `number \| null`                               |
+| `list[str]`               | `string[]`                                     |
 
 **The reason strings are a contract** — they are written to `auth_attempts` and
 rendered in Console. Reproduce them character for character, in this exact
@@ -72,20 +72,20 @@ any row, your port is wrong.
 
 ### `assessRisk`
 
-| Input                                                             | score | reasons                          |
-| ----------------------------------------------------------------- | ----- | -------------------------------- |
-| all defaults                                                      | 0     | `[]`                             |
-| `isNewDevice: true`                                               | 15    | `['new_device']`                 |
-| `isNewDevice: true, isNewCountryForUser: true`                    | 35    | `['new_device','new_country']`   |
-| `isBot: true`                                                     | 30    | `['bot_user_agent']`             |
-| `contextTrusted: false`                                           | 10    | `['untrusted_context']`          |
-| `recentFailuresForIdentifier: 3`                                  | 20    | `['identifier_failure_burst']`   |
-| `recentFailuresForIdentifier: 2`                                  | 0     | `[]`                             |
-| `recentFailuresForIp: 10`                                         | 25    | `['ip_failure_burst']`           |
-| `distinctUsersOnDevice: 3`                                        | 25    | `['shared_device']`              |
-| `kmFromLastAttempt: 5000, minutesSinceLastAttemptElsewhere: 60`   | 35    | `['impossible_travel']`          |
-| `kmFromLastAttempt: 5000, minutesSinceLastAttemptElsewhere: 0`    | 35    | `['impossible_travel']`          |
-| `kmFromLastAttempt: 100, minutesSinceLastAttemptElsewhere: 60`    | 0     | `[]`                             |
+| Input                                                           | score | reasons                        |
+| --------------------------------------------------------------- | ----- | ------------------------------ |
+| all defaults                                                    | 0     | `[]`                           |
+| `isNewDevice: true`                                             | 15    | `['new_device']`               |
+| `isNewDevice: true, isNewCountryForUser: true`                  | 35    | `['new_device','new_country']` |
+| `isBot: true`                                                   | 30    | `['bot_user_agent']`           |
+| `contextTrusted: false`                                         | 10    | `['untrusted_context']`        |
+| `recentFailuresForIdentifier: 3`                                | 20    | `['identifier_failure_burst']` |
+| `recentFailuresForIdentifier: 2`                                | 0     | `[]`                           |
+| `recentFailuresForIp: 10`                                       | 25    | `['ip_failure_burst']`         |
+| `distinctUsersOnDevice: 3`                                      | 25    | `['shared_device']`            |
+| `kmFromLastAttempt: 5000, minutesSinceLastAttemptElsewhere: 60` | 35    | `['impossible_travel']`        |
+| `kmFromLastAttempt: 5000, minutesSinceLastAttemptElsewhere: 0`  | 35    | `['impossible_travel']`        |
+| `kmFromLastAttempt: 100, minutesSinceLastAttemptElsewhere: 60`  | 0     | `[]`                           |
 
 Every signal at once (`isNewDevice`, `isNewCountryForUser`, `isBot` true,
 `contextTrusted` false, `recentFailuresForIdentifier: 99`,

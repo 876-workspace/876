@@ -64,7 +64,7 @@ const columns: ColumnDef<ItemTableRow, unknown>[] = [
     accessorKey: 'sku',
     header: 'SKU',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground text-[0.8125rem]">
         {row.original.sku ?? '—'}
       </span>
     ),
@@ -73,14 +73,14 @@ const columns: ColumnDef<ItemTableRow, unknown>[] = [
     id: 'price',
     header: 'Price',
     cell: ({ row }) => (
-      <span className="text-sm tabular-nums">{row.original.priceLabel}</span>
+      <span className="text-[0.8125rem] tabular-nums">{row.original.priceLabel}</span>
     ),
   },
   {
     accessorKey: 'description',
     header: 'Description',
     cell: ({ row }) => (
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground text-[0.8125rem]">
         {row.original.description ?? '—'}
       </span>
     ),

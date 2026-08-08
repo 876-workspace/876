@@ -67,7 +67,7 @@ export default function NotificationsSettingsPage() {
                   key={channel.name}
                   className="876-card px-4 py-3 opacity-60"
                 >
-                  <p className="text-sm font-medium">{channel.name}</p>
+                  <p className="text-[0.8125rem] font-medium">{channel.name}</p>
                   <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
                     {channel.description}
                   </p>

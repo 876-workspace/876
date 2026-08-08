@@ -42,7 +42,7 @@ function FormCard({
 }) {
   return (
     <section className="876-card p-5">
-      <h2 className="text-foreground mb-4 flex items-center gap-2 text-sm font-medium">
+      <h2 className="text-foreground mb-4 flex items-center gap-2 text-[0.8125rem] font-medium">
         <span className="bg-876-accent-surface text-876-accent-fg flex size-6 shrink-0 items-center justify-center rounded-md">
           <Icon aria-hidden="true" className="size-3.5" />
         </span>
@@ -299,7 +299,7 @@ export function CreateAppForm() {
         )}
       </form.Field>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       <div className="flex justify-end">
         <form.Subscribe

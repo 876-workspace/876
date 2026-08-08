@@ -200,7 +200,7 @@ export function ContactsManager({ user, contacts, view }: Props) {
         </div>
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       {view === 'grid' ? (
         <ContactsGridView {...viewProps} />

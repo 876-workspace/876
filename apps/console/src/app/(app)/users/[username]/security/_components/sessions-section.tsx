@@ -72,7 +72,7 @@ export function SessionsSection({ userId, sessions }: Props) {
   return (
     <div className="876-card p-5">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="flex items-center gap-2 text-sm font-semibold">
+        <h2 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
           <LogOut className="text-muted-foreground size-4" />
           Sessions
         </h2>
@@ -89,7 +89,7 @@ export function SessionsSection({ userId, sessions }: Props) {
       </div>
 
       {sessions.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No sessions recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">No sessions recorded.</p>
       ) : (
         <div className="overflow-x-auto">
           <Table>
@@ -146,7 +146,7 @@ export function SessionsSection({ userId, sessions }: Props) {
         </div>
       )}
 
-      {error && <p className="text-destructive mt-4 text-sm">{error}</p>}
+      {error && <p className="text-destructive mt-4 text-[0.8125rem]">{error}</p>}
     </div>
   )
 }

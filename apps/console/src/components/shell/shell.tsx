@@ -77,7 +77,7 @@ export async function Shell({
               aria-label="Console home"
               className="border-sidebar-border focus-visible:ring-sidebar-ring flex size-9 shrink-0 items-center justify-center rounded-lg border transition-colors hover:bg-[#f1f3f4] focus-visible:ring-2 focus-visible:outline-hidden dark:hover:bg-white/8"
             >
-              <Logo className="text-sm leading-none text-[#202124] dark:text-white" />
+              <Logo className="text-[0.8125rem] leading-none text-[#202124] dark:text-white" />
             </Link>
           </div>
           <SidebarTrigger className="hidden md:flex" />

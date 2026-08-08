@@ -171,7 +171,7 @@ function buildColumns(
       accessorKey: 'updated_at',
       header: 'Updated',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}
         </span>
       ),
@@ -223,7 +223,7 @@ export function SubscribersTable({ data, orgMap, prices, appSlug }: Props) {
                 <EmptyTitle className="text-foreground text-base font-semibold">
                   {query.trim() ? 'No matching subscribers' : 'No subscribers'}
                 </EmptyTitle>
-                <EmptyDescription className="text-muted-foreground/90 max-w-[380px] text-sm leading-relaxed">
+                <EmptyDescription className="text-muted-foreground/90 max-w-[380px] text-[0.8125rem] leading-relaxed">
                   {query.trim()
                     ? 'No subscribers match the current search.'
                     : 'Subscribers for this application will appear here once organizations subscribe.'}

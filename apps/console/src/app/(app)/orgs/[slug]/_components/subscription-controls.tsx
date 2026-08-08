@@ -96,7 +96,7 @@ function AppRow({
   return (
     <li className="flex items-center justify-between gap-4 py-3">
       <div className="min-w-0">
-        <p className="text-sm font-medium">{app.label}</p>
+        <p className="text-[0.8125rem] font-medium">{app.label}</p>
         <p className="text-muted-foreground text-xs">
           <span className="capitalize">
             {effectiveStatus ?? 'not provisioned'}

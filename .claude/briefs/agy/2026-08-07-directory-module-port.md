@@ -26,12 +26,12 @@
 
 ## The source you are porting
 
-| File | Lines | What it holds |
-| --- | --- | --- |
-| `apps/api/domains/directory/router.py` | 1,678 | 50 routes |
-| `apps/api/domains/directory/schemas/` | 573 | Pydantic contracts, split into 4 files |
-| `apps/api/db/repositories/directory.py` | 1,184 | 53 async repository methods |
-| `apps/api/db/models/directory.py` | 298 | SQLAlchemy models |
+| File                                    | Lines | What it holds                          |
+| --------------------------------------- | ----- | -------------------------------------- |
+| `apps/api/domains/directory/router.py`  | 1,678 | 50 routes                              |
+| `apps/api/domains/directory/schemas/`   | 573   | Pydantic contracts, split into 4 files |
+| `apps/api/db/repositories/directory.py` | 1,184 | 53 async repository methods            |
+| `apps/api/db/models/directory.py`       | 298   | SQLAlchemy models                      |
 
 **`apps/api/src/modules/directory/directory.docs.ts` already exists** (all the
 OpenAPI prose, already translated and committed). **Import from it. Do not
@@ -43,18 +43,18 @@ Ten resources, each with the same five verbs — list, retrieve, create, update,
 delete. That regularity is the whole reason this is one brief instead of ten:
 get the first resource exactly right, then repeat.
 
-| Resource | Path | Prisma model |
-| --- | --- | --- |
-| Banks | `/directory/banks` | `Bank` |
-| Bank branches | `/directory/bank-branches` | `BankBranch` |
-| Bank accounts | `/directory/bank-accounts` | `BankAccount` |
-| Credit unions | `/directory/credit-unions` | `CreditUnion` |
-| Credit union branches | `/directory/credit-union-branches` | `CreditUnionBranch` |
-| Ministries | `/directory/ministries` | `Ministry` |
-| Ministry departments | `/directory/ministry-departments` | `MinistryDepartment` |
-| Schools | `/directory/schools` | `SecondarySchool` |
-| Universities | `/directory/universities` | `University` |
-| University campuses | `/directory/university-campuses` | `UniversityCampus` |
+| Resource              | Path                               | Prisma model         |
+| --------------------- | ---------------------------------- | -------------------- |
+| Banks                 | `/directory/banks`                 | `Bank`               |
+| Bank branches         | `/directory/bank-branches`         | `BankBranch`         |
+| Bank accounts         | `/directory/bank-accounts`         | `BankAccount`        |
+| Credit unions         | `/directory/credit-unions`         | `CreditUnion`        |
+| Credit union branches | `/directory/credit-union-branches` | `CreditUnionBranch`  |
+| Ministries            | `/directory/ministries`            | `Ministry`           |
+| Ministry departments  | `/directory/ministry-departments`  | `MinistryDepartment` |
+| Schools               | `/directory/schools`               | `SecondarySchool`    |
+| Universities          | `/directory/universities`          | `University`         |
+| University campuses   | `/directory/university-campuses`   | `UniversityCampus`   |
 
 The Prisma models are already generated — read them under
 `apps/api/prisma/schema/` (`bank.prisma`, `bank-branch.prisma`, and so on). Do
@@ -144,7 +144,7 @@ soft-deleted row still reserves its code.
   (`object: 'bank'`, `object: 'bank_branch'`, …). Match the exact values the
   Python serializers stamp — grep `"object":` and `object=` in the Python.
 - Lists return the platform list object: `{ object: 'list', data, has_more, url,
-  total_count }`, with `url` set to that resource's own path exactly as the
+total_count }`, with `url` set to that resource's own path exactly as the
   Python sets it (e.g. `/directory/banks`).
 - Cursor pagination via `starting_after` / `ending_before` on item IDs; reuse
   `paginationQuerySchema`. A stale or unknown cursor returns an **empty page**,

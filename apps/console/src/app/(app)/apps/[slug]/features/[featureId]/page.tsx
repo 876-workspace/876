@@ -61,7 +61,7 @@ export default async function AppFeatureDetailPage({ params }: Props) {
         <section className="border-876-surface-border border-y py-5">
           <div className="min-w-0">
             <h3 className="text-base font-semibold">Flag overview</h3>
-            <p className="text-muted-foreground mt-1 max-w-3xl text-sm leading-6">
+            <p className="text-muted-foreground mt-1 max-w-3xl text-[0.8125rem] leading-6">
               {feature.description ||
                 'No description has been added for this feature.'}
             </p>

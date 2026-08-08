@@ -23,7 +23,7 @@ export function ThemeSwitcher() {
     <div className="flex items-center gap-2">
       <label
         htmlFor="theme-switcher"
-        className="text-muted-foreground text-sm font-medium"
+        className="text-muted-foreground text-[0.8125rem] font-medium"
       >
         Theme:
       </label>
@@ -31,7 +31,7 @@ export function ThemeSwitcher() {
         id="theme-switcher"
         value={theme}
         onChange={handleChange}
-        className="border-input bg-background text-foreground focus-visible:ring-ring h-8 rounded-md border px-2 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+        className="border-input bg-background text-foreground focus-visible:ring-ring h-8 rounded-md border px-2 py-1 text-[0.8125rem] shadow-sm focus-visible:ring-1 focus-visible:outline-none"
       >
         <option value="mist">Mist</option>
       </select>

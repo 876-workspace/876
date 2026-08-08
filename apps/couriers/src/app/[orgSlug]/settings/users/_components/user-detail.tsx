@@ -106,7 +106,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
               {isActive ? 'Active' : 'Inactive'}
             </Badge>
           </div>
-          <p className="text-muted-foreground mt-0.5 truncate text-sm">
+          <p className="text-muted-foreground mt-0.5 truncate text-[0.8125rem]">
             {row.email ?? 'No email available'}
           </p>
         </div>
@@ -151,7 +151,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
 
           <div className="space-y-4">
             <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
-              <span className="text-muted-foreground text-sm">Role</span>
+              <span className="text-muted-foreground text-[0.8125rem]">Role</span>
               <Select
                 value={row.roleId}
                 disabled={isPending}
@@ -172,7 +172,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
             </div>
 
             <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
-              <span className="text-muted-foreground text-sm">Status</span>
+              <span className="text-muted-foreground text-[0.8125rem]">Status</span>
               <Button
                 type="button"
                 variant="outline"
@@ -251,7 +251,7 @@ function ActivityEmpty() {
       <span className="text-muted-foreground bg-muted/40 mb-3 flex size-10 items-center justify-center rounded-xl border">
         <Activity aria-hidden="true" className="size-5" />
       </span>
-      <p className="text-sm font-medium">No activity</p>
+      <p className="text-[0.8125rem] font-medium">No activity</p>
     </div>
   )
 }

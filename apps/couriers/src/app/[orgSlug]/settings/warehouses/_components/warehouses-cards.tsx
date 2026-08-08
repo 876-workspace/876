@@ -45,7 +45,7 @@ export function WarehousesCards({ warehouses, orgSlug, emptyState }: Props) {
             </div>
           ) : null}
 
-          <div className="text-muted-foreground space-y-1 text-sm">
+          <div className="text-muted-foreground space-y-1 text-[0.8125rem]">
             <p>{formatAddressLine(warehouse.address)}</p>
             <p>{warehouse.address.countryCode}</p>
           </div>

@@ -80,7 +80,7 @@ export function TeamTableRow({
           <p className="text-muted-foreground text-xs">@{user.username}</p>
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground px-5 py-4 text-sm">
+      <TableCell className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
         {user.email}
       </TableCell>
       <TableCell className="px-5 py-4">

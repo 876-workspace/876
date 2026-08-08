@@ -82,7 +82,7 @@ export function MobileNav() {
         <SheetHeader className="border-876-surface-border border-b px-4 py-4 pr-14">
           <div className="flex items-center gap-3">
             <span className="border-876-surface-border bg-876-canvas flex size-9 shrink-0 items-center justify-center rounded-xl border">
-              <Logo className="text-sm leading-none text-[#202124] dark:text-white" />
+              <Logo className="text-[0.8125rem] leading-none text-[#202124] dark:text-white" />
             </span>
             <SheetTitle className="text-base leading-6 text-[#202124] dark:text-white">
               Console

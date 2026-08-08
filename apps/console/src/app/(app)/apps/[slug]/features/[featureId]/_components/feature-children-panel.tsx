@@ -58,7 +58,7 @@ export function FeatureChildrenPanel({
     <div className="space-y-4">
       <section className="876-card overflow-hidden">
         {childFeatures.length === 0 ? (
-          <p className="text-muted-foreground px-5 py-4 text-sm">
+          <p className="text-muted-foreground px-5 py-4 text-[0.8125rem]">
             No child features have been created yet.
           </p>
         ) : (
@@ -71,7 +71,7 @@ export function FeatureChildrenPanel({
                 <div className="min-w-0">
                   <Link
                     href={`/apps/${appSlug}/features/${childFeature.id}`}
-                    className="hover:text-primary block truncate text-sm font-medium"
+                    className="hover:text-primary block truncate text-[0.8125rem] font-medium"
                   >
                     {childFeature.name}
                   </Link>

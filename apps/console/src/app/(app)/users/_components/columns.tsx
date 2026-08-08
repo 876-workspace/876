@@ -120,7 +120,7 @@ export function makeUserColumns(
       accessorKey: 'email',
       header: 'Email',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.email}
         </span>
       ),
@@ -130,7 +130,7 @@ export function makeUserColumns(
       header: 'Company',
       cell: ({ row }) =>
         row.original.company ? (
-          <span className="flex items-center gap-2.5 text-sm">
+          <span className="flex items-center gap-2.5 text-[0.8125rem]">
             <OrgLogo
               name={row.original.company}
               src={row.original.company_logo}
@@ -139,7 +139,7 @@ export function makeUserColumns(
             <span className="truncate">{row.original.company}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <span className="text-muted-foreground text-[0.8125rem]">—</span>
         ),
     },
     {
@@ -149,7 +149,7 @@ export function makeUserColumns(
       cell: ({ row }) => {
         const apps = enrollmentsMap[row.original.id] ?? []
         if (apps.length === 0)
-          return <span className="text-muted-foreground text-sm">—</span>
+          return <span className="text-muted-foreground text-[0.8125rem]">—</span>
         return (
           <div className="flex items-center gap-1">
             {apps.slice(0, 3).map((app) => (
@@ -168,7 +168,7 @@ export function makeUserColumns(
       accessorKey: 'created_at',
       header: 'Joined',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
         </span>
       ),

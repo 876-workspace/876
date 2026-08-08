@@ -30,7 +30,7 @@ async function PackagesData() {
       {packages.length > 0 ? (
         <PackageList packages={packages} />
       ) : (
-        <div className="text-muted-foreground rounded-xl border border-dashed px-5 py-12 text-center text-sm font-medium">
+        <div className="text-muted-foreground rounded-xl border border-dashed px-5 py-12 text-center text-[0.8125rem] font-medium">
           No packages yet
         </div>
       )}

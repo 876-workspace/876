@@ -31,7 +31,7 @@ export function ShippingAddressPreview({ warehouse }: Props) {
       </p>
       <address
         aria-label="Sample customer address"
-        className="bg-muted/40 rounded-md px-3 py-2 font-mono text-sm leading-6 not-italic"
+        className="bg-muted/40 rounded-md px-3 py-2 font-mono text-[0.8125rem] leading-6 not-italic"
       >
         <span className="block">{lines.recipient}</span>
         {lines.line1 ? <span className="block">{lines.line1}</span> : null}

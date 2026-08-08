@@ -227,7 +227,7 @@ export function ModulesManager({
           </Button>
         </div>
       )}
-      <p className="text-muted-foreground text-sm" role="status">
+      <p className="text-muted-foreground text-[0.8125rem]" role="status">
         {message}
       </p>
     </div>

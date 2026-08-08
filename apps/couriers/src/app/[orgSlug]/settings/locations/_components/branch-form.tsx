@@ -148,11 +148,11 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
 
         <FormRow label="Default">
           {isFirstBranch ? (
-            <p className="text-muted-foreground pt-2 text-sm">
+            <p className="text-muted-foreground pt-2 text-[0.8125rem]">
               Your first branch is the default customers and packages route to.
             </p>
           ) : branch?.isDefault ? (
-            <p className="text-muted-foreground pt-2 text-sm">
+            <p className="text-muted-foreground pt-2 text-[0.8125rem]">
               This is the default branch. Promote another branch to change it.
             </p>
           ) : (
@@ -203,11 +203,11 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
         {/* TODO: custom fields are not built yet — the tab is deliberately
             empty so the information architecture matches the warehouse form. */}
         <TabsContent value="custom-fields" className="876-card p-5">
-          <p className="text-muted-foreground text-sm">No custom fields yet.</p>
+          <p className="text-muted-foreground text-[0.8125rem]">No custom fields yet.</p>
         </TabsContent>
       </Tabs>
 
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? <p className="text-destructive text-[0.8125rem]">{error}</p> : null}
 
       <div className="flex items-center gap-3">
         <Button

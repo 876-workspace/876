@@ -51,7 +51,7 @@ export function BillingAccountCreate({ orgId, orgSlug }: Props) {
     <section className="876-card max-w-4xl">
       <div className="border-876-surface-border border-b px-5 py-4">
         <h2 className="text-lg font-medium">Add account</h2>
-        <p className="text-muted-foreground text-sm text-pretty">
+        <p className="text-muted-foreground text-[0.8125rem] text-pretty">
           Create an invoice profile for this organization.
         </p>
       </div>

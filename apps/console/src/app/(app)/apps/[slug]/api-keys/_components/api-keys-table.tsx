@@ -236,7 +236,7 @@ export function ApiKeysTable({
       accessorKey: 'last_used_at',
       header: 'Last used',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.last_used_at
             ? formatDate(row.original.last_used_at)
             : '—'}
@@ -247,7 +247,7 @@ export function ApiKeysTable({
       accessorKey: 'expires_at',
       header: 'Expires',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.expires_at ? formatDate(row.original.expires_at) : '—'}
         </span>
       ),
@@ -256,7 +256,7 @@ export function ApiKeysTable({
       accessorKey: 'created_at',
       header: 'Created',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
         </span>
       ),
@@ -299,7 +299,7 @@ export function ApiKeysTable({
                 <EmptyTitle className="text-foreground text-base font-semibold">
                   {query.trim() ? 'No matching API keys' : 'No API keys'}
                 </EmptyTitle>
-                <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-sm leading-relaxed">
+                <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
                   {query.trim()
                     ? 'No API keys match the current search.'
                     : 'Create a key for server-to-server requests to the 876 API.'}
@@ -337,7 +337,7 @@ export function ApiKeysTable({
               placeholder="e.g. Production server"
               onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
             />
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>
@@ -364,7 +364,7 @@ export function ApiKeysTable({
               be re-activated.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {error && <p className="text-destructive px-1 text-sm">{error}</p>}
+          {error && <p className="text-destructive px-1 text-[0.8125rem]">{error}</p>}
           <AlertDialogFooter>
             <AlertDialogCancel onClick={closeDialog}>Cancel</AlertDialogCancel>
             <AlertDialogAction
@@ -391,7 +391,7 @@ export function ApiKeysTable({
               immediately. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {error && <p className="text-destructive px-1 text-sm">{error}</p>}
+          {error && <p className="text-destructive px-1 text-[0.8125rem]">{error}</p>}
           <AlertDialogFooter>
             <AlertDialogCancel onClick={closeDialog}>Cancel</AlertDialogCancel>
             <AlertDialogAction

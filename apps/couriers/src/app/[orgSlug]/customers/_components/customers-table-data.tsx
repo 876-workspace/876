@@ -78,7 +78,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   return (
     <>
       {registry?.error ? (
-        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-sm">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
           {registry.error.message}
         </div>
       ) : null}

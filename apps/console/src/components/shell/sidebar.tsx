@@ -25,7 +25,7 @@ export function Sidebar() {
           className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
         >
           <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
-            <Logo className="text-sm leading-none text-[#202124] dark:text-white" />
+            <Logo className="text-[0.8125rem] leading-none text-[#202124] dark:text-white" />
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em] text-[#202124] dark:text-white">

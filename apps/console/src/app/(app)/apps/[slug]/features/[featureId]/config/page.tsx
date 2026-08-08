@@ -54,7 +54,7 @@ export default async function AppFeatureConfigPage({ params }: Props) {
             {feature.server_side_only ? 'Server-side' : 'Client visible'}
           </Badge>
         </div>
-        <p className="mt-3 max-w-4xl text-sm leading-6">
+        <p className="mt-3 max-w-4xl text-[0.8125rem] leading-6">
           {feature.description ||
             'No description has been added for this feature.'}
         </p>
@@ -80,7 +80,7 @@ export default async function AppFeatureConfigPage({ params }: Props) {
       </section>
 
       <section className="border-876-surface-border border-y py-5">
-        <h3 className="text-sm font-semibold">Resolution order</h3>
+        <h3 className="text-[0.8125rem] font-semibold">Resolution order</h3>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           <ResolutionStep
             icon={Flag}
@@ -102,7 +102,7 @@ export default async function AppFeatureConfigPage({ params }: Props) {
 
       <section className="border-876-surface-border border-y py-5">
         <div className="mb-4">
-          <h3 className="text-sm font-semibold">Technical details</h3>
+          <h3 className="text-[0.8125rem] font-semibold">Technical details</h3>
           <p className="text-muted-foreground mt-1 text-xs">
             Identifiers and provider fields for API/debug work.
           </p>
@@ -151,7 +151,7 @@ function SignalTile({
         <p className="text-muted-foreground text-xs font-medium uppercase">
           {label}
         </p>
-        <p className="mt-1 truncate text-sm font-semibold">{value}</p>
+        <p className="mt-1 truncate text-[0.8125rem] font-semibold">{value}</p>
       </div>
     </div>
   )
@@ -170,7 +170,7 @@ function ResolutionStep({
     <div className="border-876-surface-border flex min-h-28 gap-3 border px-4 py-3">
       <Icon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
       <div>
-        <p className="text-sm font-medium">{title}</p>
+        <p className="text-[0.8125rem] font-medium">{title}</p>
         <p className="text-muted-foreground mt-1 text-xs leading-5">
           {description}
         </p>

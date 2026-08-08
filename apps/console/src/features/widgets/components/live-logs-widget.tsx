@@ -188,7 +188,7 @@ function LiveLogCard({ event }: { event: AdminAuditEvent }) {
       </div>
 
       {event.title ? (
-        <p className="text-foreground mt-2 truncate text-sm font-medium tracking-tight">
+        <p className="text-foreground mt-2 truncate text-[0.8125rem] font-medium tracking-tight">
           {event.title}
         </p>
       ) : null}
@@ -248,7 +248,7 @@ function LiveLogsNoResults({ onClear }: { onClear: () => void }) {
       <div className="bg-muted text-muted-foreground dark:bg-muted/60 flex size-11 items-center justify-center rounded-xl">
         <SearchIcon aria-hidden="true" className="size-5" />
       </div>
-      <h2 className="text-foreground mt-4 text-sm font-medium text-balance">
+      <h2 className="text-foreground mt-4 text-[0.8125rem] font-medium text-balance">
         No matching events
       </h2>
       <p className="text-muted-foreground mt-1 text-xs text-pretty">

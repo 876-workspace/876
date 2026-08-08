@@ -106,7 +106,7 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
   if (scopes.every((scope) => scope.flags.length === 0)) {
     return (
       <div className="876-card p-5">
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           No feature flags are registered for this widget yet.
         </p>
       </div>

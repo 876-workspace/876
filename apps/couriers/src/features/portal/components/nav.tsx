@@ -24,7 +24,7 @@ export function PortalNav() {
             key={link.href}
             href={link.href}
             aria-current={active ? 'page' : undefined}
-            className="text-muted-foreground hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted aria-[current=page]:text-foreground rounded-md px-2.5 py-2 text-sm font-medium transition-colors"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground aria-[current=page]:bg-muted aria-[current=page]:text-foreground rounded-md px-2.5 py-2 text-[0.8125rem] font-medium transition-colors"
           >
             {link.label}
           </Link>

@@ -49,13 +49,13 @@ export function AuthMethodsSection({ userId, accounts }: Props) {
 
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
         <Lock className="text-muted-foreground size-4" />
         Authentication Methods
       </h2>
 
       {accountsList.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           No linked sign-in methods. This user authenticates with email and
           password only.
         </p>
@@ -76,7 +76,7 @@ export function AuthMethodsSection({ userId, accounts }: Props) {
                     <KeyRound className="text-muted-foreground size-3.5" />
                   )}
                 </span>
-                <span className="min-w-0 flex-1 text-sm font-medium">
+                <span className="min-w-0 flex-1 text-[0.8125rem] font-medium">
                   {providerLabel(account.provider_id)}
                 </span>
                 {account.provider_type !== 'credential' && (
@@ -95,7 +95,7 @@ export function AuthMethodsSection({ userId, accounts }: Props) {
         </ul>
       )}
 
-      {error && <p className="text-destructive mt-3 text-sm">{error}</p>}
+      {error && <p className="text-destructive mt-3 text-[0.8125rem]">{error}</p>}
     </div>
   )
 }

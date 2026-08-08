@@ -70,7 +70,7 @@ export function UsernameSection({ userId, username }: Props) {
 
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
         <User className="text-muted-foreground size-4" />
         Username
       </h2>
@@ -113,7 +113,7 @@ export function UsernameSection({ userId, username }: Props) {
         <div className="flex items-center justify-between gap-4">
           <span
             className={cn(
-              username ? 'font-mono text-sm' : 'text-muted-foreground text-sm'
+              username ? 'font-mono text-[0.8125rem]' : 'text-muted-foreground text-[0.8125rem]'
             )}
           >
             {username ? `@${username}` : '—'}

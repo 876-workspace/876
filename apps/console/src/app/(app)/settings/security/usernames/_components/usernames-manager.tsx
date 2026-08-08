@@ -208,7 +208,7 @@ export function UsernamesManager({ initialItems }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            {addError && <p className="text-destructive text-sm">{addError}</p>}
+            {addError && <p className="text-destructive text-[0.8125rem]">{addError}</p>}
             <DialogFooter>
               <Button
                 type="button"
@@ -267,7 +267,7 @@ export function UsernamesManager({ initialItems }: Props) {
                       </span>
                     </TableCell>
                     <TableCell className="px-5 py-3.5">
-                      <span className="text-muted-foreground text-sm">
+                      <span className="text-muted-foreground text-[0.8125rem]">
                         {formatDate(item.created_at)}
                       </span>
                     </TableCell>

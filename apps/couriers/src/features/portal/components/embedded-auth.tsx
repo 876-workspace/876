@@ -24,7 +24,7 @@ export function PortalEmbeddedAuth({
       {enrollmentError ? (
         <div
           role="alert"
-          className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border px-4 py-3 text-sm"
+          className="border-destructive/30 bg-destructive/5 text-destructive rounded-xl border px-4 py-3 text-[0.8125rem]"
         >
           We couldn&apos;t set up your portal account. Please sign in again.
         </div>

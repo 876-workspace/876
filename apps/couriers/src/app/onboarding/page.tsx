@@ -16,7 +16,7 @@ function OnboardingShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh">
       {/* Brand panel — desktop only */}
       <div className="hidden flex-col bg-[var(--couriers-brand-dark)] px-14 py-16 text-white lg:flex lg:w-5/12">
-        <p className="text-sm font-medium tracking-wide text-white/40 uppercase">
+        <p className="text-[0.8125rem] font-medium tracking-wide text-white/40 uppercase">
           876 Couriers
         </p>
       </div>
@@ -60,7 +60,7 @@ function SetupUnavailable() {
       </h2>
       <Link
         href="/"
-        className="text-primary text-sm font-medium hover:underline"
+        className="text-primary text-[0.8125rem] font-medium hover:underline"
       >
         Try again
       </Link>

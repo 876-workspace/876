@@ -37,7 +37,7 @@ export function ContactsListView({ contacts, actions, emptyState }: Props) {
             </Avatar>
 
             <div className="flex min-w-0 flex-1 items-baseline gap-2">
-              <span className="truncate text-sm font-medium">{name}</span>
+              <span className="truncate text-[0.8125rem] font-medium">{name}</span>
               {contact.nickname && (
                 <span className="text-muted-foreground truncate text-xs">
                   “{contact.nickname}”

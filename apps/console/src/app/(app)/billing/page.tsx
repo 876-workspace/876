@@ -38,7 +38,7 @@ export default async function BillingPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Billing Accounts */}
         <section className="876-card p-5">
-          <h3 className="mb-4 text-sm font-semibold">
+          <h3 className="mb-4 text-[0.8125rem] font-semibold">
             Billing Accounts ({accounts.length})
           </h3>
           {accounts.length === 0 ? (
@@ -62,7 +62,7 @@ export default async function BillingPage() {
                   className="flex items-center justify-between px-5 py-3"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium">
+                    <span className="text-[0.8125rem] font-medium">
                       {account.name || account.organization_id}
                     </span>
                     <span className="text-muted-foreground font-mono text-xs">
@@ -80,7 +80,7 @@ export default async function BillingPage() {
 
         {/* Subscriptions */}
         <section className="876-card p-5">
-          <h3 className="mb-4 text-sm font-semibold">
+          <h3 className="mb-4 text-[0.8125rem] font-semibold">
             Subscriptions ({subscriptions.length})
           </h3>
           {subscriptions.length === 0 ? (
@@ -104,7 +104,7 @@ export default async function BillingPage() {
                   className="flex items-center justify-between px-5 py-3"
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-sm font-medium">
+                    <span className="text-[0.8125rem] font-medium">
                       {sub.app_slug || sub.app_id}
                     </span>
                     <span className="text-muted-foreground font-mono text-xs">

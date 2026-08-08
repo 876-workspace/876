@@ -19,7 +19,7 @@ by the primary agent in parallel and is **out of scope for you**.
    baseline", "Do not". This is the contract.
 2. `apps/api/src/platform/timestamps.ts` and `apps/api/src/platform/ids.ts` —
    the shape a platform primitive takes: named exports, no classes, a header
-   comment saying *why* the module exists, no I/O at import time.
+   comment saying _why_ the module exists, no I/O at import time.
 3. `apps/api/src/platform/jwt.ts` — a platform module that does read config and
    cache; note how it gets settings (`getSettings()` from `@/config`) and logs
    (`getLogger()` from `@/platform/logger`, structured `log.warn({fields},
@@ -29,12 +29,12 @@ by the primary agent in parallel and is **out of scope for you**.
 
 ## The four units
 
-| # | Python source | TypeScript target |
-| --- | --- | --- |
-| 1 | `apps/api/core/phone.py` (45 lines) | `apps/api/src/platform/phone.ts` |
-| 2 | `apps/api/core/user_agent.py` (209) | `apps/api/src/platform/user-agent.ts` |
-| 3 | `apps/api/providers/twilio/*.py` (585) | `apps/api/src/providers/twilio/{client,adapter,errors,types,fake,signatures}.ts` + `index.ts` |
-| 4 | `apps/api/providers/posthog/client.py` (185) | `apps/api/src/providers/posthog/{client,errors}.ts` + `index.ts` |
+| #   | Python source                                | TypeScript target                                                                             |
+| --- | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | `apps/api/core/phone.py` (45 lines)          | `apps/api/src/platform/phone.ts`                                                              |
+| 2   | `apps/api/core/user_agent.py` (209)          | `apps/api/src/platform/user-agent.ts`                                                         |
+| 3   | `apps/api/providers/twilio/*.py` (585)       | `apps/api/src/providers/twilio/{client,adapter,errors,types,fake,signatures}.ts` + `index.ts` |
+| 4   | `apps/api/providers/posthog/client.py` (185) | `apps/api/src/providers/posthog/{client,errors}.ts` + `index.ts`                              |
 
 Port **behaviour for behaviour**. Same function boundaries, same return shapes,
 same error codes, same defaults, same edge cases. Where the Python looks wrong,
@@ -92,7 +92,7 @@ pnpm node:boundaries      # must stay at 0 errors
 ```
 
 `no-orphans` **warnings** are expected — nothing imports these yet. Zero
-*errors* is the bar. Run `npx prettier --write` on the files you created to fix
+_errors_ is the bar. Run `npx prettier --write` on the files you created to fix
 formatting.
 
 ## Report

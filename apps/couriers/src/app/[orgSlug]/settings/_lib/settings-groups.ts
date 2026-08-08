@@ -41,7 +41,7 @@ export const SETTINGS_NAV = defineSettingsNav([
         href: '/settings/warehouses',
         status: 'available',
       },
-      { title: 'Custom domain', href: '/settings/domain', status: 'available' },
+      { title: 'Domains', href: '/settings/domain', status: 'available' },
       {
         title: 'Manage subscription',
         href: '/settings/subscription',
@@ -110,42 +110,35 @@ export const SETTINGS_NAV = defineSettingsNav([
     icon: 'modules_ops',
     items: [
       {
-        title: 'Warehouse settings',
-        href: '/settings/modules/warehouse',
-        status: 'available',
-        permission: 'warehouse.view',
-        module: 'warehouse',
-      },
-      {
-        title: 'Manifests settings',
+        title: 'Manifests ',
         href: '/settings/modules/manifests',
         status: 'available',
         permission: 'manifests.view',
         module: 'manifests',
       },
       {
-        title: 'Deliveries settings',
+        title: 'Deliveries ',
         href: '/settings/modules/deliveries',
         status: 'available',
         permission: 'deliveries.view',
         module: 'deliveries',
       },
       {
-        title: 'Invoices settings',
+        title: 'Invoices ',
         href: '/settings/modules/invoices',
         status: 'available',
         permission: 'invoices.view',
         module: 'invoices',
       },
       {
-        title: 'Payments settings',
+        title: 'Payments ',
         href: '/settings/modules/payments',
         status: 'available',
         permission: 'payments.view',
         module: 'payments',
       },
       {
-        title: 'Customer portal settings',
+        title: 'Customer portal ',
         href: '/settings/modules/portal',
         status: 'available',
         permission: 'portal.view',
@@ -159,7 +152,7 @@ export const SETTINGS_NAV = defineSettingsNav([
     icon: 'portal',
     items: [
       {
-        title: 'Portal settings',
+        title: 'Portal ',
         href: '/settings/portal',
         status: 'available',
       },

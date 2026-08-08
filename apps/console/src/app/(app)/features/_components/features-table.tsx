@@ -61,7 +61,7 @@ export function FeaturesTable({
       accessorKey: 'app_id',
       header: 'App',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.app_id
             ? (appById.get(row.original.app_id) ?? row.original.app_id)
             : 'Platform-wide'}
@@ -72,7 +72,7 @@ export function FeaturesTable({
       accessorKey: 'scope',
       header: 'Scope',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm capitalize">
+        <span className="text-muted-foreground text-[0.8125rem] capitalize">
           {row.original.scope}
         </span>
       ),
@@ -97,7 +97,7 @@ export function FeaturesTable({
       accessorKey: 'updated_at',
       header: 'Updated',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}
         </span>
       ),

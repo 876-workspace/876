@@ -44,7 +44,7 @@ export function LocationsCards({ branches, orgSlug, emptyState }: Props) {
             ) : null}
           </div>
 
-          <div className="text-muted-foreground space-y-1 text-sm">
+          <div className="text-muted-foreground space-y-1 text-[0.8125rem]">
             <p>{formatAddressLine(branch.address)}</p>
             <p>{branch.address.countryCode}</p>
             <p>

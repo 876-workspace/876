@@ -90,7 +90,7 @@ export default function SecuritySettingsPage() {
             className="876-card 876-card-interactive flex items-center justify-between px-5 py-4 transition-colors"
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium">Reserved Usernames</p>
+              <p className="text-[0.8125rem] font-medium">Reserved Usernames</p>
               <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
                 Protect system handles, brand names, and routing paths from
                 being claimed during sign-up.
@@ -110,7 +110,7 @@ export default function SecuritySettingsPage() {
                   className="flex items-start justify-between gap-4 px-5 py-4"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">{field.name}</p>
+                    <p className="text-[0.8125rem] font-medium">{field.name}</p>
                     <p className="text-muted-foreground mt-0.5 text-xs leading-relaxed">
                       {field.description}
                     </p>

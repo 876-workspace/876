@@ -60,7 +60,7 @@ export function CustomerCreateForm({
       />
       <Field label="Email" value={email} onChange={setEmail} type="email" />
       <Field label="Phone" value={phone} onChange={setPhone} />
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       <div className="flex justify-end gap-2 border-t pt-4">
         <Button

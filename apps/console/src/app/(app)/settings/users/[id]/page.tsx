@@ -40,8 +40,8 @@ export default async function TeamMemberOverviewPage({ params }: Props) {
     <div className="grid gap-5 sm:grid-cols-2">
       {/* Identity */}
       <div className="876-card p-5">
-        <h3 className="mb-4 text-sm font-medium">Profile</h3>
-        <dl className="space-y-3 text-sm">
+        <h3 className="mb-4 text-[0.8125rem] font-medium">Profile</h3>
+        <dl className="space-y-3 text-[0.8125rem]">
           <div>
             <dt className="876-eyebrow">Name</dt>
             <dd className="mt-1 font-medium">{displayName}</dd>
@@ -75,8 +75,8 @@ export default async function TeamMemberOverviewPage({ params }: Props) {
 
       {/* MC Access */}
       <div className="876-card p-5">
-        <h3 className="mb-4 text-sm font-medium">Console Access</h3>
-        <dl className="space-y-3 text-sm">
+        <h3 className="mb-4 text-[0.8125rem] font-medium">Console Access</h3>
+        <dl className="space-y-3 text-[0.8125rem]">
           <div>
             <dt className="876-eyebrow">Role</dt>
             <dd className="mt-1 font-medium">

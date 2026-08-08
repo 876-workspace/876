@@ -81,7 +81,7 @@ const CURRENCIES = [
 ]
 
 const selectClass =
-  'border-input bg-background text-foreground focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
+  'border-input bg-background text-foreground focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-[0.8125rem] focus-visible:ring-2 focus-visible:outline-none'
 
 export function CreateOrgForm() {
   const router = useRouter()
@@ -161,7 +161,7 @@ export function CreateOrgForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="name"
               >
                 Name <span className="text-destructive">*</span>
@@ -176,7 +176,7 @@ export function CreateOrgForm() {
             </div>
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="short_name"
               >
                 Short name{' '}
@@ -193,7 +193,7 @@ export function CreateOrgForm() {
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium" htmlFor="slug">
+            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="slug">
               Slug
               <span className="text-muted-foreground ml-1 font-normal">
                 (auto-generated if blank)
@@ -213,7 +213,7 @@ export function CreateOrgForm() {
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="status"
             >
               Status
@@ -241,7 +241,7 @@ export function CreateOrgForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="primary_phone"
               >
                 Phone
@@ -255,7 +255,7 @@ export function CreateOrgForm() {
             </div>
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="primary_email"
               >
                 Email
@@ -271,7 +271,7 @@ export function CreateOrgForm() {
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="website_url"
             >
               Website
@@ -286,7 +286,7 @@ export function CreateOrgForm() {
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="support_url"
             >
               Support URL
@@ -308,7 +308,7 @@ export function CreateOrgForm() {
         <div className="876-card space-y-4 p-5">
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="address_line1"
             >
               Address line 1
@@ -322,7 +322,7 @@ export function CreateOrgForm() {
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="address_line2"
             >
               Address line 2
@@ -335,7 +335,7 @@ export function CreateOrgForm() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium" htmlFor="city">
+            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="city">
               City
             </label>
             <Input
@@ -355,7 +355,7 @@ export function CreateOrgForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="country_code"
               >
                 Country
@@ -376,7 +376,7 @@ export function CreateOrgForm() {
             </div>
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="currency_code"
               >
                 Currency
@@ -403,7 +403,7 @@ export function CreateOrgForm() {
         <Button variant="info" onClick={handleSubmit} disabled={isPending}>
           {isPending ? 'Creating…' : 'Create Organization'}
         </Button>
-        {error && <span className="text-destructive text-sm">{error}</span>}
+        {error && <span className="text-destructive text-[0.8125rem]">{error}</span>}
       </div>
     </div>
   )
