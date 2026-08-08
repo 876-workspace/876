@@ -223,9 +223,12 @@ tables for it.
 - Couriers: wire TRN capture (portal + manage) to `user_identifications` via
   the platform client; stop reading/writing `CourierCustomerProfile.trn`; drop
   the column in a later migration.
-- Couriers: customer import + `/customers/new` (both currently dead UI) —
-  requires nullable `CourierCustomerProfile.userId` plus a claim-at-enrollment
-  flow (match by verified email against registry EXTERNAL rows, then `link`).
+- Couriers: staff-created `EXTERNAL` customers and `/customers/new` are now
+  implemented (`CourierCustomerProfile.userId` is nullable; see
+  `apps/couriers/docs/customers.md`).
+- Couriers: bulk customer import, plus the claim-at-enrollment flow that links an
+  existing `EXTERNAL` customer to an 876 account when that person later signs up
+  through the portal (match by verified email, then `customers.link`).
 - Registry: surface `customers.link`/`unlink` in the billing UI (customer
   detail action) and in Console.
 - Core: session-scoped `/users/me/identifications` for the consumer app once
