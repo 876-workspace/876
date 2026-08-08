@@ -4,6 +4,15 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-23",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // esbuild's `keepNames` helper, which wrangler turns on by default, rewrites
+  // every function in the bundle to call `__name(fn, "fn")`. Next serialises
+  // some functions into the HTML by calling `.toString()` on them — next-themes'
+  // no-flash theme script is one — so the `__name` call travels to the browser,
+  // where the helper does not exist and the script dies with
+  // `ReferenceError: __name is not defined` on every page load.
+  // Names are only lost for symbols esbuild had to rename for collisions, whose
+  // `.name` carried no meaning anyway.
+  "keep_names": false,
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",

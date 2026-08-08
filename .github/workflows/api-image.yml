@@ -55,8 +55,13 @@ jobs:
       # a build alone never reaches.
       - name: Boot the image and serve
         run: |
+          # DATABASE_URL is never dialed here — nothing this step exercises
+          # opens a connection. It only has to satisfy the config schema, which
+          # now requires an Accelerate URL because that is what the runtime
+          # client passes as `accelerateUrl`. A direct postgres:// placeholder
+          # is rejected at boot, by design.
           docker run -d --name api-ci \
-            -e DATABASE_URL='postgresql://u:p@127.0.0.1:1/db' \
+            -e DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' \
             -e API_INTERNAL_KEY='ci-internal-key' \
             -e PORT=4000 \
             -p 4000:4000 \

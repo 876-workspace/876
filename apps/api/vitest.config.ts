@@ -23,7 +23,12 @@ export default defineConfig({
       IS_PRODUCTION: 'false',
       API_INTERNAL_KEY: 'test-internal-key',
       SESSION_COOKIE_SECRET: 'test-session-cookie-secret-32-chars!!',
-      DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+      // Accelerate-shaped, because the config schema now requires it, but
+      // pointed at a closed port so nothing is ever dialed. A real Accelerate
+      // host here reaches the network and the engine's start promise rejects
+      // outside any test's control (P6002), failing the run after every test
+      // has already passed.
+      DATABASE_URL: 'prisma://127.0.0.1:1/?api_key=test',
     },
     // Modules share one Prisma client and one in-memory rate-limit store, so
     // parallel files would race on the same state. Threads stay enabled for
