@@ -63,15 +63,28 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   )
 
   const $876 = await get876Client()
-  const registry = billingCustomerIds.length
-    ? await $876.billing.customers.list(ctx.orgId, {
-        limit: 100,
-        ids: billingCustomerIds,
-      })
-    : null
+
+  // The registry caps a list at 100, and this workspace's profile count is not
+  // bounded by that — a tenant with 150 customers would otherwise render 50 rows
+  // with an opaque id where the name belongs. Ask for them a page at a time and
+  // in parallel, since the pages do not depend on one another.
+  const REGISTRY_PAGE = 100
+  const idPages: string[][] = []
+  for (let index = 0; index < billingCustomerIds.length; index += REGISTRY_PAGE)
+    idPages.push(billingCustomerIds.slice(index, index + REGISTRY_PAGE))
+
+  const pages = await Promise.all(
+    idPages.map((ids) =>
+      $876.billing.customers.list(ctx.orgId, { limit: REGISTRY_PAGE, ids })
+    )
+  )
+
+  const registry = pages.find((page) => page.error) ?? pages[0] ?? null
 
   const identityById = new Map(
-    registry?.data?.data.map((customer) => [customer.id, customer]) ?? []
+    pages.flatMap((page) =>
+      (page.data?.data ?? []).map((customer) => [customer.id, customer] as const)
+    )
   )
 
   const rows: CustomerTableRow[] = profiles.map((profile) => {
