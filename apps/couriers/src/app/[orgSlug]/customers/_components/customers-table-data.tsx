@@ -22,6 +22,16 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     selectedStatus === 'all'
       ? undefined
       : customerStatusSchema.parse(selectedStatus.toUpperCase())
+  const emptyState = (
+    <Empty className="border-0 py-6">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <UsersIcon />
+        </EmptyMedia>
+        <EmptyTitle>No customers</EmptyTitle>
+      </EmptyHeader>
+    </Empty>
+  )
 
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return <CustomersTable customers={FAKE_CUSTOMERS} />
@@ -85,16 +95,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
       <CustomersTable
         customers={rows}
-        emptyState={
-          <Empty className="border-0 py-6">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <UsersIcon />
-              </EmptyMedia>
-              <EmptyTitle>No customers</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        }
+        emptyState={emptyState}
       />
     </>
   )

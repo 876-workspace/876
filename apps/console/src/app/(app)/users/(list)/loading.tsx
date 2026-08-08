@@ -13,7 +13,7 @@ export default function Loading() {
       <div className="mb-4 max-w-sm">
         <SearchInputPlaceholder placeholder="Search users by name, email, or username…" />
       </div>
-      <DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />
+      <DataTableSkeleton columns={USERS_SKELETON_COLUMNS} rows={5} />
     </Page>
   )
 }

@@ -86,7 +86,8 @@ const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   },
   {
     accessorKey: 'mailboxNumber',
-    header: 'Mailboxmake ',
+    header: 'Mailbox ',
+    size: 96,
     cell: ({ row }) => (
       <span className="text-muted-foreground">
         {row.original.mailboxNumber ?? '—'}

@@ -26,7 +26,7 @@ export default function Loading() {
           Provisioning defaults
         </Link>
       </div>
-      <DataTableSkeleton columns={ORGS_SKELETON_COLUMNS} />
+      <DataTableSkeleton columns={ORGS_SKELETON_COLUMNS} rows={5} />
     </Page>
   )
 }

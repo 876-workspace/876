@@ -40,7 +40,7 @@ export default async function ItemsPage({ params, searchParams }: Props) {
         dropdownActions={ITEMS_DROPDOWN_ACTIONS}
       />
       <Suspense
-        fallback={<DataTableSkeleton columns={ITEMS_SKELETON_COLUMNS} />}
+        fallback={<DataTableSkeleton columns={ITEMS_SKELETON_COLUMNS} rows={5} />}
       >
         <ItemsTableData params={params} searchParams={searchParams} />
       </Suspense>

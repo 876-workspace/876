@@ -1,15 +1,9 @@
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@876/ui/empty'
-import { ClipboardDocumentListIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
+import { PackagesTable } from './_components/packages-table'
+import { FAKE_PACKAGES } from './_lib/fake-packages'
 
 const PACKAGE_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Packages' },
@@ -58,15 +52,6 @@ export default async function PackagesPage({ params, searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus =
     status && PACKAGE_STATUS_VALUES.has(status) ? status : 'all'
-  const selectedLabel = PACKAGE_STATUS_OPTIONS.find(
-    (option) => option.value === selectedStatus
-  )?.label
-
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No packages yet.'
-      : `No ${selectedLabel?.toLowerCase() ?? selectedStatus} packages.`
-
   return (
     <Page>
       <ResourceToolbar
@@ -94,15 +79,7 @@ export default async function PackagesPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <Empty className="py-14">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <ClipboardDocumentListIcon />
-          </EmptyMedia>
-          <EmptyTitle>No packages</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <PackagesTable packages={FAKE_PACKAGES} />
     </Page>
   )
 }
