@@ -179,7 +179,9 @@ describe('GET /users?ids= (batch users by id)', () => {
 
     expect(response.status).toBe(200)
     expect(user.findMany).toHaveBeenCalledTimes(1)
-    const whereArg = user.findMany.mock.calls[0][0].where as {
+    const firstCall = user.findMany.mock.calls[0]
+    if (!firstCall) throw new Error('Expected user.findMany to be called once.')
+    const whereArg = firstCall[0].where as {
       id?: { in?: string[] }
     }
     expect(whereArg.id).toEqual({ in: [USER_A, USER_B] })

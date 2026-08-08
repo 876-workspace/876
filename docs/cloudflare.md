@@ -2,7 +2,7 @@
 
 Deploy the **876 monorepo** on [Cloudflare](https://developers.cloudflare.com/) as
 Workers (Next.js via OpenNext) and Containers (FastAPI), against the existing
-Neon Postgres databases.
+Prisma Postgres databases.
 
 ---
 
@@ -22,14 +22,16 @@ Neon Postgres databases.
 **Hostname strategy:** `*.workers.dev` script names above, with custom domains
 (`api.876.app`, etc.) added as needed.
 
-**Databases:** Neon (already production).
+**Databases:** Prisma Postgres (production).
 
-| Neon endpoint       | Used by                     | Runtime env var          | CI secret               |
-| ------------------- | --------------------------- | ------------------------ | ----------------------- |
-| `ep-muddy-cell`     | api + billing-api + storage | `(BILLING_)DATABASE_URL` | `API_DATABASE_URL`      |
-| `ep-purple-brook`   | Console app-local           | `CONSOLE_DATABASE_URL`   | `CONSOLE_DATABASE_URL`  |
-| `ep-rough-darkness` | Couriers app-local          | `DATABASE_URL`           | `COURIERS_DATABASE_URL` |
-| `ep-falling-flower` | Widgets only                | `WIDGETS_DATABASE_URL`   | `WIDGETS_DATABASE_URL`  |
+| Prisma Postgres database ID    | Used by                   | Runtime env var        | CI secret               |
+| ------------------------------ | ------------------------- | ---------------------- | ----------------------- |
+| `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API              | `DATABASE_URL`         | `API_DATABASE_URL`      |
+| `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local         | `CONSOLE_DATABASE_URL` | `CONSOLE_DATABASE_URL`  |
+| `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local        | `DATABASE_URL`         | `COURIERS_DATABASE_URL` |
+| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing app + Billing API | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
+| `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API               | `WIDGETS_DATABASE_URL` | `WIDGETS_DATABASE_URL`  |
+| `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API               | `STORAGE_DATABASE_URL` | `STORAGE_DATABASE_URL`  |
 
 Two services read a variable literally named `DATABASE_URL` at runtime — the
 identity API and Couriers — so the **CI secret names are always prefixed**, and
@@ -40,15 +42,10 @@ deploy spent a day trying to build the identity schema inside the couriers
 database. Do not add an unprefixed database secret back.
 
 **Hyperdrive is not used.** The Worker-side Prisma clients use
-`@prisma/adapter-neon` (Neon's serverless driver, HTTP/WebSocket), which pools
-at Neon's edge and needs no TCP socket. Setting the plain Neon connection
-string as a Worker secret is sufficient — there is no binding to wire.
-
-> Why not `@prisma/adapter-pg`: `pg` reaches Postgres over TCP, which on Workers
-> comes from `pg-cloudflare`'s `workerd` export condition. Next's file tracing
-> only resolves the `default` condition, so OpenNext copies `dist/empty.js` and
-> the bundle fails with `Could not resolve "pg-cloudflare"`. The Node-only
-> `prisma/seed.ts` and backfill scripts still use `adapter-pg`.
+`@prisma/adapter-pg` to connect directly to each Prisma Postgres pooled
+endpoint. The connection URL is supplied as the owning Worker's secret, so
+there is no Hyperdrive binding to wire. Keep `pg-cloudflare` available to the
+Worker bundle; it provides `pg`'s workerd-compatible socket transport.
 
 ---
 
@@ -100,14 +97,13 @@ design. Each app-local `src/lib/db/index.ts` therefore exports `prisma` as a
 Proxy that constructs the client on first property access. Keep it that way when
 adding a datastore to a new app.
 
-**2c. No database client shared between requests.** `@prisma/adapter-neon` opens
-a Neon **WebSocket pool**, and a socket on workerd belongs to the request that
-opened it. Caching the client in module scope — the ordinary Node/HMR pattern —
-means the second request served by a warm isolate reuses that socket and gets
-`Cannot perform I/O on behalf of a different request`. Worse, the adapter
-reports that on the pool instead of rejecting the in-flight query, so the query
-promise never settles, the runtime cancels the invocation as a hang, and the
-page fails with **Error 1101** without a single application error being raised.
+**2c. No database client shared between requests.** `@prisma/adapter-pg` opens
+a connection pool, and a socket on workerd belongs to the request that opened
+it. Caching the client in module scope — the ordinary Node/HMR pattern — means
+the second request served by a warm isolate can reuse that socket and get
+`Cannot perform I/O on behalf of a different request`. A query that does not
+settle leaves the runtime to cancel the invocation as a hang, surfacing as
+**Error 1101** without a useful application error.
 
 Each `src/lib/db/index.ts` therefore resolves its client through
 `createRequestScopedResolver` from `@876/core/db`: one client per request on
@@ -131,7 +127,7 @@ services need it too).
 - Cloudflare account with **Workers Paid** (Containers).
 - Wrangler ≥ 4 (`wrangler whoami`).
 - Docker (for Container image build/push on deploy).
-- Neon databases (existing).
+- Prisma Postgres databases (existing).
 - WorkOS / PostHog credentials.
 
 Account used in migration planning: `b033115f2e5e7382047b69539b971105`.

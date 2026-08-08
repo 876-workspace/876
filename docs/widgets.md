@@ -7,8 +7,8 @@ Widgets are host-mounted user tools. A **shared widget** has
 A **host-exclusive widget** has `distribution: 'host'` and exists in exactly
 one app, such as Console Live Logs.
 
-**Widget-native state** lives in the **Widgets bounded context**: Postgres
-(Neon) owned exclusively by `apps/widgets-api`. Hosts never receive
+**Widget-native state** lives in the **Widgets bounded context**: Prisma
+Postgres owned exclusively by `apps/widgets-api`. Hosts never receive
 `WIDGETS_DATABASE_URL`.
 
 **External-domain information** displayed inside a widget stays in its source
@@ -56,7 +56,7 @@ HTTP clients, and React panels. It does **not** open a database connection.
 Widgets use ordinary app-local `.env` files in Codespaces and other local
 development environments. These files are ignored by Git.
 
-1. Add the existing Neon connection URL to
+1. Add the existing Prisma Postgres pooled connection URL to
    `apps/widgets-api/.env` as `WIDGETS_DATABASE_URL`.
 2. Generate one random service key with
    `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
