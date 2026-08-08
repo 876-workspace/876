@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Runs `prisma generate`, supplying a placeholder `DATABASE_URL` when none is
+ * Runs `prisma generate`, supplying a placeholder `DIRECT_DATABASE_URL` when none is
  * set.
  *
  * Two facts make this wrapper necessary:
  *
  * 1. `src/db/generated/` is gitignored, so a clean clone has no Prisma client
  *    and `tsup`/`tsc`/`vitest` cannot resolve `@/db/generated/prisma`.
- * 2. `prisma.config.ts` resolves `DATABASE_URL` through Prisma's `env()`, which
+ * 2. `prisma.config.ts` resolves `DIRECT_DATABASE_URL` through Prisma's `env()`, which
  *    throws when it is unset — correct for `migrate`, which must never run
  *    against an accidental database, but `generate` only reads the schema.
  *
@@ -42,7 +42,7 @@ const result = spawnSync(process.execPath, [cli, 'generate'], {
   stdio: 'inherit',
   env: {
     ...process.env,
-    DATABASE_URL: process.env.DATABASE_URL || PLACEHOLDER,
+    DIRECT_DATABASE_URL: process.env.DIRECT_DATABASE_URL || PLACEHOLDER,
   },
 })
 

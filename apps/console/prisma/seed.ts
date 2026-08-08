@@ -3,7 +3,7 @@
  * system roles. Idempotent: upserts each role so re-running is safe.
  *
  * Run: `pnpm --filter @876/console db:seed`
- * Requires `CONSOLE_DATABASE_URL` to point at the Console database.
+ * Requires `CONSOLE_DIRECT_DATABASE_URL` to point at the Console database.
  */
 import { config } from 'dotenv'
 
@@ -15,7 +15,7 @@ import { SYSTEM_ROLE_DEFINITIONS } from '../src/lib/permissions'
 config({ path: ['.env.development.local', '.env'] })
 
 const adapter = new PrismaPg({
-  connectionString: process.env.CONSOLE_DATABASE_URL,
+  connectionString: process.env.CONSOLE_DIRECT_DATABASE_URL,
 })
 const prisma = new PrismaClient({ adapter })
 

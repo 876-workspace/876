@@ -4,7 +4,7 @@
  *
  * Source (read-only): the identity API's Postgres (`users` table), connected via
  *   `MC_BACKFILL_SOURCE_URL` (set it to the identity `DATABASE_URL`).
- * Target: Console's Postgres, via Prisma (`CONSOLE_DATABASE_URL`).
+ * Target: Console's Postgres, via Prisma (`CONSOLE_DIRECT_DATABASE_URL`).
  *
  * For every identity user with a Console `role` (anything other than the
  * default `user`), this:
@@ -75,7 +75,7 @@ async function main(): Promise<void> {
   }
 
   const adapter = new PrismaPg({
-    connectionString: process.env.CONSOLE_DATABASE_URL,
+    connectionString: process.env.CONSOLE_DIRECT_DATABASE_URL,
   })
   const prisma = new PrismaClient({ adapter })
   try {

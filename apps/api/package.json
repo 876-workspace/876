@@ -40,8 +40,8 @@
   },
   "dependencies": {
     "@cloudflare/containers": "0.3.7",
-    "@prisma/adapter-pg": "7.7.0",
     "@prisma/client": "7.7.0",
+    "@prisma/extension-accelerate": "3.0.1",
     "@sentry/node": "10.69.0",
     "compression": "1.8.1",
     "cors": "2.8.6",

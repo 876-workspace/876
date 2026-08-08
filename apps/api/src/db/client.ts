@@ -1,4 +1,4 @@
-import { PrismaPg } from '@prisma/adapter-pg'
+import { withAccelerate } from '@prisma/extension-accelerate'
 
 import { getSettings } from '@/config'
 import { getLogger } from '@/platform/logger'
@@ -10,31 +10,26 @@ const log = getLogger('db')
 /**
  * The Prisma client singleton.
  *
- * This service runs as a long-lived Node process in a Cloudflare Container, not
- * in a serverless function, so a real connection pool is correct here — the
- * FastAPI service used SQLAlchemy's NullPool specifically because a pooled
- * asyncpg connection could outlive the event loop that created it between
- * freezes. That constraint does not apply to a container.
+ * This service runs as a long-lived Node process in a Cloudflare Container.
+ * Prisma Accelerate owns the remote connection pool so container instances do
+ * not maintain their own database socket pool.
  *
  * Only a `*.repository.ts` may import this module; dependency-cruiser enforces
  * it (.claude/rules/express-api.md).
  */
-function createClient(): PrismaClient {
+function createClient() {
   const { databaseUrl, environment } = getSettings()
   if (!databaseUrl) throw new Error('DATABASE_URL is not set.')
 
-  const adapter = new PrismaPg({
-    connectionString: databaseUrl,
-    // Retire idle pooled connections proactively rather than discovering a
-    // server-closed socket in the middle of a later query.
-    idleTimeoutMillis: 30_000,
-    max: 10,
-  })
-
-  return new PrismaClient({
-    adapter,
+  const client = new PrismaClient({
+    accelerateUrl: databaseUrl,
     log: environment === 'development' ? ['warn', 'error'] : ['error'],
   })
+
+  // This rollout intentionally does not expose cacheStrategy. Keep the
+  // repository-facing client type stable while routing every query through the
+  // Accelerate extension at runtime.
+  return client.$extends(withAccelerate()) as unknown as PrismaClient
 }
 
 export const prisma: PrismaClient = createClient()

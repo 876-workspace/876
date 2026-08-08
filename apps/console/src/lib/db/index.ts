@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { PrismaPg } from '@prisma/adapter-pg'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
@@ -20,7 +20,7 @@ export type { Role, Member, Note, Setting } from './generated/prisma/client'
  */
 function reportDbFailure(
   error: unknown,
-  failure: Partial<QueryFailure> & { stage: 'pool' | 'query' }
+  failure: Partial<QueryFailure> & { stage: 'query' }
 ): void {
   Sentry.captureException(error, {
     level: 'error',
@@ -37,24 +37,18 @@ function reportDbFailure(
       model: failure.model ?? null,
       operation: failure.operation ?? null,
       consequence: failure.crossRequestIo
-        ? 'A pg pool outlived the request that opened it. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
+        ? 'A database request crossed its Worker request scope. The query never settles, so Cloudflare cancels the invocation and the page fails with Error 1101.'
         : 'The request fails instead of rendering.',
     },
   })
 }
 
 function createPrisma() {
-  const rawConnectionString = process.env.CONSOLE_DATABASE_URL
-  if (!rawConnectionString) {
+  const accelerateUrl = process.env.CONSOLE_DATABASE_URL
+  if (!accelerateUrl) {
     throw new Error('CONSOLE_DATABASE_URL is not set; Console DB unavailable.')
   }
-  // Prisma Postgres is reached over its pooled TCP endpoint via `@prisma/adapter-pg`.
-  // The client is request-scoped through `resolvePrisma` below, because a pg
-  // socket belongs to the request that opened it and reusing it from the next
-  // request on the same isolate hangs workerd.
-  const connectionString = rawConnectionString
-  const adapter = new PrismaPg({ connectionString })
-  return new PrismaClient({ adapter })
+  const client = new PrismaClient({ accelerateUrl })
     .$extends({
       query: {
         note: {
@@ -82,6 +76,10 @@ function createPrisma() {
         }),
       },
     })
+
+  // Keep the existing service-facing extension type stable. Accelerate is
+  // applied at runtime for pooling; cacheStrategy is intentionally deferred.
+  return client.$extends(withAccelerate()) as unknown as typeof client
 }
 
 type ConsolePrisma = ReturnType<typeof createPrisma>
@@ -117,13 +115,10 @@ const resolvePrisma = createRequestScopedResolver<ConsolePrisma>({
  * the connection string a build-time requirement — and the Cloudflare build
  * environment has no `CONSOLE_DATABASE_URL`, only the Worker runtime does.
  *
- * The client is also scoped to the in-flight request. That was mandatory under
- * the WebSocket driver, where a pool's socket belongs to the request that
- * opened it and reusing it from the next request on the same isolate hangs the
- * Worker. Over HTTP there is no socket to strand, so the scoping is now
- * belt-and-braces rather than load-bearing — kept because a throwaway HTTP
- * client per request costs nothing measurable, and because it keeps this app's
- * shape identical to the datastores still on the pool. See `@876/core/db`.
+ * The client is scoped to the in-flight request so its lifecycle remains
+ * aligned with the Worker request context. Accelerate owns the remote
+ * connection pool, so no local socket is reused across requests. See
+ * `@876/core/db`.
  */
 export const prisma = new Proxy({} as ConsolePrisma, {
   get(_target, property) {
