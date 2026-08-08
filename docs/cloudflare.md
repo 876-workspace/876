@@ -41,11 +41,41 @@ repository secret `API_DATABASE_URL` exists because the unprefixed
 deploy spent a day trying to build the identity schema inside the couriers
 database. Do not add an unprefixed database secret back.
 
-**Hyperdrive is not used.** The Worker-side Prisma clients use
-`@prisma/adapter-pg` to connect directly to each Prisma Postgres pooled
-endpoint. The connection URL is supplied as the owning Worker's secret, so
-there is no Hyperdrive binding to wire. Keep `pg-cloudflare` available to the
-Worker bundle; it provides `pg`'s workerd-compatible socket transport.
+The **CI** secrets in that table hold the **direct** `postgres://` URL: the only
+thing CI does with them is `prisma migrate deploy`, and the deploy workflow maps
+each onto that app's `*_DIRECT_DATABASE_URL`. The **Worker** secret of the same
+name holds the **Accelerate** URL instead, because that is what the runtime
+client reads. Same database, two URLs, two consumers — see below.
+
+### Each database has two URLs, and they are not interchangeable
+
+Every Prisma workspace reads **two** connection strings for the same database:
+
+| Variable                      | Scheme               | Read by                                                      |
+| ----------------------------- | -------------------- | ------------------------------------------------------------ |
+| `<PREFIX>DATABASE_URL`        | `prisma+postgres://` | the runtime client, as `new PrismaClient({ accelerateUrl })` |
+| `<PREFIX>DIRECT_DATABASE_URL` | `postgres://`        | `prisma.config.ts` — migrate, generate, seed, baseline       |
+
+`accelerateUrl` is **mutually exclusive with a driver adapter** and rejects a
+direct TCP URL. Prisma does not check the scheme when the client is
+constructed, so a direct URL in the runtime variable fails on the _first query_
+as an opaque internal error, and every data-backed route 500s with nothing
+naming the cause. That is exactly what happened on 2026-08-08: the runtime
+clients moved to Accelerate while every Worker secret, CI secret, and local
+`.env` still held `postgres://…@pooled.db.prisma.io:5432`. `/health` stayed
+green throughout because it never touches the database.
+
+Both halves are now validated where they are read — `requireAccelerateUrl()`
+from `@876/core/db` in each app client, an `accelerateUrl()` refinement in
+`apps/api/src/config`, and `pnpm check:database-env` ahead of every `pnpm dev*`
+that starts a Prisma workspace. A wrong-shaped URL is a named startup failure,
+not a runtime mystery.
+
+Get both from Prisma Console → the database → **Connect**: the Accelerate
+string, and the **direct connection** string.
+
+**Hyperdrive is not used.** Accelerate owns the remote connection pool, so
+Workers hold no database socket and there is no Hyperdrive binding to wire.
 
 ---
 

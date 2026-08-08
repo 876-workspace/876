@@ -60,6 +60,94 @@ export function isWorkerdRuntime(): boolean {
   )
 }
 
+// ── Connection URL contract ─────────────────────────────────────────────────
+
+/**
+ * The URL schemes Prisma accepts for `accelerateUrl`.
+ *
+ * `prisma+postgres:` is what a Prisma Postgres database hands out; `prisma:` is
+ * the older Accelerate form. A direct TCP string (`postgres:`/`postgresql:`) is
+ * *not* one of these — it belongs to `adapter`, which is mutually exclusive
+ * with `accelerateUrl` in the generated client's constructor type.
+ */
+export const ACCELERATE_URL_PROTOCOLS = ['prisma:', 'prisma+postgres:']
+
+/**
+ * A datastore's runtime URL is not a Prisma Accelerate URL.
+ *
+ * Passing a direct `postgres://` string as `accelerateUrl` does not fail at
+ * construction — it fails on the first query, deep inside Prisma, as an opaque
+ * internal error. Every page that touches the database then 500s with nothing
+ * naming the cause. This error is raised at client construction instead, so the
+ * misconfiguration is reported once, by name, with the fix in the message.
+ *
+ * This is not hypothetical: it took the whole platform down on 2026-08-08 when
+ * the runtime clients moved to Accelerate while every stored connection string
+ * stayed a direct `postgres://…@pooled.db.prisma.io:5432` endpoint.
+ */
+export class DatabaseUrlNotAcceleratedError extends Error {
+  override readonly name = 'DatabaseUrlNotAcceleratedError'
+
+  constructor(
+    /** The environment variable that was read, e.g. `CONSOLE_DATABASE_URL`. */
+    readonly variable: string,
+    /** The datastore it configures, e.g. `Console`. */
+    readonly datastore: string,
+    /** The scheme that was found, or `undefined` when the value was unset. */
+    readonly protocol?: string
+  ) {
+    super(
+      protocol === undefined
+        ? `${variable} is not set; ${datastore} DB unavailable.`
+        : `${variable} is a "${protocol}" URL, but ${datastore}'s Prisma ` +
+            `client connects through Accelerate and needs a ` +
+            `${ACCELERATE_URL_PROTOCOLS.join(' or ')} URL. A direct TCP URL ` +
+            `only works with a driver adapter. Set ${variable} to the ` +
+            `Accelerate connection string for this database and keep the ` +
+            `direct URL on the matching *_DIRECT_DATABASE_URL variable, which ` +
+            `is what the Prisma CLI uses for migrations.`
+    )
+  }
+}
+
+/**
+ * Returns `value` once it is confirmed to be a Prisma Accelerate URL.
+ *
+ * Checked at client construction so a wrong-shaped connection string is a
+ * single named startup failure rather than an opaque per-query error.
+ *
+ * @param value - The raw environment value, possibly unset.
+ * @param options - Which variable was read and which datastore it configures.
+ * @returns The value, unchanged.
+ * @throws {DatabaseUrlNotAcceleratedError} When unset or not an Accelerate URL.
+ *
+ * @example
+ * const accelerateUrl = requireAccelerateUrl(process.env.CONSOLE_DATABASE_URL, {
+ *   variable: 'CONSOLE_DATABASE_URL',
+ *   datastore: 'Console',
+ * })
+ */
+export function requireAccelerateUrl(
+  value: string | undefined,
+  options: { variable: string; datastore: string }
+): string {
+  const { variable, datastore } = options
+
+  if (!value) throw new DatabaseUrlNotAcceleratedError(variable, datastore)
+
+  // Compare on the scheme only. The rest of the URL carries an API key, so it
+  // must never reach an error message, a log line, or a Sentry event.
+  const protocol = value.slice(0, value.indexOf(':') + 1).toLowerCase()
+  if (!ACCELERATE_URL_PROTOCOLS.includes(protocol))
+    throw new DatabaseUrlNotAcceleratedError(
+      variable,
+      datastore,
+      protocol || 'unknown'
+    )
+
+  return value
+}
+
 // ── Error identification ────────────────────────────────────────────────────
 
 /** The workerd message emitted when an I/O object outlives its request. */
