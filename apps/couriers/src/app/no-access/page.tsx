@@ -30,12 +30,12 @@ export default async function NoAccessPage() {
 
         <div className="space-y-2">
           <h1 className="876-page-title text-foreground">{content.heading}</h1>
-          <p className="text-muted-foreground text-sm leading-relaxed">
+          <p className="text-muted-foreground text-[0.8125rem] leading-relaxed">
             {content.body}
           </p>
         </div>
 
-        <SwitchAccountLink className="text-muted-foreground hover:text-foreground inline-flex h-9 w-full items-center justify-center text-sm transition-colors" />
+        <SwitchAccountLink className="text-muted-foreground hover:text-foreground inline-flex h-9 w-full items-center justify-center text-[0.8125rem] transition-colors" />
       </div>
     </main>
   )

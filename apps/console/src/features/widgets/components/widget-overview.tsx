@@ -18,7 +18,7 @@ export function WidgetOverview({ widget }: { widget: WidgetMetadata }) {
       <section>
         <h2 className="mb-3 font-semibold">Definition</h2>
         <div className="876-card overflow-hidden">
-          <dl className="divide-876-surface-border divide-y text-sm">
+          <dl className="divide-876-surface-border divide-y text-[0.8125rem]">
             <DefinitionRow label="Version" value={widget.version} />
             <DefinitionRow
               label="Distribution"

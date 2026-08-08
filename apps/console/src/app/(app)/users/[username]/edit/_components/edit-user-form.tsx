@@ -88,7 +88,7 @@ export function EditUserForm({ user, initialRole }: Props) {
     <section className="876-card p-5">
       <div className="mb-4 flex flex-col gap-1">
         <span className="876-eyebrow">Account</span>
-        <h3 className="text-foreground text-sm font-medium">
+        <h3 className="text-foreground text-[0.8125rem] font-medium">
           Login and platform access
         </h3>
       </div>
@@ -147,17 +147,17 @@ export function EditUserForm({ user, initialRole }: Props) {
             aria-invalid={usernameStatus.status === 'unavailable'}
           />
           {usernameStatus.status === 'checking' && (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-[0.8125rem]">
               Checking availability…
             </p>
           )}
           {usernameStatus.status === 'available' && (
-            <p className="text-sm text-emerald-600 dark:text-emerald-500">
+            <p className="text-[0.8125rem] text-emerald-600 dark:text-emerald-500">
               {usernameStatus.message}
             </p>
           )}
           {usernameStatus.status === 'unavailable' && (
-            <p className="text-destructive text-sm">{usernameStatus.message}</p>
+            <p className="text-destructive text-[0.8125rem]">{usernameStatus.message}</p>
           )}
         </div>
 
@@ -203,7 +203,7 @@ export function EditUserForm({ user, initialRole }: Props) {
           </div>
         </div>
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
       </div>
 
       <div className="mt-5 flex justify-end gap-2 border-t pt-4">

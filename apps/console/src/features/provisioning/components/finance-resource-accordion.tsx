@@ -81,7 +81,7 @@ export function FinanceResourceAccordion({
       </div>
 
       {rows.length === 0 ? (
-        <p className="border-border text-muted-foreground rounded-md border border-dashed p-6 text-center text-sm">
+        <p className="border-border text-muted-foreground rounded-md border border-dashed p-6 text-center text-[0.8125rem]">
           No defaults configured.
         </p>
       ) : (

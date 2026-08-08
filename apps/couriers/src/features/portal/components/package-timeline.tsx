@@ -40,7 +40,7 @@ export function PackageTimeline({ status }: { status: PackageStatus }) {
               ) : null}
             </span>
             <span
-              className={`pb-6 text-sm ${
+              className={`pb-6 text-[0.8125rem] ${
                 current
                   ? 'text-foreground font-semibold'
                   : reached

@@ -141,7 +141,7 @@ async function PlanIdentity({
         </span>
       </div>
       {product.description && (
-        <p className="text-muted-foreground max-w-xl text-sm leading-relaxed">
+        <p className="text-muted-foreground max-w-xl text-[0.8125rem] leading-relaxed">
           {product.description}
         </p>
       )}

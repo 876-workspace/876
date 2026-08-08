@@ -48,7 +48,7 @@ export function Field({
         className={
           mono
             ? 'group-hover/field:text-foreground min-w-0 truncate text-right font-mono text-[0.8125rem] transition-colors'
-            : 'group-hover/field:text-foreground min-w-0 truncate text-right text-sm transition-colors'
+            : 'group-hover/field:text-foreground min-w-0 truncate text-right text-[0.8125rem] transition-colors'
         }
       >
         {value}

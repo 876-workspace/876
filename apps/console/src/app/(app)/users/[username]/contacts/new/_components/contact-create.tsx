@@ -51,7 +51,7 @@ export function ContactCreate({ user }: Props) {
     <section className="876-card max-w-2xl">
       <div className="border-b px-5 py-4">
         <h2 className="text-lg font-medium">Add contact</h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           Save another person to this user&apos;s contacts by their user ID.
         </p>
       </div>

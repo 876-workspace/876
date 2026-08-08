@@ -43,7 +43,7 @@ function buildColumns(): ColumnDef<SubscriberItem>[] {
         const sub = row.original
         return (
           <div className="flex flex-col gap-0.5">
-            <span className="text-foreground text-sm font-medium">
+            <span className="text-foreground text-[0.8125rem] font-medium">
               {sub.name}
             </span>
             <span className="text-muted-foreground text-xs">{sub.email}</span>
@@ -81,7 +81,7 @@ function buildColumns(): ColumnDef<SubscriberItem>[] {
       header: 'MRR',
       cell: ({ row }) => {
         return (
-          <span className="text-foreground font-mono text-sm tabular-nums">
+          <span className="text-foreground font-mono text-[0.8125rem] tabular-nums">
             {formatMoney(row.original.mrr)}
           </span>
         )
@@ -124,7 +124,7 @@ export function SubscribersTable({
                   <EmptyTitle className="text-foreground text-base font-semibold">
                     No recent subscriptions
                   </EmptyTitle>
-                  <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-sm leading-relaxed">
+                  <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
                     Subscriptions for this plan will appear here once customers
                     subscribe.
                   </EmptyDescription>

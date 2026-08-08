@@ -14,7 +14,7 @@ export default function Loading() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="876-page-title">Billing customers</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-[0.8125rem]">
             Billing-owned customer records.
           </p>
         </div>

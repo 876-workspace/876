@@ -154,7 +154,7 @@ export function ProfileForm({
       <ProfileSections {...sectionsProps} />
 
       {error ? (
-        <p className="text-destructive mt-6 text-sm" role="alert">
+        <p className="text-destructive mt-6 text-[0.8125rem]" role="alert">
           {error}
         </p>
       ) : null}
@@ -162,7 +162,7 @@ export function ProfileForm({
       {canEdit ? (
         <div className="bg-876-surface/92 border-border-strong sticky bottom-0 -mx-4 mt-6 flex items-center gap-3 border-t px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
           <p
-            className="text-muted-foreground mr-auto flex items-center gap-2 text-sm"
+            className="text-muted-foreground mr-auto flex items-center gap-2 text-[0.8125rem]"
             aria-live="polite"
           >
             {dirty ? (
@@ -191,7 +191,7 @@ export function ProfileForm({
           </Button>
         </div>
       ) : (
-        <p className="text-muted-foreground mt-8 border-t pt-6 text-sm">
+        <p className="text-muted-foreground mt-8 border-t pt-6 text-[0.8125rem]">
           Only organization owners and admins can edit these details.
         </p>
       )}

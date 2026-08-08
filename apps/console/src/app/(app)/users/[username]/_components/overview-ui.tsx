@@ -74,7 +74,7 @@ export function Fact({
   return (
     <div className="min-w-0">
       <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className={cn('mt-1 truncate text-sm', mono && 'font-mono')}>
+      <dd className={cn('mt-1 truncate text-[0.8125rem]', mono && 'font-mono')}>
         {value}
       </dd>
     </div>
@@ -83,7 +83,7 @@ export function Fact({
 
 export function EmptyHint({ children }: { children: ReactNode }) {
   return (
-    <p className="text-muted-foreground rounded-lg px-3 py-5 text-center text-sm">
+    <p className="text-muted-foreground rounded-lg px-3 py-5 text-center text-[0.8125rem]">
       {children}
     </p>
   )
@@ -130,7 +130,7 @@ export function ProviderRow({ account }: { account: AdminAccount }) {
           <KeyRound className="text-muted-foreground size-3.5" />
         )}
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm font-medium">
+      <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-medium">
         {label}
       </span>
     </li>

@@ -63,7 +63,7 @@ export function FeatureAccessBoard({ scopes }: { scopes: AccessScope[] }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-muted-foreground text-sm">
+      <p className="text-muted-foreground text-[0.8125rem]">
         A user override wins over an organization override, which wins over the
         app default. A disabled flag stays off regardless.
       </p>
@@ -119,7 +119,7 @@ export function FeatureAccessBoard({ scopes }: { scopes: AccessScope[] }) {
                         )}
                       >
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-medium">
+                          <span className="block truncate text-[0.8125rem] font-medium">
                             {flag.name}
                           </span>
                           <span className="text-muted-foreground block truncate font-mono text-xs">
@@ -154,7 +154,7 @@ export function FeatureAccessBoard({ scopes }: { scopes: AccessScope[] }) {
                     ))}
 
                     {scope.flags.length === 0 && (
-                      <li className="text-muted-foreground px-3 py-4 text-sm">
+                      <li className="text-muted-foreground px-3 py-4 text-[0.8125rem]">
                         No flags registered for this app.
                       </li>
                     )}

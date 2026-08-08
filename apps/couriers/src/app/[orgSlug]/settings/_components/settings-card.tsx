@@ -61,7 +61,7 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
             {item.href ? (
               <Link
                 href={`/${orgSlug}${item.href}`}
-                className="group/item hover:bg-muted flex items-center justify-between rounded-md py-1.5 pr-2.5 pl-6 text-sm transition-colors"
+                className="group/item hover:bg-muted flex items-center justify-between rounded-md py-1.5 pr-2.5 pl-6 text-[0.8125rem] transition-colors"
               >
                 <span className="text-foreground/90 group-hover/item:text-foreground">
                   {item.title}
@@ -69,7 +69,7 @@ export function SettingsCard({ group, orgSlug }: SettingsCardProps) {
                 <ChevronRightIcon className="text-muted-foreground size-4 -translate-x-1 opacity-0 transition-all group-hover/item:translate-x-0 group-hover/item:opacity-100" />
               </Link>
             ) : (
-              <span className="text-muted-foreground/45 block py-1.5 pr-2.5 pl-6 text-sm">
+              <span className="text-muted-foreground/45 block py-1.5 pr-2.5 pl-6 text-[0.8125rem]">
                 {item.title}
               </span>
             )}

@@ -47,7 +47,7 @@ export default async function GetStartedPage() {
             <br />
             for your team
           </PageTitle>
-          <PageDescription className="text-sm leading-relaxed">
+          <PageDescription className="text-[0.8125rem] leading-relaxed">
             Manage packages, customers, and deliveries from one workspace.
           </PageDescription>
         </PageHeader>
@@ -58,10 +58,10 @@ export default async function GetStartedPage() {
             <li key={f.label} className="flex items-start gap-3">
               <CheckIcon />
               <div>
-                <span className="text-foreground text-sm font-medium">
+                <span className="text-foreground text-[0.8125rem] font-medium">
                   {f.label}
                 </span>
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-[0.8125rem]">
                   {' '}
                   — {f.description}
                 </span>
@@ -73,7 +73,7 @@ export default async function GetStartedPage() {
         {/* Actions */}
         <div className="space-y-3">
           <SetupButton />
-          <SwitchAccountLink className="text-muted-foreground hover:text-foreground flex h-9 w-full items-center justify-center text-sm transition-colors" />
+          <SwitchAccountLink className="text-muted-foreground hover:text-foreground flex h-9 w-full items-center justify-center text-[0.8125rem] transition-colors" />
         </div>
       </div>
     </div>

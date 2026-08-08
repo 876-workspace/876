@@ -5,7 +5,7 @@ model rejects it and the run dies instantly)
 **Type:** docs-only. You must not touch any `.ts`, `.py`, `.json`, or `.prisma` file.
 
 > A first attempt on `gemini-3.6-flash-high` died with `Error: timeout waiting
-> for response` before writing anything. This document is the migration's
+for response` before writing anything. This document is the migration's
 > handoff, so it goes to Sonnet.
 
 ## The one file you may edit
@@ -96,20 +96,20 @@ cross-implementation fixture.
 Replace the whole `| Unit | Source | Owner |` table with this. Six units are now
 done; three remain.
 
-| Unit | Source | State |
-| --- | --- | --- |
-| `platform/secure-field.ts` | `core/secure_field.py` | **done** |
-| `platform/phone.ts` | `core/phone.py` (45) | **done** |
-| `platform/pin.ts` | `core/pin.py` (125) | **done** |
-| `platform/rate-limit.ts` | `core/rate_limit.py` (87) | **done** |
-| `platform/risk.ts` | `core/risk.py` (148) | **done** |
-| `platform/user-agent.ts` | `core/user_agent.py` (209) | **done** |
-| `providers/communications.ts` | `providers/communications.py` | **done** |
-| `providers/twilio/` | `providers/twilio/*.py` (585) | **done** |
-| `providers/posthog/` | `providers/posthog/client.py` (185) | **done** |
-| `platform/permissions.ts` | `core/org_permissions.py` — a pure catalog plus the default role definitions | primary agent |
-| `platform/session.ts` | `core/session.py` — iron-session sealing, must stay compatible with `unsealSession876` in `@876/core` | primary agent |
-| `providers/workos/` | `providers/workos/*.py` (~900) | primary agent |
+| Unit                          | Source                                                                                                | State         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ------------- |
+| `platform/secure-field.ts`    | `core/secure_field.py`                                                                                | **done**      |
+| `platform/phone.ts`           | `core/phone.py` (45)                                                                                  | **done**      |
+| `platform/pin.ts`             | `core/pin.py` (125)                                                                                   | **done**      |
+| `platform/rate-limit.ts`      | `core/rate_limit.py` (87)                                                                             | **done**      |
+| `platform/risk.ts`            | `core/risk.py` (148)                                                                                  | **done**      |
+| `platform/user-agent.ts`      | `core/user_agent.py` (209)                                                                            | **done**      |
+| `providers/communications.ts` | `providers/communications.py`                                                                         | **done**      |
+| `providers/twilio/`           | `providers/twilio/*.py` (585)                                                                         | **done**      |
+| `providers/posthog/`          | `providers/posthog/client.py` (185)                                                                   | **done**      |
+| `platform/permissions.ts`     | `core/org_permissions.py` — a pure catalog plus the default role definitions                          | primary agent |
+| `platform/session.ts`         | `core/session.py` — iron-session sealing, must stay compatible with `unsealSession876` in `@876/core` | primary agent |
+| `providers/workos/`           | `providers/workos/*.py` (~900)                                                                        | primary agent |
 
 Immediately after that table, replace the sentence beginning "Everything after
 this batch depends on some part of it" with this paragraph:

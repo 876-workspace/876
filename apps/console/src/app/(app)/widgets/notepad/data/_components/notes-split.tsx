@@ -120,7 +120,7 @@ const fullColumns: ColumnDef<AdminNoteRow, unknown>[] = [
           <AvatarFallback>{initials(row.original)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <div className="truncate text-sm">
+          <div className="truncate text-[0.8125rem]">
             {row.original.ownerName ?? 'Unknown account'}
           </div>
           <div className="text-muted-foreground truncate text-xs">
@@ -135,16 +135,16 @@ const fullColumns: ColumnDef<AdminNoteRow, unknown>[] = [
     header: 'Written in',
     cell: ({ row }) =>
       row.original.sourceApp ? (
-        <span className="text-sm">{row.original.sourceApp}</span>
+        <span className="text-[0.8125rem]">{row.original.sourceApp}</span>
       ) : (
-        <span className="text-muted-foreground text-sm">Unattributed</span>
+        <span className="text-muted-foreground text-[0.8125rem]">Unattributed</span>
       ),
   },
   {
     id: 'updated',
     header: 'Updated',
     cell: ({ row }) => (
-      <span className="text-sm whitespace-nowrap tabular-nums">
+      <span className="text-[0.8125rem] whitespace-nowrap tabular-nums">
         {formatNoteTimestamp(row.original.updatedAt)}
       </span>
     ),
@@ -180,18 +180,18 @@ export function NotesSplit({
   if (loadError)
     return (
       <div className="876-card p-5">
-        <p className="text-destructive text-sm">{loadError}</p>
+        <p className="text-destructive text-[0.8125rem]">{loadError}</p>
       </div>
     )
 
   const empty = (
-    <div className="text-muted-foreground py-6 text-center text-sm">
+    <div className="text-muted-foreground py-6 text-center text-[0.8125rem]">
       {ownerFilter ? 'No notes for this account.' : 'No notes yet.'}
     </div>
   )
 
   const ownerChip = ownerFilter ? (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-[0.8125rem]">
       <span className="text-muted-foreground">Filtered to one account</span>
       <button
         type="button"

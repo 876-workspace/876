@@ -96,7 +96,7 @@ export function RegisterWidgetFlagsForm({
   if (widgets.length === 0) {
     return (
       <div className="876-card p-5">
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           No widgets are declared in the catalog.
         </p>
       </div>
@@ -153,7 +153,7 @@ export function RegisterWidgetFlagsForm({
           </p>
         </div>
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
       </div>
 
       <div className="border-876-surface-border flex justify-end gap-2 border-t px-5 py-4">

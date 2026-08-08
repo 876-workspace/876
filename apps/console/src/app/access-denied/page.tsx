@@ -70,7 +70,7 @@ export default async function AccessDeniedPage({
         <h1 className="876-page-title text-[var(--color-base-content)]">
           {heading}
         </h1>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[var(--auth-muted)]">
+        <p className="mx-auto mt-2 max-w-sm text-[0.8125rem] leading-6 text-[var(--auth-muted)]">
           {body}
         </p>
       </header>

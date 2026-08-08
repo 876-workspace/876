@@ -37,7 +37,7 @@ export default async function AppApiKeysPage({ params, searchParams }: Props) {
     <div className="space-y-5">
       <div className="mb-4">
         <h2 className="876-page-title text-foreground">API Keys</h2>
-        <p className="text-muted-foreground mt-1 text-sm">
+        <p className="text-muted-foreground mt-1 text-[0.8125rem]">
           Manage API keys to authenticate server requests.
         </p>
       </div>

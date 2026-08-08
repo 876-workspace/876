@@ -29,7 +29,7 @@ function StatCard({
 }) {
   return (
     <div className="876-card p-6">
-      <div className="text-muted-foreground flex items-center justify-between text-sm font-medium">
+      <div className="text-muted-foreground flex items-center justify-between text-[0.8125rem] font-medium">
         {title}
         <Icon className="h-4 w-4" />
       </div>

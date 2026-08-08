@@ -8,10 +8,10 @@
 
 Port two FastAPI domains to Express 5 + TypeScript, behaviour-identical:
 
-| Source                   | Routes | Target                       |
-| ------------------------ | ------ | ---------------------------- |
-| `domains/apps/`          | 13     | `src/modules/apps/`          |
-| `domains/provisioning/`  | 15     | `src/modules/provisioning/`  |
+| Source                  | Routes | Target                      |
+| ----------------------- | ------ | --------------------------- |
+| `domains/apps/`         | 13     | `src/modules/apps/`         |
+| `domains/provisioning/` | 15     | `src/modules/provisioning/` |
 
 `domains/apps/router.py` exposes **two** routers: `public_router` (mounted
 outside `protected_router`, so tier `public`) and `router` (mounted on
@@ -115,7 +115,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

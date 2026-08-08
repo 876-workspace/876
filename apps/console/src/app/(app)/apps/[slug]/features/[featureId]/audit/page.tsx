@@ -62,7 +62,7 @@ export default async function AppFeatureAuditPage({ params }: Props) {
   return (
     <section className="border-876-surface-border border-y py-5">
       <div className="mb-4">
-        <h3 className="text-sm font-semibold">Audit log</h3>
+        <h3 className="text-[0.8125rem] font-semibold">Audit log</h3>
         <p className="text-muted-foreground mt-1 text-xs">
           Provider and Console timestamps for this feature flag.
         </p>

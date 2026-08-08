@@ -81,7 +81,7 @@ export function SectionHeaderPill({
 
   return (
     <h2
-      className={`flex min-h-12 w-full flex-row items-center gap-2 border-b px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-50 ${styles.header}`}
+      className={`flex min-h-12 w-full flex-row items-center gap-2 border-b px-4 py-3 text-[0.8125rem] font-semibold text-slate-900 dark:text-slate-50 ${styles.header}`}
     >
       <Icon
         aria-hidden="true"

@@ -21,7 +21,7 @@ exchange, refresh, and the WorkOS authorization URL. **Call it. Do not
 reimplement any of it, and do not modify it.** Build the service with
 `createAuthService()` from `@/services/auth`.
 
-The module owns only what the FastAPI *router* owns: reading the request,
+The module owns only what the FastAPI _router_ owns: reading the request,
 sealing and setting the session cookie, choosing status codes, serializing, and
 the session-state endpoints in `domains/auth/session_state.py`.
 
@@ -134,7 +134,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

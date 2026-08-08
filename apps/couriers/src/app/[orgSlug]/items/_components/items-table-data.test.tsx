@@ -56,7 +56,7 @@ describe('Couriers items page data', () => {
     })
   })
 
-  it('when catalog items exist, formats minor-unit prices and identifies their source', async () => {
+  it('when catalog items exist, formats prices and displays catalog fields', async () => {
     mocks.listItems.mockResolvedValue(
       listResult([
         {
@@ -85,10 +85,10 @@ describe('Couriers items page data', () => {
     render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
     expect(screen.getByText('Same-day delivery')).toBeVisible()
-    expect(screen.getByText('Connected app')).toBeVisible()
-    expect(screen.getByText('Billing workspace')).toBeVisible()
+    expect(screen.getByText('DELIVERY-SAME-DAY')).toBeVisible()
+    expect(screen.getByText('Reusable mailer')).toBeVisible()
     expect(screen.getByText(/1,250/)).toBeVisible()
-    expect(screen.getByText('—')).toBeVisible()
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
     expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
       active: undefined,
     })
@@ -107,7 +107,7 @@ describe('Couriers items page data', () => {
     expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
       active: false,
     })
-    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
     expect(screen.getByText('No items')).toBeVisible()
     expect(screen.getByText('No inactive items.')).toBeVisible()
   })
@@ -120,7 +120,7 @@ describe('Couriers items page data', () => {
 
     render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
-    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
     expect(
       screen.getByText('The shared catalog could not be loaded.')
     ).toBeVisible()

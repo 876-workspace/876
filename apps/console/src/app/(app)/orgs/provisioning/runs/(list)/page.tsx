@@ -78,7 +78,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
       <ProvisioningNav current="runs" />
 
       <form className="876-card grid gap-3 p-4 md:grid-cols-[180px_1fr_1fr_auto_auto]">
-        <label className="space-y-1 text-sm">
+        <label className="space-y-1 text-[0.8125rem]">
           <span className="font-medium">Status</span>
           <select
             name="status"
@@ -93,7 +93,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
             ))}
           </select>
         </label>
-        <label className="space-y-1 text-sm">
+        <label className="space-y-1 text-[0.8125rem]">
           <span className="font-medium">Application</span>
           <select
             name="app_id"
@@ -108,7 +108,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
             ))}
           </select>
         </label>
-        <label className="space-y-1 text-sm">
+        <label className="space-y-1 text-[0.8125rem]">
           <span className="font-medium">Organization ID</span>
           <input
             name="organization_id"

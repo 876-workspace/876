@@ -9,7 +9,7 @@ export const metadata = { title: 'New User' }
 export default function NewUserPage() {
   return (
     <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-sm">
+      <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
         <Link
           href="/users"
           className="text-muted-foreground hover:text-foreground transition-colors"

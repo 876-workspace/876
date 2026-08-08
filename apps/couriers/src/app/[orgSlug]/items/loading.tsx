@@ -32,7 +32,7 @@ export default function Loading() {
         refresh
         dropdownActions={ITEMS_DROPDOWN_ACTIONS}
       />
-      <DataTableSkeleton columns={ITEMS_SKELETON_COLUMNS} />
+      <DataTableSkeleton columns={ITEMS_SKELETON_COLUMNS} rows={5} />
     </Page>
   )
 }

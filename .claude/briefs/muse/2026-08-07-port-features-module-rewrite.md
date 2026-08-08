@@ -142,7 +142,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

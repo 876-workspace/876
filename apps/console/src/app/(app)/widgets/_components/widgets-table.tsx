@@ -58,33 +58,27 @@ const APP_PILL_COLORS: Record<string, string> = {
 
 const columns: ColumnDef<WidgetTableRow, unknown>[] = [
   {
-    id: 'icon',
-    size: 64,
-    enableSorting: false,
-    header: () => <span className="sr-only">Widget icon</span>,
-    cell: ({ row }) =>
-      row.original.kind === 'master' ? (
-        <span className="border-876-surface-border bg-876-surface text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg border shadow-xs">
-          <LayoutGrid className="size-5" />
-        </span>
-      ) : (
-        <WidgetCatalogIcon visual={row.original.visual} />
-      ),
-  },
-  {
     accessorKey: 'name',
     size: 320,
     header: 'Widget',
     cell: ({ row }) => (
-      <div className="max-w-80">
+      <div className="flex max-w-80 items-start gap-3">
         {row.original.kind === 'master' ? (
-          <span className="inline-block max-w-72 truncate font-medium">
+          <span className="border-876-surface-border bg-876-surface text-muted-foreground inline-flex size-10 shrink-0 items-center justify-center rounded-lg border shadow-xs">
+            <LayoutGrid className="size-5" />
+          </span>
+        ) : (
+          <WidgetCatalogIcon visual={row.original.visual} />
+        )}
+        <div className="min-w-0">
+        {row.original.kind === 'master' ? (
+          <span className="inline-block max-w-72 truncate font-medium text-sky-600 dark:text-sky-400">
             {row.original.name}
           </span>
         ) : (
           <Link
             href={row.original.detailHref}
-            className="hover:text-primary inline-block max-w-72 truncate font-medium"
+            className="inline-block max-w-72 truncate font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
             onClick={(event) => event.stopPropagation()}
           >
             {row.original.name}
@@ -93,6 +87,7 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
         <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-5">
           {row.original.description}
         </p>
+        </div>
       </div>
     ),
   },

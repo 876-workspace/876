@@ -8,7 +8,7 @@ export default function OrgNotFound() {
         <Building2 className="text-muted-foreground size-7" />
       </div>
       <h1 className="876-page-title mb-2">Organization not found</h1>
-      <p className="text-muted-foreground mb-8 max-w-xs text-sm">
+      <p className="text-muted-foreground mb-8 max-w-xs text-[0.8125rem]">
         This organization doesn&apos;t exist or may have been removed.
       </p>
       <PageBreadcrumb href="/" label="Dashboard" className="mb-4 -ml-2.5" />

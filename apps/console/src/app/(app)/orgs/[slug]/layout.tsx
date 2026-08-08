@@ -123,7 +123,7 @@ async function CondensedTitle({ slug }: { slug: string }) {
           className="size-6 shrink-0 text-[0.625rem]"
         />
       </ChangeImageDialog>
-      <span className="truncate text-sm font-semibold">
+      <span className="truncate text-[0.8125rem] font-semibold">
         {org.name ?? org.slug}
       </span>
     </>
@@ -169,7 +169,7 @@ async function Identity({ slug }: { slug: string }) {
               <span className="text-muted-foreground italic">Unnamed</span>
             )}
           </h1>
-          <span aria-hidden="true" className="text-muted-foreground/40 text-sm">
+          <span aria-hidden="true" className="text-muted-foreground/40 text-[0.8125rem]">
             ·
           </span>
           <span
@@ -182,7 +182,7 @@ async function Identity({ slug }: { slug: string }) {
           </span>
         </div>
 
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4 sm:text-sm">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4 sm:text-[0.8125rem]">
           <span className="flex min-w-0 items-center gap-1.5">
             <Hash className="size-3.5 shrink-0" />
             <span className="max-w-[160px] truncate sm:max-w-[220px]">

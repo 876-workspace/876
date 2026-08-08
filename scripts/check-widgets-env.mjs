@@ -73,7 +73,7 @@ const widgetsSource = useProcessEnv
 
 if (!databaseUrl) {
   issues.push(`${widgetsSource}: WIDGETS_DATABASE_URL is missing.`)
-} else if (!isUrl(databaseUrl, ['prisma:'])) {
+} else if (!isUrl(databaseUrl, ['prisma:', 'prisma+postgres:'])) {
   issues.push(
     `${widgetsSource}: WIDGETS_DATABASE_URL must be a Prisma Accelerate URL.`
   )

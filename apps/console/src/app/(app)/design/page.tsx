@@ -98,7 +98,7 @@ function Section({
     <section className="space-y-4">
       <div>
         <h2 className="876-section-title">{title}</h2>
-        <p className="text-muted-foreground mt-1 max-w-2xl text-sm">
+        <p className="text-muted-foreground mt-1 max-w-2xl text-[0.8125rem]">
           {caption}
         </p>
       </div>
@@ -120,7 +120,7 @@ function OptionRow({
   return (
     <div className="rounded-xl border">
       <div className="border-b px-4 py-2.5">
-        <p className="text-sm font-medium">{label}</p>
+        <p className="text-[0.8125rem] font-medium">{label}</p>
         <p className="text-muted-foreground text-xs">{hint}</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2">
@@ -159,7 +159,7 @@ function AddButton({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        'inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition-colors',
+        'inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-[0.8125rem] font-medium transition-colors',
         className
       )}
     >
@@ -188,7 +188,7 @@ function StatusDot({ status }: { status: Status }) {
 
 function DotStatus({ status }: { status: Status }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm font-medium capitalize">
+    <span className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium capitalize">
       <StatusDot status={status} />
       {status}
     </span>

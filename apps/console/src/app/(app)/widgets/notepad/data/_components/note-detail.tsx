@@ -119,9 +119,9 @@ export function NoteDetail({
           className="rounded-lg border border-[var(--sticky-border)] bg-[var(--sticky-surface)] p-5 text-[var(--sticky-ink)] dark:border-[var(--sticky-border-dark)] dark:bg-[var(--sticky-surface-dark)] dark:text-[var(--sticky-ink-dark)]"
         >
           {paragraphs.length === 0 ? (
-            <p className="text-sm opacity-70">This note is empty.</p>
+            <p className="text-[0.8125rem] opacity-70">This note is empty.</p>
           ) : (
-            <div className="space-y-3 text-sm leading-6 whitespace-pre-wrap">
+            <div className="space-y-3 text-[0.8125rem] leading-6 whitespace-pre-wrap">
               {paragraphs.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
@@ -131,7 +131,7 @@ export function NoteDetail({
 
         <Separator className="my-5" />
 
-        <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <dl className="grid gap-3 text-[0.8125rem] sm:grid-cols-2">
           <div>
             <dt className="text-muted-foreground text-xs">Owner</dt>
             <dd className="mt-1 flex items-center gap-2.5">

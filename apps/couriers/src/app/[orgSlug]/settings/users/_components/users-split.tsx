@@ -29,7 +29,7 @@ const fullColumns: ColumnDef<TeamMemberRow, unknown>[] = [
   {
     id: 'role',
     header: 'Role',
-    cell: ({ row }) => <span className="text-sm">{row.original.roleName}</span>,
+    cell: ({ row }) => <span className="text-[0.8125rem]">{row.original.roleName}</span>,
   },
   {
     id: 'status',
@@ -67,7 +67,7 @@ export function UsersSplit({ rows, roles, selectedId, orgSlug }: Props) {
           data={rows}
           onRowClick={(row) => selectUser(row.id)}
           emptyState={
-            <div className="text-muted-foreground py-6 text-center text-sm">
+            <div className="text-muted-foreground py-6 text-center text-[0.8125rem]">
               No users.
             </div>
           }

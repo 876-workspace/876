@@ -55,13 +55,13 @@ export function RolesTableRow({ role }: { role: RoleView }) {
         )}
       </TableCell>
       <TableCell className="px-5 py-3.5">
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {role.permissions.length}{' '}
           {role.permissions.length === 1 ? 'permission' : 'permissions'}
         </span>
       </TableCell>
       <TableCell className="px-5 py-3.5">
-        <span className="text-muted-foreground text-sm">{role.userCount}</span>
+        <span className="text-muted-foreground text-[0.8125rem]">{role.userCount}</span>
       </TableCell>
     </TableRow>
   )

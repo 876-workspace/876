@@ -10,7 +10,7 @@ export default function SettingsPage() {
     <Page hub>
       <div className="mb-8">
         <h1 className="text-lg font-medium">Settings</h1>
-        <p className="text-muted-foreground mt-0.5 text-sm">
+        <p className="text-muted-foreground mt-0.5 text-[0.8125rem]">
           Configure access, permissions, and platform behaviour.
         </p>
       </div>
@@ -30,7 +30,7 @@ export default function SettingsPage() {
                 </span>
                 <span className="font-medium">{section.title}</span>
               </div>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <p className="text-muted-foreground text-[0.8125rem] leading-relaxed">
                 {section.description}
               </p>
             </Link>

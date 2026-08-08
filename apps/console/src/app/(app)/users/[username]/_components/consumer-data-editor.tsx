@@ -79,13 +79,13 @@ export function ConsumerDataEditor({ user, profile }: Props) {
     <div>
       <div className="876-card p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-foreground text-sm font-medium">Customer data</h2>
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          <h2 className="text-foreground text-[0.8125rem] font-medium">Customer data</h2>
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <section className="space-y-4">
-            <h3 className="text-sm font-medium">Personal information</h3>
+            <h3 className="text-[0.8125rem] font-medium">Personal information</h3>
             <div className="grid gap-3">
               <FieldInput
                 label="First name"

@@ -19,10 +19,9 @@ Read each route's dependencies for its tier: `AdminDep` → `admin`, `SessionDep
 → `session`, neither → `apiKey`.
 
 **This is the largest non-auth surface. Split it the way
-`src/modules/directory/**` is split** — three resource groups sharing one prefix,
-as `<group>.{schemas,serializers,repository,service,controller,routes}.ts` with
-`organizations.{schemas,serializers,repository,service}.ts` holding what all
-three share. One flat file set would be unreadable. No `schemas/` subdirectory,
+`src/modules/directory/**`is split** — three resource groups sharing one prefix,
+as`<group>.{schemas,serializers,repository,service,controller,routes}.ts`with`organizations.{schemas,serializers,repository,service}.ts`holding what all
+three share. One flat file set would be unreadable. No`schemas/` subdirectory,
 no barrels.
 
 Suggested groups, mirroring the Python split: `organizations` (core),
@@ -125,7 +124,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

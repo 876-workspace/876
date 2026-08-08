@@ -50,7 +50,7 @@ Do not edit `src/http/**`, `src/modules/**`, `prisma/**`, or any `.py` file.
   of external data needs an explicit format check.
 - Prisma refuses plain `null` on a nullable `Json` column — use `Prisma.DbNull`,
   and keep that detail inside the repository.
-- No barrel re-exports. British-neutral comments explaining *why*, not *what*.
+- No barrel re-exports. British-neutral comments explaining _why_, not _what_.
 
 ## Tests
 

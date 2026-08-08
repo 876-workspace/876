@@ -332,7 +332,7 @@ export function OrganizationLogoUpload({
               <ProgressRing percent={percent} />
               <span
                 aria-hidden
-                className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-semibold tabular-nums"
+                className="pointer-events-none absolute inset-0 flex items-center justify-center text-[0.8125rem] font-semibold tabular-nums"
               >
                 {phase === 'uploading'
                   ? `${Math.round(sentFraction * 100)}%`

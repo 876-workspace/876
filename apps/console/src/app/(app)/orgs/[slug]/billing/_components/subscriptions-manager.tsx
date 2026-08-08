@@ -146,7 +146,7 @@ export function SubscriptionsManager({
       </div>
 
       {error && (
-        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-sm">
+        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-[0.8125rem]">
           {error}
         </div>
       )}
@@ -212,7 +212,7 @@ function SubscriptionRow({
   return (
     <div className="grid gap-3 px-4 py-3 xl:grid-cols-[minmax(0,1fr)_9rem_14rem_14rem_16rem_auto] xl:items-center">
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium">
+        <p className="truncate text-[0.8125rem] font-medium">
           {item?.product_name || item?.product_slug || subscription.app_slug}
         </p>
         <p className="text-muted-foreground truncate text-xs">

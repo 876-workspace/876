@@ -14,8 +14,7 @@ Read each route's dependencies for its tier: `AdminDep` -> `admin`, `SessionDep`
 -> `session`, neither -> `apiKey`. Most are `AdminDep`; the exceptions matter, so
 check every route rather than assuming.
 
-**Split it per resource group the way `src/modules/directory/**` and
-`src/modules/organizations/**` are split** — one flat file set at 64 routes is
+**Split it per resource group the way `src/modules/directory/**`and`src/modules/organizations/**` are split** — one flat file set at 64 routes is
 unreadable. Suggested groups, following the Python file split:
 `users` (core CRUD + search), `username` (from `domains/users/username.py`), and
 whatever further groups the router's sections make obvious (emails, mobile
@@ -128,7 +127,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

@@ -115,7 +115,7 @@ async function MemberIdentity({ id }: { id: string }) {
     <>
       <Avatar className="ring-876-surface size-11 shrink-0 shadow-sm ring-2">
         {identity?.avatar && <AvatarImage src={identity.avatar} alt="" />}
-        <AvatarFallback className="text-sm">{initials}</AvatarFallback>
+        <AvatarFallback className="text-[0.8125rem]">{initials}</AvatarFallback>
       </Avatar>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -137,7 +137,7 @@ async function MemberIdentity({ id }: { id: string }) {
             </Badge>
           )}
         </div>
-        <p className="text-muted-foreground mt-0.5 truncate text-sm">
+        <p className="text-muted-foreground mt-0.5 truncate text-[0.8125rem]">
           {identity?.email}
         </p>
       </div>

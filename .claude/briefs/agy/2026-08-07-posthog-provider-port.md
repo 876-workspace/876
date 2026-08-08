@@ -16,10 +16,10 @@ Port `providers/posthog/client.py` (185 lines, Python/FastAPI) to
 
 **Create exactly two files. Create nothing else.**
 
-| File                                | Contents                                                       |
-| ----------------------------------- | -------------------------------------------------------------- |
-| `src/providers/posthog/client.ts`   | The whole port: `PostHogClient`, `getPostHogClient`, `captureEvent` |
-| `src/providers/posthog/index.ts`    | Re-export the three public symbols above and nothing else      |
+| File                              | Contents                                                            |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `src/providers/posthog/client.ts` | The whole port: `PostHogClient`, `getPostHogClient`, `captureEvent` |
+| `src/providers/posthog/index.ts`  | Re-export the three public symbols above and nothing else           |
 
 **Files you must NOT create or modify** (another agent owns them):
 
@@ -51,17 +51,17 @@ The pino logger call form is `log.warn({ field: value }, 'event.name')` — the
 
 ### Translation table — follow it literally
 
-| Python                                      | TypeScript                                                          |
-| ------------------------------------------- | ------------------------------------------------------------------- |
-| `httpx.AsyncClient(timeout=20.0)`           | `fetch(url, { signal: AbortSignal.timeout(20_000) })`               |
-| `httpx.AsyncClient(timeout=5.0)` (capture)  | `AbortSignal.timeout(5_000)`                                        |
-| `response.raise_for_status()`               | `if (!response.ok) throw …` — see error mapping below               |
-| `status.HTTP_502_BAD_GATEWAY`               | `502`                                                               |
-| `status.HTTP_503_SERVICE_UNAVAILABLE`       | `503`                                                               |
-| `status.HTTP_204_NO_CONTENT`                | `204`                                                               |
-| `dict[str, Any]`                            | `Record<string, unknown>`                                           |
-| snake_case method names                     | camelCase (`list_features` → `listFeatures`)                        |
-| snake_case **JSON payload keys**            | **keep snake_case** — they are PostHog wire fields, never rename    |
+| Python                                     | TypeScript                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------- |
+| `httpx.AsyncClient(timeout=20.0)`          | `fetch(url, { signal: AbortSignal.timeout(20_000) })`            |
+| `httpx.AsyncClient(timeout=5.0)` (capture) | `AbortSignal.timeout(5_000)`                                     |
+| `response.raise_for_status()`              | `if (!response.ok) throw …` — see error mapping below            |
+| `status.HTTP_502_BAD_GATEWAY`              | `502`                                                            |
+| `status.HTTP_503_SERVICE_UNAVAILABLE`      | `503`                                                            |
+| `status.HTTP_204_NO_CONTENT`               | `204`                                                            |
+| `dict[str, Any]`                           | `Record<string, unknown>`                                        |
+| snake_case method names                    | camelCase (`list_features` → `listFeatures`)                     |
+| snake_case **JSON payload keys**           | **keep snake_case** — they are PostHog wire fields, never rename |
 
 ### Method-by-method requirements
 

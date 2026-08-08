@@ -49,7 +49,7 @@ export function ContactEdit({ user, contact }: Props) {
     <section className="876-card max-w-2xl">
       <div className="border-b px-5 py-4">
         <h2 className="text-lg font-medium">Edit contact</h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           Update the nickname or notes for this saved contact.
         </p>
       </div>

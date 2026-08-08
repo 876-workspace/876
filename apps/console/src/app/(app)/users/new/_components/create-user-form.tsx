@@ -78,7 +78,7 @@ export function CreateUserForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="first_name"
               >
                 First Name <span className="text-destructive">*</span>
@@ -93,7 +93,7 @@ export function CreateUserForm() {
             </div>
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="last_name"
               >
                 Last Name <span className="text-destructive">*</span>
@@ -110,7 +110,7 @@ export function CreateUserForm() {
           {showOptional && (
             <div>
               <label
-                className="mb-1.5 block text-sm font-medium"
+                className="mb-1.5 block text-[0.8125rem] font-medium"
                 htmlFor="middle_name"
               >
                 Middle Name
@@ -125,7 +125,7 @@ export function CreateUserForm() {
           )}
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium" htmlFor="email">
+            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="email">
               Email <span className="text-destructive">*</span>
             </label>
             <Input
@@ -141,7 +141,7 @@ export function CreateUserForm() {
             <>
               <div>
                 <label
-                  className="mb-1.5 block text-sm font-medium"
+                  className="mb-1.5 block text-[0.8125rem] font-medium"
                   htmlFor="username"
                 >
                   Username
@@ -178,7 +178,7 @@ export function CreateUserForm() {
 
               <div>
                 <label
-                  className="mb-1.5 block text-sm font-medium"
+                  className="mb-1.5 block text-[0.8125rem] font-medium"
                   htmlFor="organization_name"
                 >
                   Organization Name
@@ -202,7 +202,7 @@ export function CreateUserForm() {
         <Button variant="info" onClick={handleSubmit} disabled={isPending}>
           {isPending ? 'Creating…' : 'Create User'}
         </Button>
-        {error && <span className="text-destructive text-sm">{error}</span>}
+        {error && <span className="text-destructive text-[0.8125rem]">{error}</span>}
       </div>
     </div>
   )

@@ -57,7 +57,7 @@ export function AddressCreate({ user }: Props) {
     <section className="876-card max-w-4xl">
       <div className="border-b px-5 py-4">
         <h2 className="text-lg font-medium">Add address</h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           Add a new saved address for this user.
         </p>
       </div>

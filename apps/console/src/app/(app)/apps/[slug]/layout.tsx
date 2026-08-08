@@ -101,7 +101,7 @@ async function Identity({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
+      <div className="text-muted-foreground flex items-center gap-2 text-[0.8125rem]">
         <span className="flex items-center">
           <span className="text-muted-foreground/70 mr-1 font-medium">#</span>
           {app.slug}

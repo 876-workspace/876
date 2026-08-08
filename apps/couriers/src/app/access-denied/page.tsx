@@ -21,7 +21,7 @@ export default function AccessDeniedPage() {
         <h1 className="text-lg font-semibold tracking-[-0.03em]">
           This workspace needs a work account
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm leading-6">
+        <p className="text-muted-foreground mt-2 text-[0.8125rem] leading-6">
           You&apos;re signed in with a personal 876 account. The couriers app
           can only be used with a work (enterprise) account. Change to a work
           account, or go to your personal 876 account.

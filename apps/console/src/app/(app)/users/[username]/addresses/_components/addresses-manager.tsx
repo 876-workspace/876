@@ -205,7 +205,7 @@ export function AddressesManager({ user, addresses, view }: Props) {
         </div>
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       {view === 'grid' ? (
         <AddressesGridView {...viewProps} />

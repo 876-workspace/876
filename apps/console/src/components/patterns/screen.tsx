@@ -60,7 +60,7 @@ function ScreenHeader({ title, onBack, className }: ScreenHeaderProps) {
       type="button"
       onClick={onBack}
       className={cn(
-        'hover:bg-accent focus-visible:ring-ring flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
+        'hover:bg-accent focus-visible:ring-ring flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[0.8125rem] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
         className
       )}
     >

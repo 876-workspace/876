@@ -132,13 +132,13 @@ export function LazyAuthAccounts({
             <span className="border-876-surface-border bg-background flex size-7 shrink-0 items-center justify-center rounded-md border">
               <KeyRound className="text-muted-foreground size-3.5" />
             </span>
-            <span className="text-sm font-medium">Email &amp; password</span>
+            <span className="text-[0.8125rem] font-medium">Email &amp; password</span>
           </li>
         )}
       </ul>
       <div className="flex items-center justify-between gap-3 border-t pt-3">
-        <span className="text-muted-foreground text-sm">Email verified</span>
-        <span className="text-sm font-medium">
+        <span className="text-muted-foreground text-[0.8125rem]">Email verified</span>
+        <span className="text-[0.8125rem] font-medium">
           {emailVerified ? 'Yes' : 'No'}
         </span>
       </div>
@@ -181,7 +181,7 @@ export function LazyEnterpriseIdentities({ userId }: { userId: string }) {
           <span className="min-w-0 flex-1">
             <Link
               href={org ? `/orgs/${org.slug}` : '#'}
-              className="block truncate text-sm hover:underline"
+              className="block truncate text-[0.8125rem] hover:underline"
             >
               {org?.short_name || org?.name || membership.organization_id}
             </Link>

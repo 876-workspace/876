@@ -23,7 +23,7 @@ export function PlanModulePicker({
 
   if (modules.length === 0)
     return (
-      <div className="876-card text-muted-foreground p-5 text-sm">
+      <div className="876-card text-muted-foreground p-5 text-[0.8125rem]">
         This application has no modules yet. Create its durable capabilities
         before configuring a plan.
       </div>
@@ -54,7 +54,7 @@ export function PlanModulePicker({
             >
               <span className="min-w-0 space-y-1">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium">{module.name}</span>
+                  <span className="text-[0.8125rem] font-medium">{module.name}</span>
                   {module.featureSlug && (
                     <Badge variant="outline">rollout flag</Badge>
                   )}

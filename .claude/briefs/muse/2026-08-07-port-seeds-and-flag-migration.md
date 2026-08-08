@@ -8,14 +8,14 @@
 
 Port the FastAPI service's startup seeds and its remaining background job:
 
-| Source                                | Lines | Target                                   |
-| ------------------------------------- | ----- | ---------------------------------------- |
-| `services/feature_seeds.py`           | 547   | `src/seeds/features.ts`                  |
-| `services/provisioning_seeds.py`      | 361   | `src/seeds/provisioning.ts`              |
-| `services/plan_seeds.py`              | 186   | `src/seeds/plans.ts`                     |
-| `services/geo_seeds.py`               | 184   | `src/seeds/geo.ts`                       |
-| `services/bootstrap.py`               | 167   | `src/seeds/bootstrap.ts`                 |
-| `services/feature_flag_migration.py`  | 204   | `src/workers/feature-flag-migration.ts`  |
+| Source                               | Lines | Target                                  |
+| ------------------------------------ | ----- | --------------------------------------- |
+| `services/feature_seeds.py`          | 547   | `src/seeds/features.ts`                 |
+| `services/provisioning_seeds.py`     | 361   | `src/seeds/provisioning.ts`             |
+| `services/plan_seeds.py`             | 186   | `src/seeds/plans.ts`                    |
+| `services/geo_seeds.py`              | 184   | `src/seeds/geo.ts`                      |
+| `services/bootstrap.py`              | 167   | `src/seeds/bootstrap.ts`                |
+| `services/feature_flag_migration.py` | 204   | `src/workers/feature-flag-migration.ts` |
 
 ## The rule that shapes all of this
 
@@ -132,7 +132,7 @@ These have each caused a real defect in this migration:
   query another module's tables.
 - **Every serialized resource carries its literal `object` discriminator**, and
   lists use the shared list object (`{ object: 'list', data, has_more, url,
-  total_count }`) with `starting_after` / `ending_before` cursor pagination.
+total_count }`) with `starting_after` / `ending_before` cursor pagination.
 
 ## Tests
 

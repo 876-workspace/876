@@ -37,7 +37,7 @@ export function AppIdentitiesPanel({
           <div className="flex items-start gap-2.5">
             <IconChip icon={app.icon} tone={app.tone} className="size-8" />
             <div className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">
+              <span className="block truncate text-[0.8125rem] font-semibold">
                 {app.name}
               </span>
               <div className="mt-1 min-w-0">{app.identity}</div>

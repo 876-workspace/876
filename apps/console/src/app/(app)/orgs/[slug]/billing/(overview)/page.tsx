@@ -72,7 +72,7 @@ async function BillingWorkspace({ orgId }: { orgId: string }) {
     await $876.billing.integration.organizations.retrieve(orgId)
   if (!billingWorkspace.data) return null
   return (
-    <div className="876-card grid gap-4 p-4 text-sm sm:grid-cols-3">
+    <div className="876-card grid gap-4 p-4 text-[0.8125rem] sm:grid-cols-3">
       <BillingFact label="Workspace" value={billingWorkspace.data.name} />
       <BillingFact
         label="Default currency"
@@ -123,8 +123,8 @@ function BillingLinkCard({
           {icon}
         </div>
         <div>
-          <h3 className="text-sm font-medium">{title}</h3>
-          <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+          <h3 className="text-[0.8125rem] font-medium">{title}</h3>
+          <p className="text-muted-foreground mt-1 text-[0.8125rem]">{description}</p>
         </div>
       </div>
       <div className="mt-5 flex justify-end">

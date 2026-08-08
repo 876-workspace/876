@@ -46,7 +46,7 @@ export default async function UsersPage({ searchParams }: Props) {
         </Suspense>
       </div>
       <Suspense
-        fallback={<DataTableSkeleton columns={USERS_SKELETON_COLUMNS} />}
+        fallback={<DataTableSkeleton columns={USERS_SKELETON_COLUMNS} rows={5} />}
       >
         <UsersTableData searchParams={searchParams} />
       </Suspense>

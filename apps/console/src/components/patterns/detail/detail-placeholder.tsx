@@ -18,8 +18,8 @@ export function DetailPlaceholder({
       <span className="text-muted-foreground bg-876-surface mb-3 flex size-11 items-center justify-center rounded-xl border">
         <Icon aria-hidden="true" className="size-5" />
       </span>
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-muted-foreground mt-1 max-w-sm text-sm">
+      <p className="text-[0.8125rem] font-medium">{label}</p>
+      <p className="text-muted-foreground mt-1 max-w-sm text-[0.8125rem]">
         {description}
       </p>
     </div>

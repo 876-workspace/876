@@ -41,7 +41,7 @@ export async function WidgetDetailHeader({
             className="size-6 rounded-md"
             iconClassName="size-3.5"
           />
-          <span className="truncate text-sm font-semibold">{widget.name}</span>
+          <span className="truncate text-[0.8125rem] font-semibold">{widget.name}</span>
         </>
       }
     >
@@ -56,14 +56,14 @@ export async function WidgetDetailHeader({
             <h1 className="876-page-title">{widget.name}</h1>
             {/* Capped to a readable measure — unbounded, the description ran
                 the full column width and read as a wall of grey. */}
-            <p className="text-muted-foreground mt-1 line-clamp-2 max-w-3xl text-sm">
+            <p className="text-muted-foreground mt-1 line-clamp-2 max-w-3xl text-[0.8125rem]">
               {widget.description}
             </p>
           </div>
         </DetailHeaderMain>
         <DetailHeaderActions>
           <div className="border-876-surface-border bg-876-surface flex items-center gap-3 rounded-lg border px-3 py-2">
-            <span className="text-muted-foreground text-sm font-medium">
+            <span className="text-muted-foreground text-[0.8125rem] font-medium">
               Enabled
             </span>
             {feature ? (

@@ -146,8 +146,8 @@ export function FinanceProvisioningEditor({
       <section className="876-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium">{heading}</p>
-            <p className="text-muted-foreground mt-1 max-w-3xl text-sm">
+            <p className="text-[0.8125rem] font-medium">{heading}</p>
+            <p className="text-muted-foreground mt-1 max-w-3xl text-[0.8125rem]">
               {description}
             </p>
           </div>
@@ -181,8 +181,8 @@ export function FinanceProvisioningEditor({
 
       {issues.length > 0 && (
         <section className="border-destructive/40 bg-destructive/5 rounded-lg border p-4">
-          <p className="text-sm font-medium">Validation issues</p>
-          <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-sm">
+          <p className="text-[0.8125rem] font-medium">Validation issues</p>
+          <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-[0.8125rem]">
             {issues.map((issue) => (
               <li key={`${issue.path}-${issue.code}`}>{issue.message}</li>
             ))}
@@ -191,7 +191,7 @@ export function FinanceProvisioningEditor({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted-foreground text-sm" role="status">
+        <p className="text-muted-foreground text-[0.8125rem]" role="status">
           {message}
         </p>
         <div className="flex gap-2">

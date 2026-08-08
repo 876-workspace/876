@@ -31,12 +31,12 @@ the error registry, the OpenAPI registry, the four auth-tier guards, and the
 
 Migrate exactly these four domains. Each becomes one module directory.
 
-| # | FastAPI source | Express module | Routers in the source |
-| --- | --- | --- | --- |
-| 1 | `domains/audit_events/` | `src/modules/audit-events/` | `router` (prefix `/audit-events`) |
-| 2 | `domains/auth_attempts/` | `src/modules/auth-attempts/` | `router` (`/auth-attempts`) + `user_router` (`/users/{user_id}/auth-attempts`) |
-| 3 | `domains/sessions/` | `src/modules/sessions/` | `router` (no prefix) |
-| 4 | `domains/devices/` | `src/modules/devices/` | `router` (`/devices`) + `user_router` (`/users/{user_id}/devices`) |
+| #   | FastAPI source           | Express module               | Routers in the source                                                          |
+| --- | ------------------------ | ---------------------------- | ------------------------------------------------------------------------------ |
+| 1   | `domains/audit_events/`  | `src/modules/audit-events/`  | `router` (prefix `/audit-events`)                                              |
+| 2   | `domains/auth_attempts/` | `src/modules/auth-attempts/` | `router` (`/auth-attempts`) + `user_router` (`/users/{user_id}/auth-attempts`) |
+| 3   | `domains/sessions/`      | `src/modules/sessions/`      | `router` (no prefix)                                                           |
+| 4   | `domains/devices/`       | `src/modules/devices/`       | `router` (`/devices`) + `user_router` (`/users/{user_id}/devices`)             |
 
 For each, port the router, the schemas, and the repository methods it uses from
 `db/repositories/`. The `<module>.docs.ts` file **already exists and is
@@ -109,7 +109,7 @@ npx prettier --check "src/**/*.ts"
 ```
 
 `no-orphans` **warnings** for not-yet-migrated `*.docs.ts` files are expected —
-0 *errors* is the bar.
+0 _errors_ is the bar.
 
 ## Do not
 

@@ -14,7 +14,7 @@ export function AddressOverviewList({ addresses }: Props) {
           key={address.id}
           className="border-876-surface-border bg-background/60 min-w-0 rounded-lg border px-3.5 py-3"
         >
-          <span className="block truncate text-sm font-medium capitalize">
+          <span className="block truncate text-[0.8125rem] font-medium capitalize">
             {address.label || formatAddressType(address.type)}
           </span>
           <span className="text-muted-foreground mt-0.5 block truncate text-xs">

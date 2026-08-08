@@ -92,8 +92,7 @@ describe('Couriers customers page data', () => {
     )
 
     expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
-    // The organization's primary contact renders beside the business name.
-    expect(screen.getByText('Nia Campbell')).toBeVisible()
+    // The primary contact's email is preferred for the business row.
     expect(screen.getByText('nia@bluemountain.test')).toBeVisible()
     // Identity is resolved by id for the enrolled set only.
     expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
@@ -113,10 +112,10 @@ describe('Couriers customers page data', () => {
     // into Couriers, so with no local profiles there is nothing to resolve.
     expect(mocks.listCustomers).not.toHaveBeenCalled()
     expect(screen.getByText('No customers')).toBeVisible()
-    expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
   })
 
-  it('renders an individual customer without a separate contact name', async () => {
+  it('renders an individual customer without a primary contact', async () => {
     mocks.listProfiles.mockResolvedValue([
       {
         id: 'profile_person',
@@ -145,10 +144,7 @@ describe('Couriers customers page data', () => {
 
     expect(screen.getByText('Ada Lovelace')).toBeVisible()
     expect(screen.getByText('ada@example.test')).toBeVisible()
-    expect(screen.getByText('Individual')).toBeVisible()
-    // Contact column shows an em dash when there is no separate contact.
-    expect(screen.getByText('—')).toBeVisible()
-    expect(screen.queryByText('Nia Campbell')).toBeNull()
+    expect(screen.getByRole('columnheader', { name: 'Company' })).toBeVisible()
   })
 
   it('resolves multiple enrolled profiles in a single ids batch', async () => {
@@ -200,10 +196,7 @@ describe('Couriers customers page data', () => {
       ids: ['cus_a', 'cus_b'],
     })
     expect(screen.getByText('Acme Shipping')).toBeVisible()
-    expect(screen.getByText('Grace Hopper')).toBeVisible()
     expect(screen.getByText('Bob Buyer')).toBeVisible()
-    expect(screen.getByText('Business')).toBeVisible()
-    expect(screen.getByText('Individual')).toBeVisible()
   })
 
   it('falls back to a single-name primary contact when lastName is missing', async () => {
@@ -236,7 +229,6 @@ describe('Couriers customers page data', () => {
       await CustomersTableData({ params, searchParams: emptySearchParams })
     )
 
-    expect(screen.getByText('Pat')).toBeVisible()
     expect(screen.getByText('pat@solo.test')).toBeVisible()
   })
 
@@ -296,7 +288,7 @@ describe('Couriers customers page data', () => {
 
     // Name and email both fall back to the opaque id when identity is missing.
     expect(screen.getAllByText('cus_missing').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('Individual')).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
   })
 
   it('prefers contact email over customer email for business rows', async () => {
@@ -364,10 +356,9 @@ describe('Couriers customers page data', () => {
     )
 
     expect(screen.getByText('ap@biz.test')).toBeVisible()
-    expect(screen.getByText('Nia Campbell')).toBeVisible()
   })
 
-  it('renders a dash contact when first and last names are blank strings', async () => {
+  it('uses the contact email when the contact name is blank', async () => {
     mocks.listProfiles.mockResolvedValue([
       {
         id: 'profile_1',
@@ -397,11 +388,10 @@ describe('Couriers customers page data', () => {
       await CustomersTableData({ params, searchParams: emptySearchParams })
     )
 
-    expect(screen.getByText('—')).toBeVisible()
     expect(screen.getByText('contact@biz.test')).toBeVisible()
   })
 
-  it('shows Suspended badge for a suspended profile status', async () => {
+  it('threads a suspended filter through to the profile query', async () => {
     mocks.listProfiles.mockResolvedValue([
       {
         id: 'profile_1',
@@ -430,8 +420,8 @@ describe('Couriers customers page data', () => {
       })
     )
 
-    expect(screen.getByText('Suspended')).toBeVisible()
     expect(screen.getByText('Suspended Person')).toBeVisible()
+    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', 'SUSPENDED')
   })
 
   it('threads the suspended profile status filter into the local profile query', async () => {
@@ -471,8 +461,8 @@ describe('Couriers customers page data', () => {
       screen.getByText('Finance customers are temporarily unavailable.')
     ).toBeVisible()
     // The enrolled profile still lists; only its resolved identity is missing,
-    // so the customer id stands in for both the name and the email.
-    expect(screen.getAllByText('cus_business')).toHaveLength(2)
-    expect(screen.getByRole('columnheader', { name: 'Customer' })).toBeVisible()
+    // so the customer id stands in for the row name.
+    expect(screen.getByText('cus_business')).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
   })
 })

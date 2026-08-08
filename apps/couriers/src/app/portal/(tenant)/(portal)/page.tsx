@@ -69,7 +69,7 @@ async function PortalDashboardData() {
                   value={mailbox.number}
                 />
               ) : (
-                <div className="text-muted-foreground py-3 text-sm">
+                <div className="text-muted-foreground py-3 text-[0.8125rem]">
                   Mailbox assignment pending
                 </div>
               )}
@@ -88,12 +88,12 @@ async function PortalDashboardData() {
                 label="Mailbox number"
                 value={mailbox.number}
               />
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-[0.8125rem]">
                 US shipping address pending
               </p>
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-[0.8125rem]">
               Mailbox assignment pending
             </p>
           )}
@@ -119,7 +119,7 @@ async function PortalDashboardData() {
         {packages.length > 0 ? (
           <PackageList packages={packages.slice(0, 5)} />
         ) : (
-          <div className="text-muted-foreground rounded-xl border border-dashed px-5 py-10 text-center text-sm font-medium">
+          <div className="text-muted-foreground rounded-xl border border-dashed px-5 py-10 text-center text-[0.8125rem] font-medium">
             No packages yet
           </div>
         )}

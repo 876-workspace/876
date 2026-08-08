@@ -29,7 +29,7 @@ export default async function OrganizationBillingCustomersPage({
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="876-page-title">Billing customers</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <p className="text-muted-foreground mt-1 text-[0.8125rem]">
             Billing-owned customer records.
           </p>
         </div>
@@ -59,7 +59,7 @@ async function BillingCustomersData({ org }: { org: AdminOrganization }) {
   return (
     <>
       {error ? (
-        <div className="876-card text-muted-foreground p-5 text-sm">
+        <div className="876-card text-muted-foreground p-5 text-[0.8125rem]">
           {error.message}
         </div>
       ) : data?.data.length ? (
@@ -71,14 +71,14 @@ async function BillingCustomersData({ org }: { org: AdminOrganization }) {
                 className="grid gap-2 px-4 py-3.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">
+                  <p className="truncate text-[0.8125rem] font-medium">
                     {customer.name}
                   </p>
                   <p className="text-muted-foreground truncate text-xs">
                     {customer.companyName ?? customer.customerKind}
                   </p>
                 </div>
-                <p className="text-muted-foreground truncate text-sm">
+                <p className="text-muted-foreground truncate text-[0.8125rem]">
                   {customer.email ?? 'No email'}
                 </p>
                 <span className="text-muted-foreground text-xs">
@@ -89,7 +89,7 @@ async function BillingCustomersData({ org }: { org: AdminOrganization }) {
           </div>
         </div>
       ) : (
-        <div className="876-card text-muted-foreground p-5 text-sm">
+        <div className="876-card text-muted-foreground p-5 text-[0.8125rem]">
           No Billing customers have been created for this organization.
         </div>
       )}

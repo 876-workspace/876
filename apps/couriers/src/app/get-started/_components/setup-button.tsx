@@ -34,7 +34,7 @@ export function SetupButton() {
         type="button"
         onClick={() => void handleSetup()}
         disabled={busy}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-10 w-full cursor-pointer items-center justify-center rounded-full text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-10 w-full cursor-pointer items-center justify-center rounded-full text-[0.8125rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
       >
         {busy ? 'Setting up…' : 'Set up workspace'}
       </button>

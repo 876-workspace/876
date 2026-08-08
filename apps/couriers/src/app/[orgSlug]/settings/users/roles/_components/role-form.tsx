@@ -82,7 +82,7 @@ export function RoleForm({ orgSlug, role }: Props) {
   return (
     <form className="max-w-5xl space-y-6" onSubmit={save}>
       {readOnly ? (
-        <div className="border-info/30 bg-info/5 text-foreground rounded-lg border px-4 py-3 text-sm">
+        <div className="border-info/30 bg-info/5 text-foreground rounded-lg border px-4 py-3 text-[0.8125rem]">
           Default role — provisioned for every organization and cannot be
           edited.
         </div>
@@ -115,7 +115,7 @@ export function RoleForm({ orgSlug, role }: Props) {
         readOnly={readOnly || isPending}
       />
 
-      {error ? <p className="text-destructive text-sm">{error}</p> : null}
+      {error ? <p className="text-destructive text-[0.8125rem]">{error}</p> : null}
 
       {!readOnly ? (
         <div className="flex flex-wrap items-center justify-between gap-3">

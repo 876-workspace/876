@@ -56,14 +56,14 @@ export function PinSection({ userId, pin }: Props) {
 
   return (
     <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
         <KeyRound className="text-muted-foreground size-4" />
         Account PIN
       </h2>
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">Status</span>
+          <span className="text-muted-foreground text-[0.8125rem]">Status</span>
           {pin.is_set ? (
             <Badge variant="success">Set</Badge>
           ) : (
@@ -79,10 +79,10 @@ export function PinSection({ userId, pin }: Props) {
           </div>
         )}
 
-        <div className="text-muted-foreground text-sm">
+        <div className="text-muted-foreground text-[0.8125rem]">
           Set: {formatWhen(pin.set_at)}
         </div>
-        <div className="text-muted-foreground text-sm">
+        <div className="text-muted-foreground text-[0.8125rem]">
           Last verified: {formatWhen(pin.last_verified_at)}
         </div>
 
@@ -96,7 +96,7 @@ export function PinSection({ userId, pin }: Props) {
             placeholder="4–8 digit PIN"
             value={pinValue}
             onChange={(e) => setPinValue(e.target.value)}
-            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-9 rounded-md border px-3 py-1 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
+            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-9 rounded-md border px-3 py-1 text-[0.8125rem] shadow-sm focus-visible:ring-1 focus-visible:outline-none"
             required
           />
           <Button type="submit" size="sm" disabled={isPending}>
@@ -115,7 +115,7 @@ export function PinSection({ userId, pin }: Props) {
           )}
         </form>
 
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
       </div>
     </div>
   )

@@ -35,7 +35,7 @@ export function AddressesPager({
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <p className="text-muted-foreground text-sm">
+      <p className="text-muted-foreground text-[0.8125rem]">
         Showing <span className="text-foreground font-medium">{start}</span>–
         <span className="text-foreground font-medium">{end}</span> of{' '}
         <span className="text-foreground font-medium">{total}</span>
@@ -51,7 +51,7 @@ export function AddressesPager({
           <ChevronLeftIcon className="size-4" />
           Previous
         </Button>
-        <span className="text-muted-foreground text-sm tabular-nums">
+        <span className="text-muted-foreground text-[0.8125rem] tabular-nums">
           Page {page} of {pageCount}
         </span>
         <Button

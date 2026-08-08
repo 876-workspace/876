@@ -41,7 +41,7 @@ export const SETTINGS_NAV = defineSettingsNav([
         href: '/settings/warehouses',
         status: 'available',
       },
-      { title: 'Custom domain', href: '/settings/domain', status: 'available' },
+      { title: 'Domains', href: '/settings/domain', status: 'available' },
       {
         title: 'Manage subscription',
         href: '/settings/subscription',
@@ -159,7 +159,7 @@ export const SETTINGS_NAV = defineSettingsNav([
     icon: 'portal',
     items: [
       {
-        title: 'Portal settings',
+        title: 'Portal ',
         href: '/settings/portal',
         status: 'available',
       },

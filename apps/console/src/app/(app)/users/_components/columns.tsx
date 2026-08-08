@@ -90,18 +90,18 @@ export function makeUserColumns(
                 its border pseudo-element, the image and the fallback all
                 default to rounded-full, so overriding only some of them leaves
                 uploaded photos circular beside square monograms. */}
-            <Avatar className="size-6 shrink-0 rounded-md after:rounded-md">
+            <Avatar className="size-6 shrink-0 rounded-full after:rounded-full">
               {user.avatar && (
-                <AvatarImage src={user.avatar} alt="" className="rounded-md" />
+                <AvatarImage src={user.avatar} alt="" className="rounded-full" />
               )}
-              <AvatarFallback className="rounded-md text-[0.5625rem]">
+              <AvatarFallback className="rounded-full text-[0.5625rem]">
                 {initialsOf(user)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <Link
                 href={`/users/${user.username ?? user.id}`}
-                className="hover:text-primary font-medium"
+                className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
                 onClick={(e) => e.stopPropagation()}
               >
                 {displayName}
@@ -117,20 +117,11 @@ export function makeUserColumns(
       },
     },
     {
-      accessorKey: 'email',
-      header: 'Email',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
-          {row.original.email}
-        </span>
-      ),
-    },
-    {
       accessorKey: 'company',
       header: 'Company',
       cell: ({ row }) =>
         row.original.company ? (
-          <span className="flex items-center gap-2.5 text-sm">
+          <span className="flex items-center gap-2.5 text-[0.8125rem]">
             <OrgLogo
               name={row.original.company}
               src={row.original.company_logo}
@@ -139,8 +130,17 @@ export function makeUserColumns(
             <span className="truncate">{row.original.company}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <span className="text-muted-foreground text-[0.8125rem]">—</span>
         ),
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-[0.8125rem]">
+          {row.original.email}
+        </span>
+      ),
     },
     {
       id: 'apps',
@@ -149,9 +149,9 @@ export function makeUserColumns(
       cell: ({ row }) => {
         const apps = enrollmentsMap[row.original.id] ?? []
         if (apps.length === 0)
-          return <span className="text-muted-foreground text-sm">—</span>
+          return <span className="text-muted-foreground text-[0.8125rem]">—</span>
         return (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {apps.slice(0, 3).map((app) => (
               <AppLogoChip key={app.id} app={app} />
             ))}
@@ -168,7 +168,7 @@ export function makeUserColumns(
       accessorKey: 'created_at',
       header: 'Joined',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
         </span>
       ),

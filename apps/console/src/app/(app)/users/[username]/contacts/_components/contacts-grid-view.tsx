@@ -45,7 +45,7 @@ export function ContactsGridView({ contacts, actions, emptyState }: Props) {
                 <AvatarFallback>{contactInitials(contact)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{name}</p>
+                <p className="truncate text-[0.8125rem] font-semibold">{name}</p>
                 {contact.nickname && (
                   <p className="text-muted-foreground truncate text-xs">
                     “{contact.nickname}”
@@ -92,7 +92,7 @@ export function ContactsGridView({ contacts, actions, emptyState }: Props) {
             </a>
 
             {contact.notes && (
-              <p className="text-muted-foreground mt-2 line-clamp-3 text-sm">
+              <p className="text-muted-foreground mt-2 line-clamp-3 text-[0.8125rem]">
                 {contact.notes}
               </p>
             )}

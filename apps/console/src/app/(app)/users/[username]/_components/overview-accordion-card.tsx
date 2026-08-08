@@ -45,7 +45,7 @@ export function AccordionCard({
             tone={tone}
             className="pointer-events-none relative size-8 shrink-0"
           />
-          <span className="pointer-events-none relative min-w-0 flex-1 truncate text-sm font-semibold">
+          <span className="pointer-events-none relative min-w-0 flex-1 truncate text-[0.8125rem] font-semibold">
             {title}
           </span>
           {typeof count === 'number' && (

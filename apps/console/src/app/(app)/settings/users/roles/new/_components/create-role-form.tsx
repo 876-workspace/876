@@ -75,7 +75,7 @@ export function CreateRoleForm() {
         <h2 className="876-section-title mb-4">Details</h2>
         <div className="876-card max-w-lg space-y-4 p-5">
           <div>
-            <label className="mb-1.5 block text-sm font-medium" htmlFor="name">
+            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="name">
               Name
               <span className="text-muted-foreground ml-1 font-mono text-xs">
                 (slug)
@@ -95,7 +95,7 @@ export function CreateRoleForm() {
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="display_name"
             >
               Display Name
@@ -109,7 +109,7 @@ export function CreateRoleForm() {
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="description"
             >
               Description
@@ -175,7 +175,7 @@ export function CreateRoleForm() {
         <Button onClick={handleSubmit} disabled={isPending}>
           {isPending ? 'Creating…' : 'Create Role'}
         </Button>
-        {error && <span className="text-destructive text-sm">{error}</span>}
+        {error && <span className="text-destructive text-[0.8125rem]">{error}</span>}
       </div>
     </div>
   )

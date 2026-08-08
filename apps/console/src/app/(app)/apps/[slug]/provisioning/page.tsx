@@ -30,7 +30,7 @@ export default async function AppProvisioningPage({ params }: Props) {
   return (
     <div className="space-y-5">
       <section className="876-card flex flex-wrap items-center justify-between gap-4 p-4">
-        <p className="text-muted-foreground max-w-2xl text-sm">
+        <p className="text-muted-foreground max-w-2xl text-[0.8125rem]">
           This page owns only {app.name}-specific defaults. Organization-wide
           currencies, taxes, and payment data remain centralized in shared
           finance provisioning.

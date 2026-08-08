@@ -109,7 +109,7 @@ export function PermissionEditor({
         <div className="876-card max-w-lg space-y-4 p-5">
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="display_name"
             >
               Display Name
@@ -123,7 +123,7 @@ export function PermissionEditor({
           </div>
           <div>
             <label
-              className="mb-1.5 block text-sm font-medium"
+              className="mb-1.5 block text-[0.8125rem] font-medium"
               htmlFor="description"
             >
               Description
@@ -211,8 +211,8 @@ export function PermissionEditor({
           <span
             className={
               feedback.type === 'success'
-                ? 'text-muted-foreground text-sm'
-                : 'text-destructive text-sm'
+                ? 'text-muted-foreground text-[0.8125rem]'
+                : 'text-destructive text-[0.8125rem]'
             }
           >
             {feedback.message}

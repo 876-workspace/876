@@ -184,20 +184,20 @@ export function PrincipalSearch({
           className="876-card absolute z-50 mt-1 max-h-72 w-full overflow-y-auto p-1 shadow-lg"
         >
           {busy && (
-            <p className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-sm">
+            <p className="text-muted-foreground flex items-center gap-2 px-3 py-2.5 text-[0.8125rem]">
               <Spinner className="size-3.5" />
               Searching
             </p>
           )}
 
           {!busy && activeError && (
-            <p className="text-destructive px-3 py-2.5 text-sm">
+            <p className="text-destructive px-3 py-2.5 text-[0.8125rem]">
               {activeError}
             </p>
           )}
 
           {!busy && !activeError && visible.length === 0 && (
-            <p className="text-muted-foreground px-3 py-2.5 text-sm">
+            <p className="text-muted-foreground px-3 py-2.5 text-[0.8125rem]">
               {matches.length > 0
                 ? 'Everyone matching already has an override.'
                 : 'No matches.'}
@@ -225,7 +225,7 @@ export function PrincipalSearch({
                   <AvatarFallback>{initials(principal.name)}</AvatarFallback>
                 </Avatar>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">
+                  <span className="block truncate text-[0.8125rem] font-medium">
                     {principal.name}
                   </span>
                   <span className="text-muted-foreground block truncate text-xs">

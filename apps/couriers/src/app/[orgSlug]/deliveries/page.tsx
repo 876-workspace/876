@@ -1,15 +1,8 @@
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@876/ui/empty'
-import { GlobeAltIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
+import { DeliveriesTable } from './_components/deliveries-table'
 
 const DELIVERY_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Deliveries' },
@@ -52,15 +45,6 @@ export default async function DeliveriesPage({ params, searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus =
     status && DELIVERY_STATUS_VALUES.has(status) ? status : 'all'
-  const selectedLabel = DELIVERY_STATUS_OPTIONS.find(
-    (option) => option.value === selectedStatus
-  )?.label
-
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No deliveries yet.'
-      : `No ${selectedLabel?.toLowerCase() ?? selectedStatus} deliveries.`
-
   return (
     <Page>
       <ResourceToolbar
@@ -88,15 +72,7 @@ export default async function DeliveriesPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <Empty className="py-14">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <GlobeAltIcon />
-          </EmptyMedia>
-          <EmptyTitle>No deliveries</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <DeliveriesTable deliveries={[]} />
     </Page>
   )
 }

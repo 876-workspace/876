@@ -41,7 +41,7 @@ export function AddressesGridView({ addresses, actions, emptyState }: Props) {
             )}
             <div className="flex items-start gap-3 pl-6">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{typeLabel}</p>
+                <p className="truncate text-[0.8125rem] font-semibold">{typeLabel}</p>
                 {address.label && (
                   <p className="text-muted-foreground truncate text-xs">
                     {address.label}
@@ -79,7 +79,7 @@ export function AddressesGridView({ addresses, actions, emptyState }: Props) {
               </DropdownMenu>
             </div>
 
-            <div className="text-muted-foreground mt-3 flex items-start gap-1.5 text-sm">
+            <div className="text-muted-foreground mt-3 flex items-start gap-1.5 text-[0.8125rem]">
               <MapPin className="mt-0.5 size-4 shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="truncate">{address.line1}</p>

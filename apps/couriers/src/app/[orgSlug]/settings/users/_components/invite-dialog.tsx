@@ -106,7 +106,7 @@ export function InviteDialog({ open, onOpenChange, orgSlug, roles }: Props) {
               </SelectContent>
             </Select>
           </div>
-          {error ? <p className="text-destructive text-sm">{error}</p> : null}
+          {error ? <p className="text-destructive text-[0.8125rem]">{error}</p> : null}
           <DialogFooter>
             <Button
               type="button"

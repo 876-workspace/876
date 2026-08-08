@@ -45,7 +45,7 @@ export function DeviceActions({ deviceId, trusted, blocked }: Props) {
           {blocked ? 'Unblock' : 'Block'}
         </Button>
       </div>
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
     </div>
   )
 }

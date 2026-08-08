@@ -163,7 +163,7 @@ export function AccountsManager({ orgSlug, accounts, view }: Props) {
         </div>
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       {view === 'grid' ? (
         <AccountsGridView
@@ -227,7 +227,7 @@ function AccountsGridView({
               <CreditCard className="size-5" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
+              <p className="truncate text-[0.8125rem] font-semibold">
                 {account.name || account.email || account.id}
               </p>
               <p className="text-muted-foreground truncate font-mono text-xs">
@@ -242,7 +242,7 @@ function AccountsGridView({
             />
           </div>
 
-          <div className="text-muted-foreground mt-3 flex items-start gap-1.5 text-sm">
+          <div className="text-muted-foreground mt-3 flex items-start gap-1.5 text-[0.8125rem]">
             <Mail className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span className="min-w-0 truncate">
               {account.invoice_email || account.email || 'No invoice email'}
@@ -289,14 +289,14 @@ function AccountsListView({
           className="grid gap-3 px-4 py-3 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_8rem_8rem_auto] lg:items-center"
         >
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">
+            <p className="truncate text-[0.8125rem] font-medium">
               {account.name || account.email || account.id}
             </p>
             <p className="text-muted-foreground truncate font-mono text-xs">
               {account.id}
             </p>
           </div>
-          <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm">
+          <div className="text-muted-foreground flex min-w-0 items-center gap-2 text-[0.8125rem]">
             <Mail className="size-4 shrink-0" aria-hidden="true" />
             <span className="truncate">
               {account.invoice_email || account.email || 'No invoice email'}
@@ -305,7 +305,7 @@ function AccountsListView({
           <Badge variant="outline" className="justify-self-start">
             {(account.currency ?? 'n/a').toUpperCase()}
           </Badge>
-          <span className="text-sm tabular-nums">
+          <span className="text-[0.8125rem] tabular-nums">
             {formatMoney(account.balance, account.currency)}
           </span>
           <AccountActions
@@ -373,7 +373,7 @@ function createAccountColumns({
       id: 'invoice_email',
       header: 'Invoice email',
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
+        <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.invoice_email ||
             row.original.email ||
             'No invoice email'}
@@ -393,7 +393,7 @@ function createAccountColumns({
       accessorKey: 'balance',
       header: 'Balance',
       cell: ({ row }) => (
-        <span className="text-sm tabular-nums">
+        <span className="text-[0.8125rem] tabular-nums">
           {formatMoney(row.original.balance, row.original.currency)}
         </span>
       ),

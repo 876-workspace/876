@@ -75,7 +75,7 @@ export function AddressForm(props: AddressFormProps) {
               }
             />
           </div>
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
         </div>
 
         <div className="flex gap-2">
@@ -152,7 +152,7 @@ export function AddressForm(props: AddressFormProps) {
             onChange={(postalCode) => onDraftChange('postalCode', postalCode)}
           />
         </div>
-        {error && <p className="text-destructive text-sm">{error}</p>}
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
       </div>
 
       <div className="flex gap-2">

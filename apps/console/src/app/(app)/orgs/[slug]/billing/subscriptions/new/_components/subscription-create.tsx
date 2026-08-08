@@ -104,7 +104,7 @@ export function SubscriptionCreate({
         </div>
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       <div className="flex gap-2">
         <Button

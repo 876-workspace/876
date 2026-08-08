@@ -186,7 +186,7 @@ function PermissionRows({
                 return (
                   <label
                     key={extra.key}
-                    className="flex items-center gap-2 text-sm"
+                    className="flex items-center gap-2 text-[0.8125rem]"
                   >
                     <Checkbox
                       checked={selected.has(key)}

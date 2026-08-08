@@ -97,7 +97,7 @@ export function EditPlanForm({ product, appSlug }: Props) {
       <section className="876-card p-5">
         <div className="mb-4 flex flex-col gap-1">
           <span className="876-eyebrow">Plan</span>
-          <h3 className="text-foreground text-sm font-medium">
+          <h3 className="text-foreground text-[0.8125rem] font-medium">
             Catalog details and status
           </h3>
         </div>
@@ -157,7 +157,7 @@ export function EditPlanForm({ product, appSlug }: Props) {
             />
           </div>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-2 border-t pt-4">
@@ -191,7 +191,7 @@ export function EditPlanForm({ product, appSlug }: Props) {
       <section className="876-card p-5">
         <div className="mb-4 flex flex-col gap-1">
           <span className="876-eyebrow">Prices</span>
-          <h3 className="text-foreground text-sm font-medium">
+          <h3 className="text-foreground text-[0.8125rem] font-medium">
             Every price point this plan has been sold at
           </h3>
         </div>
@@ -204,12 +204,12 @@ export function EditPlanForm({ product, appSlug }: Props) {
                 className="flex items-center justify-between px-4 py-3"
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">
+                  <span className="text-[0.8125rem] font-medium">
                     {price.name || (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </span>
-                  <span className="text-sm">
+                  <span className="text-[0.8125rem]">
                     {formatPrice(
                       price.unit_amount,
                       price.currency,
@@ -278,7 +278,7 @@ export function EditPlanForm({ product, appSlug }: Props) {
           </Button>
         </div>
         {priceError && (
-          <p className="text-destructive mt-2 text-sm">{priceError}</p>
+          <p className="text-destructive mt-2 text-[0.8125rem]">{priceError}</p>
         )}
       </section>
     </div>

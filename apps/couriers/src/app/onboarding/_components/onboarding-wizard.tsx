@@ -22,7 +22,7 @@ const steps = [
 ]
 
 const btn =
-  'w-full cursor-pointer rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35'
+  'w-full cursor-pointer rounded-lg bg-primary py-3 text-[0.8125rem] font-semibold text-primary-foreground transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-35'
 
 type Completion = {
   object: 'onboarding_completion'
@@ -262,7 +262,7 @@ export function OnboardingWizard({
             />
           ))}
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
           <button
             type="button"
@@ -293,7 +293,7 @@ export function OnboardingWizard({
             />
           ))}
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
           <button
             type="button"
@@ -317,7 +317,7 @@ export function OnboardingWizard({
               <div key={index} className="space-y-2">
                 <Label
                   htmlFor={`team-email-${index}`}
-                  className="text-sm font-medium"
+                  className="text-[0.8125rem] font-medium"
                 >
                   Email {index + 1}
                 </Label>
@@ -341,7 +341,7 @@ export function OnboardingWizard({
             ))}
 
             <div className="space-y-2">
-              <Label htmlFor="team-role" className="text-sm font-medium">
+              <Label htmlFor="team-role" className="text-[0.8125rem] font-medium">
                 Role
               </Label>
               <NativeSelect
@@ -358,14 +358,14 @@ export function OnboardingWizard({
             </div>
           </div>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
           {inviteResults.some((invite) => !invite.ok) && (
             <div className="space-y-2">
               {inviteResults
                 .filter((invite) => !invite.ok)
                 .map((invite) => (
-                  <p key={invite.email} className="text-destructive text-sm">
+                  <p key={invite.email} className="text-destructive text-[0.8125rem]">
                     {invite.email}: {invite.error}
                   </p>
                 ))}
@@ -384,7 +384,7 @@ export function OnboardingWizard({
           <button
             type="button"
             onClick={navigate}
-            className="text-muted-foreground hover:text-foreground w-full py-1 text-sm transition-colors"
+            className="text-muted-foreground hover:text-foreground w-full py-1 text-[0.8125rem] transition-colors"
           >
             Skip for now
           </button>

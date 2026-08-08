@@ -33,7 +33,7 @@ export function SignInActivitySection({ attempts }: Props) {
   return (
     <div className="876-card p-5">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="flex items-center gap-2 text-sm font-semibold">
+        <h2 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
           <KeyRound className="text-muted-foreground size-4" />
           Sign-in activity
         </h2>
@@ -46,7 +46,7 @@ export function SignInActivitySection({ attempts }: Props) {
       </div>
 
       {attempts.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-[0.8125rem]">
           No sign-in activity recorded.
         </p>
       ) : (

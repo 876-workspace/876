@@ -21,9 +21,19 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     selectedStatus === 'all'
       ? undefined
       : customerStatusSchema.parse(selectedStatus.toUpperCase())
+  const emptyState = (
+    <Empty className="border-0 py-6">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <UsersIcon />
+        </EmptyMedia>
+        <EmptyTitle>No customers</EmptyTitle>
+      </EmptyHeader>
+    </Empty>
+  )
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant) return null
+  if (!ctx?.tenant) return <CustomersTable customers={[]} emptyState={emptyState} />
 
   // Layer 3 first: this workspace's own enrolled customers are the list. The
   // shared registry is then read only for the identity of those customers.
@@ -31,6 +41,8 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     ctx.tenant.id,
     profileStatus
   )
+
+  if (profiles.length === 0) return <CustomersTable customers={[]} emptyState={emptyState} />
 
   const billingCustomerIds = profiles.flatMap((profile) =>
     profile.billingCustomerId ? [profile.billingCustomerId] : []
@@ -51,44 +63,36 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   const rows: CustomerTableRow[] = profiles.map((profile) => {
     const identity = identityById.get(profile.billingCustomerId)
     const contact = identity?.primaryContact ?? null
-    const contactName =
-      [contact?.firstName, contact?.lastName]
+    const fallbackName = profile.billingCustomerId ?? profile.id
+    const customerName =
+      [identity?.firstName, identity?.lastName]
         .filter(Boolean)
         .join(' ')
-        .trim() || null
+        .trim() ||
+      identity?.name ||
+      fallbackName
 
     return {
       id: profile.id,
-      billingCustomerId: profile.billingCustomerId,
-      name: identity?.name ?? profile.billingCustomerId,
-      contactName,
+      billingCustomerId: fallbackName,
+      customerName,
+      companyName: identity?.companyName ?? null,
       email: contact?.email ?? identity?.email ?? null,
-      customerKind: identity?.customerKind ?? 'INDIVIDUAL',
-      status: profile.status,
-      isCommercial: profile.isCommercial,
+      phone: identity?.phone ?? identity?.workPhone ?? null,
     }
   })
 
   return (
     <>
       {registry?.error ? (
-        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-sm">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
           {registry.error.message}
         </div>
       ) : null}
 
       <CustomersTable
         customers={rows}
-        emptyState={
-          <Empty className="border-0 py-6">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <UsersIcon />
-              </EmptyMedia>
-              <EmptyTitle>No customers</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        }
+        emptyState={emptyState}
       />
     </>
   )

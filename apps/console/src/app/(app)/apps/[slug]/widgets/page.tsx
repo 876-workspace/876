@@ -58,7 +58,7 @@ export default async function AppWidgetsPage({
 
       {widgets.length === 0 ? (
         <div className="876-card p-5">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-[0.8125rem]">
             No widgets are registered for this app.
           </p>
         </div>
