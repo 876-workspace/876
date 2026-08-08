@@ -49,12 +49,14 @@ COPY apps/api/src ./src
 # *into* `src/db/generated/`.
 RUN pnpm run build
 
-# No prune step, deliberately. `pnpm prune --prod` re-links against the *whole*
-# workspace manifest, so after a `--filter` install it empties this package's
-# node_modules and the image starts with `ERR_MODULE_NOT_FOUND`. `pnpm deploy`
-# is the tool built for this, but it also re-resolves the root manifest and
-# fails on the workspace dependencies that the filtered context does not carry.
-# Carrying the dev dependencies is the cost of a correct image.
+# Reinstall the filtered graph in production mode instead of copying build and
+# test tooling into the runtime image. `pnpm prune --prod` cannot be used here:
+# it re-links against the whole workspace manifest and empties this package's
+# node_modules after a filtered install. A fresh filtered install preserves the
+# workspace-relative symlink layout while omitting devDependencies.
+WORKDIR /repo
+RUN rm -rf node_modules apps/api/node_modules \
+  && pnpm install --frozen-lockfile --prod --ignore-scripts --filter @876/api...
 
 # --- runtime -----------------------------------------------------------------
 FROM node:22-slim AS runtime
