@@ -131,7 +131,8 @@ export type CustomerStatus = z.infer<typeof customerStatusSchema>
 export const customerViewSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
-  userId: z.string(),
+  userId: z.string().nullable(),
+  billingCustomerId: z.string(),
   branchId: z.string().nullable(),
   status: customerStatusSchema,
   trn: z.string().nullable(),
@@ -142,23 +143,64 @@ export const customerViewSchema = z.object({
 })
 export type CustomerView = z.infer<typeof customerViewSchema>
 
-export const customerCreateParamsSchema = z.strictObject({
-  userId: z.string(),
-  branchId: z.string().optional(),
-  status: customerStatusSchema.optional(),
-  trn: z.string().optional(),
-  isCommercial: z.boolean().optional(),
-  firstSeenAt: z.number().int(),
-})
+export const customerKindSchema = z.enum(['INDIVIDUAL', 'BUSINESS'])
+export type CustomerKind = z.infer<typeof customerKindSchema>
+
+export const customerCreateParamsSchema = z
+  .strictObject({
+    customerKind: customerKindSchema.default('INDIVIDUAL'),
+    firstName: z.string().trim().min(1).optional(),
+    lastName: z.string().trim().min(1).optional(),
+    companyName: z.string().trim().min(1).optional(),
+    email: z.email().optional(),
+    phone: z.string().trim().min(1).optional(),
+    branchId: z.string().optional(),
+    trn: z.string().trim().min(1).optional(),
+    isCommercial: z.boolean().optional(),
+    status: customerStatusSchema.optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.customerKind === 'INDIVIDUAL' && !value.firstName)
+      context.addIssue({
+        code: 'custom',
+        path: ['firstName'],
+        message: 'First name is required for an individual.',
+      })
+    if (value.customerKind === 'BUSINESS' && !value.companyName)
+      context.addIssue({
+        code: 'custom',
+        path: ['companyName'],
+        message: 'Company name is required for a business.',
+      })
+  })
 export type CustomerCreateParams = z.input<typeof customerCreateParamsSchema>
 
 export const customerUpdateParamsSchema = z.strictObject({
+  firstName: z.string().trim().min(1).optional(),
+  lastName: z.string().trim().min(1).optional(),
+  companyName: z.string().trim().min(1).optional(),
+  email: z.email().optional(),
+  phone: z.string().trim().min(1).optional(),
   branchId: z.string().optional(),
   status: customerStatusSchema.optional(),
   trn: z.string().optional(),
   isCommercial: z.boolean().optional(),
 })
 export type CustomerUpdateParams = z.input<typeof customerUpdateParamsSchema>
+
+export const customerRowSchema = customerViewSchema.extend({
+  customerKind: customerKindSchema,
+  customerType: z.enum(['EXTERNAL', 'CORE_USER', 'CORE_ORGANIZATION']),
+  name: z.string(),
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable(),
+  companyName: z.string().nullable(),
+  email: z.string().nullable(),
+  phone: z.string().nullable(),
+  mailboxNumber: z.string().nullable(),
+  branchName: z.string().nullable(),
+})
+export type CustomerRow = z.infer<typeof customerRowSchema>
 
 export const customerRetrieveParamsSchema = z.strictObject({
   id: z.string(),
