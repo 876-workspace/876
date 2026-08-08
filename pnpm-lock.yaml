@@ -447,15 +447,9 @@ importers:
       '@876/widgets':
         specifier: workspace:*
         version: link:../../packages/widgets
-      '@neondatabase/serverless':
-        specifier: 1.1.0
-        version: 1.1.0
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@25.6.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(wrangler@4.113.0)
-      '@prisma/adapter-neon':
-        specifier: 7.7.0
-        version: 7.7.0
       '@prisma/adapter-pg':
         specifier: 7.7.0
         version: 7.7.0
@@ -611,15 +605,9 @@ importers:
       '@876/widgets':
         specifier: workspace:*
         version: link:../../packages/widgets
-      '@neondatabase/serverless':
-        specifier: 1.1.0
-        version: 1.1.0
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@25.6.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(wrangler@4.113.0)
-      '@prisma/adapter-neon':
-        specifier: 7.7.0
-        version: 7.7.0
       '@prisma/adapter-pg':
         specifier: 7.7.0
         version: 7.7.0
@@ -777,15 +765,9 @@ importers:
       '@876/widgets':
         specifier: workspace:*
         version: link:../../packages/widgets
-      '@neondatabase/serverless':
-        specifier: 1.1.0
-        version: 1.1.0
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@25.6.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(wrangler@4.113.0)
-      '@prisma/adapter-neon':
-        specifier: 7.7.0
-        version: 7.7.0
       '@prisma/adapter-pg':
         specifier: 7.7.0
         version: 7.7.0
@@ -981,15 +963,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@neondatabase/serverless':
-        specifier: 1.1.0
-        version: 1.1.0
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@25.6.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(wrangler@4.113.0)
-      '@prisma/adapter-neon':
-        specifier: 7.7.0
-        version: 7.7.0
       '@prisma/adapter-pg':
         specifier: 7.7.0
         version: 7.7.0
@@ -3552,10 +3528,6 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@neondatabase/serverless@1.1.0':
-    resolution: {integrity: sha512-r3ZZhRjEcfEdKIZnoB1RusNgvHuaBRqfCzV4Gi+5A9yUX0S4HTws/ASWqt13wL4y4I+0rqsWGdA2w7EQXHi3+Q==}
-    engines: {node: '>=19.0.0'}
-
   '@next/env@16.3.0':
     resolution: {integrity: sha512-o9r1S0BNiNreHP9Vs+Qnqd9kviDkJh8xIACY7UFZSmiGbbQRzPBBosvHzAU4TULHOIuOj/18RSsyz2qrREmIFw==}
 
@@ -3844,9 +3816,6 @@ packages:
 
   '@posthog/types@1.372.10':
     resolution: {integrity: sha512-KuT3vLu3LSFsNWCwasS4gqjH/ysAyIUcB/aJSmKyNhDd/85hAznHRz1eSSl0sMvtsDTYiQIq0I0ybduVbrpPew==}
-
-  '@prisma/adapter-neon@7.7.0':
-    resolution: {integrity: sha512-nnQBGUqDBuLDbClSNyZ7T8jv3+wXx9ncA8zaZhVZtP+utq7SdT4azLotTfZjP4hJaP1NXIvCKjp0RfzMq5dyew==}
 
   '@prisma/adapter-pg@7.7.0':
     resolution: {integrity: sha512-q33Ta8sKbgzEpAy0lx45tAq//yMv0qcb+8nj+TCA3P4wiAY+OBFEFk/NDkZncAfHaNJeGo5WJpJdpbL+ijYx8g==}
@@ -12995,8 +12964,6 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@neondatabase/serverless@1.1.0': {}
-
   '@next/env@16.3.0': {}
 
   '@next/eslint-plugin-next@16.3.0(eslint@9.39.4(jiti@2.7.0))':
@@ -13287,12 +13254,6 @@ snapshots:
       '@types/react': 19.2.14
 
   '@posthog/types@1.372.10': {}
-
-  '@prisma/adapter-neon@7.7.0':
-    dependencies:
-      '@neondatabase/serverless': 1.1.0
-      '@prisma/driver-adapter-utils': 7.7.0
-      postgres-array: 3.0.4
 
   '@prisma/adapter-pg@7.7.0':
     dependencies:
