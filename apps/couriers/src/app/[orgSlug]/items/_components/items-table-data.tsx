@@ -24,6 +24,23 @@ export async function ItemsTableData({ params, searchParams }: Props) {
   const activeFilter =
     selectedStatus === 'all' ? undefined : selectedStatus === 'active'
 
+  const emptyMessage =
+    selectedStatus === 'all'
+      ? 'No shared catalog items in this finance workspace yet.'
+      : `No ${selectedStatus} items.`
+
+  const emptyState = (
+    <Empty className="border-0 py-6">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <CircleStackIcon />
+        </EmptyMedia>
+        <EmptyTitle>No items</EmptyTitle>
+        <EmptyDescription>{emptyMessage}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
+
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return <ItemsTable items={[]} emptyState={emptyState} />
 
@@ -46,11 +63,6 @@ export async function ItemsTableData({ params, searchParams }: Props) {
         description: item.description,
       }))
 
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No shared catalog items in this finance workspace yet.'
-      : `No ${selectedStatus} items.`
-
   return (
     <>
       {items.error ? (
@@ -59,20 +71,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
         </div>
       ) : null}
 
-      <ItemsTable
-        items={rows}
-        emptyState={
-          <Empty className="border-0 py-6">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CircleStackIcon />
-              </EmptyMedia>
-              <EmptyTitle>No items</EmptyTitle>
-              <EmptyDescription>{emptyMessage}</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
+      <ItemsTable items={rows} emptyState={emptyState} />
     </>
   )
 }
