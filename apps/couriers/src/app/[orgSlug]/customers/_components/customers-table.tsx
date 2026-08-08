@@ -49,7 +49,7 @@ function avatarColor(name: string): string {
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]!
 }
 
-const columns: ColumnDef<CustomerTableRow, unknown>[] = [
+export const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   {
     accessorKey: 'customerName',
     header: 'Name',
