@@ -44,6 +44,10 @@ export function createPackagesRouter(resolveGuards: GuardResolver) {
         description: 'Package created.',
         schema: successEnvelopeSchema(packageSchema),
       },
+      404: {
+        description: 'Referenced customer, branch, or mailbox not found.',
+        schema: errorEnvelopeSchema,
+      },
     },
     handler: controller.createPackage,
   })
@@ -58,7 +62,10 @@ export function createPackagesRouter(resolveGuards: GuardResolver) {
         description: 'Package returned.',
         schema: successEnvelopeSchema(packageSchema),
       },
-      404: { description: 'Package not found.', schema: errorEnvelopeSchema },
+      404: {
+        description: 'Package not found.',
+        schema: errorEnvelopeSchema,
+      },
     },
     handler: controller.retrievePackage,
   })
@@ -73,7 +80,10 @@ export function createPackagesRouter(resolveGuards: GuardResolver) {
         description: 'Package updated.',
         schema: successEnvelopeSchema(packageSchema),
       },
-      404: { description: 'Package not found.', schema: errorEnvelopeSchema },
+      404: {
+        description: 'Package or referenced branch or mailbox not found.',
+        schema: errorEnvelopeSchema,
+      },
     },
     handler: controller.updatePackage,
   })

@@ -35,11 +35,17 @@ export const tenantParamsSchema = z.strictObject({
 export const customerParamsSchema = tenantParamsSchema.extend({
   id: z.string().min(1),
 })
-export const listCustomersQuerySchema = z.strictObject({
-  status: customerStatusSchema.optional(),
-  branch_id: z.string().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(25),
-})
+export const listCustomersQuerySchema = z
+  .strictObject({
+    status: customerStatusSchema.optional(),
+    branch_id: z.string().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+    starting_after: z.string().min(1).optional(),
+    ending_before: z.string().min(1).optional(),
+  })
+  .refine((query) => !(query.starting_after && query.ending_before), {
+    message: 'Only one cursor may be provided.',
+  })
 export const createCustomerBodySchema = z.strictObject({
   billing_customer_id: z.string().min(1),
   user_id: z.string().min(1).nullable().optional(),
