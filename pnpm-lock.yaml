@@ -865,6 +865,9 @@ importers:
 
   apps/couriers-api:
     dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@cloudflare/containers':
         specifier: 0.3.7
         version: 0.3.7
