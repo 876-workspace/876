@@ -1,4 +1,4 @@
-import { reconcile } from './reconcile'
-import { sync } from './sync'
+import { linkSite } from './link'
+import { listSites } from './reconcile'
 
-export const orgLocations = { reconcile, sync }
+export const orgLocations = { linkSite, listSites }

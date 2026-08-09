@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
+import { branchSyncSite, scheduleSync } from '@/lib/manage/org-locations'
 import { service } from '@/lib/service'
 import { branchUpdateParamsSchema } from '@/types/branch'
 
@@ -47,17 +48,16 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await service.branches.update(
-    ctx.tenant.id,
-    ctx.tenant.orgId,
-    id,
-    parsed.data
-  )
+  const result = await service.branches.update(ctx.tenant.id, id, parsed.data)
   if (result.error)
     return apiJson(
       { error: result.error },
       { status: result.status, code: result.code }
     )
+
+  // The envelope types `data` as nullable because a service error carries
+  // none; a successful result always has it.
+  if (result.data) scheduleSync(ctx.tenant.orgId, branchSyncSite(result.data))
 
   return apiJson({ data: result.data })
 }

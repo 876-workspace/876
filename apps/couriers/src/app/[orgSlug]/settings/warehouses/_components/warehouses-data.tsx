@@ -1,5 +1,6 @@
 import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { reconcile } from '@/lib/manage/org-locations'
 import { service } from '@/lib/service'
 
 import { WarehousesCards } from './warehouses-cards'
@@ -23,7 +24,7 @@ export async function WarehousesData({ params }: Props) {
 
   // The warehouse form redirects here, so a warehouse whose core mirror failed
   // would otherwise stay unlinked no matter how often this list is refreshed.
-  after(() => service.orgLocations.reconcile(tenantId, orgId))
+  after(() => reconcile(tenantId, orgId))
 
   return (
     <WarehousesCards

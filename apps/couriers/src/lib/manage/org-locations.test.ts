@@ -1,25 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { AddressView } from '@/types/address'
+import type { BranchView } from '@/types/branch'
+import type { WarehouseView } from '@/types/warehouse'
 
 const {
   mockAfter,
-  mockBranchUpdate,
+  mockLinkSite,
   mockCreate,
   mockList,
+  mockListSites,
   mockReportServiceFailure,
   mockResolveRegionIdByCode,
   mockUpdate,
-  mockWarehouseUpdate,
 } = vi.hoisted(() => ({
   mockAfter: vi.fn(),
-  mockBranchUpdate: vi.fn(),
+  mockLinkSite: vi.fn(),
   mockCreate: vi.fn(),
   mockList: vi.fn(),
+  mockListSites: vi.fn(),
   mockReportServiceFailure: vi.fn(),
   mockResolveRegionIdByCode: vi.fn(),
   mockUpdate: vi.fn(),
-  mockWarehouseUpdate: vi.fn(),
 }))
 
 vi.mock('next/server', () => ({ after: mockAfter }))
@@ -30,10 +32,11 @@ vi.mock('@/lib/876/platform-client', () => ({
   }),
 }))
 
-vi.mock('@/lib/db', () => ({
-  prisma: {
-    branch: { update: mockBranchUpdate },
-    warehouse: { update: mockWarehouseUpdate },
+// The mirror records its result through the service layer rather than touching
+// Prisma, so `linkSite` is what these tests assert on.
+vi.mock('@/lib/service', () => ({
+  service: {
+    orgLocations: { listSites: mockListSites, linkSite: mockLinkSite },
   },
 }))
 
@@ -41,11 +44,18 @@ vi.mock('@/lib/geo/resolve-region', () => ({
   resolveRegionIdByCode: mockResolveRegionIdByCode,
 }))
 
-vi.mock('../report', () => ({
+vi.mock('@/lib/service/report', () => ({
   reportServiceFailure: mockReportServiceFailure,
 }))
 
-import { scheduleSync, sync, type SyncSite } from './sync'
+import {
+  branchSyncSite,
+  reconcile,
+  scheduleSync,
+  sync,
+  warehouseSyncSite,
+  type SyncSite,
+} from './org-locations'
 
 const ORG_ID = 'org_rocketship'
 
@@ -105,6 +115,7 @@ describe('orgLocations.sync', () => {
     mockCreate.mockResolvedValue({ data: { id: 'loc_1' }, error: null })
     mockUpdate.mockResolvedValue({ data: { id: 'loc_1' }, error: null })
     mockList.mockResolvedValue({ data: { data: [] }, error: null })
+    mockLinkSite.mockResolvedValue(undefined)
   })
 
   it('creates the core location with the site id as its code', async () => {
@@ -135,22 +146,22 @@ describe('orgLocations.sync', () => {
   it('persists the returned core id on the branch', async () => {
     await sync(ORG_ID, site())
 
-    expect(mockBranchUpdate).toHaveBeenCalledTimes(1)
-    expect(mockBranchUpdate).toHaveBeenCalledWith({
-      where: { id: 'br_kingston' },
-      data: { orgLocationId: 'loc_1' },
+    expect(mockLinkSite).toHaveBeenCalledTimes(1)
+    expect(mockLinkSite).toHaveBeenCalledWith({
+      kind: 'branch',
+      id: 'br_kingston',
+      orgLocationId: 'loc_1',
     })
-    expect(mockWarehouseUpdate).not.toHaveBeenCalled()
   })
 
   it('persists the returned core id on the warehouse for a warehouse site', async () => {
     await sync(ORG_ID, site({ kind: 'warehouse', id: 'wh_miami' }))
 
-    expect(mockWarehouseUpdate).toHaveBeenCalledWith({
-      where: { id: 'wh_miami' },
-      data: { orgLocationId: 'loc_1' },
+    expect(mockLinkSite).toHaveBeenCalledWith({
+      kind: 'warehouse',
+      id: 'wh_miami',
+      orgLocationId: 'loc_1',
     })
-    expect(mockBranchUpdate).not.toHaveBeenCalled()
   })
 
   it('sends the inactive status for a deactivated site', async () => {
@@ -181,7 +192,7 @@ describe('orgLocations.sync', () => {
       expect.objectContaining({ code: 'br_kingston' })
     )
     expect(mockCreate).not.toHaveBeenCalled()
-    expect(mockBranchUpdate).not.toHaveBeenCalled()
+    expect(mockLinkSite).not.toHaveBeenCalled()
   })
 
   function duplicateThenList() {
@@ -205,9 +216,10 @@ describe('orgLocations.sync', () => {
 
     await sync(ORG_ID, site())
 
-    expect(mockBranchUpdate).toHaveBeenCalledWith({
-      where: { id: 'br_kingston' },
-      data: { orgLocationId: 'loc_adopted' },
+    expect(mockLinkSite).toHaveBeenCalledWith({
+      kind: 'branch',
+      id: 'br_kingston',
+      orgLocationId: 'loc_adopted',
     })
     expect(mockReportServiceFailure).not.toHaveBeenCalled()
   })
@@ -238,7 +250,7 @@ describe('orgLocations.sync', () => {
 
     // Linking a stale row would retire it from reconcile; staying unlinked
     // means the next pass retries.
-    expect(mockBranchUpdate).not.toHaveBeenCalled()
+    expect(mockLinkSite).not.toHaveBeenCalled()
     expect(mockReportServiceFailure).toHaveBeenCalledTimes(1)
   })
 
@@ -250,7 +262,7 @@ describe('orgLocations.sync', () => {
 
     await sync(ORG_ID, site())
 
-    expect(mockBranchUpdate).not.toHaveBeenCalled()
+    expect(mockLinkSite).not.toHaveBeenCalled()
     expect(mockReportServiceFailure).toHaveBeenCalledTimes(1)
     expect(mockReportServiceFailure).toHaveBeenCalledWith(
       expect.any(Error),
@@ -267,7 +279,7 @@ describe('orgLocations.sync', () => {
 
     await expect(sync(ORG_ID, site())).resolves.toBeUndefined()
 
-    expect(mockBranchUpdate).not.toHaveBeenCalled()
+    expect(mockLinkSite).not.toHaveBeenCalled()
     expect(mockReportServiceFailure).toHaveBeenCalledTimes(1)
     expect(mockReportServiceFailure).toHaveBeenCalledWith(
       error,
@@ -288,7 +300,7 @@ describe('orgLocations.sync', () => {
 
   it('reports a thrown persistence failure and never throws to the caller', async () => {
     const error = new Error('connection lost')
-    mockBranchUpdate.mockRejectedValue(error)
+    mockLinkSite.mockRejectedValue(error)
 
     await expect(sync(ORG_ID, site())).resolves.toBeUndefined()
 
@@ -296,5 +308,135 @@ describe('orgLocations.sync', () => {
       error,
       expect.objectContaining({ operation: 'orgLocations.sync' })
     )
+  })
+})
+
+describe('orgLocations sync-site mappers', () => {
+  it('maps every branch view field used by the core mirror', () => {
+    const view = {
+      id: 'br_kingston',
+      tenantId: 'ten_rocketship',
+      addressId: 'adr_kingston',
+      orgLocationId: 'loc_existing',
+      name: 'Kingston branch',
+      phone: '+18765550123',
+      isDefault: true,
+      isActive: false,
+      settings: { deliveryWindow: 'weekday' },
+      address: address(),
+      createdAt: 1_785_427_200,
+      updatedAt: 1_785_427_201,
+    } satisfies BranchView
+
+    expect(branchSyncSite(view)).toEqual({
+      kind: 'branch',
+      id: 'br_kingston',
+      orgLocationId: 'loc_existing',
+      name: 'Kingston branch',
+      phone: '+18765550123',
+      isActive: false,
+      isDefaultForKind: true,
+      address: address(),
+    })
+  })
+
+  it('maps every warehouse view field used by the core mirror', () => {
+    const view = {
+      id: 'wh_miami',
+      tenantId: 'ten_rocketship',
+      addressId: 'adr_miami',
+      orgLocationId: null,
+      name: 'Miami Receiving Hub',
+      operatingModel: 'AGENT',
+      agentName: 'Carmen',
+      code: 'MIA-1',
+      mailboxPlacement: 'ADDRESS_LINE_2',
+      mailboxPrefix: 'BOX',
+      instructions: 'Use rear entrance.',
+      isActive: false,
+      isPrimary: true,
+      address: address({ id: 'adr_miami' }),
+      createdAt: 1_785_427_200,
+      updatedAt: 1_785_427_201,
+    } satisfies WarehouseView
+
+    expect(warehouseSyncSite(view)).toEqual({
+      kind: 'warehouse',
+      id: 'wh_miami',
+      orgLocationId: null,
+      name: 'Miami Receiving Hub',
+      phone: null,
+      isActive: true,
+      isDefaultForKind: true,
+      address: address({ id: 'adr_miami' }),
+    })
+  })
+})
+
+describe('orgLocations.reconcile', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockResolveRegionIdByCode.mockResolvedValue('reg_jm_sta')
+    mockCreate.mockResolvedValue({ data: { id: 'loc_1' }, error: null })
+    mockListSites.mockResolvedValue({ branches: [], warehouses: [] })
+    mockLinkSite.mockResolvedValue(undefined)
+  })
+
+  it('mirrors the bounded branch-first site batch in order', async () => {
+    mockListSites.mockResolvedValue({
+      branches: [
+        {
+          id: 'br_kingston',
+          orgLocationId: null,
+          name: 'Kingston branch',
+          phone: '+18765550123',
+          isActive: true,
+          isDefault: true,
+          address: address(),
+        },
+      ],
+      warehouses: [
+        {
+          id: 'wh_miami',
+          orgLocationId: null,
+          name: 'Miami Receiving Hub',
+          isPrimary: true,
+          address: address({ id: 'adr_miami' }),
+        },
+      ],
+    })
+
+    await reconcile('ten_rocketship', ORG_ID)
+
+    expect(mockListSites).toHaveBeenCalledTimes(1)
+    expect(mockListSites).toHaveBeenCalledWith('ten_rocketship')
+    expect(mockCreate).toHaveBeenCalledTimes(2)
+    expect(mockCreate).toHaveBeenNthCalledWith(
+      1,
+      ORG_ID,
+      expect.objectContaining({ code: 'br_kingston', type: 'branch' })
+    )
+    expect(mockCreate).toHaveBeenNthCalledWith(
+      2,
+      ORG_ID,
+      expect.objectContaining({ code: 'wh_miami', type: 'warehouse' })
+    )
+    expect(mockReportServiceFailure).not.toHaveBeenCalled()
+  })
+
+  it('reports once and never throws when the site read fails', async () => {
+    const error = new Error('connection lost')
+    mockListSites.mockRejectedValue(error)
+
+    await expect(reconcile('ten_rocketship', ORG_ID)).resolves.toBeUndefined()
+
+    expect(mockCreate).not.toHaveBeenCalled()
+    expect(mockReportServiceFailure).toHaveBeenCalledTimes(1)
+    expect(mockReportServiceFailure).toHaveBeenCalledWith(error, {
+      operation: 'orgLocations.reconcile',
+      consequence:
+        "Couriers locations remain missing from the organization's locations in the 876 profile until the next reconcile.",
+      extra: { orgId: ORG_ID, tenantId: 'ten_rocketship' },
+    })
   })
 })

@@ -2,11 +2,13 @@ import type { PlatformOrgLocationCreateParams } from '@876/core/platform'
 import { after } from 'next/server'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
-import { prisma } from '@/lib/db'
 import { resolveRegionIdByCode } from '@/lib/geo/resolve-region'
 import type { AddressView } from '@/types/address'
 
-import { reportServiceFailure } from '../report'
+import { reportServiceFailure } from '@/lib/service/report'
+import { service } from '@/lib/service'
+import type { BranchView } from '@/types/branch'
+import type { WarehouseView } from '@/types/warehouse'
 
 /**
  * The subset of a Couriers branch or warehouse the core location registry
@@ -22,6 +24,32 @@ export type SyncSite = {
   isActive: boolean
   isDefaultForKind: boolean
   address: AddressView
+}
+
+export function branchSyncSite(view: BranchView): SyncSite {
+  return {
+    kind: 'branch',
+    id: view.id,
+    orgLocationId: view.orgLocationId,
+    name: view.name,
+    phone: view.phone,
+    isActive: view.isActive,
+    isDefaultForKind: view.isDefault,
+    address: view.address,
+  }
+}
+
+export function warehouseSyncSite(view: WarehouseView): SyncSite {
+  return {
+    kind: 'warehouse',
+    id: view.id,
+    orgLocationId: view.orgLocationId,
+    name: view.name,
+    phone: null,
+    isActive: true,
+    isDefaultForKind: view.isPrimary,
+    address: view.address,
+  }
 }
 
 const consequence = (kind: SyncSite['kind']) =>
@@ -137,17 +165,46 @@ export async function sync(orgId: string, site: SyncSite): Promise<void> {
   }
 }
 
-async function persistOrgLocationId(site: SyncSite, orgLocationId: string) {
-  if (site.kind === 'branch') {
-    await prisma.branch.update({
-      where: { id: site.id },
-      data: { orgLocationId },
-    })
-    return
-  }
+/**
+ * Repairs Couriers sites that were never mirrored to the core location
+ * registry after an earlier mirror attempt failed.
+ *
+ * Never throws — this is opportunistic background repair, and a failing
+ * reconcile must not affect the page that scheduled it. `sync` absorbs and
+ * reports its own failures, so one unlinkable site does not stop the rest.
+ *
+ * @param tenantId - The Couriers tenant to sweep.
+ * @param orgId - The core 876 organization that owns the tenant.
+ */
+export async function reconcile(
+  tenantId: string,
+  orgId: string
+): Promise<void> {
+  try {
+    const { branches, warehouses } =
+      await service.orgLocations.listSites(tenantId)
 
-  await prisma.warehouse.update({
-    where: { id: site.id },
-    data: { orgLocationId },
+    for (const branch of branches) {
+      await sync(orgId, branchSyncSite(branch))
+    }
+
+    for (const warehouse of warehouses) {
+      await sync(orgId, warehouseSyncSite(warehouse))
+    }
+  } catch (error) {
+    reportServiceFailure(error, {
+      operation: 'orgLocations.reconcile',
+      consequence:
+        "Couriers locations remain missing from the organization's locations in the 876 profile until the next reconcile.",
+      extra: { orgId, tenantId },
+    })
+  }
+}
+
+function persistOrgLocationId(site: SyncSite, orgLocationId: string) {
+  return service.orgLocations.linkSite({
+    kind: site.kind,
+    id: site.id,
+    orgLocationId,
   })
 }
