@@ -144,6 +144,156 @@ describe('branches', () => {
     )
   })
 
+  it('returns inactive branches when is_active is false', async () => {
+    branch.findMany.mockResolvedValue([row({ isActive: false })])
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_1/branches?is_active=false')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [
+          expect.objectContaining({
+            object: 'branch',
+            id: 'br_1',
+            is_active: false,
+          }),
+        ],
+        has_more: false,
+        url: '/v1/tenants/ten_1/branches',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(branch.findMany).toHaveBeenCalledTimes(1)
+    expect(branch.findMany).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_1', isActive: false },
+      orderBy: [{ isDefault: 'desc' }, { name: 'asc' }, { id: 'asc' }],
+      take: 26,
+      include: { address: true },
+    })
+  })
+
+  it('uses the branch sort tuple for a starting_after page', async () => {
+    const anchor = row({ id: 'br_new_kingston', name: 'New Kingston' })
+    const next = row({
+      id: 'br_mobay',
+      name: 'Montego Bay',
+      isDefault: false,
+    })
+    branch.findFirst.mockResolvedValue(anchor)
+    branch.findMany.mockResolvedValue([
+      next,
+      row({ id: 'br_ochi', isDefault: false }),
+    ])
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_1/branches?limit=1&starting_after=br_new_kingston')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [expect.objectContaining({ id: 'br_mobay' })],
+        has_more: true,
+        url: '/v1/tenants/ten_1/branches',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(branch.findFirst).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_1', id: 'br_new_kingston' },
+      include: { address: true },
+    })
+    expect(branch.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'ten_1',
+        OR: [
+          { isDefault: false },
+          { isDefault: true, name: { gt: 'New Kingston' } },
+          {
+            isDefault: true,
+            name: 'New Kingston',
+            id: { gt: 'br_new_kingston' },
+          },
+        ],
+      },
+      orderBy: [{ isDefault: 'desc' }, { name: 'asc' }, { id: 'asc' }],
+      take: 2,
+      include: { address: true },
+    })
+  })
+
+  it('uses the reverse branch sort tuple for an ending_before page', async () => {
+    const anchor = row({
+      id: 'br_mobay',
+      name: 'Montego Bay',
+      isDefault: false,
+    })
+    branch.findFirst.mockResolvedValue(anchor)
+    branch.findMany.mockResolvedValue([
+      row({ id: 'br_new_kingston', name: 'New Kingston' }),
+    ])
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_1/branches?limit=1&ending_before=br_mobay')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [expect.objectContaining({ id: 'br_new_kingston' })],
+        has_more: false,
+        url: '/v1/tenants/ten_1/branches',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(branch.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'ten_1',
+        OR: [
+          { isDefault: true },
+          { isDefault: false, name: { lt: 'Montego Bay' } },
+          {
+            isDefault: false,
+            name: 'Montego Bay',
+            id: { lt: 'br_mobay' },
+          },
+        ],
+      },
+      orderBy: [{ isDefault: 'asc' }, { name: 'desc' }, { id: 'desc' }],
+      take: 2,
+      include: { address: true },
+    })
+  })
+
+  it('returns an empty page for an unresolvable branch cursor', async () => {
+    branch.findFirst.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_1/branches?starting_after=br_other_tenant')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        url: '/v1/tenants/ten_1/branches',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(branch.findMany).not.toHaveBeenCalled()
+  })
+
   it('creates the branch and address atomically', async () => {
     const response = await request(createApp())
       .post('/v1/tenants/ten_1/branches')
