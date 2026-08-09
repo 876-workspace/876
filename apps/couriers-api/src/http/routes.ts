@@ -5,7 +5,13 @@ import { createAuthGuards, type AuthDependencies } from '@/http/auth'
 import { hashApiKey } from '@/http/auth/credentials'
 import { getSettings } from '@/config'
 import { healthRouter } from '@/modules/health'
+import { createBranchesRouter } from '@/modules/branches'
+import { createCustomersRouter } from '@/modules/customers'
+import { createPackagesRouter } from '@/modules/packages'
+import { createTeamRouter } from '@/modules/team'
+import { createSettingsRouter } from '@/modules/settings'
 import { createTenantsRouter } from '@/modules/tenants'
+import { createWarehousesRouter } from '@/modules/warehouses'
 
 export function buildRoutes(): Router {
   const root = Router()
@@ -13,6 +19,12 @@ export function buildRoutes(): Router {
 
   root.use(healthRouter)
   root.use(createTenantsRouter(resolveGuards))
+  root.use(createBranchesRouter(resolveGuards))
+  root.use(createCustomersRouter(resolveGuards))
+  root.use(createPackagesRouter(resolveGuards))
+  root.use(...createTeamRouter(resolveGuards))
+  root.use(createSettingsRouter(resolveGuards))
+  root.use(createWarehousesRouter(resolveGuards))
 
   return root
 }
