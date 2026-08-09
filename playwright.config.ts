@@ -87,7 +87,7 @@ export default defineConfig({
     {
       name: 'Couriers',
       command:
-        'pnpm --filter @876/couriers build:sw && pnpm --filter @876/couriers exec next dev --turbopack --port 3003',
+        'pnpm --filter @876/couriers-app build:sw && pnpm --filter @876/couriers-app exec next dev --turbopack --port 3003',
       url: 'http://127.0.0.1:3003/no-access',
       env: {
         ...process.env,

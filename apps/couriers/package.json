@@ -1,5 +1,5 @@
 {
-  "name": "@876/couriers",
+  "name": "@876/couriers-app",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -31,6 +31,7 @@
     "@876/billing": "workspace:*",
     "@876/client": "workspace:*",
     "@876/core": "workspace:*",
+    "@876/couriers": "workspace:*",
     "@876/sdk": "workspace:*",
     "@876/settings": "workspace:*",
     "@876/ui": "workspace:*",
