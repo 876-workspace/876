@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { service } from '@/lib/service'
+import { $couriers } from '@/lib/couriers'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import type { ManageContext, OrgRole, AppAccessStatus } from '@/types/auth'
 import type { Tenant } from '@/lib/db'
@@ -82,9 +82,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    resolvedTenant = await service.tenants.retrieveByOrgId(
-      match.organization.id
-    )
+    resolvedTenant = await retrieveTenant(match.organization.id)
   } else if (orgId) {
     // SSO fast path: orgId sealed in cookie; find matching membership for role.
     const match = memberships.find(
@@ -96,12 +94,12 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    resolvedTenant = await service.tenants.retrieveByOrgId(orgId)
+    resolvedTenant = await retrieveTenant(orgId)
   } else {
     // Email login: pick first active org with a courier tenant; fall back to first active org.
     for (const m of memberships) {
       if (m.organization.status !== 'active') continue
-      const tenant = await service.tenants.retrieveByOrgId(m.organization.id)
+      const tenant = await retrieveTenant(m.organization.id)
       if (tenant) {
         resolvedOrgId = m.organization.id
         resolvedOrgName = m.organization.name
@@ -167,3 +165,19 @@ export const getManageContext = cache(async function getManageContext(
     ...(currentPlanName ? { currentPlanName } : {}),
   }
 })
+
+async function retrieveTenant(orgId: string): Promise<Tenant | null> {
+  const result = await $couriers.tenants.retrieveByOrgId(orgId)
+  if (result.error || !result.data) return null
+  const tenant = result.data
+  return {
+    id: tenant.id,
+    orgId: tenant.org_id,
+    slug: tenant.slug,
+    name: tenant.name,
+    mailboxPrefix: tenant.mailbox_prefix,
+    status: tenant.status as Tenant['status'],
+    createdAt: tenant.created_at,
+    updatedAt: tenant.updated_at,
+  }
+}
