@@ -130,7 +130,10 @@ export const listBranchesQuerySchema = z
     limit: z.coerce.number().int().min(1).max(100).default(25),
     starting_after: z.string().min(1).optional(),
     ending_before: z.string().min(1).optional(),
-    is_active: z.coerce.boolean().optional(),
+    is_active: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .optional(),
   })
   .refine((query) => !(query.starting_after && query.ending_before), {
     message: 'Only one cursor may be provided.',

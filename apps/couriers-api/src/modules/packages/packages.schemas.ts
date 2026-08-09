@@ -40,12 +40,18 @@ export const tenantParamsSchema = z.strictObject({
 export const packageParamsSchema = tenantParamsSchema.extend({
   id: z.string().min(1),
 })
-export const listPackagesQuerySchema = z.strictObject({
-  status: packageStatusSchema.optional(),
-  customer_id: z.string().min(1).optional(),
-  branch_id: z.string().min(1).optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(25),
-})
+export const listPackagesQuerySchema = z
+  .strictObject({
+    status: packageStatusSchema.optional(),
+    customer_id: z.string().min(1).optional(),
+    branch_id: z.string().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+    starting_after: z.string().min(1).optional(),
+    ending_before: z.string().min(1).optional(),
+  })
+  .refine((query) => !(query.starting_after && query.ending_before), {
+    message: 'Only one cursor may be provided.',
+  })
 export const createPackageBodySchema = z.strictObject({
   customer_id: z.string().min(1),
   branch_id: z.string().min(1).nullable().optional(),

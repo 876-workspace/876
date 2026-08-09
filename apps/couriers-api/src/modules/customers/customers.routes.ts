@@ -51,7 +51,10 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
         description: 'Customer profile created.',
         schema: successEnvelopeSchema(customerSchema),
       },
-      404: { description: 'Tenant not found.', schema: errorEnvelopeSchema },
+      404: {
+        description: 'Tenant or branch not found.',
+        schema: errorEnvelopeSchema,
+      },
       409: { description: 'Customer exists.', schema: errorEnvelopeSchema },
     },
     handler: controller.createCustomer,
@@ -67,7 +70,10 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
         description: 'Customer profile returned.',
         schema: successEnvelopeSchema(customerSchema),
       },
-      404: { description: 'Customer not found.', schema: errorEnvelopeSchema },
+      404: {
+        description: 'Customer not found.',
+        schema: errorEnvelopeSchema,
+      },
     },
     handler: controller.retrieveCustomer,
   })
@@ -89,7 +95,10 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
         description: 'Customer profile updated.',
         schema: successEnvelopeSchema(customerSchema),
       },
-      404: { description: 'Customer not found.', schema: errorEnvelopeSchema },
+      404: {
+        description: 'Customer or branch not found.',
+        schema: errorEnvelopeSchema,
+      },
     },
     handler: controller.updateCustomer,
   })
