@@ -4,6 +4,7 @@ import { buildAdminRuntime } from '../runtime'
 import { createRolesResource } from './roles'
 
 const baseUrl = 'https://couriers.example.test'
+const apiKey = '876_app_secret_couriers'
 const internalKey = 'couriers_internal_key'
 
 function createRoleFixture(overrides: Record<string, unknown> = {}) {
@@ -44,6 +45,7 @@ describe('admin roles resource', () => {
         .mockResolvedValue(Response.json({ data: fixture, error: null }))
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -67,6 +69,7 @@ describe('admin roles resource', () => {
         )
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -85,6 +88,7 @@ describe('admin roles resource', () => {
       const fetchMock = vi.fn<typeof fetch>()
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey: '',
         fetch: fetchMock,
       })
@@ -122,6 +126,7 @@ describe('admin roles resource', () => {
         .mockResolvedValue(Response.json({ data: fixture, error: null }))
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -148,6 +153,7 @@ describe('admin roles resource', () => {
         )
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -169,6 +175,7 @@ describe('admin roles resource', () => {
       const fetchMock = vi.fn<typeof fetch>()
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey: '',
         fetch: fetchMock,
       })
@@ -208,6 +215,7 @@ describe('admin roles resource', () => {
         .mockResolvedValue(Response.json({ data: fixture, error: null }))
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -234,6 +242,7 @@ describe('admin roles resource', () => {
         )
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -258,6 +267,7 @@ describe('admin roles resource', () => {
       const fetchMock = vi.fn<typeof fetch>()
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey: '',
         fetch: fetchMock,
       })
@@ -295,6 +305,7 @@ describe('admin roles resource', () => {
         .mockResolvedValue(Response.json({ data: tombstone, error: null }))
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -319,6 +330,7 @@ describe('admin roles resource', () => {
       )
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey,
         fetch: fetchMock,
       })
@@ -340,6 +352,7 @@ describe('admin roles resource', () => {
       const fetchMock = vi.fn<typeof fetch>()
       const runtime = buildAdminRuntime({
         baseUrl,
+        apiKey,
         internalKey: '',
         fetch: fetchMock,
       })

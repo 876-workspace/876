@@ -50,7 +50,7 @@ describe('Couriers client credential tiers', () => {
     expect(headers).not.toHaveProperty('Authorization')
   })
 
-  it('sends only the service credential from the integration tier', async () => {
+  it('sends the integration credential as the API key the service reads', async () => {
     const fetchMock = successFetch()
     const client = create876CouriersIntegrationClient({
       baseUrl: 'https://couriers.example.test',
@@ -63,17 +63,21 @@ describe('Couriers client credential tiers', () => {
       error: null,
     })
 
+    // The integration routes are `apiKey`-tier and the service reads no
+    // `x-service-key` header, so the integration credential must travel as the
+    // app API key or every integration call 401s.
     const headers = fetchMock.mock.calls[0]?.[1]?.headers
-    expect(headers).toMatchObject({ 'x-service-key': 'couriers_service_key' })
-    expect(headers).not.toHaveProperty('x-876-api-key')
+    expect(headers).toMatchObject({ 'x-876-api-key': 'couriers_service_key' })
+    expect(headers).not.toHaveProperty('x-service-key')
     expect(headers).not.toHaveProperty('x-internal-key')
     expect(headers).not.toHaveProperty('Authorization')
   })
 
-  it('sends only the internal key from the admin tier', async () => {
+  it('sends both the API key and the internal key from the admin tier', async () => {
     const fetchMock = successFetch()
     const client = create876CouriersAdminClient({
       baseUrl: 'https://couriers.example.test',
+      apiKey: '876_app_secret_couriers',
       internalKey: 'internal_key',
       fetch: fetchMock,
     })
@@ -83,11 +87,34 @@ describe('Couriers client credential tiers', () => {
       error: null,
     })
 
+    // An `admin` route runs requireApiKey before requireAdmin, so the internal
+    // key alone never reaches the handler.
     const headers = fetchMock.mock.calls[0]?.[1]?.headers
-    expect(headers).toMatchObject({ 'x-internal-key': 'internal_key' })
-    expect(headers).not.toHaveProperty('x-876-api-key')
+    expect(headers).toMatchObject({
+      'x-876-api-key': '876_app_secret_couriers',
+      'x-internal-key': 'internal_key',
+    })
     expect(headers).not.toHaveProperty('x-service-key')
     expect(headers).not.toHaveProperty('Authorization')
+  })
+
+  it('fails closed from the admin tier when only the internal key is present', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+    const client = create876CouriersAdminClient({
+      baseUrl: 'https://couriers.example.test',
+      apiKey: '',
+      internalKey: 'internal_key',
+      fetch: fetchMock,
+    })
+
+    await expect(client.tenants.retrieve('ten_1')).resolves.toEqual({
+      data: null,
+      error: {
+        code: 'couriers/admin-not-configured',
+        message: 'Couriers administration is not configured.',
+      },
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   const unconfiguredTiers = [
@@ -123,6 +150,16 @@ describe('Couriers client credential tiers', () => {
   it.each(unconfiguredTiers)(
     'fails $name closed before calling fetch without its credential',
     async ({ create, code }) => {
+      // A credential left in the ambient environment would configure the tier
+      // this case is asserting is unconfigured.
+      for (const key of [
+        'COURIERS_API_KEY',
+        'API_876_KEY',
+        'COURIERS_INTERNAL_KEY',
+        'API_INTERNAL_KEY',
+      ])
+        vi.stubEnv(key, '')
+
       const fetchMock = vi.fn<typeof fetch>()
       const client = create(fetchMock)
       const result = await client.tenants.retrieve('ten_1')
@@ -132,6 +169,7 @@ describe('Couriers client credential tiers', () => {
         error: expect.objectContaining({ code }),
       })
       expect(fetchMock).not.toHaveBeenCalled()
+      vi.unstubAllEnvs()
     }
   )
 
