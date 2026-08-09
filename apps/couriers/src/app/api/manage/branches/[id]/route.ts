@@ -5,7 +5,12 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers } from '@/lib/couriers'
+import {
+  scheduleBranchMirror,
+  statusForCouriersError,
+  toBranchView,
+} from '@/lib/manage/branches'
 import { branchUpdateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -47,17 +52,40 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await service.branches.update(
-    ctx.tenant.id,
-    ctx.tenant.orgId,
-    id,
-    parsed.data
-  )
+  const result = await $couriers.branches.update(ctx.tenant.id, id, {
+    name: parsed.data.name,
+    phone: parsed.data.phone,
+    is_default: parsed.data.isDefault,
+    is_active: parsed.data.isActive,
+    settings: parsed.data.settings,
+    ...(parsed.data.address
+      ? {
+          address: {
+            name: parsed.data.address.name,
+            line1: parsed.data.address.line1,
+            line2: parsed.data.address.line2,
+            city: parsed.data.address.city,
+            country_code: parsed.data.address.countryCode,
+            region_code: parsed.data.address.regionCode,
+            postal_code: parsed.data.address.postalCode,
+            latitude: parsed.data.address.latitude,
+            longitude: parsed.data.address.longitude,
+            is_active: parsed.data.address.isActive,
+          },
+        }
+      : {}),
+  })
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      {
+        status: statusForCouriersError(result.error.code),
+        code: result.error.code,
+      }
     )
 
-  return apiJson({ data: result.data })
+  const branch = toBranchView(result.data)
+  scheduleBranchMirror(ctx.tenant.orgId, branch)
+
+  return apiJson({ data: branch })
 }

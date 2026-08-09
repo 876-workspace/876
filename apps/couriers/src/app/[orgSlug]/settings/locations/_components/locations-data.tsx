@@ -1,5 +1,7 @@
 import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { $couriers } from '@/lib/couriers'
+import { toBranchView } from '@/lib/manage/branches'
 import { service } from '@/lib/service'
 
 import { LocationsCards } from './locations-cards'
@@ -19,7 +21,15 @@ export async function LocationsData({ params }: Props) {
 
   const { id: tenantId, orgId } = ctx.tenant
 
-  const branches = await service.branches.list({ tenantId })
+  const result = await $couriers.branches.list(tenantId)
+  if (result.error)
+    return (
+      <div className="876-empty-dashed max-w-2xl">
+        We couldn&apos;t load this organization&apos;s branches. Please try
+        again.
+      </div>
+    )
+  const branches = result.data.data.map(toBranchView)
 
   // Opportunistic repair for sites whose core mirror failed at write time. It
   // runs after the response so a slow identity API never delays this page.

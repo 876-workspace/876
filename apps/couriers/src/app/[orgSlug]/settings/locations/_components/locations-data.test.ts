@@ -1,18 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockAfter, mockReconcile, mockGetManageContext, mockService } =
-  vi.hoisted(() => {
-    const mockReconcile = vi.fn()
-    return {
-      mockAfter: vi.fn(),
-      mockReconcile,
-      mockGetManageContext: vi.fn(),
-      mockService: {
-        branches: { list: vi.fn().mockResolvedValue([]) },
-        orgLocations: { reconcile: mockReconcile },
-      },
-    }
-  })
+const {
+  mockAfter,
+  mockReconcile,
+  mockGetManageContext,
+  mockService,
+  mockCouriers,
+} = vi.hoisted(() => {
+  const mockReconcile = vi.fn()
+  return {
+    mockAfter: vi.fn(),
+    mockReconcile,
+    mockGetManageContext: vi.fn(),
+    mockService: {
+      orgLocations: { reconcile: mockReconcile },
+    },
+    mockCouriers: {
+      branches: { list: vi.fn() },
+    },
+  }
+})
 
 vi.mock('next/server', () => ({ after: mockAfter }))
 
@@ -21,6 +28,8 @@ vi.mock('@/lib/auth/manage-context', () => ({
 }))
 
 vi.mock('@/lib/service', () => ({ service: mockService }))
+
+vi.mock('@/lib/couriers', () => ({ $couriers: mockCouriers }))
 
 // The page shell is a sync component that renders this data child behind
 // <Suspense>, so awaiting the shell never runs the fetch that schedules the
@@ -41,7 +50,16 @@ describe('Branches settings page data', () => {
       tenant: { id: TENANT_ID, orgId: ORG_ID },
       role: 'owner',
     })
-    mockService.branches.list.mockResolvedValue([])
+    mockCouriers.branches.list.mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/v1/tenants/ten_rocketship/branches',
+      },
+      error: null,
+    })
   })
 
   it('schedules the org-location reconcile after the response', async () => {
