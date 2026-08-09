@@ -253,7 +253,7 @@ describe('ensureSharedCoreUserCustomer', () => {
 })
 
 describe('createExternalCustomer', () => {
-  it('creates an external registry customer with the profile retry anchor', async () => {
+  it('creates an external registry customer with the client submission key', async () => {
     const finance = {
       customers: {
         create: vi
@@ -263,7 +263,7 @@ describe('createExternalCustomer', () => {
     } as unknown as BillingIntegrationClient
 
     await createExternalCustomer(finance, 'org_1', {
-      profileId: 'cus_profile_1',
+      idempotencyKey: 'submission-001',
       customerKind: 'INDIVIDUAL',
       firstName: 'Ada',
       lastName: 'Lovelace',
@@ -275,9 +275,9 @@ describe('createExternalCustomer', () => {
       expect.objectContaining({
         customerType: 'EXTERNAL',
         name: 'Ada Lovelace',
-        sourceExternalReference: 'couriers:profile:cus_profile_1',
+        sourceExternalReference: 'couriers:create:submission-001',
       }),
-      { idempotencyKey: 'couriers:profile:cus_profile_1' }
+      { idempotencyKey: 'couriers:create:submission-001' }
     )
   })
 })

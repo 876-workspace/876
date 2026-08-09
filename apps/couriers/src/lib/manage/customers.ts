@@ -29,7 +29,11 @@ export async function createManagedCustomer({
 
   const $876 = await get876Client()
   const registry = await createExternalCustomer($876.billing, tenant.orgId, {
-    profileId,
+    // The key comes from the client and is held across retries of the same
+    // submission. Deriving it from the profile id instead would defeat the
+    // point: a retry generates a fresh profile id, so Billing would mint a
+    // second customer for the same person on every transient failure.
+    idempotencyKey: params.idempotencyKey,
     customerKind: params.customerKind ?? 'INDIVIDUAL',
     firstName: params.firstName ?? null,
     lastName: params.lastName ?? null,
@@ -40,15 +44,16 @@ export async function createManagedCustomer({
   if (registry.error || !registry.data)
     return errFrom('customer/registry-unavailable')
 
-  // A registry row left behind by a failed profile write is intentional: retrying
-  // with this pre-generated profile id reuses the same idempotency anchor.
+  // A registry row left behind by a failed profile write is recovered rather
+  // than duplicated: the retry carries the same idempotency key, so Billing
+  // returns the customer it already created.
   return service.customerProfiles.create(tenant.id, {
     id: profileId,
     billingCustomerId: registry.data.id,
     userId: null,
     mailboxNumber: allocation.data.number,
     branchId: params.branchId,
-    trn: params.trn,
+    trn: params.trn ?? undefined,
     isCommercial: params.isCommercial,
     status: params.status,
   })
@@ -113,10 +118,13 @@ export async function updateManagedCustomer({
       {
         customerKind: current.data.customerKind,
         firstName: params.firstName ?? current.data.firstName,
-        lastName: params.lastName ?? current.data.lastName,
+        lastName:
+          params.lastName === undefined
+            ? current.data.lastName
+            : params.lastName,
         companyName: params.companyName ?? current.data.companyName,
-        email: params.email ?? current.data.email,
-        phone: params.phone ?? current.data.phone,
+        email: params.email === undefined ? current.data.email : params.email,
+        phone: params.phone === undefined ? current.data.phone : params.phone,
       }
     )
     if (registry.error || !registry.data)
