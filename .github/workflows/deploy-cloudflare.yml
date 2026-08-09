@@ -294,12 +294,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - name: Apply migrations
-        run: pnpm --filter @876/couriers exec prisma migrate deploy
+        run: pnpm --filter @876/couriers-app exec prisma migrate deploy
         env:
           DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
-        run: pnpm --filter @876/couriers run deploy
+        run: pnpm --filter @876/couriers-app run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
