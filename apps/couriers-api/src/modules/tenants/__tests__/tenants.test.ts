@@ -55,7 +55,6 @@ const testEnv: NodeJS.ProcessEnv = {
   DIRECT_DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
   API_876_KEY: '876_app_secret_test_key_for_couriers_api',
   API_INTERNAL_KEY: 'test-internal-key',
-  SESSION_COOKIE_SECRET: 'test-session-cookie-secret-32-chars!!',
   SENTRY_DSN: '',
 }
 
