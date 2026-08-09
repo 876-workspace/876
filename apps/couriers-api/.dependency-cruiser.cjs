@@ -14,8 +14,7 @@ module.exports = {
     },
     {
       name: 'prisma-only-in-repositories',
-      comment:
-        'Only a *.repository.ts file may import the Prisma client.',
+      comment: 'Only a *.repository.ts file may import the Prisma client.',
       severity: 'error',
       from: {
         pathNot: '(\\.repository\\.ts$|^src/db/|^src/server\\.ts$)',
@@ -24,14 +23,16 @@ module.exports = {
     },
     {
       name: 'no-generated-prisma-outside-db',
-      comment: 'Import model types from src/db, never from the generated client directly.',
+      comment:
+        'Import model types from src/db, never from the generated client directly.',
       severity: 'error',
       from: { pathNot: '^src/db/' },
       to: { path: 'generated/prisma' },
     },
     {
       name: 'platform-is-leaf',
-      comment: 'platform/ holds cross-module primitives; it must not depend on a module.',
+      comment:
+        'platform/ holds cross-module primitives; it must not depend on a module.',
       severity: 'error',
       from: { path: '^src/platform/' },
       to: { path: '^src/(modules|http|workers)/' },
@@ -72,7 +73,11 @@ module.exports = {
       severity: 'warn',
       from: {
         orphan: true,
-        pathNot: ['\\.d\\.ts$', '^src/test/', '(^|/)(vitest|prisma)\\.config\\.ts$'],
+        pathNot: [
+          '\\.d\\.ts$',
+          '^src/test/',
+          '(^|/)(vitest|prisma)\\.config\\.ts$',
+        ],
       },
       to: {},
     },
