@@ -4,9 +4,16 @@ export const tenantIdParamsSchema = z.strictObject({
   tenantId: z.string().min(1),
 })
 
-export const listMailboxesQuerySchema = z.strictObject({
-  customer_id: z.string().min(1).optional(),
-})
+export const listMailboxesQuerySchema = z
+  .strictObject({
+    customer_id: z.string().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+    starting_after: z.string().min(1).optional(),
+    ending_before: z.string().min(1).optional(),
+  })
+  .refine((query) => !(query.starting_after && query.ending_before), {
+    message: 'Only one cursor may be provided.',
+  })
 
 export const mailboxSchema = z
   .object({

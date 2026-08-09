@@ -25,6 +25,7 @@ const { tenant, mailbox, apiKey } = vi.hoisted(() => ({
   tenant: { findUnique: vi.fn() },
   mailbox: {
     findMany: vi.fn(),
+    findFirst: vi.fn(),
     count: vi.fn(),
     findUnique: vi.fn(),
   },
@@ -62,6 +63,7 @@ beforeEach(() => {
   apiKey.update.mockResolvedValue({})
   tenant.findUnique.mockResolvedValue({ mailboxPrefix: 'KNG' })
   mailbox.findMany.mockResolvedValue([mailboxRow()])
+  mailbox.findFirst.mockResolvedValue(null)
   mailbox.count.mockResolvedValue(0)
   mailbox.findUnique.mockResolvedValue(null)
 })
@@ -125,6 +127,7 @@ describe('mailboxes', () => {
     expect(mailbox.findMany).toHaveBeenCalledWith({
       where: { tenantId: 'ten_kingston' },
       orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      take: 26,
     })
   })
 
@@ -159,7 +162,253 @@ describe('mailboxes', () => {
     expect(mailbox.findMany).toHaveBeenCalledWith({
       where: { tenantId: 'ten_kingston', customerId: 'cprof_nadine' },
       orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      take: 26,
     })
+  })
+
+  it('reports has_more false on a default first page with fewer rows than the limit', async () => {
+    mailbox.findMany.mockResolvedValue([mailboxRow()])
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_kingston/mailboxes')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body.error).toBeNull()
+    expect(response.body.data.has_more).toBe(false)
+    expect(response.body.data.data).toHaveLength(1)
+    expect(mailbox.findMany).toHaveBeenCalledTimes(1)
+    expect(mailbox.findMany).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston' },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      take: 26,
+    })
+  })
+
+  it('reports has_more true when an extra row is fetched and does not serialise the extra row', async () => {
+    mailbox.findMany.mockResolvedValue([
+      mailboxRow({ id: 'mbx_kng1001', createdAt: NOW - 30 }),
+      mailboxRow({ id: 'mbx_kng1002', createdAt: NOW - 20, isPrimary: false }),
+      mailboxRow({ id: 'mbx_kng1003', createdAt: NOW - 10, isPrimary: false }),
+    ])
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_kingston/mailboxes?limit=2')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body.error).toBeNull()
+    expect(response.body.data.has_more).toBe(true)
+    expect(response.body.data.data).toHaveLength(2)
+    expect(response.body.data.data.map((r: { id: string }) => r.id)).toEqual([
+      'mbx_kng1001',
+      'mbx_kng1002',
+    ])
+    expect(mailbox.findMany).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston' },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      take: 3,
+    })
+  })
+
+  it('uses the three-key tuple for a starting_after page and scopes the anchor by tenant', async () => {
+    const anchor = mailboxRow({
+      id: 'mbx_anchor',
+      isPrimary: true,
+      createdAt: NOW - 25,
+    })
+    mailbox.findFirst.mockResolvedValue(anchor)
+    mailbox.findMany.mockResolvedValue([
+      mailboxRow({ id: 'mbx_after', isPrimary: true, createdAt: NOW - 20 }),
+    ])
+
+    const response = await request(createApp())
+      .get(
+        '/v1/tenants/ten_kingston/mailboxes?limit=1&starting_after=mbx_anchor'
+      )
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [expect.objectContaining({ id: 'mbx_after' })],
+        has_more: false,
+        url: '/v1/tenants/ten_kingston/mailboxes',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(mailbox.findFirst).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston', id: 'mbx_anchor' },
+    })
+    expect(mailbox.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'ten_kingston',
+        OR: [
+          { isPrimary: { lt: true } },
+          { isPrimary: true, createdAt: { gt: NOW - 25 } },
+          { isPrimary: true, createdAt: NOW - 25, id: { gt: 'mbx_anchor' } },
+        ],
+      },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      take: 2,
+    })
+  })
+
+  it('filters by customer_id together with the starting_after tuple and keeps ordering', async () => {
+    const anchor = mailboxRow({
+      id: 'mbx_anchor',
+      isPrimary: false,
+      createdAt: NOW - 15,
+    })
+    mailbox.findFirst.mockResolvedValue(anchor)
+    mailbox.findMany.mockResolvedValue([
+      mailboxRow({ id: 'mbx_filtered', customerId: 'cprof_nadine' }),
+    ])
+
+    const response = await request(createApp())
+      .get(
+        '/v1/tenants/ten_kingston/mailboxes?customer_id=cprof_nadine&limit=1&starting_after=mbx_anchor'
+      )
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body.error).toBeNull()
+    expect(mailbox.findFirst).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston', id: 'mbx_anchor' },
+    })
+    expect(mailbox.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'ten_kingston',
+        customerId: 'cprof_nadine',
+        OR: [
+          { isPrimary: { lt: false } },
+          { isPrimary: false, createdAt: { gt: NOW - 15 } },
+          { isPrimary: false, createdAt: NOW - 15, id: { gt: 'mbx_anchor' } },
+        ],
+      },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+      take: 2,
+    })
+  })
+
+  it('uses a reversed three-key tuple and reversed order for an ending_before page, then reverses rows back', async () => {
+    const anchor = mailboxRow({
+      id: 'mbx_anchor',
+      isPrimary: false,
+      createdAt: NOW - 10,
+    })
+    mailbox.findFirst.mockResolvedValue(anchor)
+    // Repository fetches in reversed order (asc, desc, desc); service reverses back.
+    mailbox.findMany.mockResolvedValue([
+      mailboxRow({ id: 'mbx_b', isPrimary: true, createdAt: NOW - 30 }),
+      mailboxRow({ id: 'mbx_a', isPrimary: true, createdAt: NOW - 25 }),
+    ])
+
+    const response = await request(createApp())
+      .get(
+        '/v1/tenants/ten_kingston/mailboxes?limit=2&ending_before=mbx_anchor'
+      )
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [
+          expect.objectContaining({ id: 'mbx_a' }),
+          expect.objectContaining({ id: 'mbx_b' }),
+        ],
+        has_more: false,
+        url: '/v1/tenants/ten_kingston/mailboxes',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(mailbox.findFirst).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston', id: 'mbx_anchor' },
+    })
+    expect(mailbox.findMany).toHaveBeenCalledWith({
+      where: {
+        tenantId: 'ten_kingston',
+        OR: [
+          { isPrimary: { gt: false } },
+          { isPrimary: false, createdAt: { lt: NOW - 10 } },
+          { isPrimary: false, createdAt: NOW - 10, id: { lt: 'mbx_anchor' } },
+        ],
+      },
+      orderBy: [{ isPrimary: 'asc' }, { createdAt: 'desc' }, { id: 'desc' }],
+      take: 3,
+    })
+  })
+
+  it('returns an empty page with has_more false when the cursor does not resolve within the tenant', async () => {
+    mailbox.findFirst.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_kingston/mailboxes?starting_after=mbx_other_tenant')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        url: '/v1/tenants/ten_kingston/mailboxes',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(mailbox.findFirst).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston', id: 'mbx_other_tenant' },
+    })
+    expect(mailbox.findMany).not.toHaveBeenCalled()
+  })
+
+  it('returns an empty page for an unresolvable ending_before cursor scoped by tenant', async () => {
+    mailbox.findFirst.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .get('/v1/tenants/ten_kingston/mailboxes?ending_before=mbx_missing')
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        url: '/v1/tenants/ten_kingston/mailboxes',
+        total_count: null,
+      },
+      error: null,
+    })
+    expect(mailbox.findFirst).toHaveBeenCalledWith({
+      where: { tenantId: 'ten_kingston', id: 'mbx_missing' },
+    })
+    expect(mailbox.findMany).not.toHaveBeenCalled()
+  })
+
+  it('rejects both cursors together as a validation error', async () => {
+    const response = await request(createApp())
+      .get(
+        '/v1/tenants/ten_kingston/mailboxes?starting_after=mbx_a&ending_before=mbx_b'
+      )
+      .set(ADMIN_HEADERS)
+
+    expect(response.status).toBe(422)
+    expect(response.body).toEqual({
+      data: null,
+      error: {
+        code: 'request/invalid',
+        message: 'Only one cursor may be provided.',
+      },
+    })
+    expect(response.body.data).toBeNull()
+    expect(mailbox.findFirst).not.toHaveBeenCalled()
+    expect(mailbox.findMany).not.toHaveBeenCalled()
   })
 
   it('allocates the first free prefixed mailbox number without reserving it', async () => {

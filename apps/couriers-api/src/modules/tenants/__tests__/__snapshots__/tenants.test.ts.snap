@@ -3093,7 +3093,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
     },
     "/v1/tenants/{tenantId}/mailboxes": {
       "get": {
-        "operationId": "mailboxes-list",
+        "operationId": "tenant-mailboxes-list",
         "parameters": [
           {
             "in": "path",
@@ -3107,6 +3107,32 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           {
             "in": "query",
             "name": "customer_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
             "schema": {
               "minLength": 1,
               "type": "string",

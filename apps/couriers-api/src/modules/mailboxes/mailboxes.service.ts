@@ -10,7 +10,11 @@ import {
   serializeMailbox,
   serializeMailboxAllocation,
 } from './mailboxes.serializers'
-import type { Mailbox, MailboxAllocation } from './mailboxes.schemas'
+import type {
+  ListMailboxesQuery,
+  Mailbox,
+  MailboxAllocation,
+} from './mailboxes.schemas'
 
 const MAX_ALLOCATION_ATTEMPTS = 25
 
@@ -30,11 +34,14 @@ const allocationExhausted = () =>
 
 export async function listMailboxes(
   tenantId: string,
-  customerId?: string
-): Promise<Mailbox[]> {
-  const rows = await listMailboxRows(tenantId, customerId)
-
-  return rows.map(serializeMailbox)
+  query: ListMailboxesQuery
+): Promise<{ data: Mailbox[]; hasMore: boolean }> {
+  const rows = await listMailboxRows({ tenantId, query })
+  const page = rows.slice(0, query.limit)
+  return {
+    data: (query.ending_before ? page.reverse() : page).map(serializeMailbox),
+    hasMore: rows.length > query.limit,
+  }
 }
 
 /**

@@ -23,7 +23,7 @@ export function createMailboxesRouter(resolveGuards: GuardResolver) {
   api.get({
     path: '',
     security: 'admin',
-    operationId: 'mailboxes-list',
+    operationId: 'tenant-mailboxes-list',
     summary: 'List a tenant’s mailboxes',
     request: {
       params: tenantIdParamsSchema,
