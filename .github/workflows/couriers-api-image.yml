@@ -1,0 +1,94 @@
+name: Couriers API container image
+
+# Builds the `@876/couriers-api` container image on pull requests that can
+# affect it. It builds and boots the image, but does not push it: the deploy
+# workflow and Workers Builds own that.
+
+on:
+  pull_request:
+    paths:
+      - 'apps/couriers-api/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.dockerignore'
+      - '.github/workflows/couriers-api-image.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: couriers-api-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # The context is the repository root, matching `image_build_context` in
+      # apps/couriers-api/wrangler.jsonc — pnpm keeps one lockfile for the
+      # workspace and a `--frozen-lockfile` install cannot find it from a
+      # package context.
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/couriers-api/Dockerfile
+          push: false
+          load: true
+          tags: 876-couriers-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Building proves it compiles; this proves it runs. A missing runtime
+      # dependency or a broken symlink only shows up on the first import.
+      - name: Boot the image and serve
+        run: |
+          # DATABASE_URL is never dialed here. It only has to satisfy the
+          # config schema, which requires a Prisma Accelerate URL.
+          docker run -d --name couriers-api-ci \
+            -e DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' \
+            -e API_876_KEY='876_app_secret_ci_key' \
+            -e PORT=4001 \
+            -p 4001:4001 \
+            876-couriers-api:ci
+
+          for i in $(seq 1 30); do
+            if curl -sf -m 3 http://localhost:4001/health >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "${ready:-0}" != "1" ]; then
+            echo "::error::the container never became healthy"
+            docker logs couriers-api-ci
+            exit 1
+          fi
+
+          echo "--- /health ---"
+          curl -sf -m 5 http://localhost:4001/health
+          echo
+
+          echo "--- /openapi.json ---"
+          ops=$(curl -sf -m 30 http://localhost:4001/openapi.json \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print(sum(len(v) for v in d["paths"].values()))')
+          echo "operations: $ops"
+          if [ "$ops" -lt 4 ]; then
+            echo "::error::expected the full route surface, got $ops operations"
+            docker logs couriers-api-ci
+            exit 1
+          fi
+
+          # An unauthenticated protected route must not answer.
+          code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 http://localhost:4001/v1/tenants)
+          echo "GET /v1/tenants unauthenticated -> $code"
+          if [ "$code" != "401" ]; then
+            echo "::error::expected 401 from an unauthenticated protected route, got $code"
+            docker logs couriers-api-ci
+            exit 1
+          fi
+
+      - name: Container logs
+        if: always()
+        run: docker logs couriers-api-ci || true

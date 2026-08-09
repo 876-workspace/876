@@ -48,6 +48,7 @@ on:
           - all
           - widgets-api
           - api
+          - couriers-api
           - billing-api
           - storage-api
           - console
@@ -73,6 +74,7 @@ jobs:
     outputs:
       widgets-api: ${{ steps.filter.outputs.widgets-api }}
       api: ${{ steps.filter.outputs.api }}
+      couriers-api: ${{ steps.filter.outputs.couriers-api }}
       billing-api: ${{ steps.filter.outputs.billing-api }}
       storage-api: ${{ steps.filter.outputs.storage-api }}
       console: ${{ steps.filter.outputs.console }}
@@ -99,6 +101,13 @@ jobs:
               # The image builds from the repository root and installs from the
               # root lockfile, so a dependency bump changes the image without
               # touching apps/api. Without this the deploy silently goes stale.
+              - *shared
+              - '.dockerignore'
+            couriers-api:
+              - 'apps/couriers-api/**'
+              # The image builds from the repository root and installs from the
+              # root lockfile, so a dependency bump changes the image without
+              # touching apps/couriers-api.
               - *shared
               - '.dockerignore'
             billing-api:
@@ -182,6 +191,19 @@ jobs:
       - name: Deploy container Worker
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/api
+        run: pnpm exec wrangler deploy
+
+  couriers-api:
+    needs: changes
+    if:
+      (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'couriers-api'))
+      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.couriers-api == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Deploy container Worker
+        working-directory: apps/couriers-api
         run: pnpm exec wrangler deploy
 
   billing-api:
