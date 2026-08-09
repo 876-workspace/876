@@ -1,14 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const {
-  mockBranchFindMany,
-  mockReportServiceFailure,
-  mockSync,
-  mockWarehouseFindMany,
-} = vi.hoisted(() => ({
+const { mockBranchFindMany, mockWarehouseFindMany } = vi.hoisted(() => ({
   mockBranchFindMany: vi.fn(),
-  mockReportServiceFailure: vi.fn(),
-  mockSync: vi.fn(),
   mockWarehouseFindMany: vi.fn(),
 }))
 
@@ -19,53 +12,30 @@ vi.mock('@/lib/db', () => ({
   },
 }))
 
-vi.mock('./sync', () => ({ sync: mockSync }))
-
-vi.mock('../report', () => ({
-  reportServiceFailure: mockReportServiceFailure,
-}))
-
-import { reconcile } from './reconcile'
+import { listSites } from './reconcile'
 
 const TENANT_ID = 'ten_rocketship'
-const ORG_ID = 'org_rocketship'
 
-const ADDRESS = { id: 'adr_kingston', city: 'Kingston', countryCode: 'JM' }
-
-function branchRow(overrides: Record<string, unknown> = {}) {
+// Only the row count matters to the limit arithmetic these tests cover, so the
+// factory carries the identifying fields and nothing else.
+function branchRow(overrides: { id: string }) {
   return {
-    id: 'br_kingston',
+    tenantId: TENANT_ID,
     orgLocationId: null,
-    name: 'Kingston branch',
-    phone: '+18765550123',
-    isActive: true,
-    isDefault: true,
-    address: ADDRESS,
+    name: `Branch ${overrides.id}`,
     ...overrides,
   }
 }
 
-function warehouseRow(overrides: Record<string, unknown> = {}) {
-  return {
-    id: 'wh_miami',
-    orgLocationId: null,
-    name: 'Miami Receiving Hub',
-    isPrimary: true,
-    address: ADDRESS,
-    ...overrides,
-  }
-}
-
-describe('orgLocations.reconcile', () => {
+describe('orgLocations.listSites', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockBranchFindMany.mockResolvedValue([])
     mockWarehouseFindMany.mockResolvedValue([])
-    mockSync.mockResolvedValue(undefined)
   })
 
   it('queries only unlinked sites for the tenant', async () => {
-    await reconcile(TENANT_ID, ORG_ID)
+    await listSites(TENANT_ID)
 
     expect(mockBranchFindMany).toHaveBeenCalledWith({
       where: { tenantId: TENANT_ID, orgLocationId: null },
@@ -79,46 +49,14 @@ describe('orgLocations.reconcile', () => {
     })
   })
 
-  it('syncs nothing when every site is already linked', async () => {
-    await reconcile(TENANT_ID, ORG_ID)
-
-    expect(mockSync).not.toHaveBeenCalled()
-    expect(mockReportServiceFailure).not.toHaveBeenCalled()
-  })
-
-  it('mirrors an unlinked branch with its operational fields', async () => {
-    mockBranchFindMany.mockResolvedValue([branchRow()])
-
-    await reconcile(TENANT_ID, ORG_ID)
-
-    expect(mockSync).toHaveBeenCalledTimes(1)
-    expect(mockSync).toHaveBeenCalledWith(ORG_ID, {
-      kind: 'branch',
-      id: 'br_kingston',
-      orgLocationId: null,
-      name: 'Kingston branch',
-      phone: '+18765550123',
-      isActive: true,
-      isDefaultForKind: true,
-      address: ADDRESS,
+  it('returns empty lists when every site is already linked', async () => {
+    await expect(listSites(TENANT_ID)).resolves.toEqual({
+      branches: [],
+      warehouses: [],
     })
-  })
 
-  it('mirrors an unlinked warehouse as always active with no phone', async () => {
-    mockWarehouseFindMany.mockResolvedValue([warehouseRow()])
-
-    await reconcile(TENANT_ID, ORG_ID)
-
-    expect(mockSync).toHaveBeenCalledWith(ORG_ID, {
-      kind: 'warehouse',
-      id: 'wh_miami',
-      orgLocationId: null,
-      name: 'Miami Receiving Hub',
-      phone: null,
-      isActive: true,
-      isDefaultForKind: true,
-      address: ADDRESS,
-    })
+    expect(mockBranchFindMany).toHaveBeenCalledTimes(1)
+    expect(mockWarehouseFindMany).toHaveBeenCalledTimes(1)
   })
 
   it('caps the combined sweep at the reconcile limit', async () => {
@@ -126,7 +64,7 @@ describe('orgLocations.reconcile', () => {
       Array.from({ length: 20 }, (_, index) => branchRow({ id: `br_${index}` }))
     )
 
-    await reconcile(TENANT_ID, ORG_ID)
+    await listSites(TENANT_ID)
 
     expect(mockWarehouseFindMany).toHaveBeenCalledWith(
       expect.objectContaining({ take: 5 })
@@ -138,24 +76,17 @@ describe('orgLocations.reconcile', () => {
       Array.from({ length: 25 }, (_, index) => branchRow({ id: `br_${index}` }))
     )
 
-    await reconcile(TENANT_ID, ORG_ID)
+    await listSites(TENANT_ID)
 
     expect(mockWarehouseFindMany).not.toHaveBeenCalled()
-    expect(mockSync).toHaveBeenCalledTimes(25)
   })
 
-  it('reports a query failure and never throws to the page that scheduled it', async () => {
+  it('propagates a query failure to the orchestration layer', async () => {
     const error = new Error('connection lost')
     mockBranchFindMany.mockRejectedValue(error)
 
-    await expect(reconcile(TENANT_ID, ORG_ID)).resolves.toBeUndefined()
+    await expect(listSites(TENANT_ID)).rejects.toThrow(error)
 
-    expect(mockReportServiceFailure).toHaveBeenCalledTimes(1)
-    expect(mockReportServiceFailure).toHaveBeenCalledWith(error, {
-      operation: 'orgLocations.reconcile',
-      consequence:
-        "Couriers locations remain missing from the organization's locations in the 876 profile until the next reconcile.",
-      extra: { orgId: ORG_ID, tenantId: TENANT_ID },
-    })
+    expect(mockWarehouseFindMany).not.toHaveBeenCalled()
   })
 })

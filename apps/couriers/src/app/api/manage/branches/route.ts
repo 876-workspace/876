@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
+import { branchSyncSite, scheduleSync } from '@/lib/manage/org-locations'
 import { service } from '@/lib/service'
 import { branchCreateParamsSchema } from '@/types/branch'
 
@@ -43,16 +44,16 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await service.branches.create(
-    ctx.tenant.id,
-    ctx.tenant.orgId,
-    parsed.data
-  )
+  const result = await service.branches.create(ctx.tenant.id, parsed.data)
   if (result.error)
     return apiJson(
       { error: result.error },
       { status: result.status, code: result.code }
     )
+
+  // The envelope types `data` as nullable because a service error carries
+  // none; a successful result always has it.
+  if (result.data) scheduleSync(ctx.tenant.orgId, branchSyncSite(result.data))
 
   return apiJson({ data: result.data }, { status: 201 })
 }

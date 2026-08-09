@@ -1,5 +1,6 @@
 import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { reconcile } from '@/lib/manage/org-locations'
 import { service } from '@/lib/service'
 
 import { LocationsCards } from './locations-cards'
@@ -23,7 +24,7 @@ export async function LocationsData({ params }: Props) {
 
   // Opportunistic repair for sites whose core mirror failed at write time. It
   // runs after the response so a slow identity API never delays this page.
-  after(() => service.orgLocations.reconcile(tenantId, orgId))
+  after(() => reconcile(tenantId, orgId))
 
   return (
     <LocationsCards

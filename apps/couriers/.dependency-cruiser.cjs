@@ -40,14 +40,7 @@ module.exports = {
         'in an orchestration module (src/lib/manage/, src/lib/portal/) that composes the two, ' +
         'so the service layer can move into a standalone API service unchanged.',
       severity: 'error',
-      // KNOWN EXCEPTION — src/lib/service/org-locations/sync.ts mirrors a committed
-      // branch/warehouse into the core location registry, and is called from inside
-      // branches.create/update. It is orchestration living in the service layer, and
-      // it is the one thing that would not move cleanly into couriers-api today.
-      // Fixing it means the *caller* schedules the mirror after the verb returns;
-      // until then it is listed here so the debt is visible rather than silently
-      // permitted by a weaker rule. See Phase 2 in the couriers extraction plan.
-      from: { path: '^src/lib/service/', pathNot: '^src/lib/service/org-locations/' },
+      from: { path: '^src/lib/service/' },
       to: { path: '^src/lib/(876|finance)/' },
     },
     {
@@ -56,8 +49,7 @@ module.exports = {
         'src/lib/service/** must not import Next.js. A service verb that reads headers() or ' +
         'cookies() cannot run anywhere except inside a Next request, which defeats extraction.',
       severity: 'error',
-      // Same exception, same reason as above.
-      from: { path: '^src/lib/service/', pathNot: '^src/lib/service/org-locations/' },
+      from: { path: '^src/lib/service/' },
       to: { path: '^(next|next/.+)$', dependencyTypes: ['npm'] },
     },
     {
