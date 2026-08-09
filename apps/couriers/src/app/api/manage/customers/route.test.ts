@@ -48,7 +48,11 @@ describe('POST /api/manage/customers', () => {
   it('returns 401 with no session context', async () => {
     mocks.getManageContext.mockResolvedValue(null)
     const response = await POST(
-      request({ orgSlug: 'nkr-express', firstName: 'Marlon' })
+      request({
+        orgSlug: 'nkr-express',
+        idempotencyKey: 'submission-nkr-001',
+        firstName: 'Marlon',
+      })
     )
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
@@ -83,7 +87,11 @@ describe('POST /api/manage/customers', () => {
   })
   it('returns 422 for a business with no company name', async () => {
     const response = await POST(
-      request({ orgSlug: 'nkr-express', customerKind: 'BUSINESS' })
+      request({
+        orgSlug: 'nkr-express',
+        idempotencyKey: 'submission-nkr-001',
+        customerKind: 'BUSINESS',
+      })
     )
     expect(response.status).toBe(422)
     expect(mocks.createManagedCustomer).not.toHaveBeenCalled()
@@ -92,6 +100,7 @@ describe('POST /api/manage/customers', () => {
     const response = await POST(
       request({
         orgSlug: 'nkr-express',
+        idempotencyKey: 'submission-nkr-001',
         customerKind: 'INDIVIDUAL',
         firstName: 'Marlon',
         lastName: 'Brown',
@@ -105,6 +114,7 @@ describe('POST /api/manage/customers', () => {
     expect(mocks.createManagedCustomer).toHaveBeenCalledWith({
       tenant: tenant(),
       params: {
+        idempotencyKey: 'submission-nkr-001',
         customerKind: 'INDIVIDUAL',
         firstName: 'Marlon',
         lastName: 'Brown',

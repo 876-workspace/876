@@ -10,7 +10,7 @@ import { toCustomerView } from './view'
 export type CustomerProfileUpdateInput = {
   branchId?: string
   status?: CustomerStatus
-  trn?: string
+  trn?: string | null
   isCommercial?: boolean
 }
 

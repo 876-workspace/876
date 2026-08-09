@@ -148,14 +148,22 @@ export type CustomerKind = z.infer<typeof customerKindSchema>
 
 export const customerCreateParamsSchema = z
   .strictObject({
+    /**
+     * Client-generated, stable across retries of one submission. It keys the
+     * Billing registry create so a retry after a failed local write reuses the
+     * customer already created instead of minting a duplicate.
+     */
+    idempotencyKey: z.string().min(8).max(255),
     customerKind: customerKindSchema.default('INDIVIDUAL'),
     firstName: z.string().trim().min(1).optional(),
     lastName: z.string().trim().min(1).optional(),
     companyName: z.string().trim().min(1).optional(),
-    email: z.email().optional(),
-    phone: z.string().trim().min(1).optional(),
+    // Nullable as well as optional so one form can build both payloads: on
+    // create there is no previous value to clear, and null simply means absent.
+    email: z.email().nullable().optional(),
+    phone: z.string().trim().min(1).nullable().optional(),
     branchId: z.string().optional(),
-    trn: z.string().trim().min(1).optional(),
+    trn: z.string().trim().min(1).nullable().optional(),
     isCommercial: z.boolean().optional(),
     status: customerStatusSchema.optional(),
   })
@@ -175,15 +183,20 @@ export const customerCreateParamsSchema = z
   })
 export type CustomerCreateParams = z.input<typeof customerCreateParamsSchema>
 
+/**
+ * `null` clears a value, an absent key leaves it alone. The party's name — a
+ * first name for an individual, a company name for a business — is not
+ * clearable, so those stay non-nullable.
+ */
 export const customerUpdateParamsSchema = z.strictObject({
   firstName: z.string().trim().min(1).optional(),
-  lastName: z.string().trim().min(1).optional(),
+  lastName: z.string().trim().min(1).nullable().optional(),
   companyName: z.string().trim().min(1).optional(),
-  email: z.email().optional(),
-  phone: z.string().trim().min(1).optional(),
+  email: z.email().nullable().optional(),
+  phone: z.string().trim().min(1).nullable().optional(),
   branchId: z.string().optional(),
   status: customerStatusSchema.optional(),
-  trn: z.string().optional(),
+  trn: z.string().nullable().optional(),
   isCommercial: z.boolean().optional(),
 })
 export type CustomerUpdateParams = z.input<typeof customerUpdateParamsSchema>
