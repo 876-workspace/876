@@ -1475,7 +1475,11 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
             "in": "query",
             "name": "is_active",
             "schema": {
-              "type": "boolean",
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
             },
           },
         ],
@@ -2136,6 +2140,22 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
               "type": "integer",
             },
           },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
         ],
         "responses": {
           "200": {
@@ -2358,7 +2378,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                 },
               },
             },
-            "description": "Tenant not found.",
+            "description": "Tenant or branch not found.",
           },
           "409": {
             "content": {
@@ -2598,7 +2618,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                 },
               },
             },
-            "description": "Customer not found.",
+            "description": "Customer or branch not found.",
           },
           "422": {
             "content": {
@@ -3323,6 +3343,22 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
               "type": "integer",
             },
           },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
         ],
         "responses": {
           "200": {
@@ -3586,6 +3622,16 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
               },
             },
             "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Referenced customer, branch, or mailbox not found.",
           },
           "422": {
             "content": {
@@ -3876,7 +3922,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                 },
               },
             },
-            "description": "Package not found.",
+            "description": "Package or referenced branch or mailbox not found.",
           },
           "422": {
             "content": {
