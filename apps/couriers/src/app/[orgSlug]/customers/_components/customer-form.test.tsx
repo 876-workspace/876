@@ -83,11 +83,11 @@ describe('CustomerForm', () => {
       firstName: 'Marlon',
       lastName: 'Brown',
       email: 'marlon.brown@example.jm',
-      phone: undefined,
       branchId: undefined,
       trn: '123-456-789',
       isCommercial: false,
       customerKind: 'INDIVIDUAL',
+      idempotencyKey: expect.any(String),
     })
   })
   it('sends only courier fields and status when editing a CORE_USER', async () => {
@@ -121,5 +121,60 @@ describe('CustomerForm', () => {
     )
     expect(mocks.create).not.toHaveBeenCalled()
     expect(mocks.update).not.toHaveBeenCalled()
+  })
+  it('splits a stored Jamaican number and submits it unchanged', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ customerType: 'EXTERNAL' })}
+      />
+    )
+
+    // The catalog carries +1 for the whole NANP rather than a Jamaica-specific
+    // +1876, so the area code stays in the national field. What matters is that
+    // the pair recombines to exactly what was stored.
+    expect(screen.getByRole('textbox', { name: 'Phone' })).toHaveValue(
+      '8765550142'
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ phone: '+18765550142' })
+    )
+  })
+  it('sends null when an existing optional email is cleared', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ customerType: 'EXTERNAL' })}
+      />
+    )
+    fill('Email', '')
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ email: null })
+    )
+  })
+  it('omits an optional email that was empty and left untouched', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ customerType: 'EXTERNAL', email: null })}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update.mock.calls[0]?.[2]).not.toHaveProperty('email')
   })
 })

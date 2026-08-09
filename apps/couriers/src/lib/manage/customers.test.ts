@@ -103,10 +103,11 @@ describe('managed customers', () => {
     mocks.registryRetrieve.mockResolvedValue({ data: customer(), error: null })
   })
   describe('createManagedCustomer', () => {
-    it('allocates a mailbox, registers the customer, then creates its profile using one shared idempotency anchor', async () => {
+    it('allocates a mailbox, registers the customer, then creates its profile using the client submission key', async () => {
       const result = await createManagedCustomer({
         tenant: tenant(),
         params: {
+          idempotencyKey: 'submission-nkr-001',
           customerKind: 'INDIVIDUAL',
           firstName: 'Marlon',
           lastName: 'Brown',
@@ -123,7 +124,7 @@ describe('managed customers', () => {
         expect.anything(),
         'org_nkr',
         {
-          profileId: 'cprof_nkr',
+          idempotencyKey: 'submission-nkr-001',
           customerKind: 'INDIVIDUAL',
           firstName: 'Marlon',
           lastName: 'Brown',
@@ -150,6 +151,36 @@ describe('managed customers', () => {
         mocks.createExternalCustomer.mock.invocationCallOrder[0]
       ).toBeLessThan(mocks.create.mock.invocationCallOrder[0])
     })
+    it('uses the same client key across retries instead of the generated profile id', async () => {
+      mocks.generateId
+        .mockReturnValueOnce('cprof_first')
+        .mockReturnValueOnce('cprof_retry')
+
+      const params = {
+        idempotencyKey: 'submission-nkr-002',
+        firstName: 'Marlon',
+      }
+      await createManagedCustomer({ tenant: tenant(), params })
+      await createManagedCustomer({ tenant: tenant(), params })
+
+      expect(mocks.createExternalCustomer).toHaveBeenNthCalledWith(
+        1,
+        expect.anything(),
+        'org_nkr',
+        expect.objectContaining({ idempotencyKey: 'submission-nkr-002' })
+      )
+      expect(mocks.createExternalCustomer).toHaveBeenNthCalledWith(
+        2,
+        expect.anything(),
+        'org_nkr',
+        expect.objectContaining({ idempotencyKey: 'submission-nkr-002' })
+      )
+      expect(mocks.createExternalCustomer).not.toHaveBeenCalledWith(
+        expect.anything(),
+        'org_nkr',
+        expect.objectContaining({ idempotencyKey: 'cprof_first' })
+      )
+    })
     it('returns registry-unavailable without writing a profile when registry creation fails', async () => {
       mocks.createExternalCustomer.mockResolvedValue({
         data: null,
@@ -157,7 +188,7 @@ describe('managed customers', () => {
       })
       const result = await createManagedCustomer({
         tenant: tenant(),
-        params: { firstName: 'Marlon' },
+        params: { idempotencyKey: 'submission-nkr-003', firstName: 'Marlon' },
       })
       expect(result).toEqual({
         data: null,
@@ -174,7 +205,7 @@ describe('managed customers', () => {
       })
       const result = await createManagedCustomer({
         tenant: tenant(),
-        params: { firstName: 'Marlon' },
+        params: { idempotencyKey: 'submission-nkr-004', firstName: 'Marlon' },
       })
       expect(result).toEqual({
         data: null,
@@ -265,6 +296,21 @@ describe('managed customers', () => {
           email: 'marlon.brown@example.jm',
           phone: '+18765550142',
         }
+      )
+    })
+    it('passes an explicit identity clear through to the registry', async () => {
+      const result = await updateManagedCustomer({
+        tenant: tenant(),
+        id: 'cprof_nkr',
+        params: { email: null },
+      })
+
+      expect(result).toEqual({ data: view(), error: null })
+      expect(mocks.updateExternalCustomer).toHaveBeenCalledWith(
+        expect.anything(),
+        'org_nkr',
+        'cus_nkr',
+        expect.objectContaining({ email: null })
       )
     })
     it('returns customer/not-found before calling the registry for a missing profile', async () => {

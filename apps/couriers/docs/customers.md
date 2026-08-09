@@ -17,12 +17,12 @@ A `CORE_USER` customer represents a consumer who enrolled through the courier po
 
 Staff create a customer through `createManagedCustomer` in `apps/couriers/src/lib/manage/customers.ts`. The creation process performs the following ordered steps:
 
-1. **Profile ID generation**: Generates a profile ID (`profileId`) prior to any remote calls so it can serve as an idempotency anchor.
+1. **Submission key**: The client generates an idempotency key once for the submission attempt and retains it across failed retries.
 2. **Mailbox allocation**: Allocates a mailbox number via `service.mailboxes.allocate`.
-3. **Registry customer creation**: Creates an `EXTERNAL` customer in the shared Billing registry via `createExternalCustomer` in `apps/couriers/src/lib/finance/customers.ts`. The call specifies `customerType: 'EXTERNAL'`, `sourceExternalReference: 'couriers:profile:<profileId>'`, and `idempotencyKey: 'couriers:profile:<profileId>'`.
-4. **Courier profile creation**: Creates the `CourierCustomerProfile` and primary mailbox in the couriers datastore via `service.customerProfiles.create` in `apps/couriers/src/lib/service/customer-profiles/create.ts`.
+3. **Registry customer creation**: Creates an `EXTERNAL` customer in the shared Billing registry via `createExternalCustomer` in `apps/couriers/src/lib/finance/customers.ts`. The call specifies `customerType: 'EXTERNAL'`, `sourceExternalReference: 'couriers:create:<idempotencyKey>'`, and `idempotencyKey: 'couriers:create:<idempotencyKey>'`.
+4. **Courier profile creation**: Generates a normal profile ID and creates the `CourierCustomerProfile` and primary mailbox in the couriers datastore via `service.customerProfiles.create` in `apps/couriers/src/lib/service/customer-profiles/create.ts`.
 
-If step 4 fails after step 3 succeeds, the orphaned registry row is intentional. Retrying customer creation with the same pre-generated profile ID reuses the existing registry customer via the `couriers:profile:<profileId>` idempotency key.
+If step 4 fails after step 3 succeeds, the orphaned registry row is intentional. Retrying the same submission reuses the existing registry customer via its retained `couriers:create:<idempotencyKey>` key.
 
 ## Editing a customer
 

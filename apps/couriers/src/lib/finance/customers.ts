@@ -93,7 +93,7 @@ export async function createExternalCustomer(
   finance: BillingIntegrationClient,
   organizationId: string,
   params: {
-    profileId: string
+    idempotencyKey: string
     customerKind: CustomerKind
     firstName?: string | null
     lastName?: string | null
@@ -103,7 +103,7 @@ export async function createExternalCustomer(
   }
 ): Promise<IntegrationResult<BillingCustomer>> {
   const name = resolveCustomerName(params.customerKind, params)
-  const key = `couriers:profile:${params.profileId}`
+  const key = `couriers:create:${params.idempotencyKey}`
 
   return finance.customers.create(
     organizationId,

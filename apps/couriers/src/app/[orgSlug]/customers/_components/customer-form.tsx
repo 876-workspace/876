@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { EmailInput } from '@876/ui/email-input'
@@ -26,6 +26,29 @@ const dialCodes = listDialCodes().map((country) => ({
   label: country.countryCode,
   leadingLabel: country.dialCode,
 }))
+
+const DEFAULT_DIAL_CODE = '+1'
+
+/**
+ * Splits a stored E.164 number back into the two fields the input edits.
+ *
+ * The longest matching dial code wins: `+1` and `+1876` both prefix a Jamaican
+ * number, and picking the shorter one leaves `876…` in the national field, which
+ * is then re-submitted as a different number.
+ */
+function splitPhone(stored: string | null | undefined): PhoneInputValue {
+  if (!stored) return { dialCode: DEFAULT_DIAL_CODE, number: '' }
+
+  const match = dialCodes
+    .filter((code) => stored.startsWith(code.value))
+    .sort((a, b) => b.value.length - a.value.length)[0]
+
+  // An unrecognized prefix keeps the raw value visible rather than silently
+  // dropping digits the user would then have to notice were missing.
+  if (!match) return { dialCode: DEFAULT_DIAL_CODE, number: stored }
+
+  return { dialCode: match.value, number: stored.slice(match.value.length) }
+}
 type Props = {
   orgSlug: string
   branches: { id: string; name: string }[]
@@ -41,14 +64,17 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
   const [lastName, setLastName] = useState(customer?.lastName ?? '')
   const [companyName, setCompanyName] = useState(customer?.companyName ?? '')
   const [email, setEmail] = useState(customer?.email ?? '')
-  const [phone, setPhone] = useState<PhoneInputValue>({
-    dialCode: '+1',
-    number: customer?.phone ?? '',
-  })
+  const [phone, setPhone] = useState<PhoneInputValue>(() =>
+    splitPhone(customer?.phone)
+  )
   const [branchId, setBranchId] = useState(customer?.branchId ?? '')
   const [trn, setTrn] = useState(customer?.trn ?? '')
   const [commercial, setCommercial] = useState(customer?.isCommercial ?? false)
   const [status, setStatus] = useState(customer?.status ?? 'ACTIVE')
+  // Held across retries of the same submission and regenerated only after a
+  // successful create, so a retry after a failed write reuses the registry
+  // customer Billing already made instead of creating a second one.
+  const submissionKey = useRef(crypto.randomUUID())
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const identityLocked = customer?.customerType === 'CORE_USER'
@@ -76,28 +102,50 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
       return
     }
     startTransition(async () => {
+      // An emptied field has to travel as an explicit null. Sending undefined
+      // makes JSON.stringify drop the key, the server reads that as "not
+      // supplied", and the value can never be cleared through this form.
+      const cleared = (next: string, previous: string | null | undefined) =>
+        next ? next : previous ? null : undefined
+
+      const submittedPhone = phone.number.trim()
+        ? `${phone.dialCode}${phone.number.replace(/\D/g, '')}`
+        : ''
+      const emailValue = cleared(email.trim(), customer?.email)
+      const phoneValue = cleared(submittedPhone, customer?.phone)
+      const trnValue = cleared(trn.trim(), customer?.trn)
+
       const params = {
         ...identity,
         ...(identityLocked
           ? {}
           : {
-              email: email.trim() || undefined,
-              phone: phone.number.trim()
-                ? `${phone.dialCode}${phone.number.replace(/\D/g, '')}`
-                : undefined,
+              ...(emailValue === undefined ? {} : { email: emailValue }),
+              ...(phoneValue === undefined ? {} : { phone: phoneValue }),
             }),
         branchId: branchId || undefined,
-        trn: trn.trim() || undefined,
+        ...(trnValue === undefined ? {} : { trn: trnValue }),
         isCommercial: commercial,
-        ...(customer ? { status } : { customerKind: kind }),
       }
+
+      // Built per branch rather than as one object with a conditional tail: the
+      // two endpoints take different contracts, and a merged shape types as the
+      // union of both, which satisfies neither.
       const result = customer
-        ? await client.customers.update(orgSlug, customer.id, params)
-        : await client.customers.create(orgSlug, params)
+        ? await client.customers.update(orgSlug, customer.id, {
+            ...params,
+            status,
+          })
+        : await client.customers.create(orgSlug, {
+            ...params,
+            customerKind: kind,
+            idempotencyKey: submissionKey.current,
+          })
       if (result.error) {
         setError(result.error.message)
         return
       }
+      if (!customer) submissionKey.current = crypto.randomUUID()
       router.push(
         customer
           ? `/${orgSlug}/customers/${customer.id}`

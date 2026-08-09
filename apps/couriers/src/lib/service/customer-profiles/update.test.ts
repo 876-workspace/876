@@ -115,4 +115,14 @@ describe('customerProfiles.update', () => {
       data: { trn: '123-456-789', updatedAt: NOW },
     })
   })
+  it('writes an explicit null to clear a supplied optional operational field', async () => {
+    await update('ten_nkr', 'cprof_nkr', { trn: null })
+
+    expect(
+      mockPrismaRef.current!.courierCustomerProfile.update
+    ).toHaveBeenCalledWith({
+      where: { id: 'cprof_nkr' },
+      data: { trn: null, updatedAt: NOW },
+    })
+  })
 })

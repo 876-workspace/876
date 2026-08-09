@@ -18,11 +18,14 @@ export async function ensure(params: {
     return await runTransaction(
       'customerProfiles.ensure',
       async (transaction) => {
+        // Deliberately unfiltered by deletedAt. A soft-deleted profile still
+        // occupies the (tenantId, userId) unique key, so skipping it here would
+        // send enrollment down the create path, hit that constraint, and lock
+        // the person out of the portal permanently.
         const existing = await transaction.courierCustomerProfile.findFirst({
           where: {
             tenantId: params.tenantId,
             userId: params.userId,
-            deletedAt: null,
           },
         })
 
@@ -40,6 +43,17 @@ export async function ensure(params: {
             data: {
               billingCustomerId: params.billingCustomerId,
               updatedAt: now,
+              // Enrolling again revives the archived profile rather than
+              // replacing it, so a returning customer keeps the mailbox number
+              // their senders already have. That continuity is the reason the
+              // delete is soft in the first place.
+              ...(existing.deletedAt === null
+                ? {}
+                : {
+                    deletedAt: null,
+                    deletedBy: null,
+                    deletionReason: null,
+                  }),
             },
           })
 

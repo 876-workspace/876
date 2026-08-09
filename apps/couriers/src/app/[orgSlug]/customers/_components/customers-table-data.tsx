@@ -83,7 +83,9 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
   const identityById = new Map(
     pages.flatMap((page) =>
-      (page.data?.data ?? []).map((customer) => [customer.id, customer] as const)
+      (page.data?.data ?? []).map(
+        (customer) => [customer.id, customer] as const
+      )
     )
   )
 
