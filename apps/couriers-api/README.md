@@ -26,11 +26,12 @@ pnpm --filter @876/couriers-api dev
 | `ENVIRONMENT`          | No       | Execution environment name (defaults to production).          |
 | `LOG_LEVEL`            | No       | Pino logging level (defaults to info).                        |
 | `DATABASE_URL`         | Yes      | Prisma Accelerate URL for database access.                    |
-| `DIRECT_DATABASE_URL`  | No       | Direct database connection URL for Prisma schema generator.   |
+| `DIRECT_DATABASE_URL`  | Migrations only | Direct PostgreSQL URL for `prisma migrate`, `prisma db`, and Studio; `db:generate` does not require it. |
 | `API_876_KEY`          | Yes      | Public platform API key accepted by `requireApiKey`.          |
 | `API_INTERNAL_KEY`     | No       | Secret internal key for admin authorization (`requireAdmin`). |
-| `OAUTH_ISSUER`         | No       | Platform OAuth issuer; derives its JWKS endpoint when set.    |
-| `OAUTH_JWKS_URL`       | No       | Explicit platform JWKS endpoint, overriding `OAUTH_ISSUER`.   |
+| `OAUTH_ISSUER`         | Session routes | Exact platform OAuth issuer to accept; derives the JWKS endpoint when set. |
+| `OAUTH_AUDIENCE`       | Session routes | Exact OAuth client ID expected in platform access tokens' `aud` claim. |
+| `OAUTH_JWKS_URL`       | No       | Explicit platform JWKS endpoint, overriding the issuer-derived endpoint. |
 | `SENTRY_DSN`           | No       | Sentry Data Source Name for error reporting.                  |
 | `CORS_ALLOWED_ORIGINS` | No       | Comma-separated list of allowed CORS origins.                 |
 
@@ -61,6 +62,12 @@ src/
 | `requireAdmin`   | `x-internal-key` header                               | Privileged operations; requires internal secret key matching `API_INTERNAL_KEY`.  |
 
 Guards attach per route rather than with `router.use`, so an unknown path returns 404 instead of 401.
+
+For a `session` route to accept a request, configure `OAUTH_ISSUER` and
+`OAUTH_AUDIENCE`, plus either `OAUTH_JWKS_URL` or the issuer-derived JWKS URL.
+The identity API signs these access tokens with RS256 and publishes its key at
+`${OAUTH_ISSUER}/oauth/.well-known/jwks.json`. If any of that verification
+configuration is absent, session requests are rejected.
 
 ## Database
 

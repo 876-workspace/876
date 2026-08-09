@@ -25,9 +25,9 @@ COPY apps/couriers-api/prisma ./prisma
 COPY apps/couriers-api/prisma.config.ts apps/couriers-api/tsconfig.json apps/couriers-api/tsup.config.ts ./
 COPY apps/couriers-api/src ./src
 
-# The generated client is excluded from the root Docker context. prisma.config.ts
-# requires a direct URL for generation, but generate does not connect to it.
-RUN DIRECT_DATABASE_URL='postgresql://prisma:prisma@127.0.0.1:5432/prisma' pnpm run db:generate \
+# The generated client is excluded from the root Docker context. Generation is
+# offline, so it uses a placeholder runtime URL and does not need direct DB access.
+RUN DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' pnpm run db:generate \
   && pnpm run build
 
 WORKDIR /repo
