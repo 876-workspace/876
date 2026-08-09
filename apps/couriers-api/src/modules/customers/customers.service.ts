@@ -1,11 +1,11 @@
-import { Prisma } from '@/db/generated/prisma/client'
-import { prisma } from './customers.repository'
 import { AppHttpError } from '@/platform/errors'
 import {
-  nowUnixSeconds,
   fromDbUnixSeconds,
   nullableFromDbUnixSeconds,
+  nowUnixSeconds,
 } from '@/platform/timestamps'
+
+import * as repo from './customers.repository'
 import type {
   CreateCustomerBody,
   Customer,
@@ -22,170 +22,169 @@ const missing = (resource: string) =>
     message: 'Not found.',
     httpStatus: 404,
   })
+
 const conflict = (resource: string, message: string) =>
   new AppHttpError({ code: `${resource}/conflict`, message, httpStatus: 409 })
+
 export async function listCustomers(
   tenantId: string,
   query: ListCustomersQuery
 ) {
-  const rows = await prisma.courierCustomerProfile.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      ...(query.status ? { status: query.status } : {}),
-      ...(query.branch_id ? { branchId: query.branch_id } : {}),
-    },
-    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-    take: query.limit + 1,
-  })
+  const rows = await repo.listTenantCustomers({ tenantId, query })
+  const page = rows.slice(0, query.limit)
   return {
-    data: rows.slice(0, query.limit).map(serializeCustomer),
+    data: (query.ending_before ? page.reverse() : page).map(serializeCustomer),
     hasMore: rows.length > query.limit,
   }
 }
+
 export async function retrieveCustomer(
   tenantId: string,
   id: string
 ): Promise<Customer> {
-  const row = await prisma.courierCustomerProfile.findFirst({
-    where: { tenantId, id, deletedAt: null },
-  })
+  const row = await repo.findTenantCustomerById(tenantId, id)
   if (!row) throw missing('customer')
   return serializeCustomer(row)
 }
+
 export async function createCustomer(
   tenantId: string,
   input: CreateCustomerBody
 ): Promise<Customer> {
-  if (!(await prisma.tenant.findUnique({ where: { id: tenantId } })))
-    throw missing('tenant')
-  const now = nowUnixSeconds()
+  if (!(await repo.tenantExists(tenantId))) throw missing('tenant')
+
+  const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
   try {
     return serializeCustomer(
-      await prisma.courierCustomerProfile.create({
-        data: {
-          tenantId,
-          billingCustomerId: input.billing_customer_id,
-          userId: input.user_id ?? null,
-          branchId: input.branch_id ?? null,
-          status: input.status ?? 'ACTIVE',
-          isCommercial: input.is_commercial ?? false,
-          firstSeenAt: now,
-          createdAt: now,
-          updatedAt: now,
-        },
+      await repo.createTenantCustomer({
+        tenantId,
+        input,
+        branchId,
+        now: nowUnixSeconds(),
       })
     )
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    )
+    if (isUniqueConstraintError(error)) {
       throw conflict(
         'customer',
         'A courier profile already exists for this customer.'
       )
+    }
     throw error
   }
 }
+
 export async function updateCustomer(
   tenantId: string,
   id: string,
   input: UpdateCustomerBody
 ): Promise<Customer> {
   await retrieveCustomer(tenantId, id)
+  if (typeof input.branch_id === 'string') {
+    await ensureTenantBranch(tenantId, input.branch_id)
+  }
+
   return serializeCustomer(
-    await prisma.courierCustomerProfile.update({
-      where: { id },
-      data: {
-        ...(input.branch_id === undefined ? {} : { branchId: input.branch_id }),
-        ...(input.status === undefined ? {} : { status: input.status }),
-        ...(input.is_commercial === undefined
-          ? {}
-          : { isCommercial: input.is_commercial }),
-        updatedAt: nowUnixSeconds(),
-      },
-    })
+    await repo.updateTenantCustomer({ id, input, now: nowUnixSeconds() })
   )
 }
+
 export async function listMailboxes(
   tenantId: string,
   customerId: string
 ): Promise<Mailbox[]> {
   await retrieveCustomer(tenantId, customerId)
-  return (
-    await prisma.mailbox.findMany({
-      where: { tenantId, customerId },
-      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
-    })
-  ).map(serializeMailbox)
+  return (await repo.listTenantCustomerMailboxes(tenantId, customerId)).map(
+    serializeMailbox
+  )
 }
+
 export async function createMailbox(
   tenantId: string,
   customerId: string,
   input: MailboxCreateBody
 ): Promise<Mailbox> {
   await retrieveCustomer(tenantId, customerId)
-  const now = nowUnixSeconds()
   try {
     return serializeMailbox(
-      await prisma.$transaction(async (tx) => {
-        const count = await tx.mailbox.count({
-          where: { tenantId, customerId },
-        })
-        const isPrimary = count === 0 || input.is_primary === true
-        if (isPrimary && count > 0)
-          await tx.mailbox.updateMany({
-            where: { tenantId, customerId, isPrimary: true },
-            data: { isPrimary: false, updatedAt: now },
-          })
-        return tx.mailbox.create({
-          data: {
-            tenantId,
-            customerId,
-            number: input.number.toUpperCase(),
-            isPrimary,
-            createdAt: now,
-            updatedAt: now,
-          },
-        })
+      await repo.createTenantMailbox({
+        tenantId,
+        customerId,
+        input,
+        now: nowUnixSeconds(),
       })
     )
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    )
+    if (isUniqueConstraintError(error)) {
       throw conflict('mailbox', 'That mailbox number is already in use.')
+    }
     throw error
   }
 }
+
 export async function updateMailbox(
   tenantId: string,
   customerId: string,
   id: string,
   input: MailboxUpdateBody
 ): Promise<Mailbox> {
-  const current = await prisma.mailbox.findFirst({
-    where: { id, tenantId, customerId },
+  const current = await repo.findTenantCustomerMailboxById({
+    tenantId,
+    customerId,
+    id,
   })
   if (!current) throw missing('mailbox')
-  const now = nowUnixSeconds()
+
   return serializeMailbox(
-    await prisma.$transaction(async (tx) => {
-      if (input.is_primary && !current.isPrimary)
-        await tx.mailbox.updateMany({
-          where: { tenantId, customerId, isPrimary: true },
-          data: { isPrimary: false, updatedAt: now },
-        })
-      return tx.mailbox.update({
-        where: { id },
-        data: { isPrimary: input.is_primary, updatedAt: now },
-      })
+    await repo.updateTenantMailbox({
+      tenantId,
+      customerId,
+      id,
+      input,
+      currentIsPrimary: current.isPrimary,
+      now: nowUnixSeconds(),
     })
   )
 }
-function serializeCustomer(row: any): Customer {
+
+async function resolveCustomerBranchId(
+  tenantId: string,
+  branchId: string | null | undefined
+): Promise<string | null> {
+  if (branchId === null) return null
+  if (branchId !== undefined) {
+    await ensureTenantBranch(tenantId, branchId)
+    return branchId
+  }
+  return (await repo.findTenantDefaultBranch(tenantId))?.id ?? null
+}
+
+async function ensureTenantBranch(tenantId: string, id: string): Promise<void> {
+  if (!(await repo.findTenantBranchById(tenantId, id))) throw missing('branch')
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'P2002'
+  )
+}
+
+function serializeCustomer(row: {
+  id: string
+  tenantId: string
+  userId: string | null
+  billingCustomerId: string
+  branchId: string | null
+  status: 'ACTIVE' | 'SUSPENDED'
+  isCommercial: boolean
+  firstSeenAt: number | bigint
+  createdAt: number | bigint
+  updatedAt: number | bigint
+  deletedAt: number | bigint | null
+}): Customer {
   return {
     object: 'courier_customer_profile',
     id: row.id,
@@ -201,7 +200,16 @@ function serializeCustomer(row: any): Customer {
     deleted_at: nullableFromDbUnixSeconds(row.deletedAt),
   }
 }
-function serializeMailbox(row: any): Mailbox {
+
+function serializeMailbox(row: {
+  id: string
+  tenantId: string
+  customerId: string
+  number: string
+  isPrimary: boolean
+  createdAt: number | bigint
+  updatedAt: number | bigint
+}): Mailbox {
   return {
     object: 'mailbox',
     id: row.id,

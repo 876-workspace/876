@@ -1,9 +1,8 @@
-import { Prisma } from '@/db/generated/prisma/client'
 import { AppHttpError } from '@/platform/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { resolveRegion } from '@/providers/platform/geo'
 
-import { prisma } from './warehouses.repository'
+import * as repo from './warehouses.repository'
 import { serializeWarehouse, type WarehouseRow } from './warehouses.serializers'
 import type {
   CreateWarehouseBody,
@@ -11,7 +10,6 @@ import type {
   Warehouse,
 } from './warehouses.schemas'
 
-const withAddress = { include: { address: true } } as const
 type AddressRow = NonNullable<WarehouseRow['address']>
 const missing = () =>
   new AppHttpError({
@@ -23,31 +21,23 @@ const conflict = (message: string) =>
   new AppHttpError({ code: 'warehouse/conflict', message, httpStatus: 409 })
 
 export async function listWarehouses(tenantId: string): Promise<Warehouse[]> {
-  const rows = await prisma.warehouse.findMany({
-    where: { tenantId },
-    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
-    ...withAddress,
-  })
-  return (rows as WarehouseRow[]).map(serializeWarehouse)
+  return (await repo.listTenantWarehouses(tenantId)).map(serializeWarehouse)
 }
 
 export async function retrieveWarehouse(
   tenantId: string,
   id: string
 ): Promise<Warehouse> {
-  const row = await prisma.warehouse.findFirst({
-    where: { tenantId, id },
-    ...withAddress,
-  })
+  const row = await repo.findTenantWarehouseById(tenantId, id)
   if (!row) throw missing()
-  return serializeWarehouse(row as WarehouseRow)
+  return serializeWarehouse(row)
 }
 
 export async function createWarehouse(
   tenantId: string,
   input: CreateWarehouseBody
 ): Promise<Warehouse> {
-  if (!(await prisma.tenant.findUnique({ where: { id: tenantId } })))
+  if (!(await repo.tenantExists(tenantId)))
     throw new AppHttpError({
       code: 'tenant/not-found',
       message: 'Not found.',
@@ -57,36 +47,15 @@ export async function createWarehouse(
   const now = nowUnixSeconds()
   const operatingModel = input.operating_model ?? 'OWNED'
   try {
-    const row = await prisma.$transaction(async (tx) => {
-      const count = await tx.warehouse.count({ where: { tenantId } })
-      const isPrimary = count === 0 || input.is_primary === true
-      if (isPrimary && count > 0)
-        await tx.warehouse.updateMany({
-          where: { tenantId, isPrimary: true },
-          data: { isPrimary: false, updatedAt: now },
-        })
-      const createdAddress = await tx.address.create({ data: address })
-      return tx.warehouse.create({
-        data: {
-          tenantId,
-          addressId: createdAddress.id,
-          name: input.name,
-          operatingModel,
-          agentName:
-            operatingModel === 'AGENT' ? (input.agent_name ?? null) : null,
-          code: input.code ?? null,
-          mailboxPlacement: input.mailbox_placement ?? 'ADDRESS_LINE_2',
-          mailboxPrefix: input.mailbox_prefix ?? null,
-          instructions: input.instructions ?? null,
-          isActive: input.is_active ?? true,
-          isPrimary,
-          createdAt: now,
-          updatedAt: now,
-        },
-        ...withAddress,
+    return serializeWarehouse(
+      await repo.createWarehouseWithAddress({
+        tenantId,
+        input,
+        address,
+        operatingModel,
+        now,
       })
-    })
-    return serializeWarehouse(row as WarehouseRow)
+    )
   } catch (error) {
     if (isUnique(error))
       throw conflict('A warehouse with that name already exists.')
@@ -99,10 +68,7 @@ export async function updateWarehouse(
   id: string,
   input: UpdateWarehouseBody
 ): Promise<Warehouse> {
-  const current = (await prisma.warehouse.findFirst({
-    where: { tenantId, id },
-    ...withAddress,
-  })) as WarehouseRow | null
+  const current = await repo.findTenantWarehouseById(tenantId, id)
   if (!current) throw missing()
   const address = input.address
     ? await updateAddress(current.address!, input.address)
@@ -110,51 +76,16 @@ export async function updateWarehouse(
   const now = nowUnixSeconds()
   const operatingModel = input.operating_model ?? current.operatingModel
   try {
-    const row = await prisma.$transaction(async (tx) => {
-      if (input.is_primary === true && !current.isPrimary)
-        await tx.warehouse.updateMany({
-          where: { tenantId, isPrimary: true },
-          data: { isPrimary: false, updatedAt: now },
-        })
-      if (address)
-        await tx.address.update({
-          where: { id: current.addressId },
-          data: address,
-        })
-      return tx.warehouse.update({
-        where: { id: current.id },
-        data: {
-          ...(input.name === undefined ? {} : { name: input.name }),
-          ...(input.operating_model === undefined
-            ? {}
-            : { operatingModel: input.operating_model }),
-          ...(operatingModel === 'OWNED'
-            ? { agentName: null }
-            : input.agent_name === undefined
-              ? {}
-              : { agentName: input.agent_name }),
-          ...(input.code === undefined ? {} : { code: input.code }),
-          ...(input.mailbox_placement === undefined
-            ? {}
-            : { mailboxPlacement: input.mailbox_placement }),
-          ...(input.mailbox_prefix === undefined
-            ? {}
-            : { mailboxPrefix: input.mailbox_prefix }),
-          ...(input.instructions === undefined
-            ? {}
-            : { instructions: input.instructions }),
-          ...(input.is_active === undefined
-            ? {}
-            : { isActive: input.is_active }),
-          ...(input.is_primary === undefined
-            ? {}
-            : { isPrimary: input.is_primary }),
-          updatedAt: now,
-        },
-        ...withAddress,
+    return serializeWarehouse(
+      await repo.updateWarehouseWithAddress({
+        tenantId,
+        current,
+        input,
+        address,
+        operatingModel,
+        now,
       })
-    })
-    return serializeWarehouse(row as WarehouseRow)
+    )
   } catch (error) {
     if (isUnique(error))
       throw conflict('A warehouse with that name already exists.')
@@ -230,7 +161,9 @@ function addressError(code: string) {
 }
 function isUnique(error: unknown) {
   return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
     error.code === 'P2002'
   )
 }

@@ -1,4 +1,3 @@
-import { Prisma } from '@/db/generated/prisma/client'
 import { AppHttpError } from '@/platform/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { resolveRegion } from '@/providers/platform/geo'
@@ -67,31 +66,9 @@ export async function createBranch(
   const now = nowUnixSeconds()
 
   try {
-    const branch = await repo.prisma.$transaction(async (tx) => {
-      const count = await tx.branch.count({ where: { tenantId } })
-      const isDefault = count === 0 || input.is_default === true
-      if (isDefault && count > 0)
-        await tx.branch.updateMany({
-          where: { tenantId, isDefault: true },
-          data: { isDefault: false, updatedAt: now },
-        })
-      const createdAddress = await tx.address.create({ data: address })
-      return tx.branch.create({
-        data: {
-          tenantId,
-          addressId: createdAddress.id,
-          name: input.name,
-          phone: input.phone ?? null,
-          isDefault,
-          isActive: input.is_active ?? true,
-          settings: input.settings as Prisma.InputJsonObject | undefined,
-          createdAt: now,
-          updatedAt: now,
-        },
-        include: { address: true },
-      })
-    })
-    return serializeBranch(branch as BranchRow)
+    return serializeBranch(
+      await repo.createBranchWithAddress({ tenantId, input, address, now })
+    )
   } catch (error) {
     if (isUniqueConstraintError(error))
       throw conflict('A branch with that name already exists.')
@@ -117,37 +94,15 @@ export async function updateBranch(
   const now = nowUnixSeconds()
 
   try {
-    const branch = await repo.prisma.$transaction(async (tx) => {
-      if (input.is_default === true && !current.isDefault)
-        await tx.branch.updateMany({
-          where: { tenantId, isDefault: true },
-          data: { isDefault: false, updatedAt: now },
-        })
-      if (address)
-        await tx.address.update({
-          where: { id: current.addressId },
-          data: address,
-        })
-      return tx.branch.update({
-        where: { id: current.id },
-        data: {
-          ...(input.name === undefined ? {} : { name: input.name }),
-          ...(input.phone === undefined ? {} : { phone: input.phone }),
-          ...(input.is_default === undefined
-            ? {}
-            : { isDefault: input.is_default }),
-          ...(input.is_active === undefined
-            ? {}
-            : { isActive: input.is_active }),
-          ...(input.settings === undefined
-            ? {}
-            : { settings: input.settings as Prisma.InputJsonObject }),
-          updatedAt: now,
-        },
-        include: { address: true },
+    return serializeBranch(
+      await repo.updateBranchWithAddress({
+        tenantId,
+        current,
+        input,
+        address,
+        now,
       })
-    })
-    return serializeBranch(branch as BranchRow)
+    )
   } catch (error) {
     if (isUniqueConstraintError(error))
       throw conflict('A branch with that name already exists.')
@@ -233,7 +188,9 @@ function addressError(code: string): AppHttpError {
 
 function isUniqueConstraintError(error: unknown): boolean {
   return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
     error.code === 'P2002'
   )
 }

@@ -1,6 +1,6 @@
 import { AppHttpError } from '@/platform/errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
-import { prisma } from './settings.repository'
+import * as repo from './settings.repository'
 type Module = { key: string; label: string; optional: boolean }
 const catalog: readonly Module[] = [
   { key: 'general', label: 'General', optional: false },
@@ -16,10 +16,7 @@ const catalog: readonly Module[] = [
   { key: 'portal', label: 'Customer portal', optional: true },
 ]
 export async function list(tenantId: string) {
-  const rows = await prisma.organizationModule.findMany({
-    where: { tenantId },
-    select: { module: true, isEnabled: true },
-  })
+  const rows = await repo.listTenantModuleSettings(tenantId)
   const state = new Map(rows.map((row) => [row.module, row.isEnabled]))
   return catalog.map((module) => ({
     object: 'organization_module' as const,
@@ -48,21 +45,11 @@ export async function toggle(
       httpStatus: 409,
     })
   const now = nowUnixSeconds()
-  const row = await prisma.organizationModule.upsert({
-    where: {
-      organization_modules_tenant_id_module_key: {
-        tenantId,
-        module: module.key,
-      },
-    },
-    create: {
-      tenantId,
-      module: module.key,
-      isEnabled,
-      createdAt: now,
-      updatedAt: now,
-    },
-    update: { isEnabled, updatedAt: now },
+  const row = await repo.saveTenantModuleSetting({
+    tenantId,
+    module: module.key,
+    isEnabled,
+    now,
   })
   return {
     object: 'organization_module' as const,
