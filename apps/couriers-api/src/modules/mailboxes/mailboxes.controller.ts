@@ -8,13 +8,13 @@ import type { ListMailboxesQuery, TenantIdParams } from './mailboxes.schemas'
 
 export async function listMailboxes(req: Request, res: Response) {
   const { tenantId } = validParams<TenantIdParams>(req)
-  const { customer_id: customerId } = validQuery<ListMailboxesQuery>(req)
-  const data = await service.listMailboxes(tenantId, customerId)
+  const query = validQuery<ListMailboxesQuery>(req)
+  const result = await service.listMailboxes(tenantId, query)
 
   res.status(200).json(
     listObject({
-      data,
-      hasMore: false,
+      data: result.data,
+      hasMore: result.hasMore,
       url: `/v1/tenants/${tenantId}/mailboxes`,
     })
   )
