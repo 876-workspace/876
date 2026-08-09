@@ -17,9 +17,20 @@ module.exports = {
       comment: 'Only a *.repository.ts file may import the Prisma client.',
       severity: 'error',
       from: {
-        pathNot: '(\\.repository\\.ts$|^src/db/|^src/server\\.ts$)',
+        pathNot: '(\\.repository\\.ts$|^src/db/)',
       },
       to: { path: '^src/db/client\\.ts$' },
+    },
+    {
+      name: 'no-prisma-client-re-exports',
+      comment:
+        'The Prisma singleton may not be re-exported; that would let services evade the repository boundary.',
+      severity: 'error',
+      from: { pathNot: '^src/db/' },
+      to: {
+        path: '^src/db/client\\.ts$',
+        dependencyTypes: ['export'],
+      },
     },
     {
       name: 'no-generated-prisma-outside-db',
