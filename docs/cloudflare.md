@@ -8,16 +8,17 @@ Prisma Postgres databases.
 
 ## Architecture
 
-| Worker / Container | Workspace          | Path               | Runtime                                        |
-| ------------------ | ------------------ | ------------------ | ---------------------------------------------- |
-| `876-api`          | `@876/api`         | `apps/api`         | **Container** (Dockerfile + Worker front door) |
-| `876-billing-api`  | `@876/billing-api` | `apps/billing-api` | **Container** + Cron `*/5 * * * *`             |
-| `876-app`          | `@876/app`         | `apps/876`         | OpenNext Worker                                |
-| `876-enterprise`   | `@876/enterprise`  | `apps/enterprise`  | OpenNext Worker                                |
-| `876-console`      | `@876/console`     | `apps/console`     | OpenNext Worker                                |
-| `876-billing`      | `@876/billing-app` | `apps/billing`     | OpenNext Worker                                |
-| `876-couriers`     | `@876/couriers`    | `apps/couriers`    | OpenNext Worker                                |
-| `876-widgets-api`  | `@876/widgets-api` | `apps/widgets-api` | OpenNext Worker                                |
+| Worker / Container | Workspace           | Path                | Runtime                                        |
+| ------------------ | ------------------- | ------------------- | ---------------------------------------------- |
+| `876-api`          | `@876/api`          | `apps/api`          | **Container** (Dockerfile + Worker front door) |
+| `876-billing-api`  | `@876/billing-api`  | `apps/billing-api`  | **Container** + Cron `*/5 * * * *`             |
+| `876-couriers-api` | `@876/couriers-api` | `apps/couriers-api` | **Container** (Dockerfile + Worker front door) |
+| `876-app`          | `@876/app`          | `apps/876`          | OpenNext Worker                                |
+| `876-enterprise`   | `@876/enterprise`   | `apps/enterprise`   | OpenNext Worker                                |
+| `876-console`      | `@876/console`      | `apps/console`      | OpenNext Worker                                |
+| `876-billing`      | `@876/billing-app`  | `apps/billing`      | OpenNext Worker                                |
+| `876-couriers`     | `@876/couriers-app` | `apps/couriers`     | OpenNext Worker                                |
+| `876-widgets-api`  | `@876/widgets-api`  | `apps/widgets-api`  | OpenNext Worker                                |
 
 **Hostname strategy:** `*.workers.dev` script names above, with custom domains
 (`api.876.app`, etc.) added as needed.
@@ -191,7 +192,7 @@ pnpm --filter @876/console add -D wrangler
 ```
 
 Same pattern for `@876/app`, `@876/enterprise`, `@876/billing-app`,
-`@876/couriers` and `@876/widgets-api`.
+`@876/couriers-app` and `@876/widgets-api`.
 
 ### Local dev
 
@@ -289,6 +290,10 @@ Couriers, affected users are routed to onboarding and see
 `BILLING_API_PRIMARY_INSTANCE`, `BILLING_DATABASE_URL`,
 `BILLING_INTERNAL_KEY`, `CORS_ALLOWED_ORIGINS`, `ENVIRONMENT`, `LOG_LEVEL`,
 `PORT`.
+
+**876-couriers-api:** `PORT`, `ENVIRONMENT`, `LOG_LEVEL`, `DATABASE_URL`,
+`DIRECT_DATABASE_URL`, `API_876_KEY`, `API_INTERNAL_KEY`,
+`OAUTH_ISSUER`, `OAUTH_JWKS_URL`, `SENTRY_DSN`, `CORS_ALLOWED_ORIGINS`.
 
 **876 couriers:** `API_876_KEY`, `API_INTERNAL_KEY`, `API_URL`, `BILLING_URL`,
 `DATABASE_URL`, `NEXT_PUBLIC_*`, `STORAGE_INTERNAL_KEY`, `WIDGETS_*`,
