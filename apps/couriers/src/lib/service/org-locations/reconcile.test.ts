@@ -16,13 +16,38 @@ import { listSites } from './reconcile'
 
 const TENANT_ID = 'ten_rocketship'
 
-// Only the row count matters to the limit arithmetic these tests cover, so the
-// factory carries the identifying fields and nothing else.
+// The limit arithmetic is what these tests cover, but the rows still pass
+// through the view mapper, which refuses a branch with no address relation.
+const ADDRESS = {
+  id: 'adr_kingston',
+  tenantId: TENANT_ID,
+  name: 'Kingston branch',
+  line1: '12 Hope Road',
+  line2: null,
+  city: 'Kingston',
+  countryCode: 'JM',
+  regionCode: 'JM-02',
+  regionName: 'Saint Andrew',
+  postalCode: null,
+  latitude: null,
+  longitude: null,
+  isActive: true,
+  createdAt: 1_785_427_200,
+  updatedAt: 1_785_427_200,
+}
+
 function branchRow(overrides: { id: string }) {
   return {
     tenantId: TENANT_ID,
     orgLocationId: null,
     name: `Branch ${overrides.id}`,
+    phone: null,
+    isDefault: false,
+    isActive: true,
+    settings: null,
+    createdAt: 1_785_427_200,
+    updatedAt: 1_785_427_200,
+    address: ADDRESS,
     ...overrides,
   }
 }

@@ -9,7 +9,6 @@ const { mockAfter, mockReconcile, mockGetManageContext, mockService } =
       mockGetManageContext: vi.fn(),
       mockService: {
         warehouses: { list: vi.fn().mockResolvedValue([]) },
-        orgLocations: { reconcile: mockReconcile },
       },
     }
   })
@@ -21,6 +20,10 @@ vi.mock('@/lib/auth/manage-context', () => ({
 }))
 
 vi.mock('@/lib/service', () => ({ service: mockService }))
+
+// The reconcile moved out of the service layer: it composes a couriers read with
+// a call to the identity API, so it lives in the orchestration module now.
+vi.mock('@/lib/manage/org-locations', () => ({ reconcile: mockReconcile }))
 
 // The page shell is a sync component that renders this data child behind
 // <Suspense>, so awaiting the shell never runs the fetch that schedules the
