@@ -1,0 +1,29 @@
+enum KioskDeviceStatus {
+  ACTIVE
+  REVOKED
+}
+
+/// An enrolled counter device. The raw credential is returned exactly once at
+/// enrollment and is never stored; a compromised device can be revoked without
+/// affecting staff or customer sessions.
+model KioskDevice {
+  id             String            @id @default(cuid())
+  tenantId       String            @map("tenant_id")
+  branchId       String            @map("branch_id")
+  name           String
+  credentialHash String            @unique @map("credential_hash")
+  status         KioskDeviceStatus @default(ACTIVE)
+  createdById    String?           @map("created_by_id")
+  lastUsedAt     Int?              @map("last_used_at")
+  revokedAt      Int?              @map("revoked_at")
+  revokedById    String?           @map("revoked_by_id")
+  createdAt      Int               @map("created_at")
+  updatedAt      Int               @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name], name: "kiosk_devices_tenant_id_name_key")
+  @@index([branchId, status], name: "kiosk_devices_branch_status_idx")
+  @@map("kiosk_devices")
+}
