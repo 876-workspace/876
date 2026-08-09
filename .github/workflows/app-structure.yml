@@ -33,6 +33,12 @@ jobs:
       - name: Structural invariants
         run: pnpm check:structure
 
+      # `pnpm check` reaches this task through Turbo locally. Run the service's
+      # own command here as well so an API-only pull request cannot bypass the
+      # dependency-cruiser module and Prisma boundaries.
+      - name: Module boundaries (couriers API)
+        run: pnpm --filter @876/couriers-api boundaries
+
       # The boundary rules that ESLint can express, for the apps that import
       # eslint.app-structure.mjs.
       - name: Boundary lint (console)
