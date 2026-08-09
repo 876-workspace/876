@@ -4,6 +4,7 @@ import { createPackagesResource } from './packages'
 import { buildAdminRuntime } from '../runtime'
 
 const baseUrl = 'https://couriers.876.local'
+const apiKey = '876_app_secret_couriers'
 const internalKey = 'couriers_internal_kingston'
 const tenantId = 'ten_kingston/876'
 const packageId = 'pkg_kingston/2026-0816 A'
@@ -74,7 +75,7 @@ const updatePackageBody = {
 
 function createResource(fetchMock: typeof fetch, key?: string) {
   return createPackagesResource(
-    buildAdminRuntime({ baseUrl, internalKey: key, fetch: fetchMock })
+    buildAdminRuntime({ baseUrl, apiKey, internalKey: key, fetch: fetchMock })
   )
 }
 
@@ -98,6 +99,7 @@ describe('createPackagesResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -118,6 +120,7 @@ describe('createPackagesResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -138,6 +141,7 @@ describe('createPackagesResource', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(createPackageBody),
@@ -159,6 +163,7 @@ describe('createPackagesResource', () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(updatePackageBody),

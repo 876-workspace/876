@@ -4,6 +4,7 @@ import { createWarehousesResource } from './warehouses'
 import { buildAdminRuntime } from '../runtime'
 
 const baseUrl = 'https://couriers.876.local'
+const apiKey = '876_app_secret_couriers'
 const internalKey = 'couriers_internal_kingston'
 const tenantId = 'ten_kingston/876'
 const warehouseId = 'wh_kingston/harbour depot'
@@ -99,7 +100,7 @@ const updateBody = {
 
 function createResource(fetchMock: typeof fetch, key?: string) {
   return createWarehousesResource(
-    buildAdminRuntime({ baseUrl, internalKey: key, fetch: fetchMock })
+    buildAdminRuntime({ baseUrl, apiKey, internalKey: key, fetch: fetchMock })
   )
 }
 
@@ -123,6 +124,7 @@ describe('createWarehousesResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -143,6 +145,7 @@ describe('createWarehousesResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -163,6 +166,7 @@ describe('createWarehousesResource', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(createBody),
@@ -184,6 +188,7 @@ describe('createWarehousesResource', () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(updateBody),

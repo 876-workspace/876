@@ -15,6 +15,7 @@ export function buildAdminRuntime(options: AdminClientOptions) {
   return {
     baseUrl: resolveBaseUrl(options.baseUrl),
     fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
+    apiKey: options.apiKey ?? env.COURIERS_API_KEY ?? env.API_876_KEY,
     internalKey:
       options.internalKey ?? env.COURIERS_INTERNAL_KEY ?? env.API_INTERNAL_KEY,
     requestId: options.requestId,

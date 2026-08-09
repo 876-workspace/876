@@ -4,6 +4,7 @@ import { createCustomersResource } from './customers'
 import { buildAdminRuntime } from '../runtime'
 
 const baseUrl = 'https://couriers.876.local'
+const apiKey = '876_app_secret_couriers'
 const internalKey = 'couriers_internal_kingston'
 const tenantId = 'ten_kingston/876'
 const customerId = 'cpr_kingston/brown market'
@@ -90,7 +91,7 @@ const updateMailboxBody = {
 
 function createResource(fetchMock: typeof fetch, key?: string) {
   return createCustomersResource(
-    buildAdminRuntime({ baseUrl, internalKey: key, fetch: fetchMock })
+    buildAdminRuntime({ baseUrl, apiKey, internalKey: key, fetch: fetchMock })
   )
 }
 
@@ -114,6 +115,7 @@ describe('createCustomersResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -134,6 +136,7 @@ describe('createCustomersResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -154,6 +157,7 @@ describe('createCustomersResource', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(createCustomerBody),
@@ -179,6 +183,7 @@ describe('createCustomersResource', () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(updateCustomerBody),
@@ -200,6 +205,7 @@ describe('createCustomersResource', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
       }
@@ -224,6 +230,7 @@ describe('createCustomersResource', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(createMailboxBody),
@@ -250,6 +257,7 @@ describe('createCustomersResource', () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
         body: JSON.stringify(updateMailboxBody),
