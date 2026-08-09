@@ -1,0 +1,34 @@
+enum CustomerStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model CourierCustomerProfile {
+  id                String         @id @default(cuid())
+  tenantId          String         @map("tenant_id")
+  userId            String?        @map("user_id")
+  billingCustomerId String         @map("billing_customer_id")
+  branchId          String?        @map("branch_id")
+  status            CustomerStatus @default(ACTIVE)
+  trn               String?        @map("trn")
+  isCommercial      Boolean        @default(false) @map("is_commercial")
+  firstSeenAt       Int            @map("first_seen_at")
+  createdAt         Int            @map("created_at")
+  updatedAt         Int            @map("updated_at")
+  deletedAt         Int?           @map("deleted_at")
+  deletedBy         String?        @map("deleted_by")
+  deletionReason    String?        @map("deletion_reason")
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch    Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  mailboxes Mailbox[]
+  packages  Package[]
+
+  @@unique([id, tenantId], name: "courier_customer_profiles_id_tenant_id_key")
+  @@unique([tenantId, userId], name: "courier_customer_profiles_tenant_user_key", map: "courier_customer_profiles_tenant_user_key")
+  @@unique([tenantId, billingCustomerId], name: "courier_customer_profiles_tenant_billing_customer_key", map: "courier_customer_profiles_tenant_billing_customer_key")
+  @@index([userId], name: "courier_customer_profiles_user_id_idx")
+  @@index([branchId], name: "courier_customer_profiles_branch_id_idx")
+  @@index([tenantId, deletedAt], name: "courier_customer_profiles_tenant_deleted_idx")
+  @@map("courier_customer_profiles")
+}
