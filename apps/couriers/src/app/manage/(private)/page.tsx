@@ -34,7 +34,9 @@ export default async function ManageDashboardPage() {
         </div>
         <div className="rounded-lg border p-5">
           <h2 className="mb-1 font-semibold">Status</h2>
-          <p className="text-[0.8125rem] capitalize">{tenant.status.toLowerCase()}</p>
+          <p className="text-[0.8125rem] capitalize">
+            {tenant.status.toLowerCase()}
+          </p>
         </div>
       </section>
 

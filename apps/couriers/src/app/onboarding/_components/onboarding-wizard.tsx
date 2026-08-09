@@ -262,7 +262,9 @@ export function OnboardingWizard({
             />
           ))}
 
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
 
           <button
             type="button"
@@ -293,7 +295,9 @@ export function OnboardingWizard({
             />
           ))}
 
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
 
           <button
             type="button"
@@ -341,7 +345,10 @@ export function OnboardingWizard({
             ))}
 
             <div className="space-y-2">
-              <Label htmlFor="team-role" className="text-[0.8125rem] font-medium">
+              <Label
+                htmlFor="team-role"
+                className="text-[0.8125rem] font-medium"
+              >
                 Role
               </Label>
               <NativeSelect
@@ -358,14 +365,19 @@ export function OnboardingWizard({
             </div>
           </div>
 
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
 
           {inviteResults.some((invite) => !invite.ok) && (
             <div className="space-y-2">
               {inviteResults
                 .filter((invite) => !invite.ok)
                 .map((invite) => (
-                  <p key={invite.email} className="text-destructive text-[0.8125rem]">
+                  <p
+                    key={invite.email}
+                    className="text-destructive text-[0.8125rem]"
+                  >
                     {invite.email}: {invite.error}
                   </p>
                 ))}

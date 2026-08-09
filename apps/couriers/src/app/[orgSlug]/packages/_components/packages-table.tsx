@@ -30,12 +30,14 @@ function avatarColor(name: string): string {
 }
 
 function branchColor(branch: string): string {
-  return {
-    'New Kingston': 'border-sky-400',
-    'Half Way Tree': 'border-violet-400',
-    Portmore: 'border-emerald-400',
-    'Spanish Town': 'border-amber-400',
-  }[branch] ?? 'border-border'
+  return (
+    {
+      'New Kingston': 'border-sky-400',
+      'Half Way Tree': 'border-violet-400',
+      Portmore: 'border-emerald-400',
+      'Spanish Town': 'border-amber-400',
+    }[branch] ?? 'border-border'
+  )
 }
 
 function statusClass(status: string): string {
@@ -56,7 +58,11 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
   {
     accessorKey: 'trackingNumber',
     header: 'Tracking #',
-    cell: ({ row }) => <span className="font-medium text-sky-600">{row.original.trackingNumber}</span>,
+    cell: ({ row }) => (
+      <span className="font-medium text-sky-600">
+        {row.original.trackingNumber}
+      </span>
+    ),
   },
   {
     accessorKey: 'customerName',
@@ -74,7 +80,9 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
               .slice(0, 2)}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium text-sky-600">{row.original.customerName}</span>
+        <span className="font-medium text-sky-600">
+          {row.original.customerName}
+        </span>
       </div>
     ),
   },
@@ -104,5 +112,13 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
 ]
 
 export function PackagesTable({ packages }: { packages: PackageTableRow[] }) {
-  return <div className="876-card overflow-hidden"><DataTable columns={columns} data={packages} rowClassName="cursor-pointer" /></div>
+  return (
+    <div className="876-card overflow-hidden">
+      <DataTable
+        columns={columns}
+        data={packages}
+        rowClassName="cursor-pointer"
+      />
+    </div>
+  )
 }

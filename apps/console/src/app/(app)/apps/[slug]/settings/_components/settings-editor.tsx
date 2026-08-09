@@ -421,7 +421,9 @@ export function DangerSection({ app }: { app: AdminApp }) {
             />
           </div>
 
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>

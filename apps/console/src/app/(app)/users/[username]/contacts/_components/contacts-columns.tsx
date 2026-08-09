@@ -39,7 +39,9 @@ export function createContactColumns(
               <AvatarFallback>{contactInitials(contact)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-[0.8125rem] font-medium">{contactName}</p>
+              <p className="truncate text-[0.8125rem] font-medium">
+                {contactName}
+              </p>
               <p className="text-muted-foreground truncate text-xs">
                 {contact.contact_user.email}
               </p>

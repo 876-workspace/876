@@ -121,9 +121,13 @@ async function AccountsOnDevice({ deviceId }: { deviceId: string }) {
 
   return (
     <div className="876-card mb-6 p-5">
-      <h2 className="mb-4 text-[0.8125rem] font-semibold">Accounts on this device</h2>
+      <h2 className="mb-4 text-[0.8125rem] font-semibold">
+        Accounts on this device
+      </h2>
       {rows.length === 0 ? (
-        <p className="text-muted-foreground text-[0.8125rem]">No accounts recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">
+          No accounts recorded.
+        </p>
       ) : (
         <>
           {rows.length > 2 && (
@@ -180,7 +184,9 @@ async function RecentAttempts({ deviceId }: { deviceId: string }) {
     <div className="876-card p-5">
       <h2 className="mb-4 text-[0.8125rem] font-semibold">Recent attempts</h2>
       {rows.length === 0 ? (
-        <p className="text-muted-foreground text-[0.8125rem]">No attempts recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">
+          No attempts recorded.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <Table>

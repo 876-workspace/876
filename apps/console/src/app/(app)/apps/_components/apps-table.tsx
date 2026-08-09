@@ -13,12 +13,9 @@ import { CursorPagination } from '@/components/patterns/cursor-pagination'
 import { statusBadgeClass } from '@/lib/format'
 
 function appKindBadgeClass(appKind: AdminApp['app_kind']): string {
-  if (appKind === 'product')
-    return 'border-emerald-400'
-  if (appKind === 'platform')
-    return 'border-blue-400'
-  if (appKind === 'internal')
-    return 'border-violet-400'
+  if (appKind === 'product') return 'border-emerald-400'
+  if (appKind === 'platform') return 'border-blue-400'
+  if (appKind === 'internal') return 'border-violet-400'
   return 'border-border'
 }
 

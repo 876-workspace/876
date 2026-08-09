@@ -138,7 +138,9 @@ async function CondensedTitle({ username }: { username: string }) {
           <AvatarFallback>{initialsOf(user)}</AvatarFallback>
         </Avatar>
       </ChangeImageDialog>
-      <span className="truncate text-[0.8125rem] font-semibold">{displayName}</span>
+      <span className="truncate text-[0.8125rem] font-semibold">
+        {displayName}
+      </span>
     </>
   )
 }

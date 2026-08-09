@@ -137,7 +137,9 @@ const fullColumns: ColumnDef<AdminNoteRow, unknown>[] = [
       row.original.sourceApp ? (
         <span className="text-[0.8125rem]">{row.original.sourceApp}</span>
       ) : (
-        <span className="text-muted-foreground text-[0.8125rem]">Unattributed</span>
+        <span className="text-muted-foreground text-[0.8125rem]">
+          Unattributed
+        </span>
       ),
   },
   {

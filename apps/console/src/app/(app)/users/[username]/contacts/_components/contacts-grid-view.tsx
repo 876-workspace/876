@@ -45,7 +45,9 @@ export function ContactsGridView({ contacts, actions, emptyState }: Props) {
                 <AvatarFallback>{contactInitials(contact)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[0.8125rem] font-semibold">{name}</p>
+                <p className="truncate text-[0.8125rem] font-semibold">
+                  {name}
+                </p>
                 {contact.nickname && (
                   <p className="text-muted-foreground truncate text-xs">
                     “{contact.nickname}”

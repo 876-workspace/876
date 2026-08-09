@@ -41,7 +41,7 @@ Requirements, in detail:
 - **What is already in place** — the two-layer datastore rule
   (`prisma` singleton + `service.<resource>.<verb>()`), `ServiceResult`
   envelopes, and route handlers that hold no business logic. Explain that this
-  is what makes extraction a *move* rather than a rewrite.
+  is what makes extraction a _move_ rather than a rewrite.
 - **Phase 1** — list the five rules in `.dependency-cruiser.cjs` with a one-line
   explanation each, taken from the `comment` field of each rule. Then explain
   why `tsPreCompilationDeps` is `false`: a type-only import is erased at build

@@ -76,7 +76,10 @@ function ScalarControl({
     return (
       <div className="grid gap-2 rounded-md border p-3 sm:grid-cols-2">
         {field.options.map((option) => (
-          <label key={option.value} className="flex items-center gap-2 text-[0.8125rem]">
+          <label
+            key={option.value}
+            className="flex items-center gap-2 text-[0.8125rem]"
+          >
             <Checkbox
               checked={selected.includes(option.value)}
               onCheckedChange={(checked) =>

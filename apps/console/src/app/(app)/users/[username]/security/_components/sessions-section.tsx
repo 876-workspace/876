@@ -89,7 +89,9 @@ export function SessionsSection({ userId, sessions }: Props) {
       </div>
 
       {sessions.length === 0 ? (
-        <p className="text-muted-foreground text-[0.8125rem]">No sessions recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">
+          No sessions recorded.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <Table>
@@ -146,7 +148,9 @@ export function SessionsSection({ userId, sessions }: Props) {
         </div>
       )}
 
-      {error && <p className="text-destructive mt-4 text-[0.8125rem]">{error}</p>}
+      {error && (
+        <p className="text-destructive mt-4 text-[0.8125rem]">{error}</p>
+      )}
     </div>
   )
 }

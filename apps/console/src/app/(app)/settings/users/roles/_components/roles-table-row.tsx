@@ -61,7 +61,9 @@ export function RolesTableRow({ role }: { role: RoleView }) {
         </span>
       </TableCell>
       <TableCell className="px-5 py-3.5">
-        <span className="text-muted-foreground text-[0.8125rem]">{role.userCount}</span>
+        <span className="text-muted-foreground text-[0.8125rem]">
+          {role.userCount}
+        </span>
       </TableCell>
     </TableRow>
   )

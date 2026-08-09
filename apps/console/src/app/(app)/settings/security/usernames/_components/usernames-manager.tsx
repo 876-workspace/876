@@ -208,7 +208,9 @@ export function UsernamesManager({ initialItems }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            {addError && <p className="text-destructive text-[0.8125rem]">{addError}</p>}
+            {addError && (
+              <p className="text-destructive text-[0.8125rem]">{addError}</p>
+            )}
             <DialogFooter>
               <Button
                 type="button"

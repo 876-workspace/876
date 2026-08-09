@@ -113,7 +113,9 @@ export function UsernameSection({ userId, username }: Props) {
         <div className="flex items-center justify-between gap-4">
           <span
             className={cn(
-              username ? 'font-mono text-[0.8125rem]' : 'text-muted-foreground text-[0.8125rem]'
+              username
+                ? 'font-mono text-[0.8125rem]'
+                : 'text-muted-foreground text-[0.8125rem]'
             )}
           >
             {username ? `@${username}` : '—'}

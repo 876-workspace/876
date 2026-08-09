@@ -116,11 +116,11 @@ Port the behaviour of `apps/couriers/src/lib/service/tenants/` exactly — same
 lookups, same semantics. Serialize with an `object: 'tenant'` discriminator and
 Unix-second timestamps. Endpoints:
 
-| Method | Path                        | Tier    |
-| ------ | --------------------------- | ------- |
-| GET    | `/v1/tenants/:id`           | apiKey  |
-| GET    | `/v1/tenants/by-org/:orgId` | apiKey  |
-| GET    | `/v1/tenants`               | admin   |
+| Method | Path                        | Tier   |
+| ------ | --------------------------- | ------ |
+| GET    | `/v1/tenants/:id`           | apiKey |
+| GET    | `/v1/tenants/by-org/:orgId` | apiKey |
+| GET    | `/v1/tenants`               | admin  |
 
 `/health` is public.
 

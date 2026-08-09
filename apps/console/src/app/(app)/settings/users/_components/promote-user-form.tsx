@@ -131,7 +131,9 @@ export function PromoteUserForm() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <p className="truncate text-[0.8125rem] font-medium">{displayName}</p>
+                  <p className="truncate text-[0.8125rem] font-medium">
+                    {displayName}
+                  </p>
                   <p className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </p>

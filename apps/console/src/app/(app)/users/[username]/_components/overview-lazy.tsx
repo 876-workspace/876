@@ -132,12 +132,16 @@ export function LazyAuthAccounts({
             <span className="border-876-surface-border bg-background flex size-7 shrink-0 items-center justify-center rounded-md border">
               <KeyRound className="text-muted-foreground size-3.5" />
             </span>
-            <span className="text-[0.8125rem] font-medium">Email &amp; password</span>
+            <span className="text-[0.8125rem] font-medium">
+              Email &amp; password
+            </span>
           </li>
         )}
       </ul>
       <div className="flex items-center justify-between gap-3 border-t pt-3">
-        <span className="text-muted-foreground text-[0.8125rem]">Email verified</span>
+        <span className="text-muted-foreground text-[0.8125rem]">
+          Email verified
+        </span>
         <span className="text-[0.8125rem] font-medium">
           {emailVerified ? 'Yes' : 'No'}
         </span>

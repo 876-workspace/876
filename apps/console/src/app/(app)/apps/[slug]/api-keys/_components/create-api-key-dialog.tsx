@@ -116,7 +116,9 @@ export function CreateApiKeyDialog({ appId }: { appId: string }) {
                   onChange={(e) => setExpiresAt(e.target.value)}
                 />
               </div>
-              {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+              {error && (
+                <p className="text-destructive text-[0.8125rem]">{error}</p>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => handleOpenChange(false)}>

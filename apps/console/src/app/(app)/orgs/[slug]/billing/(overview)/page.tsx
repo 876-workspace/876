@@ -124,7 +124,9 @@ function BillingLinkCard({
         </div>
         <div>
           <h3 className="text-[0.8125rem] font-medium">{title}</h3>
-          <p className="text-muted-foreground mt-1 text-[0.8125rem]">{description}</p>
+          <p className="text-muted-foreground mt-1 text-[0.8125rem]">
+            {description}
+          </p>
         </div>
       </div>
       <div className="mt-5 flex justify-end">
