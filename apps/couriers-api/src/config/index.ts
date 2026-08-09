@@ -47,7 +47,8 @@ const envSchema = z.object({
   // An unset internal key is a valid degraded configuration: admin routes
   // reject every request until a service secret is configured.
   API_INTERNAL_KEY: str(),
-  SESSION_COOKIE_SECRET: z.string().min(1, 'SESSION_COOKIE_SECRET is required'),
+  OAUTH_ISSUER: str(),
+  OAUTH_JWKS_URL: str(),
   SENTRY_DSN: str(),
   CORS_ALLOWED_ORIGINS: z
     .string()
@@ -78,7 +79,14 @@ function build(env: NodeJS.ProcessEnv) {
     directDatabaseUrl: e.DIRECT_DATABASE_URL ?? e.DATABASE_URL,
     api876Key: e.API_876_KEY,
     internalKey: e.API_INTERNAL_KEY,
-    sessionCookieSecret: e.SESSION_COOKIE_SECRET,
+    oauth: {
+      issuer: e.OAUTH_ISSUER.replace(/\/+$/, ''),
+      jwksUrl:
+        e.OAUTH_JWKS_URL ||
+        (e.OAUTH_ISSUER
+          ? `${e.OAUTH_ISSUER.replace(/\/+$/, '')}/oauth/.well-known/jwks.json`
+          : ''),
+    },
     sentryDsn: e.SENTRY_DSN,
     corsOrigins: e.CORS_ALLOWED_ORIGINS.split(',')
       .map((o) => o.trim())
