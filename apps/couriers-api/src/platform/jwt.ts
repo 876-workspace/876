@@ -5,6 +5,11 @@ import { getLogger } from '@/platform/logger'
 
 const log = getLogger('jwt')
 
+// Five minutes bounds key rotation propagation without fetching on every
+// request. `jose` reloads the JWKS after this interval; a failed reload rejects
+// the current request rather than treating stale verification as a success.
+const JWKS_CACHE_MAX_AGE_MS = 5 * 60 * 1000
+
 export type ProviderClaims = JWTPayload & {
   token_use?: 'access' | 'id' | 'service'
   realm?: string
@@ -19,6 +24,7 @@ function keySetFor(jwksUrl: string): ReturnType<typeof createRemoteJWKSet> {
 
   const created = createRemoteJWKSet(new URL(jwksUrl), {
     timeoutDuration: 10_000,
+    cacheMaxAge: JWKS_CACHE_MAX_AGE_MS,
   })
   keySets.set(jwksUrl, created)
 
@@ -29,19 +35,30 @@ function keySetFor(jwksUrl: string): ReturnType<typeof createRemoteJWKSet> {
  * Verify a bearer token issued by the platform OAuth server.
  *
  * The platform signs access tokens with its RSA key and publishes the matching
- * public key through its JWKS endpoint. Issuer and audience remain unchecked,
- * matching the platform verifier: its issuer varies across preview hosts and
- * the receiving route owns any audience constraint.
+ * public key through its JWKS endpoint. The service only accepts the issuer
+ * and audience the identity API minted for this resource server.
  */
 export async function verifyProviderJwt(
   token: string
 ): Promise<ProviderClaims | null> {
-  const { jwksUrl } = getSettings().oauth
-  if (!jwksUrl) return null
+  const { issuer, audience, jwksUrl } = getSettings().oauth
+  if (!issuer || !audience || !jwksUrl) {
+    log.warn(
+      {
+        has_audience: Boolean(audience),
+        has_issuer: Boolean(issuer),
+        has_jwks_url: Boolean(jwksUrl),
+      },
+      'oauth.jwt.verification_unconfigured'
+    )
+    return null
+  }
 
   try {
     const { payload } = await jwtVerify(token, keySetFor(jwksUrl), {
       algorithms: ['RS256'],
+      issuer,
+      audience,
     })
     return payload as ProviderClaims
   } catch (error) {

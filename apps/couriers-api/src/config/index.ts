@@ -48,6 +48,10 @@ const envSchema = z.object({
   // reject every request until a service secret is configured.
   API_INTERNAL_KEY: str(),
   OAUTH_ISSUER: str(),
+  // The client ID the identity API placed in the access token's `aud` claim.
+  // It is deliberately separate from API_876_KEY: an API key is not an OAuth
+  // client identifier and must never be used as the expected audience.
+  OAUTH_AUDIENCE: str(),
   OAUTH_JWKS_URL: str(),
   SENTRY_DSN: str(),
   CORS_ALLOWED_ORIGINS: z
@@ -81,6 +85,7 @@ function build(env: NodeJS.ProcessEnv) {
     internalKey: e.API_INTERNAL_KEY,
     oauth: {
       issuer: e.OAUTH_ISSUER.replace(/\/+$/, ''),
+      audience: e.OAUTH_AUDIENCE.trim(),
       jwksUrl:
         e.OAUTH_JWKS_URL ||
         (e.OAUTH_ISSUER

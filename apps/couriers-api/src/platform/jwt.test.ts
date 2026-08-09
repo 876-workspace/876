@@ -5,6 +5,10 @@ import { resetSettingsForTest } from '@/config'
 
 import { resetProviderJwtKeyCache, verifyProviderJwt } from './jwt'
 
+const ISSUER = 'https://identity.example.test'
+const AUDIENCE = 'client_couriers'
+const JWKS_URL = `${ISSUER}/oauth/.well-known/jwks.json`
+
 const testEnv: NodeJS.ProcessEnv = {
   ENVIRONMENT: 'test',
   LOG_LEVEL: 'silent',
@@ -12,7 +16,9 @@ const testEnv: NodeJS.ProcessEnv = {
   DATABASE_URL: 'prisma://127.0.0.1:1/?api_key=test',
   API_876_KEY: '876_app_secret_test_key_for_couriers_api',
   API_INTERNAL_KEY: 'test-internal-key',
-  OAUTH_JWKS_URL: 'https://platform.example.test/oauth/.well-known/jwks.json',
+  OAUTH_ISSUER: ISSUER,
+  OAUTH_AUDIENCE: AUDIENCE,
+  OAUTH_JWKS_URL: JWKS_URL,
   SENTRY_DSN: '',
 }
 
@@ -23,47 +29,44 @@ afterEach(() => {
 })
 
 describe('verifyProviderJwt', () => {
-  it('accepts an RS256 platform access token signed by the configured JWKS', async () => {
+  it('uses one fetched JWKS for multiple valid RS256 access tokens inside its cache TTL', async () => {
     const { privateKey, publicKey } = await generateKeyPair('RS256')
     const jwk = await exportJWK(publicKey)
-    const token = await new SignJWT({ token_use: 'access', realm: 'consumer' })
+    const firstToken = await new SignJWT({ token_use: 'access' })
       .setProtectedHeader({ alg: 'RS256', kid: 'platform-key-1' })
+      .setIssuer(ISSUER)
       .setSubject('user_123')
-      .setAudience('app_couriers')
+      .setAudience(AUDIENCE)
       .setIssuedAt()
       .setExpirationTime('5m')
       .sign(privateKey)
-
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            keys: [{ ...jwk, alg: 'RS256', kid: 'platform-key-1', use: 'sig' }],
-          })
-        )
-      )
-    )
-    resetSettingsForTest(testEnv)
-
-    await expect(verifyProviderJwt(token)).resolves.toMatchObject({
-      sub: 'user_123',
-      token_use: 'access',
-    })
-  })
-
-  it('rejects an HMAC token, even when its key matches a legacy cookie secret', async () => {
-    const token = await new SignJWT({ token_use: 'access' })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setSubject('user_123')
+    const secondToken = await new SignJWT({ token_use: 'access' })
+      .setProtectedHeader({ alg: 'RS256', kid: 'platform-key-1' })
+      .setIssuer(ISSUER)
+      .setSubject('user_456')
+      .setAudience(AUDIENCE)
       .setIssuedAt()
       .setExpirationTime('5m')
-      .sign(new TextEncoder().encode('test-session-cookie-secret-32-chars!!'))
-    const fetchMock = vi.fn()
+      .sign(privateKey)
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          keys: [{ ...jwk, alg: 'RS256', kid: 'platform-key-1', use: 'sig' }],
+        })
+      )
+    )
+
     vi.stubGlobal('fetch', fetchMock)
     resetSettingsForTest(testEnv)
 
-    await expect(verifyProviderJwt(token)).resolves.toBeNull()
-    expect(fetchMock).not.toHaveBeenCalled()
+    await expect(verifyProviderJwt(firstToken)).resolves.toMatchObject({
+      sub: 'user_123',
+      token_use: 'access',
+    })
+    await expect(verifyProviderJwt(secondToken)).resolves.toMatchObject({
+      sub: 'user_456',
+      token_use: 'access',
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })

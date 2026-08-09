@@ -84,9 +84,7 @@ async function resolvePrincipal(req: Request): Promise<Principal> {
       { reason: 'wrong_token_use', token_use: claims.token_use },
       'auth.bearer.rejected'
     )
-    throw errors.invalidToken(
-      'The Bearer [REDACTED] cannot be used to authorize this request.'
-    )
+    throw errors.invalidToken()
   }
 
   const realm = isRealm(claims.realm) ? claims.realm : 'consumer'
