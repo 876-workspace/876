@@ -1,0 +1,37 @@
+model OrganizationModule {
+  id        String  @id @default(cuid())
+  tenantId  String  @map("tenant_id")
+  module    String
+  isEnabled Boolean @default(true) @map("is_enabled")
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, module], name: "organization_modules_tenant_id_module_key")
+  @@index([tenantId], name: "organization_modules_tenant_id_idx")
+  @@map("organization_modules")
+}
+
+model ModulePreference {
+  id                 String  @id @default(cuid())
+  tenantId           String  @map("tenant_id")
+  module             String
+  key                String
+  valueType          String  @map("value_type")
+  stringValue        String? @map("string_value")
+  integerValue       Int?    @map("integer_value")
+  decimalValue       String? @map("decimal_value")
+  booleanValue       Boolean? @map("boolean_value")
+  referenceNamespace String? @map("reference_namespace")
+  referenceKey       String? @map("reference_key")
+  updatedBy          String? @map("updated_by")
+  createdAt          Int     @map("created_at")
+  updatedAt          Int     @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, module, key], name: "module_preferences_tenant_id_module_key_key")
+  @@index([tenantId, module], name: "module_preferences_tenant_id_module_idx")
+  @@map("module_preferences")
+}
