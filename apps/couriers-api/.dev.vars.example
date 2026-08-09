@@ -1,0 +1,9 @@
+# Secrets for local `wrangler dev` / container preview. Never commit real values.
+# DATABASE_URL=
+# DIRECT_DATABASE_URL=
+# API_876_KEY=
+# API_INTERNAL_KEY=
+# OAUTH_ISSUER=
+# OAUTH_JWKS_URL=
+# SENTRY_DSN=
+# CORS_ALLOWED_ORIGINS=
