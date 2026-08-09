@@ -82,4 +82,36 @@ describe('customerProfiles.ensure', () => {
     expect(profile.update).not.toHaveBeenCalled()
     expect(profile.create).not.toHaveBeenCalled()
   })
+
+  it('revives a soft-deleted profile without reallocating its mailbox', async () => {
+    profile.findFirst.mockResolvedValue({
+      id: 'cprof_1',
+      billingCustomerId: 'cus_shared',
+      deletedAt: 1_785_427_200,
+      deletedBy: 'usr_ops',
+      deletionReason: 'Requested by customer',
+      mailboxNumber: '1001',
+      branchId: 'br_kingston',
+      trn: '123-456-789',
+      isCommercial: true,
+    })
+
+    await ensure(params)
+
+    expect(profile.create).not.toHaveBeenCalled()
+    expect(profile.update).toHaveBeenCalledWith({
+      where: { id: 'cprof_1' },
+      data: expect.objectContaining({
+        billingCustomerId: 'cus_shared',
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+      }),
+    })
+    expect(profile.update).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        data: expect.objectContaining({ mailboxNumber: expect.anything() }),
+      })
+    )
+  })
 })
