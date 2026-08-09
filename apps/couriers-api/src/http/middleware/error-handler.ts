@@ -57,12 +57,10 @@ export function errorHandler(
     { err: error, path: req.path, method: req.method },
     'request_unhandled_error'
   )
-  res
-    .status(500)
-    .json({
-      data: null,
-      error: { code: 'auth/internal-error', message: 'Internal error.' },
-    })
+  res.status(500).json({
+    data: null,
+    error: { code: 'auth/internal-error', message: 'Internal error.' },
+  })
 }
 
 export function notFoundHandler(
