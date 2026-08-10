@@ -203,7 +203,7 @@ describe('createAddressesResource', () => {
     const fetchMock = successFetch(deletedAddress)
     const resource = createResource(fetchMock, internalKey)
 
-    const result = await resource.del(tenantId, addressId)
+    const result = await resource.delete(tenantId, addressId)
 
     expect(result).toEqual({ data: deletedAddress, error: null })
     expect(fetchMock).toHaveBeenCalledWith(
@@ -240,8 +240,8 @@ describe('createAddressesResource', () => {
       invoke: (resource) => resource.update(tenantId, addressId, updateBody),
     },
     {
-      name: 'del',
-      invoke: (resource) => resource.del(tenantId, addressId),
+      name: 'delete',
+      invoke: (resource) => resource.delete(tenantId, addressId),
     },
   ]
 

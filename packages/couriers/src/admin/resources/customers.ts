@@ -2,14 +2,11 @@ import { AdminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import {
   customerListSchema,
-  customerEnrollmentSchema,
   customerSchema,
   deletedCustomerSchema,
   type CreateCustomerBody,
   type CreateMailboxBody,
   type Customer,
-  type CustomerEnrollment,
-  type CustomerEnrollmentBody,
   type CustomerList,
   type DeleteCustomerBody,
   type DeletedCustomer,
@@ -65,14 +62,6 @@ export function createCustomersResource(runtime: AdminRuntime) {
         runtime,
         { method: 'POST', path: path(tenantId), body },
         customerSchema
-      )
-    },
-
-    enroll(tenantId: string, body: CustomerEnrollmentBody) {
-      return AdminRequest<CustomerEnrollment>(
-        runtime,
-        { method: 'POST', path: `${path(tenantId)}/enrollments`, body },
-        customerEnrollmentSchema
       )
     },
 
@@ -196,7 +185,7 @@ export function createCustomersResource(runtime: AdminRuntime) {
         )
       },
 
-      del(tenantId: string, customerId: string, id: string) {
+      delete(tenantId: string, customerId: string, id: string) {
         return AdminRequest<DeletedCustomerAddress>(
           runtime,
           {

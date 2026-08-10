@@ -172,7 +172,7 @@ describe('Couriers client credential tiers', () => {
       fetch: fetchMock,
     })
 
-    await expect(client.tenants.retrieve('ten_1')).resolves.toEqual({
+    await expect(client.tenants.retrieve({ id: 'ten_1' })).resolves.toEqual({
       data: tenant,
       error: null,
     })
@@ -197,7 +197,7 @@ describe('Couriers client credential tiers', () => {
       fetch: fetchMock,
     })
 
-    await expect(client.tenants.retrieve('ten_1')).resolves.toEqual({
+    await expect(client.tenants.retrieve({ id: 'ten_1' })).resolves.toEqual({
       data: null,
       error: {
         code: 'couriers/admin-not-configured',
