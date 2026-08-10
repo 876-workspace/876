@@ -23,8 +23,6 @@ export async function WarehousesData({ params }: Props) {
     await $876.couriers.warehouses.list(tenantId)
   ).data.map(toWarehouseView)
 
-  // The warehouse form redirects here, so this is a convenient bounded repair
-
   return (
     <WarehousesCards
       warehouses={warehouses}

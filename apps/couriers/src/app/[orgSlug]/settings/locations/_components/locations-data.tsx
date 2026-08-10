@@ -23,8 +23,6 @@ export async function LocationsData({ params }: Props) {
     await $876.couriers.branches.list(tenantId)
   ).data.map(toBranchView)
 
-  // Opportunistic repair runs after the response so a slow Couriers API call
-
   return (
     <LocationsCards
       branches={branches}
