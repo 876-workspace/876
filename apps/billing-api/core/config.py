@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,8 +20,13 @@ class Settings(BaseSettings):
         validation_alias="BILLING_WRITER",
     )
     identity_api_url: str = Field(default="http://127.0.0.1:4000", validation_alias="API_URL")
-    identity_api_key: str = Field(default="", validation_alias="BILLING_API_876_KEY")
-    internal_key: str = Field(default="", validation_alias="BILLING_INTERNAL_KEY")
+    identity_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "BILLING_API_876_KEY", "BILLING_API_KEY", "API_876_KEY"
+        ),
+    )
+    internal_key: str = Field(default="", validation_alias=AliasChoices("BILLING_INTERNAL_KEY", "API_INTERNAL_KEY"))
     scheduler_key: str = Field(default="", validation_alias="BILLING_SCHEDULER_KEY")
     cors_allowed_origins: str = Field(default="http://localhost:3004", validation_alias="CORS_ALLOWED_ORIGINS")
     environment: str = Field(default="production", validation_alias="ENVIRONMENT")

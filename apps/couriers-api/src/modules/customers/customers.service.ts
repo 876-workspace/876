@@ -7,6 +7,7 @@ import {
 } from '@/platform/timestamps'
 
 import * as billing from '@/providers/billing/customers'
+import { getLogger } from '@/platform/logger'
 import { tenantsRepository as tenantRepo } from '@/modules/tenants'
 import * as repo from './customers.repository'
 import type {
@@ -22,6 +23,8 @@ import type {
   MailboxUpdateBody,
   UpdateCustomerBody,
 } from './customers.schemas'
+
+const log = getLogger('customers')
 
 const missing = (resource: string) =>
   new AppHttpError({
@@ -84,6 +87,14 @@ export async function createCustomer(
     phone: input.phone ?? null,
   })
   if (billingResult.error || !billingResult.data) {
+    log.warn(
+      {
+        errorCode: billingResult.error?.code,
+        tenantId,
+        orgId: tenant.orgId,
+      },
+      'customers.billing_create_failed'
+    )
     throw new AppHttpError({
       code: 'customer/registry-unavailable',
       message: 'The customer registry is temporarily unavailable.',
@@ -213,6 +224,7 @@ export async function updateCustomer(
       profileRow.billingCustomerId
     )
     if (current.error || !current.data) {
+      log.warn({ errorCode: current.error?.code, tenantId, customerId: id }, 'customers.billing_retrieve_failed')
       throw new AppHttpError({
         code: 'customer/registry-unavailable',
         message: 'The customer registry is temporarily unavailable.',
@@ -280,6 +292,7 @@ export async function updateCustomer(
         }
       )
       if (registry.error || !registry.data) {
+        log.warn({ errorCode: registry.error?.code, tenantId, customerId: id }, 'customers.billing_update_failed')
         throw new AppHttpError({
           code: 'customer/registry-unavailable',
           message: 'The customer registry is temporarily unavailable.',
