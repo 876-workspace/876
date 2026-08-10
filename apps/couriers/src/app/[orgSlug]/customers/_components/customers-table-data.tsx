@@ -93,7 +93,16 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     )
   )
 
-  const registry = pages.find((page) => page.error) ?? pages[0] ?? null
+  const benignCodes = new Set([
+    'billing/tenant-not-found',
+    'billing/database-not-ready',
+    'billing/unreachable',
+  ])
+  const registry = pages.find((page) => page.error && !benignCodes.has(page.error.code)) ?? pages.find((page) => page.error) ?? pages[0] ?? null
+  const displayRegistryError =
+    registry?.error && !benignCodes.has(registry.error.code)
+      ? registry.error
+      : null
 
   const identityById = new Map(
     pages.flatMap((page) =>
@@ -128,9 +137,9 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
   return (
     <>
-      {registry?.error ? (
+      {displayRegistryError ? (
         <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
-          {registry.error.message}
+          {displayRegistryError.message}
         </div>
       ) : null}
 
