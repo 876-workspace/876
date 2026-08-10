@@ -130,7 +130,28 @@ def require_scheduler(request: Request) -> BillingPrincipal:
 
 
 async def _active_tenant(repository: AuthRepository, organization_id: str) -> Tenant:
-    tenant = await repository.tenant_by_organization_id(organization_id)
+    try:
+        tenant = await repository.tenant_by_organization_id(organization_id)
+    except Exception as exc:  # noqa: BLE001 - translate missing-table into 503
+        message = str(exc).lower()
+        # asyncpg UndefinedTableError is wrapped as sqlalchemy.exc.ProgrammingError
+        if "billing_tenants" in message and (
+            "does not exist" in message or "undefinedtable" in message or "undefined_table" in message
+        ):
+            raise AppHTTPException(
+                code="billing/database-not-ready",
+                message="The Billing database is not initialized. Run Billing migrations.",
+                http_status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            ) from exc
+        # Fallback: any ProgrammingError that mentions the tenant table is the same symptom
+        exc_name = type(exc).__name__.lower()
+        if "program" in exc_name and "billing_tenants" in message:
+            raise AppHTTPException(
+                code="billing/database-not-ready",
+                message="The Billing database is not initialized. Run Billing migrations.",
+                http_status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            ) from exc
+        raise
     if tenant is None or tenant.status != TenantStatus.ACTIVE:
         raise AppHTTPException(
             code="billing/tenant-not-found",

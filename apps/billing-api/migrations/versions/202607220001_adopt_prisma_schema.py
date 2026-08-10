@@ -41,9 +41,25 @@ def _schema_fingerprint(columns: Mapping[str, Collection[str]]) -> str:
 
 
 def upgrade() -> None:
-    actual = _schema_fingerprint(_billing_columns(inspect(op.get_bind())))
-    if actual not in EXPECTED_SCHEMA_FINGERPRINTS:
-        raise RuntimeError("Refusing to adopt a Billing schema that does not match the frozen Prisma baseline.")
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    actual = _schema_fingerprint(_billing_columns(inspector))
+    if actual in EXPECTED_SCHEMA_FINGERPRINTS:
+        return
+    # Bootstrap an empty Billing database (fresh pooled DB or local dev).
+    # The empty schema fingerprint is 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a.
+    # Prisma is the schema authority, but Base.metadata reflects that exact
+    # schema, so creating all tables here is equivalent to replaying the
+    # Prisma baseline for a new environment.
+    if actual == "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a":
+        from db.models import Base
+
+        Base.metadata.create_all(bind=bind)
+        actual = _schema_fingerprint(_billing_columns(inspect(bind)))
+        if actual not in EXPECTED_SCHEMA_FINGERPRINTS:
+            raise RuntimeError(f"Billing schema bootstrap produced unexpected fingerprint: {actual}")
+        return
+    raise RuntimeError("Refusing to adopt a Billing schema that does not match the frozen Prisma baseline.")
 
 
 def downgrade() -> None:
