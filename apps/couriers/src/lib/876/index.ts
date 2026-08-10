@@ -19,7 +19,6 @@ import { headers } from 'next/headers'
 function createCouriers876Client(requestId?: string) {
   const ecosystem = create876ServerClient({
     apiKey: process.env.API_876_KEY,
-    requestId,
     storage: {
       internalKey: process.env.STORAGE_INTERNAL_KEY,
       requestId,

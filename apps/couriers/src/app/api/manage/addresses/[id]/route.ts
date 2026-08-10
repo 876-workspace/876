@@ -77,7 +77,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await $876.couriers.addresses.del(ctx.tenant.id, id)
+  const result = await $876.couriers.addresses.delete(ctx.tenant.id, id)
   if (result.error)
     return apiJson(
       { error: result.error.message },
