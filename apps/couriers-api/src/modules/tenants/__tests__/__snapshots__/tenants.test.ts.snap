@@ -411,6 +411,23 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         ],
         "type": "object",
       },
+      "MailboxAllocation": {
+        "additionalProperties": false,
+        "properties": {
+          "number": {
+            "type": "string",
+          },
+          "object": {
+            "const": "mailbox_allocation",
+            "type": "string",
+          },
+        },
+        "required": [
+          "object",
+          "number",
+        ],
+        "type": "object",
+      },
       "OrganizationModule": {
         "additionalProperties": false,
         "properties": {
@@ -780,6 +797,51 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "name",
           "mailbox_prefix",
           "status",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "TenantMailbox": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "customer_id": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_primary": {
+            "type": "boolean",
+          },
+          "number": {
+            "type": "string",
+          },
+          "object": {
+            "const": "mailbox",
+            "type": "string",
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "customer_id",
+          "number",
+          "is_primary",
           "created_at",
           "updated_at",
         ],
@@ -3026,6 +3088,259 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         "summary": "Update a customer mailbox",
         "tags": [
           "Customers",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/mailboxes": {
+      "get": {
+        "operationId": "tenant-mailboxes-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/TenantMailbox",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailboxes returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List a tenant’s mailboxes",
+        "tags": [
+          "Mailboxes",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/mailboxes/allocations": {
+      "post": {
+        "operationId": "mailboxes-allocate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MailboxAllocation",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailbox number allocated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Mailbox numbers are temporarily unavailable.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Allocate an available tenant mailbox number",
+        "tags": [
+          "Mailboxes",
         ],
       },
     },
