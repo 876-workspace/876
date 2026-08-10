@@ -7,6 +7,7 @@ import { getSettings } from '@/config'
 import { healthRouter } from '@/modules/health'
 import { createBranchesRouter } from '@/modules/branches'
 import { createCustomersRouter } from '@/modules/customers'
+import { createMailboxesRouter } from '@/modules/mailboxes'
 import { createPackagesRouter } from '@/modules/packages'
 import { createTeamRouter } from '@/modules/team'
 import { createSettingsRouter } from '@/modules/settings'
@@ -21,6 +22,7 @@ export function buildRoutes(): Router {
   root.use(createTenantsRouter(resolveGuards))
   root.use(createBranchesRouter(resolveGuards))
   root.use(createCustomersRouter(resolveGuards))
+  root.use(createMailboxesRouter(resolveGuards))
   root.use(createPackagesRouter(resolveGuards))
   root.use(...createTeamRouter(resolveGuards))
   root.use(createSettingsRouter(resolveGuards))

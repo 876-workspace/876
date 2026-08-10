@@ -1,0 +1,41 @@
+import { z } from 'zod'
+
+export const tenantIdParamsSchema = z.strictObject({
+  tenantId: z.string().min(1),
+})
+
+export const listMailboxesQuerySchema = z
+  .strictObject({
+    customer_id: z.string().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).default(25),
+    starting_after: z.string().min(1).optional(),
+    ending_before: z.string().min(1).optional(),
+  })
+  .refine((query) => !(query.starting_after && query.ending_before), {
+    message: 'Only one cursor may be provided.',
+  })
+
+export const mailboxSchema = z
+  .object({
+    object: z.literal('mailbox'),
+    id: z.string(),
+    tenant_id: z.string(),
+    customer_id: z.string(),
+    number: z.string(),
+    is_primary: z.boolean(),
+    created_at: z.number().int(),
+    updated_at: z.number().int(),
+  })
+  .meta({ id: 'TenantMailbox' })
+
+export const mailboxAllocationSchema = z
+  .object({
+    object: z.literal('mailbox_allocation'),
+    number: z.string(),
+  })
+  .meta({ id: 'MailboxAllocation' })
+
+export type TenantIdParams = z.infer<typeof tenantIdParamsSchema>
+export type ListMailboxesQuery = z.infer<typeof listMailboxesQuerySchema>
+export type Mailbox = z.infer<typeof mailboxSchema>
+export type MailboxAllocation = z.infer<typeof mailboxAllocationSchema>
