@@ -156,8 +156,4 @@ In GitHub Codespaces, `NEXT_PUBLIC_API_URL` must be the HTTPS-forwarded Codespac
 
 ## Commit Attribution
 
-AI commits MUST include:
-
-```txt
-Co-Authored-By: (the agent model's name and attribution byline)
-```
+AI commits MUST NOT include `Co-Authored-By` trailers or `Generated with` lines. Follow `.agents/rules/git.md` and `.claude/rules/git.md` — author and co-author metadata must reflect human contributors only. If a local commit contains such a trailer, amend or rebase to remove it before pushing.
