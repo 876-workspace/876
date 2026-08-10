@@ -6,6 +6,8 @@ import {
   nowUnixSeconds,
 } from '@/platform/timestamps'
 
+import * as billing from '@/providers/billing/customers'
+import { tenantsRepository as tenantRepo } from '@/modules/tenants'
 import * as repo from './customers.repository'
 import type {
   CreateCustomerBody,
@@ -66,8 +68,62 @@ export async function createCustomer(
   tenantId: string,
   input: CreateCustomerBody
 ): Promise<Customer> {
-  if (!(await repo.tenantExists(tenantId))) throw missing('tenant')
+  const tenant = await tenantRepo.findTenantById(tenantId)
+  if (!tenant) throw missing('tenant')
 
+  // High-level domain operation: orchestrate Billing registry + Courier profile atomically
+  if (typeof input.idempotency_key === 'string') {
+    const billingResult = await billing.createExternalCustomer(
+      tenant.orgId,
+      {
+        idempotencyKey: input.idempotency_key,
+        customerKind: (input.customer_kind ?? 'INDIVIDUAL') as 'INDIVIDUAL' | 'BUSINESS',
+        firstName: input.first_name ?? null,
+        lastName: input.last_name ?? null,
+        companyName: input.company_name ?? null,
+        email: input.email ?? null,
+        phone: input.phone ?? null,
+      }
+    )
+    if (billingResult.error || !billingResult.data) {
+      throw new AppHttpError({
+        code: 'customer/registry-unavailable',
+        message: 'The customer registry is temporarily unavailable.',
+        httpStatus: 503,
+      })
+    }
+    const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
+    for (let attempt = 0; attempt < MAX_ENROLLMENT_RETRY_ATTEMPTS; attempt += 1) {
+      try {
+        const result = await repo.enrollTenantCustomer({
+          tenantId,
+          billingCustomerId: billingResult.data.id,
+          userId: input.user_id ?? null,
+          branchId,
+          status: input.status ?? 'ACTIVE',
+          isCommercial: input.is_commercial ?? false,
+          now: nowUnixSeconds(),
+        })
+        if (result.kind === 'conflict')
+          throw conflict('customer', 'A courier profile is linked to another customer.')
+        if (result.kind === 'tenant_missing') throw missing('tenant')
+        if (result.kind === 'mailbox_unavailable')
+          throw new AppHttpError({
+            code: 'mailbox/allocation-exhausted',
+            message: 'A mailbox number could not be allocated. Please try again.',
+            httpStatus: 503,
+          })
+        return serializeCustomer(result.profile)
+      } catch (error) {
+        if (isForeignKeyConstraintError(error)) throw missing('branch')
+        if (!isUniqueConstraintError(error)) throw error
+      }
+    }
+    throw conflict('customer', 'A courier profile already exists for this customer.')
+  }
+
+  // Legacy path: direct profile creation with pre-existing billing_customer_id
+  if (!input.billing_customer_id) throw missing('customer')
   const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
   try {
     return serializeCustomer(
@@ -150,13 +206,77 @@ export async function updateCustomer(
   id: string,
   input: UpdateCustomerBody
 ): Promise<Customer> {
-  await retrieveCustomer(tenantId, id)
+  const profileRow = await repo.findTenantCustomerById(tenantId, id)
+  if (!profileRow) throw missing('customer')
   if (typeof input.branch_id === 'string') {
     await ensureTenantBranch(tenantId, input.branch_id)
   }
 
+  const identityKeys = ['first_name', 'last_name', 'company_name', 'email', 'phone'] as const
+  const touchesIdentity = identityKeys.some((key) => (input as Record<string, unknown>)[key] !== undefined)
+  if (touchesIdentity) {
+    const tenant = await tenantRepo.findTenantById(tenantId)
+    if (!tenant) throw missing('tenant')
+    const current = await billing.retrieveCustomer(tenant.orgId, profileRow.billingCustomerId)
+    if (current.error || !current.data) {
+      throw new AppHttpError({
+        code: 'customer/registry-unavailable',
+        message: 'The customer registry is temporarily unavailable.',
+        httpStatus: 503,
+      })
+    }
+    const registryCustomer = current.data as unknown as Record<string, unknown>
+    const billingFieldMap: Record<string, string> = {
+      first_name: 'firstName',
+      last_name: 'lastName',
+      company_name: 'companyName',
+      email: 'email',
+      phone: 'phone',
+    }
+    const hasIdentityChange = identityKeys.some((key) => {
+      if ((input as Record<string, unknown>)[key] === undefined) return false
+      const billingKey = billingFieldMap[key] as string
+      return (input as Record<string, unknown>)[key] !== registryCustomer[billingKey]
+    })
+    if (hasIdentityChange && (registryCustomer as unknown as { customerType: string }).customerType !== 'EXTERNAL') {
+      throw new AppHttpError({
+        code: 'customer/identity-locked',
+        message: 'This customer is linked to an 876 account and cannot be renamed from Couriers.',
+        httpStatus: 409,
+      })
+    }
+    if (hasIdentityChange) {
+      const registry = await billing.updateExternalCustomer(
+        tenant.orgId,
+        profileRow.billingCustomerId,
+        {
+          customerKind: (registryCustomer as unknown as { customerKind: 'INDIVIDUAL' | 'BUSINESS' }).customerKind,
+          firstName: (input.first_name as string | null | undefined) ?? (registryCustomer as unknown as { firstName: string | null }).firstName,
+          lastName: input.last_name === undefined ? (registryCustomer as unknown as { lastName: string | null }).lastName : (input.last_name as string | null),
+          companyName: (input.company_name as string | null | undefined) ?? (registryCustomer as unknown as { companyName: string | null }).companyName,
+          email: input.email === undefined ? (registryCustomer as unknown as { email: string | null }).email : (input.email as string | null),
+          phone: input.phone === undefined ? (registryCustomer as unknown as { phone: string | null }).phone : (input.phone as string | null),
+        }
+      )
+      if (registry.error || !registry.data) {
+        throw new AppHttpError({
+          code: 'customer/registry-unavailable',
+          message: 'The customer registry is temporarily unavailable.',
+          httpStatus: 503,
+        })
+      }
+    }
+  }
+
+  const courierInput: UpdateCustomerBody = {
+    branch_id: input.branch_id,
+    status: input.status,
+    trn: input.trn,
+    is_commercial: input.is_commercial,
+  }
+
   return serializeCustomer(
-    await repo.updateTenantCustomer({ id, input, now: nowUnixSeconds() })
+    await repo.updateTenantCustomer({ id, input: courierInput, now: nowUnixSeconds() })
   )
 }
 

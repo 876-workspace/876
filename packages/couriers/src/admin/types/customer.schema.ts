@@ -29,12 +29,19 @@ export const customerListSchema = z.object({
 })
 
 export const createCustomerBodySchema = z.strictObject({
-  billing_customer_id: z.string(),
+  billing_customer_id: z.string().optional(),
   user_id: z.string().nullable().optional(),
   branch_id: z.string().nullable().optional(),
   status: customerStatusSchema.optional(),
   trn: z.string().nullable().optional(),
   is_commercial: z.boolean().optional(),
+  idempotency_key: z.string().min(8).max(255).optional(),
+  customer_kind: z.enum(['INDIVIDUAL', 'BUSINESS']).optional(),
+  first_name: z.string().trim().min(1).optional(),
+  last_name: z.string().trim().min(1).nullable().optional(),
+  company_name: z.string().trim().min(1).optional(),
+  email: z.string().trim().pipe(z.email()).nullable().optional(),
+  phone: z.string().trim().min(1).nullable().optional(),
 })
 
 export const updateCustomerBodySchema = z.strictObject({
@@ -42,6 +49,11 @@ export const updateCustomerBodySchema = z.strictObject({
   status: customerStatusSchema.optional(),
   trn: z.string().nullable().optional(),
   is_commercial: z.boolean().optional(),
+  first_name: z.string().trim().min(1).optional(),
+  last_name: z.string().trim().min(1).nullable().optional(),
+  company_name: z.string().trim().min(1).optional(),
+  email: z.string().trim().pipe(z.email()).nullable().optional(),
+  phone: z.string().trim().min(1).nullable().optional(),
 })
 
 export const deletedCustomerSchema = z.object({

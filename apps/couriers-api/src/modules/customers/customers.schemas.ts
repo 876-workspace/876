@@ -47,19 +47,59 @@ export const listCustomersQuerySchema = z
   .refine((query) => !(query.starting_after && query.ending_before), {
     message: 'Only one cursor may be provided.',
   })
-export const createCustomerBodySchema = z.strictObject({
-  billing_customer_id: z.string().min(1),
-  user_id: z.string().min(1).nullable().optional(),
-  branch_id: z.string().min(1).nullable().optional(),
-  status: customerStatusSchema.optional(),
-  trn: z.string().trim().min(1).nullable().optional(),
-  is_commercial: z.boolean().optional(),
-})
+export const createCustomerBodySchema = z
+  .strictObject({
+    billing_customer_id: z.string().min(1).optional(),
+    user_id: z.string().min(1).nullable().optional(),
+    branch_id: z.string().min(1).nullable().optional(),
+    status: customerStatusSchema.optional(),
+    trn: z.string().trim().min(1).nullable().optional(),
+    is_commercial: z.boolean().optional(),
+    idempotency_key: z.string().min(8).max(255).optional(),
+    customer_kind: z.enum(['INDIVIDUAL', 'BUSINESS']).optional(),
+    first_name: z.string().trim().min(1).optional(),
+    last_name: z.string().trim().min(1).nullable().optional(),
+    company_name: z.string().trim().min(1).optional(),
+    email: z.string().trim().pipe(z.email()).nullable().optional(),
+    phone: z.string().trim().min(1).nullable().optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasLegacy = typeof value.billing_customer_id === 'string'
+    const hasHighLevel = typeof value.idempotency_key === 'string'
+    if (!hasLegacy && !hasHighLevel) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['idempotency_key'],
+        message: 'Either billing_customer_id or idempotency_key is required.',
+      })
+    }
+    if (hasHighLevel) {
+      if (value.customer_kind === 'INDIVIDUAL' && !value.first_name) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['first_name'],
+          message: 'First name is required for an individual.',
+        })
+      }
+      if (value.customer_kind === 'BUSINESS' && !value.company_name) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['company_name'],
+          message: 'Company name is required for a business.',
+        })
+      }
+    }
+  })
 export const updateCustomerBodySchema = z.strictObject({
   branch_id: z.string().min(1).nullable().optional(),
   status: customerStatusSchema.optional(),
   trn: z.string().trim().min(1).nullable().optional(),
   is_commercial: z.boolean().optional(),
+  first_name: z.string().trim().min(1).optional(),
+  last_name: z.string().trim().min(1).nullable().optional(),
+  company_name: z.string().trim().min(1).optional(),
+  email: z.string().trim().pipe(z.email()).nullable().optional(),
+  phone: z.string().trim().min(1).nullable().optional(),
 })
 export const deleteCustomerBodySchema = z
   .strictObject({
