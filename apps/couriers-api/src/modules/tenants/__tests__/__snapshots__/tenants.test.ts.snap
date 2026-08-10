@@ -4,6 +4,305 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
 {
   "components": {
     "schemas": {
+      "Address": {
+        "additionalProperties": false,
+        "properties": {
+          "city": {
+            "type": "string",
+          },
+          "country_code": {
+            "type": "string",
+          },
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_active": {
+            "type": "boolean",
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "line1": {
+            "type": "string",
+          },
+          "line2": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "name": {
+            "type": "string",
+          },
+          "object": {
+            "const": "address",
+            "type": "string",
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "region_code": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "region_name": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "name",
+          "line1",
+          "line2",
+          "city",
+          "region_code",
+          "region_name",
+          "country_code",
+          "postal_code",
+          "latitude",
+          "longitude",
+          "is_active",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "Branch": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/Address",
+          },
+          "address_id": {
+            "type": "string",
+          },
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_active": {
+            "type": "boolean",
+          },
+          "is_default": {
+            "type": "boolean",
+          },
+          "name": {
+            "type": "string",
+          },
+          "object": {
+            "const": "branch",
+            "type": "string",
+          },
+          "org_location_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "additionalProperties": {},
+                "propertyNames": {
+                  "type": "string",
+                },
+                "type": "object",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "address_id",
+          "org_location_id",
+          "name",
+          "phone",
+          "is_default",
+          "is_active",
+          "settings",
+          "address",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "CourierCustomerProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "billing_customer_id": {
+            "type": "string",
+          },
+          "branch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "first_seen_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_commercial": {
+            "type": "boolean",
+          },
+          "object": {
+            "const": "courier_customer_profile",
+            "type": "string",
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED",
+            ],
+            "type": "string",
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "user_id",
+          "billing_customer_id",
+          "branch_id",
+          "status",
+          "is_commercial",
+          "first_seen_at",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+        ],
+        "type": "object",
+      },
       "ErrorDetail": {
         "additionalProperties": false,
         "example": {
@@ -67,6 +366,386 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         ],
         "type": "object",
       },
+      "Mailbox": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "customer_id": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_primary": {
+            "type": "boolean",
+          },
+          "number": {
+            "type": "string",
+          },
+          "object": {
+            "const": "mailbox",
+            "type": "string",
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "customer_id",
+          "number",
+          "is_primary",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "MailboxAllocation": {
+        "additionalProperties": false,
+        "properties": {
+          "number": {
+            "type": "string",
+          },
+          "object": {
+            "const": "mailbox_allocation",
+            "type": "string",
+          },
+        },
+        "required": [
+          "object",
+          "number",
+        ],
+        "type": "object",
+      },
+      "OrganizationModule": {
+        "additionalProperties": false,
+        "properties": {
+          "is_enabled": {
+            "type": "boolean",
+          },
+          "label": {
+            "type": "string",
+          },
+          "module": {
+            "enum": [
+              "general",
+              "customers",
+              "items",
+              "packages",
+              "pre_alerts",
+              "warehouse",
+              "manifests",
+              "deliveries",
+              "invoices",
+              "payments",
+              "portal",
+            ],
+            "type": "string",
+          },
+          "object": {
+            "const": "organization_module",
+            "type": "string",
+          },
+          "optional": {
+            "type": "boolean",
+          },
+        },
+        "required": [
+          "object",
+          "module",
+          "label",
+          "optional",
+          "is_enabled",
+        ],
+        "type": "object",
+      },
+      "Package": {
+        "additionalProperties": false,
+        "properties": {
+          "actual_weight": {
+            "anyOf": [
+              {
+                "type": "number",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "branch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "collected_at": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "customer_id": {
+            "type": "string",
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "id": {
+            "type": "string",
+          },
+          "mailbox_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "object": {
+            "const": "package",
+            "type": "string",
+          },
+          "package_type": {
+            "enum": [
+              "CARTON",
+              "ENVELOPE",
+              "BAG",
+              "PALLET",
+              "OTHER",
+            ],
+            "type": "string",
+          },
+          "quantity": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "status": {
+            "enum": [
+              "PRE_ALERT",
+              "RECEIVED",
+              "IN_TRANSIT",
+              "ARRIVED",
+              "READY_FOR_PICKUP",
+              "COLLECTED",
+              "UNCLAIMED",
+            ],
+            "type": "string",
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "tracking_num": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "customer_id",
+          "branch_id",
+          "mailbox_id",
+          "tracking_num",
+          "status",
+          "package_type",
+          "description",
+          "quantity",
+          "actual_weight",
+          "collected_at",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "Role": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "description": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_default": {
+            "type": "boolean",
+          },
+          "member_count": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "name": {
+            "type": "string",
+          },
+          "object": {
+            "const": "role",
+            "type": "string",
+          },
+          "permissions": {
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "system_key": {
+            "anyOf": [
+              {
+                "enum": [
+                  "admin",
+                  "staff",
+                ],
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "name",
+          "description",
+          "permissions",
+          "is_default",
+          "system_key",
+          "member_count",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "TeamMember": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "id": {
+            "type": "string",
+          },
+          "object": {
+            "const": "team_member",
+            "type": "string",
+          },
+          "role_id": {
+            "type": "string",
+          },
+          "role_name": {
+            "type": "string",
+          },
+          "role_system_key": {
+            "anyOf": [
+              {
+                "enum": [
+                  "admin",
+                  "staff",
+                ],
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "status": {
+            "enum": [
+              "active",
+              "inactive",
+            ],
+            "type": "string",
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "user_id": {
+            "type": "string",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "user_id",
+          "role_id",
+          "role_name",
+          "role_system_key",
+          "status",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
       "Tenant": {
         "additionalProperties": false,
         "properties": {
@@ -118,6 +797,295 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "name",
           "mailbox_prefix",
           "status",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "TenantMailbox": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "customer_id": {
+            "type": "string",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_primary": {
+            "type": "boolean",
+          },
+          "number": {
+            "type": "string",
+          },
+          "object": {
+            "const": "mailbox",
+            "type": "string",
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "customer_id",
+          "number",
+          "is_primary",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "Warehouse": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/WarehouseAddress",
+          },
+          "address_id": {
+            "type": "string",
+          },
+          "agent_name": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "id": {
+            "type": "string",
+          },
+          "instructions": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "is_active": {
+            "type": "boolean",
+          },
+          "is_primary": {
+            "type": "boolean",
+          },
+          "mailbox_placement": {
+            "enum": [
+              "RECIPIENT_LINE",
+              "ADDRESS_LINE_1",
+              "ADDRESS_LINE_2",
+            ],
+            "type": "string",
+          },
+          "mailbox_prefix": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "name": {
+            "type": "string",
+          },
+          "object": {
+            "const": "warehouse",
+            "type": "string",
+          },
+          "operating_model": {
+            "enum": [
+              "OWNED",
+              "AGENT",
+            ],
+            "type": "string",
+          },
+          "org_location_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "address_id",
+          "org_location_id",
+          "name",
+          "operating_model",
+          "agent_name",
+          "code",
+          "mailbox_placement",
+          "mailbox_prefix",
+          "instructions",
+          "is_active",
+          "is_primary",
+          "address",
+          "created_at",
+          "updated_at",
+        ],
+        "type": "object",
+      },
+      "WarehouseAddress": {
+        "additionalProperties": false,
+        "properties": {
+          "city": {
+            "type": "string",
+          },
+          "country_code": {
+            "type": "string",
+          },
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_active": {
+            "type": "boolean",
+          },
+          "latitude": {
+            "anyOf": [
+              {
+                "type": "number",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "line1": {
+            "type": "string",
+          },
+          "line2": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "longitude": {
+            "anyOf": [
+              {
+                "type": "number",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "name": {
+            "type": "string",
+          },
+          "object": {
+            "const": "address",
+            "type": "string",
+          },
+          "postal_code": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "region_code": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "region_name": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "tenant_id": {
+            "type": "string",
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "name",
+          "line1",
+          "line2",
+          "city",
+          "region_code",
+          "region_name",
+          "country_code",
+          "postal_code",
+          "latitude",
+          "longitude",
+          "is_active",
           "created_at",
           "updated_at",
         ],
@@ -522,6 +1490,4282 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         "summary": "Retrieve a tenant by ID",
         "tags": [
           "Tenants",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/branches": {
+      "get": {
+        "description": "Returns tenant-owned operational pickup locations. Admin only.",
+        "operationId": "branches-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Branch",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List a tenant’s branches",
+        "tags": [
+          "Branches",
+        ],
+      },
+      "post": {
+        "description": "Creates a branch and its address atomically. Geographic names are resolved by the platform catalog.",
+        "operationId": "branches-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "name",
+                      "line1",
+                      "city",
+                      "country_code",
+                    ],
+                    "type": "object",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "phone": {
+                    "type": "string",
+                  },
+                  "settings": {
+                    "additionalProperties": {},
+                    "propertyNames": {
+                      "type": "string",
+                    },
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "name",
+                  "address",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Branch",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Branch not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Branch invariant or name conflict.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Invalid branch or address input.",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Geographic validation is unavailable.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Create a tenant branch",
+        "tags": [
+          "Branches",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/branches/{id}": {
+      "get": {
+        "operationId": "branches-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Branch",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Branch not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Retrieve a tenant branch",
+        "tags": [
+          "Branches",
+        ],
+      },
+      "patch": {
+        "operationId": "branches-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "settings": {
+                    "additionalProperties": {},
+                    "propertyNames": {
+                      "type": "string",
+                    },
+                    "type": "object",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Branch",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Branch not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Branch invariant or name conflict.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Invalid branch or address input.",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Geographic validation is unavailable.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a tenant branch",
+        "tags": [
+          "Branches",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/customers": {
+      "get": {
+        "operationId": "customers-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "branch_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/CourierCustomerProfile",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer profiles returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List courier customer profiles",
+        "tags": [
+          "Customers",
+        ],
+      },
+      "post": {
+        "operationId": "customers-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "billing_customer_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_commercial": {
+                    "type": "boolean",
+                  },
+                  "status": {
+                    "enum": [
+                      "ACTIVE",
+                      "SUSPENDED",
+                    ],
+                    "type": "string",
+                  },
+                  "user_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "required": [
+                  "billing_customer_id",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer profile created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant or branch not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Customer exists.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Create a courier customer profile",
+        "tags": [
+          "Customers",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/customers/{id}": {
+      "get": {
+        "operationId": "customers-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer profile returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Customer not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Retrieve a courier customer profile",
+        "tags": [
+          "Customers",
+        ],
+      },
+      "patch": {
+        "operationId": "customers-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_commercial": {
+                    "type": "boolean",
+                  },
+                  "status": {
+                    "enum": [
+                      "ACTIVE",
+                      "SUSPENDED",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer profile updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Customer or branch not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a courier customer profile",
+        "tags": [
+          "Customers",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/customers/{id}/mailboxes": {
+      "get": {
+        "operationId": "mailboxes-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Mailbox",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailboxes returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List customer mailboxes",
+        "tags": [
+          "Customers",
+        ],
+      },
+      "post": {
+        "operationId": "mailboxes-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                  "number": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9-]+$",
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "number",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Mailbox",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailbox created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Customer not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Mailbox exists.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Assign a customer mailbox",
+        "tags": [
+          "Customers",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/customers/{id}/mailboxes/{mailboxId}": {
+      "patch": {
+        "operationId": "mailboxes-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "mailboxId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                },
+                "required": [
+                  "is_primary",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Mailbox",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailbox updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Mailbox not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a customer mailbox",
+        "tags": [
+          "Customers",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/mailboxes": {
+      "get": {
+        "operationId": "tenant-mailboxes-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/TenantMailbox",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailboxes returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List a tenant’s mailboxes",
+        "tags": [
+          "Mailboxes",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/mailboxes/allocations": {
+      "post": {
+        "operationId": "mailboxes-allocate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MailboxAllocation",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailbox number allocated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Mailbox numbers are temporarily unavailable.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Allocate an available tenant mailbox number",
+        "tags": [
+          "Mailboxes",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/modules": {
+      "get": {
+        "operationId": "modules-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/OrganizationModule",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Module states returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List tenant module states",
+        "tags": [
+          "Settings",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/modules/{module}": {
+      "patch": {
+        "operationId": "modules-toggle",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "module",
+            "required": true,
+            "schema": {
+              "enum": [
+                "general",
+                "customers",
+                "items",
+                "packages",
+                "pre_alerts",
+                "warehouse",
+                "manifests",
+                "deliveries",
+                "invoices",
+                "payments",
+                "portal",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "is_enabled": {
+                    "type": "boolean",
+                  },
+                },
+                "required": [
+                  "is_enabled",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrganizationModule",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Module state updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Module not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Required module.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Enable or disable an optional module",
+        "tags": [
+          "Settings",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/packages": {
+      "get": {
+        "operationId": "packages-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "PRE_ALERT",
+                "RECEIVED",
+                "IN_TRANSIT",
+                "ARRIVED",
+                "READY_FOR_PICKUP",
+                "COLLECTED",
+                "UNCLAIMED",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "branch_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Package",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Packages returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List tenant packages",
+        "tags": [
+          "Packages",
+        ],
+      },
+      "post": {
+        "operationId": "packages-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "actual_weight": {
+                    "anyOf": [
+                      {
+                        "exclusiveMinimum": 0,
+                        "type": "number",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "customer_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "mailbox_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "package_type": {
+                    "enum": [
+                      "CARTON",
+                      "ENVELOPE",
+                      "BAG",
+                      "PALLET",
+                      "OTHER",
+                    ],
+                    "type": "string",
+                  },
+                  "quantity": {
+                    "maximum": 9007199254740991,
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "status": {
+                    "enum": [
+                      "PRE_ALERT",
+                      "RECEIVED",
+                      "IN_TRANSIT",
+                      "ARRIVED",
+                      "READY_FOR_PICKUP",
+                      "COLLECTED",
+                      "UNCLAIMED",
+                    ],
+                    "type": "string",
+                  },
+                  "tracking_num": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "required": [
+                  "customer_id",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Referenced customer, branch, or mailbox not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Create a tenant package",
+        "tags": [
+          "Packages",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/packages/{id}": {
+      "get": {
+        "operationId": "packages-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Package not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Retrieve a tenant package",
+        "tags": [
+          "Packages",
+        ],
+      },
+      "patch": {
+        "operationId": "packages-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "actual_weight": {
+                    "anyOf": [
+                      {
+                        "exclusiveMinimum": 0,
+                        "type": "number",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "mailbox_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "package_type": {
+                    "enum": [
+                      "CARTON",
+                      "ENVELOPE",
+                      "BAG",
+                      "PALLET",
+                      "OTHER",
+                    ],
+                    "type": "string",
+                  },
+                  "quantity": {
+                    "maximum": 9007199254740991,
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "status": {
+                    "enum": [
+                      "PRE_ALERT",
+                      "RECEIVED",
+                      "IN_TRANSIT",
+                      "ARRIVED",
+                      "READY_FOR_PICKUP",
+                      "COLLECTED",
+                      "UNCLAIMED",
+                    ],
+                    "type": "string",
+                  },
+                  "tracking_num": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Package or referenced branch or mailbox not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a tenant package",
+        "tags": [
+          "Packages",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/roles": {
+      "get": {
+        "operationId": "roles-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Role",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Roles returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List tenant roles",
+        "tags": [
+          "Roles",
+        ],
+      },
+      "post": {
+        "operationId": "roles-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "maxLength": 280,
+                    "type": "string",
+                  },
+                  "name": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "permissions": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "required": [
+                  "name",
+                  "permissions",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Role",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Conflict.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Create a role",
+        "tags": [
+          "Roles",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/roles/{id}": {
+      "delete": {
+        "operationId": "roles-delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "deleted": {
+                          "const": true,
+                          "type": "boolean",
+                        },
+                        "id": {
+                          "type": "string",
+                        },
+                        "object": {
+                          "const": "role",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "id",
+                        "deleted",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role deleted.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Delete a role",
+        "tags": [
+          "Roles",
+        ],
+      },
+      "patch": {
+        "operationId": "roles-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "maxLength": 280,
+                    "type": "string",
+                  },
+                  "name": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "permissions": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Role",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Conflict.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a role",
+        "tags": [
+          "Roles",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/team": {
+      "get": {
+        "operationId": "team-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/TeamMember",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Team returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List team members",
+        "tags": [
+          "Team",
+        ],
+      },
+      "post": {
+        "operationId": "team-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "role_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "user_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "user_id",
+                  "role_id",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamMember",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Member created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Add a team member",
+        "tags": [
+          "Team",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/team/{id}": {
+      "patch": {
+        "operationId": "team-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "role_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "status": {
+                    "enum": [
+                      "active",
+                      "inactive",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamMember",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Member updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a team member",
+        "tags": [
+          "Team",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/warehouses": {
+      "get": {
+        "operationId": "warehouses-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Warehouse",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouses returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List a tenant’s warehouses",
+        "tags": [
+          "Warehouses",
+        ],
+      },
+      "post": {
+        "operationId": "warehouses-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "name",
+                      "line1",
+                      "city",
+                      "country_code",
+                    ],
+                    "type": "object",
+                  },
+                  "agent_name": {
+                    "maxLength": 120,
+                    "type": "string",
+                  },
+                  "code": {
+                    "maxLength": 16,
+                    "type": "string",
+                  },
+                  "instructions": {
+                    "maxLength": 500,
+                    "type": "string",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                  "mailbox_placement": {
+                    "enum": [
+                      "RECIPIENT_LINE",
+                      "ADDRESS_LINE_1",
+                      "ADDRESS_LINE_2",
+                    ],
+                    "type": "string",
+                  },
+                  "mailbox_prefix": {
+                    "maxLength": 16,
+                    "type": "string",
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "operating_model": {
+                    "enum": [
+                      "OWNED",
+                      "AGENT",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "name",
+                  "address",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Warehouse",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouse created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Warehouse name conflict.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Invalid input.",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Geographic validation unavailable.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Create a tenant warehouse",
+        "tags": [
+          "Warehouses",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/warehouses/{id}": {
+      "get": {
+        "operationId": "warehouses-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Warehouse",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouse returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Warehouse not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Retrieve a tenant warehouse",
+        "tags": [
+          "Warehouses",
+        ],
+      },
+      "patch": {
+        "operationId": "warehouses-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "agent_name": {
+                    "anyOf": [
+                      {
+                        "maxLength": 120,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "code": {
+                    "anyOf": [
+                      {
+                        "maxLength": 16,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "instructions": {
+                    "anyOf": [
+                      {
+                        "maxLength": 500,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                  "mailbox_placement": {
+                    "enum": [
+                      "RECIPIENT_LINE",
+                      "ADDRESS_LINE_1",
+                      "ADDRESS_LINE_2",
+                    ],
+                    "type": "string",
+                  },
+                  "mailbox_prefix": {
+                    "anyOf": [
+                      {
+                        "maxLength": 16,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "operating_model": {
+                    "enum": [
+                      "OWNED",
+                      "AGENT",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Warehouse",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouse updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Warehouse not found.",
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Warehouse name conflict.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Invalid input.",
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Geographic validation unavailable.",
+          },
+        },
+        "security": [
+          {
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update a tenant warehouse",
+        "tags": [
+          "Warehouses",
         ],
       },
     },

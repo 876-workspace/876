@@ -8,6 +8,17 @@ model Tenant {
   createdAt     Int          @map("created_at")
   updatedAt     Int          @map("updated_at")
 
+  addresses Address[]
+  branches  Branch[]
+  warehouses Warehouse[]
+  customers  CourierCustomerProfile[]
+  mailboxes  Mailbox[]
+  packages   Package[]
+  roles      Role[]
+  teamMembers TeamMember[]
+  organizationModules OrganizationModule[]
+  modulePreferences ModulePreference[]
+
   @@map("tenants")
 }
 

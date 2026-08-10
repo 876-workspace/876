@@ -6,17 +6,17 @@
 
 ## Apps
 
-| Workspace          | Path               | Port | Description                                                                                                 |
-| ------------------ | ------------------ | ---- | ----------------------------------------------------------------------------------------------------------- |
-| `@876/app`         | `apps/876`         | 3000 | Consumer app — embedded auth, account/org management, OAuth provider UI, PWA.                               |
-| `@876/enterprise`  | `apps/enterprise`  | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding), org dashboards, billing.          |
-| `@876/console`     | `apps/console`     | 3002 | Internal Console — platform admin console (users, orgs, roles/permissions, app subscriptions, settings).    |
-| `@876/couriers`    | `apps/couriers`    | 3003 | Couriers SaaS app — multitenant courier management platform, own Prisma datastore.                          |
-| `@876/billing-app` | `apps/billing`     | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
-| `@876/widgets-api` | `apps/widgets-api` | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
-| `@876/api`         | `apps/api`         | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
-| `@876/billing-api` | `apps/billing-api` | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
-| `@876/storage-api` | `apps/storage-api` | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
+| Workspace           | Path               | Port | Description                                                                                                 |
+| ------------------- | ------------------ | ---- | ----------------------------------------------------------------------------------------------------------- |
+| `@876/app`          | `apps/876`         | 3000 | Consumer app — embedded auth, account/org management, OAuth provider UI, PWA.                               |
+| `@876/enterprise`   | `apps/enterprise`  | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding), org dashboards, billing.          |
+| `@876/console`      | `apps/console`     | 3002 | Internal Console — platform admin console (users, orgs, roles/permissions, app subscriptions, settings).    |
+| `@876/couriers-app` | `apps/couriers`    | 3003 | Couriers SaaS app — multitenant courier management platform, own Prisma datastore.                          |
+| `@876/billing-app`  | `apps/billing`     | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
+| `@876/widgets-api`  | `apps/widgets-api` | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
+| `@876/api`          | `apps/api`         | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
+| `@876/billing-api`  | `apps/billing-api` | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
+| `@876/storage-api`  | `apps/storage-api` | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
 
 ## Packages
 
@@ -94,7 +94,7 @@ pnpm typecheck                       # tsc --noEmit across all TS workspaces
 pnpm --filter @876/app typecheck
 pnpm --filter @876/enterprise typecheck
 pnpm --filter @876/console typecheck
-pnpm --filter @876/couriers typecheck
+pnpm --filter @876/couriers-app typecheck
 pnpm --filter @876/billing-app typecheck
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/api typecheck
@@ -118,13 +118,13 @@ pnpm dev:storage                     # 876 Storage service alone on :4005
 
 # App-local Prisma datastores (Console, Couriers)
 pnpm --filter @876/console db:generate   # Regenerate Console's Prisma client
-pnpm --filter @876/couriers db:generate  # Regenerate Couriers' Prisma client
+pnpm --filter @876/couriers-app db:generate  # Regenerate Couriers' Prisma client
 
 # Cloudflare deploy (each Next.js app deploys independently)
 pnpm --filter @876/app deploy
 pnpm --filter @876/enterprise deploy
 pnpm --filter @876/console deploy
-pnpm --filter @876/couriers deploy
+pnpm --filter @876/couriers-app deploy
 ```
 
 ---

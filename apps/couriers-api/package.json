@@ -17,6 +17,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@876/core": "workspace:*",
     "@cloudflare/containers": "0.3.7",
     "@prisma/client": "7.7.0",
     "@prisma/extension-accelerate": "3.0.1",
