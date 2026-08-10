@@ -3,13 +3,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   create: vi.fn(),
+  couriersErrorStatus: vi.fn((error: { code: string }) =>
+    error.code === 'request/invalid' ? 422 : 502
+  ),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/service', () => ({
-  service: { roles: { create: mocks.create } },
+vi.mock('@/lib/couriers', () => ({
+  $couriers: { roles: { create: mocks.create } },
+  couriersErrorStatus: mocks.couriersErrorStatus,
+  toRoleView: (role: Record<string, unknown>) => ({
+    id: role.id,
+    name: role.name,
+    description: role.description,
+    permissions: role.permissions,
+    isDefault: role.is_default,
+    systemKey: role.system_key,
+    memberCount: role.member_count,
+    createdAt: role.created_at,
+    updatedAt: role.updated_at,
+  }),
 }))
 
 import { POST } from './route'
@@ -46,11 +61,11 @@ describe('Couriers roles create route', () => {
         name: 'Dispatcher',
         description: 'Dispatch access',
         permissions: ['packages.view'],
-        isDefault: false,
-        systemKey: null,
-        memberCount: 0,
-        createdAt: 1_784_419_200,
-        updatedAt: 1_784_419_200,
+        is_default: false,
+        system_key: null,
+        member_count: 0,
+        created_at: 1_784_419_200,
+        updated_at: 1_784_419_200,
       },
       error: null,
     })
@@ -136,7 +151,7 @@ describe('Couriers roles create route', () => {
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
-  it('creates a tenant-scoped role and returns 201 with the service payload', async () => {
+  it('creates a tenant-scoped role and returns the local view', async () => {
     const response = await POST(request(validBody))
     const body = await response.json()
 
@@ -163,20 +178,21 @@ describe('Couriers roles create route', () => {
     })
   })
 
-  it('propagates service validation failures with their status and code', async () => {
+  it('maps client-safe Couriers validation failures', async () => {
     mocks.create.mockResolvedValue({
       data: null,
-      error: 'One or more permission keys are invalid.',
-      status: 400,
-      code: 'role/invalid-permission',
+      error: {
+        code: 'request/invalid',
+        message: 'One or more permission keys are invalid.',
+      },
     })
 
     const response = await POST(request(validBody))
     const body = await response.json()
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(422)
     expect(body.error.message).toBe('One or more permission keys are invalid.')
-    expect(body.error.code).toBe('role/invalid-permission')
+    expect(body.error.code).toBe('request/invalid')
     expect(body.data).toBeNull()
   })
 

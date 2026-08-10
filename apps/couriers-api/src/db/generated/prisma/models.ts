@@ -10,7 +10,10 @@
  */
 export type * from './models/Address'
 export type * from './models/Branch'
+export type * from './models/Carrier'
+export type * from './models/CustomerAddress'
 export type * from './models/CourierCustomerProfile'
+export type * from './models/Domain'
 export type * from './models/Mailbox'
 export type * from './models/OrganizationModule'
 export type * from './models/ModulePreference'

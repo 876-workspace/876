@@ -13,6 +13,7 @@ import {
   roleBodySchema,
   rolePatchBodySchema,
   roleSchema,
+  memberListQuerySchema,
   teamMemberSchema,
   tenantParamsSchema,
 } from './team.schemas'
@@ -50,6 +51,21 @@ export function createTeamRouter(resolveGuards: GuardResolver) {
       409: { description: 'Conflict.', schema: errorEnvelopeSchema },
     },
     handler: c.createRole,
+  })
+  roles.get({
+    path: '/:id',
+    security: 'admin',
+    operationId: 'roles-retrieve',
+    summary: 'Retrieve a role',
+    request: { params: idParamsSchema },
+    responses: {
+      200: {
+        description: 'Role returned.',
+        schema: successEnvelopeSchema(roleSchema),
+      },
+      404: { description: 'Not found.', schema: errorEnvelopeSchema },
+    },
+    handler: c.retrieveRole,
   })
   roles.patch({
     path: '/:id',
@@ -91,7 +107,7 @@ export function createTeamRouter(resolveGuards: GuardResolver) {
     security: 'admin',
     operationId: 'team-list',
     summary: 'List team members',
-    request: { params: tenantParamsSchema },
+    request: { params: tenantParamsSchema, query: memberListQuerySchema },
     responses: {
       200: {
         description: 'Team returned.',
@@ -127,6 +143,22 @@ export function createTeamRouter(resolveGuards: GuardResolver) {
       },
     },
     handler: c.updateMember,
+  })
+  team.delete({
+    path: '/:id',
+    security: 'admin',
+    operationId: 'team-delete',
+    summary: 'Remove a team member',
+    request: { params: idParamsSchema },
+    responses: {
+      200: {
+        description: 'Team member removed.',
+        schema: successEnvelopeSchema(deletedObjectSchema('team_member')),
+      },
+      404: { description: 'Not found.', schema: errorEnvelopeSchema },
+      409: { description: 'Last active admin.', schema: errorEnvelopeSchema },
+    },
+    handler: c.deleteMember,
   })
   return [roles.router, team.router]
 }

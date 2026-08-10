@@ -84,6 +84,6 @@ git status --short
 
 `git status --short` must show `apps/couriers-api/README.md` as the only file
 you changed — other files may already be modified by a concurrent task, so
-confirm none of the *other* entries are ones you touched. If prettier fails, run
+confirm none of the _other_ entries are ones you touched. If prettier fails, run
 `pnpm exec prettier --write` on the README and re-check. Report the final output
 of both commands verbatim.

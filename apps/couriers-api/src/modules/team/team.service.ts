@@ -102,8 +102,11 @@ export async function deleteRole(tenantId: string, id: string) {
   return deletedObject('role', id)
 }
 
-export async function listMembers(tenantId: string) {
-  return (await repo.listTenantMembers(tenantId)).map(serializeMember)
+export async function listMembers(
+  tenantId: string,
+  status?: 'active' | 'inactive'
+) {
+  return (await repo.listTenantMembers(tenantId, status)).map(serializeMember)
 }
 
 export async function createMember(tenantId: string, input: MemberBody) {
@@ -168,6 +171,21 @@ export async function updateMember(
       now: nowUnixSeconds(),
     })
   )
+}
+
+export async function deleteMember(tenantId: string, id: string) {
+  const member = await repo.findTenantMemberById(tenantId, id)
+  if (!member) throw missing('team')
+
+  if (member.status === 'ACTIVE' && member.role.systemKey === 'admin') {
+    const active = await repo.countActiveMembersForRole(tenantId, 'admin')
+    if (active <= 1) {
+      throw conflict('team', 'The last active admin cannot be removed.')
+    }
+  }
+
+  await repo.deleteTenantMember(id)
+  return deletedObject('team_member', id)
 }
 
 function isUniqueConstraintError(error: unknown): boolean {

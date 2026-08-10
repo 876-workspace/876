@@ -48,6 +48,16 @@ function createModuleListFixture(tenantId = 'ten_kgn_7f3a9b2c') {
   }
 }
 
+const preferencesFixture = {
+  object: 'module_preferences' as const,
+  module: 'packages' as const,
+  preferences: {
+    volumetric_divisor: 6000,
+    chargeable_weight_rule: 'greater_of',
+  },
+  updated_at: 1_785_240_000,
+}
+
 describe('admin settings resource', () => {
   describe('list', () => {
     it('lists module states for a Kingston tenant', async () => {
@@ -235,6 +245,54 @@ describe('admin settings resource', () => {
         }),
       })
       expect(fetchMock).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('preferences', () => {
+    it('retrieves module preferences with encoded path values', async () => {
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(
+          Response.json({ data: preferencesFixture, error: null })
+        )
+      const resource = createSettingsResource(
+        buildAdminRuntime({ baseUrl, apiKey, internalKey, fetch: fetchMock })
+      )
+
+      const result = await resource.preferences.retrieve(
+        'ten/kgn 001',
+        'packages'
+      )
+
+      expect(result).toEqual({ data: preferencesFixture, error: null })
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://couriers.example.test/v1/tenants/ten%2Fkgn%20001/modules/packages/preferences',
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('updates module preferences with the exact body', async () => {
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(
+          Response.json({ data: preferencesFixture, error: null })
+        )
+      const resource = createSettingsResource(
+        buildAdminRuntime({ baseUrl, apiKey, internalKey, fetch: fetchMock })
+      )
+      const body = { volumetric_divisor: 6000 }
+
+      const result = await resource.preferences.update(
+        'ten_kgn_7f3a9b2c',
+        'packages',
+        body
+      )
+
+      expect(result).toEqual({ data: preferencesFixture, error: null })
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://couriers.example.test/v1/tenants/ten_kgn_7f3a9b2c/modules/packages/preferences',
+        expect.objectContaining({ method: 'PATCH', body: JSON.stringify(body) })
+      )
     })
   })
 })

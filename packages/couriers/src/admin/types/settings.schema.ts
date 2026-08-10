@@ -41,3 +41,22 @@ export const toggleModuleBodySchema = z.strictObject({
 })
 
 export type ToggleModuleBody = z.input<typeof toggleModuleBodySchema>
+
+const preferenceValueSchema = z.union([z.boolean(), z.string(), z.number()])
+
+export const modulePreferencesSchema = z.object({
+  object: z.literal('module_preferences'),
+  module: moduleKeySchema,
+  preferences: z.record(z.string(), preferenceValueSchema),
+  updated_at: z.number().int().optional(),
+})
+
+export const updateModulePreferencesBodySchema = z.record(
+  z.string(),
+  preferenceValueSchema
+)
+
+export type ModulePreferences = z.infer<typeof modulePreferencesSchema>
+export type UpdateModulePreferencesBody = z.input<
+  typeof updateModulePreferencesBodySchema
+>

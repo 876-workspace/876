@@ -15,7 +15,22 @@ export type {
   PortalPackageStatus,
 } from './types/portal-package.schema'
 export type { PortalCustomer } from './types/portal-customer.schema'
+export type {
+  PortalEnrollment,
+  PortalEnrollmentBody,
+} from './types/portal-enrollment.schema'
+export type { PortalShippingAddress } from './types/portal-shipping-address.schema'
+export type {
+  PortalTenant,
+  ResolvePortalTenantParams,
+} from './types/portal-tenant.schema'
 export { portalCustomerSchema } from './types/portal-customer.schema'
+export {
+  portalEnrollmentBodySchema,
+  portalEnrollmentSchema,
+} from './types/portal-enrollment.schema'
+export { portalShippingAddressSchema } from './types/portal-shipping-address.schema'
+export { portalTenantSchema } from './types/portal-tenant.schema'
 export {
   portalPackageListSchema,
   portalPackageSchema,

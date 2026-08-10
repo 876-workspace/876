@@ -55,6 +55,9 @@ export const memberPatchBodySchema = z.strictObject({
   role_id: z.string().min(1).optional(),
   status: memberStatusSchema.optional(),
 })
+export const memberListQuerySchema = z.strictObject({
+  status: memberStatusSchema.optional(),
+})
 export type Role = z.infer<typeof roleSchema>
 export type TeamMember = z.infer<typeof teamMemberSchema>
 export type TenantParams = z.infer<typeof tenantParamsSchema>
@@ -63,3 +66,4 @@ export type RoleBody = z.infer<typeof roleBodySchema>
 export type RolePatchBody = z.infer<typeof rolePatchBodySchema>
 export type MemberBody = z.infer<typeof memberBodySchema>
 export type MemberPatchBody = z.infer<typeof memberPatchBodySchema>
+export type MemberListQuery = z.infer<typeof memberListQuerySchema>

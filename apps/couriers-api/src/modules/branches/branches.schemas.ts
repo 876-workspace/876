@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { addressSchema, type Address } from '@/modules/addresses'
 
 const optionalText = (max: number) =>
   z
@@ -14,27 +15,6 @@ const coordinatesArePaired = {
   message: 'Provide both a latitude and a longitude, or neither.',
   path: ['latitude'],
 }
-
-export const addressSchema = z
-  .object({
-    object: z.literal('address'),
-    id: z.string(),
-    tenant_id: z.string(),
-    name: z.string(),
-    line1: z.string(),
-    line2: z.string().nullable(),
-    city: z.string(),
-    region_code: z.string().nullable(),
-    region_name: z.string().nullable(),
-    country_code: z.string(),
-    postal_code: z.string().nullable(),
-    latitude: z.number().nullable(),
-    longitude: z.number().nullable(),
-    is_active: z.boolean(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
-  })
-  .meta({ id: 'Address' })
 
 export const branchSchema = z
   .object({
@@ -140,5 +120,5 @@ export const listBranchesQuerySchema = z
   })
 export type ListBranchesQuery = z.infer<typeof listBranchesQuerySchema>
 
-export type Address = z.infer<typeof addressSchema>
 export type Branch = z.infer<typeof branchSchema>
+export type { Address }

@@ -23,6 +23,7 @@ model CourierCustomerProfile {
   branch    Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
   mailboxes Mailbox[]
   packages  Package[]
+  addresses CustomerAddress[]
 
   @@unique([id, tenantId], name: "courier_customer_profiles_id_tenant_id_key")
   @@unique([tenantId, userId], name: "courier_customer_profiles_tenant_user_key", map: "courier_customer_profiles_tenant_user_key")

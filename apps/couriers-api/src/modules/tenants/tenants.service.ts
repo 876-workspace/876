@@ -1,8 +1,13 @@
 import { AppHttpError } from '@/platform/errors'
+import { nowUnixSeconds } from '@/platform/timestamps'
 
 import * as repo from './tenants.repository'
 import { serializeTenant } from './tenants.serializers'
-import type { Tenant } from './tenants.schemas'
+import type {
+  CreateTenantBody,
+  Tenant,
+  UpdateTenantBody,
+} from './tenants.schemas'
 
 export async function retrieveTenant(id: string): Promise<Tenant> {
   const row = await repo.findTenantById(id)
@@ -46,4 +51,51 @@ export async function listTenants(query: {
     hasMore,
     totalCount,
   }
+}
+
+export async function createTenant(input: CreateTenantBody): Promise<Tenant> {
+  try {
+    return serializeTenant(
+      await repo.createTenant({
+        orgId: input.org_id,
+        slug: input.slug,
+        name: input.name,
+        ownerUserId: input.owner_user_id,
+        now: nowUnixSeconds(),
+      })
+    )
+  } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      throw new AppHttpError({
+        code: 'tenant/conflict',
+        message: 'That organization or subdomain already has a tenant.',
+        httpStatus: 409,
+      })
+    }
+    throw error
+  }
+}
+
+export async function updateTenant(
+  id: string,
+  input: UpdateTenantBody
+): Promise<Tenant> {
+  await retrieveTenant(id)
+  if (input.mailbox_prefix === undefined) return retrieveTenant(id)
+  return serializeTenant(
+    await repo.updateTenantMailboxPrefix({
+      id,
+      mailboxPrefix: input.mailbox_prefix,
+      now: nowUnixSeconds(),
+    })
+  )
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'P2002'
+  )
 }

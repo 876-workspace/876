@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express'
 
-import { validParams, validQuery } from '@/http/middleware/validate'
+import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
 import * as service from './tenants.service'
 import type {
+  CreateTenantBody,
   ListTenantsQuery,
   TenantIdParams,
   TenantOrgIdParams,
+  UpdateTenantBody,
 } from './tenants.schemas'
 
 export async function retrieveTenant(
@@ -37,4 +39,18 @@ export async function listTenants(req: Request, res: Response): Promise<void> {
     url: '/v1/tenants',
     total_count: totalCount,
   })
+}
+
+export async function createTenant(req: Request, res: Response): Promise<void> {
+  const tenant = await service.createTenant(validBody<CreateTenantBody>(req))
+  res.status(201).json(tenant)
+}
+
+export async function updateTenant(req: Request, res: Response): Promise<void> {
+  const { id } = validParams<TenantIdParams>(req)
+  const tenant = await service.updateTenant(
+    id,
+    validBody<UpdateTenantBody>(req)
+  )
+  res.status(200).json(tenant)
 }

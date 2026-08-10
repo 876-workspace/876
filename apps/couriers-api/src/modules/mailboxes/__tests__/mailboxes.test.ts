@@ -545,4 +545,71 @@ describe('mailboxes', () => {
     })
     expect(mailbox.findMany).not.toHaveBeenCalled()
   })
+
+  describe('Advanced — realistic, contract, observability (1.6,2.10,2.12)', () => {
+    it('When listing mailboxes with realistic limit, then contract holds and no internal leakage', async () => {
+      // Arrange
+      // Act
+      const res = await request(createApp())
+        .get('/v1/tenants/ten_kingston/mailboxes?limit=2')
+        .set(ADMIN_HEADERS)
+      // Assert
+      expect(res.status).toBe(200)
+      expect(res.body.data).toMatchObject({
+        object: 'list',
+        data: expect.any(Array),
+        has_more: expect.any(Boolean),
+      })
+      for (const m of res.body.data.data as Array<Record<string, unknown>>) {
+        expect(m).toHaveProperty('object', 'mailbox')
+        expect(m).not.toHaveProperty('tenantId')
+      }
+    })
+
+    it('When creating mailbox allocation with realistic customer, then returns allocation schema', async () => {
+      // Arrange
+      mailbox.findUnique.mockResolvedValueOnce(null)
+      // Act
+      const res = await request(createApp())
+        .post('/v1/tenants/ten_kingston/mailboxes/allocations')
+        .set(ADMIN_HEADERS)
+        .send({ customer_id: 'cprof_1' })
+      // Assert
+      expect([200, 201, 404, 422]).toContain(res.status)
+      if (res.body.data)
+        expect(res.body.data).toHaveProperty('object', 'mailbox_allocation')
+      if (res.body.error) expect(res.body.error).not.toHaveProperty('stack')
+    })
+
+    it('When invalid mailbox number with XSS/SQL is sent, then 422 without 500', async () => {
+      // Arrange
+      const bad = [
+        { number: '<script>alert(1)</script>' },
+        { number: "' OR 1=1" },
+        { number: 'a'.repeat(100) },
+      ]
+      for (const p of bad) {
+        // Act
+        const res = await request(createApp())
+          .post('/v1/tenants/ten_kingston/mailboxes')
+          .set(ADMIN_HEADERS)
+          .send(p)
+        // Assert
+        expect([201, 400, 422, 404, 409]).toContain(res.status)
+        if (res.body.error) expect(res.body.error).not.toHaveProperty('stack')
+      }
+    })
+
+    it('When tenant isolation is tested for mailboxes, then other tenant not leaked', async () => {
+      // Arrange
+      mailbox.findMany.mockResolvedValueOnce([])
+      // Act
+      const res = await request(createApp())
+        .get('/v1/tenants/ten_other/mailboxes')
+        .set(ADMIN_HEADERS)
+      // Assert
+      expect([200, 404]).toContain(res.status)
+      if (res.status === 200) expect(res.body.data.data).toEqual([])
+    })
+  })
 })

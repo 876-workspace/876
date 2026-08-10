@@ -6,8 +6,12 @@ import { redirect } from 'next/navigation'
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { service } from '@/lib/service'
 
+import {
+  createPortalCouriersClient,
+  isPortalNotFound,
+  requirePortalData,
+} from './client'
 import { getPortalTenant } from './tenant'
 
 /**
@@ -27,11 +31,13 @@ export const requirePortalCustomer = cache(async function requirePortalCustomer(
   const tenant = await getPortalTenant()
   if (!tenant) redirect('/portal/unavailable')
 
-  const profile = await service.customerProfiles.retrieveByTenantAndUser(
-    tenant.id,
-    session.user.id
-  )
-  if (!profile) redirect(withReturnTo('/portal/auth/complete', returnTo))
+  const profileResult = await createPortalCouriersClient(
+    session.accessToken
+  ).portal.customer.retrieve(tenant.id)
+  if (isPortalNotFound(profileResult))
+    redirect(withReturnTo('/portal/auth/complete', returnTo))
+
+  const profile = requirePortalData(profileResult)
 
   return { session, tenant, profile }
 })

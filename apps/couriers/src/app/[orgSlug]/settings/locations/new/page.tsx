@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers, requireCouriersData } from '@/lib/couriers'
 
 import { BranchForm } from '../_components/branch-form'
 
@@ -43,9 +43,13 @@ async function NewBranchData({ orgSlug }: { orgSlug: string }) {
       </div>
     )
 
-  const branches = await service.branches.list({ tenantId: ctx.tenant.id })
+  const branches = requireCouriersData(
+    await $couriers.branches.list(ctx.tenant.id)
+  )
 
-  return <BranchForm orgSlug={orgSlug} isFirstBranch={branches.length === 0} />
+  return (
+    <BranchForm orgSlug={orgSlug} isFirstBranch={branches.data.length === 0} />
+  )
 }
 
 function FormSkeleton() {

@@ -26,6 +26,18 @@ export const teamMemberListSchema = z.object({
 export type TeamMember = z.infer<typeof teamMemberSchema>
 export type TeamMemberList = z.infer<typeof teamMemberListSchema>
 
+export const deletedTeamMemberSchema = z.object({
+  object: z.literal('team_member'),
+  id: z.string(),
+  deleted: z.literal(true),
+})
+
+export type DeletedTeamMember = z.infer<typeof deletedTeamMemberSchema>
+
+export type ListTeamMembersParams = {
+  status?: z.infer<typeof memberStatusSchema>
+}
+
 export const createTeamMemberBodySchema = z.strictObject({
   user_id: z.string(),
   role_id: z.string(),

@@ -36,8 +36,6 @@ export type AuthGuards = {
   requireIntegration: RequestHandler
   requireSession: RequestHandler
   requireAdmin: RequestHandler
-  // Kiosk device tier (mailbox-number lookup, package collection) will attach
-  // here as `requireKioskDevice` — device-bound auth, separate from apiKey/session/admin.
 }
 
 function clientIp(req: Request): string | undefined {

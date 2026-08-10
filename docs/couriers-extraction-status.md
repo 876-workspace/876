@@ -70,7 +70,42 @@ Test coverage added along the way: `customers` and `packages` had **no tests at
 all**; both now have supertest suites. Local verification on every branch touched:
 `typecheck`, `lint`, `test`, `boundaries`, `build`, `prettier --check`.
 
-## Left to do
+## Current completion state — 2026-08-10
+
+The implementation work recorded below is superseded by the integrated working
+tree. The completed scope now includes:
+
+- SDK cursor parameters and the Console-only `COURIERS_API_KEY` correction.
+- Admin customer address, organization-location, tenant provisioning, and
+  customer soft-delete parity.
+- Session-scoped portal tenant resolution, profile enrollment, shipping-address,
+  package list, and enriched package-detail resources. Enrollment creates (or
+  revives) the customer profile and primary mailbox atomically in the Couriers
+  API; the Next app no longer owns that race.
+- Next app migration to the Couriers SDK/admin SDK, including portal and
+  management BFFs. The app-local service, Prisma schema/client, migrations,
+  Prisma dependencies, database configuration, and associated retired tests
+  have been removed.
+- Updated OpenAPI snapshot and focused contract tests for the new resources.
+
+The counter-kiosk prototype is intentionally **parked** outside build paths in
+`parked/kiosk/` per the active directive. It is not exposed by the API,
+OpenAPI document, SDK, or app.
+
+The original phrase “portal/driver/warehouse/integration tiers” was too broad:
+there is no driver, delivery, route-assignment, manifest, shelf/bin, or
+integration-consumer model in the existing product, and no call site specifies
+one. Those would require a product contract and must not be invented merely to
+close an extraction checklist. Existing warehouse configuration is migrated via
+the admin tier; the session portal has the shipping-address view it actually
+uses. Integration remains intentionally limited to its existing tenant reads.
+
+Focused verification after integration: Couriers API typecheck and 321 tests;
+Couriers SDK typecheck and 139 tests; Couriers Next app typecheck and 626 tests.
+No commit, push, rebase, or pull request operation has been performed from this
+working tree.
+
+## Historical handoff checklist (superseded)
 
 ### 1. Two remaining review findings on #220 (small, well specified)
 

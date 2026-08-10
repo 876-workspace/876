@@ -9,7 +9,7 @@ A courier customer in the couriers app is either an `EXTERNAL` customer created 
 | `EXTERNAL`  | Staff in manage app     | No (`CourierCustomerProfile.userId` is `null`) | Yes                            |
 | `CORE_USER` | Consumer portal sign-up | Yes (`CourierCustomerProfile.userId` present)  | No                             |
 
-An `EXTERNAL` customer represents a party created manually by staff from `/[orgSlug]/customers/new`. The customer has no 876 account, so `CourierCustomerProfile.userId` is `null` in `apps/couriers/prisma/schema/customer.prisma`. Identity fields (first name, last name, company name, email, phone) live on the shared Billing registry row (Layer 2) with `customerType: 'EXTERNAL'` and are editable by staff.
+An `EXTERNAL` customer represents a party created manually by staff from `/[orgSlug]/customers/new`. The customer has no 876 account, so `CourierCustomerProfile.userId` is `null` in the Couriers API's customer model. Identity fields (first name, last name, company name, email, phone) live on the shared Billing registry row (Layer 2) with `customerType: 'EXTERNAL'` and are editable by staff.
 
 A `CORE_USER` customer represents a consumer who enrolled through the courier portal. The profile links to an 876 account (`userId`). Identity fields belong to the user's 876 account (Layer 1) and are read-only in couriers.
 
@@ -35,7 +35,7 @@ Customer updates are processed by `updateManagedCustomer` in `apps/couriers/src/
 
 Archiving or deleting a customer is performed by `deleteCustomer` in `apps/couriers/src/lib/service/customer-profiles/delete.ts`:
 
-- Deletion is a soft delete: it writes `deletedAt`, `deletedBy`, and `deletionReason` on `CourierCustomerProfile` using tombstone columns defined in `apps/couriers/prisma/migrations/20260808000000_courier_customer_crud/migration.sql`.
+- Deletion is a soft delete: the Couriers API writes `deletedAt`, `deletedBy`, and `deletionReason` on `CourierCustomerProfile`.
 - Every read query (such as `service.customerProfiles.list` in `apps/couriers/src/lib/service/customer-profiles/list.ts`) filters out soft-deleted profiles by requiring `deletedAt: null`.
 - The shared Billing registry customer (Layer 2) is not archived or deleted when a courier profile is soft-deleted, because other 876 apps in the same organization may still have that party as their customer.
 

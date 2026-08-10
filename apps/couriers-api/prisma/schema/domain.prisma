@@ -1,0 +1,16 @@
+/// A verified hostname through which a Couriers tenant is reached.
+model Domain {
+  id        String  @id @default(cuid())
+  tenantId  String  @map("tenant_id")
+  hostname  String  @unique
+  isPrimary Boolean @default(false) @map("is_primary")
+  verified  Boolean @default(false)
+  createdAt Int     @map("created_at")
+  updatedAt Int     @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([hostname], name: "domains_hostname_idx")
+  @@index([tenantId], name: "domains_tenant_id_idx")
+  @@map("domains")
+}

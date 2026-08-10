@@ -780,15 +780,6 @@ importers:
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@25.6.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(wrangler@4.113.0)
-      '@prisma/adapter-pg':
-        specifier: 7.7.0
-        version: 7.7.0
-      '@prisma/client':
-        specifier: 7.7.0
-        version: 7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.9.3))(typescript@5.9.3)
-      '@prisma/extension-accelerate':
-        specifier: 3.0.1
-        version: 3.0.1(@prisma/client@7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.9.3))(typescript@5.9.3))
       '@sentry/nextjs':
         specifier: 10.56.0
         version: 10.56.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@25.6.2)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(webpack@5.107.1(esbuild@0.28.1))
@@ -801,9 +792,6 @@ importers:
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      pg:
-        specifier: 8.13.1
-        version: 8.13.1
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -850,9 +838,6 @@ importers:
       jsdom:
         specifier: 29.1.1
         version: 29.1.1(@noble/hashes@1.8.0)
-      prisma:
-        specifier: 7.7.0
-        version: 7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@5.9.3)
       tailwindcss:
         specifier: 4.3.0
         version: 4.3.0
@@ -874,6 +859,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/settings':
+        specifier: workspace:*
+        version: link:../../packages/settings
       '@cloudflare/containers':
         specifier: 0.3.7
         version: 0.3.7

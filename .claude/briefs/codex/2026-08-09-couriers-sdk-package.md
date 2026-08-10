@@ -25,11 +25,11 @@ Do not commit, branch, or push.
 `packages/couriers`, package name `@876/couriers`, with three subpath exports
 mirroring `packages/billing`:
 
-| Subpath                     | Credential                    | Consumer                        |
-| --------------------------- | ----------------------------- | ------------------------------- |
-| `@876/couriers`             | app API key / session         | portal, kiosk, driver app       |
-| `@876/couriers/integration` | service key, service-to-service | other 876 services            |
-| `@876/couriers/admin`       | `x-internal-key`, server-only | Console (`$couriers` singleton) |
+| Subpath                     | Credential                      | Consumer                        |
+| --------------------------- | ------------------------------- | ------------------------------- |
+| `@876/couriers`             | app API key / session           | portal, kiosk, driver app       |
+| `@876/couriers/integration` | service key, service-to-service | other 876 services              |
+| `@876/couriers/admin`       | `x-internal-key`, server-only   | Console (`$couriers` singleton) |
 
 **The rule that keeps this from becoming unmanageable: these packages carry
 contracts and transport only, never behavior.** A resource method is a ~5-line

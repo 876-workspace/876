@@ -16,6 +16,32 @@ export const tenantSchema = z
 
 export type Tenant = z.infer<typeof tenantSchema>
 
+export const createTenantBodySchema = z.strictObject({
+  org_id: z.string().min(1),
+  slug: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9-]+$/),
+  name: z.string().trim().min(1).max(120),
+  owner_user_id: z.string().min(1).optional(),
+})
+export type CreateTenantBody = z.infer<typeof createTenantBodySchema>
+
+export const updateTenantBodySchema = z.strictObject({
+  mailbox_prefix: z
+    .string()
+    .trim()
+    .max(16)
+    .transform((value) => value.toUpperCase())
+    .refine(
+      (value) => /^[A-Z0-9]+$/.test(value),
+      'Prefix may only contain letters and numbers.'
+    )
+    .nullable()
+    .optional(),
+})
+export type UpdateTenantBody = z.infer<typeof updateTenantBodySchema>
+
 export const tenantIdParamsSchema = z.strictObject({ id: z.string().min(1) })
 export type TenantIdParams = z.infer<typeof tenantIdParamsSchema>
 

@@ -6,8 +6,8 @@ import { toSlug } from '@876/core/utils'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
+import { $couriers, couriersErrorStatus } from '@/lib/couriers'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
-import { service } from '@/lib/service'
 
 export const runtime = 'nodejs'
 
@@ -75,23 +75,37 @@ export async function POST() {
 
   let tenantId = ctx.tenant?.id
   if (!tenantId) {
-    const created = await service.tenants.create({
-      orgId: ctx.orgId,
+    const created = await $couriers.tenants.create({
+      org_id: ctx.orgId,
       name: platformName,
       slug: toSlug(platformName),
-      ownerUserId: ctx.userId,
+      owner_user_id: ctx.userId,
     })
     if (created.error)
-      return apiJson({ error: created.error }, { status: created.status })
+      return apiJson(
+        { error: created.error.message },
+        {
+          status: couriersErrorStatus(created.error),
+          code: created.error.code,
+        }
+      )
 
-    const createdTenant = created.data
-    if (!createdTenant)
-      return apiJson({ error: 'Failed to create tenant.' }, { status: 500 })
-
-    tenantId = createdTenant.id
+    tenantId = created.data.id
   }
 
-  if (mailboxPrefix) await service.tenants.update(tenantId, { mailboxPrefix })
+  if (mailboxPrefix) {
+    const updated = await $couriers.tenants.update(tenantId, {
+      mailbox_prefix: mailboxPrefix,
+    })
+    if (updated.error)
+      return apiJson(
+        { error: updated.error.message },
+        {
+          status: couriersErrorStatus(updated.error),
+          code: updated.error.code,
+        }
+      )
+  }
 
   return apiJson({
     data: {

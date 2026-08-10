@@ -20,20 +20,20 @@ pnpm --filter @876/couriers-api dev
 
 ## Environment
 
-| Variable               | Required | Purpose                                                       |
-| ---------------------- | -------- | ------------------------------------------------------------- |
-| `PORT`                 | No       | HTTP server port (defaults to 4001).                          |
-| `ENVIRONMENT`          | No       | Execution environment name (defaults to production).          |
-| `LOG_LEVEL`            | No       | Pino logging level (defaults to info).                        |
-| `DATABASE_URL`         | Yes      | Prisma Accelerate URL for database access.                    |
+| Variable               | Required        | Purpose                                                                                                 |
+| ---------------------- | --------------- | ------------------------------------------------------------------------------------------------------- |
+| `PORT`                 | No              | HTTP server port (defaults to 4001).                                                                    |
+| `ENVIRONMENT`          | No              | Execution environment name (defaults to production).                                                    |
+| `LOG_LEVEL`            | No              | Pino logging level (defaults to info).                                                                  |
+| `DATABASE_URL`         | Yes             | Prisma Accelerate URL for database access.                                                              |
 | `DIRECT_DATABASE_URL`  | Migrations only | Direct PostgreSQL URL for `prisma migrate`, `prisma db`, and Studio; `db:generate` does not require it. |
-| `API_876_KEY`          | Yes      | Public platform API key accepted by `requireApiKey`.          |
-| `API_INTERNAL_KEY`     | No       | Secret internal key for admin authorization (`requireAdmin`). |
-| `OAUTH_ISSUER`         | Session routes | Exact platform OAuth issuer to accept; derives the JWKS endpoint when set. |
-| `OAUTH_AUDIENCE`       | Session routes | Exact OAuth client ID expected in platform access tokens' `aud` claim. |
-| `OAUTH_JWKS_URL`       | No       | Explicit platform JWKS endpoint, overriding the issuer-derived endpoint. |
-| `SENTRY_DSN`           | No       | Sentry Data Source Name for error reporting.                  |
-| `CORS_ALLOWED_ORIGINS` | No       | Comma-separated list of allowed CORS origins.                 |
+| `API_876_KEY`          | Yes             | Public platform API key accepted by `requireApiKey`.                                                    |
+| `API_INTERNAL_KEY`     | No              | Secret internal key for admin authorization (`requireAdmin`).                                           |
+| `OAUTH_ISSUER`         | Session routes  | Exact platform OAuth issuer to accept; derives the JWKS endpoint when set.                              |
+| `OAUTH_AUDIENCE`       | Session routes  | Exact OAuth client ID expected in platform access tokens' `aud` claim.                                  |
+| `OAUTH_JWKS_URL`       | No              | Explicit platform JWKS endpoint, overriding the issuer-derived endpoint.                                |
+| `SENTRY_DSN`           | No              | Sentry Data Source Name for error reporting.                                                            |
+| `CORS_ALLOWED_ORIGINS` | No              | Comma-separated list of allowed CORS origins.                                                           |
 
 ## Project layout
 

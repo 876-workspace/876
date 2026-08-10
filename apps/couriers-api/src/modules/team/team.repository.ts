@@ -72,9 +72,17 @@ export function deleteTenantRole(id: string) {
   return prisma.role.delete({ where: { id } })
 }
 
-export function listTenantMembers(tenantId: string) {
+export function listTenantMembers(
+  tenantId: string,
+  status?: 'active' | 'inactive'
+) {
   return prisma.teamMember.findMany({
-    where: { tenantId },
+    where: {
+      tenantId,
+      ...(status === undefined
+        ? {}
+        : { status: status === 'active' ? 'ACTIVE' : 'INACTIVE' }),
+    },
     ...withRole,
     orderBy: { createdAt: 'asc' },
   })
@@ -126,4 +134,8 @@ export function updateTenantMember(options: {
     },
     ...withRole,
   })
+}
+
+export function deleteTenantMember(id: string) {
+  return prisma.teamMember.delete({ where: { id } })
 }

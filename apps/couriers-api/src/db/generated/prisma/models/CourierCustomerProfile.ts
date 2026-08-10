@@ -304,6 +304,7 @@ export type CourierCustomerProfileWhereInput = {
   branch?: Prisma.XOR<Prisma.BranchNullableScalarRelationFilter, Prisma.BranchWhereInput> | null
   mailboxes?: Prisma.MailboxListRelationFilter
   packages?: Prisma.PackageListRelationFilter
+  addresses?: Prisma.CustomerAddressListRelationFilter
 }
 
 export type CourierCustomerProfileOrderByWithRelationInput = {
@@ -325,6 +326,7 @@ export type CourierCustomerProfileOrderByWithRelationInput = {
   branch?: Prisma.BranchOrderByWithRelationInput
   mailboxes?: Prisma.MailboxOrderByRelationAggregateInput
   packages?: Prisma.PackageOrderByRelationAggregateInput
+  addresses?: Prisma.CustomerAddressOrderByRelationAggregateInput
 }
 
 export type CourierCustomerProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -352,6 +354,7 @@ export type CourierCustomerProfileWhereUniqueInput = Prisma.AtLeast<{
   branch?: Prisma.XOR<Prisma.BranchNullableScalarRelationFilter, Prisma.BranchWhereInput> | null
   mailboxes?: Prisma.MailboxListRelationFilter
   packages?: Prisma.PackageListRelationFilter
+  addresses?: Prisma.CustomerAddressListRelationFilter
 }, "id" | "courier_customer_profiles_id_tenant_id_key" | "courier_customer_profiles_tenant_user_key" | "courier_customer_profiles_tenant_billing_customer_key">
 
 export type CourierCustomerProfileOrderByWithAggregationInput = {
@@ -413,6 +416,7 @@ export type CourierCustomerProfileCreateInput = {
   branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
   packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileUncheckedCreateInput = {
@@ -432,6 +436,7 @@ export type CourierCustomerProfileUncheckedCreateInput = {
   deletionReason?: string | null
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileUpdateInput = {
@@ -451,6 +456,7 @@ export type CourierCustomerProfileUpdateInput = {
   branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateInput = {
@@ -470,6 +476,7 @@ export type CourierCustomerProfileUncheckedUpdateInput = {
   deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileCreateManyInput = {
@@ -529,6 +536,11 @@ export type CourierCustomerProfileListRelationFilter = {
 
 export type CourierCustomerProfileOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type CourierCustomerProfileScalarRelationFilter = {
+  is?: Prisma.CourierCustomerProfileWhereInput
+  isNot?: Prisma.CourierCustomerProfileWhereInput
 }
 
 export type CourierCustomerProfileCourier_customer_profiles_id_tenant_id_keyCompoundUniqueInput = {
@@ -611,11 +623,6 @@ export type CourierCustomerProfileSumOrderByAggregateInput = {
   deletedAt?: Prisma.SortOrder
 }
 
-export type CourierCustomerProfileScalarRelationFilter = {
-  is?: Prisma.CourierCustomerProfileWhereInput
-  isNot?: Prisma.CourierCustomerProfileWhereInput
-}
-
 export type CourierCustomerProfileCreateNestedManyWithoutBranchInput = {
   create?: Prisma.XOR<Prisma.CourierCustomerProfileCreateWithoutBranchInput, Prisma.CourierCustomerProfileUncheckedCreateWithoutBranchInput> | Prisma.CourierCustomerProfileCreateWithoutBranchInput[] | Prisma.CourierCustomerProfileUncheckedCreateWithoutBranchInput[]
   connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutBranchInput | Prisma.CourierCustomerProfileCreateOrConnectWithoutBranchInput[]
@@ -656,6 +663,20 @@ export type CourierCustomerProfileUncheckedUpdateManyWithoutBranchNestedInput = 
   update?: Prisma.CourierCustomerProfileUpdateWithWhereUniqueWithoutBranchInput | Prisma.CourierCustomerProfileUpdateWithWhereUniqueWithoutBranchInput[]
   updateMany?: Prisma.CourierCustomerProfileUpdateManyWithWhereWithoutBranchInput | Prisma.CourierCustomerProfileUpdateManyWithWhereWithoutBranchInput[]
   deleteMany?: Prisma.CourierCustomerProfileScalarWhereInput | Prisma.CourierCustomerProfileScalarWhereInput[]
+}
+
+export type CourierCustomerProfileCreateNestedOneWithoutAddressesInput = {
+  create?: Prisma.XOR<Prisma.CourierCustomerProfileCreateWithoutAddressesInput, Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput>
+  connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutAddressesInput
+  connect?: Prisma.CourierCustomerProfileWhereUniqueInput
+}
+
+export type CourierCustomerProfileUpdateOneRequiredWithoutAddressesNestedInput = {
+  create?: Prisma.XOR<Prisma.CourierCustomerProfileCreateWithoutAddressesInput, Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput>
+  connectOrCreate?: Prisma.CourierCustomerProfileCreateOrConnectWithoutAddressesInput
+  upsert?: Prisma.CourierCustomerProfileUpsertWithoutAddressesInput
+  connect?: Prisma.CourierCustomerProfileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CourierCustomerProfileUpdateToOneWithWhereWithoutAddressesInput, Prisma.CourierCustomerProfileUpdateWithoutAddressesInput>, Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput>
 }
 
 export type EnumCustomerStatusFieldUpdateOperationsInput = {
@@ -756,6 +777,7 @@ export type CourierCustomerProfileCreateWithoutBranchInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
   packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileUncheckedCreateWithoutBranchInput = {
@@ -774,6 +796,7 @@ export type CourierCustomerProfileUncheckedCreateWithoutBranchInput = {
   deletionReason?: string | null
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileCreateOrConnectWithoutBranchInput = {
@@ -822,6 +845,98 @@ export type CourierCustomerProfileScalarWhereInput = {
   deletionReason?: Prisma.StringNullableFilter<"CourierCustomerProfile"> | string | null
 }
 
+export type CourierCustomerProfileCreateWithoutAddressesInput = {
+  id?: string
+  userId?: string | null
+  billingCustomerId: string
+  status?: $Enums.CustomerStatus
+  trn?: string | null
+  isCommercial?: boolean
+  firstSeenAt: number
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number | null
+  deletedBy?: string | null
+  deletionReason?: string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
+  branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
+  mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
+  packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
+}
+
+export type CourierCustomerProfileUncheckedCreateWithoutAddressesInput = {
+  id?: string
+  tenantId: string
+  userId?: string | null
+  billingCustomerId: string
+  branchId?: string | null
+  status?: $Enums.CustomerStatus
+  trn?: string | null
+  isCommercial?: boolean
+  firstSeenAt: number
+  createdAt: number
+  updatedAt: number
+  deletedAt?: number | null
+  deletedBy?: string | null
+  deletionReason?: string | null
+  mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type CourierCustomerProfileCreateOrConnectWithoutAddressesInput = {
+  where: Prisma.CourierCustomerProfileWhereUniqueInput
+  create: Prisma.XOR<Prisma.CourierCustomerProfileCreateWithoutAddressesInput, Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput>
+}
+
+export type CourierCustomerProfileUpsertWithoutAddressesInput = {
+  update: Prisma.XOR<Prisma.CourierCustomerProfileUpdateWithoutAddressesInput, Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput>
+  create: Prisma.XOR<Prisma.CourierCustomerProfileCreateWithoutAddressesInput, Prisma.CourierCustomerProfileUncheckedCreateWithoutAddressesInput>
+  where?: Prisma.CourierCustomerProfileWhereInput
+}
+
+export type CourierCustomerProfileUpdateToOneWithWhereWithoutAddressesInput = {
+  where?: Prisma.CourierCustomerProfileWhereInput
+  data: Prisma.XOR<Prisma.CourierCustomerProfileUpdateWithoutAddressesInput, Prisma.CourierCustomerProfileUncheckedUpdateWithoutAddressesInput>
+}
+
+export type CourierCustomerProfileUpdateWithoutAddressesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCustomerId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
+  trn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCommercial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  firstSeenAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
+  branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
+  mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
+}
+
+export type CourierCustomerProfileUncheckedUpdateWithoutAddressesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingCustomerId?: Prisma.StringFieldUpdateOperationsInput | string
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
+  trn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isCommercial?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  firstSeenAt?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  deletedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
+}
+
 export type CourierCustomerProfileCreateWithoutMailboxesInput = {
   id?: string
   userId?: string | null
@@ -838,6 +953,7 @@ export type CourierCustomerProfileCreateWithoutMailboxesInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
   branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
   packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileUncheckedCreateWithoutMailboxesInput = {
@@ -856,6 +972,7 @@ export type CourierCustomerProfileUncheckedCreateWithoutMailboxesInput = {
   deletedBy?: string | null
   deletionReason?: string | null
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileCreateOrConnectWithoutMailboxesInput = {
@@ -890,6 +1007,7 @@ export type CourierCustomerProfileUpdateWithoutMailboxesInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
   branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
   packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateWithoutMailboxesInput = {
@@ -908,6 +1026,7 @@ export type CourierCustomerProfileUncheckedUpdateWithoutMailboxesInput = {
   deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileCreateWithoutPackagesInput = {
@@ -926,6 +1045,7 @@ export type CourierCustomerProfileCreateWithoutPackagesInput = {
   tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
   branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileUncheckedCreateWithoutPackagesInput = {
@@ -944,6 +1064,7 @@ export type CourierCustomerProfileUncheckedCreateWithoutPackagesInput = {
   deletedBy?: string | null
   deletionReason?: string | null
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileCreateOrConnectWithoutPackagesInput = {
@@ -978,6 +1099,7 @@ export type CourierCustomerProfileUpdateWithoutPackagesInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
   branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateWithoutPackagesInput = {
@@ -996,6 +1118,7 @@ export type CourierCustomerProfileUncheckedUpdateWithoutPackagesInput = {
   deletedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileCreateWithoutTenantInput = {
@@ -1014,6 +1137,7 @@ export type CourierCustomerProfileCreateWithoutTenantInput = {
   branch?: Prisma.BranchCreateNestedOneWithoutCustomersInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutCustomerInput
   packages?: Prisma.PackageCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileUncheckedCreateWithoutTenantInput = {
@@ -1032,6 +1156,7 @@ export type CourierCustomerProfileUncheckedCreateWithoutTenantInput = {
   deletionReason?: string | null
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutCustomerInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutCustomerInput
+  addresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutCustomerInput
 }
 
 export type CourierCustomerProfileCreateOrConnectWithoutTenantInput = {
@@ -1092,6 +1217,7 @@ export type CourierCustomerProfileUpdateWithoutBranchInput = {
   tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateWithoutBranchInput = {
@@ -1110,6 +1236,7 @@ export type CourierCustomerProfileUncheckedUpdateWithoutBranchInput = {
   deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateManyWithoutBranchInput = {
@@ -1160,6 +1287,7 @@ export type CourierCustomerProfileUpdateWithoutTenantInput = {
   branch?: Prisma.BranchUpdateOneWithoutCustomersNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateWithoutTenantInput = {
@@ -1178,6 +1306,7 @@ export type CourierCustomerProfileUncheckedUpdateWithoutTenantInput = {
   deletionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutCustomerNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutCustomerNestedInput
+  addresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type CourierCustomerProfileUncheckedUpdateManyWithoutTenantInput = {
@@ -1204,11 +1333,13 @@ export type CourierCustomerProfileUncheckedUpdateManyWithoutTenantInput = {
 export type CourierCustomerProfileCountOutputType = {
   mailboxes: number
   packages: number
+  addresses: number
 }
 
 export type CourierCustomerProfileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mailboxes?: boolean | CourierCustomerProfileCountOutputTypeCountMailboxesArgs
   packages?: boolean | CourierCustomerProfileCountOutputTypeCountPackagesArgs
+  addresses?: boolean | CourierCustomerProfileCountOutputTypeCountAddressesArgs
 }
 
 /**
@@ -1235,6 +1366,13 @@ export type CourierCustomerProfileCountOutputTypeCountPackagesArgs<ExtArgs exten
   where?: Prisma.PackageWhereInput
 }
 
+/**
+ * CourierCustomerProfileCountOutputType without action
+ */
+export type CourierCustomerProfileCountOutputTypeCountAddressesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CustomerAddressWhereInput
+}
+
 
 export type CourierCustomerProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1255,6 +1393,7 @@ export type CourierCustomerProfileSelect<ExtArgs extends runtime.Types.Extension
   branch?: boolean | Prisma.CourierCustomerProfile$branchArgs<ExtArgs>
   mailboxes?: boolean | Prisma.CourierCustomerProfile$mailboxesArgs<ExtArgs>
   packages?: boolean | Prisma.CourierCustomerProfile$packagesArgs<ExtArgs>
+  addresses?: boolean | Prisma.CourierCustomerProfile$addressesArgs<ExtArgs>
   _count?: boolean | Prisma.CourierCustomerProfileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["courierCustomerProfile"]>
 
@@ -1319,6 +1458,7 @@ export type CourierCustomerProfileInclude<ExtArgs extends runtime.Types.Extensio
   branch?: boolean | Prisma.CourierCustomerProfile$branchArgs<ExtArgs>
   mailboxes?: boolean | Prisma.CourierCustomerProfile$mailboxesArgs<ExtArgs>
   packages?: boolean | Prisma.CourierCustomerProfile$packagesArgs<ExtArgs>
+  addresses?: boolean | Prisma.CourierCustomerProfile$addressesArgs<ExtArgs>
   _count?: boolean | Prisma.CourierCustomerProfileCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CourierCustomerProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1337,6 +1477,7 @@ export type $CourierCustomerProfilePayload<ExtArgs extends runtime.Types.Extensi
     branch: Prisma.$BranchPayload<ExtArgs> | null
     mailboxes: Prisma.$MailboxPayload<ExtArgs>[]
     packages: Prisma.$PackagePayload<ExtArgs>[]
+    addresses: Prisma.$CustomerAddressPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1751,6 +1892,7 @@ export interface Prisma__CourierCustomerProfileClient<T, Null = never, ExtArgs e
   branch<T extends Prisma.CourierCustomerProfile$branchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourierCustomerProfile$branchArgs<ExtArgs>>): Prisma.Prisma__BranchClient<runtime.Types.Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   mailboxes<T extends Prisma.CourierCustomerProfile$mailboxesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourierCustomerProfile$mailboxesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MailboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   packages<T extends Prisma.CourierCustomerProfile$packagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourierCustomerProfile$packagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  addresses<T extends Prisma.CourierCustomerProfile$addressesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CourierCustomerProfile$addressesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CustomerAddressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2259,6 +2401,30 @@ export type CourierCustomerProfile$packagesArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.PackageScalarFieldEnum | Prisma.PackageScalarFieldEnum[]
+}
+
+/**
+ * CourierCustomerProfile.addresses
+ */
+export type CourierCustomerProfile$addressesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CustomerAddress
+   */
+  select?: Prisma.CustomerAddressSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CustomerAddress
+   */
+  omit?: Prisma.CustomerAddressOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CustomerAddressInclude<ExtArgs> | null
+  where?: Prisma.CustomerAddressWhereInput
+  orderBy?: Prisma.CustomerAddressOrderByWithRelationInput | Prisma.CustomerAddressOrderByWithRelationInput[]
+  cursor?: Prisma.CustomerAddressWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CustomerAddressScalarFieldEnum | Prisma.CustomerAddressScalarFieldEnum[]
 }
 
 /**

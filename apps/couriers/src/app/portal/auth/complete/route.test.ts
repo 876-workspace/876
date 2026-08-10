@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NextRequest } from 'next/server'
 
-import type { Tenant } from '@/lib/db'
-import type { Signed876Session } from '@/types/auth'
+import type { CouriersTenant, Signed876Session } from '@/types/auth'
 import type { PortalCustomer } from '@/types/portal'
 
 const mocks = vi.hoisted(() => ({
@@ -65,7 +64,7 @@ function createSession(
   }
 }
 
-function createTenant(overrides: Partial<Tenant> = {}): Tenant {
+function createTenant(overrides: Partial<CouriersTenant> = {}): CouriersTenant {
   return {
     id: 'ten_rocketship',
     orgId: 'org_rocketship',
@@ -172,6 +171,7 @@ describe('portal auth complete GET', () => {
       email: 'kimani@rocketship.test',
       firstName: 'Kimani',
       lastName: 'Brown',
+      accessToken: 'access_kimani',
     })
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).toHaveBeenCalledWith(
@@ -201,6 +201,7 @@ describe('portal auth complete GET', () => {
       email: 'kimani@rocketship.test',
       firstName: 'Kimani',
       lastName: 'Brown',
+      accessToken: 'access_kimani',
     })
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).toHaveBeenCalledWith('/portal')
@@ -232,6 +233,7 @@ describe('portal auth complete GET', () => {
         email: 'kimani@rocketship.test',
         firstName: 'Kimani',
         lastName: 'Brown',
+        accessToken: 'access_kimani',
       })
       expect(mocks.redirect).toHaveBeenCalledTimes(1)
       expect(mocks.redirect).toHaveBeenCalledWith('/portal')

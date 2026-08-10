@@ -1,518 +1,187 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
-import type { CourierCustomerProfile, Mailbox, Tenant } from '@/lib/db'
-import type { PortalCustomerEnsureParams } from '@/types/portal'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
+  createPortalCouriersClient: vi.fn(),
   get876Client: vi.fn(),
   ensureSharedCoreUserCustomer: vi.fn(),
-  retrieveByTenantAndUser: vi.fn(),
-  customerProfileEnsure: vi.fn(),
-  allocate: vi.fn(),
-  listMailboxes: vi.fn(),
+  retrieve: vi.fn(),
+  shippingAddress: vi.fn(),
+  enroll: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+vi.mock('./client', () => ({
+  createPortalCouriersClient: mocks.createPortalCouriersClient,
+  isPortalNotFound: (result: { error: { code: string } | null }) =>
+    result.error?.code.endsWith('/not-found') ?? false,
 }))
+vi.mock('@/lib/876', () => ({ get876Client: mocks.get876Client }))
 vi.mock('@/lib/finance/customers', () => ({
   ensureSharedCoreUserCustomer: mocks.ensureSharedCoreUserCustomer,
-}))
-vi.mock('@/lib/service', () => ({
-  service: {
-    customerProfiles: {
-      retrieveByTenantAndUser: mocks.retrieveByTenantAndUser,
-      ensure: mocks.customerProfileEnsure,
-    },
-    mailboxes: {
-      allocate: mocks.allocate,
-      list: mocks.listMailboxes,
-    },
-  },
 }))
 
 import { ensurePortalCustomer } from './enroll'
 
-const financeClient = { customers: { list: vi.fn(), create: vi.fn() } }
-
-function createTenant(overrides: Partial<Tenant> = {}): Tenant {
-  return {
-    id: 'ten_rocketship',
-    orgId: 'org_rocketship',
-    slug: 'rocketship',
-    name: 'Rocketship Couriers Jamaica',
-    mailboxPrefix: 'RSJ',
-    status: 'ACTIVE',
-    createdAt: 1_784_419_200,
-    updatedAt: 1_784_419_200,
-    ...overrides,
-  }
+const tenant = {
+  id: 'ten_rocketship',
+  orgId: 'org_rocketship',
+  slug: 'rocketship',
+  name: 'Rocketship Couriers Jamaica',
+  mailboxPrefix: 'RSJ',
+  status: 'ACTIVE' as const,
+  createdAt: 1_784_419_200,
+  updatedAt: 1_784_419_200,
 }
 
-function createProfile(
-  overrides: Partial<CourierCustomerProfile> = {}
-): CourierCustomerProfile {
-  return {
-    id: 'cprof_kimani',
-    tenantId: 'ten_rocketship',
-    userId: 'user_kimani',
-    billingCustomerId: 'blcus_kimani',
-    branchId: 'br_kingston',
-    status: 'ACTIVE',
-    trn: null,
-    isCommercial: false,
-    firstSeenAt: 1_784_419_200,
-    createdAt: 1_784_419_200,
-    updatedAt: 1_784_419_200,
-    deletedAt: null,
-    deletedBy: null,
-    deletionReason: null,
-    ...overrides,
-  }
+const customer = {
+  object: 'courier_customer_profile' as const,
+  id: 'cprof_kimani',
+  tenant_id: tenant.id,
+  user_id: 'user_kimani',
+  billing_customer_id: 'blcus_kimani',
+  branch_id: 'br_kingston',
+  status: 'ACTIVE' as const,
+  is_commercial: false,
+  first_seen_at: 1_784_419_200,
+  created_at: 1_784_419_200,
+  updated_at: 1_784_419_200,
+  deleted_at: null,
 }
 
-function createMailbox(overrides: Partial<Mailbox> = {}): Mailbox {
-  return {
-    id: 'mbx_rsj1001',
-    customerId: 'cprof_kimani',
-    tenantId: 'ten_rocketship',
-    number: 'RSJ1001',
-    isPrimary: true,
-    createdAt: 1_784_419_200,
-    updatedAt: 1_784_419_200,
-    ...overrides,
-  }
+const mailbox = {
+  object: 'mailbox' as const,
+  id: 'mbx_rsj1001',
+  tenant_id: tenant.id,
+  customer_id: customer.id,
+  number: 'RSJ1001',
+  is_primary: true,
+  created_at: 1_784_419_200,
+  updated_at: 1_784_419_200,
 }
 
-function createParams(
-  overrides: Partial<PortalCustomerEnsureParams> = {}
-): PortalCustomerEnsureParams {
+function params() {
   return {
-    tenant: createTenant(),
+    tenant,
     userId: 'user_kimani',
     email: 'kimani@rocketship.test',
     firstName: 'Kimani',
     lastName: 'Brown',
-    ...overrides,
+    accessToken: 'portal-access-token',
   }
 }
 
-function expectBillingEnsureCall(params: PortalCustomerEnsureParams) {
-  expect(mocks.get876Client).toHaveBeenCalledTimes(1)
-  expect(mocks.get876Client).toHaveBeenCalledWith()
-  expect(mocks.ensureSharedCoreUserCustomer).toHaveBeenCalledTimes(1)
-  expect(mocks.ensureSharedCoreUserCustomer).toHaveBeenCalledWith(
-    financeClient,
-    params.tenant.orgId,
-    {
-      id: params.userId,
-      email: params.email,
-      firstName: params.firstName ?? null,
-      lastName: params.lastName ?? null,
-    }
-  )
-}
-
 describe('ensurePortalCustomer', () => {
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>
-
   beforeEach(() => {
     vi.clearAllMocks()
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    mocks.get876Client.mockResolvedValue({ billing: financeClient })
+    mocks.createPortalCouriersClient.mockReturnValue({
+      portal: {
+        customer: { retrieve: mocks.retrieve },
+        shippingAddress: { retrieve: mocks.shippingAddress },
+        enrollments: { create: mocks.enroll },
+      },
+    })
+    mocks.get876Client.mockResolvedValue({ billing: 'billing-client' })
     mocks.ensureSharedCoreUserCustomer.mockResolvedValue({
-      data: { id: 'blcus_kimani' },
+      data: { id: customer.billing_customer_id },
       error: null,
     })
-    mocks.retrieveByTenantAndUser.mockResolvedValue(null)
-    mocks.allocate.mockResolvedValue({
-      data: { number: 'RSJ1001' },
+    mocks.shippingAddress.mockResolvedValue({
+      data: {
+        warehouse: null,
+        mailbox: { id: mailbox.id, number: mailbox.number },
+      },
       error: null,
     })
-    mocks.listMailboxes.mockResolvedValue([])
+    mocks.enroll.mockResolvedValue({
+      data: {
+        object: 'courier_customer_enrollment',
+        customer,
+        mailbox,
+      },
+      error: null,
+    })
   })
 
-  afterEach(() => {
-    consoleErrorSpy.mockRestore()
-  })
+  it('reuses an existing profile and retrieves its assigned mailbox via session endpoints', async () => {
+    mocks.retrieve.mockResolvedValue({ data: customer, error: null })
 
-  it('returns an existing profile without billing or allocation work', async () => {
-    const params = createParams()
-    const profile = createProfile()
-    const mailbox = createMailbox()
-    mocks.retrieveByTenantAndUser.mockResolvedValue(profile)
-    mocks.listMailboxes.mockResolvedValue([mailbox])
-
-    const result = await ensurePortalCustomer(params)
+    const result = await ensurePortalCustomer(params())
 
     expect(result).toEqual({
-      data: { ...profile, primaryMailboxNumber: 'RSJ1001' },
+      data: expect.objectContaining({
+        id: customer.id,
+        tenantId: tenant.id,
+        primaryMailboxNumber: mailbox.number,
+      }),
       error: null,
     })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-      'ten_rocketship',
-      'user_kimani'
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+      'portal-access-token'
     )
-    expect(mocks.listMailboxes).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
-    })
-    expect(mocks.get876Client).not.toHaveBeenCalled()
+    expect(mocks.shippingAddress).toHaveBeenCalledWith(tenant.id)
     expect(mocks.ensureSharedCoreUserCustomer).not.toHaveBeenCalled()
-    expect(mocks.allocate).not.toHaveBeenCalled()
-    expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
+    expect(mocks.enroll).not.toHaveBeenCalled()
   })
 
-  it('returns billing unavailable when Billing returns an error', async () => {
-    const params = createParams()
+  it('creates the billing customer then atomically enrolls the missing portal profile', async () => {
+    mocks.retrieve.mockResolvedValue({
+      data: null,
+      error: { code: 'customer/not-found', message: 'Not found.' },
+    })
+
+    const result = await ensurePortalCustomer(params())
+
+    expect(result).toEqual({
+      data: expect.objectContaining({ primaryMailboxNumber: mailbox.number }),
+      error: null,
+    })
+    expect(mocks.ensureSharedCoreUserCustomer).toHaveBeenCalledWith(
+      'billing-client',
+      tenant.orgId,
+      {
+        id: 'user_kimani',
+        email: 'kimani@rocketship.test',
+        firstName: 'Kimani',
+        lastName: 'Brown',
+      }
+    )
+    expect(mocks.enroll).toHaveBeenCalledWith(tenant.id, {
+      billing_customer_id: customer.billing_customer_id,
+    })
+  })
+
+  it('does not enroll when Billing cannot ensure the shared customer', async () => {
+    mocks.retrieve.mockResolvedValue({
+      data: null,
+      error: { code: 'customer/not-found', message: 'Not found.' },
+    })
     mocks.ensureSharedCoreUserCustomer.mockResolvedValue({
       data: null,
+      error: { code: 'billing/unavailable', message: 'Unavailable.' },
+    })
+
+    await expect(ensurePortalCustomer(params())).resolves.toMatchObject({
+      data: null,
+      code: 'portal/billing-unavailable',
+    })
+    expect(mocks.enroll).not.toHaveBeenCalled()
+  })
+
+  it('maps exhausted mailbox allocation to the existing portal-safe error', async () => {
+    mocks.retrieve.mockResolvedValue({
+      data: null,
+      error: { code: 'customer/not-found', message: 'Not found.' },
+    })
+    mocks.enroll.mockResolvedValue({
+      data: null,
       error: {
-        code: 'billing/provider-unavailable',
-        message: 'Billing provider unavailable.',
+        code: 'mailbox/allocation-exhausted',
+        message: 'No mailbox.',
       },
     })
 
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
+    await expect(ensurePortalCustomer(params())).resolves.toMatchObject({
       data: null,
-      error: 'Billing is temporarily unavailable. Please try again.',
-      status: 503,
-      code: 'portal/billing-unavailable',
-    })
-    expectBillingEnsureCall(params)
-    expect(mocks.allocate).not.toHaveBeenCalled()
-    expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-  })
-
-  it('returns billing unavailable when Billing returns null data without an error', async () => {
-    const params = createParams({ firstName: undefined, lastName: null })
-    mocks.ensureSharedCoreUserCustomer.mockResolvedValue({
-      data: null,
-      error: null,
-    })
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: null,
-      error: 'Billing is temporarily unavailable. Please try again.',
-      status: 503,
-      code: 'portal/billing-unavailable',
-    })
-    expectBillingEnsureCall(params)
-    expect(mocks.allocate).not.toHaveBeenCalled()
-    expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-  })
-
-  it('propagates the initial mailbox allocation failure', async () => {
-    const params = createParams()
-    const allocationFailure = {
-      data: null,
-      error: 'A mailbox number could not be allocated. Please try again.',
-      status: 503,
-    }
-    mocks.allocate.mockResolvedValue(allocationFailure)
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual(allocationFailure)
-    expectBillingEnsureCall(params)
-    expect(mocks.allocate).toHaveBeenCalledTimes(1)
-    expect(mocks.allocate).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-    })
-    expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-  })
-
-  it('returns a concurrently-created profile after the first P2002 conflict', async () => {
-    const params = createParams()
-    const profile = createProfile()
-    const mailbox = createMailbox()
-    mocks.retrieveByTenantAndUser
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(profile)
-    mocks.customerProfileEnsure.mockRejectedValue({ code: 'P2002' })
-    mocks.listMailboxes.mockResolvedValue([mailbox])
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: { ...profile, primaryMailboxNumber: 'RSJ1001' },
-      error: null,
-    })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(2)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenNthCalledWith(
-      1,
-      'ten_rocketship',
-      'user_kimani'
-    )
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenNthCalledWith(
-      2,
-      'ten_rocketship',
-      'user_kimani'
-    )
-    expect(mocks.allocate).toHaveBeenCalledTimes(1)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      userId: 'user_kimani',
-      billingCustomerId: 'blcus_kimani',
-      mailboxNumber: 'RSJ1001',
-    })
-    expect(mocks.listMailboxes).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
-    })
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
-  })
-
-  it('re-allocates and succeeds when no concurrent profile exists', async () => {
-    const params = createParams()
-    const profile = createProfile()
-    const mailbox = createMailbox({ number: 'RSJ1002' })
-    mocks.retrieveByTenantAndUser
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null)
-    mocks.allocate
-      .mockResolvedValueOnce({ data: { number: 'RSJ1001' }, error: null })
-      .mockResolvedValueOnce({ data: { number: 'RSJ1002' }, error: null })
-    mocks.customerProfileEnsure
-      .mockRejectedValueOnce({ code: 'P2002' })
-      .mockResolvedValueOnce(profile)
-    mocks.listMailboxes.mockResolvedValue([mailbox])
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: { ...profile, primaryMailboxNumber: 'RSJ1002' },
-      error: null,
-    })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(2)
-    expect(mocks.allocate).toHaveBeenCalledTimes(2)
-    expect(mocks.allocate).toHaveBeenNthCalledWith(1, {
-      tenantId: 'ten_rocketship',
-    })
-    expect(mocks.allocate).toHaveBeenNthCalledWith(2, {
-      tenantId: 'ten_rocketship',
-    })
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(2)
-    expect(mocks.customerProfileEnsure).toHaveBeenNthCalledWith(1, {
-      tenantId: 'ten_rocketship',
-      userId: 'user_kimani',
-      billingCustomerId: 'blcus_kimani',
-      mailboxNumber: 'RSJ1001',
-    })
-    expect(mocks.customerProfileEnsure).toHaveBeenNthCalledWith(2, {
-      tenantId: 'ten_rocketship',
-      userId: 'user_kimani',
-      billingCustomerId: 'blcus_kimani',
-      mailboxNumber: 'RSJ1002',
-    })
-    expect(mocks.listMailboxes).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
-    })
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
-  })
-
-  it('returns the race winner found after a second P2002 conflict', async () => {
-    const params = createParams()
-    const profile = createProfile()
-    const mailbox = createMailbox({ number: 'RSJ1002' })
-    mocks.retrieveByTenantAndUser
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(profile)
-    mocks.allocate
-      .mockResolvedValueOnce({ data: { number: 'RSJ1001' }, error: null })
-      .mockResolvedValueOnce({ data: { number: 'RSJ1002' }, error: null })
-    mocks.customerProfileEnsure.mockRejectedValue({ code: 'P2002' })
-    mocks.listMailboxes.mockResolvedValue([mailbox])
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: { ...profile, primaryMailboxNumber: 'RSJ1002' },
-      error: null,
-    })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(3)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenNthCalledWith(
-      3,
-      'ten_rocketship',
-      'user_kimani'
-    )
-    expect(mocks.allocate).toHaveBeenCalledTimes(2)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(2)
-    expect(mocks.listMailboxes).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
-    })
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
-  })
-
-  it('returns mailbox unavailable when both P2002 attempts have no race winner', async () => {
-    const params = createParams()
-    mocks.retrieveByTenantAndUser.mockResolvedValue(null)
-    mocks.allocate
-      .mockResolvedValueOnce({ data: { number: 'RSJ1001' }, error: null })
-      .mockResolvedValueOnce({ data: { number: 'RSJ1002' }, error: null })
-    mocks.customerProfileEnsure.mockRejectedValue({ code: 'P2002' })
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: null,
-      error: 'A mailbox could not be assigned. Please try again.',
-      status: 503,
       code: 'portal/mailbox-unavailable',
     })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(3)
-    expect(mocks.allocate).toHaveBeenCalledTimes(2)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(2)
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[portal.ensurePortalCustomer]',
-      { code: 'P2002' }
-    )
-  })
-
-  it('propagates a mailbox failure from the retry allocation', async () => {
-    const params = createParams()
-    const allocationFailure = {
-      data: null,
-      error: 'A mailbox number could not be allocated. Please try again.',
-      status: 503,
-    }
-    mocks.retrieveByTenantAndUser.mockResolvedValue(null)
-    mocks.allocate
-      .mockResolvedValueOnce({ data: { number: 'RSJ1001' }, error: null })
-      .mockResolvedValueOnce(allocationFailure)
-    mocks.customerProfileEnsure.mockRejectedValueOnce({ code: 'P2002' })
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual(allocationFailure)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(2)
-    expect(mocks.allocate).toHaveBeenCalledTimes(2)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-    expect(consoleErrorSpy).not.toHaveBeenCalled()
-  })
-
-  it('maps a non-P2002 Error to enrollment failed', async () => {
-    const params = createParams()
-    const databaseError = new Error('Database connection interrupted')
-    mocks.customerProfileEnsure.mockRejectedValue(databaseError)
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: null,
-      error: 'Portal enrollment could not be completed. Please try again.',
-      status: 500,
-      code: 'portal/enrollment-failed',
-    })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.allocate).toHaveBeenCalledTimes(1)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[portal.ensurePortalCustomer]',
-      databaseError
-    )
-  })
-
-  it('maps a non-Error rejection to enrollment failed', async () => {
-    const params = createParams()
-    const thrownValue = { reason: 'pool exhausted' }
-    mocks.customerProfileEnsure.mockRejectedValue(thrownValue)
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: null,
-      error: 'Portal enrollment could not be completed. Please try again.',
-      status: 500,
-      code: 'portal/enrollment-failed',
-    })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.allocate).toHaveBeenCalledTimes(1)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[portal.ensurePortalCustomer]',
-      thrownValue
-    )
-  })
-
-  it('returns mailbox unavailable when an existing profile has no primary mailbox', async () => {
-    const params = createParams()
-    const profile = createProfile()
-    mocks.retrieveByTenantAndUser.mockResolvedValue(profile)
-    mocks.listMailboxes.mockResolvedValue([
-      createMailbox({ isPrimary: false, number: 'RSJ1002' }),
-    ])
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: null,
-      error: 'A mailbox could not be assigned. Please try again.',
-      status: 503,
-      code: 'portal/mailbox-unavailable',
-    })
-    expect(mocks.listMailboxes).toHaveBeenCalledTimes(1)
-    expect(mocks.listMailboxes).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
-    })
-    expect(mocks.get876Client).not.toHaveBeenCalled()
-    expect(mocks.ensureSharedCoreUserCustomer).not.toHaveBeenCalled()
-    expect(mocks.allocate).not.toHaveBeenCalled()
-    expect(mocks.customerProfileEnsure).not.toHaveBeenCalled()
-  })
-
-  it('maps a non-P2002 retry failure to enrollment failed', async () => {
-    const params = createParams()
-    const retryError = new Error('Database connection interrupted')
-    mocks.retrieveByTenantAndUser.mockResolvedValue(null)
-    mocks.allocate
-      .mockResolvedValueOnce({ data: { number: 'RSJ1001' }, error: null })
-      .mockResolvedValueOnce({ data: { number: 'RSJ1002' }, error: null })
-    mocks.customerProfileEnsure
-      .mockRejectedValueOnce({ code: 'P2002' })
-      .mockRejectedValueOnce(retryError)
-
-    const result = await ensurePortalCustomer(params)
-
-    expect(result).toEqual({
-      data: null,
-      error: 'Portal enrollment could not be completed. Please try again.',
-      status: 500,
-      code: 'portal/enrollment-failed',
-    })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(2)
-    expect(mocks.allocate).toHaveBeenCalledTimes(2)
-    expect(mocks.customerProfileEnsure).toHaveBeenCalledTimes(2)
-    expect(mocks.listMailboxes).not.toHaveBeenCalled()
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      '[portal.ensurePortalCustomer]',
-      retryError
-    )
   })
 })

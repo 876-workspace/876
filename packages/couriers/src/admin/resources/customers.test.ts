@@ -26,6 +26,7 @@ const customer = {
   billing_customer_id: 'billcus_sophia_brown',
   branch_id: 'br_kingston/harbour',
   status: 'ACTIVE' as const,
+  trn: null,
   is_commercial: false,
   first_seen_at: 1_776_048_000,
   created_at: 1_776_048_000,
@@ -77,7 +78,20 @@ const createCustomerBody = {
 const updateCustomerBody = {
   branch_id: null,
   status: 'SUSPENDED' as const,
+  trn: '123456789',
   is_commercial: false,
+}
+
+const deletedCustomer = {
+  object: 'courier_customer_profile' as const,
+  id: customerId,
+  deleted: true as const,
+}
+
+const customerEnrollment = {
+  object: 'courier_customer_enrollment' as const,
+  customer,
+  mailbox,
 }
 
 const createMailboxBody = {
@@ -190,6 +204,33 @@ describe('createCustomersResource', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it('atomically enrolls a customer and primary mailbox', async () => {
+    const fetchMock = successFetch(customerEnrollment)
+    const resource = createResource(fetchMock, internalKey)
+    const body = {
+      billing_customer_id: 'billcus_marcia_campbell',
+      branch_id: 'br_montego_bay/freeport',
+      is_commercial: true,
+    }
+
+    await expect(resource.enroll(tenantId, body)).resolves.toEqual({
+      data: customerEnrollment,
+      error: null,
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers/enrollments`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
+          'x-internal-key': internalKey,
+        },
+        body: JSON.stringify(body),
+      }
+    )
+  })
+
   it('updates a customer with encoded identifiers and the exact body', async () => {
     const fetchMock = successFetch(customer)
     const resource = createResource(fetchMock, internalKey)
@@ -214,6 +255,28 @@ describe('createCustomersResource', () => {
       }
     )
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('deletes a customer with optional audit metadata', async () => {
+    const fetchMock = successFetch(deletedCustomer)
+    const resource = createResource(fetchMock, internalKey)
+    const body = { deleted_by: 'usr_kingston', reason: 'duplicate' }
+
+    const result = await resource.delete(tenantId, customerId, body)
+
+    expect(result).toEqual({ data: deletedCustomer, error: null })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers/cpr_kingston%2Fbrown%20market`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
+          'x-internal-key': internalKey,
+        },
+        body: JSON.stringify(body),
+      }
+    )
   })
 
   it('lists a customer’s mailboxes with encoded identifiers', async () => {
@@ -309,9 +372,20 @@ describe('createCustomersResource', () => {
       invoke: (resource) => resource.create(tenantId, createCustomerBody),
     },
     {
+      name: 'enroll',
+      invoke: (resource) =>
+        resource.enroll(tenantId, {
+          billing_customer_id: 'billcus_marcia_campbell',
+        }),
+    },
+    {
       name: 'update',
       invoke: (resource) =>
         resource.update(tenantId, customerId, updateCustomerBody),
+    },
+    {
+      name: 'delete',
+      invoke: (resource) => resource.delete(tenantId, customerId),
     },
     {
       name: 'mailboxes.list',

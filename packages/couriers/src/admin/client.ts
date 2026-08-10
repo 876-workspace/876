@@ -1,7 +1,9 @@
 import { createTenantsResource } from './resources/tenants'
 import { createBranchesResource } from './resources/branches'
+import { createAddressesResource } from './resources/addresses'
 import { createCustomersResource } from './resources/customers'
 import { createMailboxesResource } from './resources/mailboxes'
+import { createOrganizationLocationsResource } from './resources/organization-locations'
 import { createPackagesResource } from './resources/packages'
 import { createRolesResource } from './resources/roles'
 import { createSettingsResource } from './resources/settings'
@@ -17,8 +19,10 @@ export function create876CouriersAdminClient(options: AdminClientOptions = {}) {
     tenants: createTenantsResource(runtime),
     branches: createBranchesResource(runtime),
     warehouses: createWarehousesResource(runtime),
+    addresses: createAddressesResource(runtime),
     customers: createCustomersResource(runtime),
     mailboxes: createMailboxesResource(runtime),
+    organizationLocations: createOrganizationLocationsResource(runtime),
     packages: createPackagesResource(runtime),
     roles: createRolesResource(runtime),
     team: createTeamResource(runtime),

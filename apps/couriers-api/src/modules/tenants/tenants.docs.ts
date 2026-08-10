@@ -20,3 +20,19 @@ export const LIST_TENANTS_DESCRIPTION = 'Returns all tenants. Admin only.'
 export const LIST_TENANTS_RESPONSES = {
   200: { description: 'Tenants returned.' },
 } as const
+
+export const CREATE_TENANT_SUMMARY = 'Create a tenant'
+export const CREATE_TENANT_DESCRIPTION =
+  'Provisions a tenant with its verified default subdomain and system roles. Admin only.'
+export const CREATE_TENANT_RESPONSES = {
+  201: { description: 'Tenant created.' },
+  409: { description: 'Organization or subdomain already has a tenant.' },
+} as const
+
+export const UPDATE_TENANT_SUMMARY = 'Update a tenant'
+export const UPDATE_TENANT_DESCRIPTION =
+  'Updates mutable tenant settings. Admin only.'
+export const UPDATE_TENANT_RESPONSES = {
+  200: { description: 'Tenant updated.' },
+  404: { description: 'Tenant not found.' },
+} as const

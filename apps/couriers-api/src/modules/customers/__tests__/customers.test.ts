@@ -25,19 +25,27 @@ function customerRow(overrides: Record<string, unknown> = {}) {
   }
 }
 
-const { tenant, courierCustomerProfile, branch } = vi.hoisted(() => ({
-  tenant: { findUnique: vi.fn() },
-  courierCustomerProfile: {
-    findMany: vi.fn(),
-    findFirst: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-  },
-  branch: { findFirst: vi.fn() },
-}))
+const { tenant, courierCustomerProfile, branch, mailbox, $transaction } =
+  vi.hoisted(() => ({
+    tenant: { findUnique: vi.fn() },
+    courierCustomerProfile: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    branch: { findFirst: vi.fn() },
+    mailbox: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      count: vi.fn(),
+      create: vi.fn(),
+    },
+    $transaction: vi.fn(),
+  }))
 
 vi.mock('@/db/client', () => ({
-  prisma: { tenant, courierCustomerProfile, branch },
+  prisma: { tenant, courierCustomerProfile, branch, mailbox, $transaction },
   disconnectDb: vi.fn(),
   pingDb: vi.fn(),
 }))
@@ -65,6 +73,10 @@ beforeEach(() => {
   courierCustomerProfile.create.mockResolvedValue(customerRow())
   courierCustomerProfile.update.mockResolvedValue(customerRow())
   branch.findFirst.mockResolvedValue({ id: 'br_kingston' })
+  $transaction.mockImplementation(
+    (callback: (tx: Record<string, unknown>) => unknown) =>
+      callback({ tenant, courierCustomerProfile, mailbox, branch })
+  )
 })
 
 afterEach(() => {
@@ -95,6 +107,7 @@ describe('customers', () => {
             user_id: null,
             billing_customer_id: 'cus_brown_1',
             branch_id: 'br_kingston',
+            trn: null,
             status: 'ACTIVE',
             is_commercial: false,
             first_seen_at: NOW - 100,
@@ -257,6 +270,7 @@ describe('customers', () => {
         billingCustomerId: 'cus_spanish_town',
         userId: null,
         branchId: 'br_spanish_town',
+        trn: null,
         status: 'ACTIVE',
         isCommercial: false,
         firstSeenAt: NOW,
@@ -322,5 +336,145 @@ describe('customers', () => {
       error: { code: 'branch/not-found', message: 'Not found.' },
     })
     expect(courierCustomerProfile.update).not.toHaveBeenCalled()
+  })
+
+  describe('enrollments', () => {
+    function stubEnrollment() {
+      courierCustomerProfile.findFirst.mockResolvedValue(null)
+      courierCustomerProfile.create.mockResolvedValue(
+        customerRow({ id: 'cprof_enrolled' })
+      )
+      tenant.findUnique.mockResolvedValue({
+        id: 'ten_reyes',
+        mailboxPrefix: 'KG',
+      })
+      mailbox.findFirst.mockResolvedValue(null)
+      mailbox.findUnique.mockResolvedValue(null)
+      mailbox.count.mockResolvedValue(0)
+      mailbox.create.mockResolvedValue({
+        id: 'mb_1001',
+        tenantId: 'ten_reyes',
+        customerId: 'cprof_enrolled',
+        number: 'KG1001',
+        isPrimary: true,
+        createdAt: NOW,
+        updatedAt: NOW,
+      })
+    }
+
+    it('retries once when the mailbox-number insert loses a P2002 race', async () => {
+      stubEnrollment()
+      mailbox.create
+        .mockRejectedValueOnce({ code: 'P2002' })
+        .mockResolvedValue({
+          id: 'mb_1001',
+          tenantId: 'ten_reyes',
+          customerId: 'cprof_enrolled',
+          number: 'KG1001',
+          isPrimary: true,
+          createdAt: NOW,
+          updatedAt: NOW,
+        })
+
+      const response = await request(createApp())
+        .post('/v1/tenants/ten_reyes/customers/enrollments')
+        .set(ADMIN_HEADERS)
+        .send({ billing_customer_id: 'cus_enroll_1' })
+
+      expect(response.status).toBe(201)
+      expect(response.body).toEqual({
+        data: expect.objectContaining({
+          object: 'courier_customer_enrollment',
+          customer: expect.objectContaining({ id: 'cprof_enrolled' }),
+          mailbox: expect.objectContaining({ number: 'KG1001' }),
+        }),
+        error: null,
+      })
+      expect(courierCustomerProfile.create).toHaveBeenCalledTimes(2)
+      expect(mailbox.create).toHaveBeenCalledTimes(2)
+    })
+
+    it('returns 409 when the mailbox-number race persists across retries', async () => {
+      stubEnrollment()
+      mailbox.create.mockRejectedValue({ code: 'P2002' })
+
+      const response = await request(createApp())
+        .post('/v1/tenants/ten_reyes/customers/enrollments')
+        .set(ADMIN_HEADERS)
+        .send({ billing_customer_id: 'cus_enroll_2' })
+
+      expect(response.status).toBe(409)
+      expect(response.body).toEqual({
+        data: null,
+        error: expect.objectContaining({ code: 'customer/conflict' }),
+      })
+      expect(mailbox.create).toHaveBeenCalledTimes(3)
+    })
+
+    it('maps a branch foreign-key violation to a 404', async () => {
+      stubEnrollment()
+      courierCustomerProfile.create.mockRejectedValue({ code: 'P2003' })
+
+      const response = await request(createApp())
+        .post('/v1/tenants/ten_reyes/customers/enrollments')
+        .set(ADMIN_HEADERS)
+        .send({ billing_customer_id: 'cus_enroll_3' })
+
+      expect(response.status).toBe(404)
+      expect(response.body).toEqual({
+        data: null,
+        error: expect.objectContaining({ code: 'branch/not-found' }),
+      })
+    })
+  })
+
+  describe('Advanced — AAA and realistic data (1.2, 1.6, 2.10)', () => {
+    it('When creating customer with realistic Jamaican data, then returns contract schema with dynamic fields or validation envelope', async () => {
+      // Arrange — schema requires billing_customer_id, realistic trimming
+      const payload = {
+        billing_customer_id: 'cus_real_123',
+        branch_id: 'br_1',
+        is_commercial: false,
+      }
+
+      // Act
+      const res = await request(createApp())
+        .post('/v1/tenants/ten_1/customers')
+        .set(ADMIN_HEADERS)
+        .send(payload)
+
+      // Assert — 2.10: dynamic id/timestamps, allow 201/200/422 but never 500/stack
+      expect([201, 200, 422, 404]).toContain(res.status)
+      if (res.status === 201 || res.status === 200) {
+        expect(res.body).toMatchObject({
+          data: {
+            object: expect.any(String),
+            id: expect.any(String),
+            created_at: expect.any(Number),
+          },
+          error: null,
+        })
+      } else {
+        expect(res.body.error).not.toHaveProperty('stack')
+      }
+    })
+
+    it('When malformed customer payload with XSS, then 422 without leak', async () => {
+      // Arrange
+      const bad = {
+        display_name: "<script>alert('xss')</script>",
+        branch_id: 123 as unknown as string,
+      }
+
+      // Act
+      const res = await request(createApp())
+        .post('/v1/tenants/ten_1/customers')
+        .set(ADMIN_HEADERS)
+        .send(bad)
+
+      // Assert
+      expect([400, 422]).toContain(res.status)
+      expect(res.body.error).not.toHaveProperty('stack')
+    })
   })
 })

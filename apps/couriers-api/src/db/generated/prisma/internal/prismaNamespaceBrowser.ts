@@ -53,7 +53,10 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Address: 'Address',
   Branch: 'Branch',
+  Carrier: 'Carrier',
+  CustomerAddress: 'CustomerAddress',
   CourierCustomerProfile: 'CourierCustomerProfile',
+  Domain: 'Domain',
   Mailbox: 'Mailbox',
   OrganizationModule: 'OrganizationModule',
   ModulePreference: 'ModulePreference',
@@ -118,6 +121,35 @@ export const BranchScalarFieldEnum = {
 export type BranchScalarFieldEnum = (typeof BranchScalarFieldEnum)[keyof typeof BranchScalarFieldEnum]
 
 
+export const CarrierScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  logoUrl: 'logoUrl',
+  websiteUrl: 'websiteUrl',
+  trackingUrlTemplate: 'trackingUrlTemplate',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CarrierScalarFieldEnum = (typeof CarrierScalarFieldEnum)[keyof typeof CarrierScalarFieldEnum]
+
+
+export const CustomerAddressScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  customerId: 'customerId',
+  addressId: 'addressId',
+  type: 'type',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CustomerAddressScalarFieldEnum = (typeof CustomerAddressScalarFieldEnum)[keyof typeof CustomerAddressScalarFieldEnum]
+
+
 export const CourierCustomerProfileScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -136,6 +168,19 @@ export const CourierCustomerProfileScalarFieldEnum = {
 } as const
 
 export type CourierCustomerProfileScalarFieldEnum = (typeof CourierCustomerProfileScalarFieldEnum)[keyof typeof CourierCustomerProfileScalarFieldEnum]
+
+
+export const DomainScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  hostname: 'hostname',
+  isPrimary: 'isPrimary',
+  verified: 'verified',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DomainScalarFieldEnum = (typeof DomainScalarFieldEnum)[keyof typeof DomainScalarFieldEnum]
 
 
 export const MailboxScalarFieldEnum = {

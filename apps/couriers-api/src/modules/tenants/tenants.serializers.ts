@@ -7,7 +7,7 @@ export type TenantRow = {
   slug: string
   name: string
   mailboxPrefix: string | null
-  status: string
+  status: Tenant['status']
   createdAt: number | bigint
   updatedAt: number | bigint
 }

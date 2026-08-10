@@ -1,4 +1,20 @@
-import type { Tenant } from '@/lib/db'
+/**
+ * The Couriers tenant shape consumed by the Next app.
+ *
+ * This is intentionally independent of the app-local Prisma model. The API
+ * client returns snake-case transport data; `lib/couriers` converts it at the
+ * application boundary so routing and orchestration do not depend on Prisma.
+ */
+export type CouriersTenant = {
+  id: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix: string | null
+  status: 'ACTIVE' | 'PENDING' | 'SUSPENDED'
+  createdAt: number
+  updatedAt: number
+}
 
 /** A read result that is either the 876 session value or a thrown error. */
 export type Session876Result<T> = T | Error
@@ -41,7 +57,7 @@ export type ManageContext = {
   orgSlug: string | null
   orgLogoUrl: string | null
   organizations: OrgSummary[]
-  tenant: Tenant | null
+  tenant: CouriersTenant | null
   role: OrgRole
   accessStatus: AppAccessStatus
   currentPlanName?: string | null

@@ -28,10 +28,27 @@ export type Address = Prisma.AddressModel
  */
 export type Branch = Prisma.BranchModel
 /**
+ * Model Carrier
+ * Global shipping-carrier reference data. It is deliberately not tenant
+ * scoped; a portal customer may see only the carrier attached to a package
+ * they already own.
+ */
+export type Carrier = Prisma.CarrierModel
+/**
+ * Model CustomerAddress
+ * A customer's use of an address in a particular role.
+ */
+export type CustomerAddress = Prisma.CustomerAddressModel
+/**
  * Model CourierCustomerProfile
  * 
  */
 export type CourierCustomerProfile = Prisma.CourierCustomerProfileModel
+/**
+ * Model Domain
+ * A verified hostname through which a Couriers tenant is reached.
+ */
+export type Domain = Prisma.DomainModel
 /**
  * Model Mailbox
  * 

@@ -1,8 +1,11 @@
 import { AdminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import {
+  deletedTeamMemberSchema,
   teamMemberListSchema,
   teamMemberSchema,
+  type DeletedTeamMember,
+  type ListTeamMembersParams,
   type TeamMember,
   type CreateTeamMemberBody,
   type TeamMemberList,
@@ -13,10 +16,10 @@ export function createTeamResource(runtime: AdminRuntime) {
   const path = (tenantId: string) =>
     `/v1/tenants/${encodeURIComponent(tenantId)}/team`
   return {
-    list(tenantId: string) {
+    list(tenantId: string, params: ListTeamMembersParams = {}) {
       return AdminRequest<TeamMemberList>(
         runtime,
-        { method: 'GET', path: path(tenantId) },
+        { method: 'GET', path: path(tenantId), query: params },
         teamMemberListSchema
       )
     },
@@ -36,6 +39,16 @@ export function createTeamResource(runtime: AdminRuntime) {
           body,
         },
         teamMemberSchema
+      )
+    },
+    delete(tenantId: string, id: string) {
+      return AdminRequest<DeletedTeamMember>(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${path(tenantId)}/${encodeURIComponent(id)}`,
+        },
+        deletedTeamMemberSchema
       )
     },
   }

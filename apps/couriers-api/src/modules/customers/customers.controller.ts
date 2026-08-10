@@ -1,10 +1,12 @@
 import type { Request, Response } from 'express'
-import { listObject } from '@/http/envelope'
+import { deletedObject, listObject } from '@/http/envelope'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import * as service from './customers.service'
 import type {
   CreateCustomerBody,
+  CustomerEnrollmentBody,
   CustomerParams,
+  DeleteCustomerBody,
   ListCustomersQuery,
   MailboxCreateBody,
   MailboxUpdateBody,
@@ -33,6 +35,17 @@ export async function createCustomer(req: Request, res: Response) {
       await service.createCustomer(tenantId, validBody<CreateCustomerBody>(req))
     )
 }
+export async function enrollCustomer(req: Request, res: Response) {
+  const { tenantId } = validParams<TenantParams>(req)
+  res
+    .status(201)
+    .json(
+      await service.enrollCustomer(
+        tenantId,
+        validBody<CustomerEnrollmentBody>(req)
+      )
+    )
+}
 export async function retrieveCustomer(req: Request, res: Response) {
   const { tenantId, id } = validParams<CustomerParams>(req)
   res.status(200).json(await service.retrieveCustomer(tenantId, id))
@@ -48,6 +61,12 @@ export async function updateCustomer(req: Request, res: Response) {
         validBody<UpdateCustomerBody>(req)
       )
     )
+}
+export async function deleteCustomer(req: Request, res: Response) {
+  const { tenantId, id } = validParams<CustomerParams>(req)
+  const body = (req.valid?.body as DeleteCustomerBody | undefined) ?? {}
+  const deleted = await service.deleteCustomer(tenantId, id, body)
+  res.status(200).json(deletedObject('courier_customer_profile', deleted.id))
 }
 export async function listMailboxes(req: Request, res: Response) {
   const { tenantId, id } = validParams<CustomerParams>(req)

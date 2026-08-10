@@ -7,6 +7,8 @@ import {
 import * as c from './settings.controller'
 import {
   moduleParamsSchema,
+  modulePreferencesSchema,
+  modulePreferencesUpdateBodySchema,
   moduleStateSchema,
   tenantParamsSchema,
   toggleBodySchema,
@@ -46,6 +48,49 @@ export function createSettingsRouter(resolveGuards: GuardResolver) {
       409: { description: 'Required module.', schema: errorEnvelopeSchema },
     },
     handler: c.toggle,
+  })
+  api.get({
+    path: '/:module/preferences',
+    security: 'admin',
+    operationId: 'modules-preferences-retrieve',
+    summary: 'Retrieve resolved preferences for a module',
+    request: { params: moduleParamsSchema },
+    responses: {
+      200: {
+        description: 'Module preferences returned.',
+        schema: successEnvelopeSchema(modulePreferencesSchema),
+      },
+      404: {
+        description: 'Module not found.',
+        schema: errorEnvelopeSchema,
+      },
+    },
+    handler: c.retrievePreferences,
+  })
+  api.patch({
+    path: '/:module/preferences',
+    security: 'admin',
+    operationId: 'modules-preferences-update',
+    summary: 'Update preferences for a module',
+    request: {
+      params: moduleParamsSchema,
+      body: modulePreferencesUpdateBodySchema,
+    },
+    responses: {
+      200: {
+        description: 'Module preferences updated.',
+        schema: successEnvelopeSchema(modulePreferencesSchema),
+      },
+      404: {
+        description: 'Module not found.',
+        schema: errorEnvelopeSchema,
+      },
+      422: {
+        description: 'Invalid preferences.',
+        schema: errorEnvelopeSchema,
+      },
+    },
+    handler: c.updatePreferences,
   })
   return api.router
 }

@@ -5,10 +5,9 @@ import * as Sentry from '@sentry/nextjs'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { service } from '@/lib/service'
+import { $couriers, toCouriersTenant } from '@/lib/couriers'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import type { ManageContext, OrgRole, AppAccessStatus } from '@/types/auth'
-import type { Tenant } from '@/lib/db'
 
 export const getManageContext = cache(async function getManageContext(
   orgSlug?: string
@@ -66,7 +65,7 @@ export const getManageContext = cache(async function getManageContext(
   let resolvedOrgSlug: string | null = null
   let resolvedOrgLogoUrl: string | null = null
   let resolvedRole: OrgRole = 'member'
-  let resolvedTenant: Tenant | null = null
+  let resolvedTenant: ManageContext['tenant'] = null
 
   if (orgSlug !== undefined) {
     const match = memberships.find(
@@ -82,9 +81,10 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    resolvedTenant = await service.tenants.retrieveByOrgId(
+    const tenant = await $couriers.tenants.retrieveByOrgId(
       match.organization.id
     )
+    resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
   } else if (orgId) {
     // SSO fast path: orgId sealed in cookie; find matching membership for role.
     const match = memberships.find(
@@ -96,19 +96,20 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    resolvedTenant = await service.tenants.retrieveByOrgId(orgId)
+    const tenant = await $couriers.tenants.retrieveByOrgId(orgId)
+    resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
   } else {
     // Email login: pick first active org with a courier tenant; fall back to first active org.
     for (const m of memberships) {
       if (m.organization.status !== 'active') continue
-      const tenant = await service.tenants.retrieveByOrgId(m.organization.id)
-      if (tenant) {
+      const tenant = await $couriers.tenants.retrieveByOrgId(m.organization.id)
+      if (tenant.data) {
         resolvedOrgId = m.organization.id
         resolvedOrgName = m.organization.name
         resolvedOrgSlug = m.organization.slug
         resolvedOrgLogoUrl = m.organization.logo_url
         resolvedRole = m.role as OrgRole
-        resolvedTenant = tenant
+        resolvedTenant = toCouriersTenant(tenant.data)
         break
       }
     }

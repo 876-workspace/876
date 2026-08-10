@@ -203,6 +203,23 @@ export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonNullableFilter<$PrismaModel>
 }
 
+export type EnumCustomerAddressTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CustomerAddressType | Prisma.EnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCustomerAddressTypeFilter<$PrismaModel> | $Enums.CustomerAddressType
+}
+
+export type EnumCustomerAddressTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CustomerAddressType | Prisma.EnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCustomerAddressTypeWithAggregatesFilter<$PrismaModel> | $Enums.CustomerAddressType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCustomerAddressTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCustomerAddressTypeFilter<$PrismaModel>
+}
+
 export type EnumCustomerStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.CustomerStatus | Prisma.EnumCustomerStatusFieldRefInput<$PrismaModel>
   in?: $Enums.CustomerStatus[] | Prisma.ListEnumCustomerStatusFieldRefInput<$PrismaModel>
@@ -586,6 +603,23 @@ export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumCustomerAddressTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.CustomerAddressType | Prisma.EnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCustomerAddressTypeFilter<$PrismaModel> | $Enums.CustomerAddressType
+}
+
+export type NestedEnumCustomerAddressTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.CustomerAddressType | Prisma.EnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.CustomerAddressType[] | Prisma.ListEnumCustomerAddressTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumCustomerAddressTypeWithAggregatesFilter<$PrismaModel> | $Enums.CustomerAddressType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumCustomerAddressTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumCustomerAddressTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumCustomerStatusFilter<$PrismaModel = never> = {

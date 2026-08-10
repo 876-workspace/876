@@ -2,8 +2,8 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
 import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
-import { customerStatusSchema } from '@/types/customer'
+import { $couriers, requireCouriersData, toCustomerView } from '@/lib/couriers'
+import { customerStatusSchema, type CustomerView } from '@/types/customer'
 
 import { CustomersTable, type CustomerTableRow } from './customers-table'
 
@@ -42,12 +42,23 @@ export async function CustomersTableData({ params, searchParams }: Props) {
       />
     )
 
-  // Layer 3 first: this workspace's own enrolled customers are the list. The
-  // shared registry is then read only for the identity of those customers.
-  const profiles = await service.customerProfiles.list(
-    ctx.tenant.id,
-    profileStatus
-  )
+  const profiles: CustomerView[] = []
+  let startingAfter: string | undefined
+  for (;;) {
+    const page = requireCouriersData(
+      await $couriers.customers.list(ctx.tenant.id, {
+        ...(profileStatus === undefined ? {} : { status: profileStatus }),
+        limit: 100,
+        ...(startingAfter === undefined
+          ? {}
+          : { starting_after: startingAfter }),
+      })
+    )
+    profiles.push(...page.data.map(toCustomerView))
+    const lastId = page.data.at(-1)?.id
+    if (!page.has_more || lastId === undefined) break
+    startingAfter = lastId
+  }
 
   if (profiles.length === 0)
     return (

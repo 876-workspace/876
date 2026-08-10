@@ -1,3 +1,4 @@
+import { deletedObject } from '@/http/envelope'
 import { AppHttpError } from '@/platform/errors'
 import {
   fromDbUnixSeconds,
@@ -9,6 +10,10 @@ import * as repo from './customers.repository'
 import type {
   CreateCustomerBody,
   Customer,
+  CustomerEnrollment,
+  CustomerEnrollmentBody,
+  DeleteCustomerBody,
+  DeletedCustomer,
   ListCustomersQuery,
   Mailbox,
   MailboxCreateBody,
@@ -84,6 +89,62 @@ export async function createCustomer(
   }
 }
 
+const MAX_ENROLLMENT_RETRY_ATTEMPTS = 3
+
+/** Atomically creates or revives a profile and its primary mailbox. */
+export async function enrollCustomer(
+  tenantId: string,
+  input: CustomerEnrollmentBody
+): Promise<CustomerEnrollment> {
+  if (!(await repo.tenantExists(tenantId))) throw missing('tenant')
+  for (let attempt = 0; attempt < MAX_ENROLLMENT_RETRY_ATTEMPTS; attempt += 1) {
+    const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
+    try {
+      return await enrollAttempt(tenantId, input, branchId)
+    } catch (error) {
+      if (isForeignKeyConstraintError(error)) throw missing('branch')
+      if (!isUniqueConstraintError(error)) throw error
+    }
+  }
+  throw conflict(
+    'customer',
+    'A courier profile already exists for this customer.'
+  )
+}
+
+async function enrollAttempt(
+  tenantId: string,
+  input: CustomerEnrollmentBody,
+  branchId: string | null
+): Promise<CustomerEnrollment> {
+  const result = await repo.enrollTenantCustomer({
+    tenantId,
+    billingCustomerId: input.billing_customer_id,
+    userId: input.user_id ?? null,
+    branchId,
+    status: input.status ?? 'ACTIVE',
+    isCommercial: input.is_commercial ?? false,
+    now: nowUnixSeconds(),
+  })
+  if (result.kind === 'conflict')
+    throw conflict(
+      'customer',
+      'A courier profile is linked to another customer.'
+    )
+  if (result.kind === 'tenant_missing') throw missing('tenant')
+  if (result.kind === 'mailbox_unavailable')
+    throw new AppHttpError({
+      code: 'mailbox/allocation-exhausted',
+      message: 'A mailbox number could not be allocated. Please try again.',
+      httpStatus: 503,
+    })
+  return {
+    object: 'courier_customer_enrollment',
+    customer: serializeCustomer(result.profile),
+    mailbox: serializeMailbox(result.mailbox),
+  }
+}
+
 export async function updateCustomer(
   tenantId: string,
   id: string,
@@ -97,6 +158,24 @@ export async function updateCustomer(
   return serializeCustomer(
     await repo.updateTenantCustomer({ id, input, now: nowUnixSeconds() })
   )
+}
+
+export async function deleteCustomer(
+  tenantId: string,
+  id: string,
+  input?: DeleteCustomerBody | null
+): Promise<DeletedCustomer> {
+  const row = await repo.findTenantCustomerById(tenantId, id)
+  if (!row) throw missing('customer')
+  const deletedBy = input?.deleted_by ?? null
+  const deletionReason = input?.reason ?? input?.deletion_reason ?? null
+  await repo.softDeleteTenantCustomer({
+    id,
+    now: nowUnixSeconds(),
+    deletedBy,
+    deletionReason,
+  })
+  return deletedObject('courier_customer_profile', id) as DeletedCustomer
 }
 
 export async function listMailboxes(
@@ -182,6 +261,15 @@ function isUniqueConstraintError(error: unknown): boolean {
   )
 }
 
+function isForeignKeyConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'P2003'
+  )
+}
+
 function serializeCustomer(row: {
   id: string
   tenantId: string
@@ -189,6 +277,7 @@ function serializeCustomer(row: {
   billingCustomerId: string
   branchId: string | null
   status: 'ACTIVE' | 'SUSPENDED'
+  trn: string | null
   isCommercial: boolean
   firstSeenAt: number | bigint
   createdAt: number | bigint
@@ -203,6 +292,7 @@ function serializeCustomer(row: {
     billing_customer_id: row.billingCustomerId,
     branch_id: row.branchId,
     status: row.status,
+    trn: row.trn ?? null,
     is_commercial: row.isCommercial,
     first_seen_at: fromDbUnixSeconds(row.firstSeenAt),
     created_at: fromDbUnixSeconds(row.createdAt),

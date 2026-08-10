@@ -28,6 +28,25 @@ export const moduleParamsSchema = tenantParamsSchema.extend({
   module: moduleKeySchema,
 })
 export const toggleBodySchema = z.strictObject({ is_enabled: z.boolean() })
+export const modulePreferencesSchema = z
+  .object({
+    object: z.literal('module_preferences'),
+    module: moduleKeySchema,
+    preferences: z.record(
+      z.string(),
+      z.union([z.boolean(), z.string(), z.number()])
+    ),
+    updated_at: z.number().int().optional(),
+  })
+  .meta({ id: 'ModulePreferences' })
+export const modulePreferencesUpdateBodySchema = z.record(
+  z.string(),
+  z.union([z.boolean(), z.string(), z.number()])
+)
 export type TenantParams = z.infer<typeof tenantParamsSchema>
 export type ModuleParams = z.infer<typeof moduleParamsSchema>
 export type ToggleBody = z.infer<typeof toggleBodySchema>
+export type ModulePreferences = z.infer<typeof modulePreferencesSchema>
+export type ModulePreferencesUpdateBody = z.infer<
+  typeof modulePreferencesUpdateBodySchema
+>

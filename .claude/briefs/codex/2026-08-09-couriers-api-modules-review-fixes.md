@@ -4,7 +4,7 @@ Working directory: **`/root/projects/876`**, on branch **`feat/couriers-api-modu
 (already checked out for you). Do **not** create a worktree; do **not** create,
 switch, or reset a branch; do **not** commit or push. Leave the work in the tree.
 
-Scope: **`apps/couriers-api/**` only.** Do not touch `apps/couriers/**`,
+Scope: **`apps/couriers-api/**`only.** Do not touch`apps/couriers/**`,
 `packages/**`, any Prisma schema, or any migration. Another agent may be editing
 `packages/couriers` concurrently — stay out of it.
 
@@ -76,6 +76,7 @@ by `starting_after` / `ending_before` on item IDs.
   ```
 
   and the mirrored `gt` form, ascending, then reverse, for `ending_before`.
+
 - An unknown or cross-tenant anchor id must not leak another tenant's page:
   scope the anchor load by `tenantId` and return an empty page (or a 400 —
   pick one, state which and why) when it does not resolve.
@@ -100,8 +101,7 @@ branch sorts first.
 transform:
 
 ```ts
-is_active: z
-  .enum(['true', 'false'])
+is_active: z.enum(['true', 'false'])
   .transform((value) => value === 'true')
   .optional()
 ```
@@ -133,10 +133,10 @@ Next app's own flow resolves the tenant's default branch first, so a profile
 created through this API has no routing destination while one created through the
 app does — the same tenant, two behaviors.
 
-**Read `apps/couriers/src/lib/service/customers/**` first and match what it
+**Read `apps/couriers/src/lib/service/customers/**`first and match what it
 actually does** (it is the behavior being ported; do not invent a third rule).
 If it resolves the default branch, resolve it here the same way — omitted means
-"tenant default", explicit `null` means "deliberately none". Say plainly in your
+"tenant default", explicit`null` means "deliberately none". Say plainly in your
 report what the Next flow does and what you implemented.
 
 ---

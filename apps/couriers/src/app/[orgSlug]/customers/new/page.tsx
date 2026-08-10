@@ -3,7 +3,7 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers, requireCouriersData } from '@/lib/couriers'
 import { CustomerForm } from '../_components/customer-form'
 
 export const metadata = { title: 'Add customer' }
@@ -39,11 +39,13 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
         You do not have permission to manage customers.
       </div>
     )
-  const branches = await service.branches.list({ tenantId: ctx.tenant.id })
+  const branches = requireCouriersData(
+    await $couriers.branches.list(ctx.tenant.id)
+  )
   return (
     <CustomerForm
       orgSlug={orgSlug}
-      branches={branches.map(({ id, name }) => ({ id, name }))}
+      branches={branches.data.map(({ id, name }) => ({ id, name }))}
     />
   )
 }

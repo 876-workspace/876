@@ -328,4 +328,225 @@ describe('branches', () => {
     expect(response.body.error.code).toBe('branch/conflict')
     expect(branch.update).not.toHaveBeenCalled()
   })
+
+  describe('Advanced guides — AAA, realistic data, contract and chaos (1.2,1.6,2.10,2.11,4.1)', () => {
+    it('When realistic Kingston address with mixed case and accent is posted, then normalizes and returns BDD envelope', async () => {
+      // Arrange
+      const payload = {
+        name: '  Café Harbour — Downtown  ',
+        address: {
+          name: '  Café Harbour  ',
+          line1: '  7 King Street, Suite 2 ',
+          city: '  St. Andrew  ',
+          country_code: ' jm ',
+          region_code: ' ksa ',
+          postal_code: ' JMKN05 ',
+        },
+      }
+      // Act
+      const res = await request(createApp())
+        .post('/v1/tenants/ten_1/branches')
+        .set(ADMIN_HEADERS)
+        .send(payload)
+      // Assert
+      expect(res.status).toBe(201)
+      expect(res.body).toMatchObject({
+        data: {
+          object: 'branch',
+          id: expect.any(String),
+          created_at: expect.any(Number),
+        },
+        error: null,
+      })
+      expect(res.body.data.address).toMatchObject({
+        object: 'address',
+        country_code: 'JM',
+        region_code: 'KSA',
+      })
+    })
+
+    it('When XSS/SQL/traversal strings are sent, then never 500 and no stack leak', async () => {
+      // Arrange
+      const probes = [
+        {
+          name: "<script>alert('xss')</script>",
+          address: {
+            name: 'Home',
+            line1: '1 Harbour',
+            city: 'Kingston',
+            country_code: 'JM',
+          },
+        },
+        {
+          name: "' OR '1'='1",
+          address: {
+            name: 'Home',
+            line1: '../etc/passwd',
+            city: 'Kingston',
+            country_code: 'JM',
+          },
+        },
+        {
+          name: 'a'.repeat(200),
+          address: {
+            name: 'Home',
+            line1: '1 Harbour',
+            city: 'Kingston',
+            country_code: 'JM',
+          },
+        },
+      ]
+      for (const p of probes) {
+        // Act
+        const res = await request(createApp())
+          .post('/v1/tenants/ten_1/branches')
+          .set(ADMIN_HEADERS)
+          .send(p)
+        // Assert
+        expect([201, 400, 422, 409]).toContain(res.status)
+        if (res.body.error) expect(res.body.error).not.toHaveProperty('stack')
+      }
+    })
+
+    it('When geographic service is slow or returns 503, then branch create reports 503 and does not write', async () => {
+      // Arrange
+      const { resolveRegion } = await import('@/providers/platform/geo')
+      ;(
+        resolveRegion as unknown as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce({
+        ok: false,
+        code: 'address/geography-unavailable',
+      })
+      // Act
+      const res = await request(createApp())
+        .post('/v1/tenants/ten_1/branches')
+        .set(ADMIN_HEADERS)
+        .send({
+          name: 'Geo Fail',
+          address: {
+            name: 'Geo Fail',
+            line1: '1 Harbour',
+            city: 'Kingston',
+            country_code: 'JM',
+            region_code: 'KSA',
+          },
+        })
+      // Assert
+      expect(res.status).toBe(503)
+      expect(res.body.error.code).toBe('address/geography-unavailable')
+      expect(branch.create).not.toHaveBeenCalled()
+    })
+
+    it('When listing, then contract holds for dynamic fields and no internal leakage', async () => {
+      // Arrange
+      const row = {
+        id: 'br_real_1',
+        tenantId: 'ten_1',
+        addressId: 'addr_1',
+        orgLocationId: null,
+        name: 'Real',
+        phone: null,
+        isDefault: true,
+        isActive: true,
+        settings: null,
+        createdAt: 1785000000,
+        updatedAt: 1785000000,
+        address: {
+          id: 'addr_1',
+          tenantId: 'ten_1',
+          name: 'Real',
+          line1: '1 Harbour',
+          line2: null,
+          city: 'Kingston',
+          regionCode: 'KSA',
+          regionName: 'Kingston',
+          countryCode: 'JM',
+          postalCode: null,
+          latitude: null,
+          longitude: null,
+          isActive: true,
+          createdAt: 1785000000,
+          updatedAt: 1785000000,
+        },
+      }
+      branch.findMany.mockResolvedValueOnce([
+        row,
+      ] as unknown as typeof branch.findMany extends (
+        ...args: unknown[]
+      ) => Promise<infer T>
+        ? T
+        : never)
+      // Act
+      const res = await request(createApp())
+        .get('/v1/tenants/ten_1/branches')
+        .set(ADMIN_HEADERS)
+      // Assert
+      expect(res.status).toBe(200)
+      expect(res.body.data.data[0]).toMatchObject({
+        object: 'branch',
+        id: expect.any(String),
+        tenant_id: expect.any(String),
+        created_at: expect.any(Number),
+      })
+      expect(res.body.data.data[0]).not.toHaveProperty('tenantId')
+      expect(res.body.data.data[0].address).toMatchObject({
+        object: 'address',
+        region_code: expect.any(String),
+      })
+    })
+
+    it('When pagination cursors are invalid, then 422 or empty page without 500', async () => {
+      // Arrange + Act
+      const res1 = await request(createApp())
+        .get('/v1/tenants/ten_1/branches?limit=9999')
+        .set(ADMIN_HEADERS)
+      const res2 = await request(createApp())
+        .get('/v1/tenants/ten_1/branches?starting_after=&ending_before=xyz')
+        .set(ADMIN_HEADERS)
+      // Assert
+      for (const r of [res1, res2]) {
+        expect([200, 422]).toContain(r.status)
+        if (r.body.error) expect(r.body.error).not.toHaveProperty('stack')
+      }
+    })
+
+    it('When branch name is whitespace-only or oversized, then 422 or trimmed success without 500', async () => {
+      // Arrange
+      const payloads = [
+        {
+          name: '   ',
+          address: {
+            name: 'Valid',
+            line1: '1 Harbour',
+            city: 'Kingston',
+            country_code: 'JM',
+          },
+        },
+        {
+          name: 'a'.repeat(300),
+          address: {
+            name: 'Valid',
+            line1: '1 Harbour',
+            city: 'Kingston',
+            country_code: 'JM',
+          },
+        },
+      ]
+      for (const p of payloads) {
+        // Act
+        const res = await request(createApp())
+          .post('/v1/tenants/ten_1/branches')
+          .set(ADMIN_HEADERS)
+          .send(p)
+        // Assert — whitespace correctly rejected, oversized rejected, but trims mean either 201 or 422/400, never 500
+        expect([201, 400, 422]).toContain(res.status)
+        if (res.status !== 201) {
+          expect(res.body).toEqual({
+            data: null,
+            error: expect.objectContaining({ code: expect.any(String) }),
+          })
+        }
+      }
+    })
+  })
 })

@@ -10,6 +10,7 @@ import type {
   CreatePackageBody,
   ListPackagesQuery,
   Package,
+  PortalPackage,
   UpdatePackageBody,
 } from './packages.schemas'
 
@@ -51,6 +52,21 @@ export async function retrieveCustomerPackage(
   })
   if (!row) throw missing()
   return serialize(row)
+}
+
+/** Session-safe package detail, with only relations needed by the owner UI. */
+export async function retrieveCustomerPortalPackage(
+  tenantId: string,
+  customerId: string,
+  id: string
+): Promise<PortalPackage> {
+  const row = await repo.findTenantCustomerPackageDetailById({
+    tenantId,
+    customerId,
+    id,
+  })
+  if (!row) throw missing()
+  return serializePortalPackage(row)
 }
 
 export async function createPackage(
@@ -137,5 +153,41 @@ function serialize(row: {
     collected_at: nullableFromDbUnixSeconds(row.collectedAt),
     created_at: fromDbUnixSeconds(row.createdAt),
     updated_at: fromDbUnixSeconds(row.updatedAt),
+  }
+}
+
+function serializePortalPackage(row: {
+  id: string
+  tenantId: string
+  customerId: string
+  branchId: string | null
+  mailboxId: string | null
+  trackingNum: string | null
+  status:
+    | 'PRE_ALERT'
+    | 'RECEIVED'
+    | 'IN_TRANSIT'
+    | 'ARRIVED'
+    | 'READY_FOR_PICKUP'
+    | 'COLLECTED'
+    | 'UNCLAIMED'
+  packageType: 'CARTON' | 'ENVELOPE' | 'BAG' | 'PALLET' | 'OTHER'
+  description: string | null
+  quantity: number
+  actualWeight: number | null
+  chargeableWeight?: number | null
+  collectedAt: number | bigint | null
+  createdAt: number | bigint
+  updatedAt: number | bigint
+  carrier?: { id: string; name: string } | null
+  branch?: { id: string; name: string } | null
+  mailbox?: { id: string; number: string } | null
+}): PortalPackage {
+  return {
+    ...serialize(row),
+    chargeable_weight: row.chargeableWeight ?? null,
+    carrier: row.carrier ?? null,
+    branch: row.branch ?? null,
+    mailbox: row.mailbox ?? null,
   }
 }

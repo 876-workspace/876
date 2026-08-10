@@ -5,13 +5,18 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  couriersErrorStatus: vi.fn((error: { code: string }) =>
+    error.code === 'role/in-use' ? 409 : 400
+  ),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/service', () => ({
-  service: { roles: { update: mocks.update, delete: mocks.delete } },
+vi.mock('@/lib/couriers', () => ({
+  $couriers: { roles: { update: mocks.update, delete: mocks.delete } },
+  couriersErrorStatus: mocks.couriersErrorStatus,
+  toRoleView: (role: Record<string, unknown>) => role,
 }))
 
 import { DELETE, PATCH } from './route'
@@ -49,7 +54,7 @@ describe('Couriers role route', () => {
       error: null,
     })
     mocks.delete.mockResolvedValue({
-      data: { id: 'role_dispatcher', deleted: true },
+      data: { object: 'role', id: 'role_dispatcher', deleted: true },
       error: null,
     })
   })
@@ -138,9 +143,10 @@ describe('Couriers role route', () => {
     it('propagates default-role immutability from the service', async () => {
       mocks.update.mockResolvedValue({
         data: null,
-        error: 'Default roles cannot be edited or deleted.',
-        status: 400,
-        code: 'role/default-immutable',
+        error: {
+          code: 'role/default-immutable',
+          message: 'Default roles cannot be edited or deleted.',
+        },
       })
 
       const response = await PATCH(
@@ -233,9 +239,10 @@ describe('Couriers role route', () => {
     it('propagates role-in-use conflicts from the service', async () => {
       mocks.delete.mockResolvedValue({
         data: null,
-        error: 'Reassign all team members before deleting this role.',
-        status: 409,
-        code: 'role/in-use',
+        error: {
+          code: 'role/in-use',
+          message: 'Reassign all team members before deleting this role.',
+        },
       })
 
       const response = await DELETE(

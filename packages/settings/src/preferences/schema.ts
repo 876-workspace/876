@@ -82,7 +82,7 @@ function normalizeDecimal(value: string): {
   fraction: string
 } {
   const negative = value.startsWith('-')
-  const [rawInteger, rawFraction = ''] = value.replace(/^-/, '').split('.')
+  const [rawInteger = '', rawFraction = ''] = value.replace(/^-/, '').split('.')
   const integer = rawInteger.replace(/^0+(?=\d)/, '')
   const fraction = rawFraction.padEnd(8, '0')
   const isZero = /^0+$/.test(integer) && /^0*$/.test(fraction)

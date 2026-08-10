@@ -12,9 +12,8 @@ you open** — the last run left three test files truncated one character short 
 parsing, which cost a review cycle. Re-read each file you write, end to end,
 before reporting.
 
-Scope: **`apps/couriers-api/src/modules/mailboxes/**` plus the OpenAPI snapshot**
-only. Do not touch any other module, any Prisma schema, any migration,
-`apps/couriers/**`, or `packages/**`.
+Scope: **`apps/couriers-api/src/modules/mailboxes/**`plus the OpenAPI snapshot**
+only. Do not touch any other module, any Prisma schema, any migration,`apps/couriers/**`, or `packages/**`.
 
 Rules that bind: `.claude/rules/express-api.md`, `.claude/rules/testing.md`.
 
@@ -53,7 +52,7 @@ then filter on the tuple `(isPrimary, createdAt, id)`:
 ```ts
 // starting_after — the page after the anchor, in the same order
 OR: [
-  { isPrimary: { lt: anchor.isPrimary } },               // false sorts after true
+  { isPrimary: { lt: anchor.isPrimary } }, // false sorts after true
   { isPrimary: anchor.isPrimary, createdAt: { gt: anchor.createdAt } },
   {
     isPrimary: anchor.isPrimary,

@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { CourierCustomerProfile, Tenant } from '@/lib/db'
-import type { Signed876Session } from '@/types/auth'
-import type { PortalPackage } from '@/types/package'
+import type { PortalPackage } from '@876/couriers'
+
+import type { CouriersTenant, Signed876Session } from '@/types/auth'
 
 const mocks = vi.hoisted(() => ({
   getAuthSession: vi.fn(),
   isSignedSession: vi.fn(),
   getPortalTenant: vi.fn(),
-  retrieveByTenantAndUser: vi.fn(),
-  listPackages: vi.fn(),
+  createPortalCouriersClient: vi.fn(),
+  listAllPortalPackages: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/session', () => ({
@@ -19,13 +19,25 @@ vi.mock('@/lib/auth/session', () => ({
 vi.mock('@/lib/portal/tenant', () => ({
   getPortalTenant: mocks.getPortalTenant,
 }))
-vi.mock('@/lib/service', () => ({
-  service: {
-    customerProfiles: {
-      retrieveByTenantAndUser: mocks.retrieveByTenantAndUser,
-    },
-    packages: { list: mocks.listPackages },
+vi.mock('@/lib/portal/client', () => ({
+  createPortalCouriersClient: mocks.createPortalCouriersClient,
+  listAllPortalPackages: mocks.listAllPortalPackages,
+  isPortalNotFound: (result: { error: { code: string } | null }) =>
+    result.error?.code.endsWith('/not-found') ?? false,
+  requirePortalData: <T>(result: {
+    data: T | null
+    error: { code: string; message: string } | null
+  }) => {
+    if (result.error === null) return result.data as T
+    throw new Error(result.error.message)
   },
+  toPortalPackageListItem: (packageItem: PortalPackage) => ({
+    id: packageItem.id,
+    trackingNum: packageItem.tracking_num,
+    status: packageItem.status,
+    description: packageItem.description,
+    createdAt: packageItem.created_at,
+  }),
 }))
 
 import { GET } from './route'
@@ -46,7 +58,7 @@ function createSession(
   }
 }
 
-function createTenant(overrides: Partial<Tenant> = {}): Tenant {
+function createTenant(overrides: Partial<CouriersTenant> = {}): CouriersTenant {
   return {
     id: 'ten_rocketship',
     orgId: 'org_rocketship',
@@ -60,71 +72,29 @@ function createTenant(overrides: Partial<Tenant> = {}): Tenant {
   }
 }
 
-function createProfile(
-  overrides: Partial<CourierCustomerProfile> = {}
-): CourierCustomerProfile {
-  return {
-    id: 'cprof_kimani',
-    tenantId: 'ten_rocketship',
-    userId: 'user_kimani',
-    billingCustomerId: 'blcus_kimani',
-    branchId: 'br_kingston',
-    status: 'ACTIVE',
-    trn: null,
-    isCommercial: false,
-    firstSeenAt: 1_784_419_200,
-    createdAt: 1_784_419_200,
-    updatedAt: 1_784_419_200,
-    deletedAt: null,
-    deletedBy: null,
-    deletionReason: null,
-    ...overrides,
-  }
-}
-
 function createPortalPackage(
   overrides: Partial<PortalPackage> = {}
 ): PortalPackage {
   return {
+    object: 'package',
     id: 'pkg_rocketship_1001',
-    tenantId: 'ten_rocketship',
-    customerId: 'cprof_kimani',
-    branchId: 'br_kingston',
-    mailboxId: 'mbx_rsj1001',
-    carrierId: 'car_fedex',
-    sellerId: null,
-    categoryId: null,
-    billingInvoiceId: null,
-    manifestId: null,
-    trackingNum: 'FX876JM1001',
+    tenant_id: 'ten_rocketship',
+    customer_id: 'cprof_kimani',
+    branch_id: 'br_kingston',
+    mailbox_id: 'mbx_rsj1001',
+    tracking_num: 'FX876JM1001',
     status: 'READY_FOR_PICKUP',
-    packageType: 'CARTON',
+    package_type: 'CARTON',
     description: 'Running shoes',
     quantity: 1,
-    actualWeight: 4.5,
-    chargeableWeight: 5,
-    length: 14,
-    width: 10,
-    height: 6,
-    dimensionalWeight: 6.04,
-    declaredValue: 12_500,
-    hsCode: '6404110000',
-    countryOfOrigin: 'US',
-    hasCustomsDuty: false,
-    importDutyAmount: null,
-    gctAmount: null,
-    customsEntryNumber: null,
-    customsClearedAt: null,
-    customsHoldReason: null,
-    isHazardous: false,
-    condition: 'Good condition',
-    collectedAt: null,
-    collectedById: null,
-    createdAt: 1_784_419_200,
-    updatedAt: 1_784_505_600,
-    carrier: { name: 'FedEx' },
-    branch: { name: 'Kingston' },
-    mailbox: { number: 'RSJ1001' },
+    actual_weight: 4.5,
+    chargeable_weight: 4.5,
+    carrier: { id: 'carrier_fedex', name: 'FedEx' },
+    branch: { id: 'br_kingston', name: 'Kingston' },
+    mailbox: { id: 'mbx_rsj1001', number: 'RSJ1001' },
+    collected_at: null,
+    created_at: 1_784_419_200,
+    updated_at: 1_784_505_600,
     ...overrides,
   }
 }
@@ -135,8 +105,8 @@ describe('portal packages GET', () => {
     mocks.getAuthSession.mockResolvedValue({ user: null })
     mocks.isSignedSession.mockReturnValue(false)
     mocks.getPortalTenant.mockResolvedValue(null)
-    mocks.retrieveByTenantAndUser.mockResolvedValue(null)
-    mocks.listPackages.mockResolvedValue([])
+    mocks.createPortalCouriersClient.mockReturnValue({})
+    mocks.listAllPortalPackages.mockResolvedValue({ data: [], error: null })
   })
 
   it('returns 401 for an unsigned session without resolving portal data', async () => {
@@ -156,8 +126,8 @@ describe('portal packages GET', () => {
     expect(mocks.isSignedSession).toHaveBeenCalledTimes(1)
     expect(mocks.isSignedSession).toHaveBeenCalledWith(session)
     expect(mocks.getPortalTenant).not.toHaveBeenCalled()
-    expect(mocks.retrieveByTenantAndUser).not.toHaveBeenCalled()
-    expect(mocks.listPackages).not.toHaveBeenCalled()
+    expect(mocks.createPortalCouriersClient).not.toHaveBeenCalled()
+    expect(mocks.listAllPortalPackages).not.toHaveBeenCalled()
   })
 
   it('returns 404 when the signed session has no portal tenant', async () => {
@@ -175,8 +145,8 @@ describe('portal packages GET', () => {
     })
     expect(mocks.getPortalTenant).toHaveBeenCalledTimes(1)
     expect(mocks.getPortalTenant).toHaveBeenCalledWith()
-    expect(mocks.retrieveByTenantAndUser).not.toHaveBeenCalled()
-    expect(mocks.listPackages).not.toHaveBeenCalled()
+    expect(mocks.createPortalCouriersClient).not.toHaveBeenCalled()
+    expect(mocks.listAllPortalPackages).not.toHaveBeenCalled()
   })
 
   it('returns 403 when the signed customer is not enrolled', async () => {
@@ -185,6 +155,10 @@ describe('portal packages GET', () => {
     mocks.getAuthSession.mockResolvedValue(session)
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPortalTenant.mockResolvedValue(tenant)
+    mocks.listAllPortalPackages.mockResolvedValue({
+      data: null,
+      error: { code: 'customer/not-found', message: 'Not found.' },
+    })
 
     const response = await GET()
     const body = await response.json()
@@ -197,52 +171,64 @@ describe('portal packages GET', () => {
         message: 'Portal enrollment is required.',
       },
     })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-      'ten_rocketship',
-      'user_kimani'
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+      'access_kimani'
     )
-    expect(mocks.listPackages).not.toHaveBeenCalled()
+    expect(mocks.listAllPortalPackages).toHaveBeenCalledTimes(1)
+    expect(mocks.listAllPortalPackages).toHaveBeenCalledWith(
+      expect.anything(),
+      'ten_rocketship'
+    )
   })
 
-  it('returns only packages scoped to the tenant and customer profile', async () => {
+  it('returns session-scoped package-list views', async () => {
     const session = createSession()
     const tenant = createTenant()
-    const profile = createProfile()
     const packages = [createPortalPackage()]
     mocks.getAuthSession.mockResolvedValue(session)
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPortalTenant.mockResolvedValue(tenant)
-    mocks.retrieveByTenantAndUser.mockResolvedValue(profile)
-    mocks.listPackages.mockResolvedValue(packages)
+    mocks.listAllPortalPackages.mockResolvedValue({
+      data: packages,
+      error: null,
+    })
 
     const response = await GET()
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body).toEqual({ data: packages, error: null })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-      'ten_rocketship',
-      'user_kimani'
-    )
-    expect(mocks.listPackages).toHaveBeenCalledTimes(1)
-    expect(mocks.listPackages).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
+    expect(body).toEqual({
+      data: [
+        {
+          id: 'pkg_rocketship_1001',
+          trackingNum: 'FX876JM1001',
+          status: 'READY_FOR_PICKUP',
+          description: 'Running shoes',
+          createdAt: 1_784_419_200,
+        },
+      ],
+      error: null,
     })
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+      'access_kimani'
+    )
+    expect(mocks.listAllPortalPackages).toHaveBeenCalledTimes(1)
+    expect(mocks.listAllPortalPackages).toHaveBeenCalledWith(
+      expect.anything(),
+      'ten_rocketship'
+    )
   })
 
-  it('returns a 500 envelope when the package service rejects unexpectedly', async () => {
+  it('returns a 500 envelope when the Couriers API rejects unexpectedly', async () => {
     const session = createSession()
     const tenant = createTenant()
-    const profile = createProfile()
-    const serviceError = new Error('Database connection interrupted')
+    const serviceError = new Error('Couriers API unavailable')
     mocks.getAuthSession.mockResolvedValue(session)
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPortalTenant.mockResolvedValue(tenant)
-    mocks.retrieveByTenantAndUser.mockResolvedValue(profile)
-    mocks.listPackages.mockRejectedValue(serviceError)
+    mocks.listAllPortalPackages.mockRejectedValue(serviceError)
 
     const response = await GET()
     const body = await response.json()
@@ -255,15 +241,14 @@ describe('portal packages GET', () => {
         message: 'Failed to load packages.',
       },
     })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-      'ten_rocketship',
-      'user_kimani'
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+      'access_kimani'
     )
-    expect(mocks.listPackages).toHaveBeenCalledTimes(1)
-    expect(mocks.listPackages).toHaveBeenCalledWith({
-      tenantId: 'ten_rocketship',
-      customerId: 'cprof_kimani',
-    })
+    expect(mocks.listAllPortalPackages).toHaveBeenCalledTimes(1)
+    expect(mocks.listAllPortalPackages).toHaveBeenCalledWith(
+      expect.anything(),
+      'ten_rocketship'
+    )
   })
 })

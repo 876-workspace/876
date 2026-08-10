@@ -86,7 +86,7 @@ command you did not run.
 
 ### apps/couriers-api/src/platform/jwt.ts
 
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Verify bearer tokens with the platform public key**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub> Verify bearer tokens with the platform public key**
 
 When a route uses `security: 'session'`, every real platform access token will be rejected because this verifies it as an HMAC token using `SESSION_COOKIE_SECRET`, while `apps/api/src/platform/jwt.ts` signs and verifies provider tokens with RS256. The session-cookie secret is for the separately sealed cookie architecture, so Couriers must verify bearer tokens using the identity API's public key/JWKS instead.
 
@@ -96,7 +96,7 @@ Useful? React with 👍 / 👎.
 
 ### apps/couriers-api/package.json
 
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Run the boundary gate from the repository checks**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub> Run the boundary gate from the repository checks**
 
 Checked the root `package.json`, `turbo.json`, and `.github/workflows`: `pnpm check` runs only Turbo's `lint`, `typecheck`, and `test` tasks, and no workflow invokes this `boundaries` script. Consequently, violations of the new module/Prisma dependency rules pass the repository's advertised pre-commit and CI checks; wire this command into an executed task or workflow.
 
@@ -104,9 +104,8 @@ Useful? React with 👍 / 👎.
 
 ### apps/couriers-api/prisma.config.ts
 
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Do not require an optional direct database URL**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub> Do not require an optional direct database URL**
 
 When a developer follows this package's README and configures the required `DATABASE_URL` but omits the documented-optional `DIRECT_DATABASE_URL`, the advertised `pnpm db:generate` command fails while evaluating `env('DIRECT_DATABASE_URL')` before Prisma can generate anything. Either make the variable required in the documented setup or avoid eagerly requiring it for generation and reserve it for commands that actually need a direct connection.
 
 Useful? React with 👍 / 👎.
-

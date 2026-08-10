@@ -47,7 +47,10 @@ vi.mock('@/db/client', () => ({
 
 function createSessionApp(): Express {
   const app = express()
-  const guards = createAuthGuards({ findApiKeyByHash, markApiKeyUsed })
+  const guards = createAuthGuards({
+    findApiKeyByHash,
+    markApiKeyUsed,
+  })
   const api = createApiRouter({
     tag: 'Session guard test',
     prefix: '/session-probe',

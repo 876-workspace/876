@@ -1,12 +1,16 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import type { NextRequest } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { branchSyncSite, scheduleSync } from '@/lib/manage/org-locations'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  couriersErrorStatus,
+  toBranchCreateBody,
+  toBranchView,
+} from '@/lib/couriers'
 import { branchCreateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -35,6 +39,8 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
+  const tenantId = ctx.tenant.id
+
   const params = { ...(body as Record<string, unknown>) }
   delete params.orgSlug
   const parsed = branchCreateParamsSchema.safeParse(params)
@@ -44,16 +50,23 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await service.branches.create(ctx.tenant.id, parsed.data)
+  const result = await $couriers.branches.create(
+    tenantId,
+    toBranchCreateBody(parsed.data)
+  )
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  // The envelope types `data` as nullable because a service error carries
-  // none; a successful result always has it.
-  if (result.data) scheduleSync(ctx.tenant.orgId, branchSyncSite(result.data))
+  const branch = toBranchView(result.data)
+  after(() =>
+    $couriers.organizationLocations.sync(tenantId, {
+      kind: 'branch',
+      site_id: branch.id,
+    })
+  )
 
-  return apiJson({ data: result.data }, { status: 201 })
+  return apiJson({ data: branch }, { status: 201 })
 }

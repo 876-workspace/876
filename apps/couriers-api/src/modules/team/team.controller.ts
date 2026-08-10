@@ -1,15 +1,20 @@
 import type { Request, Response } from 'express'
 import { listObject } from '@/http/envelope'
-import { validBody, validParams } from '@/http/middleware/validate'
+import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import * as service from './team.service'
 import type {
   IdParams,
   MemberBody,
+  MemberListQuery,
   MemberPatchBody,
   RoleBody,
   RolePatchBody,
   TenantParams,
 } from './team.schemas'
+export async function retrieveRole(req: Request, res: Response) {
+  const { tenantId, id } = validParams<IdParams>(req)
+  res.status(200).json(await service.retrieveRole(tenantId, id))
+}
 export async function listRoles(req: Request, res: Response) {
   const { tenantId } = validParams<TenantParams>(req)
   res.status(200).json(
@@ -38,9 +43,10 @@ export async function deleteRole(req: Request, res: Response) {
 }
 export async function listMembers(req: Request, res: Response) {
   const { tenantId } = validParams<TenantParams>(req)
+  const { status } = validQuery<MemberListQuery>(req)
   res.status(200).json(
     listObject({
-      data: await service.listMembers(tenantId),
+      data: await service.listMembers(tenantId, status),
       hasMore: false,
       url: `/v1/tenants/${tenantId}/team`,
     })
@@ -59,4 +65,8 @@ export async function updateMember(req: Request, res: Response) {
     .json(
       await service.updateMember(tenantId, id, validBody<MemberPatchBody>(req))
     )
+}
+export async function deleteMember(req: Request, res: Response) {
+  const { tenantId, id } = validParams<IdParams>(req)
+  res.status(200).json(await service.deleteMember(tenantId, id))
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import {
+  deletedObjectSchema,
   errorEnvelopeSchema,
   listObjectSchema,
   successEnvelopeSchema,
@@ -8,14 +9,17 @@ import {
 import * as controller from './customers.controller'
 import {
   createCustomerBodySchema,
+  customerEnrollmentBodySchema,
+  customerEnrollmentSchema,
   customerParamsSchema,
   customerSchema,
+  deleteCustomerBodySchema,
   listCustomersQuerySchema,
   mailboxCreateBodySchema,
   mailboxSchema,
   mailboxUpdateBodySchema,
   tenantParamsSchema,
-  type CustomerParams,
+  updateCustomerBodySchema,
 } from './customers.schemas'
 const mailboxParamsSchema = customerParamsSchema.extend({
   mailboxId: z.string().min(1),
@@ -59,6 +63,29 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.createCustomer,
   })
+  api.post({
+    path: '/enrollments',
+    security: 'admin',
+    operationId: 'customers-enroll',
+    summary: 'Atomically enroll a courier customer with a primary mailbox',
+    request: { params: tenantParamsSchema, body: customerEnrollmentBodySchema },
+    responses: {
+      201: {
+        description: 'Customer profile and primary mailbox enrolled.',
+        schema: successEnvelopeSchema(customerEnrollmentSchema),
+      },
+      404: {
+        description: 'Tenant or branch not found.',
+        schema: errorEnvelopeSchema,
+      },
+      409: { description: 'Customer conflict.', schema: errorEnvelopeSchema },
+      503: {
+        description: 'Mailbox allocation unavailable.',
+        schema: errorEnvelopeSchema,
+      },
+    },
+    handler: controller.enrollCustomer,
+  })
   api.get({
     path: '/:id',
     security: 'admin',
@@ -84,11 +111,7 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
     summary: 'Update a courier customer profile',
     request: {
       params: customerParamsSchema,
-      body: z.strictObject({
-        branch_id: z.string().min(1).nullable().optional(),
-        status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
-        is_commercial: z.boolean().optional(),
-      }),
+      body: updateCustomerBodySchema,
     },
     responses: {
       200: {
@@ -101,6 +124,29 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
       },
     },
     handler: controller.updateCustomer,
+  })
+  api.delete({
+    path: '/:id',
+    security: 'admin',
+    operationId: 'customers-delete',
+    summary: 'Delete a courier customer profile',
+    request: {
+      params: customerParamsSchema,
+      body: deleteCustomerBodySchema,
+    },
+    responses: {
+      200: {
+        description: 'Customer profile deleted.',
+        schema: successEnvelopeSchema(
+          deletedObjectSchema('courier_customer_profile')
+        ),
+      },
+      404: {
+        description: 'Customer not found.',
+        schema: errorEnvelopeSchema,
+      },
+    },
+    handler: controller.deleteCustomer,
   })
   api.get({
     path: '/:id/mailboxes',

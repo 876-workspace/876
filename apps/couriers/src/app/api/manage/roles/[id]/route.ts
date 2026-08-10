@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers, couriersErrorStatus, toRoleView } from '@/lib/couriers'
 import { roleUpdateParamsSchema } from '@/types/role'
 
 export const runtime = 'nodejs'
@@ -40,14 +40,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await service.roles.update(ctx.tenant.id, id, params)
+  const result = await $couriers.roles.update(ctx.tenant.id, id, params)
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  return apiJson({ data: result.data })
+  return apiJson({ data: toRoleView(result.data) })
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
@@ -66,12 +66,12 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await service.roles.delete(ctx.tenant.id, id)
+  const result = await $couriers.roles.delete(ctx.tenant.id, id)
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  return apiJson({ data: result.data })
+  return apiJson({ data: { id: result.data.id, deleted: true } })
 }

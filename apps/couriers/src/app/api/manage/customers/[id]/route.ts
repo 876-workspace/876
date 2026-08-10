@@ -5,8 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
+import { $couriers, couriersErrorStatus } from '@/lib/couriers'
 import { updateManagedCustomer } from '@/lib/manage/customers'
-import { service } from '@/lib/service'
 import { customerUpdateParamsSchema } from '@/types/customer'
 
 export const runtime = 'nodejs'
@@ -67,15 +67,14 @@ export async function DELETE(request: NextRequest, context: Context) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
   const { id } = await context.params
-  const result = await service.customerProfiles.delete(
-    ctx.tenant.id,
-    id,
-    ctx.userId
-  )
+  const result = await $couriers.customers.delete(ctx.tenant.id, id, {
+    deleted_by: ctx.userId,
+  })
+
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
-  return apiJson({ data: result.data })
+  return apiJson({ data: { id: result.data.id, deleted: true } })
 }

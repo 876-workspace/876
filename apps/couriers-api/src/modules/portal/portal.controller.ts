@@ -3,11 +3,13 @@ import type { Request, Response } from 'express'
 import { getPrincipal } from '@/http/auth'
 import { errors } from '@/http/errors'
 import { listObject } from '@/http/envelope'
-import { validParams, validQuery } from '@/http/middleware/validate'
+import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
 import type {
   PortalPackageParams,
+  PortalEnrollmentBody,
   PortalPackagesQuery,
+  PortalTenantResolveQuery,
   PortalTenantParams,
 } from './portal.schemas'
 import * as service from './portal.service'
@@ -20,6 +22,35 @@ export async function retrievePortalCustomer(
   res
     .status(200)
     .json(await service.retrievePortalCustomer(tenantId, userId(req)))
+}
+
+export async function resolvePortalTenant(
+  req: Request,
+  res: Response
+): Promise<void> {
+  res
+    .status(200)
+    .json(
+      await service.resolvePortalTenant(
+        validQuery<PortalTenantResolveQuery>(req)
+      )
+    )
+}
+
+export async function enrollPortalCustomer(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const { tenantId } = validParams<PortalTenantParams>(req)
+  res
+    .status(201)
+    .json(
+      await service.enrollPortalCustomer(
+        tenantId,
+        userId(req),
+        validBody<PortalEnrollmentBody>(req)
+      )
+    )
 }
 
 export async function listPortalPackages(
@@ -49,6 +80,16 @@ export async function retrievePortalPackage(
   res
     .status(200)
     .json(await service.retrievePortalPackage(tenantId, userId(req), id))
+}
+
+export async function retrievePortalShippingAddress(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const { tenantId } = validParams<PortalTenantParams>(req)
+  res
+    .status(200)
+    .json(await service.retrievePortalShippingAddress(tenantId, userId(req)))
 }
 
 function userId(req: Request): string {

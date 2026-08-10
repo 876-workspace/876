@@ -6,8 +6,11 @@ import { hashApiKey } from '@/http/auth/credentials'
 import { getSettings } from '@/config'
 import { healthRouter } from '@/modules/health'
 import { createBranchesRouter } from '@/modules/branches'
+import { createAddressesRouter } from '@/modules/addresses'
+import { createCustomerAddressesRouter } from '@/modules/customer-addresses'
 import { createCustomersRouter } from '@/modules/customers'
 import { createMailboxesRouter } from '@/modules/mailboxes'
+import { createOrganizationLocationsRouter } from '@/modules/organization-locations'
 import { createPackagesRouter } from '@/modules/packages'
 import { createPortalRouter } from '@/modules/portal'
 import { createTeamRouter } from '@/modules/team'
@@ -21,11 +24,14 @@ export function buildRoutes(): Router {
 
   root.use(healthRouter)
   root.use(createTenantsRouter(resolveGuards))
+  root.use(createAddressesRouter(resolveGuards))
   root.use(createBranchesRouter(resolveGuards))
   root.use(createCustomersRouter(resolveGuards))
+  root.use(createCustomerAddressesRouter(resolveGuards))
   root.use(createMailboxesRouter(resolveGuards))
+  root.use(createOrganizationLocationsRouter(resolveGuards))
   root.use(createPackagesRouter(resolveGuards))
-  root.use(createPortalRouter(resolveGuards))
+  root.use(...createPortalRouter(resolveGuards))
   root.use(...createTeamRouter(resolveGuards))
   root.use(createSettingsRouter(resolveGuards))
   root.use(createWarehousesRouter(resolveGuards))
@@ -34,7 +40,10 @@ export function buildRoutes(): Router {
 }
 
 export function buildAuthGuards() {
-  return createAuthGuards({ findApiKeyByHash, markApiKeyUsed })
+  return createAuthGuards({
+    findApiKeyByHash,
+    markApiKeyUsed,
+  })
 }
 
 async function findApiKeyByHash(keyHash: string) {

@@ -50,6 +50,98 @@ export function findTenantCustomerByUserId(tenantId: string, userId: string) {
   })
 }
 
+export async function enrollTenantCustomer(options: {
+  tenantId: string
+  billingCustomerId: string
+  userId: string | null
+  branchId: string | null
+  status: 'ACTIVE' | 'SUSPENDED'
+  isCommercial: boolean
+  now: number
+}) {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.courierCustomerProfile.findFirst({
+      where: {
+        tenantId: options.tenantId,
+        ...(options.userId === null
+          ? { billingCustomerId: options.billingCustomerId }
+          : { userId: options.userId }),
+      },
+    })
+    if (existing && existing.billingCustomerId !== options.billingCustomerId)
+      return { kind: 'conflict' as const }
+
+    const profile = existing
+      ? await tx.courierCustomerProfile.update({
+          where: { id: existing.id },
+          data: {
+            deletedAt: null,
+            deletedBy: null,
+            deletionReason: null,
+            updatedAt: options.now,
+          },
+        })
+      : await tx.courierCustomerProfile.create({
+          data: {
+            tenantId: options.tenantId,
+            billingCustomerId: options.billingCustomerId,
+            userId: options.userId,
+            branchId: options.branchId,
+            status: options.status,
+            isCommercial: options.isCommercial,
+            firstSeenAt: options.now,
+            createdAt: options.now,
+            updatedAt: options.now,
+          },
+        })
+
+    const mailbox = await tx.mailbox.findFirst({
+      where: {
+        tenantId: options.tenantId,
+        customerId: profile.id,
+        isPrimary: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    })
+    if (mailbox) return { kind: 'success' as const, profile, mailbox }
+
+    const tenant = await tx.tenant.findUnique({
+      where: { id: options.tenantId },
+      select: { mailboxPrefix: true },
+    })
+    if (!tenant) return { kind: 'tenant_missing' as const }
+    const prefix = tenant.mailboxPrefix?.trim().toUpperCase() ?? ''
+    const count = await tx.mailbox.count({
+      where: { tenantId: options.tenantId },
+    })
+    for (let attempt = 0; attempt < 25; attempt += 1) {
+      const number = `${prefix}${String(1001 + count + attempt).padStart(4, '0')}`
+      const occupied = await tx.mailbox.findUnique({
+        where: {
+          mailboxes_tenant_id_number_key: {
+            tenantId: options.tenantId,
+            number,
+          },
+        },
+        select: { id: true },
+      })
+      if (occupied) continue
+      const createdMailbox = await tx.mailbox.create({
+        data: {
+          tenantId: options.tenantId,
+          customerId: profile.id,
+          number,
+          isPrimary: true,
+          createdAt: options.now,
+          updatedAt: options.now,
+        },
+      })
+      return { kind: 'success' as const, profile, mailbox: createdMailbox }
+    }
+    return { kind: 'mailbox_unavailable' as const }
+  })
+}
+
 export async function tenantExists(tenantId: string): Promise<boolean> {
   return Boolean(await prisma.tenant.findUnique({ where: { id: tenantId } }))
 }
@@ -78,6 +170,7 @@ export function createTenantCustomer(options: {
       userId: options.input.user_id ?? null,
       branchId: options.branchId,
       status: options.input.status ?? 'ACTIVE',
+      trn: options.input.trn ?? null,
       isCommercial: options.input.is_commercial ?? false,
       firstSeenAt: options.now,
       createdAt: options.now,
@@ -100,9 +193,27 @@ export function updateTenantCustomer(options: {
       ...(options.input.status === undefined
         ? {}
         : { status: options.input.status }),
+      ...(options.input.trn === undefined ? {} : { trn: options.input.trn }),
       ...(options.input.is_commercial === undefined
         ? {}
         : { isCommercial: options.input.is_commercial }),
+      updatedAt: options.now,
+    },
+  })
+}
+
+export function softDeleteTenantCustomer(options: {
+  id: string
+  now: number
+  deletedBy?: string | null
+  deletionReason?: string | null
+}) {
+  return prisma.courierCustomerProfile.update({
+    where: { id: options.id },
+    data: {
+      deletedAt: options.now,
+      deletedBy: options.deletedBy ?? null,
+      deletionReason: options.deletionReason ?? null,
       updatedAt: options.now,
     },
   })

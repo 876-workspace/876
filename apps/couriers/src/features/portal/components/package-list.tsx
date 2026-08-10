@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { ChevronRight } from '@876/ui/icons'
 
-import type { PortalPackage } from '@/types/package'
+import type { PortalPackageListItem } from '@/types/package'
 
 import { PackageStatusBadge } from './package-status-badge'
 
@@ -13,7 +13,11 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   timeZone: 'UTC',
 })
 
-export function PackageList({ packages }: { packages: PortalPackage[] }) {
+export function PackageList({
+  packages,
+}: {
+  packages: PortalPackageListItem[]
+}) {
   return (
     <div className="bg-card divide-y overflow-hidden rounded-xl border shadow-xs">
       {packages.map((item) => (

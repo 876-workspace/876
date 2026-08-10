@@ -4,7 +4,12 @@ import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  isCouriersNotFound,
+  requireCouriersData,
+  toWarehouseView,
+} from '@/lib/couriers'
 
 import { WarehouseForm } from '../../_components/warehouse-form'
 
@@ -45,13 +50,15 @@ async function EditWarehouseData({ orgSlug, id }: EditWarehouseDataProps) {
       </div>
     )
 
-  const warehouse = await service.warehouses.retrieve({
-    tenantId: ctx.tenant.id,
-    id,
-  })
-  if (!warehouse) notFound()
+  const result = await $couriers.warehouses.retrieve(ctx.tenant.id, id)
+  if (!result.data && isCouriersNotFound(result)) notFound()
 
-  return <WarehouseForm orgSlug={orgSlug} warehouse={warehouse} />
+  return (
+    <WarehouseForm
+      orgSlug={orgSlug}
+      warehouse={toWarehouseView(requireCouriersData(result))}
+    />
+  )
 }
 
 function FormSkeleton() {

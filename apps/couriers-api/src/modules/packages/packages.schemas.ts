@@ -34,6 +34,22 @@ export const packageSchema = z
     updated_at: z.number().int(),
   })
   .meta({ id: 'Package' })
+const portalPackageReferenceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+})
+const portalMailboxReferenceSchema = z.object({
+  id: z.string(),
+  number: z.string(),
+})
+export const portalPackageSchema = packageSchema
+  .extend({
+    chargeable_weight: z.number().nullable(),
+    carrier: portalPackageReferenceSchema.nullable(),
+    branch: portalPackageReferenceSchema.nullable(),
+    mailbox: portalMailboxReferenceSchema.nullable(),
+  })
+  .meta({ id: 'PortalPackage' })
 export const tenantParamsSchema = z.strictObject({
   tenantId: z.string().min(1),
 })
@@ -74,6 +90,7 @@ export const updatePackageBodySchema = z.strictObject({
   actual_weight: z.number().positive().nullable().optional(),
 })
 export type Package = z.infer<typeof packageSchema>
+export type PortalPackage = z.infer<typeof portalPackageSchema>
 export type TenantParams = z.infer<typeof tenantParamsSchema>
 export type PackageParams = z.infer<typeof packageParamsSchema>
 export type ListPackagesQuery = z.infer<typeof listPackagesQuerySchema>

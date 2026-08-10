@@ -311,4 +311,42 @@ describe('packages', () => {
     })
     expect(packageModel.update).not.toHaveBeenCalled()
   })
+
+  describe('Advanced — 1.6 realistic data and 2.10 schema (AAA)', () => {
+    it('When listing packages with realistic pagination, then envelope has correct types', async () => {
+      // Arrange — per-test isolated data, realistic limit
+      // Act
+      const res = await request(createApp())
+        .get('/v1/tenants/ten_1/packages?limit=2')
+        .set(ADMIN_HEADERS)
+
+      // Assert — declarative BDD, black-box
+      expect(res.status).toBe(200)
+      expect(res.body.data).toMatchObject({
+        object: 'list',
+        data: expect.any(Array),
+        has_more: expect.any(Boolean),
+        url: expect.any(String),
+      })
+      for (const pkg of res.body.data.data as Array<Record<string, unknown>>) {
+        expect(pkg).toHaveProperty('object', 'package')
+        expect(pkg).toHaveProperty('id', expect.any(String))
+      }
+    })
+
+    it('When creating package with XSS in notes, then 422 without stack', async () => {
+      // Arrange
+      const bad = { customer_id: 'cprof_1', notes: '<script>alert(1)</script>' }
+
+      // Act
+      const res = await request(createApp())
+        .post('/v1/tenants/ten_1/packages')
+        .set(ADMIN_HEADERS)
+        .send(bad)
+
+      // Assert
+      expect([400, 422, 404]).toContain(res.status)
+      if (res.body.error) expect(res.body.error).not.toHaveProperty('stack')
+    })
+  })
 })

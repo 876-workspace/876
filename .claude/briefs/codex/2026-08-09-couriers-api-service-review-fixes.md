@@ -5,8 +5,7 @@ Working directory: **`/root/projects/876`**, on branch **`feat/couriers-api`**
 create, switch, or reset a branch; do not commit or push. Leave the work in the
 tree.
 
-Scope: **`apps/couriers-api/**`, plus `turbo.json` / the root `package.json` /
-`.github/workflows/**` where finding 2 requires it.** Do not touch
+Scope: **`apps/couriers-api/**`, plus `turbo.json`/ the root`package.json`/`.github/workflows/**` where finding 2 requires it.** Do not touch
 `apps/couriers/**`, `packages/**`, any other app, any Prisma schema, or any
 migration.
 

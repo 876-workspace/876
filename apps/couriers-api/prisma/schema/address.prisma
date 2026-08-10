@@ -16,9 +16,10 @@ model Address {
   createdAt   Int     @map("created_at")
   updatedAt   Int     @map("updated_at")
 
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  branches Branch[]
-  warehouses Warehouse[]
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branches          Branch[]
+  warehouses        Warehouse[]
+  customerAddresses CustomerAddress[]
 
   @@unique([id, tenantId], name: "addresses_id_tenant_id_key")
   @@index([tenantId], name: "addresses_tenant_id_idx")

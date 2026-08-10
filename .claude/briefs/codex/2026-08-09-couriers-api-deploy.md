@@ -45,14 +45,14 @@ not assume.
 These values are confirmed from the live account and `apps/api/wrangler.jsonc` —
 use them exactly, do not derive your own:
 
-| Field                 | Value                                                   |
-| --------------------- | ------------------------------------------------------- |
-| Worker `name`         | `876-couriers-api`                                      |
-| container `name`      | `couriers-api-876`                                      |
-| `class_name`          | `CouriersApiContainer`                                  |
-| `image`               | `./Dockerfile`                                          |
+| Field                 | Value                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| Worker `name`         | `876-couriers-api`                                                                                    |
+| container `name`      | `couriers-api-876`                                                                                    |
+| `class_name`          | `CouriersApiContainer`                                                                                |
+| `image`               | `./Dockerfile`                                                                                        |
 | `image_build_context` | `../../` — the workspace lockfile lives at the repo root, and a context of the app directory has none |
-| binding `name`        | `COURIERS_API_CONTAINER`                                |
+| binding `name`        | `COURIERS_API_CONTAINER`                                                                              |
 
 The live account already runs `api-876`, `billing-api-876`, and
 `storage-api-876` on this exact pattern, so `couriers-api-876` is the fourth

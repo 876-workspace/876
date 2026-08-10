@@ -22,6 +22,16 @@ export function createRolesResource(runtime: AdminRuntime) {
         roleListSchema
       )
     },
+    retrieve(tenantId: string, id: string) {
+      return AdminRequest<Role>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${path(tenantId)}/${encodeURIComponent(id)}`,
+        },
+        roleSchema
+      )
+    },
     create(tenantId: string, body: CreateRoleBody) {
       return AdminRequest<Role>(
         runtime,

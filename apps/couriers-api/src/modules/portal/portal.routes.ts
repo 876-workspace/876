@@ -4,17 +4,42 @@ import {
   listObjectSchema,
   successEnvelopeSchema,
 } from '@/http/envelope'
-import { customerSchema } from '@/modules/customers/customers.schemas'
-import { packageSchema } from '@/modules/packages/packages.schemas'
+import { customerEnrollmentSchema, customerSchema } from '@/modules/customers'
+import { packageSchema, portalPackageSchema } from '@/modules/packages'
 
 import * as controller from './portal.controller'
 import {
   portalPackageParamsSchema,
+  portalEnrollmentBodySchema,
   portalPackagesQuerySchema,
+  portalShippingAddressSchema,
+  portalTenantResolveQuerySchema,
+  portalTenantSchema,
   portalTenantParamsSchema,
 } from './portal.schemas'
 
 export function createPortalRouter(resolveGuards: GuardResolver) {
+  const root = createApiRouter({
+    tag: 'Portal',
+    prefix: '/v1/portal',
+    resolveGuards,
+  })
+  root.get({
+    path: '/tenants/resolve',
+    security: 'apiKey',
+    operationId: 'portal-tenants-resolve',
+    summary: 'Resolve an active portal tenant by hostname or slug',
+    request: { query: portalTenantResolveQuerySchema },
+    responses: {
+      200: {
+        description: 'Active portal tenant returned.',
+        schema: successEnvelopeSchema(portalTenantSchema),
+      },
+      404: { description: 'Tenant not found.', schema: errorEnvelopeSchema },
+    },
+    handler: controller.resolvePortalTenant,
+  })
+
   const api = createApiRouter({
     tag: 'Portal',
     prefix: '/v1/portal/tenants/:tenantId',
@@ -35,6 +60,33 @@ export function createPortalRouter(resolveGuards: GuardResolver) {
       404: { description: 'Customer not found.', schema: errorEnvelopeSchema },
     },
     handler: controller.retrievePortalCustomer,
+  })
+
+  api.post({
+    path: '/enrollments',
+    security: 'session',
+    operationId: 'portal-customer-enroll',
+    summary: 'Atomically enroll the signed-in customer with a primary mailbox',
+    request: {
+      params: portalTenantParamsSchema,
+      body: portalEnrollmentBodySchema,
+    },
+    responses: {
+      201: {
+        description: 'Customer portal enrollment completed.',
+        schema: successEnvelopeSchema(customerEnrollmentSchema),
+      },
+      404: { description: 'Tenant not found.', schema: errorEnvelopeSchema },
+      409: {
+        description: 'Customer enrollment conflict.',
+        schema: errorEnvelopeSchema,
+      },
+      503: {
+        description: 'Mailbox allocation unavailable.',
+        schema: errorEnvelopeSchema,
+      },
+    },
+    handler: controller.enrollPortalCustomer,
   })
 
   api.get({
@@ -65,12 +117,28 @@ export function createPortalRouter(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Customer package returned.',
-        schema: successEnvelopeSchema(packageSchema),
+        schema: successEnvelopeSchema(portalPackageSchema),
       },
       404: { description: 'Package not found.', schema: errorEnvelopeSchema },
     },
     handler: controller.retrievePortalPackage,
   })
 
-  return api.router
+  api.get({
+    path: '/shipping-address',
+    security: 'session',
+    operationId: 'portal-shipping-address-retrieve',
+    summary: 'Retrieve the signed-in customer shipping address view',
+    request: { params: portalTenantParamsSchema },
+    responses: {
+      200: {
+        description: 'Shipping address view returned.',
+        schema: successEnvelopeSchema(portalShippingAddressSchema),
+      },
+      404: { description: 'Customer not found.', schema: errorEnvelopeSchema },
+    },
+    handler: controller.retrievePortalShippingAddress,
+  })
+
+  return [root.router, api.router]
 }

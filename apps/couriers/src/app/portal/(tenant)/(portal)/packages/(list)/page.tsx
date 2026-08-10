@@ -3,7 +3,12 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { PackageList } from '@/features/portal/components/package-list'
 import { requirePortalCustomer } from '@/lib/portal/customer'
-import { service } from '@/lib/service'
+import {
+  createPortalCouriersClient,
+  listAllPortalPackages,
+  requirePortalData,
+  toPortalPackageListItem,
+} from '@/lib/portal/client'
 
 export default function PortalPackagesPage() {
   return (
@@ -19,11 +24,13 @@ export default function PortalPackagesPage() {
 }
 
 async function PackagesData() {
-  const { tenant, profile } = await requirePortalCustomer('/portal/packages')
-  const packages = await service.packages.list({
-    tenantId: tenant.id,
-    customerId: profile.id,
-  })
+  const { session, tenant } = await requirePortalCustomer('/portal/packages')
+  const packages = requirePortalData(
+    await listAllPortalPackages(
+      createPortalCouriersClient(session.accessToken),
+      tenant.id
+    )
+  ).map(toPortalPackageListItem)
 
   return (
     <>

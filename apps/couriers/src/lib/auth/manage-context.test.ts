@@ -1,8 +1,7 @@
 import type { PlatformRoutingMembership } from '@876/core/platform'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { Tenant } from '@/lib/db'
-import type { Signed876Session } from '@/types/auth'
+import type { CouriersTenant, Signed876Session } from '@/types/auth'
 
 const mocks = vi.hoisted(() => ({
   getAuthSession: vi.fn(),
@@ -35,10 +34,29 @@ vi.mock('@/lib/876/platform-client', () => ({
 vi.mock('@/lib/couriers-app', () => ({
   COURIERS_APP_SLUG: '876-couriers',
 }))
-vi.mock('@/lib/service', () => ({
-  service: {
+vi.mock('@/lib/couriers', () => ({
+  $couriers: {
     tenants: { retrieveByOrgId: mocks.retrieveByOrgId },
   },
+  toCouriersTenant: (tenant: {
+    id: string
+    org_id: string
+    slug: string
+    name: string
+    mailbox_prefix: string | null
+    status: 'ACTIVE' | 'PENDING' | 'SUSPENDED'
+    created_at: number
+    updated_at: number
+  }) => ({
+    id: tenant.id,
+    orgId: tenant.org_id,
+    slug: tenant.slug,
+    name: tenant.name,
+    mailboxPrefix: tenant.mailbox_prefix,
+    status: tenant.status,
+    createdAt: tenant.created_at,
+    updatedAt: tenant.updated_at,
+  }),
 }))
 
 import { getManageContext } from './manage-context'
@@ -86,7 +104,7 @@ function createMembership(
   }
 }
 
-function createTenant(overrides: Partial<Tenant> = {}): Tenant {
+function createTenant(overrides: Partial<CouriersTenant> = {}): CouriersTenant {
   return {
     id: 'tenant_island_123',
     orgId: 'organization_island_123',
@@ -98,6 +116,28 @@ function createTenant(overrides: Partial<Tenant> = {}): Tenant {
     updatedAt: 1_721_952_000,
     ...overrides,
   }
+}
+
+function tenantResult(tenant: CouriersTenant | null) {
+  return tenant
+    ? {
+        data: {
+          object: 'tenant' as const,
+          id: tenant.id,
+          org_id: tenant.orgId,
+          slug: tenant.slug,
+          name: tenant.name,
+          mailbox_prefix: tenant.mailboxPrefix,
+          status: tenant.status,
+          created_at: tenant.createdAt,
+          updated_at: tenant.updatedAt,
+        },
+        error: null,
+      }
+    : {
+        data: null,
+        error: { code: 'tenant/not-found', message: 'Not found.' },
+      }
 }
 
 describe('getManageContext', () => {
@@ -136,7 +176,7 @@ describe('getManageContext', () => {
       },
       error: null,
     })
-    mocks.retrieveByOrgId.mockResolvedValue(null)
+    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(null))
     mocks.retrieveSubscriptionBySlug.mockResolvedValue({
       data: { status: 'active' },
       error: null,
@@ -205,7 +245,7 @@ describe('getManageContext', () => {
   })
 
   it('does not report when memberships resolve', async () => {
-    mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(createTenant()))
 
     await getManageContext('island-logistics')
 
@@ -213,7 +253,7 @@ describe('getManageContext', () => {
   })
 
   it('reports when the subscription lookup fails and access degrades to none', async () => {
-    mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(createTenant()))
     mocks.retrieveSubscriptionBySlug.mockResolvedValue({
       data: null,
       error: {
@@ -242,7 +282,7 @@ describe('getManageContext', () => {
 
   it('resolves an exact active slug to the complete management context', async () => {
     const tenant = createTenant()
-    mocks.retrieveByOrgId.mockResolvedValue(tenant)
+    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
 
     const result = await getManageContext('island-logistics')
 
@@ -374,7 +414,7 @@ describe('getManageContext', () => {
       data: { data: [cookieMembership, slugMembership] },
       error: null,
     })
-    mocks.retrieveByOrgId.mockResolvedValue(tenant)
+    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
 
     const result = await getManageContext('slug-express')
 
@@ -423,7 +463,7 @@ describe('getManageContext', () => {
     })
     const tenant = createTenant()
     mocks.getAuthSession.mockResolvedValue(session)
-    mocks.retrieveByOrgId.mockResolvedValue(tenant)
+    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
 
     const result = await getManageContext()
 
@@ -508,8 +548,8 @@ describe('getManageContext', () => {
       error: null,
     })
     mocks.retrieveByOrgId
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(tenant)
+      .mockResolvedValueOnce(tenantResult(null))
+      .mockResolvedValueOnce(tenantResult(tenant))
 
     const result = await getManageContext()
 
@@ -779,7 +819,7 @@ describe('getManageContext', () => {
         },
         error: null,
       })
-      mocks.retrieveByOrgId.mockResolvedValue(tenant)
+      mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
 
       const result = await getManageContext('island-logistics')
 
@@ -835,7 +875,7 @@ describe('getManageContext', () => {
         },
         error: null,
       })
-      mocks.retrieveByOrgId.mockResolvedValue(tenant)
+      mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
 
       const result = await getManageContext('montego-express')
 
@@ -883,7 +923,7 @@ describe('getManageContext', () => {
         },
         error: null,
       })
-      mocks.retrieveByOrgId.mockResolvedValue(createTenant())
+      mocks.retrieveByOrgId.mockResolvedValue(tenantResult(createTenant()))
 
       const result = await getManageContext()
 

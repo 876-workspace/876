@@ -12,6 +12,8 @@ model Tenant {
   branches  Branch[]
   warehouses Warehouse[]
   customers  CourierCustomerProfile[]
+  customerAddresses CustomerAddress[]
+  domains Domain[]
   mailboxes  Mailbox[]
   packages   Package[]
   roles      Role[]

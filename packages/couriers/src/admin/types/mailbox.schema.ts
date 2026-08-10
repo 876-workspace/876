@@ -19,8 +19,14 @@ export const mailboxListSchema = z.object({
   url: z.string(),
 })
 
+export const mailboxAllocationSchema = z.object({
+  object: z.literal('mailbox_allocation'),
+  number: z.string(),
+})
+
 export type Mailbox = z.infer<typeof mailboxSchema>
 export type MailboxList = z.infer<typeof mailboxListSchema>
+export type MailboxAllocation = z.infer<typeof mailboxAllocationSchema>
 export type ListMailboxesParams = {
   customer_id?: string
   limit?: number

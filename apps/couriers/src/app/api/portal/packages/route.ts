@@ -1,8 +1,14 @@
 import { apiJson } from '@876/core/api'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import {
+  createPortalCouriersClient,
+  isPortalNotFound,
+  listAllPortalPackages,
+  requirePortalData,
+  toPortalPackageListItem,
+} from '@/lib/portal/client'
 import { getPortalTenant } from '@/lib/portal/tenant'
-import { service } from '@/lib/service'
 
 export const runtime = 'nodejs'
 
@@ -15,20 +21,19 @@ export async function GET() {
   if (!tenant) return apiJson({ error: 'Portal unavailable.' }, { status: 404 })
 
   try {
-    const profile = await service.customerProfiles.retrieveByTenantAndUser(
-      tenant.id,
-      session.user.id
+    const packagesResult = await listAllPortalPackages(
+      createPortalCouriersClient(session.accessToken),
+      tenant.id
     )
-    if (!profile)
+    if (isPortalNotFound(packagesResult))
       return apiJson(
         { error: 'Portal enrollment is required.' },
         { status: 403 }
       )
 
-    const packages = await service.packages.list({
-      tenantId: tenant.id,
-      customerId: profile.id,
-    })
+    const packages = requirePortalData(packagesResult).map(
+      toPortalPackageListItem
+    )
 
     return apiJson({ data: packages })
   } catch (error) {

@@ -4,7 +4,12 @@ import type { CursorPageParams } from '@876/core/client'
 import { tenantListSchema, tenantSchema } from '../types/tenant.schema'
 import { AdminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
-import type { Tenant, TenantList } from '../types/tenant.schema'
+import type {
+  CreateTenantBody,
+  Tenant,
+  TenantList,
+  UpdateTenantBody,
+} from '../types/tenant.schema'
 
 export function createTenantsResource(runtime: AdminRuntime) {
   return {
@@ -39,6 +44,30 @@ export function createTenantsResource(runtime: AdminRuntime) {
           query: toCursorQuery(params),
         },
         tenantListSchema
+      )
+    },
+
+    create(body: CreateTenantBody) {
+      return AdminRequest<Tenant>(
+        runtime,
+        {
+          method: 'POST',
+          path: '/v1/tenants',
+          body,
+        },
+        tenantSchema
+      )
+    },
+
+    update(id: string, body: UpdateTenantBody) {
+      return AdminRequest<Tenant>(
+        runtime,
+        {
+          method: 'PATCH',
+          path: `/v1/tenants/${encodeURIComponent(id)}`,
+          body,
+        },
+        tenantSchema
       )
     },
   }
