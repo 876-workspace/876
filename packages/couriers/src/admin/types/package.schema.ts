@@ -75,6 +75,8 @@ export type ListPackagesParams = {
   customer_id?: string
   branch_id?: string
   limit?: number
+  starting_after?: string
+  ending_before?: string
 }
 export type CreatePackageBody = z.input<typeof createPackageBodySchema>
 export type UpdatePackageBody = z.input<typeof updatePackageBodySchema>

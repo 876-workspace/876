@@ -3,18 +3,20 @@ import type { AdminRuntime } from '../runtime'
 import {
   customerListSchema,
   customerSchema,
-  mailboxListSchema,
-  mailboxSchema,
   type CreateCustomerBody,
   type CreateMailboxBody,
   type Customer,
   type CustomerList,
   type ListCustomersParams,
-  type Mailbox,
-  type MailboxList,
   type UpdateCustomerBody,
   type UpdateMailboxBody,
 } from '../types/customer.schema'
+import {
+  mailboxListSchema,
+  mailboxSchema,
+  type Mailbox,
+  type MailboxList,
+} from '../types/mailbox.schema'
 
 export function createCustomersResource(runtime: AdminRuntime) {
   const path = (tenantId: string) =>

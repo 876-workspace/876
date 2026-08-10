@@ -107,6 +107,30 @@ describe('createPackagesResource', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it('sends a starting_after cursor when listing packages', async () => {
+    const fetchMock = successFetch(packageList)
+    const resource = createResource(fetchMock, internalKey)
+
+    await resource.list(tenantId, { starting_after: packageId })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/packages?starting_after=pkg_kingston%2F2026-0816+A`,
+      expect.anything()
+    )
+  })
+
+  it('sends an ending_before cursor when listing packages', async () => {
+    const fetchMock = successFetch(packageList)
+    const resource = createResource(fetchMock, internalKey)
+
+    await resource.list(tenantId, { ending_before: packageId })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/packages?ending_before=pkg_kingston%2F2026-0816+A`,
+      expect.anything()
+    )
+  })
+
   it('retrieves a package with encoded identifiers', async () => {
     const fetchMock = successFetch(courierPackage)
     const resource = createResource(fetchMock, internalKey)
