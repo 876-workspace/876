@@ -38,7 +38,7 @@ export async function DELETE(
   if (response) return response
 
   const { accountId } = await context.params
-  const { data, error } = await $876.billingAccounts.del(accountId)
+  const { data, error } = await $876.billingAccounts.delete(accountId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete billing account.' },
