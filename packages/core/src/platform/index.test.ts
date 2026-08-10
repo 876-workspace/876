@@ -15,7 +15,7 @@ describe('create876PlatformClient', () => {
     expect($876.memberships.list).toBeTypeOf('function')
     expect($876.memberships.listRouting).toBeTypeOf('function')
     expect($876.invites.create).toBeTypeOf('function')
-    expect($876.subscriptions.provision).toBeTypeOf('function')
+    expect($876.subscriptions.create).toBeTypeOf('function')
     expect($876.regions.list).toBeTypeOf('function')
     expect($876.identifications.disclose).toBeTypeOf('function')
 
