@@ -2,7 +2,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
 import { $876, get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { requireCouriersData, toCustomerView } from '@/lib/couriers'
+import { toCustomerView } from '@/lib/couriers'
 import { customerStatusSchema, type CustomerView } from '@/types/customer'
 
 import { CustomersTable, type CustomerTableRow } from './customers-table'
@@ -43,21 +43,32 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     )
 
   const profiles: CustomerView[] = []
+  let customersError: { code: string; message: string } | null = null
   let startingAfter: string | undefined
   for (;;) {
-    const page = requireCouriersData(
-      await $876.couriers.customers.list(ctx.tenant.id, {
-        ...(profileStatus === undefined ? {} : { status: profileStatus }),
-        limit: 100,
-        ...(startingAfter === undefined
-          ? {}
-          : { starting_after: startingAfter }),
-      })
-    )
-    profiles.push(...page.data.map(toCustomerView))
-    const lastId = page.data.at(-1)?.id
-    if (!page.has_more || lastId === undefined) break
+    const result = await $876.couriers.customers.list(ctx.tenant.id, {
+      ...(profileStatus === undefined ? {} : { status: profileStatus }),
+      limit: 100,
+      ...(startingAfter === undefined ? {} : { starting_after: startingAfter }),
+    })
+    if (result.error) {
+      customersError = result.error
+      break
+    }
+    profiles.push(...result.data.data.map(toCustomerView))
+    const lastId = result.data.data.at(-1)?.id
+    if (!result.data.has_more || lastId === undefined) break
     startingAfter = lastId
+  }
+  if (customersError) {
+    return (
+      <>
+        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
+          {customersError.message}
+        </div>
+        <CustomersTable customers={[]} orgSlug={orgSlug} emptyState={emptyState} />
+      </>
+    )
   }
 
   if (profiles.length === 0)
