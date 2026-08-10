@@ -13,7 +13,7 @@ export default defineConfig({
   // `exports` maps, so nothing resolves them at runtime. tsup treats every
   // declared dependency as external by default; inlining them is what makes
   // the bundled service self-contained.
-  noExternal: ['@876/core', '@876/settings'],
+  noExternal: ['@876/core', '@876/settings', '@876/billing'],
   esbuildOptions(options) {
     // `@876/core/platform` carries a side-effect `import 'server-only'`, whose
     // default Node entry throws on import by design — it exists to break a
