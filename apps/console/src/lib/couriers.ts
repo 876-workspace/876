@@ -4,6 +4,7 @@ import { create876CouriersAdminClient } from '@876/couriers/admin'
 
 export const $couriers = create876CouriersAdminClient({
   baseUrl: process.env.COURIERS_API_URL,
+  apiKey: process.env.COURIERS_API_KEY,
   internalKey:
     process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY,
 })

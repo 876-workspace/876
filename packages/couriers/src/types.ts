@@ -38,6 +38,11 @@ export interface IntegrationClientOptions {
 
 export interface AdminClientOptions {
   baseUrl?: string
+  /**
+   * The Couriers app API key. Every `admin` route runs `requireApiKey` before
+   * `requireAdmin`, so the internal key alone is not enough to reach one.
+   */
+  apiKey?: string
   internalKey?: string
   fetch?: typeof fetch
   requestId?: string
