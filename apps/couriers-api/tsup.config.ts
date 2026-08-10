@@ -9,10 +9,11 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: ['@prisma/client', '.prisma/client'],
-  // `@876/core` publishes raw TypeScript through its `exports` map, so nothing
-  // resolves it at runtime. tsup treats every declared dependency as external
-  // by default; inlining it is what makes the bundled service self-contained.
-  noExternal: ['@876/core'],
+  // `@876/core` and `@876/settings` publish raw TypeScript through their
+  // `exports` maps, so nothing resolves them at runtime. tsup treats every
+  // declared dependency as external by default; inlining them is what makes
+  // the bundled service self-contained.
+  noExternal: ['@876/core', '@876/settings'],
   esbuildOptions(options) {
     // `@876/core/platform` carries a side-effect `import 'server-only'`, whose
     // default Node entry throws on import by design — it exists to break a
