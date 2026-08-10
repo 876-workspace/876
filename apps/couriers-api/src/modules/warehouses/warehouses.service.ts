@@ -64,8 +64,14 @@ export async function createWarehouse(
       throw conflict('A warehouse with that name already exists.')
     throw error
   }
-  void syncOrganizationLocation(tenantId, { kind: 'warehouse', site_id: warehouse.id }).catch((error) => {
-    log.error({ err: error, tenant_id: tenantId, site_id: warehouse.id }, 'warehouse.organization_location_sync_failed')
+  void syncOrganizationLocation(tenantId, {
+    kind: 'warehouse',
+    site_id: warehouse.id,
+  }).catch((error) => {
+    log.error(
+      { err: error, tenant_id: tenantId, site_id: warehouse.id },
+      'warehouse.organization_location_sync_failed'
+    )
   })
   return serializeWarehouse(warehouse)
 }
@@ -97,8 +103,14 @@ export async function updateWarehouse(
       throw conflict('A warehouse with that name already exists.')
     throw error
   }
-  void syncOrganizationLocation(tenantId, { kind: 'warehouse', site_id: updated.id }).catch((error) => {
-    log.error({ err: error, tenant_id: tenantId, site_id: updated.id }, 'warehouse.organization_location_sync_failed')
+  void syncOrganizationLocation(tenantId, {
+    kind: 'warehouse',
+    site_id: updated.id,
+  }).catch((error) => {
+    log.error(
+      { err: error, tenant_id: tenantId, site_id: updated.id },
+      'warehouse.organization_location_sync_failed'
+    )
   })
   return serializeWarehouse(updated)
 }

@@ -4,7 +4,11 @@ import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { isCouriersNotFound, requireCouriersData, toBranchView } from '@/lib/couriers'
+import {
+  isCouriersNotFound,
+  requireCouriersData,
+  toBranchView,
+} from '@/lib/couriers'
 import { $876 } from '@/lib/876'
 
 import { BranchForm } from '../../_components/branch-form'

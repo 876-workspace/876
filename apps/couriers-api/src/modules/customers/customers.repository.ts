@@ -168,7 +168,9 @@ export function createTenantCustomer(options: {
   return prisma.courierCustomerProfile.create({
     data: {
       tenantId: options.tenantId,
-      billingCustomerId: (options.input as unknown as { billing_customer_id: string }).billing_customer_id,
+      billingCustomerId: (
+        options.input as unknown as { billing_customer_id: string }
+      ).billing_customer_id,
       userId: null,
       branchId: options.branchId,
       status: options.input.status ?? 'ACTIVE',

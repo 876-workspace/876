@@ -71,14 +71,25 @@ export async function createBranch(
 
   let branch: import('./branches.serializers').BranchRow
   try {
-    branch = await repo.createBranchWithAddress({ tenantId, input, address, now })
+    branch = await repo.createBranchWithAddress({
+      tenantId,
+      input,
+      address,
+      now,
+    })
   } catch (error) {
     if (isUniqueConstraintError(error))
       throw conflict('A branch with that name already exists.')
     throw error
   }
-  void syncOrganizationLocation(tenantId, { kind: 'branch', site_id: branch.id }).catch((error) => {
-    log.error({ err: error, tenant_id: tenantId, site_id: branch.id }, 'branch.organization_location_sync_failed')
+  void syncOrganizationLocation(tenantId, {
+    kind: 'branch',
+    site_id: branch.id,
+  }).catch((error) => {
+    log.error(
+      { err: error, tenant_id: tenantId, site_id: branch.id },
+      'branch.organization_location_sync_failed'
+    )
   })
   return serializeBranch(branch)
 }
@@ -114,8 +125,14 @@ export async function updateBranch(
       throw conflict('A branch with that name already exists.')
     throw error
   }
-  void syncOrganizationLocation(tenantId, { kind: 'branch', site_id: updated.id }).catch((error) => {
-    log.error({ err: error, tenant_id: tenantId, site_id: updated.id }, 'branch.organization_location_sync_failed')
+  void syncOrganizationLocation(tenantId, {
+    kind: 'branch',
+    site_id: updated.id,
+  }).catch((error) => {
+    log.error(
+      { err: error, tenant_id: tenantId, site_id: updated.id },
+      'branch.organization_location_sync_failed'
+    )
   })
   return serializeBranch(updated)
 }

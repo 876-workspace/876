@@ -224,9 +224,14 @@ describe('Billing context', () => {
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
     expect(mocks.listTenants).toHaveBeenCalledTimes(1)
-    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: ['org_123'] })
+    expect(mocks.listTenants).toHaveBeenCalledWith({
+      organizationIds: ['org_123'],
+    })
     expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_123', appSlug: '876-billing' })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+      organizationId: 'org_123',
+      appSlug: '876-billing',
+    })
     expect(mocks.resolveMember).toHaveBeenCalledTimes(1)
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
@@ -291,13 +296,14 @@ describe('Billing context', () => {
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
     expect(mocks.listTenants).toHaveBeenCalledTimes(1)
-    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: [
-      'org_123',
-      'org_session',
-      'org_cookie',
-    ] })
+    expect(mocks.listTenants).toHaveBeenCalledWith({
+      organizationIds: ['org_123', 'org_session', 'org_cookie'],
+    })
     expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_cookie', appSlug: '876-billing' })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+      organizationId: 'org_cookie',
+      appSlug: '876-billing',
+    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -350,7 +356,10 @@ describe('Billing context', () => {
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
     expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_session', appSlug: '876-billing' })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+      organizationId: 'org_session',
+      appSlug: '876-billing',
+    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -402,9 +411,14 @@ describe('Billing context', () => {
       permissions: [],
     })
     expect(mocks.listTenants).toHaveBeenCalledTimes(1)
-    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: ['org_session'] })
+    expect(mocks.listTenants).toHaveBeenCalledWith({
+      organizationIds: ['org_session'],
+    })
     expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_session', appSlug: '876-billing' })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+      organizationId: 'org_session',
+      appSlug: '876-billing',
+    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -437,7 +451,10 @@ describe('Billing context', () => {
       expect(mocks.getCookie).toHaveBeenCalledTimes(1)
       expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
       expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_123', appSlug: '876-billing' })
+      expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+        organizationId: 'org_123',
+        appSlug: '876-billing',
+      })
     }
   )
 
@@ -503,11 +520,9 @@ describe('Billing context', () => {
       permissions: [],
     })
     expect(mocks.listTenants).toHaveBeenCalledTimes(1)
-    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: [
-      'org_owner',
-      'org_admin',
-      'org_viewer',
-    ] })
+    expect(mocks.listTenants).toHaveBeenCalledWith({
+      organizationIds: ['org_owner', 'org_admin', 'org_viewer'],
+    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 

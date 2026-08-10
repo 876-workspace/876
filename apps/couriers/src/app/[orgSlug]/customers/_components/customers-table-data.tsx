@@ -86,7 +86,10 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
   const pages = await Promise.all(
     idPages.map((ids) =>
-      request876.billing.customers.list(ctx.orgId, { limit: REGISTRY_PAGE, ids })
+      request876.billing.customers.list(ctx.orgId, {
+        limit: REGISTRY_PAGE,
+        ids,
+      })
     )
   )
 

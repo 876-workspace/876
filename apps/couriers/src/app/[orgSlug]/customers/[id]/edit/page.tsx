@@ -4,7 +4,11 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { $876, get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { isCouriersNotFound, requireCouriersData, toCustomerView } from '@/lib/couriers'
+import {
+  isCouriersNotFound,
+  requireCouriersData,
+  toCustomerView,
+} from '@/lib/couriers'
 import { CustomerForm } from '../../_components/customer-form'
 
 type Props = { params: Promise<{ orgSlug: string; id: string }> }
@@ -35,7 +39,10 @@ async function EditCustomerData({
 }) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
-  const customerResult = await $876.couriers.customers.retrieve(ctx.tenant.id, id)
+  const customerResult = await $876.couriers.customers.retrieve(
+    ctx.tenant.id,
+    id
+  )
   if (isCouriersNotFound(customerResult)) notFound()
   const profile = toCustomerView(requireCouriersData(customerResult))
   const [request876, branchesResult] = await Promise.all([
@@ -47,7 +54,7 @@ async function EditCustomerData({
     ctx.tenant.orgId,
     profile.billingCustomerId
   )
-  
+
   if (!registry.data) notFound()
 
   return (

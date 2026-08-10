@@ -568,7 +568,6 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           path: `/organizations/${params.organizationId}/apps/${params.appId}`,
         })
       },
-
     },
 
     /** The org-level permission catalog for building custom roles. */

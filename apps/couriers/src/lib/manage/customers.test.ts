@@ -147,7 +147,11 @@ describe('managed customers', () => {
       data: null,
       code: 'customer/identity-locked',
     })
-    expect(mocks.update).toHaveBeenCalledWith(tenant.id, courierCustomer.id, expect.objectContaining({ first_name: 'Andre' }))
+    expect(mocks.update).toHaveBeenCalledWith(
+      tenant.id,
+      courierCustomer.id,
+      expect.objectContaining({ first_name: 'Andre' })
+    )
   })
 
   it('forwards courier-owned fields to the domain update', async () => {

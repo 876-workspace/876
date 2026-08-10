@@ -13,5 +13,7 @@ import { $876 } from '@/lib/876'
  * toolbar, once behind Suspense.
  */
 export const listTeamRoles = cache(async (tenantId: string) =>
-  requireCouriersData(await $876.couriers.roles.list(tenantId)).data.map(toRoleView)
+  requireCouriersData(await $876.couriers.roles.list(tenantId)).data.map(
+    toRoleView
+  )
 )

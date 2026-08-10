@@ -23,7 +23,9 @@ export async function createManagedCustomer({
     customer_kind: params.customerKind ?? 'INDIVIDUAL',
     ...(params.firstName === undefined ? {} : { first_name: params.firstName }),
     ...(params.lastName === undefined ? {} : { last_name: params.lastName }),
-    ...(params.companyName === undefined ? {} : { company_name: params.companyName }),
+    ...(params.companyName === undefined
+      ? {}
+      : { company_name: params.companyName }),
     email: params.email ?? null,
     phone: params.phone ?? null,
     ...(params.branchId === undefined ? {} : { branch_id: params.branchId }),
@@ -47,17 +49,23 @@ export async function updateManagedCustomer({
   const result = await $876.couriers.customers.update(tenant.id, id, {
     ...(params.firstName === undefined ? {} : { first_name: params.firstName }),
     ...(params.lastName === undefined ? {} : { last_name: params.lastName }),
-    ...(params.companyName === undefined ? {} : { company_name: params.companyName }),
+    ...(params.companyName === undefined
+      ? {}
+      : { company_name: params.companyName }),
     ...(params.email === undefined ? {} : { email: params.email }),
     ...(params.phone === undefined ? {} : { phone: params.phone }),
     ...(params.branchId === undefined ? {} : { branch_id: params.branchId }),
     ...(params.status === undefined ? {} : { status: params.status }),
     ...(params.trn === undefined ? {} : { trn: params.trn }),
-    ...(params.isCommercial === undefined ? {} : { is_commercial: params.isCommercial }),
+    ...(params.isCommercial === undefined
+      ? {}
+      : { is_commercial: params.isCommercial }),
   })
   if (result.error !== null) {
-    if (result.error.code === 'customer/identity-locked') return localFailure('customer/identity-locked')
-    if (result.error.code === 'customer/registry-unavailable') return localFailure('customer/registry-unavailable')
+    if (result.error.code === 'customer/identity-locked')
+      return localFailure('customer/identity-locked')
+    if (result.error.code === 'customer/registry-unavailable')
+      return localFailure('customer/registry-unavailable')
     return couriersFailure(result.error)
   }
   return { data: toCustomerView(result.data), error: null }

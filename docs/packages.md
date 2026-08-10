@@ -32,25 +32,25 @@ $876 composition (explicit, per-app):
 
 ## 2. Package inventory
 
-| Package | Path | Privilege | Browser-safe | Role |
-|---|---|---|---|---|
-| `@876/core` | `packages/core` | shared | yes (utils) / server-only for `platform` | Errors, IDs, timestamps, platform bootstrap, fetch bridge |
-| `@876/types` | `packages/types` | shared | yes | Re-export of `@876/core/types` domain types |
-| `@876/sdk` | `packages/sdk` | app-API-key / session | yes (request-only) | Consumer auth/OAuth/self-scoped resources |
-| `@876/client` | `packages/client` | mixed (server + browser) | `src/index.ts` yes, `src/server.ts` server-only | Unified `$876` root composing core + common services |
-| `@876/admin` | `packages/admin` | `x-internal-key` | **no** (`server-only`) | Privileged platform admin (Console-only) |
-| `@876/billing` | `packages/billing` | tenant Bearer | `src/index.ts` yes (tenant), `src/admin` no | Billing tenant client |
-| `@876/billing/admin` | `packages/billing/src/admin` | `x-internal-key` | **no** | Billing idempotent `create()` projection (Console) |
-| `@876/billing/integration` | `packages/billing/src/integration` | `x-internal-key` | **no** | Billing integration tier (product service-to-service) |
-| `@876/storage` | `packages/storage` | `x-internal-key` | **no** | Signed upload lifecycle (`uploads.create/complete`, `files.*`) |
-| `@876/couriers` | `packages/couriers` | tenant Bearer | yes (member) | Couriers member portal |
-| `@876/couriers/integration` | `packages/couriers/src/integration` | `x-internal-key` | **no** | Couriers integration tier |
-| `@876/couriers/admin` | `packages/couriers/src/admin` | `x-internal-key` | **no** | Couriers privileged admin (Console) |
-| `@876/widgets` | `packages/widgets` | mixed | split (`browser/*` yes, `server/*` no) | Notes/collections + server admin |
-| `@876/settings` | `packages/settings` | shared lib | yes | Settings nav registry, preferences, readiness |
-| `@876/analytics` | `packages/analytics` | shared lib | yes | Browser PostHog analytics, audit mirror |
-| `@876/device` | `packages/device` | shared lib | yes (browser) | Device signal / fingerprint for `x-876-device` |
-| `@876/ui` | `packages/ui` | shared lib | yes | shadcn/ui primitives, tokens, embeddable auth UI |
+| Package                     | Path                                | Privilege                | Browser-safe                                    | Role                                                           |
+| --------------------------- | ----------------------------------- | ------------------------ | ----------------------------------------------- | -------------------------------------------------------------- |
+| `@876/core`                 | `packages/core`                     | shared                   | yes (utils) / server-only for `platform`        | Errors, IDs, timestamps, platform bootstrap, fetch bridge      |
+| `@876/types`                | `packages/types`                    | shared                   | yes                                             | Re-export of `@876/core/types` domain types                    |
+| `@876/sdk`                  | `packages/sdk`                      | app-API-key / session    | yes (request-only)                              | Consumer auth/OAuth/self-scoped resources                      |
+| `@876/client`               | `packages/client`                   | mixed (server + browser) | `src/index.ts` yes, `src/server.ts` server-only | Unified `$876` root composing core + common services           |
+| `@876/admin`                | `packages/admin`                    | `x-internal-key`         | **no** (`server-only`)                          | Privileged platform admin (Console-only)                       |
+| `@876/billing`              | `packages/billing`                  | tenant Bearer            | `src/index.ts` yes (tenant), `src/admin` no     | Billing tenant client                                          |
+| `@876/billing/admin`        | `packages/billing/src/admin`        | `x-internal-key`         | **no**                                          | Billing idempotent `create()` projection (Console)             |
+| `@876/billing/integration`  | `packages/billing/src/integration`  | `x-internal-key`         | **no**                                          | Billing integration tier (product service-to-service)          |
+| `@876/storage`              | `packages/storage`                  | `x-internal-key`         | **no**                                          | Signed upload lifecycle (`uploads.create/complete`, `files.*`) |
+| `@876/couriers`             | `packages/couriers`                 | tenant Bearer            | yes (member)                                    | Couriers member portal                                         |
+| `@876/couriers/integration` | `packages/couriers/src/integration` | `x-internal-key`         | **no**                                          | Couriers integration tier                                      |
+| `@876/couriers/admin`       | `packages/couriers/src/admin`       | `x-internal-key`         | **no**                                          | Couriers privileged admin (Console)                            |
+| `@876/widgets`              | `packages/widgets`                  | mixed                    | split (`browser/*` yes, `server/*` no)          | Notes/collections + server admin                               |
+| `@876/settings`             | `packages/settings`                 | shared lib               | yes                                             | Settings nav registry, preferences, readiness                  |
+| `@876/analytics`            | `packages/analytics`                | shared lib               | yes                                             | Browser PostHog analytics, audit mirror                        |
+| `@876/device`               | `packages/device`                   | shared lib               | yes (browser)                                   | Device signal / fingerprint for `x-876-device`                 |
+| `@876/ui`                   | `packages/ui`                       | shared lib               | yes                                             | shadcn/ui primitives, tokens, embeddable auth UI               |
 
 > `@876/client` and `@876/admin` must **not** become All876 registries. Apps compose only the product namespaces they need (see §4).
 
@@ -89,7 +89,9 @@ await $876.organizations.subscriptions.retrieve({ organizationId, appId })
 **Result envelope (all SDK clients):**
 
 ```ts
-type Result<T> = { data: T; error: null } | { data: null; error: { code, message } }
+type Result<T> =
+  | { data: T; error: null }
+  | { data: null; error: { code; message } }
 const { data, error } = await $876.users.retrieve({ id })
 if (error) return handle(error)
 ```
@@ -119,8 +121,14 @@ export function createProduct876Client(requestId?: string) {
   })
   return {
     ...platform, // $876.users (scoped), $876.organizations (scoped), etc. per bootstrap
-    billing: create876BillingIntegrationClient({ internalKey: process.env.BILLING_INTERNAL_KEY, requestId }),
-    storage: create876StorageClient({ internalKey: process.env.STORAGE_INTERNAL_KEY, requestId }),
+    billing: create876BillingIntegrationClient({
+      internalKey: process.env.BILLING_INTERNAL_KEY,
+      requestId,
+    }),
+    storage: create876StorageClient({
+      internalKey: process.env.STORAGE_INTERNAL_KEY,
+      requestId,
+    }),
     // add couriers only if product integrates with Couriers, via /integration or member tier
   }
 }
@@ -142,10 +150,18 @@ import { create876CouriersAdminClient } from '@876/couriers/admin'
 // billing/storage/widgets are temporarily embedded inside @876/admin for compat (see §6)
 // target direction: explicit composition here:
 export function createConsole876Client(requestId?: string) {
-  const platform = create876AdminClient({ internalKey: process.env.API_INTERNAL_KEY, apiKey: process.env.API_876_KEY, requestId })
+  const platform = create876AdminClient({
+    internalKey: process.env.API_INTERNAL_KEY,
+    apiKey: process.env.API_876_KEY,
+    requestId,
+  })
   return {
     ...platform, // $876.users, $876.organizations, $876.apps, $876.features, … (+ billing/storage/widgets compat)
-    couriers: create876CouriersAdminClient({ baseUrl: process.env.COURIERS_API_URL, internalKey: process.env.COURIERS_INTERNAL_KEY, requestId }),
+    couriers: create876CouriersAdminClient({
+      baseUrl: process.env.COURIERS_API_URL,
+      internalKey: process.env.COURIERS_INTERNAL_KEY,
+      requestId,
+    }),
     // future: billing: create876BillingAdminClient(...), storage: ..., widgets: ...
   }
 }
@@ -184,7 +200,10 @@ import { create876PlatformClient } from '@876/core/platform'
 import type { Organization } from '@876/core/types/organizations'
 
 const id = generateId('org')
-const platform = create876PlatformClient({ apiKey: process.env.API_876_KEY, requestId })
+const platform = create876PlatformClient({
+  apiKey: process.env.API_876_KEY,
+  requestId,
+})
 const { data } = await platform.organizations.retrieve({ id: orgId }) // typed retrieve, if exposed by bootstrap
 ```
 
@@ -210,15 +229,15 @@ Validates params, sends `fetch` to `POST /auth/*`, `GET /organizations/{id}/deta
 
 **Resources (`src/resources/*`):**
 
-| Resource | Verbs | Notes |
-|---|---|---|
-| `auth` | `resolve`, `login`, `register`, `registerBusiness`, `socialLogin`, `verifyEmailCode`, `recover`, `resetPassword`, `logout`, `getSession`, `sendMagicOtp`, `verifyMagicOtp` | Session/page flows, device signal attached |
-| `users` | `list`, `retrieve({id}|{workosId}|{username})` | Self-scoped where applicable |
+| Resource                    | Verbs                                                                                                                                                                           | Notes                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------ | ---------------------------- |
+| `auth`                      | `resolve`, `login`, `register`, `registerBusiness`, `socialLogin`, `verifyEmailCode`, `recover`, `resetPassword`, `logout`, `getSession`, `sendMagicOtp`, `verifyMagicOtp`      | Session/page flows, device signal attached                                        |
+| `users`                     | `list`, `retrieve({id}                                                                                                                                                          | {workosId}                                                                        | {username})` | Self-scoped where applicable |
 | `organizations` (`orgs.ts`) | `retrieve(orgId)`, `update(orgId)`, `locations.*`, `contacts.*`, `departments.*`, `employees.*`, `members`, `roles`, `appAssignments`, `subscriptions.list/retrieve`, `invites` | Member-scoped; `subscriptions` is `organizations.subscriptions` (org entitlement) |
-| `apps` | `list`, `retrieve` | Public app catalog |
-| `products`/`prices` | `list`, `retrieve` | Catalog |
-| `features` | `list`, `retrieve` | Feature flags |
-| `oauth` | `getAuthorizationUrl`, `exchangeCodeForToken`, `getUserInfo` | PKCE |
+| `apps`                      | `list`, `retrieve`                                                                                                                                                              | Public app catalog                                                                |
+| `products`/`prices`         | `list`, `retrieve`                                                                                                                                                              | Catalog                                                                           |
+| `features`                  | `list`, `retrieve`                                                                                                                                                              | Feature flags                                                                     |
+| `oauth`                     | `getAuthorizationUrl`, `exchangeCodeForToken`, `getUserInfo`                                                                                                                    | PKCE                                                                              |
 
 **Example:**
 
@@ -226,13 +245,21 @@ Validates params, sends `fetch` to `POST /auth/*`, `GET /organizations/{id}/deta
 import { create876Client } from '@876/sdk'
 
 const $876 = create876Client({ baseUrl: process.env.NEXT_PUBLIC_API_URL })
-const r = await $876.auth.login({ identifier: 'ada@efesto.test', password: '...' })
+const r = await $876.auth.login({
+  identifier: 'ada@efesto.test',
+  password: '...',
+})
 if (r.error) throw new Error(r.error.message)
-if (r.data.object === 'auth_event') { /* verification */ }
+if (r.data.object === 'auth_event') {
+  /* verification */
+}
 
 const client = await get876ServerClient() // wrapper over @876/sdk with session cookie
 const org = await client.organizations.retrieve(membership.organization.id) // positional for SDK member client
-const sub = await client.organizations.subscriptions.retrieve({ organizationId: orgId, appSlug: 'billing' })
+const sub = await client.organizations.subscriptions.retrieve({
+  organizationId: orgId,
+  appSlug: 'billing',
+})
 ```
 
 **Base URL resolution:** explicit `baseUrl` → `NEXT_PUBLIC_876_API_URL` → `NEXT_PUBLIC_API_URL` → Codespaces forwarded `4000` → `http://localhost:4000` → prod `https://eight76-api.onrender.com` (see `packages/sdk/README.md`).
@@ -251,14 +278,14 @@ const sub = await client.organizations.subscriptions.retrieve({ organizationId: 
 
 **Resources (`src/resources/*`):**
 
-| Resource | File | Verbs / Distinctness |
-|---|---|---|
-| `users` | `users.ts` | `create`, `list`, `retrieve({id}|{workosId}|{username})`, `search`, `update`, `delete`, plus `identifications.*`, `pin.*`, `addresses`, `contacts`, `sessions` etc. |
-| `organizations` | `orgs.ts` | `create`, `list`, `retrieve({id}|{slug})`, `search`, `update`, `delete`/`purge`, plus `locations`, `contacts`, `departments`, `employees`, `members`, `roles`, `permissions`, `appAssignments`. `organizations.subscriptions` is **org-to-app entitlement** (`POST /organizations/{id}/apps`, `GET /organizations/{id}/apps`, `GET .../by-slug/{slug}`, batch `GET /organizations/app-access/batch`) — distinct from top-level `subscriptions`. |
-| `subscriptions` (top-level) | `subscriptions.ts` | Platform billing subscriptions (`GET/POST /billing/subscriptions`, `/billing/subscriptions/{id}`) — distinct from `organizations.subscriptions`. See `src/client.ts:85` vs `121` comments. |
-| `apps` | `apps.ts` | `list`, `retrieve`, `create`, `update`, plus `features`, `subscriptions` |
-| `features`/`modules`/`provisioning`/`onboarding` | | Feature/catalog/provisioning |
-| `memberships`, `auditEvents`, `auth`, `devices`, `sessions`, `billingAccounts`, `communications` | | Platform ops |
+| Resource                                                                                         | File               | Verbs / Distinctness                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `users`                                                                                          | `users.ts`         | `create`, `list`, `retrieve({id}                                                                                                                                                           | {workosId}                                                                                                                                                                                                                                                                                                                                                                                                     | {username})`, `search`, `update`, `delete`, plus `identifications._`, `pin._`, `addresses`, `contacts`, `sessions` etc. |
+| `organizations`                                                                                  | `orgs.ts`          | `create`, `list`, `retrieve({id}                                                                                                                                                           | {slug})`, `search`, `update`, `delete`/`purge`, plus `locations`, `contacts`, `departments`, `employees`, `members`, `roles`, `permissions`, `appAssignments`. `organizations.subscriptions` is **org-to-app entitlement** (`POST /organizations/{id}/apps`, `GET /organizations/{id}/apps`, `GET .../by-slug/{slug}`, batch `GET /organizations/app-access/batch`) — distinct from top-level `subscriptions`. |
+| `subscriptions` (top-level)                                                                      | `subscriptions.ts` | Platform billing subscriptions (`GET/POST /billing/subscriptions`, `/billing/subscriptions/{id}`) — distinct from `organizations.subscriptions`. See `src/client.ts:85` vs `121` comments. |
+| `apps`                                                                                           | `apps.ts`          | `list`, `retrieve`, `create`, `update`, plus `features`, `subscriptions`                                                                                                                   |
+| `features`/`modules`/`provisioning`/`onboarding`                                                 |                    | Feature/catalog/provisioning                                                                                                                                                               |
+| `memberships`, `auditEvents`, `auth`, `devices`, `sessions`, `billingAccounts`, `communications` |                    | Platform ops                                                                                                                                                                               |
 
 **Embedded product shims (compat, do not add new products):** `billing` (admin+integration), `storage`, `widgets` are embedded until Console migrates to explicit composition (`apps/console/src/lib/876/index.ts`). Target: `@876/admin` = Core/platform only.
 
@@ -271,12 +298,18 @@ import 'server-only'
 import { create876AdminClient } from '@876/admin'
 
 function getAdminClient(requestId?: string) {
-  return create876AdminClient({ baseUrl: process.env.API_URL, internalKey: process.env.API_INTERNAL_KEY, requestId })
+  return create876AdminClient({
+    baseUrl: process.env.API_URL,
+    internalKey: process.env.API_INTERNAL_KEY,
+    requestId,
+  })
 }
 // page.tsx (RSC)
 const $876 = getAdminClient()
 const org = await $876.organizations.retrieve({ slug })
-const batch = await $876.organizations.subscriptions.list({ organizationIds: orgIds }) // one call, not N+1
+const batch = await $876.organizations.subscriptions.list({
+  organizationIds: orgIds,
+}) // one call, not N+1
 const user = await $876.users.retrieve({ id: userId, includeDeleted: true })
 ```
 
@@ -315,11 +348,11 @@ Product-specific namespaces are composed explicitly per app (e.g., Couriers: `..
 
 **Path:** `packages/billing` | **Three tiers:**
 
-| Tier | Entry | Auth | Use |
-|---|---|---|---|
-| Tenant (member) | `@876/billing` (`create876Client`) | `Authorization: Bearer` + `x-billing-organization-id` | Browser/server, invoice/payment/catalog CRUD for the authenticated org |
-| Admin | `@876/billing/admin` (`create876AdminClient`) | `x-internal-key` (`BILLING_INTERNAL_KEY`) | Server-only Console projection (`create()` idempotent on `sourceAppId`/`entitlementReferenceId`/`organizationId`/`externalReference`; backing `POST /api/v1/admin/.../ensure` is internal compat) |
-| Integration | `@876/billing/integration` (`create876BillingIntegrationClient`) | `x-internal-key` | Server-to-service (product → Billing) |
+| Tier            | Entry                                                            | Auth                                                  | Use                                                                                                                                                                                               |
+| --------------- | ---------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenant (member) | `@876/billing` (`create876Client`)                               | `Authorization: Bearer` + `x-billing-organization-id` | Browser/server, invoice/payment/catalog CRUD for the authenticated org                                                                                                                            |
+| Admin           | `@876/billing/admin` (`create876AdminClient`)                    | `x-internal-key` (`BILLING_INTERNAL_KEY`)             | Server-only Console projection (`create()` idempotent on `sourceAppId`/`entitlementReferenceId`/`organizationId`/`externalReference`; backing `POST /api/v1/admin/.../ensure` is internal compat) |
+| Integration     | `@876/billing/integration` (`create876BillingIntegrationClient`) | `x-internal-key`                                      | Server-to-service (product → Billing)                                                                                                                                                             |
 
 **Tenant resources (`src/resources/*`):** `bankAccounts`, `bankTransactions`, `addons`, `customers`, `discounts`, `invoices`, `invoicePreferences`, `paymentModes`, `paymentProviders`, `paymentTerms`, `payments`, `plans`, `prices`, `priceLists`, `products`, `salespeople`, `subscriptions`, `taxAuthorities`, `taxRates` — shallow, resource-first facades (`$876.billing.payments.*`).
 
@@ -327,11 +360,40 @@ Product-specific namespaces are composed explicitly per app (e.g., Couriers: `..
 
 ```ts
 // Console mirror (control-plane, retries reconcile drift) — apps/console/src/lib/billing/mirror.ts
-const createdProduct = await $876.billing.products.create({ sourceAppId: product.app_id, slug, name, active: true })
-const createdPlan = await $876.billing.plans.create({ productId: createdProduct.data.id, entitlementReferenceId: product.id, code, name, intervalUnit, intervalCount })
-const createdPrice = await $876.billing.prices.create({ planId: createdPlan.data.id, entitlementReferenceId: price.id, currency, unitAmount, intervalUnit, intervalCount })
-const createdCustomer = await $876.billing.customers.create({ organizationId, customerType: 'CORE_ORGANIZATION', name, primaryContact })
-const createdSubscription = await $876.billing.subscriptions.create({ externalReference: subscription.id, sourceAppId, customerId: createdCustomer.data.id, items: [{ priceEntitlementReferenceId, quantity }] })
+const createdProduct = await $876.billing.products.create({
+  sourceAppId: product.app_id,
+  slug,
+  name,
+  active: true,
+})
+const createdPlan = await $876.billing.plans.create({
+  productId: createdProduct.data.id,
+  entitlementReferenceId: product.id,
+  code,
+  name,
+  intervalUnit,
+  intervalCount,
+})
+const createdPrice = await $876.billing.prices.create({
+  planId: createdPlan.data.id,
+  entitlementReferenceId: price.id,
+  currency,
+  unitAmount,
+  intervalUnit,
+  intervalCount,
+})
+const createdCustomer = await $876.billing.customers.create({
+  organizationId,
+  customerType: 'CORE_ORGANIZATION',
+  name,
+  primaryContact,
+})
+const createdSubscription = await $876.billing.subscriptions.create({
+  externalReference: subscription.id,
+  sourceAppId,
+  customerId: createdCustomer.data.id,
+  items: [{ priceEntitlementReferenceId, quantity }],
+})
 ```
 
 **API contract:** base `/api/v1`, `{data,error}`, `object` discriminator, minor-unit money, Unix-second timestamps, OpenAPI `GET /api/v1/openapi`.
@@ -350,8 +412,21 @@ Resources: `uploads` (`create`, `complete`) + `files` (`retrieve`, `list`, …).
 
 ```ts
 // apps/console/src/lib/876 or any product BFF
-const session = await $876.storage.uploads.create({ route_key: 'organization.primaryLogo', owner_type: 'organization', owner_id: orgId, actor_user_id: userId, source_app_id: '876-couriers', file_name, content_type, size_bytes })
-await fetch(session.upload_url, { method: session.method, headers: session.headers, body: file })
+const session = await $876.storage.uploads.create({
+  route_key: 'organization.primaryLogo',
+  owner_type: 'organization',
+  owner_id: orgId,
+  actor_user_id: userId,
+  source_app_id: '876-couriers',
+  file_name,
+  content_type,
+  size_bytes,
+})
+await fetch(session.upload_url, {
+  method: session.method,
+  headers: session.headers,
+  body: file,
+})
 const file = await $876.storage.uploads.complete(session.id) // verifies R2 object
 ```
 
@@ -367,11 +442,11 @@ Composed via `@876/client/server` in product apps; Console uses same via `@876/a
 
 **Path:** `packages/couriers` | **Tiers:**
 
-| Tier | Entry | Auth |
-|---|---|---|
-| Member | `@876/couriers` (`create876CouriersClient`) | tenant Bearer (org-scoped) |
-| Integration | `@876/couriers/integration` | `x-internal-key` |
-| Admin | `@876/couriers/admin` (`create876CouriersAdminClient`) | `x-internal-key` + `COURIERS_API_URL` |
+| Tier        | Entry                                                  | Auth                                  |
+| ----------- | ------------------------------------------------------ | ------------------------------------- |
+| Member      | `@876/couriers` (`create876CouriersClient`)            | tenant Bearer (org-scoped)            |
+| Integration | `@876/couriers/integration`                            | `x-internal-key`                      |
+| Admin       | `@876/couriers/admin` (`create876CouriersAdminClient`) | `x-internal-key` + `COURIERS_API_URL` |
 
 Resources:
 
@@ -412,7 +487,10 @@ Provides nav registry, module catalog defaults, preference encode/diff/resolve, 
 
 ```ts
 import { createBrowserAnalytics } from '@876/analytics'
-const { AnalyticsProvider, track } = createBrowserAnalytics({ appName: 'console', events: { pageViewed: 'console_page_viewed' } })
+const { AnalyticsProvider, track } = createBrowserAnalytics({
+  appName: 'console',
+  events: { pageViewed: 'console_page_viewed' },
+})
 ```
 
 ---
@@ -439,15 +517,15 @@ import { cn } from '@876/ui/lib/utils'
 
 ## 6. App composition reference
 
-| App | Path | `$876` factory | Local DB | Notes |
-|---|---|---|---|---|
-| `@876/app` (consumer) | `apps/876` | narrow `@876/sdk` + `@876/client` | no | Org workspaces, OAuth provider UI, PWA. `requireConsumerAccount` guards. |
-| `@876/console` | `apps/console` | `createConsole876Client` (`@876/admin` + `@876/couriers/admin` + billing/storage/widgets compat) | yes (`service.*`) | Control plane. `service.team.*` local, `$876.*` remote per §4.2. No `$couriers` root. |
-| `@876/billing-app` | `apps/billing` | `create876Client` (tenant) + `service.tenants.create` local | yes | Finance workspaces; `service.tenants.create` is public `create`, internal `runProvisioning`/`ensureWorkspace`. |
-| `apps/api` | `apps/api` | FastAPI (`main.py` → `domains/*/router.py`) | owns Core DB | Auth, users, orgs, memberships, features, apps. |
-| `apps/billing-api` | `apps/billing-api` | FastAPI | owns Billing DB | Financial data plane, `POST /api/v1/admin/.../ensure` backing Billing `create()`. |
-| `apps/couriers` / `apps/couriers-api` | `apps/couriers*` | Next + Express | owns Couriers DB | `customers.create` orchestrates Billing + mailbox. |
-| `apps/widgets-api` | `apps/widgets-api` | Next + Prisma | owns Widgets DB | `notes`, `collections`. |
+| App                                   | Path               | `$876` factory                                                                                   | Local DB          | Notes                                                                                                          |
+| ------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| `@876/app` (consumer)                 | `apps/876`         | narrow `@876/sdk` + `@876/client`                                                                | no                | Org workspaces, OAuth provider UI, PWA. `requireConsumerAccount` guards.                                       |
+| `@876/console`                        | `apps/console`     | `createConsole876Client` (`@876/admin` + `@876/couriers/admin` + billing/storage/widgets compat) | yes (`service.*`) | Control plane. `service.team.*` local, `$876.*` remote per §4.2. No `$couriers` root.                          |
+| `@876/billing-app`                    | `apps/billing`     | `create876Client` (tenant) + `service.tenants.create` local                                      | yes               | Finance workspaces; `service.tenants.create` is public `create`, internal `runProvisioning`/`ensureWorkspace`. |
+| `apps/api`                            | `apps/api`         | FastAPI (`main.py` → `domains/*/router.py`)                                                      | owns Core DB      | Auth, users, orgs, memberships, features, apps.                                                                |
+| `apps/billing-api`                    | `apps/billing-api` | FastAPI                                                                                          | owns Billing DB   | Financial data plane, `POST /api/v1/admin/.../ensure` backing Billing `create()`.                              |
+| `apps/couriers` / `apps/couriers-api` | `apps/couriers*`   | Next + Express                                                                                   | owns Couriers DB  | `customers.create` orchestrates Billing + mailbox.                                                             |
+| `apps/widgets-api`                    | `apps/widgets-api` | Next + Prisma                                                                                    | owns Widgets DB   | `notes`, `collections`.                                                                                        |
 
 Routing: `src/proxy.ts` (Edge, coarse `userId`/`accountType` only). Fine-grained `hasPermission` in RSC layouts (`src/lib/auth/guards.ts`).
 
@@ -517,4 +595,4 @@ CI must be green: `pnpm typecheck`, `pnpm test`, `pnpm boundaries`, `pnpm check:
 
 ---
 
-*This document is authoritative for package boundaries and SDK vocabulary. Keep it in sync with `docs/ecosystem-sdk-template.md` and the implementation; update it with every phase of the ecosystem migration.*
+_This document is authoritative for package boundaries and SDK vocabulary. Keep it in sync with `docs/ecosystem-sdk-template.md` and the implementation; update it with every phase of the ecosystem migration._

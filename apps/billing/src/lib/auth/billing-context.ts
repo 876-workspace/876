@@ -47,7 +47,11 @@ export const getContext = cache(
         )
       : undefined
 
-    const tenants = await service.tenants.list({ organizationIds: memberships.map((membership) => membership.organization.id) })
+    const tenants = await service.tenants.list({
+      organizationIds: memberships.map(
+        (membership) => membership.organization.id
+      ),
+    })
     const tenantByOrganizationId = new Map(
       tenants.flatMap((tenant) =>
         tenant.organizationId ? [[tenant.organizationId, tenant] as const] : []

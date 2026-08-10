@@ -6,7 +6,11 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { $876, get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { isCouriersNotFound, requireCouriersData, toCustomerView } from '@/lib/couriers'
+import {
+  isCouriersNotFound,
+  requireCouriersData,
+  toCustomerView,
+} from '@/lib/couriers'
 
 import { CustomerActions } from './_components/customer-actions'
 
@@ -64,7 +68,10 @@ async function CustomerData({ orgSlug, id }: { orgSlug: string; id: string }) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
 
-  const customerResult = await $876.couriers.customers.retrieve(ctx.tenant.id, id)
+  const customerResult = await $876.couriers.customers.retrieve(
+    ctx.tenant.id,
+    id
+  )
   if (isCouriersNotFound(customerResult)) notFound()
   const profile = toCustomerView(requireCouriersData(customerResult))
 

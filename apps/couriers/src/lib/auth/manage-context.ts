@@ -97,13 +97,17 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    const tenant = await $876.couriers.tenants.retrieve({ organizationId: orgId })
+    const tenant = await $876.couriers.tenants.retrieve({
+      organizationId: orgId,
+    })
     resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
   } else {
     // Email login: pick first active org with a courier tenant; fall back to first active org.
     for (const m of memberships) {
       if (m.organization.status !== 'active') continue
-      const tenant = await $876.couriers.tenants.retrieve({ organizationId: m.organization.id })
+      const tenant = await $876.couriers.tenants.retrieve({
+        organizationId: m.organization.id,
+      })
       if (tenant.data) {
         resolvedOrgId = m.organization.id
         resolvedOrgName = m.organization.name
