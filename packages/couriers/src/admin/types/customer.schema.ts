@@ -31,47 +31,33 @@ export const customerListSchema = z.object({
 
 export const createCustomerBodySchema = z
   .strictObject({
-    billing_customer_id: z.string().optional(),
-    user_id: z.string().nullable().optional(),
-    branch_id: z.string().nullable().optional(),
-    status: customerStatusSchema.optional(),
-    trn: z.string().nullable().optional(),
-    is_commercial: z.boolean().optional(),
-    idempotency_key: z.string().min(8).max(255).optional(),
+    idempotency_key: z.string().min(8).max(255),
     customer_kind: customerKindSchema.default('INDIVIDUAL'),
     first_name: z.string().trim().min(1).optional(),
     last_name: z.string().trim().min(1).nullable().optional(),
     company_name: z.string().trim().min(1).optional(),
     email: z.string().trim().pipe(z.email()).nullable().optional(),
     phone: z.string().trim().min(1).nullable().optional(),
+    branch_id: z.string().nullable().optional(),
+    status: customerStatusSchema.optional(),
+    trn: z.string().trim().min(1).nullable().optional(),
+    is_commercial: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
-    const hasLegacy = typeof value.billing_customer_id === 'string'
-    const hasHighLevel = typeof value.idempotency_key === 'string'
-    if (!hasLegacy && !hasHighLevel) {
+    const kind = value.customer_kind ?? 'INDIVIDUAL'
+    if (kind === 'INDIVIDUAL' && !value.first_name) {
       ctx.addIssue({
         code: 'custom',
-        path: ['idempotency_key'],
-        message: 'Either billing_customer_id or idempotency_key is required.',
+        path: ['first_name'],
+        message: 'First name is required for an individual.',
       })
-      return
     }
-    if (hasHighLevel) {
-      const kind = value.customer_kind ?? 'INDIVIDUAL'
-      if (kind === 'INDIVIDUAL' && !value.first_name) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['first_name'],
-          message: 'First name is required for an individual.',
-        })
-      }
-      if (kind === 'BUSINESS' && !value.company_name) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['company_name'],
-          message: 'Company name is required for a business.',
-        })
-      }
+    if (kind === 'BUSINESS' && !value.company_name) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['company_name'],
+        message: 'Company name is required for a business.',
+      })
     }
   })
 

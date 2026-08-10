@@ -68,8 +68,10 @@ const listParams = {
 }
 
 const createCustomerBody = {
-  billing_customer_id: 'billcus_marcia_campbell',
-  user_id: null,
+  idempotency_key: 'idem_12345678',
+  customer_kind: 'INDIVIDUAL' as const,
+  first_name: 'Marcia',
+  last_name: 'Campbell',
   branch_id: 'br_montego_bay/freeport',
   status: 'ACTIVE' as const,
   is_commercial: true,
@@ -349,13 +351,6 @@ describe('createCustomersResource', () => {
     {
       name: 'create',
       invoke: (resource) => resource.create(tenantId, createCustomerBody),
-    },
-    {
-      name: 'enroll',
-      invoke: (resource) =>
-        resource.create(tenantId, {
-          billing_customer_id: 'billcus_marcia_campbell',
-        }),
     },
     {
       name: 'update',

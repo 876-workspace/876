@@ -71,83 +71,60 @@ export async function createCustomer(
   const tenant = await tenantRepo.findTenantById(tenantId)
   if (!tenant) throw missing('tenant')
 
-  // High-level domain operation: orchestrate Billing registry + Courier profile atomically
-  if (typeof input.idempotency_key === 'string') {
-    const billingResult = await billing.createExternalCustomer(
-      tenant.orgId,
-      {
-        idempotencyKey: input.idempotency_key,
-        customerKind: (input.customer_kind ?? 'INDIVIDUAL') as 'INDIVIDUAL' | 'BUSINESS',
-        firstName: input.first_name ?? null,
-        lastName: input.last_name ?? null,
-        companyName: input.company_name ?? null,
-        email: input.email ?? null,
-        phone: input.phone ?? null,
-      }
-    )
-    if (billingResult.error || !billingResult.data) {
-      throw new AppHttpError({
-        code: 'customer/registry-unavailable',
-        message: 'The customer registry is temporarily unavailable.',
-        httpStatus: 503,
-      })
+  // High-level domain operation: Billing customer creation is idempotent. Courier profile + mailbox creation is transactionally atomic within Couriers. The overall cross-service workflow is retry-safe/idempotent.
+  const billingResult = await billing.createExternalCustomer(
+    tenant.orgId,
+    {
+      idempotencyKey: input.idempotency_key,
+      customerKind: (input.customer_kind ?? 'INDIVIDUAL') as 'INDIVIDUAL' | 'BUSINESS',
+      firstName: input.first_name ?? null,
+      lastName: input.last_name ?? null,
+      companyName: input.company_name ?? null,
+      email: input.email ?? null,
+      phone: input.phone ?? null,
     }
-    const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
-    for (let attempt = 0; attempt < MAX_ENROLLMENT_RETRY_ATTEMPTS; attempt += 1) {
-      try {
-        const result = await repo.enrollTenantCustomer({
-          tenantId,
-          billingCustomerId: billingResult.data.id,
-          userId: input.user_id ?? null,
-          branchId,
-          status: input.status ?? 'ACTIVE',
-          isCommercial: input.is_commercial ?? false,
-          now: nowUnixSeconds(),
-        })
-        if (result.kind === 'conflict')
-          throw conflict('customer', 'A courier profile is linked to another customer.')
-        if (result.kind === 'tenant_missing') throw missing('tenant')
-        if (result.kind === 'mailbox_unavailable')
-          throw new AppHttpError({
-            code: 'mailbox/allocation-exhausted',
-            message: 'A mailbox number could not be allocated. Please try again.',
-            httpStatus: 503,
-          })
-        return serializeCustomer(result.profile)
-      } catch (error) {
-        if (isForeignKeyConstraintError(error)) throw missing('branch')
-        if (!isUniqueConstraintError(error)) throw error
-      }
-    }
-    throw conflict('customer', 'A courier profile already exists for this customer.')
+  )
+  if (billingResult.error || !billingResult.data) {
+    throw new AppHttpError({
+      code: 'customer/registry-unavailable',
+      message: 'The customer registry is temporarily unavailable.',
+      httpStatus: 503,
+    })
   }
-
-  // Legacy path: direct profile creation with pre-existing billing_customer_id
-  if (!input.billing_customer_id) throw missing('customer')
   const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
-  try {
-    return serializeCustomer(
-      await repo.createTenantCustomer({
+  for (let attempt = 0; attempt < MAX_ENROLLMENT_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      const result = await repo.enrollTenantCustomer({
         tenantId,
-        input,
+        billingCustomerId: billingResult.data.id,
+        userId: null,
         branchId,
+        status: input.status ?? 'ACTIVE',
+        trn: input.trn ?? null,
+        isCommercial: input.is_commercial ?? false,
         now: nowUnixSeconds(),
       })
-    )
-  } catch (error) {
-    if (isUniqueConstraintError(error)) {
-      throw conflict(
-        'customer',
-        'A courier profile already exists for this customer.'
-      )
+      if (result.kind === 'conflict')
+        throw conflict('customer', 'A courier profile is linked to another customer.')
+      if (result.kind === 'tenant_missing') throw missing('tenant')
+      if (result.kind === 'mailbox_unavailable')
+        throw new AppHttpError({
+          code: 'mailbox/allocation-exhausted',
+          message: 'A mailbox number could not be allocated. Please try again.',
+          httpStatus: 503,
+        })
+      return serializeCustomer(result.profile)
+    } catch (error) {
+      if (isForeignKeyConstraintError(error)) throw missing('branch')
+      if (!isUniqueConstraintError(error)) throw error
     }
-    throw error
   }
+  throw conflict('customer', 'A courier profile already exists for this customer.')
 }
 
 const MAX_ENROLLMENT_RETRY_ATTEMPTS = 3
 
-/** Atomically creates or revives a profile and its primary mailbox. */
+/** Creates or revives a profile and its primary mailbox transactionally within Couriers. */
 export async function enrollCustomer(
   tenantId: string,
   input: CustomerEnrollmentBody
@@ -179,6 +156,7 @@ async function enrollAttempt(
     userId: input.user_id ?? null,
     branchId,
     status: input.status ?? 'ACTIVE',
+    trn: null,
     isCommercial: input.is_commercial ?? false,
     now: nowUnixSeconds(),
   })
