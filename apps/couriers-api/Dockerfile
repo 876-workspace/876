@@ -17,12 +17,15 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
 COPY apps/couriers-api/package.json apps/couriers-api/
 COPY packages/core/package.json packages/core/
+COPY packages/settings/package.json packages/settings/
 
 RUN pnpm install --frozen-lockfile --ignore-scripts --filter @876/couriers-api...
 
-# @876/core ships raw TypeScript, so its source has to be present for the
-# bundle step — a workspace link alone gives esbuild nothing to resolve.
+# @876/core and @876/settings ship raw TypeScript, so their source has to be
+# present for the bundle step — a workspace link alone gives esbuild nothing
+# to resolve.
 COPY packages/core/src packages/core/src
+COPY packages/settings/src packages/settings/src
 
 WORKDIR /repo/apps/couriers-api
 
