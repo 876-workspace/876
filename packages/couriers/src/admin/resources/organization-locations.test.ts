@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import { createOrganizationLocationsResource } from './organization-locations'
-import { buildAdminRuntime } from '../runtime'
+import { create876CouriersAdminClient } from '../client'
 
-describe('createOrganizationLocationsResource', () => {
-  it('exposes no public sync/reconcile verbs', () => {
-    const resource = createOrganizationLocationsResource(
-      buildAdminRuntime({ baseUrl: 'https://couriers.876.local', apiKey: 'k', internalKey: 'i' })
-    )
-    expect('sync' in resource).toBe(false)
-    expect('reconcile' in resource).toBe(false)
+describe('create876CouriersAdminClient', () => {
+  it('does not expose organizationLocations as a public resource', () => {
+    const client = create876CouriersAdminClient({
+      baseUrl: 'https://couriers.876.local',
+      apiKey: '876_app_secret',
+      internalKey: 'internal',
+    })
+    expect('organizationLocations' in client).toBe(false)
   })
 })
