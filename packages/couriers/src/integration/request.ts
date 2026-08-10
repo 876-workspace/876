@@ -23,11 +23,7 @@ export function IntegrationRequest<T>(
       baseUrl: runtime.baseUrl,
       fetch: runtime.fetch,
       headers: {
-        // The service exposes no separate service-key guard yet: the
-        // integration routes are `apiKey`-tier, so the integration credential
-        // travels as the app API key. The tier is a scope boundary (narrow
-        // endpoints), not a distinct credential, until the API grows one.
-        'x-876-api-key': runtime.serviceKey,
+        'x-couriers-integration-key': runtime.serviceKey,
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
       },
     },

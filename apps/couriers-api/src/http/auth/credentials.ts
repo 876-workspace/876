@@ -25,6 +25,10 @@ export function readInternalKey(req: Request): string | null {
   return req.header('x-internal-key')?.trim() || null
 }
 
+export function readIntegrationKey(req: Request): string | null {
+  return req.header('x-couriers-integration-key')?.trim() || null
+}
+
 export function hasApiKeyPrefix(key: string): boolean {
   return key.startsWith(API_KEY_PREFIX)
 }

@@ -1105,6 +1105,12 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         "scheme": "bearer",
         "type": "http",
       },
+      "IntegrationKey": {
+        "description": "Server-to-server Couriers integration key.",
+        "in": "header",
+        "name": "x-couriers-integration-key",
+        "type": "apiKey",
+      },
       "InternalKey": {
         "description": "Secret service key. Server-to-server only.",
         "in": "header",
@@ -1171,6 +1177,188 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         "summary": "Check API health",
         "tags": [
           "System",
+        ],
+      },
+    },
+    "/v1/integration/tenants/by-org/{orgId}": {
+      "get": {
+        "description": "Returns the Couriers tenant for one 876 organization to an authenticated server-to-server integration.",
+        "operationId": "integration-tenants-retrieve-by-org",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orgId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Tenant",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Tenant returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "IntegrationKey": [],
+          },
+        ],
+        "summary": "Retrieve a tenant by organization ID for an integration",
+        "tags": [
+          "Tenants",
+        ],
+      },
+    },
+    "/v1/integration/tenants/{id}": {
+      "get": {
+        "description": "Returns one explicitly addressed Couriers tenant to an authenticated server-to-server integration.",
+        "operationId": "integration-tenants-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Tenant",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Tenant returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "IntegrationKey": [],
+          },
+        ],
+        "summary": "Retrieve a tenant for an integration",
+        "tags": [
+          "Tenants",
         ],
       },
     },

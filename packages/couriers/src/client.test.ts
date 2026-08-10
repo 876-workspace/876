@@ -50,7 +50,7 @@ describe('Couriers client credential tiers', () => {
     expect(headers).not.toHaveProperty('Authorization')
   })
 
-  it('sends the integration credential as the API key the service reads', async () => {
+  it('sends the dedicated integration credential and uses its narrow route', async () => {
     const fetchMock = successFetch()
     const client = create876CouriersIntegrationClient({
       baseUrl: 'https://couriers.example.test',
@@ -63,12 +63,15 @@ describe('Couriers client credential tiers', () => {
       error: null,
     })
 
-    // The integration routes are `apiKey`-tier and the service reads no
-    // `x-service-key` header, so the integration credential must travel as the
-    // app API key or every integration call 401s.
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://couriers.example.test/v1/integration/tenants/ten_1',
+      expect.anything()
+    )
     const headers = fetchMock.mock.calls[0]?.[1]?.headers
-    expect(headers).toMatchObject({ 'x-876-api-key': 'couriers_service_key' })
-    expect(headers).not.toHaveProperty('x-service-key')
+    expect(headers).toMatchObject({
+      'x-couriers-integration-key': 'couriers_service_key',
+    })
+    expect(headers).not.toHaveProperty('x-876-api-key')
     expect(headers).not.toHaveProperty('x-internal-key')
     expect(headers).not.toHaveProperty('Authorization')
   })

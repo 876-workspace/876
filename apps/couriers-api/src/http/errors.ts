@@ -43,4 +43,18 @@ export const errors = {
       message: 'Invalid API key.',
       httpStatus: 401,
     }),
+
+  integrationKeyMissing: () =>
+    new AppHttpError({
+      code: 'integration-key/missing',
+      message: 'An integration key is required.',
+      httpStatus: 401,
+    }),
+
+  integrationKeyInvalid: () =>
+    new AppHttpError({
+      code: 'integration-key/invalid',
+      message: 'Invalid integration key.',
+      httpStatus: 401,
+    }),
 } as const

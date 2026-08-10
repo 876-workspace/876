@@ -44,6 +44,10 @@ const envSchema = z.object({
   DATABASE_URL: accelerateUrl(),
   DIRECT_DATABASE_URL: z.string().optional(),
   API_876_KEY: z.string().min(1, 'API_876_KEY is required'),
+  // Integration callers receive a separate secret and can reach only the
+  // explicitly registered `integration` routes. It is never interchangeable
+  // with the app API key or the platform-internal admin key.
+  COURIERS_INTEGRATION_KEY: str(),
   // An unset internal key is a valid degraded configuration: admin routes
   // reject every request until a service secret is configured.
   API_INTERNAL_KEY: str(),
@@ -82,6 +86,7 @@ function build(env: NodeJS.ProcessEnv) {
     databaseUrl: e.DATABASE_URL,
     directDatabaseUrl: e.DIRECT_DATABASE_URL ?? e.DATABASE_URL,
     api876Key: e.API_876_KEY,
+    integrationKey: e.COURIERS_INTEGRATION_KEY,
     internalKey: e.API_INTERNAL_KEY,
     oauth: {
       issuer: e.OAUTH_ISSUER.replace(/\/+$/, ''),

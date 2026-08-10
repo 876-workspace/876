@@ -27,6 +27,7 @@ export function createApp(): Express {
         'Authorization',
         'X-876-API-Key',
         'X-API-Key',
+        'x-couriers-integration-key',
         'x-internal-key',
         'x-request-id',
       ],

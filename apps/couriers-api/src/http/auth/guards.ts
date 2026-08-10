@@ -11,6 +11,7 @@ import {
   keyFingerprint,
   readApiKey,
   readBearerToken,
+  readIntegrationKey,
   readInternalKey,
   secretsMatch,
 } from './credentials'
@@ -32,6 +33,7 @@ export type AuthDependencies = {
 
 export type AuthGuards = {
   requireApiKey: RequestHandler
+  requireIntegration: RequestHandler
   requireSession: RequestHandler
   requireAdmin: RequestHandler
   // Kiosk device tier (mailbox-number lookup, package collection) will attach
@@ -176,6 +178,25 @@ export function createAuthGuards(deps: AuthDependencies): AuthGuards {
     throw errors.noSession()
   })
 
+  const requireIntegration = guard(async (req) => {
+    const presented = readIntegrationKey(req)
+    const configured = getSettings().integrationKey
+    if (!presented) {
+      log.warn(
+        { reason: 'missing', path: req.path, client_ip: clientIp(req) },
+        'integration_key.rejected'
+      )
+      throw errors.integrationKeyMissing()
+    }
+    if (!configured || !secretsMatch(presented, configured)) {
+      log.warn(
+        { reason: 'invalid', path: req.path, client_ip: clientIp(req) },
+        'integration_key.rejected'
+      )
+      throw errors.integrationKeyInvalid()
+    }
+  })
+
   const requireAdmin = guard(async (req) => {
     const principal = await resolvePrincipal(req)
     setPrincipal(req, principal)
@@ -195,5 +216,5 @@ export function createAuthGuards(deps: AuthDependencies): AuthGuards {
     throw errors.noSession()
   })
 
-  return { requireApiKey, requireSession, requireAdmin }
+  return { requireApiKey, requireIntegration, requireSession, requireAdmin }
 }

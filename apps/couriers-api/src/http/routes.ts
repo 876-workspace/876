@@ -61,6 +61,8 @@ export function createGuardResolver(
         return []
       case 'apiKey':
         return [guards.requireApiKey]
+      case 'integration':
+        return [guards.requireIntegration]
       case 'session':
         return [guards.requireApiKey, guards.requireSession]
       case 'admin':

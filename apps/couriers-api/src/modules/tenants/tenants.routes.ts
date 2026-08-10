@@ -1,3 +1,5 @@
+import { Router } from 'express'
+
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import {
   errorEnvelopeSchema,
@@ -43,6 +45,48 @@ export function createTenantsRouter(resolveGuards: GuardResolver) {
     handler: controller.retrieveTenantByOrgId,
   })
 
+  const integration = createApiRouter({
+    tag: 'Tenants',
+    prefix: '/v1/integration/tenants',
+    resolveGuards,
+  })
+
+  integration.get({
+    path: '/by-org/:orgId',
+    security: 'integration',
+    operationId: 'integration-tenants-retrieve-by-org',
+    summary: 'Retrieve a tenant by organization ID for an integration',
+    description:
+      'Returns the Couriers tenant for one 876 organization to an authenticated server-to-server integration.',
+    request: { params: tenantOrgIdParamsSchema, query: emptyQuerySchema },
+    responses: {
+      200: {
+        description: 'Tenant returned.',
+        schema: successEnvelopeSchema(tenantSchema),
+      },
+      404: { description: 'Tenant not found.', schema: errorEnvelopeSchema },
+    },
+    handler: controller.retrieveTenantByOrgId,
+  })
+
+  integration.get({
+    path: '/:id',
+    security: 'integration',
+    operationId: 'integration-tenants-retrieve',
+    summary: 'Retrieve a tenant for an integration',
+    description:
+      'Returns one explicitly addressed Couriers tenant to an authenticated server-to-server integration.',
+    request: { params: tenantIdParamsSchema, query: emptyQuerySchema },
+    responses: {
+      200: {
+        description: 'Tenant returned.',
+        schema: successEnvelopeSchema(tenantSchema),
+      },
+      404: { description: 'Tenant not found.', schema: errorEnvelopeSchema },
+    },
+    handler: controller.retrieveTenant,
+  })
+
   api.get({
     path: '/:id',
     security: 'apiKey',
@@ -79,5 +123,8 @@ export function createTenantsRouter(resolveGuards: GuardResolver) {
     handler: controller.listTenants,
   })
 
-  return api.router
+  const root = Router()
+  root.use(integration.router)
+  root.use(api.router)
+  return root
 }

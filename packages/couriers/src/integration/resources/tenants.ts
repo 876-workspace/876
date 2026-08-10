@@ -10,7 +10,7 @@ export function createTenantsResource(runtime: IntegrationRuntime) {
         runtime,
         {
           method: 'GET',
-          path: `/v1/tenants/${encodeURIComponent(id)}`,
+          path: `/v1/integration/tenants/${encodeURIComponent(id)}`,
         },
         tenantSchema
       )
@@ -21,7 +21,7 @@ export function createTenantsResource(runtime: IntegrationRuntime) {
         runtime,
         {
           method: 'GET',
-          path: `/v1/tenants/by-org/${encodeURIComponent(orgId)}`,
+          path: `/v1/integration/tenants/by-org/${encodeURIComponent(orgId)}`,
         },
         tenantSchema
       )

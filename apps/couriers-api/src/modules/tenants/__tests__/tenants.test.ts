@@ -54,6 +54,7 @@ const testEnv: NodeJS.ProcessEnv = {
   DATABASE_URL: 'prisma://127.0.0.1:1/?api_key=test',
   DIRECT_DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
   API_876_KEY: '876_app_secret_test_key_for_couriers_api',
+  COURIERS_INTEGRATION_KEY: 'couriers-integration-test-key',
   API_INTERNAL_KEY: 'test-internal-key',
   SENTRY_DSN: '',
 }
@@ -65,6 +66,9 @@ const ADMIN_HEADERS = {
 }
 const API_KEY_HEADERS = {
   'X-876-API-Key': APP_KEY,
+}
+const INTEGRATION_HEADERS = {
+  'x-couriers-integration-key': 'couriers-integration-test-key',
 }
 
 beforeEach(() => {
@@ -271,6 +275,66 @@ describe('GET /v1/tenants/by-org/:orgId', () => {
       .set(API_KEY_HEADERS)
     expect(response.status).toBe(200)
     expect(response.body.data.org_id).toBe('org_4qR8')
+  })
+})
+
+describe('GET /v1/integration/tenants', () => {
+  it('retrieves an exact tenant with the dedicated integration key', async () => {
+    const response = await request(createApp())
+      .get('/v1/integration/tenants/ten_4qR8')
+      .set(INTEGRATION_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'tenant',
+        id: 'ten_4qR8',
+        org_id: 'org_4qR8',
+        slug: 'reyes-couriers',
+        name: 'Reyes Couriers',
+        mailbox_prefix: 'RC',
+        status: 'ACTIVE',
+        created_at: NOW - 100,
+        updated_at: NOW,
+      },
+      error: null,
+    })
+  })
+
+  it('retrieves a tenant by organization with the dedicated integration key', async () => {
+    const response = await request(createApp())
+      .get('/v1/integration/tenants/by-org/org_4qR8')
+      .set(INTEGRATION_HEADERS)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.org_id).toBe('org_4qR8')
+    expect(tenant.findUnique).toHaveBeenCalledWith({
+      where: { orgId: 'org_4qR8' },
+    })
+  })
+
+  it('does not accept the app API key as an integration credential', async () => {
+    const response = await request(createApp())
+      .get('/v1/integration/tenants/ten_4qR8')
+      .set(API_KEY_HEADERS)
+
+    expect(response.status).toBe(401)
+    expect(response.body).toEqual({
+      data: null,
+      error: {
+        code: 'integration-key/missing',
+        message: 'An integration key is required.',
+      },
+    })
+  })
+
+  it('rejects an incorrect integration credential', async () => {
+    const response = await request(createApp())
+      .get('/v1/integration/tenants/ten_4qR8')
+      .set('x-couriers-integration-key', 'wrong-key')
+
+    expect(response.status).toBe(401)
+    expect(response.body.error.code).toBe('integration-key/invalid')
   })
 })
 

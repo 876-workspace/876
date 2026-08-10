@@ -41,6 +41,12 @@ export const SECURITY_SCHEMES = {
     name: 'X-876-API-Key',
     description: 'App API key (`876_app_secret_…`).',
   },
+  IntegrationKey: {
+    type: 'apiKey',
+    in: 'header',
+    name: 'x-couriers-integration-key',
+    description: 'Server-to-server Couriers integration key.',
+  },
   BearerToken: {
     type: 'http',
     scheme: 'bearer',

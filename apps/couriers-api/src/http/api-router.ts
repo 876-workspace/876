@@ -18,7 +18,7 @@ import {
   type HttpMethod,
 } from '@/http/openapi/registry'
 
-export type Security = 'public' | 'apiKey' | 'session' | 'admin'
+export type Security = 'public' | 'apiKey' | 'integration' | 'session' | 'admin'
 
 type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`
 
@@ -28,6 +28,7 @@ const SECURITY_REQUIREMENTS: Record<
 > = {
   public: [],
   apiKey: [{ ApiKey: [] }],
+  integration: [{ IntegrationKey: [] }],
   session: [{ BearerToken: [] }, { InternalKey: [] }],
   admin: [{ InternalKey: [] }],
 }
