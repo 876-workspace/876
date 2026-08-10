@@ -126,4 +126,22 @@ describe('Couriers items page data', () => {
     ).toBeVisible()
     expect(screen.getByText('No items')).toBeVisible()
   })
+
+  it('when the Billing workspace is missing, renders empty state without an error banner', async () => {
+    mocks.listItems.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'billing/tenant-not-found',
+        message: 'The Billing workspace was not found.',
+      },
+    })
+
+    render(await ItemsTableData({ params, searchParams: emptySearchParams }))
+
+    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
+    expect(screen.getByText('No items')).toBeVisible()
+    expect(
+      screen.queryByText('The Billing workspace was not found.')
+    ).not.toBeInTheDocument()
+  })
 })

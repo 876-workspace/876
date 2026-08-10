@@ -49,6 +49,14 @@ export async function ItemsTableData({ params, searchParams }: Props) {
     active: activeFilter,
   })
 
+  const isMissingWorkspace =
+    items.error?.code === 'billing/tenant-not-found' ||
+    items.error?.code === 'billing/database-not-ready' ||
+    items.error?.code === 'billing/unreachable'
+
+  const displayError =
+    items.error && !isMissingWorkspace ? items.error : null
+
   const rows = items.error
     ? []
     : items.data.data.map((item) => ({
@@ -65,9 +73,9 @@ export async function ItemsTableData({ params, searchParams }: Props) {
 
   return (
     <>
-      {items.error ? (
+      {displayError ? (
         <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
-          {items.error.message}
+          {displayError.message}
         </div>
       ) : null}
 
