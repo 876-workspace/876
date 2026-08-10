@@ -203,9 +203,6 @@ export function createUsersResource(runtime: SdkRuntime) {
 
       /** Deletes one of the current user's addresses. */
       delete: deleteAddress,
-
-      /** @deprecated Use `delete()` — it matches the standard verb vocabulary. */
-      del: deleteAddress,
     },
 
     contacts: {
@@ -277,9 +274,6 @@ export function createUsersResource(runtime: SdkRuntime) {
 
       /** Deletes one of the current user's contacts. */
       delete: deleteContact,
-
-      /** @deprecated Use `delete()` — it matches the standard verb vocabulary. */
-      del: deleteContact,
     },
   }
 }
