@@ -17,8 +17,8 @@ const mocks = vi.hoisted(() => ({
   isSignedSession: vi.fn(),
   getPlatformClient: vi.fn(),
   getRoutingMemberships: vi.fn(),
-  retrieveSubscriptionBySlug: vi.fn(),
-  listByOrganizationIds: vi.fn(),
+  retrieveSubscription: vi.fn(),
+  listTenants: vi.fn(),
   resolveMember: vi.fn(),
   getFeatures: vi.fn(),
   getCookie: vi.fn(),
@@ -42,7 +42,7 @@ vi.mock('@/lib/876/platform-client', () => ({
 vi.mock('@/lib/features', () => ({ getFeatures: mocks.getFeatures }))
 vi.mock('@/lib/service', () => ({
   service: {
-    tenants: { listByOrganizationIds: mocks.listByOrganizationIds },
+    tenants: { list: mocks.listTenants },
     members: { resolve: mocks.resolveMember },
   },
 }))
@@ -129,15 +129,15 @@ describe('Billing context', () => {
     mocks.getPlatformClient.mockResolvedValue({
       memberships: { listRouting: mocks.getRoutingMemberships },
       subscriptions: {
-        retrieveBySlug: mocks.retrieveSubscriptionBySlug,
+        retrieve: mocks.retrieveSubscription,
       },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
       data: { data: [createMembership('org_123')] },
       error: null,
     })
-    mocks.listByOrganizationIds.mockResolvedValue([tenant])
-    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+    mocks.listTenants.mockResolvedValue([tenant])
+    mocks.retrieveSubscription.mockResolvedValue({
       data: { status: 'active', items: [{ price_id: 'price_internal' }] },
       error: null,
     })
@@ -173,7 +173,7 @@ describe('Billing context', () => {
       userId: 'user_123',
       status: 'active',
     })
-    expect(mocks.listByOrganizationIds).not.toHaveBeenCalled()
+    expect(mocks.listTenants).not.toHaveBeenCalled()
   })
 
   it('filters inactive organizations and returns null when none remain', async () => {
@@ -196,7 +196,7 @@ describe('Billing context', () => {
     const result = await getContext()
 
     expect(result).toBeNull()
-    expect(mocks.listByOrganizationIds).not.toHaveBeenCalled()
+    expect(mocks.listTenants).not.toHaveBeenCalled()
   })
 
   it('builds active workspace context for the preferred organization', async () => {
@@ -223,13 +223,10 @@ describe('Billing context', () => {
     })
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledTimes(1)
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledWith(['org_123'])
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'org_123',
-      '876-billing'
-    )
+    expect(mocks.listTenants).toHaveBeenCalledTimes(1)
+    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: ['org_123'] })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_123', appSlug: '876-billing' })
     expect(mocks.resolveMember).toHaveBeenCalledTimes(1)
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
@@ -293,17 +290,14 @@ describe('Billing context', () => {
     })
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledTimes(1)
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledWith([
+    expect(mocks.listTenants).toHaveBeenCalledTimes(1)
+    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: [
       'org_123',
       'org_session',
       'org_cookie',
-    ])
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'org_cookie',
-      '876-billing'
-    )
+    ] })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_cookie', appSlug: '876-billing' })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -355,11 +349,8 @@ describe('Billing context', () => {
     })
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'org_session',
-      '876-billing'
-    )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_session', appSlug: '876-billing' })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -410,13 +401,10 @@ describe('Billing context', () => {
       access: null,
       permissions: [],
     })
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledTimes(1)
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledWith(['org_session'])
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'org_session',
-      '876-billing'
-    )
+    expect(mocks.listTenants).toHaveBeenCalledTimes(1)
+    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: ['org_session'] })
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_session', appSlug: '876-billing' })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -448,11 +436,8 @@ describe('Billing context', () => {
       })
       expect(mocks.getCookie).toHaveBeenCalledTimes(1)
       expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
-      expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-        'org_123',
-        '876-billing'
-      )
+      expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+      expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'org_123', appSlug: '876-billing' })
     }
   )
 
@@ -482,7 +467,7 @@ describe('Billing context', () => {
       },
       error: null,
     })
-    mocks.listByOrganizationIds.mockResolvedValue([])
+    mocks.listTenants.mockResolvedValue([])
 
     const result = await getContext()
 
@@ -517,12 +502,12 @@ describe('Billing context', () => {
       access: null,
       permissions: [],
     })
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledTimes(1)
-    expect(mocks.listByOrganizationIds).toHaveBeenCalledWith([
+    expect(mocks.listTenants).toHaveBeenCalledTimes(1)
+    expect(mocks.listTenants).toHaveBeenCalledWith({ organizationIds: [
       'org_owner',
       'org_admin',
       'org_viewer',
-    ])
+    ] })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -587,7 +572,7 @@ describe('Billing context', () => {
       },
       error: null,
     })
-    mocks.listByOrganizationIds.mockResolvedValue([
+    mocks.listTenants.mockResolvedValue([
       { ...tenant, id: 'ten_orphan', organizationId: null },
     ])
 
@@ -627,7 +612,7 @@ describe('Billing context', () => {
     ['subscription error', { data: null, error: { message: 'Missing.' } }],
     ['missing subscription data', { data: null, error: null }],
   ])('maps %s to no Billing access', async (_name, subscriptionResult) => {
-    mocks.retrieveSubscriptionBySlug.mockResolvedValue(subscriptionResult)
+    mocks.retrieveSubscription.mockResolvedValue(subscriptionResult)
 
     const result = await getContext()
 
@@ -643,7 +628,7 @@ describe('Billing context', () => {
   })
 
   it('retains a blocked Billing access status without resolving a member', async () => {
-    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+    mocks.retrieveSubscription.mockResolvedValue({
       data: { status: 'blocked', items: [{ price_id: 'price_internal' }] },
       error: null,
     })
@@ -657,7 +642,7 @@ describe('Billing context', () => {
   })
 
   it('denies Billing access when the subscription has no plan item', async () => {
-    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+    mocks.retrieveSubscription.mockResolvedValue({
       data: { status: 'active', items: [] },
       error: null,
     })
@@ -716,9 +701,9 @@ describe('Billing context', () => {
     ['suspended member', { memberStatus: 'SUSPENDED' }],
     ['missing Billing permission', { permissions: ['sales:read'] }],
   ])('returns null workspace context for %s', async (_name, scenario) => {
-    if ('tenants' in scenario) mocks.listByOrganizationIds.mockResolvedValue([])
+    if ('tenants' in scenario) mocks.listTenants.mockResolvedValue([])
     if ('subscriptionStatus' in scenario)
-      mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+      mocks.retrieveSubscription.mockResolvedValue({
         data: {
           status: scenario.subscriptionStatus,
           items: [{ price_id: 'price_internal' }],
@@ -777,7 +762,7 @@ describe('Billing context', () => {
   })
 
   it('redirects feature checks when there is no workspace context', async () => {
-    mocks.listByOrganizationIds.mockResolvedValue([])
+    mocks.listTenants.mockResolvedValue([])
 
     await expect(requireBillingFeature('sales')).rejects.toMatchObject({
       path: '/no-access',
