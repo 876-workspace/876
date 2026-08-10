@@ -102,7 +102,7 @@ describe('resolveOrgOwner', () => {
       organizationId: 'org_1',
       limit: 100,
     })
-    expect(client.users.retrieve).toHaveBeenCalledWith('usr_owner')
+    expect(client.users.retrieve).toHaveBeenCalledWith({ id: 'usr_owner' })
   })
 
   it('prefers owner over an earlier admin membership', async () => {
@@ -170,7 +170,7 @@ describe('resolveOrgOwner', () => {
     const owner = await resolveOrgOwner(client, 'org_1')
 
     expect(owner?.userId).toBe('usr_early')
-    expect(client.users.retrieve).toHaveBeenCalledWith('usr_early')
+    expect(client.users.retrieve).toHaveBeenCalledWith({ id: 'usr_early' })
   })
 
   it('returns userId-only when the user retrieve fails', async () => {
@@ -237,7 +237,7 @@ describe('resolveOrgParty', () => {
       email: null,
       phone: null,
     })
-    expect(client.organizations.retrieve).toHaveBeenCalledWith('org_1')
+    expect(client.organizations.retrieve).toHaveBeenCalledWith({ id: 'org_1' })
   })
 
   it('returns null when neither profile nor org can be resolved', async () => {

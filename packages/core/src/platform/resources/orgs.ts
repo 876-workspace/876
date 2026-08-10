@@ -29,10 +29,10 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
     },
 
     /** Retrieves an organization by id. */
-    retrieve(orgId: string) {
+    retrieve(params: { id: string }) {
       return platformRequest<PlatformOrganization>(runtime, {
         method: 'GET',
-        path: `/organizations/${orgId}`,
+        path: `/organizations/${params.id}`,
       })
     },
 
