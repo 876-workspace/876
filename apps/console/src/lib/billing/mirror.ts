@@ -134,7 +134,9 @@ export async function mirrorCoreProductPrices(
 ): Promise<boolean> {
   if (!product.app_id) return false
 
-  const ensuredProduct = await $876.billing.products.ensure({
+  // Control-plane workflow: Console intentionally coordinates Core entitlements + Billing commercial projection.
+  // Uses standard create() (idempotent via externalReference/sourceAppId) — Billing service handles idempotency.
+  const ensuredProduct = await $876.billing.products.create({
     sourceAppId: product.app_id,
     slug: product.app_slug ?? product.app_id,
     name: product.app_name ?? product.app_slug ?? product.app_id,
@@ -143,7 +145,7 @@ export async function mirrorCoreProductPrices(
   })
   if (ensuredProduct.error !== null) {
     console.error(
-      '[console.billing.mirror] product ensure failed:',
+      '[console.billing.mirror] product create failed:',
       product.id,
       ensuredProduct.error.message
     )
@@ -163,7 +165,7 @@ export async function mirrorCoreProductPrices(
     }
 
     const { intervalUnit, intervalCount } = cadence
-    const ensuredPlan = await $876.billing.plans.ensure({
+    const ensuredPlan = await $876.billing.plans.create({
       productId: ensuredProduct.data.id,
       entitlementReferenceId: product.id,
       code: product.slug,
@@ -176,7 +178,7 @@ export async function mirrorCoreProductPrices(
     })
     if (ensuredPlan.error !== null) {
       console.error(
-        '[console.billing.mirror] plan ensure failed:',
+        '[console.billing.mirror] plan create failed:',
         product.id,
         ensuredPlan.error.message
       )
@@ -184,7 +186,7 @@ export async function mirrorCoreProductPrices(
       continue
     }
 
-    const ensuredPrice = await $876.billing.prices.ensure({
+    const ensuredPrice = await $876.billing.prices.create({
       planId: ensuredPlan.data.id,
       entitlementReferenceId: price.id,
       nickname: price.nickname ?? price.name ?? null,
@@ -196,7 +198,7 @@ export async function mirrorCoreProductPrices(
     })
     if (ensuredPrice.error !== null) {
       console.error(
-        '[console.billing.mirror] price ensure failed:',
+        '[console.billing.mirror] price create failed:',
         price.id,
         ensuredPrice.error.message
       )
@@ -264,7 +266,7 @@ export async function mirrorCoreSubscription(
   const legalName = org.data?.name ?? subscription.organization_id
   const contact = await resolveOrgPrimaryContact(org.data)
 
-  const ensuredCustomer = await $876.billing.customers.ensure({
+  const ensuredCustomer = await $876.billing.customers.create({
     organizationId: subscription.organization_id,
     customerType: 'CORE_ORGANIZATION',
     customerKind: 'BUSINESS',
@@ -278,14 +280,14 @@ export async function mirrorCoreSubscription(
   })
   if (ensuredCustomer.error !== null) {
     console.error(
-      '[console.billing.mirror] customer ensure failed:',
+      '[console.billing.mirror] customer create failed:',
       subscription.organization_id,
       ensuredCustomer.error.message
     )
     return false
   }
 
-  const ensuredSubscription = await $876.billing.subscriptions.ensure({
+  const ensuredSubscription = await $876.billing.subscriptions.create({
     externalReference: subscription.id,
     sourceAppId: subscription.app_id,
     customerId: ensuredCustomer.data.id,
@@ -299,7 +301,7 @@ export async function mirrorCoreSubscription(
   })
   if (ensuredSubscription.error !== null) {
     console.error(
-      '[console.billing.mirror] subscription ensure failed:',
+      '[console.billing.mirror] subscription create failed:',
       subscription.id,
       ensuredSubscription.error.message
     )
@@ -384,7 +386,7 @@ export async function reconcileBillingMirror() {
       for (const org of orgResult.data.data) {
         try {
           const subscriptionResult =
-            await $876.subscriptions.listForOrganization(org.id)
+            await $876.organizations.subscriptions.list(org.id)
           if (subscriptionResult.error) {
             failures += 1
             console.error(
