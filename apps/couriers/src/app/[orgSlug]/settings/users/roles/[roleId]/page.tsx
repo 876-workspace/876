@@ -4,7 +4,11 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { isCouriersNotFound, requireCouriersData, toRoleView } from '@/lib/couriers'
+import {
+  isCouriersNotFound,
+  requireCouriersData,
+  toRoleView,
+} from '@/lib/couriers'
 import { $876 } from '@/lib/876'
 
 import { RoleForm } from '../_components/role-form'

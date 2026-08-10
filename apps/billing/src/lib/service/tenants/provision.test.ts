@@ -206,13 +206,7 @@ describe('tenant provisioning', () => {
   })
 
   it('seeds the Jamaican GCT authority and default rate even for a non-JM org country', async () => {
-    const result = await create(
-      'org_1',
-      'usr_1',
-      'owner',
-      'US',
-      createParams()
-    )
+    const result = await create('org_1', 'usr_1', 'owner', 'US', createParams())
 
     expect(result).toEqual({
       data: { id: 'Tenant', created: true, provisioningVersion: 3 },
@@ -273,13 +267,7 @@ describe('tenant provisioning', () => {
   it('rejects an unsupported currency without writing tenant data', async () => {
     tx.currency.findMany.mockResolvedValue([])
 
-    const result = await create(
-      'org_1',
-      'usr_1',
-      'owner',
-      'JM',
-      createParams()
-    )
+    const result = await create('org_1', 'usr_1', 'owner', 'JM', createParams())
 
     expect(result).toEqual({
       data: null,
@@ -323,13 +311,7 @@ describe('tenant provisioning', () => {
     })
     tx.currency.findMany.mockResolvedValue([{ code: 'JMD' }, { code: 'USD' }])
 
-    const result = await create(
-      'org_1',
-      'usr_1',
-      'owner',
-      'JM',
-      createParams()
-    )
+    const result = await create('org_1', 'usr_1', 'owner', 'JM', createParams())
 
     expect(result.error).toBeNull()
     expect(tx.tenantCurrency.createMany.mock.calls[0][0].data).toHaveLength(2)
@@ -346,13 +328,7 @@ describe('tenant provisioning', () => {
   it('rejects provisioning when the manifest language is unavailable', async () => {
     tx.language.findFirst.mockResolvedValue(null)
 
-    const result = await create(
-      'org_1',
-      'usr_1',
-      'owner',
-      'JM',
-      createParams()
-    )
+    const result = await create('org_1', 'usr_1', 'owner', 'JM', createParams())
 
     expect(result).toEqual({
       data: null,
@@ -368,13 +344,7 @@ describe('tenant provisioning', () => {
       provisioningVersion: 1,
     })
 
-    const result = await create(
-      'org_1',
-      'usr_1',
-      'owner',
-      'JM',
-      createParams()
-    )
+    const result = await create('org_1', 'usr_1', 'owner', 'JM', createParams())
 
     expect(result).toEqual({
       data: {
@@ -422,13 +392,7 @@ describe('tenant provisioning', () => {
       provisioningVersion: 1,
     })
 
-    const result = await create(
-      'org_1',
-      'usr_1',
-      'owner',
-      'JM',
-      createParams()
-    )
+    const result = await create('org_1', 'usr_1', 'owner', 'JM', createParams())
 
     expect(result).toEqual({
       data: {

@@ -72,18 +72,17 @@ export async function createCustomer(
   if (!tenant) throw missing('tenant')
 
   // High-level domain operation: Billing customer creation is idempotent. Courier profile + mailbox creation is transactionally atomic within Couriers. The overall cross-service workflow is retry-safe/idempotent.
-  const billingResult = await billing.createExternalCustomer(
-    tenant.orgId,
-    {
-      idempotencyKey: input.idempotency_key,
-      customerKind: (input.customer_kind ?? 'INDIVIDUAL') as 'INDIVIDUAL' | 'BUSINESS',
-      firstName: input.first_name ?? null,
-      lastName: input.last_name ?? null,
-      companyName: input.company_name ?? null,
-      email: input.email ?? null,
-      phone: input.phone ?? null,
-    }
-  )
+  const billingResult = await billing.createExternalCustomer(tenant.orgId, {
+    idempotencyKey: input.idempotency_key,
+    customerKind: (input.customer_kind ?? 'INDIVIDUAL') as
+      | 'INDIVIDUAL'
+      | 'BUSINESS',
+    firstName: input.first_name ?? null,
+    lastName: input.last_name ?? null,
+    companyName: input.company_name ?? null,
+    email: input.email ?? null,
+    phone: input.phone ?? null,
+  })
   if (billingResult.error || !billingResult.data) {
     throw new AppHttpError({
       code: 'customer/registry-unavailable',
@@ -105,7 +104,10 @@ export async function createCustomer(
         now: nowUnixSeconds(),
       })
       if (result.kind === 'conflict')
-        throw conflict('customer', 'A courier profile is linked to another customer.')
+        throw conflict(
+          'customer',
+          'A courier profile is linked to another customer.'
+        )
       if (result.kind === 'tenant_missing') throw missing('tenant')
       if (result.kind === 'mailbox_unavailable')
         throw new AppHttpError({
@@ -119,7 +121,10 @@ export async function createCustomer(
       if (!isUniqueConstraintError(error)) throw error
     }
   }
-  throw conflict('customer', 'A courier profile already exists for this customer.')
+  throw conflict(
+    'customer',
+    'A courier profile already exists for this customer.'
+  )
 }
 
 const MAX_ENROLLMENT_RETRY_ATTEMPTS = 3
@@ -190,12 +195,23 @@ export async function updateCustomer(
     await ensureTenantBranch(tenantId, input.branch_id)
   }
 
-  const identityKeys = ['first_name', 'last_name', 'company_name', 'email', 'phone'] as const
-  const touchesIdentity = identityKeys.some((key) => (input as Record<string, unknown>)[key] !== undefined)
+  const identityKeys = [
+    'first_name',
+    'last_name',
+    'company_name',
+    'email',
+    'phone',
+  ] as const
+  const touchesIdentity = identityKeys.some(
+    (key) => (input as Record<string, unknown>)[key] !== undefined
+  )
   if (touchesIdentity) {
     const tenant = await tenantRepo.findTenantById(tenantId)
     if (!tenant) throw missing('tenant')
-    const current = await billing.retrieveCustomer(tenant.orgId, profileRow.billingCustomerId)
+    const current = await billing.retrieveCustomer(
+      tenant.orgId,
+      profileRow.billingCustomerId
+    )
     if (current.error || !current.data) {
       throw new AppHttpError({
         code: 'customer/registry-unavailable',
@@ -214,12 +230,19 @@ export async function updateCustomer(
     const hasIdentityChange = identityKeys.some((key) => {
       if ((input as Record<string, unknown>)[key] === undefined) return false
       const billingKey = billingFieldMap[key] as string
-      return (input as Record<string, unknown>)[key] !== registryCustomer[billingKey]
+      return (
+        (input as Record<string, unknown>)[key] !== registryCustomer[billingKey]
+      )
     })
-    if (hasIdentityChange && (registryCustomer as unknown as { customerType: string }).customerType !== 'EXTERNAL') {
+    if (
+      hasIdentityChange &&
+      (registryCustomer as unknown as { customerType: string }).customerType !==
+        'EXTERNAL'
+    ) {
       throw new AppHttpError({
         code: 'customer/identity-locked',
-        message: 'This customer is linked to an 876 account and cannot be renamed from Couriers.',
+        message:
+          'This customer is linked to an 876 account and cannot be renamed from Couriers.',
         httpStatus: 409,
       })
     }
@@ -228,12 +251,32 @@ export async function updateCustomer(
         tenant.orgId,
         profileRow.billingCustomerId,
         {
-          customerKind: (registryCustomer as unknown as { customerKind: 'INDIVIDUAL' | 'BUSINESS' }).customerKind,
-          firstName: (input.first_name as string | null | undefined) ?? (registryCustomer as unknown as { firstName: string | null }).firstName,
-          lastName: input.last_name === undefined ? (registryCustomer as unknown as { lastName: string | null }).lastName : (input.last_name as string | null),
-          companyName: (input.company_name as string | null | undefined) ?? (registryCustomer as unknown as { companyName: string | null }).companyName,
-          email: input.email === undefined ? (registryCustomer as unknown as { email: string | null }).email : (input.email as string | null),
-          phone: input.phone === undefined ? (registryCustomer as unknown as { phone: string | null }).phone : (input.phone as string | null),
+          customerKind: (
+            registryCustomer as unknown as {
+              customerKind: 'INDIVIDUAL' | 'BUSINESS'
+            }
+          ).customerKind,
+          firstName:
+            (input.first_name as string | null | undefined) ??
+            (registryCustomer as unknown as { firstName: string | null })
+              .firstName,
+          lastName:
+            input.last_name === undefined
+              ? (registryCustomer as unknown as { lastName: string | null })
+                  .lastName
+              : (input.last_name as string | null),
+          companyName:
+            (input.company_name as string | null | undefined) ??
+            (registryCustomer as unknown as { companyName: string | null })
+              .companyName,
+          email:
+            input.email === undefined
+              ? (registryCustomer as unknown as { email: string | null }).email
+              : (input.email as string | null),
+          phone:
+            input.phone === undefined
+              ? (registryCustomer as unknown as { phone: string | null }).phone
+              : (input.phone as string | null),
         }
       )
       if (registry.error || !registry.data) {
@@ -254,7 +297,11 @@ export async function updateCustomer(
   }
 
   return serializeCustomer(
-    await repo.updateTenantCustomer({ id, input: courierInput, now: nowUnixSeconds() })
+    await repo.updateTenantCustomer({
+      id,
+      input: courierInput,
+      now: nowUnixSeconds(),
+    })
   )
 }
 

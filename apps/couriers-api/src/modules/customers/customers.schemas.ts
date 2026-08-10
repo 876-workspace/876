@@ -64,7 +64,9 @@ export const createCustomerBodySchema = z
     is_commercial: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
-    const kind = (value.customer_kind ?? 'INDIVIDUAL') as 'INDIVIDUAL' | 'BUSINESS'
+    const kind = (value.customer_kind ?? 'INDIVIDUAL') as
+      | 'INDIVIDUAL'
+      | 'BUSINESS'
     if (kind === 'INDIVIDUAL' && !value.first_name) {
       ctx.addIssue({
         code: 'custom',

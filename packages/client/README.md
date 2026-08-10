@@ -45,7 +45,10 @@ import { create876ServerClient } from '@876/client/server'
 import { create876CouriersAdminClient } from '@876/couriers/admin'
 
 function createCouriers876Client(requestId?: string) {
-  const ecosystem = create876ServerClient({ apiKey: process.env.API_876_KEY, requestId, /* ... */ })
+  const ecosystem = create876ServerClient({
+    apiKey: process.env.API_876_KEY,
+    requestId /* ... */,
+  })
   return {
     ...ecosystem,
     couriers: create876CouriersAdminClient({

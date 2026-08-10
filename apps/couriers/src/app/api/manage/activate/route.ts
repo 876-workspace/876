@@ -27,7 +27,7 @@ export async function POST() {
   }
 
   const platform = await getPlatformClient()
-  const result = await platform.organizations.subscriptions.create(ctx.orgId, {
+  const result = await platform.subscriptions.create(ctx.orgId, {
     appSlug: COURIERS_APP_SLUG,
   })
 

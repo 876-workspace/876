@@ -139,9 +139,19 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
      */
     retrieve(
       params:
-        | { id: string; workosId?: never; username?: never; includeDeleted?: boolean }
+        | {
+            id: string
+            workosId?: never
+            username?: never
+            includeDeleted?: boolean
+          }
         | { workosId: string; id?: never; username?: never }
-        | { username: string; id?: never; workosId?: never; includeDeleted?: boolean }
+        | {
+            username: string
+            id?: never
+            workosId?: never
+            includeDeleted?: boolean
+          }
     ) {
       if ('workosId' in params) {
         return adminRequest<AdminUser>(runtime, {

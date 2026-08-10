@@ -135,7 +135,9 @@ export async function getAuthRoutingClient() {
     },
     users: {
       retrieve(
-        params: { id: string; workosId?: never } | { workosId: string; id?: never }
+        params:
+          | { id: string; workosId?: never }
+          | { workosId: string; id?: never }
       ) {
         if ('workosId' in params) {
           return authRoutingRequest<AuthRoutingUserRow>(runtime, {

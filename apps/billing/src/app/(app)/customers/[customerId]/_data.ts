@@ -75,7 +75,9 @@ export const resolveCustomerParty = cache(
       return resolveOrgParty(platform, customer, self)
 
     if (customer.customerType === 'CORE_USER' && customer.userId) {
-      const { data: user } = await platform.users.retrieve({ id: customer.userId })
+      const { data: user } = await platform.users.retrieve({
+        id: customer.userId,
+      })
       if (!user) return { org: null, memberCount: null, contact: self }
 
       return {
@@ -104,7 +106,7 @@ async function resolveOrgParty(
   const organizationId = customer.organizationId!
 
   const [orgResult, membersResult] = await Promise.all([
-    platform.organizations.retrieve(organizationId),
+    platform.organizations.retrieve({ id: organizationId }),
     platform.memberships.list({ organizationId, limit: 100 }),
   ])
 
