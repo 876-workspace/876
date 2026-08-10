@@ -68,7 +68,7 @@ export async function POST() {
   if (appSubmit.error)
     return apiJson({ error: 'Complete the setup step first.' }, { status: 422 })
 
-  const prov = await platform.organizations.subscriptions.create(ctx.orgId, {
+  const prov = await platform.subscriptions.create(ctx.orgId, {
     appSlug: COURIERS_APP_SLUG,
   })
   if (prov.error)
