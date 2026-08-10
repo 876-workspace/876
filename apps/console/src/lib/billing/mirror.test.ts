@@ -458,7 +458,7 @@ describe('mirrorCoreProductPrices', () => {
     )
   })
 
-  it('continues after a plan ensure failure', async () => {
+  it('continues after a plan create failure', async () => {
     mocks.planCreate.mockResolvedValue({
       data: null,
       error: { message: 'Plan unavailable.' },
@@ -477,7 +477,7 @@ describe('mirrorCoreProductPrices', () => {
     )
   })
 
-  it('reports a price ensure failure', async () => {
+  it('reports a price create failure', async () => {
     mocks.priceCreate.mockResolvedValue({
       data: null,
       error: { message: 'Price unavailable.' },
@@ -829,7 +829,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     )
   })
 
-  it('reports a subscription ensure failure', async () => {
+  it('reports a subscription create failure', async () => {
     mocks.subscriptionCreate.mockResolvedValue({
       data: null,
       error: { message: 'Subscription unavailable.' },

@@ -118,6 +118,8 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     apiKeys: createAdminApiKeysResource(runtime),
     organizations: {
       ...organizations,
+      // Organization-scoped entitlement: org -> app access relationship (GET /organizations/{id}/apps)
+      // Distinct from top-level billing subscriptions (GET /billing/subscriptions) which are platform billing records by subscription ID.
       subscriptions: organizationSubscriptions,
     },
     locations,
@@ -142,6 +144,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     addresses: createAdminAddressesResource(runtime),
     reservedUsernames: createAdminReservedUsernamesResource(runtime),
     billingAccounts: createAdminBillingAccountsResource(runtime),
+    // Top-level platform billing subscriptions (GET /billing/subscriptions/{id}) — distinct from organizations.subscriptions (org app-access)
     subscriptions,
     storage: create876StorageClient(options.storage),
     billing: {

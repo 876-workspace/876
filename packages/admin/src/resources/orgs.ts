@@ -489,7 +489,11 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     subscriptions: {
-      /** Create an org's app subscription (idempotent). */
+      /**
+       * `$876.organizations.subscriptions.*` — org-to-app entitlement (GET /organizations/{id}/apps).
+       * Distinct from top-level `$876.subscriptions.*` (GET /billing/subscriptions) which are platform billing records.
+       * Create an org's app subscription (idempotent).
+       */
       create(
         orgId: string,
         params: { appId?: string; appSlug?: string; priceId?: string }

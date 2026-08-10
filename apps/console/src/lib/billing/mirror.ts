@@ -136,18 +136,18 @@ export async function mirrorCoreProductPrices(
 
   // Control-plane workflow: Console intentionally coordinates Core entitlements + Billing commercial projection.
   // Uses standard create() (idempotent via externalReference/sourceAppId) — Billing service handles idempotency.
-  const ensuredProduct = await $876.billing.products.create({
+  const createdProduct = await $876.billing.products.create({
     sourceAppId: product.app_id,
     slug: product.app_slug ?? product.app_id,
     name: product.app_name ?? product.app_slug ?? product.app_id,
     description: null,
     active: true,
   })
-  if (ensuredProduct.error !== null) {
+  if (createdProduct.error !== null) {
     console.error(
       '[console.billing.mirror] product create failed:',
       product.id,
-      ensuredProduct.error.message
+      createdProduct.error.message
     )
     return false
   }
@@ -165,8 +165,8 @@ export async function mirrorCoreProductPrices(
     }
 
     const { intervalUnit, intervalCount } = cadence
-    const ensuredPlan = await $876.billing.plans.create({
-      productId: ensuredProduct.data.id,
+    const createdPlan = await $876.billing.plans.create({
+      productId: createdProduct.data.id,
       entitlementReferenceId: product.id,
       code: product.slug,
       name: product.name,
@@ -176,18 +176,18 @@ export async function mirrorCoreProductPrices(
       trialDays: price.trial_period_days ?? 0,
       active: product.active,
     })
-    if (ensuredPlan.error !== null) {
+    if (createdPlan.error !== null) {
       console.error(
         '[console.billing.mirror] plan create failed:',
         product.id,
-        ensuredPlan.error.message
+        createdPlan.error.message
       )
       succeeded = false
       continue
     }
 
-    const ensuredPrice = await $876.billing.prices.create({
-      planId: ensuredPlan.data.id,
+    const createdPrice = await $876.billing.prices.create({
+      planId: createdPlan.data.id,
       entitlementReferenceId: price.id,
       nickname: price.nickname ?? price.name ?? null,
       currency: price.currency.toUpperCase(),
@@ -196,11 +196,11 @@ export async function mirrorCoreProductPrices(
       intervalCount,
       active: price.active,
     })
-    if (ensuredPrice.error !== null) {
+    if (createdPrice.error !== null) {
       console.error(
         '[console.billing.mirror] price create failed:',
         price.id,
-        ensuredPrice.error.message
+        createdPrice.error.message
       )
       succeeded = false
     }
@@ -268,7 +268,7 @@ export async function mirrorCoreSubscription(
   const legalName = org.data?.name ?? subscription.organization_id
   const contact = await resolveOrgPrimaryContact(org.data)
 
-  const ensuredCustomer = await $876.billing.customers.create({
+  const createdCustomer = await $876.billing.customers.create({
     organizationId: subscription.organization_id,
     customerType: 'CORE_ORGANIZATION',
     customerKind: 'BUSINESS',
@@ -280,19 +280,19 @@ export async function mirrorCoreSubscription(
     lastName: contact?.lastName ?? null,
     primaryContact: contact,
   })
-  if (ensuredCustomer.error !== null) {
+  if (createdCustomer.error !== null) {
     console.error(
       '[console.billing.mirror] customer create failed:',
       subscription.organization_id,
-      ensuredCustomer.error.message
+      createdCustomer.error.message
     )
     return false
   }
 
-  const ensuredSubscription = await $876.billing.subscriptions.create({
+  const createdSubscription = await $876.billing.subscriptions.create({
     externalReference: subscription.id,
     sourceAppId: subscription.app_id,
-    customerId: ensuredCustomer.data.id,
+    customerId: createdCustomer.data.id,
     items: subscription.items.map((item) => ({
       priceEntitlementReferenceId: item.price_id,
       quantity: item.quantity,
@@ -301,11 +301,11 @@ export async function mirrorCoreSubscription(
     startAt: subscription.start_date ?? subscription.created_at,
     cancelAtPeriodEnd: subscription.cancel_at_period_end,
   })
-  if (ensuredSubscription.error !== null) {
+  if (createdSubscription.error !== null) {
     console.error(
       '[console.billing.mirror] subscription create failed:',
       subscription.id,
-      ensuredSubscription.error.message
+      createdSubscription.error.message
     )
     return false
   }
