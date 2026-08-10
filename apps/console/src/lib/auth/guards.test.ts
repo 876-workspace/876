@@ -105,7 +105,7 @@ describe('Console auth guards', () => {
       status: 'active',
     })
     expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_bootstrap')
+    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_bootstrap' })
     expect(mocks.retrieveTeamMember).not.toHaveBeenCalled()
   })
 
@@ -143,7 +143,7 @@ describe('Console auth guards', () => {
     // The signed-in operator's own address must never grant super-admin to the
     // id they happen to be looking at.
     expect(result).toBeNull()
-    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_other')
+    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_other' })
   })
 
   it('falls back to the identity API when the session carries no address', async () => {
@@ -158,7 +158,7 @@ describe('Console auth guards', () => {
     const result = await findConsoleAccess('user_bootstrap')
 
     expect(result?.role).toBe('super_admin')
-    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_bootstrap')
+    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_bootstrap' })
   })
 
   it('does not consult the identity API for an unsigned session', async () => {
@@ -174,7 +174,7 @@ describe('Console auth guards', () => {
     // An unsigned session cannot vouch for an address, so the authoritative
     // read still happens and still decides.
     expect(result?.role).toBe('super_admin')
-    expect(mocks.retrieveUser).toHaveBeenCalledWith('user_bootstrap')
+    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_bootstrap' })
   })
 
   it.each([null, { email: '' }, { email: 'operator@example.com' }])(
