@@ -2,8 +2,12 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { service } from '@/lib/service'
 import { getManageContext } from '@/lib/auth/manage-context'
+import {
+  $couriers,
+  couriersErrorStatus,
+  toCouriersTenant,
+} from '@/lib/couriers'
 
 export const runtime = 'nodejs'
 
@@ -48,15 +52,21 @@ export async function POST(request: NextRequest) {
 
   const { name, slug } = parsed.data
 
-  const result = await service.tenants.create({
-    orgId: ctx.orgId,
+  const result = await $couriers.tenants.create({
+    org_id: ctx.orgId,
     name,
     slug,
-    ownerUserId: ctx.userId,
+    owner_user_id: ctx.userId,
   })
   if (result.error) {
-    return apiJson({ error: result.error }, { status: result.status })
+    return apiJson(
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
+    )
   }
 
-  return apiJson({ object: 'tenant', ...result.data }, { status: 201 })
+  return apiJson(
+    { object: 'tenant', ...toCouriersTenant(result.data) },
+    { status: 201 }
+  )
 }

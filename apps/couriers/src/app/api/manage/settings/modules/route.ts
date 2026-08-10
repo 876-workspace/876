@@ -1,17 +1,18 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
+import { moduleKeySchema } from '@876/couriers/admin'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers, couriersErrorStatus } from '@/lib/couriers'
 
 export const runtime = 'nodejs'
 
 const toggleSchema = z.strictObject({
   orgSlug: z.string().min(1),
-  module: z.string().min(1),
+  module: moduleKeySchema,
   isEnabled: z.boolean(),
 })
 
@@ -30,9 +31,14 @@ export async function GET(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const data = await service.modules.list({ tenantId: ctx.tenant.id })
+  const result = await $couriers.settings.list(ctx.tenant.id)
+  if (result.error)
+    return apiJson(
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
+    )
 
-  return apiJson({ data })
+  return apiJson({ data: result.data })
 }
 
 export async function PATCH(request: NextRequest) {
@@ -57,13 +63,16 @@ export async function PATCH(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await service.modules.toggle({
-    tenantId: ctx.tenant.id,
-    module: parsed.data.module,
-    isEnabled: parsed.data.isEnabled,
-  })
+  const result = await $couriers.settings.update(
+    ctx.tenant.id,
+    parsed.data.module,
+    { is_enabled: parsed.data.isEnabled }
+  )
   if (result.error)
-    return apiJson({ error: result.error }, { status: result.status })
+    return apiJson(
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
+    )
 
   return apiJson({ data: result.data })
 }

@@ -8,7 +8,12 @@ import { ChevronLeft } from '@876/ui/icons'
 import { PackageStatusBadge } from '@/features/portal/components/package-status-badge'
 import { PackageTimeline } from '@/features/portal/components/package-timeline'
 import { requirePortalCustomer } from '@/lib/portal/customer'
-import { service } from '@/lib/service'
+import {
+  createPortalCouriersClient,
+  isPortalNotFound,
+  requirePortalData,
+  toPortalPackageDetail,
+} from '@/lib/portal/client'
 
 const DATE_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
   month: 'short',
@@ -27,12 +32,12 @@ export default async function PortalPackageDetailPage({
 }) {
   const { id } = await params
   const returnTo = `/portal/packages/${id}`
-  const { tenant, profile } = await requirePortalCustomer(returnTo)
-  const packageItem = await service.packages.retrieve({
-    tenantId: tenant.id,
-    id,
-  })
-  if (!packageItem || packageItem.customerId !== profile.id) notFound()
+  const { session, tenant } = await requirePortalCustomer(returnTo)
+  const packageResult = await createPortalCouriersClient(
+    session.accessToken
+  ).portal.packages.retrieve(tenant.id, id)
+  if (isPortalNotFound(packageResult)) notFound()
+  const packageItem = toPortalPackageDetail(requirePortalData(packageResult))
 
   const title =
     packageItem.description || packageItem.trackingNum || 'Package details'

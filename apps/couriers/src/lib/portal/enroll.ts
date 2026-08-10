@@ -1,23 +1,37 @@
 import 'server-only'
 
 import { get876Client } from '@/lib/876'
-import type { CourierCustomerProfile } from '@/lib/db'
 import { ensureSharedCoreUserCustomer } from '@/lib/finance/customers'
-import { service } from '@/lib/service'
-import { errFrom, ok } from '@/lib/service/result'
+import { getError, type CouriersErrorCode } from '@/lib/errors'
 import type {
   EnsurePortalCustomerResult,
+  PortalCustomer,
   PortalCustomerEnsureParams,
 } from '@/types/portal'
+
+import { createPortalCouriersClient, isPortalNotFound } from './client'
 
 export async function ensurePortalCustomer(
   params: PortalCustomerEnsureParams
 ): EnsurePortalCustomerResult {
-  const existing = await service.customerProfiles.retrieveByTenantAndUser(
-    params.tenant.id,
-    params.userId
-  )
-  if (existing) return withPrimaryMailbox(existing)
+  const couriers = createPortalCouriersClient(params.accessToken)
+  const existing = await couriers.portal.customer.retrieve(params.tenant.id)
+  if (existing.error === null) {
+    const shippingAddress = await couriers.portal.shippingAddress.retrieve(
+      params.tenant.id
+    )
+    if (shippingAddress.error !== null || shippingAddress.data.mailbox === null)
+      return localFailure('portal/mailbox-unavailable')
+    return {
+      data: toPortalCustomer(
+        existing.data,
+        shippingAddress.data.mailbox.number
+      ),
+      error: null,
+    }
+  }
+  if (!isPortalNotFound(existing))
+    return localFailure('portal/enrollment-failed')
 
   const $876 = await get876Client()
   const billingCustomer = await ensureSharedCoreUserCustomer(
@@ -31,88 +45,66 @@ export async function ensurePortalCustomer(
     }
   )
   if (billingCustomer.error || !billingCustomer.data)
-    return errFrom('portal/billing-unavailable')
+    return localFailure('portal/billing-unavailable')
 
-  let allocation = await service.mailboxes.allocate({
-    tenantId: params.tenant.id,
-  })
-  if (allocation.data === null) return allocation
-
-  try {
-    const profile = await service.customerProfiles.ensure({
-      tenantId: params.tenant.id,
-      userId: params.userId,
-      billingCustomerId: billingCustomer.data.id,
-      mailboxNumber: allocation.data.number,
-    })
-
-    return withPrimaryMailbox(profile)
-  } catch (error) {
-    if (!isUniqueViolation(error)) {
-      console.error('[portal.ensurePortalCustomer]', error)
-      return errFrom('portal/enrollment-failed')
+  const enrollment = await couriers.portal.enrollments.create(
+    params.tenant.id,
+    {
+      billing_customer_id: billingCustomer.data.id,
     }
-  }
-
-  const concurrentProfile =
-    await service.customerProfiles.retrieveByTenantAndUser(
-      params.tenant.id,
-      params.userId
-    )
-  if (concurrentProfile) return withPrimaryMailbox(concurrentProfile)
-
-  allocation = await service.mailboxes.allocate({
-    tenantId: params.tenant.id,
-  })
-  if (allocation.data === null) return allocation
-
-  try {
-    const profile = await service.customerProfiles.ensure({
-      tenantId: params.tenant.id,
-      userId: params.userId,
-      billingCustomerId: billingCustomer.data.id,
-      mailboxNumber: allocation.data.number,
-    })
-
-    return withPrimaryMailbox(profile)
-  } catch (error) {
-    if (!isUniqueViolation(error)) {
-      console.error('[portal.ensurePortalCustomer]', error)
-      return errFrom('portal/enrollment-failed')
-    }
-
-    const profile = await service.customerProfiles.retrieveByTenantAndUser(
-      params.tenant.id,
-      params.userId
-    )
-    if (profile) return withPrimaryMailbox(profile)
-
-    console.error('[portal.ensurePortalCustomer]', error)
-    return errFrom('portal/mailbox-unavailable')
-  }
-}
-
-async function withPrimaryMailbox(
-  profile: CourierCustomerProfile
-): EnsurePortalCustomerResult {
-  const mailboxes = await service.mailboxes.list({
-    tenantId: profile.tenantId,
-    customerId: profile.id,
-  })
-  const primaryMailbox = mailboxes.find((mailbox) => mailbox.isPrimary)
-  if (!primaryMailbox) return errFrom('portal/mailbox-unavailable')
-
-  return ok({
-    ...profile,
-    primaryMailboxNumber: primaryMailbox.number,
-  })
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error as { code?: unknown }).code === 'P2002'
   )
+  if (enrollment.error !== null) {
+    if (enrollment.error.code === 'mailbox/allocation-exhausted')
+      return localFailure('portal/mailbox-unavailable')
+    return localFailure('portal/enrollment-failed')
+  }
+
+  return {
+    data: toPortalCustomer(
+      enrollment.data.customer,
+      enrollment.data.mailbox.number
+    ),
+    error: null,
+  }
+}
+
+function localFailure(code: CouriersErrorCode) {
+  const error = getError(code)
+  return {
+    data: null,
+    error: error.message,
+    status: error.httpStatus,
+    code: error.code,
+  }
+}
+
+function toPortalCustomer(
+  customer: {
+    id: string
+    tenant_id: string
+    user_id: string | null
+    billing_customer_id: string
+    branch_id: string | null
+    status: 'ACTIVE' | 'SUSPENDED'
+    is_commercial: boolean
+    first_seen_at: number
+    created_at: number
+    updated_at: number
+  },
+  primaryMailboxNumber: string
+): PortalCustomer {
+  return {
+    id: customer.id,
+    tenantId: customer.tenant_id,
+    userId: customer.user_id,
+    billingCustomerId: customer.billing_customer_id,
+    branchId: customer.branch_id,
+    status: customer.status,
+    trn: null,
+    isCommercial: customer.is_commercial,
+    firstSeenAt: customer.first_seen_at,
+    createdAt: customer.created_at,
+    updatedAt: customer.updated_at,
+    primaryMailboxNumber,
+  }
 }

@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { CourierCustomerProfile, Tenant } from '@/lib/db'
-import type { Signed876Session } from '@/types/auth'
+import type { PortalCustomer } from '@876/couriers'
+
+import type { CouriersTenant, Signed876Session } from '@/types/auth'
 
 const mocks = vi.hoisted(() => ({
   redirect: vi.fn(),
   getAuthSession: vi.fn(),
   isSignedSession: vi.fn(),
   getPortalTenant: vi.fn(),
-  retrieveByTenantAndUser: vi.fn(),
+  createPortalCouriersClient: vi.fn(),
+  retrievePortalCustomer: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
@@ -16,11 +18,16 @@ vi.mock('@/lib/auth/session', () => ({
   getAuthSession: mocks.getAuthSession,
   isSignedSession: mocks.isSignedSession,
 }))
-vi.mock('@/lib/service', () => ({
-  service: {
-    customerProfiles: {
-      retrieveByTenantAndUser: mocks.retrieveByTenantAndUser,
-    },
+vi.mock('./client', () => ({
+  createPortalCouriersClient: mocks.createPortalCouriersClient,
+  isPortalNotFound: (result: { error: { code: string } | null }) =>
+    result.error?.code.endsWith('/not-found') ?? false,
+  requirePortalData: <T>(result: {
+    data: T | null
+    error: { code: string; message: string } | null
+  }) => {
+    if (result.error === null) return result.data as T
+    throw new Error(result.error.message)
   },
 }))
 vi.mock('./tenant', () => ({ getPortalTenant: mocks.getPortalTenant }))
@@ -54,7 +61,7 @@ function createSession(
   }
 }
 
-function createTenant(overrides: Partial<Tenant> = {}): Tenant {
+function createTenant(overrides: Partial<CouriersTenant> = {}): CouriersTenant {
   return {
     id: 'ten_rocketship',
     orgId: 'org_rocketship',
@@ -69,23 +76,21 @@ function createTenant(overrides: Partial<Tenant> = {}): Tenant {
 }
 
 function createProfile(
-  overrides: Partial<CourierCustomerProfile> = {}
-): CourierCustomerProfile {
+  overrides: Partial<PortalCustomer> = {}
+): PortalCustomer {
   return {
+    object: 'courier_customer_profile',
     id: 'cprof_kimani',
-    tenantId: 'ten_rocketship',
-    userId: 'user_kimani',
-    billingCustomerId: 'blcus_kimani',
-    branchId: 'br_kingston',
+    tenant_id: 'ten_rocketship',
+    user_id: 'user_kimani',
+    billing_customer_id: 'blcus_kimani',
+    branch_id: 'br_kingston',
     status: 'ACTIVE',
-    trn: null,
-    isCommercial: false,
-    firstSeenAt: 1_784_419_200,
-    createdAt: 1_784_419_200,
-    updatedAt: 1_784_419_200,
-    deletedAt: null,
-    deletedBy: null,
-    deletionReason: null,
+    is_commercial: false,
+    first_seen_at: 1_784_419_200,
+    created_at: 1_784_419_200,
+    updated_at: 1_784_419_200,
+    deleted_at: null,
     ...overrides,
   }
 }
@@ -99,7 +104,13 @@ describe('requirePortalCustomer', () => {
     mocks.getAuthSession.mockResolvedValue({ user: null })
     mocks.isSignedSession.mockReturnValue(false)
     mocks.getPortalTenant.mockResolvedValue(null)
-    mocks.retrieveByTenantAndUser.mockResolvedValue(null)
+    mocks.createPortalCouriersClient.mockReturnValue({
+      portal: { customer: { retrieve: mocks.retrievePortalCustomer } },
+    })
+    mocks.retrievePortalCustomer.mockResolvedValue({
+      data: null,
+      error: { code: 'customer/not-found', message: 'Not found.' },
+    })
   })
 
   it('redirects an unsigned visitor to login without a root return parameter', async () => {
@@ -114,7 +125,8 @@ describe('requirePortalCustomer', () => {
     expect(mocks.isSignedSession).toHaveBeenCalledTimes(1)
     expect(mocks.isSignedSession).toHaveBeenCalledWith(session)
     expect(mocks.getPortalTenant).not.toHaveBeenCalled()
-    expect(mocks.retrieveByTenantAndUser).not.toHaveBeenCalled()
+    expect(mocks.createPortalCouriersClient).not.toHaveBeenCalled()
+    expect(mocks.retrievePortalCustomer).not.toHaveBeenCalled()
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).toHaveBeenCalledWith('/portal/login')
   })
@@ -131,7 +143,8 @@ describe('requirePortalCustomer', () => {
     expect(mocks.isSignedSession).toHaveBeenCalledWith(session)
     expect(mocks.getPortalTenant).toHaveBeenCalledTimes(1)
     expect(mocks.getPortalTenant).toHaveBeenCalledWith()
-    expect(mocks.retrieveByTenantAndUser).not.toHaveBeenCalled()
+    expect(mocks.createPortalCouriersClient).not.toHaveBeenCalled()
+    expect(mocks.retrievePortalCustomer).not.toHaveBeenCalled()
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).toHaveBeenCalledWith('/portal/unavailable')
   })
@@ -148,11 +161,12 @@ describe('requirePortalCustomer', () => {
     await expect(action).rejects.toMatchObject({
       path: '/portal/auth/complete',
     })
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-      'ten_rocketship',
-      'user_kimani'
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+      'access_kimani'
     )
+    expect(mocks.retrievePortalCustomer).toHaveBeenCalledTimes(1)
+    expect(mocks.retrievePortalCustomer).toHaveBeenCalledWith('ten_rocketship')
     expect(mocks.redirect).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).toHaveBeenCalledWith('/portal/auth/complete')
   })
@@ -174,10 +188,13 @@ describe('requirePortalCustomer', () => {
       expect(mocks.getAuthSession).toHaveBeenCalledTimes(1)
       expect(mocks.isSignedSession).toHaveBeenCalledTimes(1)
       expect(mocks.getPortalTenant).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-        'ten_rocketship',
-        'user_kimani'
+      expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
+      expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+        'access_kimani'
+      )
+      expect(mocks.retrievePortalCustomer).toHaveBeenCalledTimes(1)
+      expect(mocks.retrievePortalCustomer).toHaveBeenCalledWith(
+        'ten_rocketship'
       )
       expect(mocks.redirect).toHaveBeenCalledTimes(1)
       expect(mocks.redirect).toHaveBeenCalledWith(expectedPath)
@@ -191,7 +208,10 @@ describe('requirePortalCustomer', () => {
     mocks.getAuthSession.mockResolvedValue(session)
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPortalTenant.mockResolvedValue(tenant)
-    mocks.retrieveByTenantAndUser.mockResolvedValue(profile)
+    mocks.retrievePortalCustomer.mockResolvedValue({
+      data: profile,
+      error: null,
+    })
 
     const result = await requirePortalCustomer('/portal/packages')
 
@@ -201,11 +221,12 @@ describe('requirePortalCustomer', () => {
     expect(mocks.isSignedSession).toHaveBeenCalledWith(session)
     expect(mocks.getPortalTenant).toHaveBeenCalledTimes(1)
     expect(mocks.getPortalTenant).toHaveBeenCalledWith()
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByTenantAndUser).toHaveBeenCalledWith(
-      'ten_rocketship',
-      'user_kimani'
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
+    expect(mocks.createPortalCouriersClient).toHaveBeenCalledWith(
+      'access_kimani'
     )
+    expect(mocks.retrievePortalCustomer).toHaveBeenCalledTimes(1)
+    expect(mocks.retrievePortalCustomer).toHaveBeenCalledWith('ten_rocketship')
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
 })

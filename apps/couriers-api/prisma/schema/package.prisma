@@ -1,0 +1,70 @@
+enum PackageType {
+  CARTON
+  ENVELOPE
+  BAG
+  PALLET
+  OTHER
+}
+
+enum PackageStatus {
+  PRE_ALERT
+  RECEIVED
+  IN_TRANSIT
+  ARRIVED
+  READY_FOR_PICKUP
+  COLLECTED
+  UNCLAIMED
+}
+
+model Package {
+  id               String        @id @default(cuid())
+  tenantId         String        @map("tenant_id")
+  customerId       String        @map("customer_id")
+  branchId         String?       @map("branch_id")
+  mailboxId        String?       @map("mailbox_id")
+  carrierId        String?       @map("carrier_id")
+  sellerId         String?       @map("seller_id")
+  categoryId       String?       @map("category_id")
+  billingInvoiceId String?       @map("billing_invoice_id")
+  manifestId       String?       @map("manifest_id")
+  trackingNum      String?       @map("tracking_num")
+  status           PackageStatus @default(PRE_ALERT)
+  packageType      PackageType   @default(CARTON) @map("package_type")
+  description      String?
+  quantity         Int           @default(1)
+  actualWeight     Float?        @map("actual_weight")
+  chargeableWeight Float?        @map("chargeable_weight")
+  length           Float?
+  width            Float?
+  height           Float?
+  dimensionalWeight Float?       @map("dimensional_weight")
+  declaredValue    Int?          @map("declared_value")
+  hsCode           String?       @map("hs_code")
+  countryOfOrigin  String?       @map("country_of_origin")
+  hasCustomsDuty   Boolean       @default(false) @map("has_customs_duty")
+  importDutyAmount Int?          @map("import_duty_amount")
+  gctAmount        Int?          @map("gct_amount")
+  customsEntryNumber String?     @map("customs_entry_number")
+  customsClearedAt Int?          @map("customs_cleared_at")
+  customsHoldReason String?      @map("customs_hold_reason")
+  isHazardous      Boolean       @default(false) @map("is_hazardous")
+  condition        String?
+  collectedAt      Int?          @map("collected_at")
+  collectedById    String?       @map("collected_by_id")
+  createdAt        Int           @map("created_at")
+  updatedAt        Int           @map("updated_at")
+
+  tenant   Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer CourierCustomerProfile @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  branch   Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  mailbox  Mailbox?               @relation(fields: [mailboxId], references: [id], onDelete: SetNull)
+  carrier  Carrier?               @relation(fields: [carrierId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId], name: "packages_tenant_id_idx")
+  @@index([customerId], name: "packages_customer_id_idx")
+  @@index([tenantId, trackingNum], name: "packages_tenant_id_tracking_num_idx")
+  @@index([branchId], name: "packages_branch_id_idx")
+  @@index([carrierId], name: "packages_carrier_id_idx")
+  @@index([mailboxId], name: "packages_mailbox_id_idx")
+  @@map("packages")
+}

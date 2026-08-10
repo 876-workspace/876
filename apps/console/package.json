@@ -26,6 +26,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
+    "@876/couriers": "workspace:*",
     "@876/admin": "workspace:*",
     "@876/analytics": "workspace:*",
     "@876/billing": "workspace:*",

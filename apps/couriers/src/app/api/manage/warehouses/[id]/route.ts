@@ -1,12 +1,16 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import type { NextRequest } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { scheduleSync, warehouseSyncSite } from '@/lib/manage/org-locations'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  couriersErrorStatus,
+  toWarehouseUpdateBody,
+  toWarehouseView,
+} from '@/lib/couriers'
 import { warehouseUpdateParamsSchema } from '@/types/warehouse'
 
 export const runtime = 'nodejs'
@@ -39,6 +43,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
+  const tenantId = ctx.tenant.id
+
   const rest = { ...(body as Record<string, unknown>) }
   delete rest.orgSlug
   const parsed = warehouseUpdateParamsSchema.safeParse(rest)
@@ -48,17 +54,24 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await service.warehouses.update(ctx.tenant.id, id, parsed.data)
+  const result = await $couriers.warehouses.update(
+    tenantId,
+    id,
+    toWarehouseUpdateBody(parsed.data)
+  )
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  // The envelope types `data` as nullable because a service error carries
-  // none; a successful result always has it.
-  if (result.data)
-    scheduleSync(ctx.tenant.orgId, warehouseSyncSite(result.data))
+  const warehouse = toWarehouseView(result.data)
+  after(() =>
+    $couriers.organizationLocations.sync(tenantId, {
+      kind: 'warehouse',
+      site_id: warehouse.id,
+    })
+  )
 
-  return apiJson({ data: result.data })
+  return apiJson({ data: warehouse })
 }

@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { service } from '@/lib/service'
+import { $couriers, couriersErrorStatus } from '@/lib/couriers'
 
 export const runtime = 'nodejs'
 
@@ -39,13 +39,26 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const role = await service.roles.retrieve(ctx.tenant.id, parsed.data.roleId)
-  if (!role) return apiJson({ error: 'Role not found.' }, { status: 404 })
+  const roleResult = await $couriers.roles.retrieve(
+    ctx.tenant.id,
+    parsed.data.roleId
+  )
+  if (roleResult.error) {
+    if (roleResult.error.code.endsWith('/not-found'))
+      return apiJson({ error: 'Role not found.' }, { status: 404 })
+    return apiJson(
+      { error: roleResult.error.message },
+      {
+        status: couriersErrorStatus(roleResult.error),
+        code: roleResult.error.code,
+      }
+    )
+  }
 
   const platform = await getPlatformClient()
   const result = await platform.invites.create(ctx.orgId, {
     email: parsed.data.email,
-    role: role.systemKey === 'admin' ? 'admin' : 'member',
+    role: roleResult.data.system_key === 'admin' ? 'admin' : 'member',
     sourceAppSlug: COURIERS_APP_SLUG,
   })
   if (result.error)

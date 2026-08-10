@@ -31,7 +31,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @876/console exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/billing-app exec vitest run --pool=forks --maxWorkers=2
-      - run: pnpm --filter @876/couriers exec vitest run --pool=forks --maxWorkers=2
+      - run: pnpm --filter @876/couriers-app exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/widgets exec vitest run --pool=forks --maxWorkers=2
 
   widget-browser:

@@ -1,0 +1,28 @@
+/// A named physical location owned by one Couriers tenant.
+model Address {
+  id          String  @id @default(cuid())
+  tenantId    String  @map("tenant_id")
+  name        String
+  line1       String  @map("line_1")
+  line2       String? @map("line_2")
+  city        String
+  regionCode  String? @map("region_code")
+  regionName  String? @map("region_name")
+  countryCode String  @default("JM") @map("country_code")
+  postalCode  String? @map("postal_code")
+  latitude    Float?
+  longitude   Float?
+  isActive    Boolean @default(true) @map("is_active")
+  createdAt   Int     @map("created_at")
+  updatedAt   Int     @map("updated_at")
+
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branches          Branch[]
+  warehouses        Warehouse[]
+  customerAddresses CustomerAddress[]
+
+  @@unique([id, tenantId], name: "addresses_id_tenant_id_key")
+  @@index([tenantId], name: "addresses_tenant_id_idx")
+  @@index([tenantId, countryCode, regionCode], name: "addresses_tenant_country_region_idx")
+  @@map("addresses")
+}

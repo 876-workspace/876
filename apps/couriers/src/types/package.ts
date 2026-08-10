@@ -168,6 +168,12 @@ export interface PortalPackage extends PackageView {
   mailbox: { number: string } | null
 }
 
+/** The fields the portal package-list UI can render from its session endpoint. */
+export type PortalPackageListItem = Pick<
+  PackageView,
+  'id' | 'trackingNum' | 'status' | 'description' | 'createdAt'
+>
+
 export interface CustomerPackageListParams {
   tenantId: string
   customerId: string

@@ -6,7 +6,12 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  isCouriersNotFound,
+  requireCouriersData,
+  toCustomerView,
+} from '@/lib/couriers'
 
 import { CustomerActions } from './_components/customer-actions'
 
@@ -64,29 +69,29 @@ async function CustomerData({ orgSlug, id }: { orgSlug: string; id: string }) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
 
-  const profile = await service.customerProfiles.retrieve(ctx.tenant.id, id)
-  if (!profile) notFound()
+  const customerResult = await $couriers.customers.retrieve(ctx.tenant.id, id)
+  if (isCouriersNotFound(customerResult)) notFound()
+  const profile = toCustomerView(requireCouriersData(customerResult))
 
   const $876 = await get876Client()
 
   // Independent of one another, so they cost one round trip rather than three.
-  const [registry, mailboxes, branch] = await Promise.all([
+  const [registry, mailboxesResult, branchResult] = await Promise.all([
     $876.billing.customers.retrieve(
       ctx.tenant.orgId,
       profile.billingCustomerId
     ),
-    service.mailboxes.list({ tenantId: ctx.tenant.id, customerId: profile.id }),
+    $couriers.customers.mailboxes.list(ctx.tenant.id, profile.id),
     profile.branchId
-      ? service.branches.retrieve({
-          tenantId: ctx.tenant.id,
-          id: profile.branchId,
-        })
+      ? $couriers.branches.retrieve(ctx.tenant.id, profile.branchId)
       : null,
   ])
+  const mailboxes = requireCouriersData(mailboxesResult).data
+  const branch = branchResult?.error ? null : (branchResult?.data ?? null)
 
   const identity = registry.data
   const name = identity?.name || profile.billingCustomerId
-  const mailbox = mailboxes.find((item) => item.isPrimary) ?? mailboxes[0]
+  const mailbox = mailboxes.find((item) => item.is_primary) ?? mailboxes[0]
   const isActive = profile.status === 'ACTIVE'
 
   return (

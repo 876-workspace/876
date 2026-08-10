@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getPlatformClient: vi.fn(),
   retrieveRole: vi.fn(),
   createInvite: vi.fn(),
+  couriersErrorStatus: vi.fn(() => 502),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -13,8 +14,9 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/876/platform-client', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
-vi.mock('@/lib/service', () => ({
-  service: { roles: { retrieve: mocks.retrieveRole } },
+vi.mock('@/lib/couriers', () => ({
+  $couriers: { roles: { retrieve: mocks.retrieveRole } },
+  couriersErrorStatus: mocks.couriersErrorStatus,
 }))
 vi.mock('@/lib/couriers-app', () => ({
   COURIERS_APP_SLUG: '876-couriers',
@@ -53,8 +55,8 @@ describe('Couriers team invite route', () => {
     vi.clearAllMocks()
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.retrieveRole.mockResolvedValue({
-      id: 'role_admin',
-      systemKey: 'admin',
+      data: { id: 'role_admin', system_key: 'admin' },
+      error: null,
     })
     mocks.getPlatformClient.mockResolvedValue({
       invites: { create: mocks.createInvite },
@@ -140,7 +142,10 @@ describe('Couriers team invite route', () => {
   })
 
   it('returns 404 when the tenant role does not exist', async () => {
-    mocks.retrieveRole.mockResolvedValue(null)
+    mocks.retrieveRole.mockResolvedValue({
+      data: null,
+      error: { code: 'role/not-found', message: 'Not found.' },
+    })
 
     const response = await POST(request(validBody))
     const body = await response.json()
@@ -172,8 +177,8 @@ describe('Couriers team invite route', () => {
 
   it('maps non-admin tenant roles to the core member invite role', async () => {
     mocks.retrieveRole.mockResolvedValue({
-      id: 'role_dispatcher',
-      systemKey: null,
+      data: { id: 'role_dispatcher', system_key: null },
+      error: null,
     })
 
     const response = await POST(
@@ -194,8 +199,8 @@ describe('Couriers team invite route', () => {
 
   it('maps staff systemKey roles to the core member invite role', async () => {
     mocks.retrieveRole.mockResolvedValue({
-      id: 'role_staff',
-      systemKey: 'staff',
+      data: { id: 'role_staff', system_key: 'staff' },
+      error: null,
     })
 
     await POST(

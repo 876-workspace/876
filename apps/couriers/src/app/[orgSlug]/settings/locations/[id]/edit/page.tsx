@@ -4,7 +4,12 @@ import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  isCouriersNotFound,
+  requireCouriersData,
+  toBranchView,
+} from '@/lib/couriers'
 
 import { BranchForm } from '../../_components/branch-form'
 
@@ -45,13 +50,15 @@ async function EditBranchData({ orgSlug, id }: EditBranchDataProps) {
       </div>
     )
 
-  const branch = await service.branches.retrieve({
-    tenantId: ctx.tenant.id,
-    id,
-  })
-  if (!branch) notFound()
+  const result = await $couriers.branches.retrieve(ctx.tenant.id, id)
+  if (!result.data && isCouriersNotFound(result)) notFound()
 
-  return <BranchForm orgSlug={orgSlug} branch={branch} />
+  return (
+    <BranchForm
+      orgSlug={orgSlug}
+      branch={toBranchView(requireCouriersData(result))}
+    />
+  )
 }
 
 function FormSkeleton() {

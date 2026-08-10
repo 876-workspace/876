@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     email: session.user.email,
     firstName: session.user.firstName,
     lastName: session.user.lastName,
+    accessToken: session.accessToken,
   })
   if (enrollment.error) redirect('/portal/login?error=enrollment')
 

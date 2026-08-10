@@ -1,7 +1,6 @@
 import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { reconcile } from '@/lib/manage/org-locations'
-import { service } from '@/lib/service'
+import { $couriers, requireCouriersData, toBranchView } from '@/lib/couriers'
 
 import { LocationsCards } from './locations-cards'
 
@@ -18,13 +17,15 @@ export async function LocationsData({ params }: Props) {
       </div>
     )
 
-  const { id: tenantId, orgId } = ctx.tenant
+  const { id: tenantId } = ctx.tenant
 
-  const branches = await service.branches.list({ tenantId })
+  const branches = requireCouriersData(
+    await $couriers.branches.list(tenantId)
+  ).data.map(toBranchView)
 
-  // Opportunistic repair for sites whose core mirror failed at write time. It
-  // runs after the response so a slow identity API never delays this page.
-  after(() => reconcile(tenantId, orgId))
+  // Opportunistic repair runs after the response so a slow Couriers API call
+  // never delays this page. The API owns the core-location reconciliation.
+  after(() => $couriers.organizationLocations.reconcile(tenantId))
 
   return (
     <LocationsCards

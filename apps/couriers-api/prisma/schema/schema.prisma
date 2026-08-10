@@ -1,0 +1,12 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../../src/db/generated/prisma"
+  previewFeatures = ["queryCompiler", "driverAdapters"]
+}
+
+// Prisma 7 rejects `url` here: the connection string lives in prisma.config.ts
+// for Migrate, and the client receives an adapter or Accelerate URL at
+// construction. See apps/couriers/prisma/schema/schema.prisma.
+datasource db {
+  provider = "postgresql"
+}

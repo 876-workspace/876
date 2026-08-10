@@ -4,7 +4,12 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  isCouriersNotFound,
+  requireCouriersData,
+  toCustomerView,
+} from '@/lib/couriers'
 import { CustomerForm } from '../../_components/customer-form'
 
 type Props = { params: Promise<{ orgSlug: string; id: string }> }
@@ -35,12 +40,14 @@ async function EditCustomerData({
 }) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
-  const profile = await service.customerProfiles.retrieve(ctx.tenant.id, id)
-  if (!profile) notFound()
-  const [$876, branches] = await Promise.all([
+  const customerResult = await $couriers.customers.retrieve(ctx.tenant.id, id)
+  if (isCouriersNotFound(customerResult)) notFound()
+  const profile = toCustomerView(requireCouriersData(customerResult))
+  const [$876, branchesResult] = await Promise.all([
     get876Client(),
-    service.branches.list({ tenantId: ctx.tenant.id }),
+    $couriers.branches.list(ctx.tenant.id),
   ])
+  const branches = requireCouriersData(branchesResult).data
   const registry = await $876.billing.customers.retrieve(
     ctx.tenant.orgId,
     profile.billingCustomerId

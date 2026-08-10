@@ -9,7 +9,12 @@ import { Skeleton } from '@876/ui/skeleton'
 import { CopyableAddressLine } from '@/features/portal/components/copyable-address-line'
 import { PackageList } from '@/features/portal/components/package-list'
 import { requirePortalCustomer } from '@/lib/portal/customer'
-import { service } from '@/lib/service'
+import {
+  createPortalCouriersClient,
+  listAllPortalPackages,
+  requirePortalData,
+  toPortalPackageListItem,
+} from '@/lib/portal/client'
 
 export default function PortalDashboardPage() {
   return (
@@ -25,20 +30,14 @@ export default function PortalDashboardPage() {
 }
 
 async function PortalDashboardData() {
-  const { session, tenant, profile } = await requirePortalCustomer('/portal')
-  const [warehouses, mailboxes, packages] = await Promise.all([
-    service.warehouses.list({ tenantId: tenant.id }),
-    service.mailboxes.list({
-      tenantId: tenant.id,
-      customerId: profile.id,
-    }),
-    service.packages.list({
-      tenantId: tenant.id,
-      customerId: profile.id,
-    }),
+  const { session, tenant } = await requirePortalCustomer('/portal')
+  const $couriers = createPortalCouriersClient(session.accessToken)
+  const [shippingAddress, packages] = await Promise.all([
+    $couriers.portal.shippingAddress.retrieve(tenant.id),
+    listAllPortalPackages($couriers, tenant.id),
   ])
-  const warehouse = warehouses[0]
-  const mailbox = mailboxes[0]
+  const { warehouse, mailbox } = requirePortalData(shippingAddress)
+  const packageItems = requirePortalData(packages).map(toPortalPackageListItem)
   const customerName =
     [session.user.firstName, session.user.lastName].filter(Boolean).join(' ') ||
     session.user.email ||
@@ -77,8 +76,9 @@ async function PortalDashboardData() {
                 label="City, state, ZIP"
                 value={formatLocality(
                   warehouse.address.city,
-                  warehouse.address.regionName ?? warehouse.address.regionCode,
-                  warehouse.address.postalCode
+                  warehouse.address.region_name ??
+                    warehouse.address.region_code,
+                  warehouse.address.postal_code
                 )}
               />
             </div>
@@ -116,8 +116,8 @@ async function PortalDashboardData() {
           </Link>
         </div>
 
-        {packages.length > 0 ? (
-          <PackageList packages={packages.slice(0, 5)} />
+        {packageItems.length > 0 ? (
+          <PackageList packages={packageItems.slice(0, 5)} />
         ) : (
           <div className="text-muted-foreground rounded-xl border border-dashed px-5 py-10 text-center text-[0.8125rem] font-medium">
             No packages yet

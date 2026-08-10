@@ -1,12 +1,16 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import type { NextRequest } from 'next/server'
+import { after, type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { scheduleSync, warehouseSyncSite } from '@/lib/manage/org-locations'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  couriersErrorStatus,
+  toWarehouseCreateBody,
+  toWarehouseView,
+} from '@/lib/couriers'
 import { warehouseCreateParamsSchema } from '@/types/warehouse'
 
 export const runtime = 'nodejs'
@@ -35,6 +39,8 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
+  const tenantId = ctx.tenant.id
+
   const params = { ...(body as Record<string, unknown>) }
   delete params.orgSlug
   const parsed = warehouseCreateParamsSchema.safeParse(params)
@@ -44,17 +50,23 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await service.warehouses.create(ctx.tenant.id, parsed.data)
+  const result = await $couriers.warehouses.create(
+    tenantId,
+    toWarehouseCreateBody(parsed.data)
+  )
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  // The envelope types `data` as nullable because a service error carries
-  // none; a successful result always has it.
-  if (result.data)
-    scheduleSync(ctx.tenant.orgId, warehouseSyncSite(result.data))
+  const warehouse = toWarehouseView(result.data)
+  after(() =>
+    $couriers.organizationLocations.sync(tenantId, {
+      kind: 'warehouse',
+      site_id: warehouse.id,
+    })
+  )
 
-  return apiJson({ data: result.data }, { status: 201 })
+  return apiJson({ data: warehouse }, { status: 201 })
 }

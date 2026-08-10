@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers, requireCouriersData, toRoleView } from '@/lib/couriers'
 
 import { RolesShell } from '../_components/roles-shell'
 import { RolesTable } from '../_components/roles-table'
@@ -38,8 +38,9 @@ async function RolesData({ params }: Props) {
       </div>
     )
 
-  await service.roles.ensureDefaults(ctx.tenant.id)
-  const roles = await service.roles.list(ctx.tenant.id)
+  const roles = requireCouriersData(
+    await $couriers.roles.list(ctx.tenant.id)
+  ).data.map(toRoleView)
 
   return <RolesTable orgSlug={orgSlug} roles={roles} />
 }

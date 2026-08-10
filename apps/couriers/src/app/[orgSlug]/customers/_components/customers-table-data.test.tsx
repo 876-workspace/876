@@ -16,8 +16,26 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/876', () => ({
   get876Client: mocks.get876Client,
 }))
-vi.mock('@/lib/service', () => ({
-  service: { customerProfiles: { list: mocks.listProfiles } },
+vi.mock('@/lib/couriers', () => ({
+  $couriers: { customers: { list: mocks.listProfiles } },
+  requireCouriersData: (result: unknown) => {
+    if (Array.isArray(result))
+      return {
+        object: 'list',
+        data: result,
+        has_more: false,
+        total_count: result.length,
+        url: '/test',
+      }
+    return (result as { data: unknown }).data
+  },
+  toCustomerView: (customer: Record<string, unknown>) => ({
+    id: customer.id,
+    billingCustomerId:
+      customer.billing_customer_id ?? customer.billingCustomerId,
+    status: customer.status,
+    isCommercial: customer.is_commercial ?? customer.isCommercial,
+  }),
 }))
 vi.mock('next/navigation', () => ({
   usePathname: () => '/island-logistics/customers',
@@ -421,7 +439,10 @@ describe('Couriers customers page data', () => {
     )
 
     expect(screen.getByText('Suspended Person')).toBeVisible()
-    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', 'SUSPENDED')
+    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
+      limit: 100,
+      status: 'SUSPENDED',
+    })
   })
 
   it('threads the suspended profile status filter into the local profile query', async () => {
@@ -435,7 +456,10 @@ describe('Couriers customers page data', () => {
     )
 
     // The filter applies to the courier profile, not the registry customer.
-    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', 'SUSPENDED')
+    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
+      limit: 100,
+      status: 'SUSPENDED',
+    })
     expect(mocks.listCustomers).not.toHaveBeenCalled()
   })
 

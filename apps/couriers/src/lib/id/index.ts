@@ -2,7 +2,7 @@ import { createPrefixedId } from '@876/core/id'
 
 /**
  * Couriers-local entity prefixes — only entities in Couriers' own datastore
- * (`apps/couriers/prisma/`), never core identity/platform entities. See
+ * (the Couriers API schema), never core identity/platform entities. See
  * `.claude/rules/platform-services.md`.
  *
  * Keys match Prisma model names exactly (PascalCase) — the `$allModels`

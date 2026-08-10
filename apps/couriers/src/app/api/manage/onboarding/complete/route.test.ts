@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   provision: vi.fn(),
   createTenant: vi.fn(),
   updateTenant: vi.fn(),
+  couriersErrorStatus: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -16,13 +17,14 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/876/platform-client', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
-vi.mock('@/lib/service', () => ({
-  service: {
+vi.mock('@/lib/couriers', () => ({
+  $couriers: {
     tenants: {
       create: mocks.createTenant,
       update: mocks.updateTenant,
     },
   },
+  couriersErrorStatus: mocks.couriersErrorStatus,
 }))
 
 import { POST } from './route'
@@ -31,6 +33,7 @@ describe('Couriers onboarding completion route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.getManageContext.mockResolvedValue({
+      userId: 'user_123',
       orgId: 'organization_123',
       role: 'owner',
       accessStatus: 'active',
@@ -51,6 +54,7 @@ describe('Couriers onboarding completion route', () => {
       error: null,
     })
     mocks.updateTenant.mockResolvedValue({ data: {}, error: null })
+    mocks.couriersErrorStatus.mockReturnValue(502)
   })
 
   it.each([undefined, null, '', '   ', 42])(
@@ -72,4 +76,37 @@ describe('Couriers onboarding completion route', () => {
       expect(mocks.createTenant).not.toHaveBeenCalled()
     }
   )
+
+  it('provisions the Couriers tenant and applies the selected mailbox prefix', async () => {
+    mocks.retrieve.mockResolvedValue({
+      data: {
+        answers: {
+          platform_name: 'Montego Couriers',
+          mailbox_prefix: 'mbj',
+        },
+      },
+      error: null,
+    })
+
+    const response = await POST()
+
+    expect(response.status).toBe(200)
+    expect(mocks.createTenant).toHaveBeenCalledWith({
+      org_id: 'organization_123',
+      name: 'Montego Couriers',
+      slug: 'montego-couriers',
+      owner_user_id: 'user_123',
+    })
+    expect(mocks.updateTenant).toHaveBeenCalledWith('tenant_123', {
+      mailbox_prefix: 'MBJ',
+    })
+    await expect(response.json()).resolves.toEqual({
+      data: {
+        object: 'onboarding_completion',
+        tenant_id: 'tenant_123',
+        access_status: 'active',
+      },
+      error: null,
+    })
+  })
 })

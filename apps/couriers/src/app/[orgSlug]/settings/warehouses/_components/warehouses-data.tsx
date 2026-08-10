@@ -1,7 +1,6 @@
 import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { reconcile } from '@/lib/manage/org-locations'
-import { service } from '@/lib/service'
+import { $couriers, requireCouriersData, toWarehouseView } from '@/lib/couriers'
 
 import { WarehousesCards } from './warehouses-cards'
 
@@ -18,13 +17,15 @@ export async function WarehousesData({ params }: Props) {
       </div>
     )
 
-  const { id: tenantId, orgId } = ctx.tenant
+  const { id: tenantId } = ctx.tenant
 
-  const warehouses = await service.warehouses.list({ tenantId })
+  const warehouses = requireCouriersData(
+    await $couriers.warehouses.list(tenantId)
+  ).data.map(toWarehouseView)
 
-  // The warehouse form redirects here, so a warehouse whose core mirror failed
-  // would otherwise stay unlinked no matter how often this list is refreshed.
-  after(() => reconcile(tenantId, orgId))
+  // The warehouse form redirects here, so this is a convenient bounded repair
+  // point for a mirror that failed after an earlier write.
+  after(() => $couriers.organizationLocations.reconcile(tenantId))
 
   return (
     <WarehousesCards

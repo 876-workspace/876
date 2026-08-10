@@ -5,7 +5,12 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  couriersErrorStatus,
+  toAddressUpdateBody,
+  toAddressView,
+} from '@/lib/couriers'
 import { addressUpdateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'
@@ -47,14 +52,18 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await service.addresses.update(ctx.tenant.id, id, parsed.data)
+  const result = await $couriers.addresses.update(
+    ctx.tenant.id,
+    id,
+    toAddressUpdateBody(parsed.data)
+  )
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  return apiJson({ data: result.data })
+  return apiJson({ data: toAddressView(result.data) })
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
@@ -72,12 +81,12 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await service.addresses.delete(ctx.tenant.id, id)
+  const result = await $couriers.addresses.del(ctx.tenant.id, id)
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  return apiJson({ data: result.data })
+  return apiJson({ data: { id: result.data.id, deleted: result.data.deleted } })
 }

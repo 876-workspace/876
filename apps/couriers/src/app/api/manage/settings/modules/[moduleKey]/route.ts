@@ -1,11 +1,12 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
+import { moduleKeySchema } from '@876/couriers/admin'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import { $couriers, couriersErrorStatus } from '@/lib/couriers'
 
 export const runtime = 'nodejs'
 
@@ -32,13 +33,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { moduleKey } = await context.params
-  const data = await service.preferences.retrieve({
-    tenantId: ctx.tenant.id,
-    module: moduleKey,
-  })
-  if (!data) return apiJson({ error: 'Unknown module.' }, { status: 404 })
+  const parsedModule = moduleKeySchema.safeParse(moduleKey)
+  if (!parsedModule.success)
+    return apiJson({ error: 'Unknown module.' }, { status: 404 })
+  const result = await $couriers.settings.preferences.retrieve(
+    ctx.tenant.id,
+    parsedModule.data
+  )
+  if (result.error)
+    return apiJson(
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
+    )
 
-  return apiJson({ data })
+  const data = result.data
+  return apiJson({
+    data: {
+      module: data.module,
+      preferences: data.preferences,
+      updatedAt: data.updated_at,
+    },
+  })
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
@@ -64,14 +79,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { moduleKey } = await context.params
-  const result = await service.preferences.update({
-    tenantId: ctx.tenant.id,
-    module: moduleKey,
-    values: parsed.data.values,
-    updatedBy: ctx.userId,
-  })
+  const parsedModule = moduleKeySchema.safeParse(moduleKey)
+  if (!parsedModule.success)
+    return apiJson({ error: 'Unknown module.' }, { status: 404 })
+  const result = await $couriers.settings.preferences.update(
+    ctx.tenant.id,
+    parsedModule.data,
+    parsed.data.values
+  )
   if (result.error)
-    return apiJson({ error: result.error }, { status: result.status })
+    return apiJson(
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
+    )
 
-  return apiJson({ data: result.data })
+  const data = result.data
+  return apiJson({
+    data: {
+      module: data.module,
+      preferences: data.preferences,
+      updatedAt: data.updated_at,
+    },
+  })
 }

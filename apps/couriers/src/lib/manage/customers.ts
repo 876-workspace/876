@@ -1,15 +1,14 @@
 import 'server-only'
 
-import type { Tenant } from '@/lib/db'
 import { get876Client } from '@/lib/876'
+import { $couriers, couriersErrorStatus, toCustomerView } from '@/lib/couriers'
 import {
   createExternalCustomer,
   updateExternalCustomer,
 } from '@/lib/finance/customers'
-import { generateId } from '@/lib/id'
-import { service } from '@/lib/service'
-import { errFrom } from '@/lib/service/result'
+import { getError, type CouriersErrorCode } from '@/lib/errors'
 import type { ServiceResult } from '@/types/api'
+import type { CouriersTenant } from '@/types/auth'
 import type {
   CustomerCreateParams,
   CustomerUpdateParams,
@@ -20,13 +19,9 @@ export async function createManagedCustomer({
   tenant,
   params,
 }: {
-  tenant: Tenant
+  tenant: CouriersTenant
   params: CustomerCreateParams
 }): ServiceResult<CustomerView> {
-  const profileId = generateId('CourierCustomerProfile')
-  const allocation = await service.mailboxes.allocate({ tenantId: tenant.id })
-  if (allocation.data === null) return errFrom('customer/mailbox-unavailable')
-
   const $876 = await get876Client()
   const registry = await createExternalCustomer($876.billing, tenant.orgId, {
     // The key comes from the client and is held across retries of the same
@@ -42,21 +37,19 @@ export async function createManagedCustomer({
     phone: params.phone ?? null,
   })
   if (registry.error || !registry.data)
-    return errFrom('customer/registry-unavailable')
+    return localFailure('customer/registry-unavailable')
 
-  // A registry row left behind by a failed profile write is recovered rather
-  // than duplicated: the retry carries the same idempotency key, so Billing
-  // returns the customer it already created.
-  return service.customerProfiles.create(tenant.id, {
-    id: profileId,
-    billingCustomerId: registry.data.id,
-    userId: null,
-    mailboxNumber: allocation.data.number,
-    branchId: params.branchId,
-    trn: params.trn ?? undefined,
-    isCommercial: params.isCommercial,
+  // Billing reuses the submission idempotency key on a retry. The Couriers
+  // enrollment endpoint then creates the profile and primary mailbox in one
+  // transaction, so no app-local allocation race remains.
+  const enrollment = await $couriers.customers.enroll(tenant.id, {
+    billing_customer_id: registry.data.id,
+    branch_id: params.branchId,
     status: params.status,
+    is_commercial: params.isCommercial,
   })
+  if (enrollment.error !== null) return couriersFailure(enrollment.error)
+  return { data: toCustomerView(enrollment.data.customer), error: null }
 }
 
 export async function updateManagedCustomer({
@@ -64,20 +57,26 @@ export async function updateManagedCustomer({
   id,
   params,
 }: {
-  tenant: Tenant
+  tenant: CouriersTenant
   id: string
   params: CustomerUpdateParams
 }): ServiceResult<CustomerView> {
-  const profile = await service.customerProfiles.retrieve(tenant.id, id)
-  if (!profile) return errFrom('customer/not-found')
+  const profileResult = await $couriers.customers.retrieve(tenant.id, id)
+  if (profileResult.error !== null) return couriersFailure(profileResult.error)
+  const profile = profileResult.data
 
-  const updateProfile = () =>
-    service.customerProfiles.update(tenant.id, id, {
-      branchId: params.branchId,
-      status: params.status,
-      trn: params.trn,
-      isCommercial: params.isCommercial,
+  const updateProfile = async () => {
+    const result = await $couriers.customers.update(tenant.id, id, {
+      ...(params.branchId === undefined ? {} : { branch_id: params.branchId }),
+      ...(params.status === undefined ? {} : { status: params.status }),
+      ...(params.trn === undefined ? {} : { trn: params.trn }),
+      ...(params.isCommercial === undefined
+        ? {}
+        : { is_commercial: params.isCommercial }),
     })
+    if (result.error !== null) return couriersFailure(result.error)
+    return { data: toCustomerView(result.data), error: null }
+  }
 
   const identityKeys = [
     'firstName',
@@ -91,10 +90,10 @@ export async function updateManagedCustomer({
     const $876 = await get876Client()
     const current = await $876.billing.customers.retrieve(
       tenant.orgId,
-      profile.billingCustomerId
+      profile.billing_customer_id
     )
     if (current.error || !current.data)
-      return errFrom('customer/registry-unavailable')
+      return localFailure('customer/registry-unavailable')
 
     // Compare against what the registry already holds rather than trusting the
     // mere presence of a key. A client that echoes the whole record back — which
@@ -106,7 +105,7 @@ export async function updateManagedCustomer({
         params[key] !== undefined && params[key] !== registryCustomer[key]
     )
     if (changesIdentity && registryCustomer.customerType !== 'EXTERNAL')
-      return errFrom('customer/identity-locked')
+      return localFailure('customer/identity-locked')
 
     // Nothing to send when the identity is byte-for-byte what the registry holds.
     if (!changesIdentity) return updateProfile()
@@ -114,7 +113,7 @@ export async function updateManagedCustomer({
     const registry = await updateExternalCustomer(
       $876.billing,
       tenant.orgId,
-      profile.billingCustomerId,
+      profile.billing_customer_id,
       {
         customerKind: current.data.customerKind,
         firstName: params.firstName ?? current.data.firstName,
@@ -128,8 +127,27 @@ export async function updateManagedCustomer({
       }
     )
     if (registry.error || !registry.data)
-      return errFrom('customer/registry-unavailable')
+      return localFailure('customer/registry-unavailable')
   }
 
   return updateProfile()
+}
+
+function couriersFailure(error: { code: string; message: string }) {
+  return {
+    data: null,
+    error: error.message,
+    status: couriersErrorStatus(error),
+    code: error.code,
+  }
+}
+
+function localFailure(code: CouriersErrorCode) {
+  const error = getError(code)
+  return {
+    data: null,
+    error: error.message,
+    status: error.httpStatus,
+    code: error.code,
+  }
 }

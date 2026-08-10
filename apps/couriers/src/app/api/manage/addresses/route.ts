@@ -5,7 +5,12 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  couriersErrorStatus,
+  toAddressCreateBody,
+  toAddressView,
+} from '@/lib/couriers'
 import { addressCreateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'
@@ -43,12 +48,15 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await service.addresses.create(ctx.tenant.id, parsed.data)
+  const result = await $couriers.addresses.create(
+    ctx.tenant.id,
+    toAddressCreateBody(parsed.data)
+  )
   if (result.error)
     return apiJson(
-      { error: result.error },
-      { status: result.status, code: result.code }
+      { error: result.error.message },
+      { status: couriersErrorStatus(result.error), code: result.error.code }
     )
 
-  return apiJson({ data: result.data }, { status: 201 })
+  return apiJson({ data: toAddressView(result.data) }, { status: 201 })
 }

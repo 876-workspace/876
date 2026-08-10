@@ -5,13 +5,19 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  couriersErrorStatus: vi.fn((error: { code: string }) => {
+    if (error.code.endsWith('/not-found')) return 404
+    return error.code === 'team/last-active-admin' ? 400 : 409
+  }),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/service', () => ({
-  service: { team: { update: mocks.update, delete: mocks.delete } },
+vi.mock('@/lib/couriers', () => ({
+  $couriers: { team: { update: mocks.update, delete: mocks.delete } },
+  couriersErrorStatus: mocks.couriersErrorStatus,
+  toTeamMemberView: (member: Record<string, unknown>) => member,
 }))
 
 import { DELETE, PATCH } from './route'
@@ -55,7 +61,7 @@ describe('Couriers team member route', () => {
       error: null,
     })
     mocks.delete.mockResolvedValue({
-      data: { id: 'tmem_123', deleted: true },
+      data: { object: 'team_member', id: 'tmem_123', deleted: true },
       error: null,
     })
   })
@@ -152,7 +158,7 @@ describe('Couriers team member route', () => {
       expect(body.error).toBeNull()
       expect(mocks.update).toHaveBeenCalledTimes(1)
       expect(mocks.update).toHaveBeenCalledWith('ten_123', 'tmem_123', {
-        roleId: 'role_staff',
+        role_id: 'role_staff',
         status: 'inactive',
       })
     })
@@ -160,10 +166,11 @@ describe('Couriers team member route', () => {
     it('propagates the last-active-admin lockout from the service', async () => {
       mocks.update.mockResolvedValue({
         data: null,
-        error:
-          'The last active Admin team member cannot be removed or reassigned.',
-        status: 400,
-        code: 'team/last-active-admin',
+        error: {
+          code: 'team/last-active-admin',
+          message:
+            'The last active Admin team member cannot be removed or reassigned.',
+        },
       })
 
       const response = await PATCH(
@@ -255,9 +262,10 @@ describe('Couriers team member route', () => {
     it('propagates not-found from the service', async () => {
       mocks.delete.mockResolvedValue({
         data: null,
-        error: 'The requested team member was not found.',
-        status: 404,
-        code: 'team/not-found',
+        error: {
+          code: 'team/not-found',
+          message: 'The requested team member was not found.',
+        },
       })
 
       const response = await DELETE(

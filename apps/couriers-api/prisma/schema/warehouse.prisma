@@ -1,0 +1,36 @@
+enum WarehouseOperatingModel {
+  OWNED
+  AGENT
+}
+
+enum MailboxPlacement {
+  RECIPIENT_LINE
+  ADDRESS_LINE_1
+  ADDRESS_LINE_2
+}
+
+model Warehouse {
+  id               String                  @id @default(cuid())
+  tenantId         String                  @map("tenant_id")
+  addressId        String                  @unique @map("address_id")
+  orgLocationId    String?                 @unique @map("org_location_id")
+  name             String
+  operatingModel   WarehouseOperatingModel @default(OWNED) @map("operating_model")
+  agentName        String?                 @map("agent_name")
+  code             String?
+  mailboxPlacement MailboxPlacement        @default(ADDRESS_LINE_2) @map("mailbox_placement")
+  mailboxPrefix    String?                 @map("mailbox_prefix")
+  instructions     String?
+  isActive         Boolean                 @default(true) @map("is_active")
+  isPrimary        Boolean                 @default(false) @map("is_primary")
+  createdAt        Int                     @map("created_at")
+  updatedAt        Int                     @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  address Address @relation(fields: [addressId, tenantId], references: [id, tenantId], onDelete: NoAction)
+
+  @@unique([tenantId, name], name: "warehouses_tenant_id_name_key")
+  @@index([tenantId], name: "warehouses_tenant_id_idx")
+  @@index([tenantId, isActive], name: "warehouses_tenant_id_is_active_idx")
+  @@map("warehouses")
+}

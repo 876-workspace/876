@@ -4,7 +4,11 @@ import { Page } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { service } from '@/lib/service'
+import {
+  $couriers,
+  requireCouriersData,
+  toTeamMemberView,
+} from '@/lib/couriers'
 import type {
   PendingTeamInvite,
   TeamMemberRow,
@@ -88,17 +92,13 @@ async function UsersSettingsData({ params, searchParams }: Props) {
       </div>
     )
 
-  await service.team.ensure(ctx.tenant.id, {
-    userId: ctx.userId,
-    systemKey: ctx.role === 'owner' || ctx.role === 'admin' ? 'admin' : 'staff',
-  })
-
   const platform = await getPlatformClient()
-  const [members, roleViews, invitesResult] = await Promise.all([
-    service.team.list(ctx.tenant.id, { status }),
+  const [membersResult, roleViews, invitesResult] = await Promise.all([
+    $couriers.team.list(ctx.tenant.id, { status }),
     listTeamRoles(ctx.tenant.id),
     platform.invites.list(ctx.orgId),
   ])
+  const members = requireCouriersData(membersResult).data.map(toTeamMemberView)
 
   const identities = await Promise.all(
     members.map(async (member) => {
