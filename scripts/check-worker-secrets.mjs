@@ -46,6 +46,17 @@ const REQUIRED_SECRETS = {
     'BILLING_INTERNAL_KEY',
     'CORS_ALLOWED_ORIGINS',
   ],
+  '876-couriers-api': [
+    'API_876_KEY',
+    'API_INTERNAL_KEY',
+    'CORS_ALLOWED_ORIGINS',
+    'COURIERS_INTEGRATION_KEY',
+    'DATABASE_URL',
+    'OAUTH_AUDIENCE',
+    'OAUTH_ISSUER',
+    'OAUTH_JWKS_URL',
+    'SENTRY_DSN',
+  ],
   '876-couriers': [
     'API_876_KEY',
     'API_INTERNAL_KEY',
