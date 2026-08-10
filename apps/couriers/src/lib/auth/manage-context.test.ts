@@ -34,10 +34,14 @@ vi.mock('@/lib/876/platform-client', () => ({
 vi.mock('@/lib/couriers-app', () => ({
   COURIERS_APP_SLUG: '876-couriers',
 }))
-vi.mock('@/lib/couriers', () => ({
-  $couriers: {
-    tenants: { retrieveByOrgId: mocks.retrieveByOrgId },
+vi.mock('@/lib/876', () => ({
+  $876: {
+    couriers: {
+      tenants: { retrieveByOrgId: mocks.retrieveByOrgId },
+    },
   },
+}))
+vi.mock('@/lib/couriers', () => ({
   toCouriersTenant: (tenant: {
     id: string
     org_id: string
