@@ -76,7 +76,7 @@ Server components read through `$876` directly. Mutations triggered from **clien
 - Typed client (browser): `client` from `@/lib/client` (`apps/876/src/lib/client/`, `apps/console/src/lib/client/`) — mutation endpoints only, not a second mirror of `$876`. Components do e.g. `client.roles.create(params)`.
 - No-JS form posts may use a native `<form action="/api/..." method="post">` that calls `$876` and redirects.
 
-This keeps one testable RPC surface, no server actions, and no business logic in Next.js (it lives in FastAPI). The rule is recorded in `.grok/rules/api-access.md`.
+This keeps one testable RPC surface, no server actions, and no business logic in Next.js (it lives in FastAPI). The rule is recorded in `.claude/rules/api-access.md`.
 
 ## The one privileged exception in the consumer app
 
@@ -100,7 +100,10 @@ The ecosystem is built to add apps without duplicating identity or re-shaping th
 
 - `@876/api` stays the identity/account/platform core. A product with a rich domain (orders, catalog, payments) gets its **own API service**, not bloat in `@876/api`.
 - Each product ships its **own SDK package** (`@876/<product>`) that builds on `@876/core/client` (runtime + transport) and these conventions, and depends on `@876/sdk` for identity/login. Same `<resource>.<verb>()` DX and `{ data, error }` envelope.
-- **Product admin surface is a subpath, not a consumer export:** Console-only operations live at `@876/<product>/admin` (a `create<Product>AdminClient` composed from the product's admin resource factories, internal-key tier, server-only). Console instantiates **one singleton per product** alongside the platform client — `$876` from `@876/admin`, `$eats` from `@876/eats/admin`, etc. Do not merge product resources into the `$876` namespace; separate singletons keep versioning, credentials, and ownership per product.
+- **Product SDKs remain independently packaged, versioned, and authenticated bounded contexts.** An application explicitly composes only the product namespaces it needs under its local `$876` root. For example, Couriers composes `create876CouriersAdminClient` inside `apps/couriers/src/lib/876/index.ts` and exposes `$876.couriers.*`, while a future Billing-only app would compose only `billing` and have no `couriers` property. `@876/client` does **not** become a registry of every product; composition happens inside the application that needs it.
+- `$` is reserved for `$876` as the ecosystem root. Do not introduce `$couriers`, `$billing`, `$careers`, etc. as application-level roots. Product factories remain named `create876CouriersAdminClient`, etc., but call sites use `$876.couriers.*`, `$876.billing.*`, etc.
+- **Privileged resource availability is determined by which product client tier the application composes and remains enforced by the backing API.** The presence of a namespace in the TypeScript type does not bypass service authorization.
+- **No universal All876Client.** Do not create a central type or factory that lists every possible product. Applications compose capabilities explicitly; tree-shaking and bundle isolation follow from that.
 - **Universal cross-product resources** (e.g. a unified `orders` view spanning "876 Eats" and "876 Commerce") live in their own shared package/service that reads from the universal 876 user base.
 - Identity/auth **always** flows through `@876/sdk`; it is never re-implemented per product.
 - A React Native app or a hosted storefront consumes `@876/sdk` for the 876 account plus the relevant product SDK for product features.
