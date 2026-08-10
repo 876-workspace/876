@@ -36,7 +36,9 @@ export function DevicesSection({ devices }: Props) {
       </h2>
 
       {devices.length === 0 ? (
-        <p className="text-muted-foreground text-[0.8125rem]">No devices recorded.</p>
+        <p className="text-muted-foreground text-[0.8125rem]">
+          No devices recorded.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <Table>

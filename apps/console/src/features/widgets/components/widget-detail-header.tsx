@@ -41,7 +41,9 @@ export async function WidgetDetailHeader({
             className="size-6 rounded-md"
             iconClassName="size-3.5"
           />
-          <span className="truncate text-[0.8125rem] font-semibold">{widget.name}</span>
+          <span className="truncate text-[0.8125rem] font-semibold">
+            {widget.name}
+          </span>
         </>
       }
     >

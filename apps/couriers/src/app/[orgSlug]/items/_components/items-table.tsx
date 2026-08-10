@@ -73,7 +73,9 @@ export const columns: ColumnDef<ItemTableRow, unknown>[] = [
     id: 'price',
     header: 'Price',
     cell: ({ row }) => (
-      <span className="text-[0.8125rem] tabular-nums">{row.original.priceLabel}</span>
+      <span className="text-[0.8125rem] tabular-nums">
+        {row.original.priceLabel}
+      </span>
     ),
   },
   {

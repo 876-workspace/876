@@ -169,7 +169,10 @@ async function Identity({ slug }: { slug: string }) {
               <span className="text-muted-foreground italic">Unnamed</span>
             )}
           </h1>
-          <span aria-hidden="true" className="text-muted-foreground/40 text-[0.8125rem]">
+          <span
+            aria-hidden="true"
+            className="text-muted-foreground/40 text-[0.8125rem]"
+          >
             ·
           </span>
           <span

@@ -126,9 +126,9 @@ run.
 
 ## The raw reviewer comments, verbatim
 
-### apps/couriers/src/app/[orgSlug]/customers/_components/customer-form.tsx:47
+### apps/couriers/src/app/[orgSlug]/customers/\_components/customer-form.tsx:47
 
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Parse the stored phone before resubmitting it**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub> Parse the stored phone before resubmitting it**
 
 When editing an external customer whose phone is stored as `+18765550142`, this initializes the national-number field to the entire E.164 value while hard-coding `+1` as its dial code. Submitting even an unrelated edit therefore concatenates them into `+118765550142` and overwrites the registry with a corrupted phone number; split the stored value into its dial code and national number before initializing `PhoneInput`.
 
@@ -136,7 +136,7 @@ Useful? React with 👍 / 👎.
 
 ### apps/couriers/src/lib/service/customer-profiles/ensure.ts:25
 
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Allow portal enrollment to revive a deleted profile**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub> Allow portal enrollment to revive a deleted profile**
 
 After a `CORE_USER` profile is soft-deleted, portal enrollment now ignores that row because of `deletedAt: null` and attempts to create a replacement. The unchanged unique constraints on `(tenantId, userId)` and `(tenantId, billingCustomerId)` still belong to the tombstone, so both enrollment attempts fail with a unique violation and ultimately report mailbox unavailability; revive the tombstone or change uniqueness to apply only to active profiles.
 
@@ -144,20 +144,19 @@ Useful? React with 👍 / 👎.
 
 ### apps/couriers/src/lib/manage/customers.ts:26
 
-**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>  Keep the creation key stable across request retries**
+**<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub> Keep the creation key stable across request retries**
 
 If Billing creates the registry customer but the subsequent local profile write fails, retrying the POST executes this line again and generates a different profile ID. The new ID produces a different `sourceExternalReference` and idempotency key, so Billing creates another customer rather than reusing the orphan as the comments and customer documentation claim, accumulating duplicate financial-plane customers after transient database failures.
 
 Useful? React with 👍 / 👎.
 
-### apps/couriers/src/app/[orgSlug]/customers/_components/customer-form.tsx:87
+### apps/couriers/src/app/[orgSlug]/customers/\_components/customer-form.tsx:87
 
-**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Send explicit clears for optional customer fields**
+**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub> Send explicit clears for optional customer fields**
 
 For an external customer with an existing email or phone, clearing either input converts the value to `undefined`; `JSON.stringify` then omits the key entirely, so the PATCH merge retains the old registry value while the UI reports success. The update contract needs an explicit nullable/clear representation rather than treating an emptied field as an omitted field.
 
 Useful? React with 👍 / 👎.
-
 
 ## Work already applied by the orchestrator — verify, complete, and test it
 

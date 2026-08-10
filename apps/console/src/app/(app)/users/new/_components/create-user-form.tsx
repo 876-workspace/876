@@ -125,7 +125,10 @@ export function CreateUserForm() {
           )}
 
           <div>
-            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="email">
+            <label
+              className="mb-1.5 block text-[0.8125rem] font-medium"
+              htmlFor="email"
+            >
               Email <span className="text-destructive">*</span>
             </label>
             <Input
@@ -202,7 +205,9 @@ export function CreateUserForm() {
         <Button variant="info" onClick={handleSubmit} disabled={isPending}>
           {isPending ? 'Creating…' : 'Create User'}
         </Button>
-        {error && <span className="text-destructive text-[0.8125rem]">{error}</span>}
+        {error && (
+          <span className="text-destructive text-[0.8125rem]">{error}</span>
+        )}
       </div>
     </div>
   )

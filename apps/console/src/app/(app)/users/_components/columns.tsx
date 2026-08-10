@@ -92,7 +92,11 @@ export function makeUserColumns(
                 uploaded photos circular beside square monograms. */}
             <Avatar className="size-6 shrink-0 rounded-full after:rounded-full">
               {user.avatar && (
-                <AvatarImage src={user.avatar} alt="" className="rounded-full" />
+                <AvatarImage
+                  src={user.avatar}
+                  alt=""
+                  className="rounded-full"
+                />
               )}
               <AvatarFallback className="rounded-full text-[0.5625rem]">
                 {initialsOf(user)}
@@ -149,7 +153,9 @@ export function makeUserColumns(
       cell: ({ row }) => {
         const apps = enrollmentsMap[row.original.id] ?? []
         if (apps.length === 0)
-          return <span className="text-muted-foreground text-[0.8125rem]">—</span>
+          return (
+            <span className="text-muted-foreground text-[0.8125rem]">—</span>
+          )
         return (
           <div className="flex items-center gap-2">
             {apps.slice(0, 3).map((app) => (

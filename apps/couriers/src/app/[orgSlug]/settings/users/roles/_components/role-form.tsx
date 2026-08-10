@@ -115,7 +115,9 @@ export function RoleForm({ orgSlug, role }: Props) {
         readOnly={readOnly || isPending}
       />
 
-      {error ? <p className="text-destructive text-[0.8125rem]">{error}</p> : null}
+      {error ? (
+        <p className="text-destructive text-[0.8125rem]">{error}</p>
+      ) : null}
 
       {!readOnly ? (
         <div className="flex flex-wrap items-center justify-between gap-3">

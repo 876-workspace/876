@@ -157,7 +157,9 @@ export function EditUserForm({ user, initialRole }: Props) {
             </p>
           )}
           {usernameStatus.status === 'unavailable' && (
-            <p className="text-destructive text-[0.8125rem]">{usernameStatus.message}</p>
+            <p className="text-destructive text-[0.8125rem]">
+              {usernameStatus.message}
+            </p>
           )}
         </div>
 

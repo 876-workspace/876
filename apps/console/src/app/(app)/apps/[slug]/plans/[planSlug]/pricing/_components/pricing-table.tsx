@@ -407,7 +407,9 @@ export function PricingTable({ prices, productId }: Props) {
                 <NativeSelectOption value="year">Yearly</NativeSelectOption>
               </NativeSelect>
             </div>
-            {addError && <p className="text-destructive text-[0.8125rem]">{addError}</p>}
+            {addError && (
+              <p className="text-destructive text-[0.8125rem]">{addError}</p>
+            )}
           </div>
 
           <DialogFooter>

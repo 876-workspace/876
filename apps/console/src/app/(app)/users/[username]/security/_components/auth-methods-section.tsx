@@ -95,7 +95,9 @@ export function AuthMethodsSection({ userId, accounts }: Props) {
         </ul>
       )}
 
-      {error && <p className="text-destructive mt-3 text-[0.8125rem]">{error}</p>}
+      {error && (
+        <p className="text-destructive mt-3 text-[0.8125rem]">{error}</p>
+      )}
     </div>
   )
 }

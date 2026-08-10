@@ -54,7 +54,9 @@ export function PlanModulePicker({
             >
               <span className="min-w-0 space-y-1">
                 <span className="flex flex-wrap items-center gap-2">
-                  <span className="text-[0.8125rem] font-medium">{module.name}</span>
+                  <span className="text-[0.8125rem] font-medium">
+                    {module.name}
+                  </span>
                   {module.featureSlug && (
                     <Badge variant="outline">rollout flag</Badge>
                   )}

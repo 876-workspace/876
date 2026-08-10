@@ -30,17 +30,17 @@ Everything below is scoped to `apps/couriers` plus **one** small addition to
 
 ## Reference implementations to copy from (read these first)
 
-| Concern                      | Copy the shape of                                                          |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| service create/update        | `src/lib/service/branches/create.ts`, `.../update.ts`                      |
-| service delete + tombstone   | `src/lib/service/team/delete.ts` (result shape only — ours is soft delete) |
-| route handler POST           | `src/app/api/manage/branches/route.ts`                                     |
-| route handler PATCH/DELETE   | `src/app/api/manage/team/[id]/route.ts`                                    |
-| browser client               | `src/lib/client/branches.ts`, `src/lib/client/index.ts`                    |
-| form component               | `src/app/[orgSlug]/settings/warehouses/_components/warehouse-form.tsx`      |
-| new/edit page pair           | `src/app/[orgSlug]/settings/warehouses/new/page.tsx` and `[id]/edit/page.tsx` |
-| list page + streamed table   | `src/app/[orgSlug]/customers/(list)/page.tsx` + `_components/customers-table-data.tsx` |
-| registry (Billing) calls     | `src/lib/finance/customers.ts`, `src/lib/portal/enroll.ts`                 |
+| Concern                    | Copy the shape of                                                                      |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| service create/update      | `src/lib/service/branches/create.ts`, `.../update.ts`                                  |
+| service delete + tombstone | `src/lib/service/team/delete.ts` (result shape only — ours is soft delete)             |
+| route handler POST         | `src/app/api/manage/branches/route.ts`                                                 |
+| route handler PATCH/DELETE | `src/app/api/manage/team/[id]/route.ts`                                                |
+| browser client             | `src/lib/client/branches.ts`, `src/lib/client/index.ts`                                |
+| form component             | `src/app/[orgSlug]/settings/warehouses/_components/warehouse-form.tsx`                 |
+| new/edit page pair         | `src/app/[orgSlug]/settings/warehouses/new/page.tsx` and `[id]/edit/page.tsx`          |
+| list page + streamed table | `src/app/[orgSlug]/customers/(list)/page.tsx` + `_components/customers-table-data.tsx` |
+| registry (Billing) calls   | `src/lib/finance/customers.ts`, `src/lib/portal/enroll.ts`                             |
 
 ## The architecture — do not deviate
 
@@ -149,7 +149,7 @@ export async function createExternalCustomer(
   finance: BillingIntegrationClient,
   organizationId: string,
   params: {
-    profileId: string        // pre-generated courier profile id — the idempotency anchor
+    profileId: string // pre-generated courier profile id — the idempotency anchor
     customerKind: 'INDIVIDUAL' | 'BUSINESS'
     firstName?: string | null
     lastName?: string | null
@@ -173,7 +173,7 @@ export async function updateExternalCustomer(
   finance: BillingIntegrationClient,
   organizationId: string,
   customerId: string,
-  params: { firstName?, lastName?, companyName?, email?, phone?, name? }
+  params: { firstName?; lastName?; companyName?; email?; phone?; name? }
 ): Promise<IntegrationResult<BillingCustomer>>
 ```
 

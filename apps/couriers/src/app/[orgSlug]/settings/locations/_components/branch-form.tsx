@@ -203,11 +203,15 @@ export function BranchForm({ orgSlug, branch, isFirstBranch }: Props) {
         {/* TODO: custom fields are not built yet — the tab is deliberately
             empty so the information architecture matches the warehouse form. */}
         <TabsContent value="custom-fields" className="876-card p-5">
-          <p className="text-muted-foreground text-[0.8125rem]">No custom fields yet.</p>
+          <p className="text-muted-foreground text-[0.8125rem]">
+            No custom fields yet.
+          </p>
         </TabsContent>
       </Tabs>
 
-      {error ? <p className="text-destructive text-[0.8125rem]">{error}</p> : null}
+      {error ? (
+        <p className="text-destructive text-[0.8125rem]">{error}</p>
+      ) : null}
 
       <div className="flex items-center gap-3">
         <Button

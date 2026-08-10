@@ -86,7 +86,9 @@ export function PendingInvites({ orgSlug, invites }: Props) {
   return (
     <section className="mt-8">
       <h2 className="876-section-title mb-3">Pending invites</h2>
-      {error ? <p className="text-destructive mb-3 text-[0.8125rem]">{error}</p> : null}
+      {error ? (
+        <p className="text-destructive mb-3 text-[0.8125rem]">{error}</p>
+      ) : null}
       <div className="876-card overflow-hidden">
         <DataTable columns={columns} data={invites} />
       </div>

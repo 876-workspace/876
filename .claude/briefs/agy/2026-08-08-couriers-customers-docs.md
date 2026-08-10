@@ -26,7 +26,7 @@ The three facts that matter and that a reader will get wrong if you omit them:
 - A staff-created customer is an **`EXTERNAL`** customer in the shared Billing
   registry (Layer 2), created with `customerType: 'EXTERNAL'` and an idempotency
   key of `couriers:profile:<profileId>`, where the profile id is generated
-  *before* the registry call precisely so it can anchor that key. A
+  _before_ the registry call precisely so it can anchor that key. A
   portal-created customer is **`CORE_USER`** and is unchanged.
 - Identity fields (first name, last name, company, email, phone) may be edited
   **only** on an `EXTERNAL` customer. On a `CORE_USER` customer the identity
@@ -56,7 +56,7 @@ Requirements:
 
 - Under **The two kinds of courier customer**, give a Markdown table with the
   columns `Kind` | `Created by` | `Has an 876 account?` | `Identity editable in
-  couriers?` and exactly two rows (`EXTERNAL`, `CORE_USER`).
+couriers?` and exactly two rows (`EXTERNAL`, `CORE_USER`).
 - Under **Creating a customer**, list the ordered steps the code actually
   performs, taken from `createManagedCustomer` — mailbox allocation, registry
   create, profile create — and state plainly that a registry row orphaned by a

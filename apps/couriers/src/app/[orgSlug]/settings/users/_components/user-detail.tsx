@@ -151,7 +151,9 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
 
           <div className="space-y-4">
             <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
-              <span className="text-muted-foreground text-[0.8125rem]">Role</span>
+              <span className="text-muted-foreground text-[0.8125rem]">
+                Role
+              </span>
               <Select
                 value={row.roleId}
                 disabled={isPending}
@@ -172,7 +174,9 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
             </div>
 
             <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
-              <span className="text-muted-foreground text-[0.8125rem]">Status</span>
+              <span className="text-muted-foreground text-[0.8125rem]">
+                Status
+              </span>
               <Button
                 type="button"
                 variant="outline"

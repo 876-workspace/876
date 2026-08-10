@@ -71,22 +71,22 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
           <WidgetCatalogIcon visual={row.original.visual} />
         )}
         <div className="min-w-0">
-        {row.original.kind === 'master' ? (
-          <span className="inline-block max-w-72 truncate font-medium text-sky-600 dark:text-sky-400">
-            {row.original.name}
-          </span>
-        ) : (
-          <Link
-            href={row.original.detailHref}
-            className="inline-block max-w-72 truncate font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
-            onClick={(event) => event.stopPropagation()}
-          >
-            {row.original.name}
-          </Link>
-        )}
-        <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-5">
-          {row.original.description}
-        </p>
+          {row.original.kind === 'master' ? (
+            <span className="inline-block max-w-72 truncate font-medium text-sky-600 dark:text-sky-400">
+              {row.original.name}
+            </span>
+          ) : (
+            <Link
+              href={row.original.detailHref}
+              className="inline-block max-w-72 truncate font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {row.original.name}
+            </Link>
+          )}
+          <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs leading-5">
+            {row.original.description}
+          </p>
         </div>
       </div>
     ),

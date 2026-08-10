@@ -193,7 +193,10 @@ export function CreateOrgForm() {
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="slug">
+            <label
+              className="mb-1.5 block text-[0.8125rem] font-medium"
+              htmlFor="slug"
+            >
               Slug
               <span className="text-muted-foreground ml-1 font-normal">
                 (auto-generated if blank)
@@ -335,7 +338,10 @@ export function CreateOrgForm() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-[0.8125rem] font-medium" htmlFor="city">
+            <label
+              className="mb-1.5 block text-[0.8125rem] font-medium"
+              htmlFor="city"
+            >
               City
             </label>
             <Input
@@ -403,7 +409,9 @@ export function CreateOrgForm() {
         <Button variant="info" onClick={handleSubmit} disabled={isPending}>
           {isPending ? 'Creating…' : 'Create Organization'}
         </Button>
-        {error && <span className="text-destructive text-[0.8125rem]">{error}</span>}
+        {error && (
+          <span className="text-destructive text-[0.8125rem]">{error}</span>
+        )}
       </div>
     </div>
   )

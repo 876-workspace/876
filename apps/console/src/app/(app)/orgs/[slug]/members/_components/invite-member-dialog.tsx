@@ -130,7 +130,9 @@ export function InviteMemberDialog({ orgId }: Props) {
                 ))}
               </select>
             </div>
-            {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+            {error && (
+              <p className="text-destructive text-[0.8125rem]">{error}</p>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => handleOpen(false)}>
                 Cancel

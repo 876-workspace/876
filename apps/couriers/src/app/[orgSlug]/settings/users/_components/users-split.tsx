@@ -29,7 +29,9 @@ const fullColumns: ColumnDef<TeamMemberRow, unknown>[] = [
   {
     id: 'role',
     header: 'Role',
-    cell: ({ row }) => <span className="text-[0.8125rem]">{row.original.roleName}</span>,
+    cell: ({ row }) => (
+      <span className="text-[0.8125rem]">{row.original.roleName}</span>
+    ),
   },
   {
     id: 'status',

@@ -57,7 +57,9 @@ export default async function OrganizationsPage({ searchParams }: Props) {
         </Link>
       </div>
       <Suspense
-        fallback={<DataTableSkeleton columns={ORGS_SKELETON_COLUMNS} rows={5} />}
+        fallback={
+          <DataTableSkeleton columns={ORGS_SKELETON_COLUMNS} rows={5} />
+        }
       >
         <OrganizationsTableData searchParams={searchParams} />
       </Suspense>

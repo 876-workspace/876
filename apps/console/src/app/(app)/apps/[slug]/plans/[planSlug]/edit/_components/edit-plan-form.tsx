@@ -157,7 +157,9 @@ export function EditPlanForm({ product, appSlug }: Props) {
             />
           </div>
 
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
         </div>
 
         <div className="mt-5 flex items-center justify-between gap-2 border-t pt-4">

@@ -41,7 +41,9 @@ export function AddressesGridView({ addresses, actions, emptyState }: Props) {
             )}
             <div className="flex items-start gap-3 pl-6">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[0.8125rem] font-semibold">{typeLabel}</p>
+                <p className="truncate text-[0.8125rem] font-semibold">
+                  {typeLabel}
+                </p>
                 {address.label && (
                   <p className="text-muted-foreground truncate text-xs">
                     {address.label}

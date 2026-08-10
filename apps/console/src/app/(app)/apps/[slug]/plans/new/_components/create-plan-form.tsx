@@ -63,7 +63,9 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
           <span className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-full text-xs font-semibold">
             1
           </span>
-          <span className="text-foreground text-[0.8125rem] font-medium">Details</span>
+          <span className="text-foreground text-[0.8125rem] font-medium">
+            Details
+          </span>
         </div>
         <span className="bg-border h-px flex-1" aria-hidden="true" />
         <div className="flex items-center gap-2">
@@ -179,7 +181,9 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
             onSelectedModuleIdsChange={setSelectedModuleIds}
             disabled={isPending}
           />
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
         </section>
       )}
 

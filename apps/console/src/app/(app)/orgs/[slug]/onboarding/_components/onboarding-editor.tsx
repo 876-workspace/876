@@ -103,7 +103,9 @@ export function OnboardingEditor({
       <section className="876-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[0.8125rem] font-medium">Global organization setup</p>
+            <p className="text-[0.8125rem] font-medium">
+              Global organization setup
+            </p>
             <p className="text-muted-foreground mt-1 text-[0.8125rem]">
               Jamaica catalog revision {catalog.catalog_revision} · schema
               version 1

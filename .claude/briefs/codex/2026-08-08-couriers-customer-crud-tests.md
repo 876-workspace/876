@@ -20,12 +20,12 @@ tests that would have caught them.
 
 ## Reference test files — match their mocking style exactly
 
-| For                | Copy the shape of                                                    |
-| ------------------ | -------------------------------------------------------------------- |
-| service verb tests | `apps/couriers/src/lib/service/customer-profiles/ensure.test.ts`     |
-| route handler tests| `apps/couriers/src/app/api/manage/team/[id]/route.test.ts`           |
-| form component     | `apps/couriers/src/app/[orgSlug]/settings/warehouses/_components/warehouse-form.test.tsx` |
-| registry helpers   | `apps/couriers/src/lib/finance/customers.test.ts` (extend it)        |
+| For                 | Copy the shape of                                                                         |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| service verb tests  | `apps/couriers/src/lib/service/customer-profiles/ensure.test.ts`                          |
+| route handler tests | `apps/couriers/src/app/api/manage/team/[id]/route.test.ts`                                |
+| form component      | `apps/couriers/src/app/[orgSlug]/settings/warehouses/_components/warehouse-form.test.tsx` |
+| registry helpers    | `apps/couriers/src/lib/finance/customers.test.ts` (extend it)                             |
 
 Note: `warehouse-form.test.tsx` currently has tests that time out at 5000ms under
 parallel load. Do not copy its timing approach blindly — prefer
@@ -89,10 +89,10 @@ Mock `@/lib/876`, `@/lib/finance/customers`, and `@/lib/service`.
 `updateManagedCustomer`:
 
 - **REGRESSION — this is a bug that shipped and was fixed.** When the caller
-  sends identity fields whose values are *identical* to what the registry
+  sends identity fields whose values are _identical_ to what the registry
   already holds, and the customer is `CORE_USER`, the update must **succeed**
   (the courier-owned fields are written) and `updateExternalCustomer` must not
-  be called. The old code compared key *presence*, so an edit form echoing the
+  be called. The old code compared key _presence_, so an edit form echoing the
   record back made it impossible to change a portal customer's branch or TRN at
   all. Write this test so it can never regress.
 - changing an identity field on a `CORE_USER` customer returns

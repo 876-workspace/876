@@ -337,7 +337,9 @@ export function ApiKeysTable({
               placeholder="e.g. Production server"
               onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
             />
-            {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+            {error && (
+              <p className="text-destructive text-[0.8125rem]">{error}</p>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>
@@ -364,7 +366,9 @@ export function ApiKeysTable({
               be re-activated.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {error && <p className="text-destructive px-1 text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive px-1 text-[0.8125rem]">{error}</p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel onClick={closeDialog}>Cancel</AlertDialogCancel>
             <AlertDialogAction
@@ -391,7 +395,9 @@ export function ApiKeysTable({
               immediately. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {error && <p className="text-destructive px-1 text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive px-1 text-[0.8125rem]">{error}</p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel onClick={closeDialog}>Cancel</AlertDialogCancel>
             <AlertDialogAction
