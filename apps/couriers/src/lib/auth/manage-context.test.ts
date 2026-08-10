@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   getPlatformClient: vi.fn(),
   getRoutingMemberships: vi.fn(),
   retrieve: vi.fn(),
-  retrieveSubscriptionBySlug: vi.fn(),
+  retrieveSubscription: vi.fn(),
   captureMessage: vi.fn(),
 }))
 
@@ -158,7 +158,7 @@ describe('getManageContext', () => {
     mocks.getPlatformClient.mockResolvedValue({
       memberships: { listRouting: mocks.getRoutingMemberships },
       subscriptions: {
-        retrieveBySlug: mocks.retrieveSubscriptionBySlug,
+        retrieve: mocks.retrieveSubscription,
       },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
@@ -181,7 +181,7 @@ describe('getManageContext', () => {
       error: null,
     })
     mocks.retrieve.mockResolvedValue(tenantResult(null))
-    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+    mocks.retrieveSubscription.mockResolvedValue({
       data: { status: 'active' },
       error: null,
     })
@@ -197,7 +197,7 @@ describe('getManageContext', () => {
     expect(mocks.getPlatformClient).not.toHaveBeenCalled()
     expect(mocks.getRoutingMemberships).not.toHaveBeenCalled()
     expect(mocks.retrieve).not.toHaveBeenCalled()
-    expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+    expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
   })
 
   it('returns null when memberships fail without loading courier tenants', async () => {
@@ -219,7 +219,7 @@ describe('getManageContext', () => {
       status: 'active',
     })
     expect(mocks.retrieve).not.toHaveBeenCalled()
-    expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+    expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
   })
 
   it('reports the failing call when memberships fail', async () => {
@@ -258,7 +258,7 @@ describe('getManageContext', () => {
 
   it('reports when the subscription lookup fails and access degrades to none', async () => {
     mocks.retrieve.mockResolvedValue(tenantResult(createTenant()))
-    mocks.retrieveSubscriptionBySlug.mockResolvedValue({
+    mocks.retrieveSubscription.mockResolvedValue({
       data: null,
       error: {
         code: 'admin/unauthorized',
@@ -271,12 +271,12 @@ describe('getManageContext', () => {
     expect(result?.accessStatus).toBe('none')
     expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
     expect(mocks.captureMessage).toHaveBeenCalledWith(
-      'Platform outage: orgs.subscriptions.retrieveBySlug failed',
+      'Platform outage: organizations.subscriptions.retrieve failed',
       expect.objectContaining({
         level: 'error',
         tags: { category: 'platform_client' },
         extra: expect.objectContaining({
-          call: 'orgs.subscriptions.retrieveBySlug',
+          call: 'organizations.subscriptions.retrieve',
           errorCode: 'admin/unauthorized',
           errorMessage: 'An internal key is required.',
         }),
@@ -318,11 +318,8 @@ describe('getManageContext', () => {
     expect(mocks.retrieve).toHaveBeenCalledWith({
       organizationId: 'organization_island_123',
     })
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'organization_island_123',
-      '876-couriers'
-    )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'organization_island_123', appSlug: '876-couriers' })
   })
 
   it.each(SECURITY_INPUTS)(
@@ -337,7 +334,7 @@ describe('getManageContext', () => {
         status: 'active',
       })
       expect(mocks.retrieve).not.toHaveBeenCalled()
-      expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+      expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
     }
   )
 
@@ -360,7 +357,7 @@ describe('getManageContext', () => {
 
     expect(result).toBeNull()
     expect(mocks.retrieve).not.toHaveBeenCalled()
-    expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+    expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
   })
 
   it('returns null when the slug matches an inactive membership', async () => {
@@ -374,7 +371,7 @@ describe('getManageContext', () => {
 
     expect(result).toBeNull()
     expect(mocks.retrieve).not.toHaveBeenCalled()
-    expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+    expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
   })
 
   it('ignores the sealed organization id when an explicit slug is provided', async () => {
@@ -450,11 +447,8 @@ describe('getManageContext', () => {
     })
     expect(mocks.retrieve).toHaveBeenCalledTimes(1)
     expect(mocks.retrieve).toHaveBeenCalledWith({ organizationId: 'organization_slug_123' })
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'organization_slug_123',
-      '876-couriers'
-    )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'organization_slug_123', appSlug: '876-couriers' })
   })
 
   it('uses a matching sealed organization id as the no-slug fast path', async () => {
@@ -494,11 +488,8 @@ describe('getManageContext', () => {
     expect(mocks.retrieve).toHaveBeenCalledWith({
       organizationId: 'organization_island_123',
     })
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'organization_island_123',
-      '876-couriers'
-    )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'organization_island_123', appSlug: '876-couriers' })
   })
 
   it('returns null when the sealed organization id is outside memberships', async () => {
@@ -515,7 +506,7 @@ describe('getManageContext', () => {
 
     expect(result).toBeNull()
     expect(mocks.retrieve).not.toHaveBeenCalled()
-    expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+    expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
   })
 
   it('selects the first active organization with a tenant when no id is sealed', async () => {
@@ -586,11 +577,8 @@ describe('getManageContext', () => {
     expect(mocks.retrieve).toHaveBeenCalledTimes(2)
     expect(mocks.retrieve).toHaveBeenNthCalledWith(1, { organizationId: 'organization_portland_123' })
     expect(mocks.retrieve).toHaveBeenNthCalledWith(2, { organizationId: 'organization_montego_123' })
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'organization_montego_123',
-      '876-couriers'
-    )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'organization_montego_123', appSlug: '876-couriers' })
   })
 
   it('falls back to the first active organization when none has a tenant', async () => {
@@ -652,11 +640,8 @@ describe('getManageContext', () => {
     expect(mocks.retrieve).toHaveBeenCalledTimes(2)
     expect(mocks.retrieve).toHaveBeenNthCalledWith(1, { organizationId: 'organization_portland_123' })
     expect(mocks.retrieve).toHaveBeenNthCalledWith(2, { organizationId: 'organization_montego_123' })
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-      'organization_portland_123',
-      '876-couriers'
-    )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'organization_portland_123', appSlug: '876-couriers' })
   })
 
   it('returns null when no active organization is available', async () => {
@@ -678,7 +663,7 @@ describe('getManageContext', () => {
 
     expect(result).toBeNull()
     expect(mocks.retrieve).not.toHaveBeenCalled()
-    expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
+    expect(mocks.retrieveSubscription).not.toHaveBeenCalled()
   })
 
   it('maps only active memberships in active organizations', async () => {
@@ -759,7 +744,7 @@ describe('getManageContext', () => {
         subscriptionResult.data && 'status' in subscriptionResult.data
           ? subscriptionResult.data.status
           : 'none'
-      mocks.retrieveSubscriptionBySlug.mockResolvedValue(subscriptionResult)
+      mocks.retrieveSubscription.mockResolvedValue(subscriptionResult)
 
       const result = await getManageContext('island-logistics')
 
@@ -782,11 +767,8 @@ describe('getManageContext', () => {
         role: 'owner',
         accessStatus: expectedStatus,
       })
-      expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
-        'organization_island_123',
-        '876-couriers'
-      )
+      expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+      expect(mocks.retrieveSubscription).toHaveBeenCalledWith({ organizationId: 'organization_island_123', appSlug: '876-couriers' })
     }
   )
 

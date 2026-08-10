@@ -23,10 +23,10 @@ export default async function OrganizationAppDetailPage({
   )
 
   const client = await get876ServerClient()
-  const subscriptionResult = await client.subscriptions.retrieveBySlug(
-    membership.organization.id,
-    appSlug
-  )
+  const subscriptionResult = await client.organizations.subscriptions.retrieve({
+    organizationId: membership.organization.id,
+    appSlug,
+  })
   const subscription = subscriptionResult.data
   if (!subscription) notFound()
 
