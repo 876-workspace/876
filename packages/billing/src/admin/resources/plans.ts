@@ -6,8 +6,7 @@ import type { Ensured, PlanEnsureParams } from '../types'
 /** `$876.billing.plans.*` — secret-service plan synchronization. */
 export function createAdminPlansResource(runtime: AdminRuntime) {
   return {
-    /** Idempotently ensures a core plan tier and cadence in Billing. */
-    ensure(params: PlanEnsureParams) {
+    create(params: PlanEnsureParams) {
       return AdminRequest<Ensured<'plan'>>(
         runtime,
         {

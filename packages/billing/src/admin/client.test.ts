@@ -23,7 +23,7 @@ describe('create876AdminClient', () => {
       status: 'ACTIVE' as const,
     }
 
-    const result = await client.subscriptions.ensure(params)
+    const result = await client.subscriptions.create(params)
 
     expect(result).toEqual({
       data: { object: 'subscription', id: 'blsub_1' },
@@ -49,7 +49,7 @@ describe('create876AdminClient', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.customers.ensure({
+    const result = await client.customers.create({
       organizationId: 'org_1',
       name: 'Efesto Technologies',
     })
@@ -136,7 +136,7 @@ describe('create876AdminClient', () => {
       email: 'ada@example.test',
     }
 
-    await client.customers.ensure(params)
+    await client.customers.create(params)
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/admin/customers/ensure',
@@ -176,7 +176,7 @@ describe('create876AdminClient', () => {
       },
     }
 
-    const result = await client.customers.ensure(params)
+    const result = await client.customers.create(params)
 
     expect(result).toEqual({
       data: { object: 'customer', id: 'blcus_org' },
@@ -220,7 +220,7 @@ describe('create876AdminClient', () => {
       primaryContact: null,
     }
 
-    await client.customers.ensure(params)
+    await client.customers.create(params)
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/admin/customers/ensure',
@@ -241,7 +241,7 @@ describe('create876AdminClient', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.customers.ensure({
+    const result = await client.customers.create({
       organizationId: 'org_1',
       name: 'Efesto',
     })

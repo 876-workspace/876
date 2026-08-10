@@ -14,7 +14,7 @@ export interface AdminClientOptions {
   requestId?: string
 }
 
-/** Minimal acknowledgement returned by an idempotent ensure operation. */
+/** Minimal acknowledgement returned by an idempotent create operation. */
 export interface Ensured<
   TObject extends 'product' | 'plan' | 'price' | 'customer' | 'subscription',
 > {
@@ -32,7 +32,7 @@ export interface ProductEnsureParams {
 }
 
 export interface PlanEnsureParams {
-  /** Billing product ID returned by `$876.billing.products.ensure()`. */
+  /** Billing product ID returned by `$876.billing.products.create()`. */
   productId: string
   /** Opaque core plan-tier ID (`prd_...`). */
   entitlementReferenceId: string
@@ -46,7 +46,7 @@ export interface PlanEnsureParams {
 }
 
 export interface PriceEnsureParams {
-  /** Billing plan ID returned by `$876.billing.plans.ensure()`. */
+  /** Billing plan ID returned by `$876.billing.plans.create()`. */
   planId: string
   /** Opaque core price ID (`prc_...`). */
   entitlementReferenceId: string
@@ -149,7 +149,7 @@ export interface SubscriptionEnsureParams {
   /** Opaque core subscription ID (`sub_...`) used as the idempotency key. */
   externalReference: string
   sourceAppId?: string | null
-  /** Billing customer ID returned by `$876.billing.customers.ensure()`. */
+  /** Billing customer ID returned by `$876.billing.customers.create()`. */
   customerId: string
   items: Array<{
     /** Opaque core price ID resolved by Billing. */

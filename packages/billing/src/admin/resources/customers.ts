@@ -6,8 +6,7 @@ import type { CustomerEnsureParams, Ensured } from '../types'
 /** `$876.billing.customers.*` — secret-service customer synchronization. */
 export function createAdminCustomersResource(runtime: AdminRuntime) {
   return {
-    /** Idempotently ensures a core organization as a Billing customer. */
-    ensure(params: CustomerEnsureParams) {
+    create(params: CustomerEnsureParams) {
       return AdminRequest<Ensured<'customer'>>(
         runtime,
         {

@@ -6,8 +6,7 @@ import type { Ensured, SubscriptionEnsureParams } from '../types'
 /** `$876.billing.subscriptions.*` — secret-service subscription synchronization. */
 export function createAdminSubscriptionsResource(runtime: AdminRuntime) {
   return {
-    /** Idempotently ensures a core commercial agreement in Billing. */
-    ensure(params: SubscriptionEnsureParams) {
+    create(params: SubscriptionEnsureParams) {
       return AdminRequest<Ensured<'subscription'>>(
         runtime,
         {

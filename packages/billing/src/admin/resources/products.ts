@@ -6,8 +6,7 @@ import type { Ensured, ProductEnsureParams } from '../types'
 /** `$876.billing.products.*` — secret-service product synchronization. */
 export function createAdminProductsResource(runtime: AdminRuntime) {
   return {
-    /** Idempotently ensures a core application has a Billing product. */
-    ensure(params: ProductEnsureParams) {
+    create(params: ProductEnsureParams) {
       return AdminRequest<Ensured<'product'>>(
         runtime,
         {

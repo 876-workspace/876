@@ -6,8 +6,7 @@ import type { Ensured, PriceEnsureParams } from '../types'
 /** `$876.billing.prices.*` — secret-service price synchronization. */
 export function createAdminPricesResource(runtime: AdminRuntime) {
   return {
-    /** Idempotently ensures a core price as an immutable Billing price. */
-    ensure(params: PriceEnsureParams) {
+    create(params: PriceEnsureParams) {
       return AdminRequest<Ensured<'price'>>(
         runtime,
         {
