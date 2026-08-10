@@ -195,14 +195,26 @@ jobs:
 
   couriers-api:
     needs: changes
+    # Runs on any matching push, like the api job above — the migration step
+    # must apply even when the deploy gate is off, or the schema sits behind
+    # the code. Only the deploy step is gated on who the deployer is.
     if:
       (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'couriers-api'))
-      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.couriers-api == 'true')
+      || (github.event_name == 'push' && needs.changes.outputs.couriers-api == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # The couriers database predates this service and the migrations moved
+      # here with the prisma retirement; the app job no longer owns them.
+      # `DIRECT_DATABASE_URL` is what apps/couriers-api/prisma.config.ts dials
+      # for migrate, and `COURIERS_DATABASE_URL` is that database's own secret.
+      - name: Apply migrations
+        run: pnpm --filter @876/couriers-api exec prisma migrate deploy
+        env:
+          DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Deploy container Worker
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/couriers-api
         run: pnpm exec wrangler deploy
 
@@ -293,10 +305,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Apply migrations
-        run: pnpm --filter @876/couriers-app exec prisma migrate deploy
-        env:
-          DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/couriers-app run deploy

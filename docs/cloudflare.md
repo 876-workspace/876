@@ -292,8 +292,13 @@ Couriers, affected users are routed to onboarding and see
 `PORT`.
 
 **876-couriers-api:** `PORT`, `ENVIRONMENT`, `LOG_LEVEL`, `DATABASE_URL`,
-`DIRECT_DATABASE_URL`, `API_876_KEY`, `API_INTERNAL_KEY`,
-`OAUTH_ISSUER`, `OAUTH_JWKS_URL`, `SENTRY_DSN`, `CORS_ALLOWED_ORIGINS`.
+`API_876_KEY`, `API_INTERNAL_KEY`, `CORS_ALLOWED_ORIGINS`,
+`COURIERS_INTEGRATION_KEY`, `OAUTH_AUDIENCE`, `OAUTH_ISSUER`,
+`OAUTH_JWKS_URL`, `SENTRY_DSN`.
+
+> `DIRECT_DATABASE_URL` is deliberately not a Worker secret here: migrations
+> run from the deploy workflow against `COURIERS_DATABASE_URL`, and the
+> container talks to the database through Accelerate only.
 
 **876 couriers:** `API_876_KEY`, `API_INTERNAL_KEY`, `API_URL`, `BILLING_URL`,
 `DATABASE_URL`, `NEXT_PUBLIC_*`, `STORAGE_INTERNAL_KEY`, `WIDGETS_*`,

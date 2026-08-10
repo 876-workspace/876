@@ -6,17 +6,18 @@
 
 ## Apps
 
-| Workspace           | Path               | Port | Description                                                                                                 |
-| ------------------- | ------------------ | ---- | ----------------------------------------------------------------------------------------------------------- |
-| `@876/app`          | `apps/876`         | 3000 | Consumer app — embedded auth, account/org management, OAuth provider UI, PWA.                               |
-| `@876/enterprise`   | `apps/enterprise`  | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding), org dashboards, billing.          |
-| `@876/console`      | `apps/console`     | 3002 | Internal Console — platform admin console (users, orgs, roles/permissions, app subscriptions, settings).    |
-| `@876/couriers-app` | `apps/couriers`    | 3003 | Couriers SaaS app — multitenant courier management platform, own Prisma datastore.                          |
-| `@876/billing-app`  | `apps/billing`     | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
-| `@876/widgets-api`  | `apps/widgets-api` | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
-| `@876/api`          | `apps/api`         | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
-| `@876/billing-api`  | `apps/billing-api` | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
-| `@876/storage-api`  | `apps/storage-api` | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
+| Workspace           | Path                | Port | Description                                                                                                 |
+| ------------------- | ------------------- | ---- | ----------------------------------------------------------------------------------------------------------- |
+| `@876/app`          | `apps/876`          | 3000 | Consumer app — embedded auth, account/org management, OAuth provider UI, PWA.                               |
+| `@876/enterprise`   | `apps/enterprise`   | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding), org dashboards, billing.          |
+| `@876/console`      | `apps/console`      | 3002 | Internal Console — platform admin console (users, orgs, roles/permissions, app subscriptions, settings).    |
+| `@876/couriers-app` | `apps/couriers`     | 3003 | Couriers SaaS app — multitenant courier management platform.                                                |
+| `@876/couriers-api` | `apps/couriers-api` | 4001 | Couriers API service — Express + Prisma Accelerate; owns the couriers datastore and its migrations.         |
+| `@876/billing-app`  | `apps/billing`      | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
+| `@876/widgets-api`  | `apps/widgets-api`  | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
+| `@876/api`          | `apps/api`          | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
+| `@876/billing-api`  | `apps/billing-api`  | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
+| `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
 
 ## Packages
 
@@ -30,7 +31,7 @@
 | `@876/ui`        | `packages/ui`        | shadcn/ui primitives (Base UI + Tailwind v4), chart components, embeddable auth UI (`@876/ui/auth`), and shared design tokens.                                          |
 | `@876/analytics` | `packages/analytics` | PostHog analytics provider and shared tracking utilities.                                                                                                               |
 
-Console and Couriers each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers/prisma/`) for operational data scoped to that app — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
+Console and the Couriers API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
 
 ---
 
@@ -76,9 +77,9 @@ pnpm dev:enterprise                  # Enterprise app + API
 pnpm dev:console                     # Console + API + Widgets API + Billing + Billing API
 pnpm dev:console:min                 # Console + API + Billing API (no Widgets/Billing app)
 pnpm dev:console:core                # Console + API only (no Billing backend)
-pnpm dev:couriers                    # Couriers app + API + Storage API + Billing + Widgets
-pnpm dev:couriers:min                # Couriers app + API + Billing API (no Widgets/Storage/Billing app)
-pnpm dev:couriers:core               # Couriers app + API only (no Billing backend)
+pnpm dev:couriers                    # Couriers app + couriers API + core API + Storage API + Billing + Widgets
+pnpm dev:couriers:min                # Couriers app + couriers API + core API + Billing API (no Widgets/Storage/Billing app)
+pnpm dev:couriers:core               # Couriers app + couriers API + core API only (no Billing backend)
 pnpm dev:billing                     # Billing + API + Widgets API
 pnpm dev:billing:min                 # Billing app + API + Billing API (no Widgets API)
 pnpm dev:billing:core                # Billing app + Billing API only (no core API/Widgets)
@@ -116,15 +117,16 @@ pnpm --filter @876/api seed          # feature/geo/plan/provisioning/bootstrap s
 pnpm --filter @876/storage-api db:migrate
 pnpm dev:storage                     # 876 Storage service alone on :4005
 
-# App-local Prisma datastores (Console, Couriers)
+# App-local Prisma datastores (Console, Couriers API)
 pnpm --filter @876/console db:generate   # Regenerate Console's Prisma client
-pnpm --filter @876/couriers-app db:generate  # Regenerate Couriers' Prisma client
+pnpm --filter @876/couriers-api db:generate  # Regenerate the Couriers API's Prisma client
 
-# Cloudflare deploy (each Next.js app deploys independently)
+# Cloudflare deploy (each app deploys independently)
 pnpm --filter @876/app deploy
 pnpm --filter @876/enterprise deploy
 pnpm --filter @876/console deploy
 pnpm --filter @876/couriers-app deploy
+pnpm --filter @876/couriers-api deploy
 ```
 
 ---
@@ -146,7 +148,7 @@ Browser / Next.js Apps (876, Enterprise, Console, Couriers)
   Stripe     (billing)
   PostHog    (analytics)
 
-App-local operational data (Console, Couriers) lives in that
+App-local operational data (Console, Couriers API) lives in that
 app's own Prisma datastore — never shared, never a cross-DB FK
 to identity. Core entities are referenced by opaque ID only,
 resolved through @876/admin.
