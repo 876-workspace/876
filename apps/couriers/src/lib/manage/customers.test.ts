@@ -88,8 +88,6 @@ describe('managed customers', () => {
       idempotency_key: 'submission-nkr-001',
       customer_kind: 'INDIVIDUAL',
       first_name: 'Marlon',
-      last_name: null,
-      company_name: null,
       email: null,
       phone: null,
       branch_id: 'br_kingston',
