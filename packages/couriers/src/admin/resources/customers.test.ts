@@ -123,6 +123,30 @@ describe('createCustomersResource', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it('sends a starting_after cursor when listing customers', async () => {
+    const fetchMock = successFetch(customerList)
+    const resource = createResource(fetchMock, internalKey)
+
+    await resource.list(tenantId, { starting_after: customerId })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers?starting_after=cpr_kingston%2Fbrown+market`,
+      expect.anything()
+    )
+  })
+
+  it('sends an ending_before cursor when listing customers', async () => {
+    const fetchMock = successFetch(customerList)
+    const resource = createResource(fetchMock, internalKey)
+
+    await resource.list(tenantId, { ending_before: customerId })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers?ending_before=cpr_kingston%2Fbrown+market`,
+      expect.anything()
+    )
+  })
+
   it('retrieves a customer with encoded identifiers', async () => {
     const fetchMock = successFetch(customer)
     const resource = createResource(fetchMock, internalKey)

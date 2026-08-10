@@ -25,25 +25,6 @@ export const customerListSchema = z.object({
   url: z.string(),
 })
 
-export const mailboxSchema = z.object({
-  object: z.literal('mailbox'),
-  id: z.string(),
-  tenant_id: z.string(),
-  customer_id: z.string(),
-  number: z.string(),
-  is_primary: z.boolean(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
-})
-
-export const mailboxListSchema = z.object({
-  object: z.literal('list'),
-  data: z.array(mailboxSchema),
-  has_more: z.boolean(),
-  total_count: z.number().int().nullable(),
-  url: z.string(),
-})
-
 export const createCustomerBodySchema = z.strictObject({
   billing_customer_id: z.string(),
   user_id: z.string().nullable().optional(),
@@ -69,13 +50,13 @@ export const updateMailboxBodySchema = z.strictObject({
 
 export type Customer = z.infer<typeof customerSchema>
 export type CustomerList = z.infer<typeof customerListSchema>
-export type Mailbox = z.infer<typeof mailboxSchema>
-export type MailboxList = z.infer<typeof mailboxListSchema>
 export type CustomerStatus = z.infer<typeof customerStatusSchema>
 export type ListCustomersParams = {
   status?: CustomerStatus
   branch_id?: string
   limit?: number
+  starting_after?: string
+  ending_before?: string
 }
 export type CreateCustomerBody = z.input<typeof createCustomerBodySchema>
 export type UpdateCustomerBody = z.input<typeof updateCustomerBodySchema>
