@@ -174,7 +174,7 @@ export function createAuthGuards(deps: AuthDependencies): AuthGuards {
   const requireSession = guard(async (req) => {
     const principal = await resolvePrincipal(req)
     setPrincipal(req, principal)
-    if (principal.internal || principal.userId) return
+    if (principal.userId) return
     throw errors.noSession()
   })
 

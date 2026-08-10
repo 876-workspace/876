@@ -29,8 +29,8 @@ const SECURITY_REQUIREMENTS: Record<
   public: [],
   apiKey: [{ ApiKey: [] }],
   integration: [{ IntegrationKey: [] }],
-  session: [{ BearerToken: [] }, { InternalKey: [] }],
-  admin: [{ InternalKey: [] }],
+  session: [{ ApiKey: [], BearerToken: [] }],
+  admin: [{ ApiKey: [], InternalKey: [] }],
 }
 
 export type ResponseSpec = {

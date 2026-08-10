@@ -38,6 +38,21 @@ export async function retrievePackage(
   return serialize(row)
 }
 
+/** Retrieve a package only when it belongs to the caller's customer profile. */
+export async function retrieveCustomerPackage(
+  tenantId: string,
+  customerId: string,
+  id: string
+): Promise<Package> {
+  const row = await repo.findTenantCustomerPackageById({
+    tenantId,
+    customerId,
+    id,
+  })
+  if (!row) throw missing()
+  return serialize(row)
+}
+
 export async function createPackage(
   tenantId: string,
   input: CreatePackageBody

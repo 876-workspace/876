@@ -18,6 +18,24 @@ const tenant = {
   updated_at: 2,
 }
 
+const portalPackage = {
+  object: 'package' as const,
+  id: 'pkg_1',
+  tenant_id: 'ten_1',
+  customer_id: 'ccp_1',
+  branch_id: 'br_1',
+  mailbox_id: 'mbx_1',
+  tracking_num: 'TRACK-1',
+  status: 'READY_FOR_PICKUP' as const,
+  package_type: 'CARTON' as const,
+  description: 'Books',
+  quantity: 1,
+  actual_weight: 1.5,
+  collected_at: null,
+  created_at: 1,
+  updated_at: 2,
+}
+
 function successFetch() {
   return vi
     .fn<typeof fetch>()
@@ -48,6 +66,71 @@ describe('Couriers client credential tiers', () => {
     expect(headers).not.toHaveProperty('x-service-key')
     expect(headers).not.toHaveProperty('x-internal-key')
     expect(headers).not.toHaveProperty('Authorization')
+  })
+
+  it('binds portal resources to the configured session access token', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: {
+          object: 'list',
+          data: [portalPackage],
+          has_more: false,
+          total_count: null,
+          url: '/v1/portal/tenants/ten_1/packages',
+        },
+        error: null,
+      })
+    )
+    const client = create876CouriersClient({
+      baseUrl: 'https://couriers.example.test',
+      apiKey: '876_app_secret_couriers',
+      accessToken: 'session-access-token',
+      fetch: fetchMock,
+    })
+
+    await expect(
+      client.portal.packages.list('ten_1', {
+        status: 'READY_FOR_PICKUP',
+        starting_after: 'pkg_previous',
+      })
+    ).resolves.toEqual({
+      data: {
+        object: 'list',
+        data: [portalPackage],
+        has_more: false,
+        total_count: null,
+        url: '/v1/portal/tenants/ten_1/packages',
+      },
+      error: null,
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://couriers.example.test/v1/portal/tenants/ten_1/packages?status=READY_FOR_PICKUP&starting_after=pkg_previous',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'x-876-api-key': '876_app_secret_couriers',
+          Authorization: 'Bearer session-access-token',
+        }),
+      })
+    )
+  })
+
+  it('fails closed when a portal access token is absent', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+    const client = create876CouriersClient({
+      baseUrl: 'https://couriers.example.test',
+      apiKey: '876_app_secret_couriers',
+      fetch: fetchMock,
+    })
+
+    await expect(client.portal.customer.retrieve('ten_1')).resolves.toEqual({
+      data: null,
+      error: {
+        code: 'couriers/session-not-configured',
+        message: 'Couriers session access is not configured.',
+      },
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('sends the dedicated integration credential and uses its narrow route', async () => {

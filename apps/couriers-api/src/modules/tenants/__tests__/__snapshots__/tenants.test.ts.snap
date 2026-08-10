@@ -1362,6 +1362,369 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         ],
       },
     },
+    "/v1/portal/tenants/{tenantId}/customer": {
+      "get": {
+        "operationId": "portal-customer-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer profile returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Customer not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve the signed-in customer portal profile",
+        "tags": [
+          "Portal",
+        ],
+      },
+    },
+    "/v1/portal/tenants/{tenantId}/packages": {
+      "get": {
+        "operationId": "portal-packages-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "PRE_ALERT",
+                "RECEIVED",
+                "IN_TRANSIT",
+                "ARRIVED",
+                "READY_FOR_PICKUP",
+                "COLLECTED",
+                "UNCLAIMED",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Package",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer packages returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Customer not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List packages belonging to the signed-in customer",
+        "tags": [
+          "Portal",
+        ],
+      },
+    },
+    "/v1/portal/tenants/{tenantId}/packages/{id}": {
+      "get": {
+        "operationId": "portal-packages-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer package returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Package not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve one package belonging to the signed-in customer",
+        "tags": [
+          "Portal",
+        ],
+      },
+    },
     "/v1/tenants": {
       "get": {
         "description": "Returns all tenants. Admin only.",
@@ -1490,6 +1853,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -1829,6 +2193,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2032,6 +2397,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2131,6 +2497,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2339,6 +2706,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2503,6 +2871,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2653,6 +3022,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2752,6 +3122,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -2883,6 +3254,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3011,6 +3383,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3143,6 +3516,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3270,6 +3644,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3423,6 +3798,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3523,6 +3899,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3642,6 +4019,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3782,6 +4160,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -3959,6 +4338,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4149,6 +4529,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4248,6 +4629,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4440,6 +4822,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4559,6 +4942,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4679,6 +5063,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4787,6 +5172,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -4922,6 +5308,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5041,6 +5428,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5144,6 +5532,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5257,6 +5646,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5376,6 +5766,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5599,6 +5990,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5698,6 +6090,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],
@@ -5948,6 +6341,7 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         },
         "security": [
           {
+            "ApiKey": [],
             "InternalKey": [],
           },
         ],

@@ -254,6 +254,20 @@ describe('session-tier authentication', () => {
     expect(fetchMock).toHaveBeenCalledTimes(0)
   })
 
+  it('does not treat an internal admin credential as an end-user session', async () => {
+    const response = await request(createSessionApp())
+      .get('/session-probe')
+      .set('X-876-API-Key', APP_KEY)
+      .set('x-internal-key', 'test-internal-key')
+
+    expect(response.status).toBe(401)
+    expect(response.body).toEqual({
+      data: null,
+      error: { code: 'auth/no-session', message: 'No active session.' },
+    })
+    expect(handler).not.toHaveBeenCalled()
+  })
+
   it('rejects a session request when the JWKS cannot be fetched', async () => {
     const { privateKey } = await generateKeyPair('RS256')
     const token = await createToken(privateKey)

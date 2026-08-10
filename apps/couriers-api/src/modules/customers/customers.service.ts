@@ -47,6 +47,16 @@ export async function retrieveCustomer(
   return serializeCustomer(row)
 }
 
+/** Resolve the caller's own Couriers profile without accepting a profile ID. */
+export async function retrieveCustomerByUserId(
+  tenantId: string,
+  userId: string
+): Promise<Customer> {
+  const row = await repo.findTenantCustomerByUserId(tenantId, userId)
+  if (!row) throw missing('customer')
+  return serializeCustomer(row)
+}
+
 export async function createCustomer(
   tenantId: string,
   input: CreateCustomerBody

@@ -25,6 +25,12 @@ export interface RequestOptions {
 export interface ClientOptions {
   baseUrl?: string
   apiKey?: string
+  /**
+   * Short-lived OAuth access token for `portal` resources. Supply it from the
+   * server-side session for each request; do not expose it as a client-side
+   * environment variable.
+   */
+  accessToken?: string
   fetch?: typeof fetch
   requestId?: string
 }

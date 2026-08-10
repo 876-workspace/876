@@ -42,6 +42,20 @@ export function findTenantPackageById(tenantId: string, id: string) {
   return prisma.package.findFirst({ where: { tenantId, id } })
 }
 
+export function findTenantCustomerPackageById(options: {
+  tenantId: string
+  customerId: string
+  id: string
+}) {
+  return prisma.package.findFirst({
+    where: {
+      tenantId: options.tenantId,
+      customerId: options.customerId,
+      id: options.id,
+    },
+  })
+}
+
 export function findTenantCustomerById(tenantId: string, id: string) {
   return prisma.courierCustomerProfile.findFirst({
     where: { tenantId, id, deletedAt: null },

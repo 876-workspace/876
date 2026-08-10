@@ -44,6 +44,12 @@ export function findTenantCustomerById(tenantId: string, id: string) {
   })
 }
 
+export function findTenantCustomerByUserId(tenantId: string, userId: string) {
+  return prisma.courierCustomerProfile.findFirst({
+    where: { tenantId, userId, deletedAt: null },
+  })
+}
+
 export async function tenantExists(tenantId: string): Promise<boolean> {
   return Boolean(await prisma.tenant.findUnique({ where: { id: tenantId } }))
 }

@@ -9,6 +9,7 @@ import { createBranchesRouter } from '@/modules/branches'
 import { createCustomersRouter } from '@/modules/customers'
 import { createMailboxesRouter } from '@/modules/mailboxes'
 import { createPackagesRouter } from '@/modules/packages'
+import { createPortalRouter } from '@/modules/portal'
 import { createTeamRouter } from '@/modules/team'
 import { createSettingsRouter } from '@/modules/settings'
 import { createTenantsRouter } from '@/modules/tenants'
@@ -24,6 +25,7 @@ export function buildRoutes(): Router {
   root.use(createCustomersRouter(resolveGuards))
   root.use(createMailboxesRouter(resolveGuards))
   root.use(createPackagesRouter(resolveGuards))
+  root.use(createPortalRouter(resolveGuards))
   root.use(...createTeamRouter(resolveGuards))
   root.use(createSettingsRouter(resolveGuards))
   root.use(createWarehousesRouter(resolveGuards))
