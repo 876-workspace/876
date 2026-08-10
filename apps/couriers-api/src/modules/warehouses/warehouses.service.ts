@@ -1,6 +1,8 @@
 import { AppHttpError } from '@/platform/errors'
+import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { resolveRegion } from '@/providers/platform/geo'
+import { syncOrganizationLocation } from '@/modules/organization-locations'
 
 import * as repo from './warehouses.repository'
 import { serializeWarehouse, type WarehouseRow } from './warehouses.serializers'
@@ -19,6 +21,8 @@ const missing = () =>
   })
 const conflict = (message: string) =>
   new AppHttpError({ code: 'warehouse/conflict', message, httpStatus: 409 })
+
+const log = getLogger('warehouses')
 
 export async function listWarehouses(tenantId: string): Promise<Warehouse[]> {
   return (await repo.listTenantWarehouses(tenantId)).map(serializeWarehouse)
@@ -46,21 +50,24 @@ export async function createWarehouse(
   const address = await createAddress(tenantId, input.address)
   const now = nowUnixSeconds()
   const operatingModel = input.operating_model ?? 'OWNED'
+  let warehouse: import('./warehouses.serializers').WarehouseRow
   try {
-    return serializeWarehouse(
-      await repo.createWarehouseWithAddress({
-        tenantId,
-        input,
-        address,
-        operatingModel,
-        now,
-      })
-    )
+    warehouse = await repo.createWarehouseWithAddress({
+      tenantId,
+      input,
+      address,
+      operatingModel,
+      now,
+    })
   } catch (error) {
     if (isUnique(error))
       throw conflict('A warehouse with that name already exists.')
     throw error
   }
+  void syncOrganizationLocation(tenantId, { kind: 'warehouse', site_id: warehouse.id }).catch((error) => {
+    log.error({ err: error, tenant_id: tenantId, site_id: warehouse.id }, 'warehouse.organization_location_sync_failed')
+  })
+  return serializeWarehouse(warehouse)
 }
 
 export async function updateWarehouse(
@@ -75,22 +82,25 @@ export async function updateWarehouse(
     : undefined
   const now = nowUnixSeconds()
   const operatingModel = input.operating_model ?? current.operatingModel
+  let updated: import('./warehouses.serializers').WarehouseRow
   try {
-    return serializeWarehouse(
-      await repo.updateWarehouseWithAddress({
-        tenantId,
-        current,
-        input,
-        address,
-        operatingModel,
-        now,
-      })
-    )
+    updated = await repo.updateWarehouseWithAddress({
+      tenantId,
+      current,
+      input,
+      address,
+      operatingModel,
+      now,
+    })
   } catch (error) {
     if (isUnique(error))
       throw conflict('A warehouse with that name already exists.')
     throw error
   }
+  void syncOrganizationLocation(tenantId, { kind: 'warehouse', site_id: updated.id }).catch((error) => {
+    log.error({ err: error, tenant_id: tenantId, site_id: updated.id }, 'warehouse.organization_location_sync_failed')
+  })
+  return serializeWarehouse(updated)
 }
 
 async function createAddress(

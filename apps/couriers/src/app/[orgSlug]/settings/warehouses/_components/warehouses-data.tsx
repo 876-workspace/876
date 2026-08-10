@@ -1,4 +1,3 @@
-import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toWarehouseView } from '@/lib/couriers'
 import { $876 } from '@/lib/876'
@@ -25,8 +24,6 @@ export async function WarehousesData({ params }: Props) {
   ).data.map(toWarehouseView)
 
   // The warehouse form redirects here, so this is a convenient bounded repair
-  // point for a mirror that failed after an earlier write.
-  after(() => $876.couriers.organizationLocations.reconcile(tenantId))
 
   return (
     <WarehousesCards

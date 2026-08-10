@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import { after, type NextRequest } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -62,12 +62,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     )
 
   const branch = toBranchView(result.data)
-  after(() =>
-    $876.couriers.organizationLocations.sync(tenantId, {
-      kind: 'branch',
-      site_id: branch.id,
-    })
-  )
 
   return apiJson({ data: branch })
 }

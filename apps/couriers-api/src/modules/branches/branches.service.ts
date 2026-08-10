@@ -1,6 +1,8 @@
 import { AppHttpError } from '@/platform/errors'
+import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { resolveRegion } from '@/providers/platform/geo'
+import { syncOrganizationLocation } from '@/modules/organization-locations'
 
 import * as repo from './branches.repository'
 import { serializeBranch, type BranchRow } from './branches.serializers'
@@ -27,6 +29,8 @@ const tenantNotFound = () =>
 
 const conflict = (message: string) =>
   new AppHttpError({ code: 'branch/conflict', message, httpStatus: 409 })
+
+const log = getLogger('branches')
 
 export async function retrieveBranch(
   tenantId: string,
@@ -65,15 +69,18 @@ export async function createBranch(
   const address = await createAddressData(tenantId, input.address)
   const now = nowUnixSeconds()
 
+  let branch: import('./branches.serializers').BranchRow
   try {
-    return serializeBranch(
-      await repo.createBranchWithAddress({ tenantId, input, address, now })
-    )
+    branch = await repo.createBranchWithAddress({ tenantId, input, address, now })
   } catch (error) {
     if (isUniqueConstraintError(error))
       throw conflict('A branch with that name already exists.')
     throw error
   }
+  void syncOrganizationLocation(tenantId, { kind: 'branch', site_id: branch.id }).catch((error) => {
+    log.error({ err: error, tenant_id: tenantId, site_id: branch.id }, 'branch.organization_location_sync_failed')
+  })
+  return serializeBranch(branch)
 }
 
 export async function updateBranch(
@@ -93,21 +100,24 @@ export async function updateBranch(
     : undefined
   const now = nowUnixSeconds()
 
+  let updated: import('./branches.serializers').BranchRow
   try {
-    return serializeBranch(
-      await repo.updateBranchWithAddress({
-        tenantId,
-        current,
-        input,
-        address,
-        now,
-      })
-    )
+    updated = await repo.updateBranchWithAddress({
+      tenantId,
+      current,
+      input,
+      address,
+      now,
+    })
   } catch (error) {
     if (isUniqueConstraintError(error))
       throw conflict('A branch with that name already exists.')
     throw error
   }
+  void syncOrganizationLocation(tenantId, { kind: 'branch', site_id: updated.id }).catch((error) => {
+    log.error({ err: error, tenant_id: tenantId, site_id: updated.id }, 'branch.organization_location_sync_failed')
+  })
+  return serializeBranch(updated)
 }
 
 async function createAddressData(

@@ -1,4 +1,3 @@
-import { after } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toBranchView } from '@/lib/couriers'
 import { $876 } from '@/lib/876'
@@ -25,8 +24,6 @@ export async function LocationsData({ params }: Props) {
   ).data.map(toBranchView)
 
   // Opportunistic repair runs after the response so a slow Couriers API call
-  // never delays this page. The API owns the core-location reconciliation.
-  after(() => $876.couriers.organizationLocations.reconcile(tenantId))
 
   return (
     <LocationsCards
