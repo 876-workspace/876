@@ -133,51 +133,48 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
     },
 
     /**
-     * Retrieves a user by ID.
+     * Retrieves a user by ID or alternate identifier (typed lookup object).
      *
-     * @param userId - The ID of the user to retrieve.
-     * @param params - Optional query params (e.g. includeDeleted).
-     * @returns A result containing the user, or an error.
+     * Preferred: retrieve({ id }) | retrieve({ workosId }) | retrieve({ username })
+     * Legacy string form retrieve(userId) remains supported.
      */
-    retrieve(userId: string, params?: { includeDeleted?: boolean }) {
-      return adminRequest<AdminUser>(runtime, {
-        method: 'GET',
-        path: `/users/${userId}`,
-        query: {
-          include_deleted: params?.includeDeleted,
-        },
-      })
-    },
-
-    /**
-     * Retrieves a user by WorkOS ID.
-     *
-     * @param workosUserId - The WorkOS user ID to look up.
-     * @returns A result containing the user, or an error.
-     */
-    retrieveByWorkosId(workosUserId: string) {
-      return adminRequest<AdminUser>(runtime, {
-        method: 'GET',
-        path: `/users/by-workos-id/${workosUserId}`,
-      })
-    },
-
-    /**
-     * Retrieves a user by username.
-     *
-     * @param username - The username to look up.
-     * @param params - Optional query params (e.g. includeDeleted).
-     * @returns A result containing the user, or an error.
-     */
-    retrieveByUsername(
-      username: string,
-      params?: { includeDeleted?: boolean }
+    retrieve(
+      params:
+        | string
+        | { id: string; workosId?: never; username?: never; includeDeleted?: boolean }
+        | { workosId: string; id?: never; username?: never }
+        | { username: string; id?: never; workosId?: never; includeDeleted?: boolean },
+      legacyParams?: { includeDeleted?: boolean }
     ) {
+      if (typeof params === 'object' && params !== null && 'workosId' in params) {
+        return adminRequest<AdminUser>(runtime, {
+          method: 'GET',
+          path: `/users/by-workos-id/${params.workosId}`,
+        })
+      }
+      if (typeof params === 'object' && params !== null && 'username' in params) {
+        return adminRequest<AdminUser>(runtime, {
+          method: 'GET',
+          path: `/users/by-username/${params.username}`,
+          query: {
+            include_deleted: params.includeDeleted,
+          },
+        })
+      }
+      if (typeof params === 'object' && params !== null && 'id' in params) {
+        return adminRequest<AdminUser>(runtime, {
+          method: 'GET',
+          path: `/users/${params.id}`,
+          query: {
+            include_deleted: params.includeDeleted,
+          },
+        })
+      }
       return adminRequest<AdminUser>(runtime, {
         method: 'GET',
-        path: `/users/by-username/${username}`,
+        path: `/users/${params as string}`,
         query: {
-          include_deleted: params?.includeDeleted,
+          include_deleted: legacyParams?.includeDeleted,
         },
       })
     },

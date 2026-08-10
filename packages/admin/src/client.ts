@@ -7,6 +7,15 @@
  * never reaches their bundles. The surface of this client is exactly the set
  * of resource factories composed below.
  *
+ * Embedded product clients (billing, storage, widgets) are compatibility
+ * shims. Target direction per ecosystem plan: `@876/admin` = Core/platform
+ * admin only; applications compose product tiers explicitly under their
+ * local `$876` root (see `apps/console/src/lib/876/index.ts` for the
+ * `createConsole876Client` pattern with `$876.couriers`). Billing/storage/
+ * widgets remain here until all Console/consumer call sites migrate to
+ * explicit composition, then this embedding will be removed. Do not add
+ * new products here.
+ *
  * @module @876/admin/client
  */
 
@@ -107,7 +116,10 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     features,
     organizationFeatures,
     apiKeys: createAdminApiKeysResource(runtime),
-    organizations,
+    organizations: {
+      ...organizations,
+      subscriptions: organizationSubscriptions,
+    },
     locations,
     contacts,
     departments,
@@ -130,15 +142,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     addresses: createAdminAddressesResource(runtime),
     reservedUsernames: createAdminReservedUsernamesResource(runtime),
     billingAccounts: createAdminBillingAccountsResource(runtime),
-    subscriptions: {
-      ...subscriptions,
-      provision: organizationSubscriptions.provision,
-      updateForOrganizationApp: organizationSubscriptions.update,
-      listForOrganization: organizationSubscriptions.list,
-      retrieveForOrganizationApp: organizationSubscriptions.retrieve,
-      retrieveBySlug: organizationSubscriptions.retrieveBySlug,
-      listByOrganizations: organizationSubscriptions.listByOrgs,
-    },
+    subscriptions,
     storage: create876StorageClient(options.storage),
     billing: {
       ...billing,

@@ -55,7 +55,7 @@ export function createAdminSubscriptionsResource(runtime: AdminRuntime) {
     },
 
     /** Cancels/deletes a subscription. */
-    del(subscriptionId: string) {
+    delete(subscriptionId: string) {
       return adminRequest<AdminDeletedSubscription>(runtime, {
         method: 'DELETE',
         path: `/billing/subscriptions/${subscriptionId}`,
