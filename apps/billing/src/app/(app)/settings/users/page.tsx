@@ -29,7 +29,7 @@ export default async function UsersPage() {
   const identities = await Promise.all(
     memberships.map((membership) =>
       platform.users
-        .retrieve(membership.user_id)
+        .retrieve({ id: membership.user_id })
         .then((result) => result.data)
         .catch(() => null)
     )

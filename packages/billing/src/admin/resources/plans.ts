@@ -1,14 +1,17 @@
 import { AdminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
-import type { Ensured, PlanEnsureParams } from '../types'
+import type { CreatedResource, PlanCreateParams } from '../types'
 
-/** `$876.billing.plans.*` — secret-service plan synchronization. */
+/** `$876.billing.plans.*` — secret-service plan synchronization. Idempotent create via `entitlementReferenceId`. */
 export function createAdminPlansResource(runtime: AdminRuntime) {
   return {
-    /** Idempotently ensures a core plan tier and cadence in Billing. */
-    ensure(params: PlanEnsureParams) {
-      return AdminRequest<Ensured<'plan'>>(
+    /**
+     * Idempotent create: same `entitlementReferenceId`+`productId` with compatible payload returns existing plan; new reference creates.
+     * Backing endpoint remains `/ensure` as internal idempotency implementation.
+     */
+    create(params: PlanCreateParams) {
+      return AdminRequest<CreatedResource<'plan'>>(
         runtime,
         {
           method: 'POST',

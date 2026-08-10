@@ -44,7 +44,7 @@ export async function DELETE(
 
   const { subscriptionId } = await context.params
   const existing = await $876.subscriptions.retrieve(subscriptionId)
-  const { data, error } = await $876.subscriptions.del(subscriptionId)
+  const { data, error } = await $876.subscriptions.delete(subscriptionId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete subscription.' },

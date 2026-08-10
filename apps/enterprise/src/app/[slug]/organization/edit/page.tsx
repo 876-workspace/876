@@ -20,9 +20,7 @@ export default async function OrganizationEditPage({
   )
 
   const client = await get876ServerClient()
-  const orgResult = await client.organizations.retrieve(
-    membership.organization.id
-  )
+  const orgResult = await client.organizations.retrieve(membership.organization.id)
 
   return (
     <Page>

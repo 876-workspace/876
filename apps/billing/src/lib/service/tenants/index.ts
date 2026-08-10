@@ -1,13 +1,8 @@
-import { provision } from './provision'
-import {
-  listByOrganizationIds,
-  retrieveByOrganizationId,
-  retrieveBySlug,
-} from './retrieve'
+import { create } from './provision'
+import { list, retrieve } from './retrieve'
 
 export const tenants = {
-  provision,
-  listByOrganizationIds,
-  retrieveByOrganizationId,
-  retrieveBySlug,
+  create,
+  retrieve,
+  list,
 }

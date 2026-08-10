@@ -127,20 +127,20 @@ export const getManageContext = cache(async function getManageContext(
 
   if (!resolvedOrgId) return null
 
-  const accessResult = await platform.subscriptions.retrieveBySlug(
-    resolvedOrgId,
-    COURIERS_APP_SLUG
-  )
+  const accessResult = await platform.organizations.subscriptions.retrieve({
+    organizationId: resolvedOrgId,
+    appSlug: COURIERS_APP_SLUG,
+  })
   if (accessResult.error) {
     // 'none' is also the legitimate answer for an org that was never
     // provisioned, so an outage silently revokes access for a subscribed org.
     Sentry.captureMessage(
-      'Platform outage: orgs.subscriptions.retrieveBySlug failed',
+      'Platform outage: organizations.subscriptions.retrieve failed',
       {
         level: 'error',
         tags: { category: 'platform_client' },
         extra: {
-          call: 'orgs.subscriptions.retrieveBySlug',
+          call: 'organizations.subscriptions.retrieve',
           errorCode: accessResult.error.code ?? null,
           errorMessage: accessResult.error.message ?? null,
           appSlug: COURIERS_APP_SLUG,

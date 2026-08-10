@@ -55,7 +55,7 @@ describe('Couriers client credential tiers', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.tenants.retrieve('ten/with space')
+    const result = await client.tenants.retrieve({ id: 'ten/with space' })
 
     expect(result).toEqual({ data: tenant, error: null })
     expect(fetchMock).toHaveBeenCalledWith(
@@ -145,7 +145,7 @@ describe('Couriers client credential tiers', () => {
       fetch: fetchMock,
     })
 
-    await expect(client.tenants.retrieve('ten_1')).resolves.toEqual({
+    await expect(client.tenants.retrieve({ id: 'ten_1' })).resolves.toEqual({
       data: tenant,
       error: null,
     })
@@ -252,7 +252,7 @@ describe('Couriers client credential tiers', () => {
 
       const fetchMock = vi.fn<typeof fetch>()
       const client = create(fetchMock)
-      const result = await client.tenants.retrieve('ten_1')
+      const result = await client.tenants.retrieve({ id: 'ten_1' })
 
       expect(result).toEqual({
         data: null,
@@ -273,7 +273,7 @@ describe('Couriers client credential tiers', () => {
       fetch: fetchMock,
     })
 
-    await expect(client.tenants.retrieve('ten_1')).resolves.toEqual({
+    await expect(client.tenants.retrieve({ id: 'ten_1' })).resolves.toEqual({
       data: null,
       error: {
         code: 'couriers/invalid-response',

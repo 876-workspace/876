@@ -50,7 +50,7 @@ export function createAdminBillingAccountsResource(runtime: AdminRuntime) {
     },
 
     /** Deletes a billing account. */
-    del(billingAccountId: string) {
+    delete(billingAccountId: string) {
       return adminRequest<AdminDeletedBillingAccount>(runtime, {
         method: 'DELETE',
         path: `/billing/accounts/${billingAccountId}`,

@@ -15,19 +15,18 @@ import type {
 /** User bootstrap reads and sensitive identification transports. */
 export function createPlatformUsersResource(runtime: PlatformRuntime) {
   return {
-    /** Retrieves a user by 876 user id. */
-    retrieve(userId: string) {
+    retrieve(
+      params: { id: string; workosId?: never } | { workosId: string; id?: never }
+    ) {
+      if ('workosId' in params) {
+        return platformRequest<PlatformUser>(runtime, {
+          method: 'GET',
+          path: `/users/by-workos-id/${params.workosId}`,
+        })
+      }
       return platformRequest<PlatformUser>(runtime, {
         method: 'GET',
-        path: `/users/${userId}`,
-      })
-    },
-
-    /** Retrieves a user by WorkOS user id. */
-    retrieveByWorkosId(workosUserId: string) {
-      return platformRequest<PlatformUser>(runtime, {
-        method: 'GET',
-        path: `/users/by-workos-id/${workosUserId}`,
+        path: `/users/${params.id}`,
       })
     },
 

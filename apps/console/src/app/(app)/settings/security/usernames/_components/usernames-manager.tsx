@@ -150,7 +150,7 @@ export function UsernamesManager({ initialItems }: Props) {
     )
       return
     startTransition(async () => {
-      const { error } = await reservedUsernames.del(usernameToDelete)
+      const { error } = await reservedUsernames.delete(usernameToDelete)
       if (!error) {
         setItems((prev) => prev.filter((i) => i.username !== usernameToDelete))
         router.refresh()

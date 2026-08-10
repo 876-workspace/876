@@ -14,7 +14,9 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { organizationId } = await context.params
-  const retrieveResult = await $876.organizations.retrieve(organizationId)
+  const retrieveResult = await $876.organizations.retrieve({
+    id: organizationId,
+  })
   if (retrieveResult.error || !retrieveResult.data)
     return apiJson(
       {

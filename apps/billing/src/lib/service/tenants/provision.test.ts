@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { TenantCreateParams } from '@/types/tenant'
 
-import { provision } from './provision'
+import { create } from './provision'
 
 const mocks = vi.hoisted(() => ({
   prismaRef: { current: null as unknown as Record<string, unknown> },
@@ -206,7 +206,7 @@ describe('tenant provisioning', () => {
   })
 
   it('seeds the Jamaican GCT authority and default rate even for a non-JM org country', async () => {
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_1',
       'owner',
@@ -273,7 +273,7 @@ describe('tenant provisioning', () => {
   it('rejects an unsupported currency without writing tenant data', async () => {
     tx.currency.findMany.mockResolvedValue([])
 
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_1',
       'owner',
@@ -323,7 +323,7 @@ describe('tenant provisioning', () => {
     })
     tx.currency.findMany.mockResolvedValue([{ code: 'JMD' }, { code: 'USD' }])
 
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_1',
       'owner',
@@ -346,7 +346,7 @@ describe('tenant provisioning', () => {
   it('rejects provisioning when the manifest language is unavailable', async () => {
     tx.language.findFirst.mockResolvedValue(null)
 
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_1',
       'owner',
@@ -368,7 +368,7 @@ describe('tenant provisioning', () => {
       provisioningVersion: 1,
     })
 
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_1',
       'owner',
@@ -422,7 +422,7 @@ describe('tenant provisioning', () => {
       provisioningVersion: 1,
     })
 
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_1',
       'owner',
@@ -446,7 +446,7 @@ describe('tenant provisioning', () => {
       provisioningVersion: 3,
     })
 
-    const result = await provision(
+    const result = await create(
       'org_1',
       'usr_admin',
       'admin',

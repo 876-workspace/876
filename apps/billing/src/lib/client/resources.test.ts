@@ -507,7 +507,7 @@ const cases: RequestCase[] = [
   },
   {
     name: 'deletes a role',
-    act: () => roles.del('role /1'),
+    act: () => roles.delete('role /1'),
     url: '/api/v1/roles/role%20%2F1',
     init: { method: 'DELETE' },
   },

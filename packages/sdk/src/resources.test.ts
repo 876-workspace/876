@@ -350,7 +350,7 @@ describe('$876.users', () => {
     await $876.users.addresses.list()
     await $876.users.addresses.create({ type: 'home', line1: '1 Main St' })
     await $876.users.addresses.update('adr_123', { label: 'Home' })
-    const deleted = await $876.users.addresses.del('adr_123')
+    const deleted = await $876.users.addresses.delete('adr_123')
 
     expect(deleted.data?.deleted).toBe(true)
     expect(fetchMock).toHaveBeenNthCalledWith(
@@ -405,7 +405,7 @@ describe('$876.users', () => {
     await $876.users.contacts.list()
     await $876.users.contacts.create({ contactUserId: 'user_456' })
     await $876.users.contacts.update('cnt_123', { nickname: 'Alex' })
-    const deleted = await $876.users.contacts.del('cnt_123')
+    const deleted = await $876.users.contacts.delete('cnt_123')
 
     expect(deleted.data?.deleted).toBe(true)
     expect(fetchMock).toHaveBeenNthCalledWith(

@@ -9,7 +9,8 @@ import { $876 } from '@/lib/876'
  * each tab page dedupe to a single fetch per request.
  */
 export const resolveOrg = cache(async (slug: string) => {
-  const result = await $876.organizations.retrieveBySlug(slug, {
+  const result = await $876.organizations.retrieve({
+    slug,
     includeDeleted: true,
   })
   if (result.error) return null
@@ -32,7 +33,9 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
 })
 
 export const resolveOrgSubscriptions = cache(async (orgId: string) => {
-  const result = await $876.subscriptions.listForOrganization(orgId)
+  const result = await $876.organizations.subscriptions.list({
+    organizationId: orgId,
+  })
   if (result.error) throw new Error(result.error.message)
   return result.data
 })

@@ -17,15 +17,13 @@ export type RetrieveTenantParams =
 
 export function createTenantsResource(runtime: AdminRuntime) {
   return {
-    retrieve(params: RetrieveTenantParams | string) {
-      const normalized: RetrieveTenantParams =
-        typeof params === 'string' ? { id: params } : params
-      if ('organizationId' in normalized && normalized.organizationId) {
+    retrieve(params: RetrieveTenantParams) {
+      if ('organizationId' in params && params.organizationId) {
         return AdminRequest<Tenant>(
           runtime,
           {
             method: 'GET',
-            path: `/v1/tenants/by-org/${encodeURIComponent(normalized.organizationId)}`,
+            path: `/v1/tenants/by-org/${encodeURIComponent(params.organizationId)}`,
           },
           tenantSchema
         )
@@ -34,7 +32,7 @@ export function createTenantsResource(runtime: AdminRuntime) {
         runtime,
         {
           method: 'GET',
-          path: `/v1/tenants/${encodeURIComponent((normalized as { id: string }).id)}`,
+          path: `/v1/tenants/${encodeURIComponent((params as { id: string }).id)}`,
         },
         tenantSchema
       )

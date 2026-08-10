@@ -47,9 +47,7 @@ export const getContext = cache(
         )
       : undefined
 
-    const tenants = await service.tenants.listByOrganizationIds(
-      memberships.map((membership) => membership.organization.id)
-    )
+    const tenants = await service.tenants.list({ organizationIds: memberships.map((membership) => membership.organization.id) })
     const tenantByOrganizationId = new Map(
       tenants.flatMap((tenant) =>
         tenant.organizationId ? [[tenant.organizationId, tenant] as const] : []
@@ -68,10 +66,10 @@ export const getContext = cache(
     if (!selectedMembership) return null
 
     const organizationId = selectedMembership.organization.id
-    const accessResult = await platform.subscriptions.retrieveBySlug(
+    const accessResult = await platform.subscriptions.retrieve({
       organizationId,
-      BILLING_APP_SLUG
-    )
+      appSlug: BILLING_APP_SLUG,
+    })
     const accessStatus: AccessStatus = accessResult.error
       ? 'none'
       : accessResult.data?.items.length

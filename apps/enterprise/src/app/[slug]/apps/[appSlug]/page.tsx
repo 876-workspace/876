@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
-import type { Price, Subscription } from '@876/sdk'
+import type { Price, Product, Subscription } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
@@ -23,12 +23,13 @@ export default async function OrganizationAppDetailPage({
   )
 
   const client = await get876ServerClient()
-  const subscriptionResult = await client.subscriptions.retrieveBySlug(
-    membership.organization.id,
-    appSlug
-  )
+
+  const subscriptionResult = await client.organizations.subscriptions.retrieve({
+    organizationId: membership.organization.id,
+    appSlug,
+  })
+  if (!subscriptionResult.data) notFound()
   const subscription = subscriptionResult.data
-  if (!subscription) notFound()
 
   const [appResult, productsResult] = await Promise.all([
     client.apps.retrieve(subscription.app_id),
@@ -48,7 +49,9 @@ export default async function OrganizationAppDetailPage({
 
   const products = productsResult.data.data
   const currentProductIds = new Set(
-    subscription.items.map((item) => item.product_id).filter(Boolean)
+    subscription.items
+      .map((item: { product_id?: string | null }) => item.product_id)
+      .filter(Boolean)
   )
 
   return (
@@ -116,7 +119,7 @@ export default async function OrganizationAppDetailPage({
           <section className="876-card p-5">
             <h2 className="text-foreground mb-4 text-sm font-medium">Plans</h2>
             <ul className="divide-border divide-y">
-              {products.map((product) => {
+              {products.map((product: Product) => {
                 const isCurrent = currentProductIds.has(product.id)
                 return (
                   <li

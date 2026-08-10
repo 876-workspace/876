@@ -48,7 +48,7 @@ export async function resolveOrgOwner(
       current.created_at < earliest.created_at ? current : earliest
     )
 
-  const user = await platform.users.retrieve(owner.user_id)
+  const user = await platform.users.retrieve({ id: owner.user_id })
   if (user.error || !user.data)
     return {
       userId: owner.user_id,
@@ -85,7 +85,7 @@ export async function resolveOrgParty(
       phone: profile.data.primary_phone,
     }
 
-  const org = await platform.organizations.retrieve(organizationId)
+  const org = await platform.organizations.retrieve({ id: organizationId })
   if (!org.data) return null
 
   return {

@@ -36,6 +36,7 @@ import type {
   AdminOrgRoleUpdateParams,
   AdminOrgSetupParams,
   AdminPermissionCatalog,
+  AdminResult,
   AdminSearchResponse,
   AdminSubscription,
   AdminSubscriptionBatch,
@@ -86,35 +87,29 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     /**
-     * Retrieves an organization by ID.
+     * Retrieves an organization by ID or slug (typed lookup object).
      *
-     * @param orgId - The ID of the organization to retrieve.
-     * @param params - Optional query params (e.g. includeDeleted).
-     * @returns A result containing the organization, or an error.
+     * retrieve({ id }) or retrieve({ slug })
      */
-    retrieve(orgId: string, params?: { includeDeleted?: boolean }) {
+    retrieve(
+      params:
+        | { id: string; slug?: never; includeDeleted?: boolean }
+        | { slug: string; id?: never; includeDeleted?: boolean }
+    ) {
+      if ('slug' in params) {
+        return adminRequest<AdminOrganization>(runtime, {
+          method: 'GET',
+          path: `/organizations/by-slug/${params.slug}`,
+          query: {
+            include_deleted: params.includeDeleted,
+          },
+        })
+      }
       return adminRequest<AdminOrganization>(runtime, {
         method: 'GET',
-        path: `/organizations/${orgId}`,
+        path: `/organizations/${params.id}`,
         query: {
-          include_deleted: params?.includeDeleted,
-        },
-      })
-    },
-
-    /**
-     * Retrieves an organization by slug.
-     *
-     * @param slug - The organization slug to look up.
-     * @param params - Optional query params (e.g. includeDeleted).
-     * @returns A result containing the organization, or an error.
-     */
-    retrieveBySlug(slug: string, params?: { includeDeleted?: boolean }) {
-      return adminRequest<AdminOrganization>(runtime, {
-        method: 'GET',
-        path: `/organizations/by-slug/${slug}`,
-        query: {
-          include_deleted: params?.includeDeleted,
+          include_deleted: params.includeDeleted,
         },
       })
     },
@@ -494,7 +489,12 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     subscriptions: {
-      provision(
+      /**
+       * `$876.organizations.subscriptions.*` — org-to-app entitlement (GET /organizations/{id}/apps).
+       * Distinct from top-level `$876.subscriptions.*` (GET /billing/subscriptions) which are platform billing records.
+       * Create an org's app subscription (idempotent).
+       */
+      create(
         orgId: string,
         params: { appId?: string; appSlug?: string; priceId?: string }
       ) {
@@ -525,34 +525,50 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         })
       },
 
-      list(orgId: string) {
+      list: ((
+        params:
+          | { organizationId: string; organizationIds?: never }
+          | { organizationIds: string[]; organizationId?: never }
+      ) => {
+        if ('organizationIds' in params && params.organizationIds) {
+          return adminRequest<AdminSubscriptionBatch>(runtime, {
+            method: 'GET',
+            path: '/organizations/app-access/batch',
+            query: { organization_ids: params.organizationIds.join(',') },
+          })
+        }
         return adminRequest<AdminSubscription[]>(runtime, {
           method: 'GET',
-          path: `/organizations/${orgId}/apps`,
+          path: `/organizations/${params.organizationId}/apps`,
         })
+      }) as {
+        (params: {
+          organizationIds: string[]
+          organizationId?: never
+        }): Promise<AdminResult<AdminSubscriptionBatch>>
+        (params: {
+          organizationId: string
+          organizationIds?: never
+        }): Promise<AdminResult<AdminSubscription[]>>
       },
 
-      retrieve(orgId: string, appId: string) {
+      retrieve(
+        params:
+          | { organizationId: string; appId: string; appSlug?: never }
+          | { organizationId: string; appSlug: string; appId?: never }
+      ) {
+        if ('appSlug' in params) {
+          return adminRequest<AdminSubscription>(runtime, {
+            method: 'GET',
+            path: `/organizations/${params.organizationId}/apps/by-slug/${params.appSlug}`,
+          })
+        }
         return adminRequest<AdminSubscription>(runtime, {
           method: 'GET',
-          path: `/organizations/${orgId}/apps/${appId}`,
+          path: `/organizations/${params.organizationId}/apps/${params.appId}`,
         })
       },
 
-      retrieveBySlug(orgId: string, appSlug: string) {
-        return adminRequest<AdminSubscription>(runtime, {
-          method: 'GET',
-          path: `/organizations/${orgId}/apps/by-slug/${appSlug}`,
-        })
-      },
-
-      listByOrgs(orgIds: string[]) {
-        return adminRequest<AdminSubscriptionBatch>(runtime, {
-          method: 'GET',
-          path: `/organizations/app-access/batch`,
-          query: { organization_ids: orgIds.join(',') },
-        })
-      },
     },
 
     /** The org-level permission catalog for building custom roles. */

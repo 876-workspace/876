@@ -14,15 +14,15 @@ export interface AdminClientOptions {
   requestId?: string
 }
 
-/** Minimal acknowledgement returned by an idempotent ensure operation. */
-export interface Ensured<
+/** Minimal acknowledgement returned by an idempotent create operation. */
+export interface CreatedResource<
   TObject extends 'product' | 'plan' | 'price' | 'customer' | 'subscription',
 > {
   object: TObject
   id: string
 }
 
-export interface ProductEnsureParams {
+export interface ProductCreateParams {
   /** Opaque core app ID (`rap_...`) mirrored by the Billing product. */
   sourceAppId: string
   slug: string
@@ -31,8 +31,8 @@ export interface ProductEnsureParams {
   active?: boolean
 }
 
-export interface PlanEnsureParams {
-  /** Billing product ID returned by `$876.billing.products.ensure()`. */
+export interface PlanCreateParams {
+  /** Billing product ID returned by `$876.billing.products.create()`. */
   productId: string
   /** Opaque core plan-tier ID (`prd_...`). */
   entitlementReferenceId: string
@@ -45,8 +45,8 @@ export interface PlanEnsureParams {
   active?: boolean
 }
 
-export interface PriceEnsureParams {
-  /** Billing plan ID returned by `$876.billing.plans.ensure()`. */
+export interface PriceCreateParams {
+  /** Billing plan ID returned by `$876.billing.plans.create()`. */
   planId: string
   /** Opaque core price ID (`prc_...`). */
   entitlementReferenceId: string
@@ -58,7 +58,7 @@ export interface PriceEnsureParams {
   active?: boolean
 }
 
-export interface CustomerEnsureParams {
+export interface CustomerCreateParams {
   customerType?: 'CORE_ORGANIZATION' | 'CORE_USER'
   /** Opaque core organization ID (`org_...`). */
   organizationId?: string
@@ -145,11 +145,11 @@ export interface AppBillingStatsDetail extends AppBillingStats {
   plans: PlanBillingStats[]
 }
 
-export interface SubscriptionEnsureParams {
+export interface SubscriptionCreateParams {
   /** Opaque core subscription ID (`sub_...`) used as the idempotency key. */
   externalReference: string
   sourceAppId?: string | null
-  /** Billing customer ID returned by `$876.billing.customers.ensure()`. */
+  /** Billing customer ID returned by `$876.billing.customers.create()`. */
   customerId: string
   items: Array<{
     /** Opaque core price ID resolved by Billing. */

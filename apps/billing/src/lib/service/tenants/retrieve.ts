@@ -1,17 +1,19 @@
 import { prisma } from '@/lib/db'
 
-export function retrieveByOrganizationId(organizationId: string) {
-  return prisma.tenant.findUnique({ where: { organizationId } })
+export function retrieve(
+  params: { organizationId: string; slug?: never } | { slug: string; organizationId?: never }
+) {
+  if ('organizationId' in params) {
+    return prisma.tenant.findUnique({ where: { organizationId: params.organizationId } })
+  }
+  return prisma.tenant.findUnique({ where: { slug: params.slug } })
 }
 
-export function retrieveBySlug(slug: string) {
-  return prisma.tenant.findUnique({ where: { slug } })
-}
-
-export function listByOrganizationIds(organizationIds: string[]) {
-  if (organizationIds.length === 0) return []
-
+export function list(
+  params: { organizationIds: string[] }
+) {
+  if (params.organizationIds.length === 0) return []
   return prisma.tenant.findMany({
-    where: { organizationId: { in: organizationIds } },
+    where: { organizationId: { in: params.organizationIds } },
   })
 }

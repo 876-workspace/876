@@ -26,7 +26,7 @@ interface ProvisionedTenant {
  * Activates paid Billing access on the organization's existing finance
  * workspace, or creates that workspace when no embedded app needed it first.
  */
-export async function provision(
+export async function create(
   organizationId: string,
   actorUserId: string,
   actorOrgRole: 'owner' | 'admin',
@@ -62,12 +62,12 @@ export async function provision(
           return err(retryError.message, 422)
         if (isUniqueConstraintError(retryError))
           return err('This organization already has a Billing workspace.', 409)
-        console.error('[billing.service.tenants.provision]', retryError)
+        console.error('[billing.service.tenants.create]', retryError)
         return err('Failed to provision the Billing workspace.', 500)
       }
     }
 
-    console.error('[billing.service.tenants.provision]', error)
+    console.error('[billing.service.tenants.create]', error)
     return err('Failed to provision the Billing workspace.', 500)
   }
 }

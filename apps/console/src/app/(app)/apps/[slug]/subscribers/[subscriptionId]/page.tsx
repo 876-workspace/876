@@ -52,9 +52,9 @@ export default async function SubscriptionDetailPage({ params }: Props) {
 
   if (!subscription) notFound()
 
-  const { data: org } = await $876.organizations.retrieve(
-    subscription.organization_id
-  )
+  const { data: org } = await $876.organizations.retrieve({
+    id: subscription.organization_id,
+  })
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">

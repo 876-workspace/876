@@ -898,15 +898,24 @@ export function createOrgsResource(runtime: SdkRuntime) {
         )
       },
 
-      retrieveBySlug(
-        orgId: string,
-        appSlug: string,
+      retrieve(
+        params: { organizationId: string; appId: string } | { organizationId: string; appSlug: string },
         requestOptions?: RequestOptions
       ): Promise<Result<Subscription>> {
+        if ('appSlug' in params) {
+          return sendAuthRequest(
+            runtime,
+            'GET',
+            `/organizations/${params.organizationId}/subscriptions/by-slug/${params.appSlug}`,
+            undefined,
+            sdk876SubscriptionSchema,
+            requestOptions
+          )
+        }
         return sendAuthRequest(
           runtime,
           'GET',
-          `/organizations/${orgId}/subscriptions/by-slug/${appSlug}`,
+          `/organizations/${params.organizationId}/subscriptions/${params.appId}`,
           undefined,
           sdk876SubscriptionSchema,
           requestOptions

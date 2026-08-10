@@ -61,7 +61,7 @@ async function SubscribersTableData({ app }: { app: AdminApp }) {
   const orgMap = new Map<string, AdminOrganization>()
   await Promise.all(
     orgIds.map(async (id) => {
-      const { data: org } = await $876.organizations.retrieve(id)
+      const { data: org } = await $876.organizations.retrieve({ id })
       if (org) orgMap.set(id, org)
     })
   )

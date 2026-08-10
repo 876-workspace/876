@@ -12,7 +12,11 @@ import type {
   AdminDeletedSubscriptionItem,
 } from '../types'
 
-/** `$876.subscriptions.*` — platform administration of subscriptions. */
+/**
+ * `$876.subscriptions.*` — platform billing subscription records (GET /billing/subscriptions/{id}).
+ * Distinct from `$876.organizations.subscriptions.*` which models the org-to-app entitlement relationship (GET /organizations/{id}/apps).
+ * Do not alias these; they have different ownership and identity.
+ */
 export function createAdminSubscriptionsResource(runtime: AdminRuntime) {
   return {
     /** Lists all subscriptions. */
@@ -55,7 +59,7 @@ export function createAdminSubscriptionsResource(runtime: AdminRuntime) {
     },
 
     /** Cancels/deletes a subscription. */
-    del(subscriptionId: string) {
+    delete(subscriptionId: string) {
       return adminRequest<AdminDeletedSubscription>(runtime, {
         method: 'DELETE',
         path: `/billing/subscriptions/${subscriptionId}`,

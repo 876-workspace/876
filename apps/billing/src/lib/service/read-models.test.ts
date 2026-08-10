@@ -22,9 +22,8 @@ import { retrieve as retrieveSubscription } from './subscriptions/retrieve'
 import { list as listTaxAuthorities } from './tax-authorities/list'
 import { list as listTaxRates } from './tax-rates/list'
 import {
-  listByOrganizationIds,
-  retrieveByOrganizationId,
-  retrieveBySlug,
+  list as listTenants,
+  retrieve as retrieveTenant,
 } from './tenants/retrieve'
 
 const { prismaRef } = vi.hoisted(() => ({
@@ -566,21 +565,21 @@ const cases: QueryCase[] = [
   },
   {
     name: 'retrieves a tenant by organization ID',
-    act: () => retrieveByOrganizationId('org_123'),
+    act: () => retrieveTenant({ organizationId: 'org_123' }),
     model: 'tenant',
     method: 'findUnique',
     args: { where: { organizationId: 'org_123' } },
   },
   {
     name: 'retrieves a tenant by slug',
-    act: () => retrieveBySlug('efesto-technologies'),
+    act: () => retrieveTenant({ slug: 'efesto-technologies' }),
     model: 'tenant',
     method: 'findUnique',
     args: { where: { slug: 'efesto-technologies' } },
   },
   {
     name: 'lists tenants by organization IDs',
-    act: () => listByOrganizationIds(['org_123', 'org_456']),
+    act: () => listTenants({ organizationIds: ['org_123', 'org_456'] }),
     model: 'tenant',
     method: 'findMany',
     args: {
@@ -654,7 +653,7 @@ describe('Billing service read models', () => {
       >
     ).tenant
 
-    const result = listByOrganizationIds([])
+    const result = listTenants({ organizationIds: [] })
 
     expect(result).toEqual([])
     expect(tenantModel.findMany).not.toHaveBeenCalled()

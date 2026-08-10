@@ -137,7 +137,6 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
     },
 
     subscriptions: {
-      /** Lists an organization's app subscriptions. */
       list(orgId: string) {
         return platformRequest<PlatformSubscription[]>(runtime, {
           method: 'GET',
@@ -145,16 +144,22 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
         })
       },
 
-      /** Retrieves an org's subscription to an app by the app's slug. */
-      retrieveBySlug(orgId: string, appSlug: string) {
+      retrieve(
+        params: { organizationId: string; appId: string } | { organizationId: string; appSlug: string }
+      ) {
+        if ('appSlug' in params) {
+          return platformRequest<PlatformSubscription>(runtime, {
+            method: 'GET',
+            path: `/organizations/${params.organizationId}/apps/by-slug/${params.appSlug}`,
+          })
+        }
         return platformRequest<PlatformSubscription>(runtime, {
           method: 'GET',
-          path: `/organizations/${orgId}/apps/by-slug/${appSlug}`,
+          path: `/organizations/${params.organizationId}/apps/${params.appId}`,
         })
       },
 
-      /** Provisions (activates) an org's subscription to an app. */
-      provision(
+      create(
         orgId: string,
         params: { appId?: string; appSlug?: string; priceId?: string }
       ) {

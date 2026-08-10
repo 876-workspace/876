@@ -12,11 +12,11 @@ import type {
   SubscriptionCreateParams as ClientSubscriptionCreateParams,
 } from '@876/billing'
 import type {
-  CustomerEnsureParams as ClientCustomerEnsureParams,
-  PlanEnsureParams as ClientPlanEnsureParams,
-  PriceEnsureParams as ClientPriceEnsureParams,
-  ProductEnsureParams as ClientProductEnsureParams,
-  SubscriptionEnsureParams as ClientSubscriptionEnsureParams,
+  CustomerCreateParams as ClientCustomerEnsureParams,
+  PlanCreateParams as ClientPlanEnsureParams,
+  PriceCreateParams as ClientPriceEnsureParams,
+  ProductCreateParams as ClientProductEnsureParams,
+  SubscriptionCreateParams as ClientSubscriptionEnsureParams,
 } from '@876/billing/admin'
 import type { z } from 'zod'
 

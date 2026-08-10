@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { create876AdminClient } from './client'
 
 describe('create876AdminClient', () => {
-  it('calls a versioned ensure endpoint with the server-only key', async () => {
+  it('creates a subscription via idempotent create (backing /ensure endpoint)', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { object: 'subscription', id: 'blsub_1' },
@@ -23,7 +23,7 @@ describe('create876AdminClient', () => {
       status: 'ACTIVE' as const,
     }
 
-    const result = await client.subscriptions.ensure(params)
+    const result = await client.subscriptions.create(params)
 
     expect(result).toEqual({
       data: { object: 'subscription', id: 'blsub_1' },
@@ -49,7 +49,7 @@ describe('create876AdminClient', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.customers.ensure({
+    const result = await client.customers.create({
       organizationId: 'org_1',
       name: 'Efesto Technologies',
     })
@@ -117,7 +117,7 @@ describe('create876AdminClient', () => {
     )
   })
 
-  it('ensures a core user customer', async () => {
+  it('creates a core user customer via idempotent create', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { object: 'customer', id: 'blcus_1' },
@@ -136,7 +136,7 @@ describe('create876AdminClient', () => {
       email: 'ada@example.test',
     }
 
-    await client.customers.ensure(params)
+    await client.customers.create(params)
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/admin/customers/ensure',
@@ -176,7 +176,7 @@ describe('create876AdminClient', () => {
       },
     }
 
-    const result = await client.customers.ensure(params)
+    const result = await client.customers.create(params)
 
     expect(result).toEqual({
       data: { object: 'customer', id: 'blcus_org' },
@@ -220,7 +220,7 @@ describe('create876AdminClient', () => {
       primaryContact: null,
     }
 
-    await client.customers.ensure(params)
+    await client.customers.create(params)
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/admin/customers/ensure',
@@ -228,7 +228,7 @@ describe('create876AdminClient', () => {
     )
   })
 
-  it('rejects a non-customer ensure acknowledgement', async () => {
+  it('rejects a non-customer create acknowledgement', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { object: 'subscription', id: 'blsub_1' },
@@ -241,7 +241,7 @@ describe('create876AdminClient', () => {
       fetch: fetchMock,
     })
 
-    const result = await client.customers.ensure({
+    const result = await client.customers.create({
       organizationId: 'org_1',
       name: 'Efesto',
     })

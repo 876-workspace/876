@@ -134,16 +134,18 @@ export async function getAuthRoutingClient() {
       },
     },
     users: {
-      retrieve(userId: string) {
+      retrieve(
+        params: { id: string; workosId?: never } | { workosId: string; id?: never }
+      ) {
+        if ('workosId' in params) {
+          return authRoutingRequest<AuthRoutingUserRow>(runtime, {
+            method: 'GET',
+            path: `/users/by-workos-id/${params.workosId}`,
+          })
+        }
         return authRoutingRequest<AuthRoutingUserRow>(runtime, {
           method: 'GET',
-          path: `/users/${userId}`,
-        })
-      },
-      retrieveByWorkosId(workosUserId: string) {
-        return authRoutingRequest<AuthRoutingUserRow>(runtime, {
-          method: 'GET',
-          path: `/users/by-workos-id/${workosUserId}`,
+          path: `/users/${params.id}`,
         })
       },
       listFeatures(userId: string) {

@@ -22,7 +22,7 @@ export async function POST() {
   }
 
   const platform = await getPlatformClient()
-  const result = await platform.subscriptions.provision(context.orgId, {
+  const result = await platform.subscriptions.create(context.orgId, {
     appSlug: BILLING_APP_SLUG,
   })
   if (result.error) {
