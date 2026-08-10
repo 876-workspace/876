@@ -244,7 +244,7 @@ describe('customers.addresses', () => {
     const fetchMock = successFetch(deletedCustomerAddress)
     const resource = createResource(fetchMock, internalKey)
 
-    const result = await resource.addresses.del(
+    const result = await resource.addresses.delete(
       tenantId,
       customerId,
       customerAddressId
@@ -299,7 +299,7 @@ describe('customers.addresses', () => {
     {
       name: 'addresses.del',
       invoke: (resource) =>
-        resource.addresses.del(tenantId, customerId, customerAddressId),
+        resource.addresses.delete(tenantId, customerId, customerAddressId),
     },
   ]
 

@@ -1,28 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  get876Client: vi.fn(),
-  createExternalCustomer: vi.fn(),
-  updateExternalCustomer: vi.fn(),
-  enroll: vi.fn(),
-  retrieve: vi.fn(),
+  create: vi.fn(),
   update: vi.fn(),
-  registryRetrieve: vi.fn(),
 }))
 
-vi.mock('@/lib/876', () => ({ get876Client: mocks.get876Client }))
-vi.mock('@/lib/finance/customers', () => ({
-  createExternalCustomer: mocks.createExternalCustomer,
-  updateExternalCustomer: mocks.updateExternalCustomer,
-}))
-vi.mock('@/lib/couriers', () => ({
-  $couriers: {
-    customers: {
-      enroll: mocks.enroll,
-      retrieve: mocks.retrieve,
-      update: mocks.update,
+vi.mock('@/lib/876', () => ({
+  $876: {
+    couriers: {
+      customers: {
+        create: mocks.create,
+        update: mocks.update,
+      },
     },
   },
+}))
+vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: (error: { code: string }) =>
     error.code.endsWith('/not-found') ? 404 : 502,
   toCustomerView: (customer: Record<string, unknown>) => ({
@@ -69,47 +62,14 @@ const courierCustomer = {
   deleted_at: null,
 }
 
-const registryCustomer = {
-  id: 'cus_nkr',
-  customerType: 'EXTERNAL',
-  customerKind: 'INDIVIDUAL',
-  firstName: 'Marlon',
-  lastName: 'Brown',
-  companyName: null,
-  email: 'marlon.brown@example.jm',
-  phone: '+18765550142',
-}
-
 describe('managed customers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.get876Client.mockResolvedValue({
-      billing: { customers: { retrieve: mocks.registryRetrieve } },
-    })
-    mocks.createExternalCustomer.mockResolvedValue({
-      data: registryCustomer,
-      error: null,
-    })
-    mocks.updateExternalCustomer.mockResolvedValue({
-      data: registryCustomer,
-      error: null,
-    })
-    mocks.enroll.mockResolvedValue({
-      data: {
-        object: 'courier_customer_enrollment',
-        customer: courierCustomer,
-      },
-      error: null,
-    })
-    mocks.retrieve.mockResolvedValue({ data: courierCustomer, error: null })
+    mocks.create.mockResolvedValue({ data: courierCustomer, error: null })
     mocks.update.mockResolvedValue({ data: courierCustomer, error: null })
-    mocks.registryRetrieve.mockResolvedValue({
-      data: registryCustomer,
-      error: null,
-    })
   })
 
-  it('uses Billing idempotency before atomically enrolling the Couriers profile', async () => {
+  it('creates via the unified couriers customer domain operation with idempotency', async () => {
     const result = await createManagedCustomer({
       tenant,
       params: {
@@ -124,23 +84,23 @@ describe('managed customers', () => {
       data: expect.objectContaining({ id: courierCustomer.id }),
       error: null,
     })
-    expect(mocks.createExternalCustomer).toHaveBeenCalledWith(
-      expect.anything(),
-      tenant.orgId,
-      expect.objectContaining({ idempotencyKey: 'submission-nkr-001' })
-    )
-    expect(mocks.enroll).toHaveBeenCalledWith(tenant.id, {
-      billing_customer_id: registryCustomer.id,
+    expect(mocks.create).toHaveBeenCalledWith(tenant.id, {
+      idempotency_key: 'submission-nkr-001',
+      customer_kind: 'INDIVIDUAL',
+      first_name: 'Marlon',
+      email: null,
+      phone: null,
       branch_id: 'br_kingston',
       status: undefined,
       is_commercial: true,
+      trn: null,
     })
   })
 
-  it('does not enroll when registry creation fails', async () => {
-    mocks.createExternalCustomer.mockResolvedValue({
+  it('propagates registry-unavailable without masking', async () => {
+    mocks.create.mockResolvedValue({
       data: null,
-      error: { code: 'billing/unavailable', message: 'Unavailable.' },
+      error: { code: 'customer/registry-unavailable', message: 'Unavailable.' },
     })
 
     await expect(
@@ -152,11 +112,10 @@ describe('managed customers', () => {
       data: null,
       code: 'customer/registry-unavailable',
     })
-    expect(mocks.enroll).not.toHaveBeenCalled()
   })
 
-  it('returns the Couriers enrollment error without masking its safe code', async () => {
-    mocks.enroll.mockResolvedValue({
+  it('returns couriers mailbox error without masking', async () => {
+    mocks.create.mockResolvedValue({
       data: null,
       error: { code: 'mailbox/allocation-exhausted', message: 'No mailbox.' },
     })
@@ -172,10 +131,10 @@ describe('managed customers', () => {
     })
   })
 
-  it('prevents an identity change for a core-user registry customer', async () => {
-    mocks.registryRetrieve.mockResolvedValue({
-      data: { ...registryCustomer, customerType: 'CORE_USER' },
-      error: null,
+  it('delegates identity-lock handling to couriers-api', async () => {
+    mocks.update.mockResolvedValue({
+      data: null,
+      error: { code: 'customer/identity-locked', message: 'Locked.' },
     })
 
     await expect(
@@ -188,10 +147,10 @@ describe('managed customers', () => {
       data: null,
       code: 'customer/identity-locked',
     })
-    expect(mocks.update).not.toHaveBeenCalled()
+    expect(mocks.update).toHaveBeenCalledWith(tenant.id, courierCustomer.id, expect.objectContaining({ first_name: 'Andre' }))
   })
 
-  it('updates Couriers fields after an allowed registry change', async () => {
+  it('forwards courier-owned fields to the domain update', async () => {
     await expect(
       updateManagedCustomer({
         tenant,

@@ -1,22 +1,21 @@
 import 'server-only'
 
-import {
-  create876CouriersAdminClient,
-  type Address,
-  type Branch,
-  type CreateAddressBody,
-  type CreateBranchBody,
-  type Customer,
-  type CreateWarehouseBody,
-  type Error as CouriersError,
-  type Result,
-  type Role,
-  type TeamMember,
-  type Tenant,
-  type UpdateAddressBody,
-  type UpdateBranchBody,
-  type UpdateWarehouseBody,
-  type Warehouse,
+import type {
+  Address,
+  Branch,
+  CreateAddressBody,
+  CreateBranchBody,
+  CreateWarehouseBody,
+  Customer,
+  Error as CouriersError,
+  Result,
+  Role,
+  TeamMember,
+  Tenant,
+  UpdateAddressBody,
+  UpdateBranchBody,
+  UpdateWarehouseBody,
+  Warehouse,
 } from '@876/couriers/admin'
 
 import type { CouriersTenant } from '@/types/auth'
@@ -38,12 +37,6 @@ import type {
   WarehouseUpdateParams,
   WarehouseView,
 } from '@/types/warehouse'
-
-export const $couriers = create876CouriersAdminClient({
-  baseUrl: process.env.COURIERS_API_URL,
-  apiKey: process.env.COURIERS_API_KEY,
-  internalKey: process.env.API_INTERNAL_KEY,
-})
 
 /**
  * Keep a Couriers service outage distinct from an empty result. Server

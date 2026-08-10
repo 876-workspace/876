@@ -181,3 +181,23 @@ of what was asked and why:
 - `codex/2026-08-09-couriers-api-service-review-fixes.md`
 - `muse/2026-08-09-couriers-sdk-admin-team-settings.md`
 - `muse/2026-08-09-couriers-api-mailboxes-review-fixes.md`
+
+## 2026-08-10 — Unified $876.couriers pilot — remaining orchestration debt (Phase 4)
+
+**Completed in this pilot:**
+- `apps/couriers/src/lib/876/index.ts` now composes `create876CouriersAdminClient` under `$876.couriers`; `apps/couriers/src/lib/couriers.ts` no longer exports `$couriers` singleton.
+- All active server call sites migrated from `$couriers.*` to `$876.couriers.*`; helpers (`toBranchView`, `couriersErrorStatus`, etc.) remain in `@/lib/couriers`.
+- `apps/couriers-api` owns Billing customer orchestration for `customers.create` / `customers.update` via `src/providers/billing/customers.ts`; SDK contract updated to accept `idempotency_key` + domain fields (`customer_kind`, `first_name`, etc.) and `packages/couriers` admin types mirror the new body.
+- BFF `src/lib/manage/customers.ts` now delegates to `$876.couriers.customers.create/update` with no direct Billing calls; browser components still use typed `client.*` transport.
+
+**Remaining BFF orchestration (intentionally deferred, owner + reason):**
+
+| Area | Current BFF does `after(() => $876.couriers.organizationLocations.sync(...))` after branch/warehouse create/update | Owner | Reason |
+|------|------|-------|--------|
+| Branches `POST /api/manage/branches` and `PATCH /api/manage/branches/[id]` | Schedules Core org-location mirror via `after()` so primary response is not delayed | Couriers API team | No durable background primitive yet in `couriers-api` (no outbox/retry). Replacing `after()` with an un-awaited Promise would risk lost mirrors; keep BFF `after()` until service has reliable background execution. |
+| Warehouses same | Same `after()` mirror | Couriers API team | Same durability concern; mirrors already implemented inside `couriers-api` for direct API calls, BFF mirror is idempotent repair. |
+| Team invites/onboarding (`/api/manage/team/invites`, `/api/manage/onboarding/complete`) | Combines Core platform calls (role lookup, subscription provision) with Courier tenant writes | Couriers App team | Bootstrap workflow spans platform + Couriers; whether it should move into `couriers-api` depends on final ownership of app-subscription vs tenant provisioning — treat as app-level orchestration, not Courier domain. |
+| Storage generic `organization.primaryLogo` (`/api/manage/settings/orglogo`) | Uses `$876.storage.*` directly | Couriers App team | Resource is Core organization profile, not Courier-owned; correct to keep as generic ecosystem operation per storage rule. Do not move into `$876.couriers`. |
+
+**Tree-shaking invariant:** `packages/client` does **not** import `@876/couriers`; only `apps/couriers` depends on `@876/couriers`. No global `All876Client` or product booleans introduced.
+

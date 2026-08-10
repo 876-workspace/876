@@ -1,16 +1,12 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import { after, type NextRequest } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toWarehouseCreateBody,
-  toWarehouseView,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toWarehouseCreateBody, toWarehouseView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { warehouseCreateParamsSchema } from '@/types/warehouse'
 
 export const runtime = 'nodejs'
@@ -50,7 +46,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await $couriers.warehouses.create(
+  const result = await $876.couriers.warehouses.create(
     tenantId,
     toWarehouseCreateBody(parsed.data)
   )
@@ -61,12 +57,6 @@ export async function POST(request: NextRequest) {
     )
 
   const warehouse = toWarehouseView(result.data)
-  after(() =>
-    $couriers.organizationLocations.sync(tenantId, {
-      kind: 'warehouse',
-      site_id: warehouse.id,
-    })
-  )
 
   return apiJson({ data: warehouse }, { status: 201 })
 }

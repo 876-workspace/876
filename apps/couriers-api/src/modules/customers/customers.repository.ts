@@ -56,6 +56,7 @@ export async function enrollTenantCustomer(options: {
   userId: string | null
   branchId: string | null
   status: 'ACTIVE' | 'SUSPENDED'
+  trn: string | null
   isCommercial: boolean
   now: number
 }) {
@@ -88,6 +89,7 @@ export async function enrollTenantCustomer(options: {
             userId: options.userId,
             branchId: options.branchId,
             status: options.status,
+            trn: options.trn,
             isCommercial: options.isCommercial,
             firstSeenAt: options.now,
             createdAt: options.now,
@@ -166,8 +168,8 @@ export function createTenantCustomer(options: {
   return prisma.courierCustomerProfile.create({
     data: {
       tenantId: options.tenantId,
-      billingCustomerId: options.input.billing_customer_id,
-      userId: options.input.user_id ?? null,
+      billingCustomerId: (options.input as unknown as { billing_customer_id: string }).billing_customer_id,
+      userId: null,
       branchId: options.branchId,
       status: options.input.status ?? 'ACTIVE',
       trn: options.input.trn ?? null,

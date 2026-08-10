@@ -1,16 +1,12 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import { after, type NextRequest } from 'next/server'
+import { type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toBranchCreateBody,
-  toBranchView,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toBranchCreateBody, toBranchView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { branchCreateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -50,7 +46,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await $couriers.branches.create(
+  const result = await $876.couriers.branches.create(
     tenantId,
     toBranchCreateBody(parsed.data)
   )
@@ -61,12 +57,6 @@ export async function POST(request: NextRequest) {
     )
 
   const branch = toBranchView(result.data)
-  after(() =>
-    $couriers.organizationLocations.sync(tenantId, {
-      kind: 'branch',
-      site_id: branch.id,
-    })
-  )
 
   return apiJson({ data: branch }, { status: 201 })
 }

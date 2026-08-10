@@ -4,12 +4,8 @@ import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  isCouriersNotFound,
-  requireCouriersData,
-  toWarehouseView,
-} from '@/lib/couriers'
+import { isCouriersNotFound, requireCouriersData, toWarehouseView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 
 import { WarehouseForm } from '../../_components/warehouse-form'
 
@@ -50,7 +46,7 @@ async function EditWarehouseData({ orgSlug, id }: EditWarehouseDataProps) {
       </div>
     )
 
-  const result = await $couriers.warehouses.retrieve(ctx.tenant.id, id)
+  const result = await $876.couriers.warehouses.retrieve(ctx.tenant.id, id)
   if (!result.data && isCouriersNotFound(result)) notFound()
 
   return (

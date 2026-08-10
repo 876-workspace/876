@@ -17,11 +17,6 @@ const mailboxList = {
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/mailboxes`,
 }
 
-const mailboxAllocation = {
-  object: 'mailbox_allocation' as const,
-  number: 'KIN-1842',
-}
-
 function createResource(fetchMock: typeof fetch) {
   return createMailboxesResource(
     buildAdminRuntime({ baseUrl, apiKey, internalKey, fetch: fetchMock })
@@ -71,23 +66,9 @@ describe('createMailboxesResource', () => {
     )
   })
 
-  it('allocates a mailbox number without a request body', async () => {
-    const fetchMock = successFetch(mailboxAllocation)
+  it('exposes no public allocate verb', async () => {
+    const fetchMock = successFetch(mailboxList)
     const resource = createResource(fetchMock)
-
-    const result = await resource.allocate(tenantId)
-
-    expect(result).toEqual({ data: mailboxAllocation, error: null })
-    expect(fetchMock).toHaveBeenCalledWith(
-      `${baseUrl}/v1/tenants/ten_kingston%2F876/mailboxes/allocations`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-876-api-key': apiKey,
-          'x-internal-key': internalKey,
-        },
-      }
-    )
+    expect('allocate' in resource).toBe(false)
   })
 })

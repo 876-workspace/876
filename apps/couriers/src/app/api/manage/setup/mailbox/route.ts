@@ -2,11 +2,8 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toCouriersTenant,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toCouriersTenant } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -26,7 +23,7 @@ export async function PATCH(request: NextRequest) {
   const prefix =
     typeof raw === 'string' ? raw.trim().toUpperCase() || null : null
 
-  const result = await $couriers.tenants.update(ctx.tenant.id, {
+  const result = await $876.couriers.tenants.update(ctx.tenant.id, {
     mailbox_prefix: prefix,
   })
   if (result.error) {

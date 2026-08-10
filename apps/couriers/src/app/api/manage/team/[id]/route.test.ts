@@ -14,8 +14,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
+vi.mock('@/lib/876', () => ({
+  $876: { couriers: { team: { update: mocks.update, delete: mocks.delete } } },
+}))
 vi.mock('@/lib/couriers', () => ({
-  $couriers: { team: { update: mocks.update, delete: mocks.delete } },
   couriersErrorStatus: mocks.couriersErrorStatus,
   toTeamMemberView: (member: Record<string, unknown>) => member,
 }))

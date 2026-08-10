@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { mailboxSchema } from './mailbox.schema'
 
 const customerStatusSchema = z.enum(['ACTIVE', 'SUSPENDED'])
+const customerKindSchema = z.enum(['INDIVIDUAL', 'BUSINESS'])
 
 export const customerSchema = z.object({
   object: z.literal('courier_customer_profile'),
@@ -28,20 +29,48 @@ export const customerListSchema = z.object({
   url: z.string(),
 })
 
-export const createCustomerBodySchema = z.strictObject({
-  billing_customer_id: z.string(),
-  user_id: z.string().nullable().optional(),
-  branch_id: z.string().nullable().optional(),
-  status: customerStatusSchema.optional(),
-  trn: z.string().nullable().optional(),
-  is_commercial: z.boolean().optional(),
-})
+export const createCustomerBodySchema = z
+  .strictObject({
+    idempotency_key: z.string().min(8).max(255),
+    customer_kind: customerKindSchema.default('INDIVIDUAL'),
+    first_name: z.string().trim().min(1).optional(),
+    last_name: z.string().trim().min(1).nullable().optional(),
+    company_name: z.string().trim().min(1).optional(),
+    email: z.string().trim().pipe(z.email()).nullable().optional(),
+    phone: z.string().trim().min(1).nullable().optional(),
+    branch_id: z.string().nullable().optional(),
+    status: customerStatusSchema.optional(),
+    trn: z.string().trim().min(1).nullable().optional(),
+    is_commercial: z.boolean().optional(),
+  })
+  .superRefine((value, ctx) => {
+    const kind = value.customer_kind ?? 'INDIVIDUAL'
+    if (kind === 'INDIVIDUAL' && !value.first_name) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['first_name'],
+        message: 'First name is required for an individual.',
+      })
+    }
+    if (kind === 'BUSINESS' && !value.company_name) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['company_name'],
+        message: 'Company name is required for a business.',
+      })
+    }
+  })
 
 export const updateCustomerBodySchema = z.strictObject({
   branch_id: z.string().nullable().optional(),
   status: customerStatusSchema.optional(),
   trn: z.string().nullable().optional(),
   is_commercial: z.boolean().optional(),
+  first_name: z.string().trim().min(1).optional(),
+  last_name: z.string().trim().min(1).nullable().optional(),
+  company_name: z.string().trim().min(1).optional(),
+  email: z.string().trim().pipe(z.email()).nullable().optional(),
+  phone: z.string().trim().min(1).nullable().optional(),
 })
 
 export const deletedCustomerSchema = z.object({

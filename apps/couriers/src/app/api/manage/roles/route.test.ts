@@ -11,8 +11,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
+vi.mock('@/lib/876', () => ({
+  $876: { couriers: { roles: { create: mocks.create } } },
+}))
 vi.mock('@/lib/couriers', () => ({
-  $couriers: { roles: { create: mocks.create } },
   couriersErrorStatus: mocks.couriersErrorStatus,
   toRoleView: (role: Record<string, unknown>) => ({
     id: role.id,

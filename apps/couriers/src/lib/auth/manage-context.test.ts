@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   isSignedSession: vi.fn(),
   getPlatformClient: vi.fn(),
   getRoutingMemberships: vi.fn(),
-  retrieveByOrgId: vi.fn(),
+  retrieve: vi.fn(),
   retrieveSubscriptionBySlug: vi.fn(),
   captureMessage: vi.fn(),
 }))
@@ -34,10 +34,14 @@ vi.mock('@/lib/876/platform-client', () => ({
 vi.mock('@/lib/couriers-app', () => ({
   COURIERS_APP_SLUG: '876-couriers',
 }))
-vi.mock('@/lib/couriers', () => ({
-  $couriers: {
-    tenants: { retrieveByOrgId: mocks.retrieveByOrgId },
+vi.mock('@/lib/876', () => ({
+  $876: {
+    couriers: {
+      tenants: { retrieve: mocks.retrieve },
+    },
   },
+}))
+vi.mock('@/lib/couriers', () => ({
   toCouriersTenant: (tenant: {
     id: string
     org_id: string
@@ -176,7 +180,7 @@ describe('getManageContext', () => {
       },
       error: null,
     })
-    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(null))
+    mocks.retrieve.mockResolvedValue(tenantResult(null))
     mocks.retrieveSubscriptionBySlug.mockResolvedValue({
       data: { status: 'active' },
       error: null,
@@ -192,7 +196,7 @@ describe('getManageContext', () => {
     expect(mocks.getAuthSession).toHaveBeenCalledTimes(1)
     expect(mocks.getPlatformClient).not.toHaveBeenCalled()
     expect(mocks.getRoutingMemberships).not.toHaveBeenCalled()
-    expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
@@ -214,7 +218,7 @@ describe('getManageContext', () => {
       userId: 'user_kingston_123',
       status: 'active',
     })
-    expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
@@ -245,7 +249,7 @@ describe('getManageContext', () => {
   })
 
   it('does not report when memberships resolve', async () => {
-    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(createTenant()))
+    mocks.retrieve.mockResolvedValue(tenantResult(createTenant()))
 
     await getManageContext('island-logistics')
 
@@ -253,7 +257,7 @@ describe('getManageContext', () => {
   })
 
   it('reports when the subscription lookup fails and access degrades to none', async () => {
-    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(createTenant()))
+    mocks.retrieve.mockResolvedValue(tenantResult(createTenant()))
     mocks.retrieveSubscriptionBySlug.mockResolvedValue({
       data: null,
       error: {
@@ -282,7 +286,7 @@ describe('getManageContext', () => {
 
   it('resolves an exact active slug to the complete management context', async () => {
     const tenant = createTenant()
-    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
+    mocks.retrieve.mockResolvedValue(tenantResult(tenant))
 
     const result = await getManageContext('island-logistics')
 
@@ -310,10 +314,10 @@ describe('getManageContext', () => {
       userId: 'user_kingston_123',
       status: 'active',
     })
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledWith(
-      'organization_island_123'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieve).toHaveBeenCalledWith({
+      organizationId: 'organization_island_123',
+    })
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
       'organization_island_123',
@@ -332,7 +336,7 @@ describe('getManageContext', () => {
         userId: 'user_kingston_123',
         status: 'active',
       })
-      expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+      expect(mocks.retrieve).not.toHaveBeenCalled()
       expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
     }
   )
@@ -355,7 +359,7 @@ describe('getManageContext', () => {
     const result = await getManageContext('archived-couriers')
 
     expect(result).toBeNull()
-    expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
@@ -369,7 +373,7 @@ describe('getManageContext', () => {
     const result = await getManageContext('island-logistics')
 
     expect(result).toBeNull()
-    expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
@@ -414,7 +418,7 @@ describe('getManageContext', () => {
       data: { data: [cookieMembership, slugMembership] },
       error: null,
     })
-    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
+    mocks.retrieve.mockResolvedValue(tenantResult(tenant))
 
     const result = await getManageContext('slug-express')
 
@@ -444,8 +448,8 @@ describe('getManageContext', () => {
       role: 'member',
       accessStatus: 'active',
     })
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledWith('organization_slug_123')
+    expect(mocks.retrieve).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieve).toHaveBeenCalledWith({ organizationId: 'organization_slug_123' })
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
       'organization_slug_123',
@@ -463,7 +467,7 @@ describe('getManageContext', () => {
     })
     const tenant = createTenant()
     mocks.getAuthSession.mockResolvedValue(session)
-    mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
+    mocks.retrieve.mockResolvedValue(tenantResult(tenant))
 
     const result = await getManageContext()
 
@@ -486,10 +490,10 @@ describe('getManageContext', () => {
       role: 'owner',
       accessStatus: 'active',
     })
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledWith(
-      'organization_island_123'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieve).toHaveBeenCalledWith({
+      organizationId: 'organization_island_123',
+    })
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
       'organization_island_123',
@@ -510,7 +514,7 @@ describe('getManageContext', () => {
     const result = await getManageContext()
 
     expect(result).toBeNull()
-    expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
@@ -547,7 +551,7 @@ describe('getManageContext', () => {
       data: { data: [firstMembership, secondMembership] },
       error: null,
     })
-    mocks.retrieveByOrgId
+    mocks.retrieve
       .mockResolvedValueOnce(tenantResult(null))
       .mockResolvedValueOnce(tenantResult(tenant))
 
@@ -579,15 +583,9 @@ describe('getManageContext', () => {
       role: 'owner',
       accessStatus: 'active',
     })
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledTimes(2)
-    expect(mocks.retrieveByOrgId).toHaveBeenNthCalledWith(
-      1,
-      'organization_portland_123'
-    )
-    expect(mocks.retrieveByOrgId).toHaveBeenNthCalledWith(
-      2,
-      'organization_montego_123'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledTimes(2)
+    expect(mocks.retrieve).toHaveBeenNthCalledWith(1, { organizationId: 'organization_portland_123' })
+    expect(mocks.retrieve).toHaveBeenNthCalledWith(2, { organizationId: 'organization_montego_123' })
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
       'organization_montego_123',
@@ -651,15 +649,9 @@ describe('getManageContext', () => {
       role: 'admin',
       accessStatus: 'active',
     })
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledTimes(2)
-    expect(mocks.retrieveByOrgId).toHaveBeenNthCalledWith(
-      1,
-      'organization_portland_123'
-    )
-    expect(mocks.retrieveByOrgId).toHaveBeenNthCalledWith(
-      2,
-      'organization_montego_123'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledTimes(2)
+    expect(mocks.retrieve).toHaveBeenNthCalledWith(1, { organizationId: 'organization_portland_123' })
+    expect(mocks.retrieve).toHaveBeenNthCalledWith(2, { organizationId: 'organization_montego_123' })
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveSubscriptionBySlug).toHaveBeenCalledWith(
       'organization_portland_123',
@@ -685,7 +677,7 @@ describe('getManageContext', () => {
     const result = await getManageContext()
 
     expect(result).toBeNull()
-    expect(mocks.retrieveByOrgId).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
     expect(mocks.retrieveSubscriptionBySlug).not.toHaveBeenCalled()
   })
 
@@ -749,10 +741,10 @@ describe('getManageContext', () => {
       role: 'owner',
       accessStatus: 'active',
     })
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveByOrgId).toHaveBeenCalledWith(
-      'organization_island_123'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieve).toHaveBeenCalledWith({
+      organizationId: 'organization_island_123',
+    })
   })
 
   it.each([
@@ -819,7 +811,7 @@ describe('getManageContext', () => {
         },
         error: null,
       })
-      mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
+      mocks.retrieve.mockResolvedValue(tenantResult(tenant))
 
       const result = await getManageContext('island-logistics')
 
@@ -875,7 +867,7 @@ describe('getManageContext', () => {
         },
         error: null,
       })
-      mocks.retrieveByOrgId.mockResolvedValue(tenantResult(tenant))
+      mocks.retrieve.mockResolvedValue(tenantResult(tenant))
 
       const result = await getManageContext('montego-express')
 
@@ -923,7 +915,7 @@ describe('getManageContext', () => {
         },
         error: null,
       })
-      mocks.retrieveByOrgId.mockResolvedValue(tenantResult(createTenant()))
+      mocks.retrieve.mockResolvedValue(tenantResult(createTenant()))
 
       const result = await getManageContext()
 

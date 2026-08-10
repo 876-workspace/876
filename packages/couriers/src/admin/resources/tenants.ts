@@ -11,25 +11,30 @@ import type {
   UpdateTenantBody,
 } from '../types/tenant.schema'
 
+export type RetrieveTenantParams =
+  | { id: string; organizationId?: never }
+  | { organizationId: string; id?: never }
+
 export function createTenantsResource(runtime: AdminRuntime) {
   return {
-    retrieve(id: string) {
+    retrieve(params: RetrieveTenantParams | string) {
+      const normalized: RetrieveTenantParams =
+        typeof params === 'string' ? { id: params } : params
+      if ('organizationId' in normalized && normalized.organizationId) {
+        return AdminRequest<Tenant>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/v1/tenants/by-org/${encodeURIComponent(normalized.organizationId)}`,
+          },
+          tenantSchema
+        )
+      }
       return AdminRequest<Tenant>(
         runtime,
         {
           method: 'GET',
-          path: `/v1/tenants/${encodeURIComponent(id)}`,
-        },
-        tenantSchema
-      )
-    },
-
-    retrieveByOrgId(orgId: string) {
-      return AdminRequest<Tenant>(
-        runtime,
-        {
-          method: 'GET',
-          path: `/v1/tenants/by-org/${encodeURIComponent(orgId)}`,
+          path: `/v1/tenants/${encodeURIComponent((normalized as { id: string }).id)}`,
         },
         tenantSchema
       )

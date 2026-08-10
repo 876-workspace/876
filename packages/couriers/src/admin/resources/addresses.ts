@@ -53,7 +53,7 @@ export function createAddressesResource(runtime: AdminRuntime) {
       )
     },
 
-    del(tenantId: string, id: string) {
+    delete(tenantId: string, id: string) {
       return AdminRequest<DeletedAddress>(
         runtime,
         {

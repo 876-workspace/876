@@ -4,11 +4,8 @@ import { Page } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  requireCouriersData,
-  toTeamMemberView,
-} from '@/lib/couriers'
+import { requireCouriersData, toTeamMemberView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import type {
   PendingTeamInvite,
   TeamMemberRow,
@@ -94,7 +91,7 @@ async function UsersSettingsData({ params, searchParams }: Props) {
 
   const platform = await getPlatformClient()
   const [membersResult, roleViews, invitesResult] = await Promise.all([
-    $couriers.team.list(ctx.tenant.id, { status }),
+    $876.couriers.team.list(ctx.tenant.id, { status }),
     listTeamRoles(ctx.tenant.id),
     platform.invites.list(ctx.orgId),
   ])

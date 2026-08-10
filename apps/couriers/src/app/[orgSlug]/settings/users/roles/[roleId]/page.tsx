@@ -4,12 +4,8 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  isCouriersNotFound,
-  requireCouriersData,
-  toRoleView,
-} from '@/lib/couriers'
+import { isCouriersNotFound, requireCouriersData, toRoleView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 
 import { RoleForm } from '../_components/role-form'
 
@@ -42,7 +38,7 @@ async function RoleData({ orgSlug, roleId }: RoleDataProps) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
-  const roleResult = await $couriers.roles.retrieve(ctx.tenant.id, roleId)
+  const roleResult = await $876.couriers.roles.retrieve(ctx.tenant.id, roleId)
   if (isCouriersNotFound(roleResult)) notFound()
   const role = toRoleView(requireCouriersData(roleResult))
 

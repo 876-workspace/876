@@ -1,8 +1,8 @@
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
-import { get876Client } from '@/lib/876'
+import { $876, get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { $couriers, requireCouriersData, toCustomerView } from '@/lib/couriers'
+import { requireCouriersData, toCustomerView } from '@/lib/couriers'
 import { customerStatusSchema, type CustomerView } from '@/types/customer'
 
 import { CustomersTable, type CustomerTableRow } from './customers-table'
@@ -46,7 +46,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   let startingAfter: string | undefined
   for (;;) {
     const page = requireCouriersData(
-      await $couriers.customers.list(ctx.tenant.id, {
+      await $876.couriers.customers.list(ctx.tenant.id, {
         ...(profileStatus === undefined ? {} : { status: profileStatus }),
         limit: 100,
         ...(startingAfter === undefined
@@ -73,7 +73,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     profile.billingCustomerId ? [profile.billingCustomerId] : []
   )
 
-  const $876 = await get876Client()
+  const request876 = await get876Client()
 
   // The registry caps a list at 100, and this workspace's profile count is not
   // bounded by that — a tenant with 150 customers would otherwise render 50 rows
@@ -86,7 +86,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
   const pages = await Promise.all(
     idPages.map((ids) =>
-      $876.billing.customers.list(ctx.orgId, { limit: REGISTRY_PAGE, ids })
+      request876.billing.customers.list(ctx.orgId, { limit: REGISTRY_PAGE, ids })
     )
   )
 
