@@ -3,11 +3,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toCouriersTenant,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toCouriersTenant } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -52,7 +49,7 @@ export async function POST(request: NextRequest) {
 
   const { name, slug } = parsed.data
 
-  const result = await $couriers.tenants.create({
+  const result = await $876.couriers.tenants.create({
     org_id: ctx.orgId,
     name,
     slug,

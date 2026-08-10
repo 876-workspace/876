@@ -3,7 +3,8 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { $couriers, requireCouriersData } from '@/lib/couriers'
+import { requireCouriersData } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { CustomerForm } from '../_components/customer-form'
 
 export const metadata = { title: 'Add customer' }
@@ -40,7 +41,7 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
       </div>
     )
   const branches = requireCouriersData(
-    await $couriers.branches.list(ctx.tenant.id)
+    await $876.couriers.branches.list(ctx.tenant.id)
   )
   return (
     <CustomerForm

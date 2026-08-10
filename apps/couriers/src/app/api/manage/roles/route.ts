@@ -5,7 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { $couriers, couriersErrorStatus, toRoleView } from '@/lib/couriers'
+import { couriersErrorStatus, toRoleView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { roleCreateParamsSchema } from '@/types/role'
 
 export const runtime = 'nodejs'
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await $couriers.roles.create(ctx.tenant.id, params)
+  const result = await $876.couriers.roles.create(ctx.tenant.id, params)
   if (result.error)
     return apiJson(
       { error: result.error.message },

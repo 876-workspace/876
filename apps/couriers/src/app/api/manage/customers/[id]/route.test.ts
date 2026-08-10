@@ -23,8 +23,10 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/manage/customers', () => ({
   updateManagedCustomer: mocks.updateManagedCustomer,
 }))
+vi.mock('@/lib/876', () => ({
+  $876: { couriers: { customers: { delete: mocks.delete } } },
+}))
 vi.mock('@/lib/couriers', () => ({
-  $couriers: { customers: { delete: mocks.delete } },
   couriersErrorStatus: mocks.couriersErrorStatus,
 }))
 import { DELETE, PATCH } from './route'

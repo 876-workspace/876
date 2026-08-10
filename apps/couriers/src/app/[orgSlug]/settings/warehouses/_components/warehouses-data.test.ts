@@ -17,8 +17,10 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mockGetManageContext,
 }))
 
+vi.mock('@/lib/876', () => ({
+  $876: { couriers: mockCouriers },
+}))
 vi.mock('@/lib/couriers', () => ({
-  $couriers: mockCouriers,
   requireCouriersData: <T>(result: { data: T }) => result.data,
   toWarehouseView: (warehouse: unknown) => warehouse,
 }))

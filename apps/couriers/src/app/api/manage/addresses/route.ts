@@ -5,12 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toAddressCreateBody,
-  toAddressView,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toAddressCreateBody, toAddressView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { addressCreateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'
@@ -48,7 +44,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await $couriers.addresses.create(
+  const result = await $876.couriers.addresses.create(
     ctx.tenant.id,
     toAddressCreateBody(parsed.data)
   )

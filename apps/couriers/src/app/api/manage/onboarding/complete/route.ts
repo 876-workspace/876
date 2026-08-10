@@ -6,7 +6,8 @@ import { toSlug } from '@876/core/utils'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { $couriers, couriersErrorStatus } from '@/lib/couriers'
+import { couriersErrorStatus } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 
 export const runtime = 'nodejs'
@@ -75,7 +76,7 @@ export async function POST() {
 
   let tenantId = ctx.tenant?.id
   if (!tenantId) {
-    const created = await $couriers.tenants.create({
+    const created = await $876.couriers.tenants.create({
       org_id: ctx.orgId,
       name: platformName,
       slug: toSlug(platformName),
@@ -94,7 +95,7 @@ export async function POST() {
   }
 
   if (mailboxPrefix) {
-    const updated = await $couriers.tenants.update(tenantId, {
+    const updated = await $876.couriers.tenants.update(tenantId, {
       mailbox_prefix: mailboxPrefix,
     })
     if (updated.error)

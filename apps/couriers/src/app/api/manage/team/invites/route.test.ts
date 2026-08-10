@@ -14,8 +14,10 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/876/platform-client', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
+vi.mock('@/lib/876', () => ({
+  $876: { couriers: { roles: { retrieve: mocks.retrieveRole } } },
+}))
 vi.mock('@/lib/couriers', () => ({
-  $couriers: { roles: { retrieve: mocks.retrieveRole } },
   couriersErrorStatus: mocks.couriersErrorStatus,
 }))
 vi.mock('@/lib/couriers-app', () => ({

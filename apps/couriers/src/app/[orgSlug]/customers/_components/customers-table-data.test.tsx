@@ -15,9 +15,9 @@ vi.mock('@/lib/auth/manage-context', () => ({
 }))
 vi.mock('@/lib/876', () => ({
   get876Client: mocks.get876Client,
+  $876: { couriers: { customers: { list: mocks.listProfiles } } },
 }))
 vi.mock('@/lib/couriers', () => ({
-  $couriers: { customers: { list: mocks.listProfiles } },
   requireCouriersData: (result: unknown) => {
     if (Array.isArray(result))
       return {

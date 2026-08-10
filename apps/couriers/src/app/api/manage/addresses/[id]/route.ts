@@ -5,12 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toAddressUpdateBody,
-  toAddressView,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toAddressUpdateBody, toAddressView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { addressUpdateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'
@@ -52,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await $couriers.addresses.update(
+  const result = await $876.couriers.addresses.update(
     ctx.tenant.id,
     id,
     toAddressUpdateBody(parsed.data)
@@ -81,7 +77,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await $couriers.addresses.del(ctx.tenant.id, id)
+  const result = await $876.couriers.addresses.del(ctx.tenant.id, id)
   if (result.error)
     return apiJson(
       { error: result.error.message },

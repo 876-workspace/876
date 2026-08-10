@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { $couriers, requireCouriersData } from '@/lib/couriers'
+import { requireCouriersData } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 
 import { WarehouseForm } from '../_components/warehouse-form'
 
@@ -44,7 +45,7 @@ async function NewWarehouseData({ orgSlug }: { orgSlug: string }) {
     )
 
   const warehouses = requireCouriersData(
-    await $couriers.warehouses.list(ctx.tenant.id)
+    await $876.couriers.warehouses.list(ctx.tenant.id)
   )
 
   return (

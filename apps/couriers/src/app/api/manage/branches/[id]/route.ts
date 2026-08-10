@@ -5,12 +5,8 @@ import { after, type NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  $couriers,
-  couriersErrorStatus,
-  toBranchUpdateBody,
-  toBranchView,
-} from '@/lib/couriers'
+import { couriersErrorStatus, toBranchUpdateBody, toBranchView } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 import { branchUpdateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -54,7 +50,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await $couriers.branches.update(
+  const result = await $876.couriers.branches.update(
     tenantId,
     id,
     toBranchUpdateBody(parsed.data)
@@ -67,7 +63,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const branch = toBranchView(result.data)
   after(() =>
-    $couriers.organizationLocations.sync(tenantId, {
+    $876.couriers.organizationLocations.sync(tenantId, {
       kind: 'branch',
       site_id: branch.id,
     })

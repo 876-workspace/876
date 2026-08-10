@@ -7,7 +7,8 @@ import { z } from 'zod'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { $couriers, couriersErrorStatus } from '@/lib/couriers'
+import { couriersErrorStatus } from '@/lib/couriers'
+import { $876 } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const roleResult = await $couriers.roles.retrieve(
+  const roleResult = await $876.couriers.roles.retrieve(
     ctx.tenant.id,
     parsed.data.roleId
   )
