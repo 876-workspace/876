@@ -9,7 +9,9 @@ export function AdminRequest<T>(
   request: TransportRequest,
   responseSchema: z.ZodType<T>
 ): Promise<Result<T>> {
-  if (!runtime.internalKey)
+  // An `admin` route resolves to [requireApiKey, requireAdmin], so a request
+  // carrying only one of the two credentials is rejected by the service.
+  if (!runtime.apiKey || !runtime.internalKey)
     return Promise.resolve({
       data: null,
       error: {
@@ -23,6 +25,7 @@ export function AdminRequest<T>(
       baseUrl: runtime.baseUrl,
       fetch: runtime.fetch,
       headers: {
+        'x-876-api-key': runtime.apiKey,
         'x-internal-key': runtime.internalKey,
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
       },
