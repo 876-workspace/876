@@ -38,6 +38,7 @@
     "LOG_LEVEL": "info",
     "PORT": "4001",
     "BILLING_API_URL": "https://876-billing-api.1876.workers.dev",
+    "COURIERS_API_PRIMARY_INSTANCE": "primary-20260810",
   },
   "observability": {
     "enabled": true,
