@@ -271,12 +271,12 @@ describe('getManageContext', () => {
     expect(result?.accessStatus).toBe('none')
     expect(mocks.captureMessage).toHaveBeenCalledTimes(1)
     expect(mocks.captureMessage).toHaveBeenCalledWith(
-      'Platform outage: organizations.subscriptions.retrieve failed',
+      'Platform outage: subscriptions.retrieve failed',
       expect.objectContaining({
         level: 'error',
         tags: { category: 'platform_client' },
         extra: expect.objectContaining({
-          call: 'organizations.subscriptions.retrieve',
+          call: 'subscriptions.retrieve',
           errorCode: 'admin/unauthorized',
           errorMessage: 'An internal key is required.',
         }),
