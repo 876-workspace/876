@@ -145,7 +145,9 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
       },
 
       retrieve(
-        params: { organizationId: string; appId: string } | { organizationId: string; appSlug: string }
+        params:
+          | { organizationId: string; appId: string }
+          | { organizationId: string; appSlug: string }
       ) {
         if ('appSlug' in params) {
           return platformRequest<PlatformSubscription>(runtime, {

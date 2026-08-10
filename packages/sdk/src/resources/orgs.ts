@@ -899,7 +899,9 @@ export function createOrgsResource(runtime: SdkRuntime) {
       },
 
       retrieve(
-        params: { organizationId: string; appId: string } | { organizationId: string; appSlug: string },
+        params:
+          | { organizationId: string; appId: string }
+          | { organizationId: string; appSlug: string },
         requestOptions?: RequestOptions
       ): Promise<Result<Subscription>> {
         if ('appSlug' in params) {
