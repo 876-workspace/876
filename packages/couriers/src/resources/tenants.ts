@@ -5,23 +5,28 @@ import type { Tenant } from '../types/tenant.schema'
 
 export function createTenantsResource(runtime: Runtime) {
   return {
-    retrieve(id: string) {
+    retrieve(
+      params:
+        | string
+        | { id: string; organizationId?: never }
+        | { organizationId: string; id?: never }
+    ) {
+      if (typeof params === 'object' && params !== null && 'organizationId' in params) {
+        return Request<Tenant>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/v1/tenants/by-org/${encodeURIComponent(params.organizationId as string)}`,
+          },
+          tenantSchema
+        )
+      }
+      const id = typeof params === 'string' ? params : params.id
       return Request<Tenant>(
         runtime,
         {
           method: 'GET',
-          path: `/v1/tenants/${encodeURIComponent(id)}`,
-        },
-        tenantSchema
-      )
-    },
-
-    retrieveByOrgId(orgId: string) {
-      return Request<Tenant>(
-        runtime,
-        {
-          method: 'GET',
-          path: `/v1/tenants/by-org/${encodeURIComponent(orgId)}`,
+          path: `/v1/tenants/${encodeURIComponent(id as string)}`,
         },
         tenantSchema
       )
