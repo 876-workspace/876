@@ -36,6 +36,7 @@ import type {
   AdminOrgRoleUpdateParams,
   AdminOrgSetupParams,
   AdminPermissionCatalog,
+  AdminResult,
   AdminSearchResponse,
   AdminSubscription,
   AdminSubscriptionBatch,
@@ -88,17 +89,14 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     /**
      * Retrieves an organization by ID or slug (typed lookup object).
      *
-     * Preferred: retrieve({ id }) or retrieve({ slug })
-     * Legacy string form retrieve(orgId) remains supported for compat.
+     * retrieve({ id }) or retrieve({ slug })
      */
     retrieve(
       params:
-        | string
         | { id: string; slug?: never; includeDeleted?: boolean }
-        | { slug: string; id?: never; includeDeleted?: boolean },
-      legacyParams?: { includeDeleted?: boolean }
+        | { slug: string; id?: never; includeDeleted?: boolean }
     ) {
-      if (typeof params === 'object' && params !== null && 'slug' in params) {
+      if ('slug' in params) {
         return adminRequest<AdminOrganization>(runtime, {
           method: 'GET',
           path: `/organizations/by-slug/${params.slug}`,
@@ -107,20 +105,11 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           },
         })
       }
-      if (typeof params === 'object' && params !== null && 'id' in params) {
-        return adminRequest<AdminOrganization>(runtime, {
-          method: 'GET',
-          path: `/organizations/${params.id}`,
-          query: {
-            include_deleted: params.includeDeleted,
-          },
-        })
-      }
       return adminRequest<AdminOrganization>(runtime, {
         method: 'GET',
-        path: `/organizations/${params as string}`,
+        path: `/organizations/${params.id}`,
         query: {
-          include_deleted: legacyParams?.includeDeleted,
+          include_deleted: params.includeDeleted,
         },
       })
     },
@@ -532,35 +521,47 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         })
       },
 
-      list(orgId: string) {
+      list: ((
+        params:
+          | { organizationId: string; organizationIds?: never }
+          | { organizationIds: string[]; organizationId?: never }
+      ) => {
+        if ('organizationIds' in params && params.organizationIds) {
+          return adminRequest<AdminSubscriptionBatch>(runtime, {
+            method: 'GET',
+            path: '/organizations/app-access/batch',
+            query: { organization_ids: params.organizationIds.join(',') },
+          })
+        }
         return adminRequest<AdminSubscription[]>(runtime, {
           method: 'GET',
-          path: `/organizations/${orgId}/apps`,
+          path: `/organizations/${params.organizationId}/apps`,
         })
+      }) as {
+        (params: {
+          organizationIds: string[]
+          organizationId?: never
+        }): Promise<AdminResult<AdminSubscriptionBatch>>
+        (params: {
+          organizationId: string
+          organizationIds?: never
+        }): Promise<AdminResult<AdminSubscription[]>>
       },
 
       retrieve(
         params:
-          | string
-          | { organizationId: string; appId: string }
-          | { organizationId: string; appSlug: string },
-        appId?: string
+          | { organizationId: string; appId: string; appSlug?: never }
+          | { organizationId: string; appSlug: string; appId?: never }
       ) {
-        if (typeof params === 'object' && params !== null && 'appSlug' in params) {
+        if ('appSlug' in params) {
           return adminRequest<AdminSubscription>(runtime, {
             method: 'GET',
             path: `/organizations/${params.organizationId}/apps/by-slug/${params.appSlug}`,
           })
         }
-        if (typeof params === 'object' && params !== null && 'appId' in params) {
-          return adminRequest<AdminSubscription>(runtime, {
-            method: 'GET',
-            path: `/organizations/${params.organizationId}/apps/${params.appId}`,
-          })
-        }
         return adminRequest<AdminSubscription>(runtime, {
           method: 'GET',
-          path: `/organizations/${params as string}/apps/${appId as string}`,
+          path: `/organizations/${params.organizationId}/apps/${params.appId}`,
         })
       },
 

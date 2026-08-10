@@ -103,12 +103,11 @@ async function OrganizationsTableData({
   const orgIds = orgs.map((o) => o.id)
   const subscriptionsMap: Record<string, AdminSubscription[]> = {}
   if (orgIds.length > 0) {
-    const results = await Promise.all(
-      orgIds.map((orgId) => $876.organizations.subscriptions.list(orgId))
-    )
-    for (const result of results) {
-      if (result.error || !result.data) continue
-      for (const row of result.data) {
+    const batchResult = await $876.organizations.subscriptions.list({
+      organizationIds: orgIds,
+    })
+    if (batchResult.data?.data) {
+      for (const row of batchResult.data.data) {
         if (!subscriptionsMap[row.organization_id])
           subscriptionsMap[row.organization_id] = []
         subscriptionsMap[row.organization_id]!.push(row)

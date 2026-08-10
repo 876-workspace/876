@@ -33,7 +33,9 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
 })
 
 export const resolveOrgSubscriptions = cache(async (orgId: string) => {
-  const result = await $876.organizations.subscriptions.list(orgId)
+  const result = await $876.organizations.subscriptions.list({
+    organizationId: orgId,
+  })
   if (result.error) throw new Error(result.error.message)
   return result.data
 })

@@ -99,7 +99,7 @@ async function UsersSettingsData({ params, searchParams }: Props) {
 
   const identities = await Promise.all(
     members.map(async (member) => {
-      const result = await platform.users.retrieve(member.userId)
+      const result = await platform.users.retrieve({ id: member.userId })
 
       return result.error ? null : result.data
     })

@@ -7,26 +7,24 @@ export function createTenantsResource(runtime: IntegrationRuntime) {
   return {
     retrieve(
       params:
-        | string
         | { id: string; organizationId?: never }
         | { organizationId: string; id?: never }
     ) {
-      if (typeof params === 'object' && params !== null && 'organizationId' in params) {
+      if ('organizationId' in params && params.organizationId) {
         return IntegrationRequest<Tenant>(
           runtime,
           {
             method: 'GET',
-            path: `/v1/integration/tenants/by-org/${encodeURIComponent(params.organizationId as string)}`,
+            path: `/v1/integration/tenants/by-org/${encodeURIComponent(params.organizationId)}`,
           },
           tenantSchema
         )
       }
-      const id = typeof params === 'string' ? params : params.id
       return IntegrationRequest<Tenant>(
         runtime,
         {
           method: 'GET',
-          path: `/v1/integration/tenants/${encodeURIComponent(id as string)}`,
+          path: `/v1/integration/tenants/${encodeURIComponent((params as { id: string }).id)}`,
         },
         tenantSchema
       )

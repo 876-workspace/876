@@ -78,9 +78,9 @@ async function AppSettingsContent({ app }: { app: AdminApp }) {
     app.organization_id &&
     !orgs.some((org) => org.id === app.organization_id)
   ) {
-    const { data: owningOrg } = await $876.organizations.retrieve(
-      app.organization_id
-    )
+    const { data: owningOrg } = await $876.organizations.retrieve({
+      id: app.organization_id,
+    })
     orgs.unshift({
       id: app.organization_id,
       name: owningOrg?.name ?? owningOrg?.slug ?? app.organization_id,

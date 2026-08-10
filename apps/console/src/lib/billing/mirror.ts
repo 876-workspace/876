@@ -7,7 +7,7 @@ import type {
   AdminSubscription,
   AdminSubscriptionStatus,
 } from '@876/admin'
-import type { CustomerEnsureParams } from '@876/billing/admin'
+import type { CustomerCreateParams } from '@876/billing/admin'
 import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 
 import { $876 } from '@/lib/876'
@@ -30,7 +30,7 @@ import { $876 } from '@/lib/876'
  */
 async function resolveOrgPrimaryContact(
   org: AdminOrganization | null | undefined
-): Promise<CustomerEnsureParams['primaryContact']> {
+): Promise<CustomerCreateParams['primaryContact']> {
   if (!org) return null
 
   let contactUserId = org.primary_contact_user_id
@@ -50,7 +50,7 @@ async function resolveOrgPrimaryContact(
     contactUserId = owner.user_id
   }
 
-  const user = await $876.users.retrieve(contactUserId)
+  const user = await $876.users.retrieve({ id: contactUserId })
   if (!user.data) return { userId: contactUserId }
 
   return {
@@ -230,7 +230,9 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const orgPromise = $876.organizations.retrieve(subscription.organization_id)
+  const orgPromise = $876.organizations.retrieve({
+    id: subscription.organization_id,
+  })
   const productPromises = productIds.map((productId) =>
     $876.products.retrieve(productId)
   )
@@ -386,7 +388,9 @@ export async function reconcileBillingMirror() {
       for (const org of orgResult.data.data) {
         try {
           const subscriptionResult =
-            await $876.organizations.subscriptions.list(org.id)
+            await $876.organizations.subscriptions.list({
+              organizationId: org.id,
+            })
           if (subscriptionResult.error) {
             failures += 1
             console.error(

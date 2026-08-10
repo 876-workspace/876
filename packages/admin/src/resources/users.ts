@@ -135,24 +135,21 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
     /**
      * Retrieves a user by ID or alternate identifier (typed lookup object).
      *
-     * Preferred: retrieve({ id }) | retrieve({ workosId }) | retrieve({ username })
-     * Legacy string form retrieve(userId) remains supported.
+     * retrieve({ id }) | retrieve({ workosId }) | retrieve({ username })
      */
     retrieve(
       params:
-        | string
         | { id: string; workosId?: never; username?: never; includeDeleted?: boolean }
         | { workosId: string; id?: never; username?: never }
-        | { username: string; id?: never; workosId?: never; includeDeleted?: boolean },
-      legacyParams?: { includeDeleted?: boolean }
+        | { username: string; id?: never; workosId?: never; includeDeleted?: boolean }
     ) {
-      if (typeof params === 'object' && params !== null && 'workosId' in params) {
+      if ('workosId' in params) {
         return adminRequest<AdminUser>(runtime, {
           method: 'GET',
           path: `/users/by-workos-id/${params.workosId}`,
         })
       }
-      if (typeof params === 'object' && params !== null && 'username' in params) {
+      if ('username' in params) {
         return adminRequest<AdminUser>(runtime, {
           method: 'GET',
           path: `/users/by-username/${params.username}`,
@@ -161,20 +158,11 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
           },
         })
       }
-      if (typeof params === 'object' && params !== null && 'id' in params) {
-        return adminRequest<AdminUser>(runtime, {
-          method: 'GET',
-          path: `/users/${params.id}`,
-          query: {
-            include_deleted: params.includeDeleted,
-          },
-        })
-      }
       return adminRequest<AdminUser>(runtime, {
         method: 'GET',
-        path: `/users/${params as string}`,
+        path: `/users/${params.id}`,
         query: {
-          include_deleted: legacyParams?.includeDeleted,
+          include_deleted: params.includeDeleted,
         },
       })
     },

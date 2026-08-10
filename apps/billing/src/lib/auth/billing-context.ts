@@ -66,7 +66,7 @@ export const getContext = cache(
     if (!selectedMembership) return null
 
     const organizationId = selectedMembership.organization.id
-    const accessResult = await platform.organizations.subscriptions.retrieve({
+    const accessResult = await platform.subscriptions.retrieve({
       organizationId,
       appSlug: BILLING_APP_SLUG,
     })

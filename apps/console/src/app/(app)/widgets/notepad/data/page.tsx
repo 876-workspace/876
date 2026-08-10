@@ -44,7 +44,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
     (
       await Promise.all(
         ownerIds.map(async (id) => {
-          const { data } = await $876.users.retrieve(id)
+          const { data } = await $876.users.retrieve({ id })
           return [id, data] as const
         })
       )

@@ -1,8 +1,8 @@
-import { provision } from './provision'
+import { create } from './provision'
 import { list, retrieve } from './retrieve'
 
 export const tenants = {
-  provision,
+  create,
   retrieve,
   list,
 }

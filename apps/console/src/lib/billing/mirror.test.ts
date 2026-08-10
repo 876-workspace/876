@@ -14,11 +14,11 @@ const mocks = vi.hoisted(() => ({
   subscriptionRetrieve: vi.fn(),
   membershipsList: vi.fn(),
   usersRetrieve: vi.fn(),
-  productEnsure: vi.fn(),
-  planEnsure: vi.fn(),
-  priceEnsure: vi.fn(),
-  customerEnsure: vi.fn(),
-  subscriptionEnsure: vi.fn(),
+  productCreate: vi.fn(),
+  planCreate: vi.fn(),
+  priceCreate: vi.fn(),
+  customerCreate: vi.fn(),
+  subscriptionCreate: vi.fn(),
 }))
 
 vi.mock('@/lib/876', () => ({
@@ -29,11 +29,11 @@ vi.mock('@/lib/876', () => ({
     memberships: { list: mocks.membershipsList },
     users: { retrieve: mocks.usersRetrieve },
     billing: {
-      products: { ensure: mocks.productEnsure },
-      plans: { ensure: mocks.planEnsure },
-      prices: { ensure: mocks.priceEnsure },
-      customers: { ensure: mocks.customerEnsure },
-      subscriptions: { ensure: mocks.subscriptionEnsure },
+      products: { create: mocks.productCreate },
+      plans: { create: mocks.planCreate },
+      prices: { create: mocks.priceCreate },
+      customers: { create: mocks.customerCreate },
+      subscriptions: { create: mocks.subscriptionCreate },
     },
   },
 }))
@@ -197,15 +197,15 @@ function setUpMocks() {
       email: 'ada@efesto.test',
     })
   )
-  mocks.productEnsure.mockReturnValue(
+  mocks.productCreate.mockReturnValue(
     success({ object: 'product', id: 'blprod_1' })
   )
-  mocks.planEnsure.mockReturnValue(success({ object: 'plan', id: 'blplan_1' }))
-  mocks.priceEnsure.mockReturnValue(success({ object: 'price', id: 'blprc_1' }))
-  mocks.customerEnsure.mockReturnValue(
+  mocks.planCreate.mockReturnValue(success({ object: 'plan', id: 'blplan_1' }))
+  mocks.priceCreate.mockReturnValue(success({ object: 'price', id: 'blprc_1' }))
+  mocks.customerCreate.mockReturnValue(
     success({ object: 'customer', id: 'blcus_1' })
   )
-  mocks.subscriptionEnsure.mockReturnValue(
+  mocks.subscriptionCreate.mockReturnValue(
     success({ object: 'subscription', id: 'blsub_1' })
   )
 }
@@ -219,24 +219,24 @@ describe('mirrorCoreSubscription', () => {
     setUpMocks()
   })
 
-  it('repairs catalog prerequisites before ensuring the subscription', async () => {
+  it('repairs catalog prerequisites before creating the subscription', async () => {
     const result = await mirrorCoreSubscription(createSubscription())
 
     expect(result).toBe(true)
     expect(mocks.productRetrieve).toHaveBeenCalledWith('prd_core_1')
-    expect(mocks.productEnsure).toHaveBeenCalledWith(
+    expect(mocks.productCreate).toHaveBeenCalledWith(
       expect.objectContaining({ sourceAppId: 'rap_billing' })
     )
-    expect(mocks.planEnsure).toHaveBeenCalledWith(
+    expect(mocks.planCreate).toHaveBeenCalledWith(
       expect.objectContaining({ entitlementReferenceId: 'prd_core_1' })
     )
-    expect(mocks.priceEnsure).toHaveBeenCalledWith(
+    expect(mocks.priceCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         entitlementReferenceId: 'prc_core_1',
         currency: 'JMD',
       })
     )
-    expect(mocks.customerEnsure).toHaveBeenCalledWith({
+    expect(mocks.customerCreate).toHaveBeenCalledWith({
       organizationId: 'org_1',
       customerType: 'CORE_ORGANIZATION',
       customerKind: 'BUSINESS',
@@ -253,7 +253,7 @@ describe('mirrorCoreSubscription', () => {
         email: 'ada@efesto.test',
       },
     })
-    expect(mocks.subscriptionEnsure).toHaveBeenCalledWith({
+    expect(mocks.subscriptionCreate).toHaveBeenCalledWith({
       externalReference: 'sub_core_1',
       sourceAppId: 'rap_billing',
       customerId: 'blcus_1',
@@ -265,7 +265,7 @@ describe('mirrorCoreSubscription', () => {
   })
 
   it('does not create a partial subscription when catalog repair fails', async () => {
-    mocks.priceEnsure.mockResolvedValue({
+    mocks.priceCreate.mockResolvedValue({
       data: null,
       error: { code: 'billing/unavailable', message: 'Unavailable.' },
     })
@@ -273,8 +273,8 @@ describe('mirrorCoreSubscription', () => {
     const result = await mirrorCoreSubscription(createSubscription())
 
     expect(result).toBe(false)
-    expect(mocks.customerEnsure).not.toHaveBeenCalled()
-    expect(mocks.subscriptionEnsure).not.toHaveBeenCalled()
+    expect(mocks.customerCreate).not.toHaveBeenCalled()
+    expect(mocks.subscriptionCreate).not.toHaveBeenCalled()
   })
 })
 
@@ -304,13 +304,13 @@ describe('mirrorCoreProductPrices', () => {
     )
 
     expect(result).toBe(false)
-    expect(mocks.productEnsure).not.toHaveBeenCalled()
-    expect(mocks.planEnsure).not.toHaveBeenCalled()
-    expect(mocks.priceEnsure).not.toHaveBeenCalled()
+    expect(mocks.productCreate).not.toHaveBeenCalled()
+    expect(mocks.planCreate).not.toHaveBeenCalled()
+    expect(mocks.priceCreate).not.toHaveBeenCalled()
   })
 
-  it('stops when the Billing product cannot be ensured', async () => {
-    mocks.productEnsure.mockResolvedValue({
+  it('stops when the Billing product cannot be created', async () => {
+    mocks.productCreate.mockResolvedValue({
       data: null,
       error: { message: 'Product unavailable.' },
     })
@@ -320,12 +320,12 @@ describe('mirrorCoreProductPrices', () => {
     ])
 
     expect(result).toBe(false)
-    expect(mocks.productEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.planEnsure).not.toHaveBeenCalled()
-    expect(mocks.priceEnsure).not.toHaveBeenCalled()
+    expect(mocks.productCreate).toHaveBeenCalledTimes(1)
+    expect(mocks.planCreate).not.toHaveBeenCalled()
+    expect(mocks.priceCreate).not.toHaveBeenCalled()
     expect(console.error).toHaveBeenCalledTimes(1)
     expect(console.error).toHaveBeenCalledWith(
-      '[console.billing.mirror] product ensure failed:',
+      '[console.billing.mirror] product create failed:',
       'prd_core_1',
       'Product unavailable.'
     )
@@ -335,9 +335,9 @@ describe('mirrorCoreProductPrices', () => {
     const result = await mirrorCoreProductPrices(createProduct(), [])
 
     expect(result).toBe(true)
-    expect(mocks.productEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.planEnsure).not.toHaveBeenCalled()
-    expect(mocks.priceEnsure).not.toHaveBeenCalled()
+    expect(mocks.productCreate).toHaveBeenCalledTimes(1)
+    expect(mocks.planCreate).not.toHaveBeenCalled()
+    expect(mocks.priceCreate).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -361,8 +361,8 @@ describe('mirrorCoreProductPrices', () => {
       const result = await mirrorCoreProductPrices(createProduct(), [price])
 
       expect(result).toBe(true)
-      expect(mocks.planEnsure).toHaveBeenCalledTimes(1)
-      expect(mocks.planEnsure).toHaveBeenCalledWith({
+      expect(mocks.planCreate).toHaveBeenCalledTimes(1)
+      expect(mocks.planCreate).toHaveBeenCalledWith({
         productId: 'blprod_1',
         entitlementReferenceId: 'prd_core_1',
         code: 'billing-internal',
@@ -373,8 +373,8 @@ describe('mirrorCoreProductPrices', () => {
         trialDays: 14,
         active: true,
       })
-      expect(mocks.priceEnsure).toHaveBeenCalledTimes(1)
-      expect(mocks.priceEnsure).toHaveBeenCalledWith({
+      expect(mocks.priceCreate).toHaveBeenCalledTimes(1)
+      expect(mocks.priceCreate).toHaveBeenCalledWith({
         planId: 'blplan_1',
         entitlementReferenceId: 'prc_core_1',
         nickname: 'Team price',
@@ -398,10 +398,10 @@ describe('mirrorCoreProductPrices', () => {
     const result = await mirrorCoreProductPrices(createProduct(), [price])
 
     expect(result).toBe(true)
-    expect(mocks.planEnsure).toHaveBeenCalledWith(
+    expect(mocks.planCreate).toHaveBeenCalledWith(
       expect.objectContaining({ intervalUnit: 'WEEK', intervalCount: 1 })
     )
-    expect(mocks.priceEnsure).toHaveBeenCalledWith(
+    expect(mocks.priceCreate).toHaveBeenCalledWith(
       expect.objectContaining({ nickname: null })
     )
   })
@@ -412,7 +412,7 @@ describe('mirrorCoreProductPrices', () => {
     ])
 
     expect(result).toBe(true)
-    expect(mocks.planEnsure).toHaveBeenCalledWith(
+    expect(mocks.planCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         intervalUnit: 'MONTH',
         intervalCount: 1,
@@ -428,8 +428,8 @@ describe('mirrorCoreProductPrices', () => {
     const result = await mirrorCoreProductPrices(createProduct(), [price])
 
     expect(result).toBe(false)
-    expect(mocks.planEnsure).not.toHaveBeenCalled()
-    expect(mocks.priceEnsure).not.toHaveBeenCalled()
+    expect(mocks.planCreate).not.toHaveBeenCalled()
+    expect(mocks.priceCreate).not.toHaveBeenCalled()
     expect(console.error).toHaveBeenCalledTimes(1)
     expect(console.error).toHaveBeenCalledWith(
       '[console.billing.mirror] price cadence unavailable:',
@@ -451,15 +451,15 @@ describe('mirrorCoreProductPrices', () => {
     ])
 
     expect(result).toBe(false)
-    expect(mocks.planEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.priceEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.priceEnsure).toHaveBeenCalledWith(
+    expect(mocks.planCreate).toHaveBeenCalledTimes(1)
+    expect(mocks.priceCreate).toHaveBeenCalledTimes(1)
+    expect(mocks.priceCreate).toHaveBeenCalledWith(
       expect.objectContaining({ entitlementReferenceId: 'prc_valid' })
     )
   })
 
   it('continues after a plan ensure failure', async () => {
-    mocks.planEnsure.mockResolvedValue({
+    mocks.planCreate.mockResolvedValue({
       data: null,
       error: { message: 'Plan unavailable.' },
     })
@@ -469,16 +469,16 @@ describe('mirrorCoreProductPrices', () => {
     ])
 
     expect(result).toBe(false)
-    expect(mocks.priceEnsure).not.toHaveBeenCalled()
+    expect(mocks.priceCreate).not.toHaveBeenCalled()
     expect(console.error).toHaveBeenCalledWith(
-      '[console.billing.mirror] plan ensure failed:',
+      '[console.billing.mirror] plan create failed:',
       'prd_core_1',
       'Plan unavailable.'
     )
   })
 
   it('reports a price ensure failure', async () => {
-    mocks.priceEnsure.mockResolvedValue({
+    mocks.priceCreate.mockResolvedValue({
       data: null,
       error: { message: 'Price unavailable.' },
     })
@@ -489,7 +489,7 @@ describe('mirrorCoreProductPrices', () => {
 
     expect(result).toBe(false)
     expect(console.error).toHaveBeenCalledWith(
-      '[console.billing.mirror] price ensure failed:',
+      '[console.billing.mirror] price create failed:',
       'prc_core_1',
       'Price unavailable.'
     )
@@ -501,7 +501,7 @@ describe('mirrorCoreProductPrices', () => {
     const result = await mirrorCoreProductPrices(product, [])
 
     expect(result).toBe(true)
-    expect(mocks.productEnsure).toHaveBeenCalledWith({
+    expect(mocks.productCreate).toHaveBeenCalledWith({
       sourceAppId: 'rap_billing',
       slug: 'rap_billing',
       name: 'rap_billing',
@@ -516,7 +516,7 @@ describe('mirrorCoreProductPrices', () => {
     const result = await mirrorCoreProductPrices(product, [])
 
     expect(result).toBe(true)
-    expect(mocks.productEnsure).toHaveBeenCalledWith(
+    expect(mocks.productCreate).toHaveBeenCalledWith(
       expect.objectContaining({ slug: '876-billing', name: '876-billing' })
     )
   })
@@ -535,7 +535,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     expect(result).toBe(false)
     expect(mocks.orgRetrieve).not.toHaveBeenCalled()
     expect(mocks.productRetrieve).not.toHaveBeenCalled()
-    expect(mocks.customerEnsure).not.toHaveBeenCalled()
+    expect(mocks.customerCreate).not.toHaveBeenCalled()
   })
 
   it('rejects items without product references', async () => {
@@ -552,7 +552,7 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     expect(result).toBe(false)
     expect(mocks.productRetrieve).not.toHaveBeenCalled()
-    expect(mocks.customerEnsure).not.toHaveBeenCalled()
+    expect(mocks.customerCreate).not.toHaveBeenCalled()
     expect(console.error).toHaveBeenCalledWith(
       '[console.billing.mirror] subscription items have no products:',
       'sub_core_1'
@@ -570,8 +570,8 @@ describe('mirrorCoreSubscription edge cases', () => {
       const result = await mirrorCoreSubscription(createSubscription())
 
       expect(result).toBe(false)
-      expect(mocks.customerEnsure).not.toHaveBeenCalled()
-      expect(mocks.subscriptionEnsure).not.toHaveBeenCalled()
+      expect(mocks.customerCreate).not.toHaveBeenCalled()
+      expect(mocks.subscriptionCreate).not.toHaveBeenCalled()
       expect(console.error).toHaveBeenCalledTimes(1)
     }
   )
@@ -584,8 +584,8 @@ describe('mirrorCoreSubscription edge cases', () => {
     const result = await mirrorCoreSubscription(createSubscription())
 
     expect(result).toBe(false)
-    expect(mocks.productEnsure).not.toHaveBeenCalled()
-    expect(mocks.customerEnsure).not.toHaveBeenCalled()
+    expect(mocks.productCreate).not.toHaveBeenCalled()
+    expect(mocks.customerCreate).not.toHaveBeenCalled()
   })
 
   it('deduplicates product retrieval while retaining every subscription item', async () => {
@@ -599,7 +599,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     expect(result).toBe(true)
     expect(mocks.productRetrieve).toHaveBeenCalledTimes(1)
     expect(mocks.productRetrieve).toHaveBeenCalledWith('prd_core_1')
-    expect(mocks.subscriptionEnsure).toHaveBeenCalledWith(
+    expect(mocks.subscriptionCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         items: [
           { priceEntitlementReferenceId: 'prc_core_1', quantity: 1 },
@@ -615,7 +615,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     const result = await mirrorCoreSubscription(createSubscription())
 
     expect(result).toBe(true)
-    expect(mocks.customerEnsure).toHaveBeenCalledWith({
+    expect(mocks.customerCreate).toHaveBeenCalledWith({
       organizationId: 'org_1',
       customerType: 'CORE_ORGANIZATION',
       customerKind: 'BUSINESS',
@@ -656,8 +656,8 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     expect(result).toBe(true)
     expect(mocks.membershipsList).not.toHaveBeenCalled()
-    expect(mocks.usersRetrieve).toHaveBeenCalledWith('usr_declared')
-    expect(mocks.customerEnsure).toHaveBeenCalledWith({
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith({ id: 'usr_declared' })
+    expect(mocks.customerCreate).toHaveBeenCalledWith({
       organizationId: 'org_1',
       customerType: 'CORE_ORGANIZATION',
       customerKind: 'BUSINESS',
@@ -704,8 +704,8 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     await mirrorCoreSubscription(createSubscription())
 
-    expect(mocks.usersRetrieve).toHaveBeenCalledWith('usr_owner')
-    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith({ id: 'usr_owner' })
+    expect(mocks.customerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         primaryContact: expect.objectContaining({ userId: 'usr_owner' }),
       })
@@ -748,8 +748,8 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     await mirrorCoreSubscription(createSubscription())
 
-    expect(mocks.usersRetrieve).toHaveBeenCalledWith('usr_early')
-    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+    expect(mocks.usersRetrieve).toHaveBeenCalledWith({ id: 'usr_early' })
+    expect(mocks.customerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         primaryContact: {
           userId: 'usr_early',
@@ -766,7 +766,7 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     await mirrorCoreSubscription(createSubscription())
 
-    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+    expect(mocks.customerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         firstName: null,
         lastName: null,
@@ -790,7 +790,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     await mirrorCoreSubscription(createSubscription())
 
     expect(mocks.usersRetrieve).not.toHaveBeenCalled()
-    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+    expect(mocks.customerCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         primaryContact: null,
         firstName: null,
@@ -807,13 +807,13 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     await mirrorCoreSubscription(createSubscription())
 
-    expect(mocks.customerEnsure).toHaveBeenCalledWith(
+    expect(mocks.customerCreate).toHaveBeenCalledWith(
       expect.objectContaining({ email: 'ada@efesto.test' })
     )
   })
 
-  it('stops when the Billing customer cannot be ensured', async () => {
-    mocks.customerEnsure.mockResolvedValue({
+  it('stops when the Billing customer cannot be created', async () => {
+    mocks.customerCreate.mockResolvedValue({
       data: null,
       error: { message: 'Customer unavailable.' },
     })
@@ -821,16 +821,16 @@ describe('mirrorCoreSubscription edge cases', () => {
     const result = await mirrorCoreSubscription(createSubscription())
 
     expect(result).toBe(false)
-    expect(mocks.subscriptionEnsure).not.toHaveBeenCalled()
+    expect(mocks.subscriptionCreate).not.toHaveBeenCalled()
     expect(console.error).toHaveBeenCalledWith(
-      '[console.billing.mirror] customer ensure failed:',
+      '[console.billing.mirror] customer create failed:',
       'org_1',
       'Customer unavailable.'
     )
   })
 
   it('reports a subscription ensure failure', async () => {
-    mocks.subscriptionEnsure.mockResolvedValue({
+    mocks.subscriptionCreate.mockResolvedValue({
       data: null,
       error: { message: 'Subscription unavailable.' },
     })
@@ -839,7 +839,7 @@ describe('mirrorCoreSubscription edge cases', () => {
 
     expect(result).toBe(false)
     expect(console.error).toHaveBeenCalledWith(
-      '[console.billing.mirror] subscription ensure failed:',
+      '[console.billing.mirror] subscription create failed:',
       'sub_core_1',
       'Subscription unavailable.'
     )
@@ -857,7 +857,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     const result = await mirrorCoreSubscription(createSubscription({ status }))
 
     expect(result).toBe(true)
-    expect(mocks.subscriptionEnsure).toHaveBeenCalledWith(
+    expect(mocks.subscriptionCreate).toHaveBeenCalledWith(
       expect.objectContaining({ status: expected })
     )
   })
@@ -868,7 +868,7 @@ describe('mirrorCoreSubscription edge cases', () => {
     )
 
     expect(result).toBe(true)
-    expect(mocks.subscriptionEnsure).toHaveBeenCalledWith(
+    expect(mocks.subscriptionCreate).toHaveBeenCalledWith(
       expect.objectContaining({ startAt: 321 })
     )
   })
@@ -900,8 +900,8 @@ describe('mirrorCoreSubscriptionById', () => {
     expect(result).toBe(true)
     expect(mocks.subscriptionRetrieve).toHaveBeenCalledTimes(1)
     expect(mocks.subscriptionRetrieve).toHaveBeenCalledWith('sub_core_1')
-    expect(mocks.subscriptionEnsure).toHaveBeenCalledTimes(1)
-    expect(mocks.subscriptionEnsure).toHaveBeenCalledWith(
+    expect(mocks.subscriptionCreate).toHaveBeenCalledTimes(1)
+    expect(mocks.subscriptionCreate).toHaveBeenCalledWith(
       expect.objectContaining({ externalReference: 'sub_core_1' })
     )
   })

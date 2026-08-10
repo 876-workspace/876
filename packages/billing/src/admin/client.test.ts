@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { create876AdminClient } from './client'
 
 describe('create876AdminClient', () => {
-  it('calls a versioned ensure endpoint with the server-only key', async () => {
+  it('creates a subscription via idempotent create (backing /ensure endpoint)', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { object: 'subscription', id: 'blsub_1' },
@@ -117,7 +117,7 @@ describe('create876AdminClient', () => {
     )
   })
 
-  it('ensures a core user customer', async () => {
+  it('creates a core user customer via idempotent create', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { object: 'customer', id: 'blcus_1' },
@@ -228,7 +228,7 @@ describe('create876AdminClient', () => {
     )
   })
 
-  it('rejects a non-customer ensure acknowledgement', async () => {
+  it('rejects a non-customer create acknowledgement', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { object: 'subscription', id: 'blsub_1' },

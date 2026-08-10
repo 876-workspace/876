@@ -7,26 +7,24 @@ export function createTenantsResource(runtime: Runtime) {
   return {
     retrieve(
       params:
-        | string
         | { id: string; organizationId?: never }
         | { organizationId: string; id?: never }
     ) {
-      if (typeof params === 'object' && params !== null && 'organizationId' in params) {
+      if ('organizationId' in params && params.organizationId) {
         return Request<Tenant>(
           runtime,
           {
             method: 'GET',
-            path: `/v1/tenants/by-org/${encodeURIComponent(params.organizationId as string)}`,
+            path: `/v1/tenants/by-org/${encodeURIComponent(params.organizationId)}`,
           },
           tenantSchema
         )
       }
-      const id = typeof params === 'string' ? params : params.id
       return Request<Tenant>(
         runtime,
         {
           method: 'GET',
-          path: `/v1/tenants/${encodeURIComponent(id as string)}`,
+          path: `/v1/tenants/${encodeURIComponent((params as { id: string }).id)}`,
         },
         tenantSchema
       )

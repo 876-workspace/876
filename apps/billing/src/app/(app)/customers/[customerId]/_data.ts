@@ -75,7 +75,7 @@ export const resolveCustomerParty = cache(
       return resolveOrgParty(platform, customer, self)
 
     if (customer.customerType === 'CORE_USER' && customer.userId) {
-      const { data: user } = await platform.users.retrieve(customer.userId)
+      const { data: user } = await platform.users.retrieve({ id: customer.userId })
       if (!user) return { org: null, memberCount: null, contact: self }
 
       return {
@@ -119,7 +119,7 @@ async function resolveOrgParty(
 
   if (!primary) return { org, memberCount, contact: self }
 
-  const { data: owner } = await platform.users.retrieve(primary.user_id)
+  const { data: owner } = await platform.users.retrieve({ id: primary.user_id })
   if (!owner)
     return { org, memberCount, contact: { ...self, role: primary.role } }
 

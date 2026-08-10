@@ -20,27 +20,66 @@ Only create tiers that the backing API actually supports. Do not create empty ti
 
 ## Client composition
 
-Application composes only what it needs:
+### 1. Normal Product Application
+
+> [!WARNING]
+> A product app MUST NEVER import `@876/admin` or another product's `/admin` tier merely because it needs cross-service access. Use `@876/core/platform` or client tiers for narrow server access, and `/integration` tiers for service-to-service calls.
 
 ```ts
 // apps/<product>/src/lib/876/index.ts
-import { create876AdminClient } from '@876/admin'
+import { create876PlatformClient } from '@876/core/platform'
+import { create876BillingIntegrationClient } from '@876/billing/integration'
 import { create876StorageClient } from '@876/storage'
-import { create876BillingAdminClient } from '@876/billing/admin'
-import { create876CouriersAdminClient } from '@876/couriers/admin'
 
 export function createProduct876Client(requestId?: string) {
-  const platform = create876AdminClient({ internalKey: process.env.API_INTERNAL_KEY, requestId })
+  const platform = create876PlatformClient({
+    apiKey: process.env.API_876_KEY,
+    internalKey: process.env.API_INTERNAL_KEY,
+    requestId,
+  })
   return {
     ...platform,
-    billing: create876BillingAdminClient({ internalKey: process.env.BILLING_INTERNAL_KEY, requestId }),
-    storage: create876StorageClient({ internalKey: process.env.STORAGE_INTERNAL_KEY, requestId }),
-    couriers: create876CouriersAdminClient({ baseUrl: process.env.COURIERS_API_URL, internalKey: process.env.COURIERS_INTERNAL_KEY, requestId }),
+    billing: create876BillingIntegrationClient({
+      internalKey: process.env.BILLING_INTERNAL_KEY,
+      requestId,
+    }),
+    storage: create876StorageClient({
+      internalKey: process.env.STORAGE_INTERNAL_KEY,
+      requestId,
+    }),
   }
 }
 ```
 
-Console control plane composes privileged tiers similarly in `apps/console/src/lib/876/index.ts`.
+### 2. Console Control Plane
+
+Only Console platform control-plane code composes privileged full-administration tiers:
+
+```ts
+// apps/console/src/lib/876/index.ts
+import { create876AdminClient } from '@876/admin'
+import { create876BillingAdminClient } from '@876/billing/admin'
+import { create876CouriersAdminClient } from '@876/couriers/admin'
+
+export function createConsole876Client(requestId?: string) {
+  const platform = create876AdminClient({
+    internalKey: process.env.API_INTERNAL_KEY,
+    requestId,
+  })
+  return {
+    ...platform,
+    billing: create876BillingAdminClient({
+      internalKey: process.env.BILLING_INTERNAL_KEY,
+      requestId,
+    }),
+    couriers: create876CouriersAdminClient({
+      baseUrl: process.env.COURIERS_API_URL,
+      internalKey: process.env.COURIERS_INTERNAL_KEY,
+      requestId,
+    }),
+  }
+}
+```
 
 ## Resource verbs
 

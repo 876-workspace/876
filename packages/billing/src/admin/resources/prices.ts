@@ -1,13 +1,17 @@
 import { AdminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
-import type { Ensured, PriceEnsureParams } from '../types'
+import type { CreatedResource, PriceCreateParams } from '../types'
 
-/** `$876.billing.prices.*` — secret-service price synchronization. */
+/** `$876.billing.prices.*` — secret-service price synchronization. Idempotent create via `entitlementReferenceId`. */
 export function createAdminPricesResource(runtime: AdminRuntime) {
   return {
-    create(params: PriceEnsureParams) {
-      return AdminRequest<Ensured<'price'>>(
+    /**
+     * Idempotent create: same `entitlementReferenceId`+`planId` with compatible payload returns existing price.
+     * Backing endpoint remains `/ensure` as internal idempotency implementation.
+     */
+    create(params: PriceCreateParams) {
+      return AdminRequest<CreatedResource<'price'>>(
         runtime,
         {
           method: 'POST',

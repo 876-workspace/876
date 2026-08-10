@@ -1,13 +1,17 @@
 import { AdminRequest } from '../request'
 import type { AdminRuntime } from '../runtime'
 import { createdResourceSchema } from '../../schemas'
-import type { CustomerEnsureParams, Ensured } from '../types'
+import type { CreatedResource, CustomerCreateParams } from '../types'
 
-/** `$876.billing.customers.*` — secret-service customer synchronization. */
+/** `$876.billing.customers.*` — secret-service customer synchronization. Idempotent create via `organizationId`/`userId`/`externalReference`. */
 export function createAdminCustomersResource(runtime: AdminRuntime) {
   return {
-    create(params: CustomerEnsureParams) {
-      return AdminRequest<Ensured<'customer'>>(
+    /**
+     * Idempotent create: same stable `organizationId`/`userId` with compatible payload returns existing customer.
+     * Backing endpoint remains `/ensure` as internal idempotency implementation.
+     */
+    create(params: CustomerCreateParams) {
+      return AdminRequest<CreatedResource<'customer'>>(
         runtime,
         {
           method: 'POST',
