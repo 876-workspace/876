@@ -14,10 +14,9 @@ import {
 } from '@876/ui/detail-header'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { CustomerActions } from './_components/customer-actions'
-import { CustomerDetailChromeGate } from './_components/customer-detail-chrome-gate'
-import { resolveCustomer, resolveCustomerTitle } from './_lib/customer-data'
-import { customerTabs } from './_lib/customer-tabs'
+import { CustomerActions } from '../_components/customer-actions'
+import { resolveCustomer, resolveCustomerTitle } from '../_lib/customer-data'
+import { customerTabs } from '../_lib/customer-tabs'
 
 type Props = {
   children: ReactNode
@@ -43,33 +42,31 @@ export default async function CustomerDetailLayout({
 
   return (
     <div>
-      <CustomerDetailChromeGate>
-        <DetailHeader
-          condensedTitle={
-            <Suspense fallback={<CondensedTitleFallback />}>
-              <CondensedTitle orgSlug={orgSlug} id={id} />
+      <DetailHeader
+        condensedTitle={
+          <Suspense fallback={<CondensedTitleFallback />}>
+            <CondensedTitle orgSlug={orgSlug} id={id} />
+          </Suspense>
+        }
+      >
+        <DetailHeaderTop>
+          <DetailHeaderMain>
+            <Suspense fallback={<IdentityFallback />}>
+              <CustomerIdentity orgSlug={orgSlug} id={id} />
             </Suspense>
-          }
-        >
-          <DetailHeaderTop>
-            <DetailHeaderMain>
-              <Suspense fallback={<IdentityFallback />}>
-                <CustomerIdentity orgSlug={orgSlug} id={id} />
-              </Suspense>
-            </DetailHeaderMain>
+          </DetailHeaderMain>
 
-            <DetailHeaderActions>
-              <Suspense fallback={<ActionsFallback />}>
-                <CustomerHeaderActions orgSlug={orgSlug} id={id} />
-              </Suspense>
-            </DetailHeaderActions>
-          </DetailHeaderTop>
+          <DetailHeaderActions>
+            <Suspense fallback={<ActionsFallback />}>
+              <CustomerHeaderActions orgSlug={orgSlug} id={id} />
+            </Suspense>
+          </DetailHeaderActions>
+        </DetailHeaderTop>
 
-          <DetailHeaderTabs>
-            <RouteTabs tabs={customerTabs(base)} />
-          </DetailHeaderTabs>
-        </DetailHeader>
-      </CustomerDetailChromeGate>
+        <DetailHeaderTabs>
+          <RouteTabs tabs={customerTabs(base)} />
+        </DetailHeaderTabs>
+      </DetailHeader>
 
       <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
     </div>
