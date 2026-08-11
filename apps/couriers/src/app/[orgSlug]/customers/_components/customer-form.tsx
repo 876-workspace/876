@@ -68,7 +68,7 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
     splitPhone(customer?.phone)
   )
   const [branchId, setBranchId] = useState(() => {
-    if (customer?.branchId) return customer.branchId
+    if (customer) return customer.branchId ?? ''
     return branches.length === 1 ? (branches[0]?.id ?? '') : ''
   })
   const [trn, setTrn] = useState(customer?.trn ?? '')

@@ -153,6 +153,25 @@ describe('CustomerForm', () => {
       expect.objectContaining({ branchId: 'br_kingston' })
     )
   })
+
+  it('does not assign a branch while editing an unassigned customer', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+        customer={customer({ branchId: null })}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ branchId: undefined })
+    )
+  })
   it('sends only courier fields and status when editing a CORE_USER', async () => {
     render(
       <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer()} />
