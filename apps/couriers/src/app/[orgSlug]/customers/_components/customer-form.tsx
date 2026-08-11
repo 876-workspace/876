@@ -22,11 +22,12 @@ import { client } from '@/lib/client'
 import type { CustomerKind, CustomerRow } from '@/types/customer'
 
 const dialCodes = listDialCodes().map((country) => ({
-  value: country.dialCode,
-  label: country.countryCode,
-  leadingLabel: country.dialCode,
+  value: country.countryCode,
+  label: `${country.flag} ${country.dialCode}`,
+  dialCode: country.dialCode,
 }))
 
+const DEFAULT_COUNTRY_CODE = 'JM'
 const DEFAULT_DIAL_CODE = '+1'
 
 /**
@@ -37,17 +38,31 @@ const DEFAULT_DIAL_CODE = '+1'
  * is then re-submitted as a different number.
  */
 function splitPhone(stored: string | null | undefined): PhoneInputValue {
-  if (!stored) return { dialCode: DEFAULT_DIAL_CODE, number: '' }
+  if (!stored)
+    return {
+      countryCode: DEFAULT_COUNTRY_CODE,
+      dialCode: DEFAULT_DIAL_CODE,
+      number: '',
+    }
 
   const match = dialCodes
-    .filter((code) => stored.startsWith(code.value))
-    .sort((a, b) => b.value.length - a.value.length)[0]
+    .filter((code) => stored.startsWith(code.dialCode))
+    .sort((a, b) => b.dialCode.length - a.dialCode.length)[0]
 
   // An unrecognized prefix keeps the raw value visible rather than silently
   // dropping digits the user would then have to notice were missing.
-  if (!match) return { dialCode: DEFAULT_DIAL_CODE, number: stored }
+  if (!match)
+    return {
+      countryCode: DEFAULT_COUNTRY_CODE,
+      dialCode: DEFAULT_DIAL_CODE,
+      number: stored,
+    }
 
-  return { dialCode: match.value, number: stored.slice(match.value.length) }
+  return {
+    countryCode: match.value,
+    dialCode: match.dialCode,
+    number: stored.slice(match.dialCode.length),
+  }
 }
 type Props = {
   orgSlug: string
