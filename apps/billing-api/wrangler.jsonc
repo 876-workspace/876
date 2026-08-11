@@ -36,14 +36,13 @@
   },
   "vars": {
     "API_URL": "https://876-api.1876.workers.dev",
-    // Bump this only when existing primary containers must restart to pick up
-    // changed Worker vars or secrets.
-    "BILLING_API_PRIMARY_INSTANCE": "primary-20260729",
+    // Bump to restart primary container for BILLING_WRITER activation.
+    "BILLING_API_PRIMARY_INSTANCE": "primary-20260810",
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",
     "PORT": "4004",
-    // Shadow mode until finance cutover.
-    "BILLING_WRITER": "none",
+    // Active writer for couriers customer registry via integrations.
+    "BILLING_WRITER": "fastapi",
   },
   "observability": {
     "enabled": true,
