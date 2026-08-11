@@ -29,9 +29,7 @@ describe('getRequestOrigin', () => {
   it('strips the internal port even without a forwarded host (fallback path)', () => {
     // The proxy hands the app the preview host directly
     // on nextUrl, with the internal port still attached and no x-forwarded-host.
-    const request = mockRequest(
-      `https://${PREVIEW_HOST}:3000/oauth/authorize`
-    )
+    const request = mockRequest(`https://${PREVIEW_HOST}:3000/oauth/authorize`)
 
     expect(getRequestOrigin(request)).toBe(`https://${PREVIEW_HOST}`)
   })
@@ -66,9 +64,7 @@ describe('getRequestOrigin', () => {
 
 describe('requestUrl', () => {
   it('builds an absolute URL on the externally-correct origin', () => {
-    const request = mockRequest(
-      `https://${PREVIEW_HOST}:3000/oauth/authorize`
-    )
+    const request = mockRequest(`https://${PREVIEW_HOST}:3000/oauth/authorize`)
 
     expect(requestUrl(request, '/login').toString()).toBe(
       `https://${PREVIEW_HOST}/login`
