@@ -54,7 +54,7 @@ function toPhoneValue(stored: string | null | undefined): PhoneInputValue {
   // A NANP number reports its area code separately from the national number;
   // keeping only the latter would silently drop the "876" from +1876…
   return {
-    countryCode: parsed.countryCode ?? DEFAULT_COUNTRY_CODE,
+    countryCode: parsed.countryCode ?? '',
     dialCode: parsed.dialCode,
     number: `${parsed.areaCode ?? ''}${parsed.nationalNumber}`,
   }

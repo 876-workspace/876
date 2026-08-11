@@ -56,7 +56,7 @@ function splitPhone(stored: string | null | undefined): PhoneInputValue {
     }
 
   return {
-    countryCode: parsed.countryCode ?? DEFAULT_COUNTRY_CODE,
+    countryCode: parsed.countryCode ?? '',
     dialCode: parsed.dialCode,
     number: `${parsed.areaCode ?? ''}${parsed.nationalNumber}`,
   }
