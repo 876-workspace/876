@@ -153,7 +153,7 @@ export async function resolvePrimaryOrganizationPath(): Promise<string | null> {
     (m) => m.status === 'active' && m.organization.status === 'active'
   )
   // Same-app destination → relative path. The browser keeps its current
-  // (externally-correct) origin, so this works on Codespaces/Gitpod/Ona/prod
+  // (externally-correct) origin, so this works in local and production
   // without any origin resolution. Never build an absolute same-app redirect.
   // Land on the member's profile — the enterprise app is an account/ERM
   // surface, so the personal profile is the default post-auth destination.

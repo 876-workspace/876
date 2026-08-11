@@ -64,18 +64,12 @@ function isLocalOrigin(origin: string): boolean {
 /**
  * Origin for a forwarded port inside a remote dev workspace.
  *
- * `DEV_PREVIEW_HOST_TEMPLATE` is the provider-agnostic contract written by
- * `scripts/setup-dev-env.mjs`; the Codespaces env vars remain as a fallback for
- * containers started before the setup script has run.
+ * `DEV_PREVIEW_HOST_TEMPLATE` is the host template written by
+ * `scripts/setup-dev-env.mjs`.
  */
 function getDevPreviewOrigin(port: number): string | null {
   const template = normalizeValue(process.env.DEV_PREVIEW_HOST_TEMPLATE)
   if (template) return `https://${template.replaceAll('{port}', String(port))}`
 
-  const codespaceName = normalizeValue(process.env.CODESPACE_NAME)
-  const forwardingDomain = normalizeValue(
-    process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN
-  )
-  if (!codespaceName || !forwardingDomain) return null
-  return `https://${codespaceName}-${port}.${forwardingDomain}`
+  return null
 }

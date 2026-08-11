@@ -237,10 +237,6 @@ Adding a new API operation (see `.claude/rules/sdk-conventions.md` for the full 
 - Cursor pagination via `starting_after` / `ending_before` (item ID-based).
 - Client-safe errors must not include HTTP status fields.
 
-## Codespace / Environment Notes
-
-In GitHub Codespaces, `NEXT_PUBLIC_API_URL` must be the HTTPS-forwarded Codespace URL for port 4000 (e.g. `https://<codespace>-4000.app.github.dev`), set in `apps/console/.env.local`. The server-side `API_URL` stays `http://127.0.0.1:4000`. Port 4000 must be set to **Public** in the Codespaces Ports panel.
-
 ## UI Copy
 
 **No wordy subheading/description paragraphs under section headers.** Do not add an explanatory `<p>` under a page or section `<h2>`/`<h1>` restating what the table/list below it already shows (e.g. "The subscribable plan catalog for X. Orgs provisioned onto this app default to..."). A bare heading is enough — the UI is not a place for prose. This also applies to `Empty`/`EmptyDescription` states: keep them to a short title, skip the descriptive sentence unless it conveys a non-obvious next step. Inline form-field hints (one short line under an input) are fine; restating the obvious is not.

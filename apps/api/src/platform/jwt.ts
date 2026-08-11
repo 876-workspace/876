@@ -126,7 +126,7 @@ export async function signProviderJwt(claims: ProviderClaims): Promise<string> {
  * Returns rather than throws so a caller decides what a bad token means — a
  * guard rejects, while an optional-authentication path falls through to
  * anonymous. Issuer and audience are deliberately not checked here: a single
- * deployment serves several issuer hostnames (Codespaces, preview, production),
+ * deployment serves several issuer hostnames (preview and production),
  * and the audience is the client the token was minted for, which the caller
  * checks against its own identity where that matters.
  */

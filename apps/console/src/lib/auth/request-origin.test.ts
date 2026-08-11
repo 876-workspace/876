@@ -66,15 +66,13 @@ describe('getRequestOrigin', () => {
     expect(getRequestOrigin(request)).toBe('https://console.example.com')
   })
 
-  it('strips the internal port from a Codespaces forwarding host', () => {
+  it('strips the internal port from a forwarded host', () => {
     const request = createRequest('http://127.0.0.1:3002', {
-      'x-forwarded-host': 'silver-space-3002.app.github.dev:3002',
+      'x-forwarded-host': 'preview-3002.example.test:3002',
       'x-forwarded-proto': 'https',
     })
 
-    expect(getRequestOrigin(request)).toBe(
-      'https://silver-space-3002.app.github.dev'
-    )
+    expect(getRequestOrigin(request)).toBe('https://preview-3002.example.test')
   })
 })
 

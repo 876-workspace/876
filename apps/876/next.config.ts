@@ -16,11 +16,15 @@ const securityHeaders = [
   },
 ]
 
+const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
+  '{port}',
+  '*'
+)
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
-  // Allow HMR websocket connections from Ona/Gitpod and GitHub Codespaces preview URLs.
-  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
+  allowedDevOrigins: previewDevOrigin ? [previewDevOrigin] : [],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
@@ -36,9 +40,8 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3000',
         '127.0.0.1:3000',
-        '*.app.github.dev',
-        '**.gitpod.dev',
         '876-app.1876.workers.dev',
+        ...(previewDevOrigin ? [previewDevOrigin] : []),
       ],
     },
   },

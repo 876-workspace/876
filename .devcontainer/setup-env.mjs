@@ -3,8 +3,8 @@
  * `apps/876/.env.development.local` on devcontainer start.
  *
  * Forwarded-port URLs and CORS origins are **not** handled here — those are
- * provider-agnostic and live in `scripts/setup-dev-env.mjs`, which runs for
- * both Codespaces and Ona/Gitpod as part of `pnpm dev`.
+ * provider-agnostic and live in `scripts/setup-dev-env.mjs`, which runs as
+ * part of `pnpm dev`.
  *
  * Runs automatically on postStartCommand in devcontainer.json.
  */

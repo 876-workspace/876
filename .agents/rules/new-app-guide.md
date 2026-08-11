@@ -159,18 +159,10 @@ apps/<appname>/
 
 | Variable                | Where            | Purpose                                                          |
 | ----------------------- | ---------------- | ---------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`   | app `.env.local` | Public API base URL (Codespaces HTTPS URL for port 4000)         |
+| `NEXT_PUBLIC_API_URL`   | app `.env.local` | Public API base URL                                              |
 | `API_URL`               | app `.env.local` | Server-side API base URL (`http://127.0.0.1:4000`)               |
 | `API_876_KEY`           | app `.env.local` | App API key (`876_app_key_...`) — from Console > Apps > API Keys |
 | `SESSION_COOKIE_SECRET` | app `.env.local` | 32-char secret for `iron-session` cookie sealing                 |
-
-### Codespaces
-
-- Set `NEXT_PUBLIC_API_URL` to the HTTPS-forwarded Codespace URL for port 4000
-- Port 4000 must be set to **Public** in the Codespaces Ports panel
-- Server-side `API_URL` stays `http://127.0.0.1:4000`
-
----
 
 ## 8. Console Integration
 

@@ -53,8 +53,8 @@ HTTP clients, and React panels. It does **not** open a database connection.
 
 ## Local environment
 
-Widgets use ordinary app-local `.env` files in Codespaces and other local
-development environments. These files are ignored by Git.
+Widgets use ordinary app-local `.env` files in local development environments.
+These files are ignored by Git.
 
 1. Add the existing Prisma Postgres pooled connection URL to
    `apps/widgets-api/.env` as `WIDGETS_DATABASE_URL`.

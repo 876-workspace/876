@@ -136,7 +136,6 @@ Do not expose `clientSecret` in browser bundles.
 | Explicit `baseUrl`                   | `baseUrl`                          |
 | `NEXT_PUBLIC_876_API_URL` configured | `NEXT_PUBLIC_876_API_URL`          |
 | `NEXT_PUBLIC_API_URL` configured     | `NEXT_PUBLIC_API_URL`              |
-| Codespaces browser dev without env   | matching forwarded `4000`          |
 | Local development without env        | `http://localhost:4000`            |
 | Production without env               | `https://eight76-api.onrender.com` |
 

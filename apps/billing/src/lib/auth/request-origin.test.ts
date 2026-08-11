@@ -57,15 +57,13 @@ describe('Billing getRequestOrigin', () => {
     expect(getRequestOrigin(request)).toBe('https://billing.example.com')
   })
 
-  it('strips an internal port from a Codespaces forwarding host', () => {
+  it('strips an internal port from a forwarded host', () => {
     const request = createRequest('http://127.0.0.1:3004', {
-      'x-forwarded-host': 'silver-space-3004.app.github.dev:3004',
+      'x-forwarded-host': 'preview-3004.example.test:3004',
       'x-forwarded-proto': 'https',
     })
 
-    expect(getRequestOrigin(request)).toBe(
-      'https://silver-space-3004.app.github.dev'
-    )
+    expect(getRequestOrigin(request)).toBe('https://preview-3004.example.test')
   })
 
   it('ignores empty first header values', () => {

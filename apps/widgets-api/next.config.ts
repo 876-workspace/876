@@ -3,11 +3,16 @@ import type { NextConfig } from 'next'
 
 import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
 
+const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
+  '{port}',
+  '*'
+)
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
   webpack: externalizePrismaWasm,
-  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
+  allowedDevOrigins: previewDevOrigin ? [previewDevOrigin] : [],
 }
 
 export default withSentryConfig(nextConfig, {

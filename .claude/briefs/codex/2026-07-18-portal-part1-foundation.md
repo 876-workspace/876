@@ -32,7 +32,7 @@
 1. Read hostname from `headers()`: `x-forwarded-host` first, then `host`; strip port; lowercase.
 2. Exact match via `service.tenants.retrieveByHostname(hostname)` — only accept when the matched domain row has `verified === true`; return its tenant.
 3. Platform-subdomain parse: if hostname ends with `.` + `PORTAL_BASE_DOMAIN` env (default `couriers.876.app`), extract the leftmost label as slug → `service.tenants.retrieveBySlug(slug)`.
-4. Dev override (Codespaces/local, where there is one forwarded hostname): only when `process.env.NODE_ENV !== 'production'`, read `PORTAL_DEV_TENANT_SLUG` env → `retrieveBySlug`. This branch must be unreachable in production builds.
+4. Dev override: only when `process.env.NODE_ENV !== 'production'`, read `PORTAL_DEV_TENANT_SLUG` env → `retrieveBySlug`. This branch must be unreachable in production builds.
 5. Otherwise `null`.
 
 Only return tenants with `status === 'ACTIVE'` (PENDING/SUSPENDED → treat as `null`; export a second helper `getPortalTenantAnyStatus()` ONLY if you find you need it — prefer not to).

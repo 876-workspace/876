@@ -16,6 +16,11 @@ const securityHeaders = [
   },
 ]
 
+const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
+  '{port}',
+  '*'
+)
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
@@ -24,8 +29,7 @@ const nextConfig: NextConfig = {
   // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
   // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  // Allow HMR websocket connections from Ona/Gitpod and GitHub Codespaces preview URLs.
-  allowedDevOrigins: ['127.0.0.1', '**.gitpod.dev', '*.app.github.dev'],
+  allowedDevOrigins: ['127.0.0.1', ...(previewDevOrigin ? [previewDevOrigin] : [])],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
@@ -79,8 +83,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3003',
         '127.0.0.1:3003',
-        '*.app.github.dev',
-        '**.gitpod.dev',
+        ...(previewDevOrigin ? [previewDevOrigin] : []),
       ],
     },
   },

@@ -3,13 +3,13 @@ import type { NextRequest } from 'next/server'
 /**
  * Resolves the externally-correct origin for the incoming request.
  *
- * Behind a reverse proxy (GitHub Codespaces, Vercel, etc.) `request.nextUrl.origin`
+ * Behind a reverse proxy `request.nextUrl.origin`
  * reflects the app's *internal* listening port (e.g. `:3000`). Browser-facing
  * redirects must use the *external* origin instead, or the browser is sent to a
  * port that isn't publicly reachable.
  *
  * Resolution order: `x-forwarded-host` (+ `x-forwarded-proto`) → `host` header →
- * `request.nextUrl.origin`. The codespaces port is stripped on **every** path
+ * `request.nextUrl.origin`. A forwarded internal port is stripped on **every** path
  * (including the fallback), since some proxies forward the host without a
  * distinguishing `x-forwarded-host`. Stripping is a no-op for `localhost` and
  * real domains, so this is safe for local dev and production.
@@ -18,7 +18,7 @@ import type { NextRequest } from 'next/server'
  */
 export function getRequestOrigin(request: NextRequest): string {
   const candidate = resolveCandidateOrigin(request)
-  return stripCodespacesPort(candidate) ?? candidate
+  return stripForwardedPort(candidate) ?? candidate
 }
 
 /** Builds an absolute URL on the request's externally-correct origin. */
@@ -49,10 +49,10 @@ function resolveCandidateOrigin(request: NextRequest): string {
   }
 }
 
-function stripCodespacesPort(origin: string): string | null {
+function stripForwardedPort(origin: string): string | null {
   try {
     const url = new URL(origin)
-    if (isCodespacesHost(url.hostname)) url.port = ''
+    if (isForwardedHost(url.hostname)) url.port = ''
     return url.origin
   } catch {
     return null
@@ -73,6 +73,6 @@ function isLocalHostValue(host: string): boolean {
   }
 }
 
-function isCodespacesHost(hostname: string): boolean {
+function isForwardedHost(hostname: string): boolean {
   return /-\d+\./.test(hostname)
 }

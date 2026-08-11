@@ -216,36 +216,6 @@ describe('create876Client', () => {
     )
   })
 
-  it('derives the forwarded API URL in Codespaces browser development', async () => {
-    const originalLocation = globalThis.location
-    Object.defineProperty(globalThis, 'location', {
-      configurable: true,
-      value: {
-        hostname: 'careful-space-abc123-3000.app.github.dev',
-        protocol: 'https:',
-      },
-    })
-
-    const fetchMock = vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({ data: sessionPayload, error: null }),
-    })
-
-    try {
-      const $876 = create876Client({ fetch: fetchMock })
-
-      await $876.auth.login(loginParams)
-
-      expect(fetchMock).toHaveBeenCalledWith(
-        'https://careful-space-abc123-4000.app.github.dev/auth/login',
-        expect.any(Object)
-      )
-    } finally {
-      Object.defineProperty(globalThis, 'location', {
-        configurable: true,
-        value: originalLocation,
-      })
-    }
-  })
 
   it('uses a relative same-origin base URL when configured', async () => {
     const fetchMock = vi.fn().mockResolvedValue({

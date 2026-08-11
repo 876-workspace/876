@@ -95,7 +95,7 @@ describe('/api/auth bridge', () => {
     })
   })
 
-  it('derives the browser origin from forwarded Codespaces headers', async () => {
+  it('derives the browser origin from forwarded headers', async () => {
     vi.stubEnv('API_URL', 'https://api.example.com')
     vi.stubEnv('API_876_KEY', '876_app_secret_test_key')
 
@@ -115,7 +115,7 @@ describe('/api/auth bridge', () => {
         'content-type': 'application/json',
         host: 'localhost:3000',
         'x-forwarded-host':
-          'potential-space-invention-967qjvj9vppqf75v9-3000.app.github.dev:3000',
+          'preview-3000.example.test:3000',
         'x-forwarded-proto': 'https',
       }),
       text: () => Promise.resolve('{"provider":"google"}'),
@@ -127,9 +127,7 @@ describe('/api/auth bridge', () => {
 
     const [, init] = fetchMock.mock.calls[0]!
     const headers = init?.headers as Headers
-    expect(headers.get('x-876-origin')).toBe(
-      'https://potential-space-invention-967qjvj9vppqf75v9-3000.app.github.dev'
-    )
+    expect(headers.get('x-876-origin')).toBe('https://preview-3000.example.test')
   })
 
   it('defaults the bridge to the deployed API URL in production', async () => {

@@ -262,7 +262,7 @@ const sub = await client.organizations.subscriptions.retrieve({
 })
 ```
 
-**Base URL resolution:** explicit `baseUrl` → `NEXT_PUBLIC_876_API_URL` → `NEXT_PUBLIC_API_URL` → Codespaces forwarded `4000` → `http://localhost:4000` → prod `https://eight76-api.onrender.com` (see `packages/sdk/README.md`).
+**Base URL resolution:** explicit `baseUrl` → `NEXT_PUBLIC_876_API_URL` → `NEXT_PUBLIC_API_URL` → `http://localhost:4000` → prod `https://eight76-api.onrender.com` (see `packages/sdk/README.md`).
 
 **Commands:** `pnpm --filter @876/sdk typecheck`, `pnpm --filter @876/sdk test`
 

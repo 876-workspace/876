@@ -20,9 +20,15 @@ const securityHeaders = [
   },
 ]
 
+const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
+  '{port}',
+  '*'
+)
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
+  allowedDevOrigins: previewDevOrigin ? [previewDevOrigin] : [],
   webpack: externalizePrismaWasm,
   // Trace from the monorepo root so the include globs below can reach the
   // pnpm store. This matches Next's own monorepo auto-inference, so it does
@@ -44,7 +50,6 @@ const nextConfig: NextConfig = {
       'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
     ],
   },
-  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
@@ -98,8 +103,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3004',
         '127.0.0.1:3004',
-        '*.app.github.dev',
-        '**.gitpod.dev',
+        ...(previewDevOrigin ? [previewDevOrigin] : []),
       ],
     },
   },

@@ -1307,9 +1307,8 @@ export async function sendClientRequest(
 2. Environment variables (tier-specific precedence):
    - SDK: ['NEXT_PUBLIC_876_API_URL', 'NEXT_PUBLIC_API_URL']
    - Admin: ['API_URL', 'NEXT_PUBLIC_876_API_URL', 'NEXT_PUBLIC_API_URL']
-3. Codespaces auto-detection (browser-side port forwarding)
-4. Development fallback: http://localhost:4000
-5. Production fallback: https://eight76-api.onrender.com
+3. Development fallback: http://localhost:4000
+4. Production fallback: https://eight76-api.onrender.com
 ```
 
 ### Client Options Shape

@@ -108,8 +108,8 @@ the browser sends that was not signed fails with `SignatureDoesNotMatch`.
 **Never set a CORS policy on `876-files-<env>`.** Private files are read through
 signed URLs the server mints; no browser needs to `PUT` to that bucket directly.
 
-Add each app origin as it starts uploading. Codespaces/preview origins are
-per-environment and belong only in the development bucket's policy.
+Add each app origin as it starts uploading. Preview origins are per-environment
+and belong only in the development bucket's policy.
 
 ## Credentials
 

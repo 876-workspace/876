@@ -4,8 +4,8 @@
  *
  * On a plain local machine `http://localhost:<port>` is reachable from the
  * browser, so the committed `.env.development` defaults are correct and this
- * script exits without writing. Inside a remote workspace (GitHub Codespaces or
- * Ona/Gitpod) the browser is on a different machine, so each app's public URLs
+ * script exits without writing. Inside a remote workspace the browser is on a
+ * different machine, so each app's public URLs
  * must be the forwarded HTTPS origins instead — otherwise cross-app links,
  * browser-side SDK calls, OAuth redirects, and the API's CORS allow-list all
  * point at a localhost that only exists inside the container.
