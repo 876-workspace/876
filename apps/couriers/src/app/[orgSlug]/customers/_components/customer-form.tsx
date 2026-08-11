@@ -16,14 +16,14 @@ import {
   SelectValue,
 } from '@876/ui/select'
 import { Switch } from '@876/ui/switch'
-import { listDialCodes } from '@876/core/phone'
+import { listDialCodes, parsePhone } from '@876/core/phone'
 
 import { client } from '@/lib/client'
 import type { CustomerKind, CustomerRow } from '@/types/customer'
 
 const dialCodes = listDialCodes().map((country) => ({
   value: country.countryCode,
-  label: `${country.flag} ${country.dialCode}`,
+  label: `${country.flag} ${country.name} (${country.dialCode})`,
   dialCode: country.dialCode,
 }))
 
@@ -45,13 +45,10 @@ function splitPhone(stored: string | null | undefined): PhoneInputValue {
       number: '',
     }
 
-  const match = dialCodes
-    .filter((code) => stored.startsWith(code.dialCode))
-    .sort((a, b) => b.dialCode.length - a.dialCode.length)[0]
-
   // An unrecognized prefix keeps the raw value visible rather than silently
   // dropping digits the user would then have to notice were missing.
-  if (!match)
+  const parsed = parsePhone(stored, DEFAULT_COUNTRY_CODE)
+  if (!parsed)
     return {
       countryCode: DEFAULT_COUNTRY_CODE,
       dialCode: DEFAULT_DIAL_CODE,
@@ -59,9 +56,9 @@ function splitPhone(stored: string | null | undefined): PhoneInputValue {
     }
 
   return {
-    countryCode: match.value,
-    dialCode: match.dialCode,
-    number: stored.slice(match.dialCode.length),
+    countryCode: parsed.countryCode ?? DEFAULT_COUNTRY_CODE,
+    dialCode: parsed.dialCode,
+    number: `${parsed.areaCode ?? ''}${parsed.nationalNumber}`,
   }
 }
 type Props = {

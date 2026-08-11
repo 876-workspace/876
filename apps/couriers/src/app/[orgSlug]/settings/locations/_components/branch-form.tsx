@@ -24,7 +24,7 @@ import type { BranchView } from '@/types/branch'
 /** Built once at module scope — the catalog is static and ~250 entries long. */
 const DIAL_CODE_OPTIONS = listDialCodes().map((country) => ({
   value: country.countryCode,
-  label: `${country.flag} ${country.dialCode}`,
+  label: `${country.flag} ${country.name} (${country.dialCode})`,
   dialCode: country.dialCode,
 }))
 
