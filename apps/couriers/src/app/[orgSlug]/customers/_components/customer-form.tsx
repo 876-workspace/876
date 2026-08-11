@@ -131,8 +131,11 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
       const cleared = (next: string, previous: string | null | undefined) =>
         next ? next : previous ? null : undefined
 
-      const submittedPhone = phone.number.trim()
-        ? `${phone.dialCode}${phone.number.replace(/\D/g, '')}`
+      const rawPhone = phone.number.trim()
+      const submittedPhone = rawPhone
+        ? rawPhone.startsWith('+')
+          ? rawPhone
+          : `${phone.dialCode}${rawPhone.replace(/\D/g, '')}`
         : ''
       const emailValue = cleared(email.trim(), customer?.email)
       const phoneValue = cleared(submittedPhone, customer?.phone)

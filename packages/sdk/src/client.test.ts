@@ -216,7 +216,6 @@ describe('create876Client', () => {
     )
   })
 
-
   it('uses a relative same-origin base URL when configured', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       json: () => Promise.resolve({ data: sessionPayload, error: null }),

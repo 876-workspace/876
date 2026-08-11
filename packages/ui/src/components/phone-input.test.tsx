@@ -72,7 +72,11 @@ describe('PhoneInput', () => {
     await openDialCodes()
     await user.click(await screen.findByRole('option', { name: '🇯🇲 +1' }))
     expect(onValueChange).toHaveBeenCalledWith(
-      expect.objectContaining({ number: '7700900123', dialCode: '+1', countryCode: 'JM' })
+      expect.objectContaining({
+        number: '7700900123',
+        dialCode: '+1',
+        countryCode: 'JM',
+      })
     )
   })
 
@@ -114,7 +118,11 @@ describe('PhoneInput', () => {
       />
     )
     const trigger1 = screen.getByRole('combobox')
-    expect(trigger1.hasAttribute('disabled') || trigger1.getAttribute('aria-disabled') === 'true' || trigger1.hasAttribute('data-disabled')).toBe(true)
+    expect(
+      trigger1.hasAttribute('disabled') ||
+        trigger1.getAttribute('aria-disabled') === 'true' ||
+        trigger1.hasAttribute('data-disabled')
+    ).toBe(true)
     expect(screen.getByRole('textbox')).toBeDisabled()
   })
 

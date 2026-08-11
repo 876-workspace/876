@@ -116,7 +116,9 @@ describe('SearchableSelect', () => {
         { key: 'JM', value: '+1', label: 'Jamaica', leadingLabel: '+1' },
         { key: 'BB', value: '+1', label: 'Barbados', leadingLabel: '+1' },
       ]
-      render(<SearchableSelect options={options} value="" onValueChange={() => {}} />)
+      render(
+        <SearchableSelect options={options} value="" onValueChange={() => {}} />
+      )
       await openPopup()
       expect(screen.getByRole('option', { name: /Jamaica/ })).toBeVisible()
       expect(screen.getByRole('option', { name: /Barbados/ })).toBeVisible()
@@ -127,17 +129,32 @@ describe('SearchableSelect', () => {
         { value: 'JM', label: 'Jamaica', leadingLabel: '+1' },
         { value: 'CU', label: 'Cuba', leadingLabel: '+53' },
       ]
-      render(<SearchableSelect options={options} value="" onValueChange={() => {}} />)
+      render(
+        <SearchableSelect options={options} value="" onValueChange={() => {}} />
+      )
       await openPopup()
       expect(screen.getByText('+1')).toBeVisible()
       expect(screen.getByText('+53')).toBeVisible()
-      expect(screen.getByRole('option', { name: /Jamaica/ })).toHaveTextContent('Jamaica')
+      expect(screen.getByRole('option', { name: /Jamaica/ })).toHaveTextContent(
+        'Jamaica'
+      )
     })
 
     it('is disabled when the disabled prop is set', () => {
-      render(<SearchableSelect options={COUNTRIES} value="" onValueChange={() => {}} disabled />)
+      render(
+        <SearchableSelect
+          options={COUNTRIES}
+          value=""
+          onValueChange={() => {}}
+          disabled
+        />
+      )
       const trigger = screen.getByRole('combobox')
-      expect(trigger.hasAttribute('disabled') || trigger.getAttribute('aria-disabled') === 'true' || trigger.hasAttribute('data-disabled')).toBe(true)
+      expect(
+        trigger.hasAttribute('disabled') ||
+          trigger.getAttribute('aria-disabled') === 'true' ||
+          trigger.hasAttribute('data-disabled')
+      ).toBe(true)
     })
   })
 })

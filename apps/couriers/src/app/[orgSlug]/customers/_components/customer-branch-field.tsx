@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, use, useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { FormRow } from '@876/ui/form-row'
 import {
   Select,
@@ -26,25 +26,36 @@ type Props = {
 
 /** Streams the branch selector without delaying the rest of the customer form. */
 export function CustomerBranchField({ branches, ...props }: Props) {
-  if (Array.isArray(branches))
-    return <ResolvedCustomerBranchField branches={branches} {...props} />
+  const [resolvedPromise, setResolvedPromise] = useState<{
+    source: Promise<CustomerBranchOption[]>
+    branches: CustomerBranchOption[]
+  } | null>(null)
 
-  return (
-    <Suspense
-      fallback={<CustomerBranchFieldSkeleton className={props.className} />}
-    >
-      <StreamingCustomerBranchField branches={branches} {...props} />
-    </Suspense>
-  )
-}
+  useEffect(() => {
+    if (Array.isArray(branches)) return
 
-function StreamingCustomerBranchField({
-  branches: branchesPromise,
-  ...props
-}: Omit<Props, 'branches'> & { branches: Promise<CustomerBranchOption[]> }) {
-  const branches = use(branchesPromise)
+    let cancelled = false
 
-  return <ResolvedCustomerBranchField branches={branches} {...props} />
+    void branches.then((nextBranches) => {
+      if (!cancelled)
+        setResolvedPromise({ source: branches, branches: nextBranches })
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [branches])
+
+  const resolvedBranches = Array.isArray(branches)
+    ? branches
+    : resolvedPromise?.source === branches
+      ? resolvedPromise.branches
+      : null
+
+  if (!resolvedBranches)
+    return <CustomerBranchFieldSkeleton className={props.className} />
+
+  return <ResolvedCustomerBranchField branches={resolvedBranches} {...props} />
 }
 
 function ResolvedCustomerBranchField({

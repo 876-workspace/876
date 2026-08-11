@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CustomerRow } from '@/types/customer'
@@ -52,7 +52,10 @@ function customer(overrides: Partial<CustomerRow> = {}): CustomerRow {
   }
 }
 
-const BRANCHES = [{ id: 'br_kingston', name: 'Kingston' }, { id: 'br_mobay', name: 'Montego Bay' }]
+const BRANCHES = [
+  { id: 'br_kingston', name: 'Kingston' },
+  { id: 'br_mobay', name: 'Montego Bay' },
+]
 describe('CustomerForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -296,7 +299,10 @@ describe('CustomerForm', () => {
     render(<CustomerForm orgSlug="nkr-express" branches={deferred} />)
     expect(screen.getByLabelText('Loading branches')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
-    resolve([{ id: 'br_kingston', name: 'Kingston' }])
+    await act(async () => {
+      resolve([{ id: 'br_kingston', name: 'Kingston' }])
+      await deferred
+    })
     await waitFor(() =>
       expect(
         screen.queryByLabelText('Loading branches')
@@ -308,12 +314,15 @@ describe('CustomerForm', () => {
   })
 
   it('auto-selects a single streamed branch for a new customer', async () => {
-    render(
-      <CustomerForm
-        orgSlug="nkr-express"
-        branches={Promise.resolve([{ id: 'br_kingston', name: 'Kingston' }])}
-      />
-    )
+    let resolve: (value: { id: string; name: string }[]) => void = () => {}
+    const deferred = new Promise<{ id: string; name: string }[]>((res) => {
+      resolve = res
+    })
+    render(<CustomerForm orgSlug="nkr-express" branches={deferred} />)
+    await act(async () => {
+      resolve([{ id: 'br_kingston', name: 'Kingston' }])
+      await deferred
+    })
     await waitFor(() =>
       expect(
         screen.getByRole('combobox', { name: 'Branch' })
@@ -365,9 +374,7 @@ describe('CustomerForm', () => {
     expect(screen.getByLabelText('Last name')).toBeDisabled()
     expect(screen.getByLabelText('Email')).toBeDisabled()
     expect(screen.getByRole('textbox', { name: 'Phone' })).toBeDisabled()
-    expect(
-      screen.getByText("Identity comes from this customer's 876 account.")
-    ).toBeVisible()
+    expect(screen.getByRole('button', { name: 'About Name' })).toBeVisible()
     // Clearing would normally be identity error, but CORE_USER bypasses it
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
@@ -554,24 +561,24 @@ describe('CustomerForm', () => {
   })
 
   it('keeps raw stored value for an unrecognized dial prefix instead of dropping digits', async () => {
-    // +999 is not a known dial code; splitPhone keeps raw value visible
+    // +000 is not a known dial code; splitPhone keeps raw value visible.
     render(
       <CustomerForm
         orgSlug="nkr-express"
         branches={[]}
-        customer={customer({ phone: '+99912345678', customerType: 'EXTERNAL' })}
+        customer={customer({ phone: '+00012345678', customerType: 'EXTERNAL' })}
       />
     )
     expect(screen.getByRole('textbox', { name: 'Phone' })).toHaveValue(
-      '+99912345678'
+      '+00012345678'
     )
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
-    // Re-submits as dialCode + number stripped: +99912345678 -> should round-trip as same string
+    // The raw value stays intact rather than being replaced by the default code.
     expect(mocks.update).toHaveBeenCalledWith(
       'nkr-express',
       'cprof_nkr',
-      expect.objectContaining({ phone: '+99912345678' })
+      expect.objectContaining({ phone: '+00012345678' })
     )
   })
 
@@ -665,6 +672,9 @@ describe('CustomerForm', () => {
     await waitFor(() => expect(screen.getByText('Network error')).toBeVisible())
     const firstKey = mocks.create.mock.calls[0]?.[1].idempotencyKey as string
     expect(firstKey).toBeTruthy()
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled()
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(2))
     expect(mocks.create.mock.calls[1]?.[1].idempotencyKey).toBe(firstKey)
@@ -735,25 +745,46 @@ describe('CustomerForm', () => {
 
   it('splits a Bahamas NANP number preserving the 242 area code', async () => {
     render(
-      <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer({ phone: '+12425551234', customerType: 'EXTERNAL' })} />
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ phone: '+12425551234', customerType: 'EXTERNAL' })}
+      />
     )
-    expect(screen.getByRole('textbox', { name: 'Phone' })).toHaveValue('2425551234')
+    expect(screen.getByRole('textbox', { name: 'Phone' })).toHaveValue(
+      '2425551234'
+    )
     // dial picker still shows +1 (NANP shared) but number includes area
     expect(screen.getAllByRole('combobox')[0]?.textContent).toContain('+1')
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
-    expect(mocks.update).toHaveBeenCalledWith('nkr-express', 'cprof_nkr', expect.objectContaining({ phone: '+12425551234' }))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ phone: '+12425551234' })
+    )
   })
 
   it('keeps an unparsable stored phone as raw text instead of dropping it', () => {
     render(
-      <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer({ phone: 'not-a-number', customerType: 'EXTERNAL' })} />
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ phone: 'not-a-number', customerType: 'EXTERNAL' })}
+      />
     )
-    expect(screen.getByRole('textbox', { name: 'Phone' })).toHaveValue('not-a-number')
+    expect(screen.getByRole('textbox', { name: 'Phone' })).toHaveValue(
+      'not-a-number'
+    )
   })
 
   it('omits phone on create when the number field is whitespace only', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', 'A')
     fill('Last name', 'B')
     fill('Email', 'a@b.jm')
@@ -765,64 +796,121 @@ describe('CustomerForm', () => {
   })
 
   it('sends an updated phone when edited to a new valid number', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[]} customer={customer({ phone: '+18765550142', customerType: 'EXTERNAL' })} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ phone: '+18765550142', customerType: 'EXTERNAL' })}
+      />
+    )
     const box = screen.getByRole('textbox', { name: 'Phone' })
     fireEvent.change(box, { target: { value: '8765559999' } })
     // dial picker is +1 by default, so full is +18765559999
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
-    expect(mocks.update).toHaveBeenCalledWith('nkr-express', 'cprof_nkr', expect.objectContaining({ phone: '+18765559999' }))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ phone: '+18765559999' })
+    )
   })
 
   it('trims email before sending and omits branchId validation after trim', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', 'Marlon')
     fill('Last name', 'Brown')
     fill('Email', '  marlon@example.jm  ')
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
-    expect(mocks.create).toHaveBeenCalledWith('nkr-express', expect.objectContaining({ email: 'marlon@example.jm' }))
+    expect(mocks.create).toHaveBeenCalledWith(
+      'nkr-express',
+      expect.objectContaining({ email: 'marlon@example.jm' })
+    )
   })
 
   it('treats whitespace-only first name as missing', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', '   ')
     fill('Last name', 'Brown')
     fill('Email', 'a@b.jm')
-    fireEvent.submit(screen.getByRole('button', { name: 'Add' }).closest('form')!)
-    expect(await screen.findByText('Complete the required identity fields.')).toBeVisible()
+    fireEvent.submit(
+      screen.getByRole('button', { name: 'Add' }).closest('form')!
+    )
+    expect(
+      await screen.findByText('Complete the required identity fields.')
+    ).toBeVisible()
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
   it('treats whitespace-only last name as missing', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', 'Marlon')
     fill('Last name', '   ')
     fill('Email', 'a@b.jm')
-    fireEvent.submit(screen.getByRole('button', { name: 'Add' }).closest('form')!)
-    expect(await screen.findByText('Complete the required identity fields.')).toBeVisible()
+    fireEvent.submit(
+      screen.getByRole('button', { name: 'Add' }).closest('form')!
+    )
+    expect(
+      await screen.findByText('Complete the required identity fields.')
+    ).toBeVisible()
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
   it('shows TRN hint and does not mark TRN as required', () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
-    expect(screen.getByText('Required to start receiving packages.')).toBeVisible()
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
+    expect(screen.getByRole('button', { name: 'About TRN' })).toBeVisible()
     expect(screen.getByLabelText('TRN')).not.toBeRequired()
   })
 
   it('allows changing status when editing', async () => {
     const user = userEvent.setup()
-    render(<CustomerForm orgSlug="nkr-express" branches={[]} customer={customer({ status: 'ACTIVE' })} />)
-    await user.click(screen.getByRole('combobox', { name: '' }))
-    // Status select has no aria label; find by option text
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({ status: 'ACTIVE' })}
+      />
+    )
+    const statusTrigger = screen.getAllByRole('combobox').at(-1)
+    expect(statusTrigger).toBeTruthy()
+    await user.click(statusTrigger!)
     await user.click(await screen.findByRole('option', { name: 'Suspended' }))
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
-    expect(mocks.update).toHaveBeenCalledWith('nkr-express', 'cprof_nkr', expect.objectContaining({ status: 'SUSPENDED' }))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ status: 'SUSPENDED' })
+    )
   })
 
   it('does not include status when creating a new customer', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', 'A')
     fill('Last name', 'B')
     fill('Email', 'a@b.jm')
@@ -832,7 +920,16 @@ describe('CustomerForm', () => {
   })
 
   it('ignores email changes for CORE_USER even if the input is programmatically mutated', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[]} customer={customer({ customerType: 'CORE_USER', email: 'original@example.jm' })} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[]}
+        customer={customer({
+          customerType: 'CORE_USER',
+          email: 'original@example.jm',
+        })}
+      />
+    )
     const email = screen.getByLabelText('Email') as HTMLInputElement
     // bypass disabled by removing attribute and changing value (simulates devtools tamper)
     email.removeAttribute('disabled')
@@ -843,42 +940,87 @@ describe('CustomerForm', () => {
   })
 
   it('sends branchId correctly when editing and branch was pre-selected', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={BRANCHES} customer={customer({ branchId: 'br_mobay' })} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={BRANCHES}
+        customer={customer({ branchId: 'br_mobay' })}
+      />
+    )
     // Branch already shows Montego Bay? Our customer fixture defaults to br_kingston; override above
-    expect(screen.getByRole('combobox', { name: 'Branch' })).toHaveTextContent('Montego Bay')
+    expect(screen.getByRole('combobox', { name: 'Branch' })).toHaveTextContent(
+      'Montego Bay'
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
-    expect(mocks.update).toHaveBeenCalledWith('nkr-express', 'cprof_nkr', expect.objectContaining({ branchId: 'br_mobay' }))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ branchId: 'br_mobay' })
+    )
   })
 
   it('creates with no customerType still defaults to INDIVIDUAL and requires first/last', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     expect(screen.getByLabelText('First name')).toBeVisible()
     expect(screen.queryByLabelText('Company name')).not.toBeInTheDocument()
   })
 
   it('shows branch skeleton while streaming on edit and retains customer branch after resolution', async () => {
-    const deferred = Promise.resolve([{ id: 'br_kingston', name: 'Kingston' }, { id: 'br_mobay', name: 'Montego Bay' }])
-    render(<CustomerForm orgSlug="nkr-express" branches={deferred} customer={customer({ branchId: 'br_kingston' })} />)
+    const deferred = Promise.resolve([
+      { id: 'br_kingston', name: 'Kingston' },
+      { id: 'br_mobay', name: 'Montego Bay' },
+    ])
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={deferred}
+        customer={customer({ branchId: 'br_kingston' })}
+      />
+    )
     expect(screen.getByLabelText('Loading branches')).toBeVisible()
-    await waitFor(() => expect(screen.queryByLabelText('Loading branches')).not.toBeInTheDocument())
-    expect(screen.getByRole('combobox', { name: 'Branch' })).toHaveTextContent('Kingston')
+    await waitFor(() =>
+      expect(
+        screen.queryByLabelText('Loading branches')
+      ).not.toBeInTheDocument()
+    )
+    expect(screen.getByRole('combobox', { name: 'Branch' })).toHaveTextContent(
+      'Kingston'
+    )
   })
 
   it('navigates to customer detail after successful edit and to list after create', async () => {
-    const { unmount } = render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    const { unmount } = render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', 'A')
     fill('Last name', 'B')
     fill('Email', 'a@b.jm')
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/nkr-express/customers'))
+    await waitFor(() =>
+      expect(mocks.push).toHaveBeenCalledWith('/nkr-express/customers')
+    )
     expect(mocks.refresh).toHaveBeenCalled()
     unmount()
     vi.clearAllMocks()
     mocks.update.mockResolvedValue({ data: { id: 'cprof_nkr' }, error: null })
-    render(<CustomerForm orgSlug="nkr-express" branches={[]} customer={customer()} />)
+    render(
+      <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer()} />
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
-    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/nkr-express/customers/cprof_nkr'))
+    await waitFor(() =>
+      expect(mocks.push).toHaveBeenCalledWith(
+        '/nkr-express/customers/cprof_nkr'
+      )
+    )
   })
 
   it('calls router.back when Cancel is clicked', async () => {
@@ -889,29 +1031,56 @@ describe('CustomerForm', () => {
   })
 
   it('disables Cancel and Branch while submission is pending (isPending)', async () => {
-    let resolveCreate: (v: any) => void = () => {}
-    mocks.create.mockReturnValue(new Promise((res) => { resolveCreate = res }))
-    render(<CustomerForm orgSlug="nkr-express" branches={[{ id: 'br_kingston', name: 'Kingston' }]} />)
+    let resolveCreate: (value: {
+      data: { id: string } | null
+      error: { message: string } | null
+    }) => void = () => {}
+    mocks.create.mockReturnValue(
+      new Promise((res) => {
+        resolveCreate = res
+      })
+    )
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
     fill('First name', 'A')
     fill('Last name', 'B')
     fill('Email', 'a@b.jm')
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled())
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
+    )
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
     expect(screen.getByRole('combobox', { name: 'Branch' })).toBeDisabled()
     resolveCreate({ data: { id: 'cprof_nkr' }, error: null })
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled())
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Add' })).toBeEnabled()
+    )
   })
 
   it('handles branch promise that resolves to null-ish gracefully (empty)', async () => {
-    render(<CustomerForm orgSlug="nkr-express" branches={Promise.resolve([])} />)
-    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Branch' })).toBeVisible())
+    let resolve: (value: { id: string; name: string }[]) => void = () => {}
+    const deferred = new Promise<{ id: string; name: string }[]>((res) => {
+      resolve = res
+    })
+    render(<CustomerForm orgSlug="nkr-express" branches={deferred} />)
+    await act(async () => {
+      resolve([])
+      await deferred
+    })
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'Branch' })).toBeVisible()
+    )
     expect(screen.getByRole('combobox', { name: 'Branch' })).toBeDisabled()
     fill('First name', 'A')
     fill('Last name', 'B')
     fill('Email', 'a@b.jm')
-    fireEvent.submit(screen.getByRole('button', { name: 'Add' }).closest('form')!)
+    fireEvent.submit(
+      screen.getByRole('button', { name: 'Add' }).closest('form')!
+    )
     expect(await screen.findByText('Select a branch.')).toBeVisible()
   })
-
 })
