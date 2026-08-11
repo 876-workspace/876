@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatPhone, normalizePhone, parsePhone } from './phone'
+import { formatPhone, listDialCodes, normalizePhone, parsePhone } from './phone'
 
 describe('normalizePhone', () => {
   it('normalizes raw Jamaican NANP digits', () => {
@@ -38,7 +38,6 @@ describe('normalizePhone', () => {
     expect(normalizePhone(undefined as unknown as string)).toBeNull()
   })
 })
-
 describe('formatPhone', () => {
   it('formats raw Jamaican NANP digits', () => {
     expect(formatPhone('18765555555')).toBe('+1 (876) 555-5555')
@@ -143,5 +142,38 @@ describe('parsePhone', () => {
 
   it('returns null for a runtime undefined input', () => {
     expect(parsePhone(undefined as unknown as string)).toBeNull()
+  })
+})
+
+describe('listDialCodes', () => {
+  it('includes flag and name for every country', () => {
+    const codes = listDialCodes()
+    expect(codes.length).toBe(32)
+    for (const entry of codes) {
+      expect(entry.flag).toMatch(/./u)
+      expect(entry.name.length).toBeGreaterThan(1)
+      expect(entry.countryCode).toMatch(/^[A-Z]{2}$/)
+      expect(entry.dialCode).toMatch(/^\+\d+$/)
+    }
+  })
+
+  it('is sorted alphabetically by countryCode and de-duplicated', () => {
+    const codes = listDialCodes()
+    const countryCodes = codes.map((c) => c.countryCode)
+    expect(new Set(countryCodes).size).toBe(countryCodes.length)
+    expect([...countryCodes].sort((a, b) => a.localeCompare(b))).toEqual(countryCodes)
+  })
+
+  it('exposes the Jamaican entry with its flag', () => {
+    const jm = listDialCodes().find((c) => c.countryCode === 'JM')
+    expect(jm).toMatchObject({ countryCode: 'JM', dialCode: '+1', name: 'Jamaica' })
+    expect(jm?.flag).toBeTruthy()
+  })
+
+  it('returns a fresh alphabetically sorted copy that cannot mutate the parser order', () => {
+    const first = listDialCodes()
+    const second = listDialCodes()
+    expect(first).not.toBe(second)
+    expect(first).toEqual(second)
   })
 })

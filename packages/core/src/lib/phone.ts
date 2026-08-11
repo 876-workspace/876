@@ -3,6 +3,8 @@ import countries from '../countries.json'
 type Country = {
   areaCode: string
   countryCode: string
+  flag: string
+  name: string
 }
 
 type CountryDialCode = Omit<Country, 'areaCode'> & {
@@ -237,6 +239,8 @@ export function normalizePhone(
 export type DialCodeOption = {
   countryCode: string
   dialCode: string
+  flag: string
+  name: string
 }
 
 /**
@@ -259,6 +263,8 @@ export function listDialCodes(): DialCodeOption[] {
     .map((country) => ({
       countryCode: country.countryCode,
       dialCode: country.dialCode,
+      flag: country.flag,
+      name: country.name,
     }))
     .sort((left, right) => left.countryCode.localeCompare(right.countryCode))
 }
