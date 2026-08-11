@@ -27,6 +27,7 @@
   // Non-secret service URLs. Secrets are set with `wrangler secret put`.
   "vars": {
     "API_URL": "https://876-api.1876.workers.dev",
+    "BILLING_API_URL": "https://876-billing-api.1876.workers.dev",
     "WIDGETS_API_URL": "https://876-widgets-api.1876.workers.dev",
     "BILLING_OAUTH_ISSUER": "https://876-api.1876.workers.dev",
     "SENTRY_DSN": "https://6734c1997cea1aa887a776b9c3578614@o4507681618591744.ingest.us.sentry.io/4511802776748032",
