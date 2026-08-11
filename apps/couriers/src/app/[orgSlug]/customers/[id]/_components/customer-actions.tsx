@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   AlertDialog,
@@ -12,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@876/ui/alert-dialog'
-import { Button, buttonVariants } from '@876/ui/button'
+import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,13 +38,13 @@ export function CustomerActions({
   return (
     <>
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/${orgSlug}/customers/${id}/edit`)}
+        <Link
+          href={`/${orgSlug}/customers/${id}/edit`}
+          className={buttonVariants({ variant: 'outline' })}
         >
           <Pencil />
           Edit
-        </Button>
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger
             className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
