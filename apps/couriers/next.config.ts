@@ -16,6 +16,11 @@ const securityHeaders = [
   },
 ]
 
+const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
+  '{port}',
+  '*'
+)
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
@@ -24,7 +29,7 @@ const nextConfig: NextConfig = {
   // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
   // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  allowedDevOrigins: ['127.0.0.1'],
+  allowedDevOrigins: ['127.0.0.1', ...(previewDevOrigin ? [previewDevOrigin] : [])],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
@@ -78,6 +83,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3003',
         '127.0.0.1:3003',
+        ...(previewDevOrigin ? [previewDevOrigin] : []),
       ],
     },
   },

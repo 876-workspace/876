@@ -20,6 +20,11 @@ const securityHeaders = [
   },
 ]
 
+const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
+  '{port}',
+  '*'
+)
+
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
@@ -49,7 +54,7 @@ const nextConfig: NextConfig = {
       'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
     ],
   },
-  allowedDevOrigins: ['127.0.0.1'],
+  allowedDevOrigins: ['127.0.0.1', ...(previewDevOrigin ? [previewDevOrigin] : [])],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
@@ -87,6 +92,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3002',
         '127.0.0.1:3002',
+        ...(previewDevOrigin ? [previewDevOrigin] : []),
         '876-console.1876.workers.dev',
       ],
     },
