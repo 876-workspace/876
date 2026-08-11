@@ -37,7 +37,10 @@ async function EditCustomerData({
   orgSlug: string
   id: string
 }) {
-  const ctx = await getManageContext(orgSlug)
+  const [ctx, request876] = await Promise.all([
+    getManageContext(orgSlug),
+    get876Client(),
+  ])
   if (!ctx?.tenant) notFound()
   const customerResult = await $876.couriers.customers.retrieve(
     ctx.tenant.id,
@@ -45,15 +48,14 @@ async function EditCustomerData({
   )
   if (isCouriersNotFound(customerResult)) notFound()
   const profile = toCustomerView(requireCouriersData(customerResult))
-  const [request876, branchesResult] = await Promise.all([
-    get876Client(),
+  const [branchesResult, registry] = await Promise.all([
     $876.couriers.branches.list(ctx.tenant.id),
+    request876.billing.customers.retrieve(
+      ctx.tenant.orgId,
+      profile.billingCustomerId
+    ),
   ])
   const branches = requireCouriersData(branchesResult).data
-  const registry = await request876.billing.customers.retrieve(
-    ctx.tenant.orgId,
-    profile.billingCustomerId
-  )
 
   if (!registry.data) notFound()
 

@@ -36,29 +36,34 @@ export function CustomerActions({
 
   return (
     <>
-      <Button
-        variant="outline"
-        onClick={() => router.push(`/${orgSlug}/customers/${id}/edit`)}
-      >
-        <Pencil />
-        Edit
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
-          aria-label="More actions"
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/${orgSlug}/customers/${id}/edit`)}
         >
-          <MoreHorizontalIcon className="size-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-auto min-w-40">
-          {/* Export belongs here per the detail-toolbar order, but it is not
-              implemented yet and a menu item that does nothing when clicked is
-              worse than one that is absent. Add it back with its handler. */}
-          <DropdownMenuItem variant="destructive" onClick={() => setOpen(true)}>
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <Pencil />
+          Edit
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+            aria-label="More actions"
+          >
+            <MoreHorizontalIcon className="size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-auto min-w-40">
+            {/* Export belongs here per the detail-toolbar order, but it is not
+                implemented yet and a menu item that does nothing when clicked is
+                worse than one that is absent. Add it back with its handler. */}
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setOpen(true)}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
