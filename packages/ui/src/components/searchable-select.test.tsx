@@ -7,12 +7,6 @@ import {
   type SearchableSelectOption,
 } from './searchable-select'
 
-/**
- * `userEvent.click` sends a full pointer sequence, and in jsdom the trigger
- * intermittently reads that as open-then-close. A plain click event opens the
- * popup deterministically; the `waitFor` makes a genuine failure to open show
- * up here rather than as a confusing "element not found" further down.
- */
 async function openPopup(): Promise<void> {
   const trigger = screen.getByRole('combobox')
   fireEvent.click(trigger)
@@ -113,6 +107,37 @@ describe('SearchableSelect', () => {
       await user.type(screen.getByPlaceholderText('Search countries…'), 'zzzzz')
 
       expect(screen.getByText('No country matches that search.')).toBeVisible()
+    })
+  })
+
+  describe('key and leadingLabel', () => {
+    it('renders options that share a value when given distinct keys', async () => {
+      const options: SearchableSelectOption[] = [
+        { key: 'JM', value: '+1', label: 'Jamaica', leadingLabel: '+1' },
+        { key: 'BB', value: '+1', label: 'Barbados', leadingLabel: '+1' },
+      ]
+      render(<SearchableSelect options={options} value="" onValueChange={() => {}} />)
+      await openPopup()
+      expect(screen.getByRole('option', { name: /Jamaica/ })).toBeVisible()
+      expect(screen.getByRole('option', { name: /Barbados/ })).toBeVisible()
+    })
+
+    it('renders the leadingLabel in its own column', async () => {
+      const options: SearchableSelectOption[] = [
+        { value: 'JM', label: 'Jamaica', leadingLabel: '+1' },
+        { value: 'CU', label: 'Cuba', leadingLabel: '+53' },
+      ]
+      render(<SearchableSelect options={options} value="" onValueChange={() => {}} />)
+      await openPopup()
+      expect(screen.getByText('+1')).toBeVisible()
+      expect(screen.getByText('+53')).toBeVisible()
+      expect(screen.getByRole('option', { name: /Jamaica/ })).toHaveTextContent('Jamaica')
+    })
+
+    it('is disabled when the disabled prop is set', () => {
+      render(<SearchableSelect options={COUNTRIES} value="" onValueChange={() => {}} disabled />)
+      const trigger = screen.getByRole('combobox')
+      expect(trigger.hasAttribute('disabled') || trigger.getAttribute('aria-disabled') === 'true' || trigger.hasAttribute('data-disabled')).toBe(true)
     })
   })
 })

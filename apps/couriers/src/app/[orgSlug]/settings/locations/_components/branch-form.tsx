@@ -23,11 +23,12 @@ import type { BranchView } from '@/types/branch'
 
 /** Built once at module scope — the catalog is static and ~250 entries long. */
 const DIAL_CODE_OPTIONS = listDialCodes().map((country) => ({
-  value: country.dialCode,
-  label: country.countryCode,
-  leadingLabel: country.dialCode,
+  value: country.countryCode,
+  label: `${country.flag} ${country.name} (${country.dialCode})`,
+  dialCode: country.dialCode,
 }))
 
+const DEFAULT_COUNTRY_CODE = 'JM'
 const DEFAULT_DIAL_CODE = '+1'
 
 /**
@@ -35,14 +36,25 @@ const DEFAULT_DIAL_CODE = '+1'
  * keeps its digits in the number field rather than being silently dropped.
  */
 function toPhoneValue(stored: string | null | undefined): PhoneInputValue {
-  if (!stored) return { dialCode: DEFAULT_DIAL_CODE, number: '' }
+  if (!stored)
+    return {
+      countryCode: DEFAULT_COUNTRY_CODE,
+      dialCode: DEFAULT_DIAL_CODE,
+      number: '',
+    }
 
   const parsed = parsePhone(stored, 'JM')
-  if (!parsed) return { dialCode: DEFAULT_DIAL_CODE, number: stored }
+  if (!parsed)
+    return {
+      countryCode: DEFAULT_COUNTRY_CODE,
+      dialCode: DEFAULT_DIAL_CODE,
+      number: stored,
+    }
 
   // A NANP number reports its area code separately from the national number;
   // keeping only the latter would silently drop the "876" from +1876…
   return {
+    countryCode: parsed.countryCode ?? '',
     dialCode: parsed.dialCode,
     number: `${parsed.areaCode ?? ''}${parsed.nationalNumber}`,
   }

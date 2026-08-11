@@ -15,6 +15,11 @@ import {
 } from './combobox'
 
 export type SearchableSelectOption = {
+  /**
+   * A stable, unique React key when multiple options intentionally share the
+   * same submitted value (for example, countries with one dialling code).
+   */
+  key?: string
   value: string
   label: string
   /**
@@ -88,7 +93,7 @@ export function SearchableSelect({
         <ComboboxList>
           {(option: SearchableSelectOption) => (
             <ComboboxItem
-              key={option.value}
+              key={option.key ?? option.value}
               value={option.value}
               className="group/option data-selected:bg-primary data-selected:text-primary-foreground data-selected:data-highlighted:bg-primary data-selected:data-highlighted:text-primary-foreground"
             >
