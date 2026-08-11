@@ -72,9 +72,7 @@ describe('getRequestOrigin', () => {
       'x-forwarded-proto': 'https',
     })
 
-    expect(getRequestOrigin(request)).toBe(
-      'https://silver-space-3002.app.github.dev'
-    )
+    expect(getRequestOrigin(request)).toBe('https://preview-3002.example.test')
   })
 })
 
