@@ -25,6 +25,11 @@ import { CustomerForm } from './customer-form'
 function fill(label: string, value: string) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 }
+
+function fillRequiredCreateFields() {
+  fill('First name', 'Marlon')
+  fill('Email', 'marlon.brown@example.jm')
+}
 function customer(overrides: Partial<CustomerRow> = {}): CustomerRow {
   return {
     id: 'cprof_nkr',
@@ -89,6 +94,64 @@ describe('CustomerForm', () => {
       customerKind: 'INDIVIDUAL',
       idempotencyKey: expect.any(String),
     })
+  })
+
+  it('auto-selects the only branch when creating a customer', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
+    )
+    fillRequiredCreateFields()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
+    expect(mocks.create).toHaveBeenCalledWith(
+      'nkr-express',
+      expect.objectContaining({ branchId: 'br_kingston' })
+    )
+  })
+
+  it('does not select a branch automatically when multiple branches exist', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[
+          { id: 'br_kingston', name: 'Kingston' },
+          { id: 'br_mobay', name: 'Montego Bay' },
+        ]}
+      />
+    )
+    fillRequiredCreateFields()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+
+    await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
+    expect(mocks.create).toHaveBeenCalledWith(
+      'nkr-express',
+      expect.objectContaining({ branchId: undefined })
+    )
+  })
+
+  it('preserves an existing customer branch instead of replacing it', async () => {
+    render(
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_mobay', name: 'Montego Bay' }]}
+        customer={customer({ branchId: 'br_kingston' })}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1))
+    expect(mocks.update).toHaveBeenCalledWith(
+      'nkr-express',
+      'cprof_nkr',
+      expect.objectContaining({ branchId: 'br_kingston' })
+    )
   })
   it('sends only courier fields and status when editing a CORE_USER', async () => {
     render(
