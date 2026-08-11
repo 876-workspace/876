@@ -145,10 +145,6 @@ Adding a new API operation:
 - Cursor pagination via `starting_after` / `ending_before` (item ID-based).
 - Client-safe errors must not include HTTP status fields.
 
-## Codespace / Environment Notes
-
-In GitHub Codespaces, `NEXT_PUBLIC_API_URL` must be the HTTPS-forwarded Codespace URL for port 4000 (e.g. `https://<codespace>-4000.app.github.dev`), set in `apps/console/.env.local`. The server-side `API_URL` stays `http://127.0.0.1:4000`. Port 4000 must be set to **Public** in the Codespaces Ports panel.
-
 ## Docs
 
 - Package-local notes stay in package `README.md` files.

@@ -25,7 +25,7 @@ The OAuth callback at `apps/876/src/app/callback/route.ts` and the auth bridge a
 
 > Known follow-up: `apps/876/src/app/oauth/consent/actions.ts` is the last remaining server action (an OAuth approve/deny redirect flow); convert it to a route handler in a dedicated change.
 
-Auth protocol bridge routes may forward transport metadata to the API, but they must not own provider/business logic. When an auth flow needs an absolute browser origin (for example WorkOS social callback URLs), derive it from the incoming request/forwarded headers and pass it explicitly to FastAPI. Do not hardcode `localhost`, Codespaces URLs, or deployment URLs in code. The 876 auth bridge forwards this as `x-876-origin`; the API may use it to replace missing or local-only callback configuration while production/non-local configured URLs remain authoritative.
+Auth protocol bridge routes may forward transport metadata to the API, but they must not own provider/business logic. When an auth flow needs an absolute browser origin (for example WorkOS social callback URLs), derive it from the incoming request/forwarded headers and pass it explicitly to FastAPI. Do not hardcode environment-specific URLs in code. The 876 auth bridge forwards this as `x-876-origin`; the API may use it to replace missing or local-only callback configuration while production/non-local configured URLs remain authoritative.
 
 ## How to Fetch Data
 

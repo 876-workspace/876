@@ -199,10 +199,8 @@ agent rules live in `.claude/rules/` and are mirrored in `.agents/rules/` and
 
 ---
 
-## Codespace / Environment Notes
+## Environment Notes
 
-- `NEXT_PUBLIC_API_URL` in Codespaces must be the HTTPS-forwarded URL for port 4000 (e.g. `https://<codespace>-4000.app.github.dev`). Port 4000 must be set to **Public** in the Ports panel.
-- Server-side `API_URL` stays `http://127.0.0.1:4000` even in Codespaces.
 - `API_INTERNAL_KEY` is never exposed to the browser. Set it only in server-side `.env.local` files.
 
 ---

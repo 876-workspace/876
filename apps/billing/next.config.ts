@@ -44,7 +44,6 @@ const nextConfig: NextConfig = {
       'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
     ],
   },
-  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
@@ -98,8 +97,6 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3004',
         '127.0.0.1:3004',
-        '*.app.github.dev',
-        '**.gitpod.dev',
       ],
     },
   },

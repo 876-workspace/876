@@ -36,9 +36,9 @@ function isLocalOrigin(value: string): boolean {
 }
 
 /**
- * Rewrites the current request origin to a sibling app's port. Handles
- * Codespaces forwarded hosts (`<name>-3000.app.github.dev` → `-3001`) and plain
- * localhost ports. Returns null when no peer origin can be derived.
+ * Rewrites the current request origin to a sibling app's port, including
+ * forwarded hosts and plain localhost ports. Returns null when no peer origin
+ * can be derived.
  */
 function getPeerOrigin(
   request: NextRequest,

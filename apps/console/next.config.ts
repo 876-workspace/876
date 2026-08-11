@@ -49,8 +49,7 @@ const nextConfig: NextConfig = {
       'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
     ],
   },
-  // Allow HMR websocket connections from Gitpod and GitHub Codespaces preview URLs.
-  allowedDevOrigins: ['127.0.0.1', '**.gitpod.dev', '*.app.github.dev'],
+  allowedDevOrigins: ['127.0.0.1'],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
@@ -88,8 +87,6 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3002',
         '127.0.0.1:3002',
-        '*.app.github.dev',
-        '**.gitpod.dev',
         '876-console.1876.workers.dev',
       ],
     },

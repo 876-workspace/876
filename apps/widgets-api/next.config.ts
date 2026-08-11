@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
   webpack: externalizePrismaWasm,
-  allowedDevOrigins: ['**.gitpod.dev', '*.app.github.dev'],
 }
 
 export default withSentryConfig(nextConfig, {
