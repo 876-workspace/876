@@ -127,9 +127,7 @@ describe('/api/auth bridge', () => {
 
     const [, init] = fetchMock.mock.calls[0]!
     const headers = init?.headers as Headers
-    expect(headers.get('x-876-origin')).toBe(
-      'https://potential-space-invention-967qjvj9vppqf75v9-3000.app.github.dev'
-    )
+    expect(headers.get('x-876-origin')).toBe('https://preview-3000.example.test')
   })
 
   it('defaults the bridge to the deployed API URL in production', async () => {

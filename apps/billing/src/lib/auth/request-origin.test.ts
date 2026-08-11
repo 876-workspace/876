@@ -63,9 +63,7 @@ describe('Billing getRequestOrigin', () => {
       'x-forwarded-proto': 'https',
     })
 
-    expect(getRequestOrigin(request)).toBe(
-      'https://silver-space-3004.app.github.dev'
-    )
+    expect(getRequestOrigin(request)).toBe('https://preview-3004.example.test')
   })
 
   it('ignores empty first header values', () => {
