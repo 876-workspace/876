@@ -43,7 +43,7 @@ describe('Couriers onboarding completion route', () => {
       accessStatus: 'active',
       tenant: null,
     })
-  mocks.getPlatformClient.mockResolvedValue({
+    mocks.getPlatformClient.mockResolvedValue({
       onboarding: { submit: mocks.submit, retrieve: mocks.retrieve },
       subscriptions: { create: mocks.provision },
     })
@@ -52,7 +52,10 @@ describe('Couriers onboarding completion route', () => {
       data: { answers: { platform_name: 'Montego Couriers' } },
       error: null,
     })
-    mocks.provision.mockResolvedValue({ data: { status: 'active' }, error: null })
+    mocks.provision.mockResolvedValue({
+      data: { status: 'active' },
+      error: null,
+    })
     mocks.createTenant.mockResolvedValue({
       data: { id: 'tenant_123' },
       error: null,

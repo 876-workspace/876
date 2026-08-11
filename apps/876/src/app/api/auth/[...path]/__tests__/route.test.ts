@@ -114,8 +114,7 @@ describe('/api/auth bridge', () => {
       headers: new Headers({
         'content-type': 'application/json',
         host: 'localhost:3000',
-        'x-forwarded-host':
-          'preview-3000.example.test:3000',
+        'x-forwarded-host': 'preview-3000.example.test:3000',
         'x-forwarded-proto': 'https',
       }),
       text: () => Promise.resolve('{"provider":"google"}'),
@@ -127,7 +126,9 @@ describe('/api/auth bridge', () => {
 
     const [, init] = fetchMock.mock.calls[0]!
     const headers = init?.headers as Headers
-    expect(headers.get('x-876-origin')).toBe('https://preview-3000.example.test')
+    expect(headers.get('x-876-origin')).toBe(
+      'https://preview-3000.example.test'
+    )
   })
 
   it('defaults the bridge to the deployed API URL in production', async () => {

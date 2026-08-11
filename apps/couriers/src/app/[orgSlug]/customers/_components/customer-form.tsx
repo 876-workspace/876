@@ -1,13 +1,12 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { EmailInput } from '@876/ui/email-input'
 import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
 import { PhoneInput, type PhoneInputValue } from '@876/ui/phone-input'
-import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
 import {
   Select,
   SelectContent,
@@ -15,27 +14,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@876/ui/select'
-import { Switch } from '@876/ui/switch'
 import { listDialCodes, parsePhone } from '@876/core/phone'
 
 import { client } from '@/lib/client'
-import type { CustomerKind, CustomerRow } from '@/types/customer'
+import type { CustomerRow } from '@/types/customer'
+import {
+  CustomerBranchField,
+  type CustomerBranchOption,
+} from './customer-branch-field'
 
 const dialCodes = listDialCodes().map((country) => ({
   value: country.countryCode,
-  label: `${country.flag} ${country.name} (${country.dialCode})`,
+  label: `${country.flag}\u2002${country.dialCode}`,
   dialCode: country.dialCode,
 }))
 
 const DEFAULT_COUNTRY_CODE = 'JM'
 const DEFAULT_DIAL_CODE = '+1'
+const customerFormRowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
 /**
- * Splits a stored E.164 number back into the two fields the input edits.
- *
- * The longest matching dial code wins: `+1` and `+1876` both prefix a Jamaican
- * number, and picking the shorter one leaves `876…` in the national field, which
- * is then re-submitted as a different number.
+ * Splits a stored E.164 number back into the country-aware phone picker.
  */
 function splitPhone(stored: string | null | undefined): PhoneInputValue {
   if (!stored)
@@ -45,9 +44,10 @@ function splitPhone(stored: string | null | undefined): PhoneInputValue {
       number: '',
     }
 
+  const parsed = parsePhone(stored, DEFAULT_COUNTRY_CODE)
+
   // An unrecognized prefix keeps the raw value visible rather than silently
   // dropping digits the user would then have to notice were missing.
-  const parsed = parsePhone(stored, DEFAULT_COUNTRY_CODE)
   if (!parsed)
     return {
       countryCode: DEFAULT_COUNTRY_CODE,
@@ -56,22 +56,22 @@ function splitPhone(stored: string | null | undefined): PhoneInputValue {
     }
 
   return {
-    countryCode: parsed.countryCode ?? '',
+    countryCode: parsed.countryCode ?? DEFAULT_COUNTRY_CODE,
     dialCode: parsed.dialCode,
     number: `${parsed.areaCode ?? ''}${parsed.nationalNumber}`,
   }
 }
 type Props = {
   orgSlug: string
-  branches: { id: string; name: string }[]
+  branches: CustomerBranchOption[] | Promise<CustomerBranchOption[]>
   customer?: CustomerRow
 }
 
 export function CustomerForm({ orgSlug, branches, customer }: Props) {
   const router = useRouter()
-  const [kind, setKind] = useState<CustomerKind>(
-    customer?.customerKind ?? 'INDIVIDUAL'
-  )
+  // New Couriers customers are always consumer accounts. Keep the stored kind
+  // only to render legacy business records without mutating their identity.
+  const kind = customer?.customerKind ?? 'INDIVIDUAL'
   const [firstName, setFirstName] = useState(customer?.firstName ?? '')
   const [lastName, setLastName] = useState(customer?.lastName ?? '')
   const [companyName, setCompanyName] = useState(customer?.companyName ?? '')
@@ -79,12 +79,14 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
   const [phone, setPhone] = useState<PhoneInputValue>(() =>
     splitPhone(customer?.phone)
   )
-  const [branchId, setBranchId] = useState(() => {
-    if (customer) return customer.branchId ?? ''
-    return branches.length === 1 ? (branches[0]?.id ?? '') : ''
-  })
+  const [branchId, setBranchId] = useState(
+    customer?.branchId ??
+      (Array.isArray(branches) && branches.length === 1
+        ? (branches[0]?.id ?? '')
+        : '')
+  )
+  const [branchesReady, setBranchesReady] = useState(Array.isArray(branches))
   const [trn, setTrn] = useState(customer?.trn ?? '')
-  const [commercial, setCommercial] = useState(customer?.isCommercial ?? false)
   const [status, setStatus] = useState(customer?.status ?? 'ACTIVE')
   // Held across retries of the same submission and regenerated only after a
   // successful create, so a retry after a failed write reuses the registry
@@ -93,6 +95,7 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const identityLocked = customer?.customerType === 'CORE_USER'
+  const handleBranchesReady = useCallback(() => setBranchesReady(true), [])
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -110,10 +113,15 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
         : { companyName: companyName.trim() }
     if (
       !identityLocked &&
-      ((kind === 'INDIVIDUAL' && !firstName.trim()) ||
-        (kind === 'BUSINESS' && !companyName.trim()))
+      ((kind === 'INDIVIDUAL' && (!firstName.trim() || !lastName.trim())) ||
+        (kind === 'BUSINESS' && !companyName.trim()) ||
+        (!customer && !email.trim()))
     ) {
       setError('Complete the required identity fields.')
+      return
+    }
+    if (!branchId) {
+      setError('Select a branch.')
       return
     }
     startTransition(async () => {
@@ -123,8 +131,11 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
       const cleared = (next: string, previous: string | null | undefined) =>
         next ? next : previous ? null : undefined
 
-      const submittedPhone = phone.number.trim()
-        ? `${phone.dialCode}${phone.number.replace(/\D/g, '')}`
+      const rawPhone = phone.number.trim()
+      const submittedPhone = rawPhone
+        ? rawPhone.startsWith('+')
+          ? rawPhone
+          : `${phone.dialCode}${rawPhone.replace(/\D/g, '')}`
         : ''
       const emailValue = cleared(email.trim(), customer?.email)
       const phoneValue = cleared(submittedPhone, customer?.phone)
@@ -138,9 +149,9 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
               ...(emailValue === undefined ? {} : { email: emailValue }),
               ...(phoneValue === undefined ? {} : { phone: phoneValue }),
             }),
-        branchId: branchId || undefined,
+        branchId,
         ...(trnValue === undefined ? {} : { trn: trnValue }),
-        isCommercial: commercial,
+        ...(customer ? {} : { isCommercial: false }),
       }
 
       // Built per branch rather than as one object with a conditional tail: the
@@ -172,68 +183,44 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
   return (
     <form className="max-w-3xl space-y-6" onSubmit={submit}>
       <div className="876-card space-y-5 p-5">
-        <FormRow
-          label="Customer type"
-          hint="This cannot be changed after the customer is added."
-        >
-          <RadioGroup
-            value={kind}
-            onValueChange={(value) => setKind(value as CustomerKind)}
-            disabled={isPending || Boolean(customer)}
-            className="flex gap-6 pt-2"
-          >
-            <label className="flex items-center gap-2">
-              <RadioGroupItem value="INDIVIDUAL" />
-              Individual
-            </label>
-            <label className="flex items-center gap-2">
-              <RadioGroupItem value="BUSINESS" />
-              Business
-            </label>
-          </RadioGroup>
-        </FormRow>
         {kind === 'INDIVIDUAL' ? (
-          <>
-            <FormRow
-              htmlFor="customer-first-name"
-              label="First name"
-              required
-              hint={
-                identityLocked
-                  ? "Identity comes from this customer's 876 account."
-                  : undefined
-              }
-            >
+          <FormRow
+            label="Name"
+            required
+            className={customerFormRowClassName}
+            hint={
+              identityLocked
+                ? "Identity comes from this customer's 876 account."
+                : undefined
+            }
+          >
+            <div className="grid grid-cols-2 gap-3">
               <Input
                 id="customer-first-name"
+                aria-label="First name"
+                placeholder="First name"
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
                 disabled={isPending || identityLocked}
                 required
               />
-            </FormRow>
-            <FormRow
-              htmlFor="customer-last-name"
-              label="Last name"
-              hint={
-                identityLocked
-                  ? "Identity comes from this customer's 876 account."
-                  : undefined
-              }
-            >
               <Input
                 id="customer-last-name"
+                aria-label="Last name"
+                placeholder="Last name"
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
                 disabled={isPending || identityLocked}
+                required
               />
-            </FormRow>
-          </>
+            </div>
+          </FormRow>
         ) : (
           <FormRow
             htmlFor="customer-company-name"
             label="Company name"
             required
+            className={customerFormRowClassName}
           >
             <Input
               id="customer-company-name"
@@ -247,6 +234,8 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
         <FormRow
           htmlFor="customer-email"
           label="Email"
+          required={!customer}
+          className={customerFormRowClassName}
           hint={
             identityLocked
               ? "Identity comes from this customer's 876 account."
@@ -258,11 +247,13 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             disabled={isPending || identityLocked}
+            required={!customer}
           />
         </FormRow>
         <FormRow
           htmlFor="customer-phone"
           label="Phone"
+          className={customerFormRowClassName}
           hint={
             identityLocked
               ? "Identity comes from this customer's 876 account."
@@ -277,26 +268,20 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
             disabled={isPending || identityLocked}
           />
         </FormRow>
-        <FormRow label="Home branch">
-          <Select
-            value={branchId}
-            onValueChange={(value) => setBranchId(value ?? '')}
-            disabled={isPending}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Default branch" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Default branch</SelectItem>
-              {branches.map((branch) => (
-                <SelectItem key={branch.id} value={branch.id}>
-                  {branch.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormRow>
-        <FormRow htmlFor="customer-trn" label="TRN">
+        <CustomerBranchField
+          branches={branches}
+          value={branchId}
+          onValueChange={setBranchId}
+          onBranchesReady={handleBranchesReady}
+          disabled={isPending}
+          className={customerFormRowClassName}
+        />
+        <FormRow
+          htmlFor="customer-trn"
+          label="TRN"
+          className={customerFormRowClassName}
+          hint="Required to start receiving packages."
+        >
           <Input
             id="customer-trn"
             value={trn}
@@ -304,15 +289,8 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
             disabled={isPending}
           />
         </FormRow>
-        <FormRow label="Commercial account">
-          <Switch
-            checked={commercial}
-            onCheckedChange={setCommercial}
-            disabled={isPending}
-          />
-        </FormRow>
         {customer ? (
-          <FormRow label="Status">
+          <FormRow label="Status" className={customerFormRowClassName}>
             <Select
               value={status}
               onValueChange={(value) => setStatus(value as typeof status)}
@@ -331,7 +309,11 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
       </div>
       {error ? <div className="text-destructive text-sm">{error}</div> : null}
       <div className="flex gap-3">
-        <Button type="submit" variant="info" disabled={isPending}>
+        <Button
+          type="submit"
+          variant="info"
+          disabled={isPending || !branchesReady}
+        >
           {customer ? 'Save' : 'Add'}
         </Button>
         <Button

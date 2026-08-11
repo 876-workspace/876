@@ -161,12 +161,18 @@ describe('listDialCodes', () => {
     const codes = listDialCodes()
     const countryCodes = codes.map((c) => c.countryCode)
     expect(new Set(countryCodes).size).toBe(countryCodes.length)
-    expect([...countryCodes].sort((a, b) => a.localeCompare(b))).toEqual(countryCodes)
+    expect([...countryCodes].sort((a, b) => a.localeCompare(b))).toEqual(
+      countryCodes
+    )
   })
 
   it('exposes the Jamaican entry with its flag', () => {
     const jm = listDialCodes().find((c) => c.countryCode === 'JM')
-    expect(jm).toMatchObject({ countryCode: 'JM', dialCode: '+1', name: 'Jamaica' })
+    expect(jm).toMatchObject({
+      countryCode: 'JM',
+      dialCode: '+1',
+      name: 'Jamaica',
+    })
     expect(jm?.flag).toBeTruthy()
   })
 

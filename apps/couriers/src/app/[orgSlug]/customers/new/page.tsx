@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
+import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -16,12 +16,7 @@ export default async function NewCustomerPage({ params }: Props) {
 
   return (
     <Page>
-      <PageBreadcrumb
-        href={`/${orgSlug}/customers`}
-        label="Customers"
-        className="mb-4"
-      />
-      <PageHeader className="mb-8">
+      <PageHeader className="mb-4">
         <PageTitle>Add customer</PageTitle>
       </PageHeader>
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
