@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 
-import { resolveCustomer } from '../_lib/customer-data'
+import { resolveCustomer } from '../../../_lib/customer-data'
 
 type Props = { params: Promise<{ orgSlug: string; id: string }> }
 
-export default async function CustomerOverviewPage({ params }: Props) {
+export async function CustomerOverviewData({ params }: Props) {
   const { orgSlug, id } = await params
   const customer = await resolveCustomer(orgSlug, id)
   if (!customer) notFound()

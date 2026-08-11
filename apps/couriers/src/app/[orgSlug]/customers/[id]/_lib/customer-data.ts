@@ -49,18 +49,23 @@ export const resolveCustomer = cache(async (orgSlug: string, id: string) => {
 })
 
 /** Lightweight title resolver for generateMetadata — avoids mailboxes/branch. */
-export const resolveCustomerTitle = cache(async (orgSlug: string, id: string) => {
-  const [ctx, request876] = await Promise.all([
-    getManageContext(orgSlug),
-    get876Client(),
-  ])
-  if (!ctx?.tenant) return null
-  const customerResult = await $876.couriers.customers.retrieve(ctx.tenant.id, id)
-  if (isCouriersNotFound(customerResult)) return null
-  const profile = toCustomerView(requireCouriersData(customerResult))
-  const registry = await request876.billing.customers.retrieve(
-    ctx.tenant.orgId,
-    profile.billingCustomerId
-  )
-  return registry.data?.name ?? profile.billingCustomerId
-})
+export const resolveCustomerTitle = cache(
+  async (orgSlug: string, id: string) => {
+    const [ctx, request876] = await Promise.all([
+      getManageContext(orgSlug),
+      get876Client(),
+    ])
+    if (!ctx?.tenant) return null
+    const customerResult = await $876.couriers.customers.retrieve(
+      ctx.tenant.id,
+      id
+    )
+    if (isCouriersNotFound(customerResult)) return null
+    const profile = toCustomerView(requireCouriersData(customerResult))
+    const registry = await request876.billing.customers.retrieve(
+      ctx.tenant.orgId,
+      profile.billingCustomerId
+    )
+    return registry.data?.name ?? profile.billingCustomerId
+  }
+)
