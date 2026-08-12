@@ -81,15 +81,17 @@ export default async function ManifestsPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <Empty className="py-14">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <QueueListIcon />
-          </EmptyMedia>
-          <EmptyTitle>No manifests</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <div className="876-card overflow-hidden">
+        <Empty className="border-0 py-6">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <QueueListIcon />
+            </EmptyMedia>
+            <EmptyTitle>No manifests</EmptyTitle>
+            <EmptyDescription>{emptyMessage}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     </Page>
   )
 }

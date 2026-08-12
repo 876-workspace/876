@@ -72,15 +72,17 @@ export default async function InvoicesPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <Empty className="py-14">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <DocumentTextIcon />
-          </EmptyMedia>
-          <EmptyTitle>No invoices</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <div className="876-card overflow-hidden">
+        <Empty className="border-0 py-6">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <DocumentTextIcon />
+            </EmptyMedia>
+            <EmptyTitle>No invoices</EmptyTitle>
+            <EmptyDescription>{emptyMessage}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     </Page>
   )
 }
