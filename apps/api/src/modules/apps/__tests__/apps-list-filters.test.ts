@@ -74,12 +74,16 @@ describe('GET /apps query filters', () => {
 
     expect(res.status).toBe(200)
     expect(app.findMany).toHaveBeenCalledTimes(1)
-    expect(app.findMany.mock.calls[0][0].where).toEqual({
-      deletedAt: null,
-      appKind: 'internal',
-      clientType: 'public',
-      status: 'active',
-    })
+    expect(app.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          deletedAt: null,
+          appKind: 'internal',
+          clientType: 'public',
+          status: 'active',
+        },
+      })
+    )
   })
 
   it('scopes an org-filtered list to that organization', async () => {
@@ -90,17 +94,23 @@ describe('GET /apps query filters', () => {
 
     expect(res.status).toBe(200)
     expect(app.findMany).toHaveBeenCalledTimes(1)
-    expect(app.findMany.mock.calls[0][0].where).toEqual({
-      organizationId: 'org_9tQ6',
-      deletedAt: null,
-      status: 'active',
-    })
+    expect(app.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          organizationId: 'org_9tQ6',
+          deletedAt: null,
+          status: 'active',
+        },
+      })
+    )
   })
 
   it('applies no kind filter when appKind is omitted', async () => {
     const res = await request(createApp()).get('/apps').set(AUTH)
 
     expect(res.status).toBe(200)
-    expect(app.findMany.mock.calls[0][0].where).toEqual({ deletedAt: null })
+    expect(app.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { deletedAt: null } })
+    )
   })
 })

@@ -8,6 +8,7 @@ import {
   createFeature,
   findAppBySlug,
   findAnyLegacyFeature,
+  copyFeatureGrants,
   findCompletedArchive,
   findFeatureById,
   findFeatureBySlug,
@@ -24,6 +25,7 @@ export type FeatureSeed = {
   defaultEnabled?: boolean
   tags?: string[]
   legacySlugs?: string[]
+  copyStateFromSlug?: string
 }
 
 export const PLATFORM_FEATURE_SEEDS: readonly FeatureSeed[] = [
@@ -40,6 +42,14 @@ export const PLATFORM_FEATURE_SEEDS: readonly FeatureSeed[] = [
     parentSlug: 'platform_widgets',
     tags: ['widget'],
     legacySlugs: ['platform_widgets_notes'],
+  },
+  {
+    slug: 'platform_widgets_chat',
+    name: '876 Chat widget',
+    description: 'Global switch for the shared 876 Chat rail widget.',
+    parentSlug: 'platform_widgets',
+    defaultEnabled: true,
+    tags: ['widget'],
   },
 ] as const
 
@@ -67,6 +77,15 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       description: 'Controls access to the Console Live logs widget.',
       parentSlug: 'console_widgets',
       tags: ['widget'],
+    },
+    {
+      slug: 'console_widgets_chat',
+      name: '876 Chat widget',
+      description: 'Controls access to the 876 Chat widget in Console.',
+      parentSlug: 'console_widgets',
+      defaultEnabled: true,
+      tags: ['widget'],
+      copyStateFromSlug: 'console_chat',
     },
     {
       slug: 'console_notifications',
@@ -131,6 +150,15 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       description: 'Controls access to the shared Notepad widget in Couriers.',
       parentSlug: 'couriers_widgets',
       tags: ['widget'],
+    },
+    {
+      slug: 'couriers_widgets_chat',
+      name: '876 Chat widget',
+      description: 'Controls access to the 876 Chat widget in Couriers.',
+      parentSlug: 'couriers_widgets',
+      defaultEnabled: true,
+      tags: ['widget'],
+      copyStateFromSlug: 'couriers_chat',
     },
     {
       slug: 'couriers_chat',
@@ -209,6 +237,15 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       legacySlugs: ['billing_widgets_notes'],
     },
     {
+      slug: 'billing_widgets_chat',
+      name: '876 Chat widget',
+      description: 'Controls access to the 876 Chat widget in Billing.',
+      parentSlug: 'billing_widgets',
+      defaultEnabled: true,
+      tags: ['widget'],
+      copyStateFromSlug: 'billing_chat',
+    },
+    {
       slug: 'billing_chat',
       name: '876 Chat',
       description: 'Master switch for the 876 Chat rail in Billing.',
@@ -224,6 +261,13 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       name: 'Quotes',
       description: 'Controls access to Billing quotes.',
       parentSlug: 'billing_sales',
+    },
+    {
+      slug: 'billing_sales_estimates',
+      name: 'Estimates',
+      description: 'Controls access to Billing estimates.',
+      parentSlug: 'billing_sales',
+      defaultEnabled: false,
     },
     {
       slug: 'billing_sales_invoices',
@@ -469,11 +513,16 @@ async function seedPosthogFeatures(params: {
       }
     }
     if (!providerFeature) {
+      const copiedProviderFeature = seed.copyStateFromSlug
+        ? (providerFeatures[seed.copyStateFromSlug] ?? null)
+        : null
       providerFeature = await activePosthog.createFeature({
         key: seed.slug,
         name: seed.name,
         description: seed.description,
-        enabled: seed.defaultEnabled ?? true,
+        enabled: copiedProviderFeature
+          ? Boolean(copiedProviderFeature['active'] ?? false)
+          : (seed.defaultEnabled ?? true),
       })
       providerFeatures[seed.slug] = providerFeature
     }
@@ -519,7 +568,9 @@ async function seedPosthogFeatures(params: {
         enabled: Boolean(providerFeature['active'] ?? false),
         scope: 'global',
         consumerDefaultEnabled: false,
-        defaultValue: isWidget ? (seed.defaultEnabled ?? true) : false,
+        defaultValue: isWidget
+          ? Boolean(providerFeature['active'] ?? false)
+          : false,
         appId: app ? app.id : null,
         parentFeatureId,
         tags: [
@@ -537,6 +588,10 @@ async function seedPosthogFeatures(params: {
         updatedAt: now,
       })
       featureIdsBySlug.set(seed.slug, feature.id)
+      if (seed.copyStateFromSlug) {
+        const source = await findFeatureBySlug(seed.copyStateFromSlug)
+        if (source) await copyFeatureGrants(source.id, feature.id, now)
+      }
       created += 1
       log.info(
         {
@@ -569,11 +624,15 @@ async function seedPosthogFeatures(params: {
         updatedAt: now,
       }
       if (isWidget) {
-        updatePayload.defaultValue = seed.defaultEnabled ?? true
+        updatePayload.defaultValue = Boolean(providerFeature['active'] ?? false)
       }
 
       const feature = await updateFeature(existing.id, updatePayload)
       featureIdsBySlug.set(seed.slug, feature.id)
+      if (seed.copyStateFromSlug) {
+        const source = await findFeatureBySlug(seed.copyStateFromSlug)
+        if (source) await copyFeatureGrants(source.id, feature.id, now)
+      }
       updated += 1
       log.info(
         {

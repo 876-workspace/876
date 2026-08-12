@@ -365,6 +365,41 @@ describe('GET /features/evaluate', () => {
   })
 })
 
+describe('GET /features/evaluate/details', () => {
+  it('returns the inputs and effective result for each applicable feature', async () => {
+    const response = await request(createApp())
+      .get('/features/evaluate/details')
+      .set(AUTH)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toMatchObject({
+      object: 'list',
+      url: '/features/evaluate/details',
+      data: [
+        {
+          object: 'feature_evaluation',
+          feature: SERIALIZED_FEATURE,
+          global_enabled: true,
+          parent_enabled: true,
+          module_gated: false,
+          module_entitled: true,
+          organization_override: null,
+          user_override: null,
+          enabled: true,
+        },
+      ],
+    })
+  })
+
+  it('is admin-only', async () => {
+    const response = await request(createApp())
+      .get('/features/evaluate/details')
+      .set('X-876-API-Key', APP_KEY)
+
+    expect(response.status).toBe(401)
+  })
+})
+
 describe('GET /features/evaluate/me', () => {
   it('evaluates for current user with membership', async () => {
     const token = await accessToken({ sub: 'user_2kL9' })
