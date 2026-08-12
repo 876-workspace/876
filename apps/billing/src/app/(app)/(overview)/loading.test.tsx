@@ -4,13 +4,27 @@ import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import Loading from './loading'
-import { BillingDashboardSkeleton } from '@/components/patterns/billing-page-skeleton'
+import {
+  DashboardContentSkeleton,
+  DashboardHeader,
+} from '@/components/patterns/page-skeleton'
+import { Page } from '@876/ui/page'
 
 describe('Overview Loading', () => {
-  it('renders BillingDashboardSkeleton', () => {
+  it('matches the streamed dashboard shell and content fallback', () => {
     const { container: a } = render(<Loading />)
-    const { container: b } = render(<BillingDashboardSkeleton />)
+    const { container: b } = render(
+      <Page className="pb-12">
+        <DashboardHeader />
+        <DashboardContentSkeleton />
+      </Page>
+    )
     expect(a.innerHTML).toBe(b.innerHTML)
+  })
+
+  it('renders the real page heading while data loads', () => {
+    const { getByRole } = render(<Loading />)
+    expect(getByRole('heading', { name: 'Dashboard' })).toBeTruthy()
   })
 
   it('contains 4 metric skeletons', () => {

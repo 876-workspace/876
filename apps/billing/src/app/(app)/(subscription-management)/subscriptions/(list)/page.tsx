@@ -11,12 +11,12 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { Skeleton } from '@876/ui/skeleton'
 import { SubscriptionsTable } from '@/features/subscriptions/components/subscriptions-table'
 
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 import { service } from '@/lib/service'
 import { buildSubscriptionTableRows } from '@/lib/subscriptions/view'
 import type { SubscriptionStatus } from '@/types/subscription'
@@ -51,17 +51,39 @@ type Props = {
   }>
 }
 
-export default function SubscriptionsPage({ searchParams }: Props) {
+const COLUMNS = [
+  { label: 'Customer', cell: 'avatar' as const },
+  { label: 'Product & plan' },
+  { label: 'Recurring amount' },
+  { label: 'Status', cell: 'badge' as const },
+  { label: 'Renews / ends' },
+  { label: 'Created' },
+]
+
+export default async function SubscriptionsPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = parseStatus(status)
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <SubscriptionsPageData searchParams={searchParams} />
-    </Suspense>
+    <Page>
+      <StreamingResourceToolbar
+        title="Subscriptions"
+        status={selectedStatus}
+        options={SUBSCRIPTION_STATUS_OPTIONS}
+        primary={{
+          label: 'Add',
+          href: '/subscriptions/new',
+          permission: 'subscriptions:write',
+        }}
+      />
+      <Suspense fallback={<SubscriptionsFallback />}>
+        <SubscriptionsPageData searchParams={searchParams} />
+      </Suspense>
+    </Page>
   )
 }
 
-async function SubscriptionsPageData({ searchParams }: Props) {
-  const { status, view } = await searchParams
-  const selectedStatus = [
+function parseStatus(status: string | undefined) {
+  return [
     'draft',
     'trialing',
     'active',
@@ -71,6 +93,11 @@ async function SubscriptionsPageData({ searchParams }: Props) {
   ].includes(status ?? '')
     ? status!
     : 'all'
+}
+
+async function SubscriptionsPageData({ searchParams }: Props) {
+  const { status, view } = await searchParams
+  const selectedStatus = parseStatus(status)
   const filterStatus =
     selectedStatus === 'all'
       ? undefined
@@ -91,30 +118,7 @@ async function SubscriptionsPageData({ searchParams }: Props) {
   const selectedView = views.find((savedView) => savedView.id === view)
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Subscriptions"
-        titleFilter={
-          <StatusFilterHeading
-            label="Subscriptions"
-            value={selectedStatus}
-            options={SUBSCRIPTION_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={
-          context.permissions.includes('subscriptions:write')
-            ? 'Add'
-            : undefined
-        }
-        primaryHref={
-          context.permissions.includes('subscriptions:write')
-            ? '/subscriptions/new'
-            : undefined
-        }
-        primaryVariant="info"
-        refresh
-      />
-
+    <>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Link
           href="/subscriptions"
@@ -192,6 +196,19 @@ async function SubscriptionsPageData({ searchParams }: Props) {
           </Empty>
         }
       />
-    </Page>
+    </>
+  )
+}
+
+function SubscriptionsFallback() {
+  return (
+    <>
+      <div className="mb-4 flex gap-2" aria-hidden="true">
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-8 w-28" />
+        <Skeleton className="h-8 w-32" />
+      </div>
+      <DataTableSkeleton columns={COLUMNS} rows={5} />
+    </>
   )
 }

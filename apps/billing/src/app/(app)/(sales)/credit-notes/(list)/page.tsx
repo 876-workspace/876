@@ -1,6 +1,5 @@
 import { ReceiptText } from '@876/ui/icons'
 import Link from 'next/link'
-import { Suspense } from 'react'
 import { buttonVariants } from '@876/ui/button'
 import {
   Empty,
@@ -10,16 +9,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Page } from '@876/ui/page'
 
 import { CreditNotesTable } from '../_components/credit-notes-table'
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
+import { type StatusFilterOption } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { service } from '@/lib/service'
 import type { CreditNoteStatus } from '@/lib/db'
 
@@ -42,18 +36,44 @@ type Props = {
   }>
 }
 
-export default function CreditNotesPage({ searchParams }: Props) {
+const COLUMNS = [
+  { label: 'Credit note', cell: 'avatar' as const },
+  { label: 'Customer' },
+  { label: 'Amount' },
+  { label: 'Balance' },
+  { label: 'Status', cell: 'badge' as const },
+]
+
+export default async function CreditNotesPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = parseStatus(status)
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <CreditNotesPageData searchParams={searchParams} />
-    </Suspense>
+    <StreamingResourcePage
+      title="Credit Notes"
+      status={selectedStatus}
+      options={CREDIT_NOTE_STATUS_OPTIONS}
+      primary={{
+        label: 'Add',
+        href: '/credit-notes/new',
+        permission: 'sales:write',
+      }}
+      columns={COLUMNS}
+    >
+      <CreditNotesPageData selectedStatus={selectedStatus} />
+    </StreamingResourcePage>
   )
 }
 
-async function CreditNotesPageData({ searchParams }: Props) {
-  const { status } = await searchParams
+function parseStatus(status: string | undefined) {
   const validStatuses = ['draft', 'open', 'closed', 'void']
-  const selectedStatus = validStatuses.includes(status ?? '') ? status! : 'all'
+  return validStatuses.includes(status ?? '') ? status! : 'all'
+}
+
+async function CreditNotesPageData({
+  selectedStatus,
+}: {
+  selectedStatus: string
+}) {
   const filterStatus =
     selectedStatus === 'all'
       ? undefined
@@ -80,55 +100,32 @@ async function CreditNotesPageData({ searchParams }: Props) {
   }))
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Credit Notes"
-        titleFilter={
-          <StatusFilterHeading
-            label="Credit Notes"
-            value={selectedStatus}
-            options={CREDIT_NOTE_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={
-          context.permissions.includes('sales:write') ? 'Add' : undefined
-        }
-        primaryHref={
-          context.permissions.includes('sales:write')
-            ? '/credit-notes/new'
-            : undefined
-        }
-        primaryVariant="info"
-        refresh
-      />
-
-      <CreditNotesTable
-        creditNotes={rows}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ReceiptText />
-              </EmptyMedia>
-              <EmptyTitle>No credit notes yet</EmptyTitle>
-              <EmptyDescription>
-                Create a credit note when an invoice needs a documented
-                reduction, customer credit, or refund.
-              </EmptyDescription>
-            </EmptyHeader>
-            {context.permissions.includes('sales:write') ? (
-              <EmptyContent>
-                <Link
-                  href="/credit-notes/new"
-                  className={buttonVariants({ variant: 'info' })}
-                >
-                  Add credit note
-                </Link>
-              </EmptyContent>
-            ) : null}
-          </Empty>
-        }
-      />
-    </Page>
+    <CreditNotesTable
+      creditNotes={rows}
+      emptyState={
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ReceiptText />
+            </EmptyMedia>
+            <EmptyTitle>No credit notes yet</EmptyTitle>
+            <EmptyDescription>
+              Create a credit note when an invoice needs a documented reduction,
+              customer credit, or refund.
+            </EmptyDescription>
+          </EmptyHeader>
+          {context.permissions.includes('sales:write') ? (
+            <EmptyContent>
+              <Link
+                href="/credit-notes/new"
+                className={buttonVariants({ variant: 'info' })}
+              >
+                Add credit note
+              </Link>
+            </EmptyContent>
+          ) : null}
+        </Empty>
+      }
+    />
   )
 }

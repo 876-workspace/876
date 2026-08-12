@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   useBillingPermission: vi.fn(),
 }))
 
-vi.mock('@/components/providers/billing-permissions-provider', () => ({
+vi.mock('@/components/providers/permissions-provider', () => ({
   useBillingPermission: mocks.useBillingPermission,
 }))
 

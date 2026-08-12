@@ -6,10 +6,10 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { useBillingPermission } from '@/components/providers/billing-permissions-provider'
+import { useBillingPermission } from '@/components/providers/permissions-provider'
 import type { Permission } from '@/types/access'
 
-type Action = {
+export type StreamingResourceAction = {
   label: string
   href: string
   permission: Permission
@@ -32,8 +32,8 @@ export function StreamingResourceToolbar({
   title: string
   status: string
   options: StatusFilterOption[]
-  primary?: Action
-  dropdownAction?: Action
+  primary?: StreamingResourceAction
+  dropdownAction?: StreamingResourceAction
 }) {
   const canUsePrimary = useBillingPermission(
     primary?.permission ?? 'billing:access'

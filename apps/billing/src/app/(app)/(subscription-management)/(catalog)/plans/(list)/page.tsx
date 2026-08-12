@@ -1,5 +1,4 @@
 import { ClipboardList } from '@876/ui/icons'
-import { Suspense } from 'react'
 import {
   Empty,
   EmptyDescription,
@@ -7,25 +6,20 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Page } from '@876/ui/page'
 import { PlansTable } from '@/features/catalog/components/plans-table'
 
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { service } from '@/lib/service'
+import {
+  CATALOG_LISTS,
+  parseCatalogStatus,
+} from '../../_components/catalog-list-config'
 
 export const metadata = {
   title: 'Plans',
   description: 'Subscription plans and pricing.',
 }
-
-const PLAN_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Plans' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Plans' },
-  { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive Plans' },
-]
 
 type Props = {
   searchParams: Promise<{
@@ -33,19 +27,17 @@ type Props = {
   }>
 }
 
-export default function PlansPage({ searchParams }: Props) {
+export default async function PlansPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = parseCatalogStatus(status)
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <PlansPageData searchParams={searchParams} />
-    </Suspense>
+    <StreamingResourcePage {...CATALOG_LISTS.plans} status={selectedStatus}>
+      <PlansPageData selectedStatus={selectedStatus} />
+    </StreamingResourcePage>
   )
 }
 
-async function PlansPageData({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus = ['active', 'inactive'].includes(status ?? '')
-    ? status!
-    : 'all'
+async function PlansPageData({ selectedStatus }: { selectedStatus: string }) {
   const filterStatus =
     selectedStatus === 'all' ? undefined : selectedStatus === 'active'
 
@@ -55,45 +47,22 @@ async function PlansPageData({ searchParams }: Props) {
   const plans = await service.plans.list(context.tenant.id, filterStatus)
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Plans"
-        titleFilter={
-          <StatusFilterHeading
-            label="Plans"
-            value={selectedStatus}
-            options={PLAN_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={
-          context.permissions.includes('catalog:write') ? 'Add' : undefined
-        }
-        primaryHref={
-          context.permissions.includes('catalog:write')
-            ? '/plans/new'
-            : undefined
-        }
-        primaryVariant="info"
-        refresh
-      />
-
-      <PlansTable
-        plans={plans}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ClipboardList />
-              </EmptyMedia>
-              <EmptyTitle>No plans yet</EmptyTitle>
-              <EmptyDescription>
-                Create a product first, then add the plan cadence that customers
-                can subscribe to.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
-    </Page>
+    <PlansTable
+      plans={plans}
+      emptyState={
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ClipboardList />
+            </EmptyMedia>
+            <EmptyTitle>No plans yet</EmptyTitle>
+            <EmptyDescription>
+              Create a product first, then add the plan cadence that customers
+              can subscribe to.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
   )
 }

@@ -1,5 +1,4 @@
 import { CreditCardIcon } from '@876/ui/icons'
-import { Suspense } from 'react'
 import {
   Empty,
   EmptyDescription,
@@ -7,25 +6,20 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Page } from '@876/ui/page'
 import { PricesTable } from '@/features/catalog/components/prices-table'
 
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { service } from '@/lib/service'
+import {
+  CATALOG_LISTS,
+  parseCatalogStatus,
+} from '../../_components/catalog-list-config'
 
 export const metadata = {
   title: 'Prices',
   description: 'Pricing records and configurations.',
 }
-
-const PRICE_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Prices' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Prices' },
-  { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive Prices' },
-]
 
 type Props = {
   searchParams: Promise<{
@@ -33,19 +27,17 @@ type Props = {
   }>
 }
 
-export default function PricesPage({ searchParams }: Props) {
+export default async function PricesPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = parseCatalogStatus(status)
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <PricesPageData searchParams={searchParams} />
-    </Suspense>
+    <StreamingResourcePage {...CATALOG_LISTS.prices} status={selectedStatus}>
+      <PricesPageData selectedStatus={selectedStatus} />
+    </StreamingResourcePage>
   )
 }
 
-async function PricesPageData({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus = ['active', 'inactive'].includes(status ?? '')
-    ? status!
-    : 'all'
+async function PricesPageData({ selectedStatus }: { selectedStatus: string }) {
   const filterStatus =
     selectedStatus === 'all' ? undefined : selectedStatus === 'active'
 
@@ -55,44 +47,21 @@ async function PricesPageData({ searchParams }: Props) {
   const prices = await service.prices.list(context.tenant.id, filterStatus)
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Prices"
-        titleFilter={
-          <StatusFilterHeading
-            label="Prices"
-            value={selectedStatus}
-            options={PRICE_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={
-          context.permissions.includes('catalog:write') ? 'Add' : undefined
-        }
-        primaryHref={
-          context.permissions.includes('catalog:write')
-            ? '/prices/new'
-            : undefined
-        }
-        primaryVariant="info"
-        refresh
-      />
-
-      <PricesTable
-        prices={prices}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CreditCardIcon />
-              </EmptyMedia>
-              <EmptyTitle>No prices yet</EmptyTitle>
-              <EmptyDescription>
-                Add a currency-specific price to an item or plan.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        }
-      />
-    </Page>
+    <PricesTable
+      prices={prices}
+      emptyState={
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CreditCardIcon />
+            </EmptyMedia>
+            <EmptyTitle>No prices yet</EmptyTitle>
+            <EmptyDescription>
+              Add a currency-specific price to an item or plan.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
   )
 }

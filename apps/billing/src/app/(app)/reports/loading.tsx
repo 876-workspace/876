@@ -1,5 +1,12 @@
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { Page } from '@876/ui/page'
+
+import { ReportsFallback, ReportsHeader } from './_components/reports-shell'
 
 export default function Loading() {
-  return <BillingListPageSkeleton />
+  return (
+    <Page>
+      <ReportsHeader />
+      <ReportsFallback />
+    </Page>
+  )
 }

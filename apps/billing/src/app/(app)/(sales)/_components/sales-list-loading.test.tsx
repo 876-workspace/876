@@ -10,7 +10,7 @@ vi.mock('next/navigation', () => ({
 }))
 
 const permissionMock = vi.hoisted(() => ({ fn: vi.fn() }))
-vi.mock('@/components/providers/billing-permissions-provider', () => ({
+vi.mock('@/components/providers/permissions-provider', () => ({
   useBillingPermission: permissionMock.fn,
 }))
 

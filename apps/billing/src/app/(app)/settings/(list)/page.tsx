@@ -1,10 +1,7 @@
 import Link from 'next/link'
-import { Suspense } from 'react'
-
 import { Page } from '@876/ui/page'
 
 import { getVisibleSettingsSections } from '@/components/shell/nav-config'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 export const metadata = {
@@ -12,15 +9,7 @@ export const metadata = {
   description: 'Billing workspace settings.',
 }
 
-export default function SettingsPage() {
-  return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <SettingsPageData />
-    </Suspense>
-  )
-}
-
-async function SettingsPageData() {
+export default async function SettingsPage() {
   const context = await requirePagePermission('settings:read')
   const sections = getVisibleSettingsSections(context.permissions)
 

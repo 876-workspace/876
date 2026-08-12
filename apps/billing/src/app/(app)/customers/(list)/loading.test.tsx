@@ -8,7 +8,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/customers',
   useSearchParams: () => new URLSearchParams(),
 }))
-vi.mock('@/components/providers/billing-permissions-provider', () => ({
+vi.mock('@/components/providers/permissions-provider', () => ({
   useBillingPermission: () => false,
 }))
 

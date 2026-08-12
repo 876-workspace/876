@@ -8,58 +8,57 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/test',
   useSearchParams: () => new URLSearchParams(),
 }))
-vi.mock('@/components/providers/billing-permissions-provider', () => ({
+vi.mock('@/components/providers/permissions-provider', () => ({
   useBillingPermission: () => false,
 }))
 
-import { BillingListPageSkeleton } from './billing-page-skeleton'
 import InvoicesLoading from '@/app/(app)/(sales)/invoices/(list)/loading'
 import QuotesLoading from '@/app/(app)/(sales)/quotes/(list)/loading'
 import EstimatesLoading from '@/app/(app)/(sales)/estimates/(list)/loading'
 import PaymentsLoading from '@/app/(app)/(sales)/payments/(list)/loading'
 import CreditNotesLoading from '@/app/(app)/(sales)/credit-notes/(list)/loading'
-import VendorsLoading from '@/app/(app)/purchases/vendors/loading'
+import VendorsLoading from '@/app/(app)/purchases/vendors/(list)/loading'
 import ReportsLoading from '@/app/(app)/reports/loading'
 import BankingLoading from '@/app/(app)/banking/(list)/loading'
 
 describe('list loading parity', () => {
-  it('BillingListPageSkeleton based loadings render same skeleton as base', () => {
-    const { container: base } = render(<BillingListPageSkeleton />)
-    const baseHeaders = Array.from(base.querySelectorAll('th')).map(
-      (h) => h.textContent
+  it('vendors loading mirrors the resolved table columns', () => {
+    const { container } = render(<VendorsLoading />)
+    const headers = Array.from(container.querySelectorAll('th')).map(
+      (heading) => heading.textContent?.trim()
     )
-    for (const Comp of [
-      VendorsLoading,
-      ReportsLoading,
-      BankingLoading,
-    ] as const) {
-      const { container } = render(<Comp />)
-      // those use BillingListPageSkeleton directly, so HTML equal to base
-      const headers = Array.from(container.querySelectorAll('th')).map(
-        (h) => h.textContent
-      )
-      expect(headers).toEqual(baseHeaders)
-      expect(container.querySelectorAll('tbody tr').length).toBe(5)
-      expect(
-        container.querySelector('[data-slot="table-container"]')
-      ).toHaveAttribute('aria-hidden', 'true')
-    }
+    expect(headers).toEqual(['Vendor', 'Reference', 'Currency', 'Status'])
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(5)
   })
 
-  it('sales loadings use StreamingResourceToolbar and 4-column skeletons', () => {
-    for (const Comp of [
-      InvoicesLoading,
-      QuotesLoading,
-      EstimatesLoading,
-      PaymentsLoading,
-      CreditNotesLoading,
-    ] as const) {
+  it('reports and banking use shape-matched card fallbacks', () => {
+    const { container: reports } = render(<ReportsLoading />)
+    const { container: banking } = render(<BankingLoading />)
+
+    expect(reports.textContent).toContain('Reports')
+    expect(reports.querySelectorAll('[class~="876-card"]')).toHaveLength(2)
+    expect(banking.textContent).toContain('All Bank Accounts')
+    expect(banking.querySelectorAll('[class~="876-card"]')).toHaveLength(9)
+    expect(reports.querySelector('table')).toBeNull()
+    expect(banking.querySelector('table')).toBeNull()
+  })
+
+  it('sales loadings mirror each resolved table shape', () => {
+    const cases = [
+      [InvoicesLoading, 4, true],
+      [QuotesLoading, 4, true],
+      [EstimatesLoading, 4, true],
+      [PaymentsLoading, 3, false],
+      [CreditNotesLoading, 5, true],
+    ] as const
+
+    for (const [Comp, columnCount, hasStatus] of cases) {
       const { container, unmount } = render(<Comp />)
       const headers = Array.from(container.querySelectorAll('th')).map((h) =>
         h.textContent?.trim()
       )
-      expect(headers.length).toBe(4)
-      expect(headers).toContain('Status')
+      expect(headers).toHaveLength(columnCount)
+      expect(headers.includes('Status')).toBe(hasStatus)
       expect(container.querySelectorAll('tbody tr').length).toBe(5)
       expect(container.querySelector('[data-slot="page"]')).toBeTruthy()
       unmount()

@@ -1,16 +1,9 @@
 import Link from 'next/link'
-import { Suspense } from 'react'
 
 import { CreditCardIcon } from '@876/ui/icons'
-import { Page } from '@876/ui/page'
-
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
+import { type StatusFilterOption } from '@876/ui/status-filter-heading'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
 
@@ -25,34 +18,31 @@ const PAYMENT_STATUS_OPTIONS: StatusFilterOption[] = [
 
 export default function PaymentsPage() {
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
+    <StreamingResourcePage
+      title="Payments Received"
+      status="all"
+      options={PAYMENT_STATUS_OPTIONS}
+      primary={{
+        label: 'Add',
+        href: '/payments/new',
+        permission: 'payments:write',
+      }}
+      columns={[
+        { label: 'Payment', cell: 'avatar' },
+        { label: 'Deposit account' },
+        { label: 'Amount' },
+      ]}
+    >
       <PaymentsPageData />
-    </Suspense>
+    </StreamingResourcePage>
   )
 }
 
 async function PaymentsPageData() {
   const context = await requirePagePermission('payments:read')
   const payments = await service.payments.list(context.tenant.id)
-  const canManage = context.permissions.includes('payments:write')
-
   return (
-    <Page>
-      <ResourceToolbar
-        title="Payments Received"
-        titleFilter={
-          <StatusFilterHeading
-            label="Payments Received"
-            value="all"
-            options={PAYMENT_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={canManage ? 'Add' : undefined}
-        primaryHref={canManage ? '/payments/new' : undefined}
-        primaryVariant="info"
-        refresh
-      />
-
+    <>
       {payments.length === 0 ? (
         <div className="876-card px-6 py-14 text-center">
           <CreditCardIcon className="text-muted-foreground mx-auto size-7" />
@@ -103,6 +93,6 @@ async function PaymentsPageData() {
           </div>
         </div>
       )}
-    </Page>
+    </>
   )
 }

@@ -3,7 +3,7 @@
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
-import { useBillingPermission } from '@/components/providers/billing-permissions-provider'
+import { useBillingPermission } from '@/components/providers/permissions-provider'
 
 const CUSTOMER_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Customers' },

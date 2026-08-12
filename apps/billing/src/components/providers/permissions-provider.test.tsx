@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
   BillingPermissionsProvider,
   useBillingPermission,
-} from './billing-permissions-provider'
+} from './permissions-provider'
 import type { Permission } from '@/types/access'
 
 function Probe({ permission }: { permission: Permission }) {

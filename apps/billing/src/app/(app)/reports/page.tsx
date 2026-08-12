@@ -7,12 +7,12 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
+import { Page } from '@876/ui/page'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
 import { formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
+import { ReportsFallback, ReportsHeader } from './_components/reports-shell'
 
 export const metadata = {
   title: 'Reports',
@@ -21,9 +21,12 @@ export const metadata = {
 
 export default function ReportsPage() {
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <ReportsPageData />
-    </Suspense>
+    <Page>
+      <ReportsHeader />
+      <Suspense fallback={<ReportsFallback />}>
+        <ReportsPageData />
+      </Suspense>
+    </Page>
   )
 }
 
@@ -34,43 +37,32 @@ async function ReportsPageData() {
   const overview = await service.dashboard.overview(context.tenant.id)
 
   return (
-    <Page>
-      <PageHeader>
-        <PageTitle>Reports</PageTitle>
-        <PageDescription>
-          Commercial reporting is intentionally grouped by currency. No FX
-          conversion, tax filing, payment settlement, or revenue recognition is
-          implied by these figures.
-        </PageDescription>
-      </PageHeader>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <ReportCard
-          title="Contracted recurring revenue"
-          description="Estimated MRR and annualized recurring value from active and trialing subscriptions."
-          values={overview.recurringRevenue.map((metric) => ({
-            key: metric.currency,
-            primary: `${formatMoney(metric.mrr, metric.currency)} estimated MRR`,
-            secondary: `${formatMoney(metric.arr, metric.currency)} ARR`,
-          }))}
-          emptyTitle="No recurring subscriptions"
-          emptyDescription="Create a recurring price and subscription to begin tracking contracted recurring value."
-        />
-        <ReportCard
-          title="Issued invoice value"
-          description="Totals from finalized (open, sent, overdue, partially or fully paid) invoices. These are not settlement totals."
-          values={overview.issuedInvoiceTotals.map((metric) => ({
-            key: metric.currency,
-            primary:
-              formatMoney(metric.totalOutstanding, metric.currency) +
-              ' outstanding',
-            secondary: `${formatMoney(metric.totalIssued, metric.currency)} total issued`,
-          }))}
-          emptyTitle="No finalized invoices"
-          emptyDescription="Draft invoices appear in Sales and do not count here until they are finalized."
-        />
-      </section>
-    </Page>
+    <section className="grid gap-4 lg:grid-cols-2">
+      <ReportCard
+        title="Contracted recurring revenue"
+        description="Estimated MRR and annualized recurring value from active and trialing subscriptions."
+        values={overview.recurringRevenue.map((metric) => ({
+          key: metric.currency,
+          primary: `${formatMoney(metric.mrr, metric.currency)} estimated MRR`,
+          secondary: `${formatMoney(metric.arr, metric.currency)} ARR`,
+        }))}
+        emptyTitle="No recurring subscriptions"
+        emptyDescription="Create a recurring price and subscription to begin tracking contracted recurring value."
+      />
+      <ReportCard
+        title="Issued invoice value"
+        description="Totals from finalized (open, sent, overdue, partially or fully paid) invoices. These are not settlement totals."
+        values={overview.issuedInvoiceTotals.map((metric) => ({
+          key: metric.currency,
+          primary:
+            formatMoney(metric.totalOutstanding, metric.currency) +
+            ' outstanding',
+          secondary: `${formatMoney(metric.totalIssued, metric.currency)} total issued`,
+        }))}
+        emptyTitle="No finalized invoices"
+        emptyDescription="Draft invoices appear in Sales and do not count here until they are finalized."
+      />
+    </section>
   )
 }
 

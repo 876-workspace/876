@@ -5,15 +5,12 @@ import { Badge } from '@876/ui/badge'
 import { Building2, CircleStackIcon, CreditCard } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
+import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 import { formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
+import { BankingFallback } from '../_components/banking-fallback'
 
 export const metadata = {
   title: 'Banking',
@@ -36,18 +33,30 @@ type Props = {
   }>
 }
 
-export default function BankingPage({ searchParams }: Props) {
-  return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <BankingPageData searchParams={searchParams} />
-    </Suspense>
-  )
-}
-
-async function BankingPageData({ searchParams }: Props) {
+export default async function BankingPage({ searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus =
     status === 'active' || status === 'archived' ? status : 'all'
+  return (
+    <Page>
+      <StreamingResourceToolbar
+        title="Banking"
+        status={selectedStatus}
+        options={BANKING_STATUS_OPTIONS}
+        primary={{
+          label: 'Add',
+          href: '/banking/new',
+          permission: 'banking:write',
+        }}
+      />
+      <Suspense fallback={<BankingFallback />}>
+        <BankingPageData selectedStatus={selectedStatus} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function BankingPageData({ selectedStatus }: { selectedStatus: string }) {
   const filterIsActive =
     selectedStatus === 'all' ? undefined : selectedStatus === 'active'
 
@@ -62,28 +71,7 @@ async function BankingPageData({ searchParams }: Props) {
   const activeAccounts = accounts.filter((account) => account.isActive)
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Banking"
-        titleFilter={
-          <StatusFilterHeading
-            label="Banking"
-            value={selectedStatus}
-            options={BANKING_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={
-          context.permissions.includes('banking:write') ? 'Add' : undefined
-        }
-        primaryHref={
-          context.permissions.includes('banking:write')
-            ? '/banking/new'
-            : undefined
-        }
-        primaryVariant="info"
-        refresh
-      />
-
+    <>
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
         <SummaryCard
           icon={Building2}
@@ -142,7 +130,7 @@ async function BankingPageData({ searchParams }: Props) {
           ))}
         </div>
       )}
-    </Page>
+    </>
   )
 }
 

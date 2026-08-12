@@ -20,7 +20,7 @@ import { OrgSwitcher } from './org-switcher'
 import { TopbarActions } from './topbar-actions'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
-import { BillingPermissionsProvider } from '@/components/providers/billing-permissions-provider'
+import { BillingPermissionsProvider } from '@/components/providers/permissions-provider'
 import type { Permission } from '@/types/access'
 import type { BillingFeatures as Features } from '@/types/features'
 

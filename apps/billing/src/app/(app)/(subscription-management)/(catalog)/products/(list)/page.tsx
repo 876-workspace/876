@@ -1,6 +1,5 @@
 import { CircleStackIcon } from '@876/ui/icons'
 import Link from 'next/link'
-import { Suspense } from 'react'
 import { buttonVariants } from '@876/ui/button'
 import {
   Empty,
@@ -10,25 +9,20 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@876/ui/empty'
-import { Page } from '@876/ui/page'
 import { ProductsTable } from '../_components/products-table'
 
-import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
+import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { service } from '@/lib/service'
+import {
+  CATALOG_LISTS,
+  parseCatalogStatus,
+} from '../../_components/catalog-list-config'
 
 export const metadata = {
   title: 'Products',
   description: 'Subscription products and families.',
 }
-
-const PRODUCT_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Products' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Products' },
-  { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive Products' },
-]
 
 type Props = {
   searchParams: Promise<{
@@ -36,19 +30,21 @@ type Props = {
   }>
 }
 
-export default function ProductsPage({ searchParams }: Props) {
+export default async function ProductsPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = parseCatalogStatus(status)
   return (
-    <Suspense fallback={<BillingListPageSkeleton />}>
-      <ProductsPageData searchParams={searchParams} />
-    </Suspense>
+    <StreamingResourcePage {...CATALOG_LISTS.products} status={selectedStatus}>
+      <ProductsPageData selectedStatus={selectedStatus} />
+    </StreamingResourcePage>
   )
 }
 
-async function ProductsPageData({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus = ['active', 'inactive'].includes(status ?? '')
-    ? status!
-    : 'all'
+async function ProductsPageData({
+  selectedStatus,
+}: {
+  selectedStatus: string
+}) {
   const filterStatus =
     selectedStatus === 'all' ? undefined : selectedStatus === 'active'
 
@@ -58,54 +54,31 @@ async function ProductsPageData({ searchParams }: Props) {
   const products = await service.products.list(context.tenant.id, filterStatus)
 
   return (
-    <Page>
-      <ResourceToolbar
-        title="Products"
-        titleFilter={
-          <StatusFilterHeading
-            label="Products"
-            value={selectedStatus}
-            options={PRODUCT_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel={
-          context.permissions.includes('catalog:write') ? 'Add' : undefined
-        }
-        primaryHref={
-          context.permissions.includes('catalog:write')
-            ? '/products/new'
-            : undefined
-        }
-        primaryVariant="info"
-        refresh
-      />
-
-      <ProductsTable
-        products={products}
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CircleStackIcon />
-              </EmptyMedia>
-              <EmptyTitle>No products yet</EmptyTitle>
-              <EmptyDescription>
-                Create a product before configuring subscription plans.
-              </EmptyDescription>
-            </EmptyHeader>
-            {context.permissions.includes('catalog:write') ? (
-              <EmptyContent>
-                <Link
-                  href="/products/new"
-                  className={buttonVariants({ variant: 'info' })}
-                >
-                  Add product
-                </Link>
-              </EmptyContent>
-            ) : null}
-          </Empty>
-        }
-      />
-    </Page>
+    <ProductsTable
+      products={products}
+      emptyState={
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CircleStackIcon />
+            </EmptyMedia>
+            <EmptyTitle>No products yet</EmptyTitle>
+            <EmptyDescription>
+              Create a product before configuring subscription plans.
+            </EmptyDescription>
+          </EmptyHeader>
+          {context.permissions.includes('catalog:write') ? (
+            <EmptyContent>
+              <Link
+                href="/products/new"
+                className={buttonVariants({ variant: 'info' })}
+              >
+                Add product
+              </Link>
+            </EmptyContent>
+          ) : null}
+        </Empty>
+      }
+    />
   )
 }

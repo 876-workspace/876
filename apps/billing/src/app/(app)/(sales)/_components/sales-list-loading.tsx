@@ -1,13 +1,7 @@
-'use client'
-
-import {
-  DataTableSkeleton,
-  type DataTableSkeletonColumn,
-} from '@876/ui/data-table-skeleton'
-import { Page } from '@876/ui/page'
+import type { DataTableSkeletonColumn } from '@876/ui/data-table-skeleton'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
-import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
+import { StreamingResourceLoading } from '@/components/patterns/streaming-resource-page'
 import type { Permission } from '@/types/access'
 
 export function SalesListLoading({
@@ -22,14 +16,12 @@ export function SalesListLoading({
   columns: DataTableSkeletonColumn[]
 }) {
   return (
-    <Page>
-      <StreamingResourceToolbar
-        title={title}
-        status="all"
-        options={options}
-        primary={primary}
-      />
-      <DataTableSkeleton columns={columns} rows={5} />
-    </Page>
+    <StreamingResourceLoading
+      title={title}
+      status="all"
+      options={options}
+      primary={primary}
+      columns={columns}
+    />
   )
 }

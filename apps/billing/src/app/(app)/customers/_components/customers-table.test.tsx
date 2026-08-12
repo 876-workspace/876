@@ -92,7 +92,7 @@ describe('CustomersTable', () => {
     const user = userEvent.setup()
     render(<CustomersTable customers={rows} />)
     await user.click(screen.getByRole('link', { name: 'Island Traders' }))
-    // link click stops propagation, so row handler not called? But still link href works
+    expect(pushMock).not.toHaveBeenCalled()
     expect(
       screen.getByRole('link', { name: 'Island Traders' })
     ).toHaveAttribute('href', '/customers/cus_1')
