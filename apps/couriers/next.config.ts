@@ -29,7 +29,10 @@ const nextConfig: NextConfig = {
   // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
   // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  allowedDevOrigins: ['127.0.0.1', ...(previewDevOrigin ? [previewDevOrigin] : [])],
+  allowedDevOrigins: [
+    '127.0.0.1',
+    ...(previewDevOrigin ? [previewDevOrigin] : []),
+  ],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },

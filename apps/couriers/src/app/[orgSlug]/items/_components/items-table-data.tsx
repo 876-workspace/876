@@ -54,8 +54,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
     items.error?.code === 'billing/database-not-ready' ||
     items.error?.code === 'billing/unreachable'
 
-  const displayError =
-    items.error && !isMissingWorkspace ? items.error : null
+  const displayError = items.error && !isMissingWorkspace ? items.error : null
 
   const rows = items.error
     ? []

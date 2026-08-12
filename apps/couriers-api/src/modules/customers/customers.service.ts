@@ -224,7 +224,10 @@ export async function updateCustomer(
       profileRow.billingCustomerId
     )
     if (current.error || !current.data) {
-      log.warn({ errorCode: current.error?.code, tenantId, customerId: id }, 'customers.billing_retrieve_failed')
+      log.warn(
+        { errorCode: current.error?.code, tenantId, customerId: id },
+        'customers.billing_retrieve_failed'
+      )
       throw new AppHttpError({
         code: 'customer/registry-unavailable',
         message: 'The customer registry is temporarily unavailable.',
@@ -292,7 +295,10 @@ export async function updateCustomer(
         }
       )
       if (registry.error || !registry.data) {
-        log.warn({ errorCode: registry.error?.code, tenantId, customerId: id }, 'customers.billing_update_failed')
+        log.warn(
+          { errorCode: registry.error?.code, tenantId, customerId: id },
+          'customers.billing_update_failed'
+        )
         throw new AppHttpError({
           code: 'customer/registry-unavailable',
           message: 'The customer registry is temporarily unavailable.',

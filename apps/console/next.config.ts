@@ -54,7 +54,10 @@ const nextConfig: NextConfig = {
       'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
     ],
   },
-  allowedDevOrigins: ['127.0.0.1', ...(previewDevOrigin ? [previewDevOrigin] : [])],
+  allowedDevOrigins: [
+    '127.0.0.1',
+    ...(previewDevOrigin ? [previewDevOrigin] : []),
+  ],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
