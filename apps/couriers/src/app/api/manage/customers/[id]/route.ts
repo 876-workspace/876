@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest, context: Context) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
   const { id } = await context.params
-  const result = await $876.couriers.customers.delete(ctx.tenant.id, id, {
+  const result = await $876.customers.delete(ctx.tenant.id, id, {
     deleted_by: ctx.userId,
   })
 

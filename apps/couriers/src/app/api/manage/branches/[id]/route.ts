@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await $876.couriers.branches.update(
+  const result = await $876.branches.update(
     tenantId,
     id,
     toBranchUpdateBody(parsed.data)

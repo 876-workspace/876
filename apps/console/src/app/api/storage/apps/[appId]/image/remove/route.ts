@@ -42,7 +42,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (!fileId) return apiJson({ data: null })
 
   // An app logo is platform-owned, so the creating app stands in for the owner.
-  const deleteResult = await $876.storage.files.delete(fileId, {
+  const deleteResult = await $876.files.delete(fileId, {
     sourceAppId: '876-console',
   })
   if (deleteResult.error || !deleteResult.data)

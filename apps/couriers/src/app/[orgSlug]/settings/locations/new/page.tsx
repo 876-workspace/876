@@ -45,7 +45,7 @@ async function NewBranchData({ orgSlug }: { orgSlug: string }) {
     )
 
   const branches = requireCouriersData(
-    await $876.couriers.branches.list(ctx.tenant.id)
+    await $876.branches.list(ctx.tenant.id)
   )
 
   return (

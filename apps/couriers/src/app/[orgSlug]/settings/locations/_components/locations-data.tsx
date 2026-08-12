@@ -20,7 +20,7 @@ export async function LocationsData({ params }: Props) {
   const { id: tenantId } = ctx.tenant
 
   const branches = requireCouriersData(
-    await $876.couriers.branches.list(tenantId)
+    await $876.branches.list(tenantId)
   ).data.map(toBranchView)
 
   return (

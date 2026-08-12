@@ -42,14 +42,14 @@ async function EditCustomerData({
     get876Client(),
   ])
   if (!ctx?.tenant) notFound()
-  const customerResult = await $876.couriers.customers.retrieve(
+  const customerResult = await $876.customers.retrieve(
     ctx.tenant.id,
     id
   )
   if (isCouriersNotFound(customerResult)) notFound()
   const profile = toCustomerView(requireCouriersData(customerResult))
   const [branchesResult, registry] = await Promise.all([
-    $876.couriers.branches.list(ctx.tenant.id),
+    $876.branches.list(ctx.tenant.id),
     request876.billing.customers.retrieve(
       ctx.tenant.orgId,
       profile.billingCustomerId

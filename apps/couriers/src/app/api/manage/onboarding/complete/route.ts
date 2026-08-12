@@ -76,7 +76,7 @@ export async function POST() {
 
   let tenantId = ctx.tenant?.id
   if (!tenantId) {
-    const created = await $876.couriers.tenants.create({
+    const created = await $876.tenants.create({
       org_id: ctx.orgId,
       name: platformName,
       slug: toSlug(platformName),
@@ -95,7 +95,7 @@ export async function POST() {
   }
 
   if (mailboxPrefix) {
-    const updated = await $876.couriers.tenants.update(tenantId, {
+    const updated = await $876.tenants.update(tenantId, {
       mailbox_prefix: mailboxPrefix,
     })
     if (updated.error)

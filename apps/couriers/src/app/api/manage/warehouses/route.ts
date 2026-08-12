@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await $876.couriers.warehouses.create(
+  const result = await $876.warehouses.create(
     tenantId,
     toWarehouseCreateBody(parsed.data)
   )

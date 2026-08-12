@@ -35,7 +35,7 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
         You do not have permission to manage customers.
       </div>
     )
-  const branches = await $876.couriers.branches.list(ctx.tenant.id)
+  const branches = await $876.branches.list(ctx.tenant.id)
   if (branches.error)
     return (
       <div className="border-destructive/30 bg-destructive/5 text-destructive max-w-2xl rounded-lg border p-4 text-sm">
@@ -72,7 +72,7 @@ async function listEnrolledCustomerIds(
   let startingAfter: string | undefined
 
   for (;;) {
-    const result = await $876.couriers.customers.list(tenantId, {
+    const result = await $876.customers.list(tenantId, {
       limit: 100,
       ...(startingAfter ? { starting_after: startingAfter } : {}),
     })
@@ -94,7 +94,7 @@ async function listGlobalCustomers(
   let startingAfter: string | undefined
 
   for (;;) {
-    const page = await $876.billing.customers.list(organizationId, {
+    const page = await $876.customers.list(organizationId, {
       status: 'ACTIVE',
       limit: 100,
       ...(startingAfter ? { starting_after: startingAfter } : {}),

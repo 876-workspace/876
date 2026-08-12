@@ -40,7 +40,7 @@ async function RolesData({ params }: Props) {
     )
 
   const roles = requireCouriersData(
-    await $876.couriers.roles.list(ctx.tenant.id)
+    await $876.couriersRoles.list(ctx.tenant.id)
   ).data.map(toRoleView)
 
   return <RolesTable orgSlug={orgSlug} roles={roles} />

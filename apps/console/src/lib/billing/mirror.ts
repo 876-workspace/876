@@ -136,7 +136,7 @@ export async function mirrorCoreProductPrices(
 
   // Control-plane workflow: Console intentionally coordinates Core entitlements + Billing commercial projection.
   // Uses standard create() (idempotent via externalReference/sourceAppId) — Billing service handles idempotency.
-  const createdProduct = await $876.billing.products.create({
+  const createdProduct = await $876.products.create({
     sourceAppId: product.app_id,
     slug: product.app_slug ?? product.app_id,
     name: product.app_name ?? product.app_slug ?? product.app_id,
@@ -165,7 +165,7 @@ export async function mirrorCoreProductPrices(
     }
 
     const { intervalUnit, intervalCount } = cadence
-    const createdPlan = await $876.billing.plans.create({
+    const createdPlan = await $876.plans.create({
       productId: createdProduct.data.id,
       entitlementReferenceId: product.id,
       code: product.slug,
@@ -186,7 +186,7 @@ export async function mirrorCoreProductPrices(
       continue
     }
 
-    const createdPrice = await $876.billing.prices.create({
+    const createdPrice = await $876.prices.create({
       planId: createdPlan.data.id,
       entitlementReferenceId: price.id,
       nickname: price.nickname ?? price.name ?? null,
@@ -268,7 +268,7 @@ export async function mirrorCoreSubscription(
   const legalName = org.data?.name ?? subscription.organization_id
   const contact = await resolveOrgPrimaryContact(org.data)
 
-  const createdCustomer = await $876.billing.customers.create({
+  const createdCustomer = await $876.customers.create({
     organizationId: subscription.organization_id,
     customerType: 'CORE_ORGANIZATION',
     customerKind: 'BUSINESS',
@@ -289,7 +289,7 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const createdSubscription = await $876.billing.subscriptions.create({
+  const createdSubscription = await $876.subscriptions.create({
     externalReference: subscription.id,
     sourceAppId: subscription.app_id,
     customerId: createdCustomer.data.id,

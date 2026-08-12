@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await $876.billing.stats.apps.retrieve(sourceAppId)
+    const result = await $876.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',

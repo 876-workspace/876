@@ -20,7 +20,7 @@ export async function POST(request: NextRequest, context: Context) {
     return apiJson({ error: 'The upload request is invalid.' }, { status: 400 })
 
   const { userId } = await context.params
-  const result = await $876.storage.uploads.complete(parsed.data.id)
+  const result = await $876.uploads.complete(parsed.data.id)
   if (result.error || !result.data)
     return apiJson(
       { error: result.error ?? 'Failed to verify the image upload.' },

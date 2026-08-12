@@ -18,7 +18,7 @@ export const resolveCustomer = cache(async (orgSlug: string, id: string) => {
   ])
   if (!ctx?.tenant) return null
 
-  const customerResult = await $876.couriers.customers.retrieve(
+  const customerResult = await $876.customers.retrieve(
     ctx.tenant.id,
     id
   )
@@ -33,7 +33,7 @@ export const resolveCustomer = cache(async (orgSlug: string, id: string) => {
     ),
     request876.couriers.customers.mailboxes.list(ctx.tenant.id, profile.id),
     profile.branchId
-      ? $876.couriers.branches.retrieve(ctx.tenant.id, profile.branchId)
+      ? $876.branches.retrieve(ctx.tenant.id, profile.branchId)
       : null,
   ])
 
@@ -56,7 +56,7 @@ export const resolveCustomerTitle = cache(
       get876Client(),
     ])
     if (!ctx?.tenant) return null
-    const customerResult = await $876.couriers.customers.retrieve(
+    const customerResult = await $876.customers.retrieve(
       ctx.tenant.id,
       id
     )

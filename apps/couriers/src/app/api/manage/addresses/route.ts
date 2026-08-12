@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await $876.couriers.addresses.create(
+  const result = await $876.addresses.create(
     ctx.tenant.id,
     toAddressCreateBody(parsed.data)
   )

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       message: 'Organization logo uploads are not enabled.',
     })
 
-  const result = await $876.storage.uploads.create({
+  const result = await $876.uploads.create({
     route_key: 'organization.primaryLogo',
     owner_type: 'organization',
     owner_id: ctx.orgId,

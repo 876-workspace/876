@@ -23,7 +23,7 @@ export async function PATCH(request: Request, context: Context) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.widgets.notes.update(
+  const result = await $876.notes.update(
     { userId: access.userId },
     id,
     {
@@ -56,7 +56,7 @@ export async function DELETE(_request: Request, context: Context) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $876.widgets.notes.delete({ userId: access.userId }, id)
+  const result = await $876.notes.delete({ userId: access.userId }, id)
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,

@@ -20,7 +20,7 @@ export async function WarehousesData({ params }: Props) {
   const { id: tenantId } = ctx.tenant
 
   const warehouses = requireCouriersData(
-    await $876.couriers.warehouses.list(tenantId)
+    await $876.warehouses.list(tenantId)
   ).data.map(toWarehouseView)
 
   return (

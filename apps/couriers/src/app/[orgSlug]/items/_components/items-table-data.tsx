@@ -45,7 +45,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
   if (!ctx?.tenant) return <ItemsTable items={[]} emptyState={emptyState} />
 
   const $876 = await get876Client()
-  const items = await $876.billing.items.list(ctx.orgId, {
+  const items = await $876.items.list(ctx.orgId, {
     active: activeFilter,
   })
 

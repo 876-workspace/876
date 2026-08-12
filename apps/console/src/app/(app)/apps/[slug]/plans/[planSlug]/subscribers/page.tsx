@@ -9,7 +9,7 @@ type Props = { params: Promise<{ slug: string; planSlug: string }> }
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await $876.billing.stats.apps.retrieve(sourceAppId)
+    const result = await $876.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',

@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest) {
   const prefix =
     typeof raw === 'string' ? raw.trim().toUpperCase() || null : null
 
-  const result = await $876.couriers.tenants.update(ctx.tenant.id, {
+  const result = await $876.tenants.update(ctx.tenant.id, {
     mailbox_prefix: prefix,
   })
   if (result.error) {

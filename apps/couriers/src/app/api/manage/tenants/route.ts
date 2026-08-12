@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
   const { name, slug } = parsed.data
 
-  const result = await $876.couriers.tenants.create({
+  const result = await $876.tenants.create({
     org_id: ctx.orgId,
     name,
     slug,

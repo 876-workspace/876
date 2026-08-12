@@ -10,7 +10,7 @@ export async function GET() {
   const access = await requireNotepadMember()
   if (access.response) return access.response
 
-  const result = await $876.widgets.collections.list({ userId: access.userId })
+  const result = await $876.collections.list({ userId: access.userId })
   if (result.error)
     return apiError(result.error.message, {
       status: 502,
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.widgets.collections.create(
+  const result = await $876.collections.create(
     { userId: access.userId },
     {
       name: typeof record.name === 'string' ? record.name : '',

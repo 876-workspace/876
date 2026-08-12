@@ -50,7 +50,7 @@ async function EditWarehouseData({ orgSlug, id }: EditWarehouseDataProps) {
       </div>
     )
 
-  const result = await $876.couriers.warehouses.retrieve(ctx.tenant.id, id)
+  const result = await $876.warehouses.retrieve(ctx.tenant.id, id)
   if (!result.data && isCouriersNotFound(result)) notFound()
 
   return (

@@ -45,7 +45,7 @@ async function NewWarehouseData({ orgSlug }: { orgSlug: string }) {
     )
 
   const warehouses = requireCouriersData(
-    await $876.couriers.warehouses.list(ctx.tenant.id)
+    await $876.warehouses.list(ctx.tenant.id)
   )
 
   return (

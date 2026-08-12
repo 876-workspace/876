@@ -50,7 +50,7 @@ async function EditBranchData({ orgSlug, id }: EditBranchDataProps) {
       </div>
     )
 
-  const result = await $876.couriers.branches.retrieve(ctx.tenant.id, id)
+  const result = await $876.branches.retrieve(ctx.tenant.id, id)
   if (!result.data && isCouriersNotFound(result)) notFound()
 
   return (

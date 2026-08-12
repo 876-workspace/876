@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const parsedModule = moduleKeySchema.safeParse(moduleKey)
   if (!parsedModule.success)
     return apiJson({ error: 'Unknown module.' }, { status: 404 })
-  const result = await $876.couriers.settings.preferences.retrieve(
+  const result = await $876.settings.preferences.retrieve(
     ctx.tenant.id,
     parsedModule.data
   )
@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const parsedModule = moduleKeySchema.safeParse(moduleKey)
   if (!parsedModule.success)
     return apiJson({ error: 'Unknown module.' }, { status: 404 })
-  const result = await $876.couriers.settings.preferences.update(
+  const result = await $876.settings.preferences.update(
     ctx.tenant.id,
     parsedModule.data,
     parsed.data.values

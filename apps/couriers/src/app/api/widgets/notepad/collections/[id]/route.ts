@@ -22,7 +22,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.widgets.collections.update(
+  const result = await $876.collections.update(
     { userId: access.userId },
     id,
     {
@@ -52,7 +52,7 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $876.widgets.collections.delete(
+  const result = await $876.collections.delete(
     { userId: access.userId },
     id
   )

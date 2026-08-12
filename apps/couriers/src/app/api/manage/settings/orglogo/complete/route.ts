@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       { status: 403, code: 'auth/forbidden' }
     )
 
-  const result = await $876.storage.uploads.complete(parsed.data.id)
+  const result = await $876.uploads.complete(parsed.data.id)
   if (result.error) return storageErrorResponse(result.error)
 
   const file = result.data

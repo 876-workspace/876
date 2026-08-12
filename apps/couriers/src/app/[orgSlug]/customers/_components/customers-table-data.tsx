@@ -48,7 +48,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   for (;;) {
     try {
       const page = requireCouriersData(
-        await $876.couriers.customers.list(ctx.tenant.id, {
+        await $876.customers.list(ctx.tenant.id, {
           ...(profileStatus === undefined ? {} : { status: profileStatus }),
           limit: 100,
           ...(startingAfter === undefined

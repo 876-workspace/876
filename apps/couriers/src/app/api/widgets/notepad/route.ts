@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const unfiled =
     unfiledParam === '1' || unfiledParam === 'true' ? true : undefined
 
-  const result = await $876.widgets.notes.list(
+  const result = await $876.notes.list(
     { userId: access.userId },
     {
       limit: Number(url.searchParams.get('limit') ?? '') || undefined,
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.widgets.notes.create(
+  const result = await $876.notes.create(
     { userId: access.userId },
     {
       title: typeof record.title === 'string' ? record.title : '',

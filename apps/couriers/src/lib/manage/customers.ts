@@ -19,7 +19,7 @@ export async function enrollManagedCustomer({
   tenant: CouriersTenant
   params: CustomerEnrollmentParams
 }): ServiceResult<CustomerView> {
-  const result = await $876.couriers.customers.enroll(tenant.id, {
+  const result = await $876.customers.enroll(tenant.id, {
     billing_customer_id: params.billingCustomerId,
     branch_id: params.branchId,
     ...(params.status === undefined ? {} : { status: params.status }),
@@ -39,7 +39,7 @@ export async function createManagedCustomer({
   tenant: CouriersTenant
   params: CustomerCreateParams
 }): ServiceResult<CustomerView> {
-  const result = await $876.couriers.customers.create(tenant.id, {
+  const result = await $876.customers.create(tenant.id, {
     idempotency_key: params.idempotencyKey,
     customer_kind: params.customerKind ?? 'INDIVIDUAL',
     ...(params.firstName === undefined ? {} : { first_name: params.firstName }),
@@ -67,7 +67,7 @@ export async function updateManagedCustomer({
   id: string
   params: CustomerUpdateParams
 }): ServiceResult<CustomerView> {
-  const result = await $876.couriers.customers.update(tenant.id, id, {
+  const result = await $876.customers.update(tenant.id, id, {
     ...(params.firstName === undefined ? {} : { first_name: params.firstName }),
     ...(params.lastName === undefined ? {} : { last_name: params.lastName }),
     ...(params.companyName === undefined

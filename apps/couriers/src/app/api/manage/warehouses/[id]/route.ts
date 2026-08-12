@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await $876.couriers.warehouses.update(
+  const result = await $876.warehouses.update(
     tenantId,
     id,
     toWarehouseUpdateBody(parsed.data)
