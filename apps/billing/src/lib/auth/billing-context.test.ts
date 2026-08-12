@@ -17,7 +17,6 @@ const mocks = vi.hoisted(() => ({
   isSignedSession: vi.fn(),
   getPlatformClient: vi.fn(),
   getRoutingMemberships: vi.fn(),
-  retrieveSubscription: vi.fn(),
   listTenants: vi.fn(),
   resolveMember: vi.fn(),
   getFeatures: vi.fn(),
@@ -35,7 +34,6 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 vi.mock('next/headers', () => ({
   cookies: async () => ({ get: mocks.getCookie }),
 }))
-vi.mock('@/lib/billing-app', () => ({ BILLING_APP_SLUG: '876-billing' }))
 vi.mock('@/lib/876/platform-client', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
@@ -128,19 +126,12 @@ describe('Billing context', () => {
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPlatformClient.mockResolvedValue({
       memberships: { listRouting: mocks.getRoutingMemberships },
-      subscriptions: {
-        retrieve: mocks.retrieveSubscription,
-      },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
       data: { data: [createMembership('org_123')] },
       error: null,
     })
     mocks.listTenants.mockResolvedValue([tenant])
-    mocks.retrieveSubscription.mockResolvedValue({
-      data: { status: 'active', items: [{ price_id: 'price_internal' }] },
-      error: null,
-    })
     mocks.resolveMember.mockResolvedValue(access)
     mocks.getFeatures.mockResolvedValue({
       uiFeatures: {},
@@ -227,11 +218,6 @@ describe('Billing context', () => {
     expect(mocks.listTenants).toHaveBeenCalledWith({
       organizationIds: ['org_123'],
     })
-    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
-      organizationId: 'org_123',
-      appSlug: '876-billing',
-    })
     expect(mocks.resolveMember).toHaveBeenCalledTimes(1)
     expect(mocks.resolveMember).toHaveBeenCalledWith(
       'ten_123',
@@ -299,11 +285,6 @@ describe('Billing context', () => {
     expect(mocks.listTenants).toHaveBeenCalledWith({
       organizationIds: ['org_123', 'org_session', 'org_cookie'],
     })
-    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
-      organizationId: 'org_cookie',
-      appSlug: '876-billing',
-    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -355,11 +336,6 @@ describe('Billing context', () => {
     })
     expect(mocks.getCookie).toHaveBeenCalledTimes(1)
     expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
-    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
-      organizationId: 'org_session',
-      appSlug: '876-billing',
-    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -414,11 +390,6 @@ describe('Billing context', () => {
     expect(mocks.listTenants).toHaveBeenCalledWith({
       organizationIds: ['org_session'],
     })
-    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
-      organizationId: 'org_session',
-      appSlug: '876-billing',
-    })
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
@@ -450,11 +421,6 @@ describe('Billing context', () => {
       })
       expect(mocks.getCookie).toHaveBeenCalledTimes(1)
       expect(mocks.getCookie).toHaveBeenCalledWith('billing_active_org')
-      expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
-        organizationId: 'org_123',
-        appSlug: '876-billing',
-      })
     }
   )
 
@@ -623,50 +589,22 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
-  it.each([
-    ['subscription error', { data: null, error: { message: 'Missing.' } }],
-    ['missing subscription data', { data: null, error: null }],
-  ])('maps %s to no Billing access', async (_name, subscriptionResult) => {
-    mocks.retrieveSubscription.mockResolvedValue(subscriptionResult)
-
+  it('resolves an existing workspace without consulting platform subscription state', async () => {
     const result = await getContext()
 
     expect(result).toEqual(
       expect.objectContaining({
-        accessStatus: 'none',
+        accessStatus: 'active',
         tenant,
-        access: null,
-        permissions: [],
+        access,
+        permissions: ['billing:access', 'sales:read'],
       })
     )
-    expect(mocks.resolveMember).not.toHaveBeenCalled()
-  })
-
-  it('retains a blocked Billing access status without resolving a member', async () => {
-    mocks.retrieveSubscription.mockResolvedValue({
-      data: { status: 'blocked', items: [{ price_id: 'price_internal' }] },
-      error: null,
-    })
-
-    const result = await getContext()
-
-    expect(result?.accessStatus).toBe('blocked')
-    expect(result?.access).toBeNull()
-    expect(result?.permissions).toEqual([])
-    expect(mocks.resolveMember).not.toHaveBeenCalled()
-  })
-
-  it('denies Billing access when the subscription has no plan item', async () => {
-    mocks.retrieveSubscription.mockResolvedValue({
-      data: { status: 'active', items: [] },
-      error: null,
-    })
-
-    const result = await getContext()
-
-    expect(result?.accessStatus).toBe('none')
-    expect(result?.access).toBeNull()
-    expect(mocks.resolveMember).not.toHaveBeenCalled()
+    expect(mocks.resolveMember).toHaveBeenCalledWith(
+      'ten_123',
+      'user_123',
+      'owner'
+    )
   })
 
   it('withholds permissions for a suspended Billing member', async () => {
@@ -711,20 +649,11 @@ describe('Billing context', () => {
 
   it.each([
     ['no tenant', { tenants: [] }],
-    ['blocked subscription', { subscriptionStatus: 'blocked' }],
     ['no member access', { memberAccess: null }],
     ['suspended member', { memberStatus: 'SUSPENDED' }],
     ['missing Billing permission', { permissions: ['sales:read'] }],
   ])('returns null workspace context for %s', async (_name, scenario) => {
     if ('tenants' in scenario) mocks.listTenants.mockResolvedValue([])
-    if ('subscriptionStatus' in scenario)
-      mocks.retrieveSubscription.mockResolvedValue({
-        data: {
-          status: scenario.subscriptionStatus,
-          items: [{ price_id: 'price_internal' }],
-        },
-        error: null,
-      })
     if ('memberAccess' in scenario)
       mocks.resolveMember.mockResolvedValue(scenario.memberAccess)
     if ('memberStatus' in scenario)

@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     if (!isSignedSession(session)) redirect(`/login?${AUTH_RETURN_TO_PARAM}=/`)
     redirect('/no-access')
   }
-  if (context.accessStatus !== 'active' || !context.tenant) {
+  if (!context.tenant) {
     redirect(context.role === 'member' ? '/no-access' : '/get-started')
   }
   if (

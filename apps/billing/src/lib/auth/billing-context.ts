@@ -4,12 +4,11 @@ import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import { BILLING_APP_SLUG } from '@/lib/billing-app'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getFeatures } from '@/lib/features'
 import { service } from '@/lib/service'
 import type { Tenant } from '@/lib/db'
-import type { AccessStatus, Context, OrgRole } from '@/types/auth'
+import type { Context, OrgRole } from '@/types/auth'
 import type { Permission } from '@/types/access'
 import type { BillingProductFeature } from '@/types/features'
 
@@ -70,22 +69,11 @@ export const getContext = cache(
     if (!selectedMembership) return null
 
     const organizationId = selectedMembership.organization.id
-    const accessResult = await platform.subscriptions.retrieve({
-      organizationId,
-      appSlug: BILLING_APP_SLUG,
-    })
-    const accessStatus: AccessStatus = accessResult.error
-      ? 'none'
-      : accessResult.data?.items.length
-        ? ((accessResult.data.status as AccessStatus) ?? 'none')
-        : 'none'
-
     const tenant = tenantByOrganizationId.get(organizationId) ?? null
     const role = normalizeOrgRole(selectedMembership.role)
-    const access =
-      tenant && accessStatus === 'active'
-        ? await service.members.resolve(tenant.id, session.user.id, role)
-        : null
+    const access = tenant
+      ? await service.members.resolve(tenant.id, session.user.id, role)
+      : null
 
     return {
       userId: session.user.id,
@@ -94,7 +82,10 @@ export const getContext = cache(
       orgSlug: selectedMembership.organization.slug,
       role,
       organizations,
-      accessStatus,
+      // Billing workspaces are provisioned by dependent products such as
+      // Couriers. Platform subscription state must not block enterprise
+      // members from those existing workspaces.
+      accessStatus: 'active',
       tenant,
       access,
       permissions: access?.status === 'ACTIVE' ? access.permissions : [],
@@ -113,7 +104,6 @@ export async function getWorkspaceContext(): Promise<
   const context = await getContext()
   if (
     !context?.tenant ||
-    context.accessStatus !== 'active' ||
     !context.access ||
     context.access.status !== 'ACTIVE' ||
     !context.permissions.includes('billing:access')
