@@ -13,7 +13,12 @@ export async function GET(): Promise<Response> {
       status: 'ready',
       service: 'billing',
     })
-  } catch {
+  } catch (error) {
+    console.error('Billing readiness database probe failed', {
+      name: error instanceof Error ? error.name : 'UnknownError',
+      message:
+        error instanceof Error ? error.message : 'Non-Error value thrown',
+    })
     return apiSuccess(
       {
         object: 'readiness',
