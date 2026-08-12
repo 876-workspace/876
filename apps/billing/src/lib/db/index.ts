@@ -1,9 +1,10 @@
 import 'server-only'
 
-import { PrismaPg } from '@prisma/adapter-pg'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
+  requireAccelerateUrl,
   type QueryFailure,
 } from '@876/core/db'
 import * as Sentry from '@sentry/nextjs'
@@ -91,15 +92,12 @@ function reportDbFailure(
 }
 
 function createPrisma() {
-  const connectionString = process.env.BILLING_DIRECT_DATABASE_URL
-  if (!connectionString)
-    throw new Error(
-      'BILLING_DIRECT_DATABASE_URL is not set; 876 Billing DB unavailable.'
-    )
+  const accelerateUrl = requireAccelerateUrl(process.env.BILLING_DATABASE_URL, {
+    variable: 'BILLING_DATABASE_URL',
+    datastore: 'Billing',
+  })
 
-  const adapter = new PrismaPg({ connectionString })
-
-  return new PrismaClient({ adapter })
+  const client = new PrismaClient({ accelerateUrl })
     .$extends({
       query: {
         $allModels: {
@@ -124,6 +122,8 @@ function createPrisma() {
         }),
       },
     })
+
+  return client.$extends(withAccelerate()) as unknown as typeof client
 }
 
 type Prisma = ReturnType<typeof createPrisma>
@@ -171,7 +171,7 @@ const resolvePrisma = createRequestScopedResolver<Prisma>({
  * The client is built on first property access, not at import. `next build`
  * imports every route module to collect page data, so eager construction made
  * the connection string a build-time requirement — and the Cloudflare build
- * environment has no `BILLING_DIRECT_DATABASE_URL`; only the Worker runtime
+ * environment has no `BILLING_DATABASE_URL`; only the Worker runtime
  * does.
  *
  * On Cloudflare Workers the client and its pg adapter are scoped to the

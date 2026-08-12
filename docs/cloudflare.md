@@ -25,14 +25,15 @@ Prisma Postgres databases.
 
 **Databases:** Prisma Postgres (production).
 
-| Prisma Postgres database ID    | Used by                   | Runtime env var               | CI secret               |
-| ------------------------------ | ------------------------- | ----------------------------- | ----------------------- |
-| `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API              | `DATABASE_URL`                | `API_DATABASE_URL`      |
-| `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local         | `CONSOLE_DATABASE_URL`        | `CONSOLE_DATABASE_URL`  |
-| `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local        | `DATABASE_URL`                | `COURIERS_DATABASE_URL` |
-| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing app + Billing API | `BILLING_DIRECT_DATABASE_URL` | `BILLING_DATABASE_URL`  |
-| `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API               | `WIDGETS_DATABASE_URL`        | `WIDGETS_DATABASE_URL`  |
-| `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API               | `STORAGE_DATABASE_URL`        | `STORAGE_DATABASE_URL`  |
+| Prisma Postgres database ID    | Used by            | Runtime env var        | CI secret               |
+| ------------------------------ | ------------------ | ---------------------- | ----------------------- |
+| `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API       | `DATABASE_URL`         | `API_DATABASE_URL`      |
+| `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local  | `CONSOLE_DATABASE_URL` | `CONSOLE_DATABASE_URL`  |
+| `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local | `DATABASE_URL`         | `COURIERS_DATABASE_URL` |
+| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing app        | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
+| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing API        | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
+| `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API        | `WIDGETS_DATABASE_URL` | `WIDGETS_DATABASE_URL`  |
+| `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API        | `STORAGE_DATABASE_URL` | `STORAGE_DATABASE_URL`  |
 
 Two services read a variable literally named `DATABASE_URL` at runtime — the
 identity API and Couriers — so the **CI secret names are always prefixed**, and
@@ -320,18 +321,20 @@ Couriers, affected users are routed to onboarding and see
 
 ## Continuous deployment
 
-Two systems share the job, and they must not overlap:
+Use one production deploy owner. The repository variable
+`DEPLOY_FROM_ACTIONS=true` makes GitHub Actions that owner:
 
-| System                        | Owns                                                          | Trigger                     |
-| ----------------------------- | ------------------------------------------------------------- | --------------------------- |
-| **Cloudflare Workers Builds** | Build + deploy of all OpenNext Workers and Container services | Push to `main` (git-linked) |
-| **GitHub Actions**            | Storage API schema migrations                                 | Matching push to `main`     |
-| GitHub Actions (manual)       | Migrations and deploys when an explicit fallback is needed    | `workflow_dispatch`         |
+| System                  | Owns                                                  | Trigger                 |
+| ----------------------- | ----------------------------------------------------- | ----------------------- |
+| **GitHub Actions**      | Migrate, verify secrets, deploy, and verify readiness | Matching push to `main` |
+| GitHub Actions (manual) | The same guarded release path for one app or all apps | `workflow_dispatch`     |
+| Cloudflare Builds       | Must be disabled while Actions owns releases          | Do not configure a push |
 
 ### Cloudflare Workers Builds settings
 
-Set these under **Workers & Pages → \<worker\> → Settings → Build**. Builds
-trigger on merge to the production branch (`main`).
+These settings are retained as fallback documentation only. Do not connect a
+production Worker to Git while `DEPLOY_FROM_ACTIONS=true`, or one commit can
+produce two unordered deployments and bypass migration/readiness ordering.
 
 Every `wrangler.jsonc` points `main` at `.open-next/worker.js`, so the build
 step must run OpenNext — plain `next build` only writes `.next/` and the
@@ -378,22 +381,53 @@ variable for browser-side error capture. Next.js inlines `NEXT_PUBLIC_*` values
 during the build, and runtime Worker vars from `wrangler.jsonc` are not visible
 to that build.
 
-**Workers Builds does not run migrations.** The Storage API migration stays in
-GitHub Actions, which holds its database URL. Other datastore migrations run
-through an explicit manual dispatch. Keep migrations additive so a Workers
-Build that lands before its migration job does not break.
+**Workers Builds does not run migrations or repository release gates.** Keep it
+disabled for production. If ownership is intentionally transferred back, first
+set `DEPLOY_FROM_ACTIONS=false` and provide an equivalent ordered migration and
+readiness mechanism.
 
 ### GitHub Actions
 
 `.github/workflows/deploy-cloudflare.yml`:
 
-- **Path-filtered on push.** Only a Storage API change runs its migration.
+- **Path-filtered on push.** Every changed Worker runs its own release job.
 - **Ordered on manual deploys.** Data-plane Workers run before dependent UIs.
-- **Migrations never run inside a Worker.** Storage migrations run on matching
-  pushes; the other datastore migrations require an explicit manual deploy.
-- **Every deploy step is `workflow_dispatch`-only** so pushes do not deploy a
-  Worker twice.
+- **Migrations never run inside a Worker.** Each datastore owner migrates before
+  its Worker is deployed.
+- **One database source per release.** Direct-runtime services copy the exact CI
+  migration URL into the Worker before deployment. Accelerate-backed OpenNext
+  apps keep their direct migration and runtime Accelerate URLs separate.
 - Shared toolchain setup lives in `.github/actions/setup`.
+
+### Enforced release contract
+
+Every Worker must be declared in
+`scripts/cloudflare-release-contract.mjs`. The declaration owns its app
+directory, required runtime secret names, production readiness URL,
+dependencies, migration owner, database mode, and (for Alembic) namespaced
+revision table. `pnpm check:cloudflare-release` scans every
+`apps/*/wrangler.jsonc` and fails when a Worker is undeclared, points at an
+unknown dependency, or has no deployment job/manual-dispatch option. This is
+also run before the deployment workflow evaluates path filters, so a newly
+introduced app cannot silently fall outside the release graph.
+
+Data-backed OpenNext Workers are required to use Prisma Accelerate at runtime;
+direct PostgreSQL driver adapters are rejected by the contract. Every Alembic
+service must use its own non-default revision table so services sharing one
+Postgres database cannot overwrite each other's migration head.
+
+Deploy jobs use two separate gates:
+
+1. `pnpm check:worker-secrets <worker>` verifies binding names without reading
+   or printing secret values.
+2. `pnpm check:worker-readiness <worker>` polls the Worker's declared readiness
+   endpoint and every declared dependency. A dependency response must be 2xx
+   JSON with `status: "ok"` or `status: "ready"`.
+
+`/health` is liveness only. Apps that can start while their database or an
+essential dependency is unavailable must expose a separate `/ready` endpoint
+and declare that URL. Do not use an unconditional health response as a release
+gate.
 
 ### Required GitHub configuration
 
@@ -402,7 +436,7 @@ Build that lands before its migration job does not break.
 | Secret   | `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit + Containers), `CLOUDFLARE_ACCOUNT_ID` (manual deploys only)                                                     |
 | Secret   | `API_DATABASE_URL`, `WIDGETS_DATABASE_URL`, `CONSOLE_DATABASE_URL`, `BILLING_DATABASE_URL`, `COURIERS_DATABASE_URL`, `STORAGE_DATABASE_URL` (migrations only) |
 | Secret   | `NEXT_PUBLIC_876_API_KEY`, `NEXT_PUBLIC_POSTHOG_KEY`                                                                                                          |
-| Variable | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`                                                                                  |
+| Variable | `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_876_API_URL`, `NEXT_PUBLIC_POSTHOG_HOST`, `DEPLOY_FROM_ACTIONS=true`                                                      |
 
 Only build-time (`NEXT_PUBLIC_*`) values and migration URLs belong in GitHub.
 Every runtime secret is set with `wrangler secret put` and read from the Worker

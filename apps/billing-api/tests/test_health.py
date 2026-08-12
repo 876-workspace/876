@@ -1,7 +1,23 @@
+from unittest.mock import AsyncMock, Mock
+
 from httpx import ASGITransport, AsyncClient
 
 from core.config import Settings
+from db.schema_ownership import current_revision
 from main import create_app
+
+
+async def test_readiness_uses_billing_migration_ledger() -> None:
+    result = Mock()
+    result.scalar_one_or_none.return_value = "202607220002"
+    connection = AsyncMock()
+    connection.execute.return_value = result
+
+    revision = await current_revision(connection)
+
+    statement = connection.execute.await_args.args[0]
+    assert str(statement) == ("SELECT version_num FROM billing_alembic_version LIMIT 1")
+    assert revision == "202607220002"
 
 
 async def test_health_returns_raw_service_status() -> None:

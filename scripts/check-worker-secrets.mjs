@@ -12,63 +12,14 @@
  */
 import { spawnSync } from 'node:child_process'
 
-const REQUIRED_SECRETS = {
-  '876-api': [
-    'API_INTERNAL_KEY',
-    'CORS_ALLOWED_ORIGINS',
-    'DATABASE_URL',
-    'POSTHOG_PERSONAL_API_KEY',
-    'POSTHOG_PROJECT_ID',
-    'SENTRY_DSN',
-    'WORKOS_API_KEY',
-    'WORKOS_CLIENT_ID',
-    'WORKOS_COOKIE_PASSWORD',
-  ],
-  '876-console': [
-    'API_876_KEY',
-    'API_INTERNAL_KEY',
-    'BILLING_INTERNAL_KEY',
-    'CONSOLE_DATABASE_URL',
-    'WIDGETS_SERVICE_KEY',
-    'WORKOS_COOKIE_PASSWORD',
-  ],
-  '876-billing': [
-    'API_INTERNAL_KEY',
-    'BILLING_API_876_KEY',
-    'BILLING_DIRECT_DATABASE_URL',
-    'BILLING_INTERNAL_KEY',
-    'SESSION_COOKIE_SECRET',
-    'WIDGETS_SERVICE_KEY',
-  ],
-  '876-billing-api': [
-    'BILLING_API_876_KEY',
-    'BILLING_DATABASE_URL',
-    'BILLING_INTERNAL_KEY',
-    'CORS_ALLOWED_ORIGINS',
-  ],
-  '876-couriers-api': [
-    'API_876_KEY',
-    'API_INTERNAL_KEY',
-    'CORS_ALLOWED_ORIGINS',
-    'COURIERS_INTEGRATION_KEY',
-    'DATABASE_URL',
-    'OAUTH_AUDIENCE',
-    'OAUTH_ISSUER',
-    'OAUTH_JWKS_URL',
-    'SENTRY_DSN',
-  ],
-  '876-couriers': [
-    'API_876_KEY',
-    'API_INTERNAL_KEY',
-    'DATABASE_URL',
-    // Read by apps/couriers/src/lib/storage.ts; absent from the docs inventory
-    // until this check surfaced it.
-    'STORAGE_INTERNAL_KEY',
-    'WIDGETS_SERVICE_KEY',
-    'WORKOS_COOKIE_PASSWORD',
-  ],
-  '876-widgets-api': ['WIDGETS_DATABASE_URL', 'WIDGETS_SERVICE_KEY'],
-}
+import { CLOUDFLARE_WORKERS } from './cloudflare-release-contract.mjs'
+
+const REQUIRED_SECRETS = Object.fromEntries(
+  Object.entries(CLOUDFLARE_WORKERS).map(([worker, contract]) => [
+    worker,
+    contract.requiredSecrets,
+  ])
+)
 
 const requestedWorkers = process.argv.slice(2)
 
@@ -128,6 +79,9 @@ function classifyWranglerError(output) {
  * @returns The check result. Secret values are never requested or retained.
  */
 function checkWorker(worker) {
+  if (REQUIRED_SECRETS[worker].length === 0)
+    return { worker, status: 'present', missing: [] }
+
   const result = spawnSync(
     'npx',
     ['wrangler', 'secret', 'list', '--name', worker],

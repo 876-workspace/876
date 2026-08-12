@@ -84,6 +84,8 @@ jobs:
       app: ${{ steps.filter.outputs.app }}
     steps:
       - uses: actions/checkout@v4
+      - name: Validate Cloudflare release contract
+        run: node scripts/check-cloudflare-release-contract.mjs
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -144,9 +146,14 @@ jobs:
         run: pnpm --filter @876/widgets-api exec prisma migrate deploy
         env:
           WIDGETS_DIRECT_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-widgets-api
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/widgets-api run deploy
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-widgets-api
 
   api:
     needs: changes
@@ -184,6 +191,8 @@ jobs:
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
           DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-api
       # Containers build and push the Dockerfile image; the runner's Docker
       # daemon is used directly by wrangler. The build context is the repository
       # root (`image_build_context` in wrangler.jsonc), which is why this runs
@@ -192,6 +201,9 @@ jobs:
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/api
         run: pnpm exec wrangler deploy
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-api
 
   couriers-api:
     needs: changes
@@ -213,23 +225,53 @@ jobs:
         run: pnpm --filter @876/couriers-api exec prisma migrate deploy
         env:
           DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-couriers-api
       - name: Deploy container Worker
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/couriers-api
         run: pnpm exec wrangler deploy
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-couriers-api
 
   billing-api:
     needs: changes
     if:
       (github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'billing-api'))
-      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.billing-api == 'true')
+      || (github.event_name == 'push' && needs.changes.outputs.billing-api == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: apps/billing-api/requirements.txt
+      - name: Install migration dependencies
+        working-directory: apps/billing-api
+        run: python -m pip install -r requirements.txt
+      - name: Apply migrations
+        working-directory: apps/billing-api
+        run: python -m alembic upgrade head
+        env:
+          BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      - name: Sync runtime database secret
+        working-directory: apps/billing-api
+        run: |
+          printf '%s' "$BILLING_DATABASE_URL" |
+            pnpm exec wrangler secret put BILLING_DATABASE_URL
+        env:
+          BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-billing-api
       - name: Deploy container Worker
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/billing-api
         run: pnpm exec wrangler deploy
+      - name: Verify production readiness
+        run: pnpm check:worker-readiness 876-billing-api
 
   storage-api:
     needs: changes
@@ -251,10 +293,22 @@ jobs:
         run: python -m alembic upgrade head
         env:
           STORAGE_DATABASE_URL: ${{ secrets.STORAGE_DATABASE_URL }}
+      - name: Sync runtime database secret
+        working-directory: apps/storage-api
+        run: |
+          printf '%s' "$STORAGE_DATABASE_URL" |
+            pnpm exec wrangler secret put STORAGE_DATABASE_URL
+        env:
+          STORAGE_DATABASE_URL: ${{ secrets.STORAGE_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-storage-api
       - name: Deploy container Worker
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         working-directory: apps/storage-api
         run: pnpm exec wrangler deploy
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-storage-api
 
   # ── UI Workers ───────────────────────────────────────────────────────────
 
@@ -269,6 +323,8 @@ jobs:
         run: pnpm --filter @876/console exec prisma migrate deploy
         env:
           CONSOLE_DIRECT_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-console
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/console run deploy
@@ -278,6 +334,9 @@ jobs:
           NEXT_PUBLIC_876_API_KEY: ${{ secrets.NEXT_PUBLIC_876_API_KEY }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
           NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-console
 
   billing:
     needs: [changes, widgets-api, api, billing-api]
@@ -290,6 +349,8 @@ jobs:
         run: pnpm --filter @876/billing-app exec prisma migrate deploy
         env:
           BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-billing
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/billing-app run deploy
@@ -297,6 +358,9 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
           NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-billing
 
   couriers:
     needs: [changes, widgets-api, api]
@@ -305,6 +369,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-couriers
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/couriers-app run deploy
@@ -312,6 +378,9 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
           NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-couriers
 
   # enterprise and app have no datastore, so on push there is nothing for this
   # workflow to do — Workers Builds owns them end to end.
@@ -324,12 +393,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-enterprise
       - name: Deploy
         run: pnpm --filter @876/enterprise run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
           NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-enterprise
 
   app:
     needs: [changes, api]
@@ -340,9 +414,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-app
       - name: Deploy
         run: pnpm --filter @876/app run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
           NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-app

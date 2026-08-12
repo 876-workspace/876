@@ -21,6 +21,9 @@ EXPECTED_SCHEMA_FINGERPRINTS = frozenset(
     {
         "67ae485cca6fe83be1dd6075d7463fa99e74bd77c429289d81565026624116f6",
         "247c9009e7cc476ecd1cd0fa6bd31ceffa5198cc777060770ceb1092e159fde3",
+        # Additive customer import/commercial fields deployed by the Billing
+        # Prisma owner. Keep the exact fingerprint so unrelated drift fails.
+        "b395fbaa63e4c86633dd4c1911740825d5b135a8b0a2e43b329dc3a1d35f5a91",
     }
 )
 
@@ -30,7 +33,7 @@ def _billing_columns(inspector: Inspector) -> Mapping[str, Collection[str]]:
     return {
         table_name: [column["name"] for column in inspector.get_columns(table_name)]
         for table_name in table_names
-        if table_name.startswith("billing_")
+        if table_name.startswith("billing_") and table_name != "billing_alembic_version"
     }
 
 

@@ -37,7 +37,7 @@
   "vars": {
     "API_URL": "https://876-api.1876.workers.dev",
     // Bump to restart primary container for BILLING_WRITER activation.
-    "BILLING_API_PRIMARY_INSTANCE": "primary-20260810",
+    "BILLING_API_PRIMARY_INSTANCE": "primary-20260812-release-readiness",
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",
     "PORT": "4004",
