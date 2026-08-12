@@ -257,6 +257,13 @@ jobs:
         run: python -m alembic upgrade head
         env:
           BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      - name: Sync runtime database secret
+        working-directory: apps/billing-api
+        run: |
+          printf '%s' "$BILLING_DATABASE_URL" |
+            pnpm exec wrangler secret put BILLING_DATABASE_URL
+        env:
+          BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-billing-api
       - name: Deploy container Worker
@@ -284,6 +291,13 @@ jobs:
       - name: Apply migrations
         working-directory: apps/storage-api
         run: python -m alembic upgrade head
+        env:
+          STORAGE_DATABASE_URL: ${{ secrets.STORAGE_DATABASE_URL }}
+      - name: Sync runtime database secret
+        working-directory: apps/storage-api
+        run: |
+          printf '%s' "$STORAGE_DATABASE_URL" |
+            pnpm exec wrangler secret put STORAGE_DATABASE_URL
         env:
           STORAGE_DATABASE_URL: ${{ secrets.STORAGE_DATABASE_URL }}
       - name: Verify runtime secrets

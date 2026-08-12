@@ -76,6 +76,14 @@ for (const [worker, directory] of discovered) {
     errors.push(
       `${worker}: ${contract.migrationOwner} migration owner has no migration step.`
     )
+  if (
+    jobMatch &&
+    contract.runtimeDatabaseMode === 'shared-direct' &&
+    !jobMatch[0].includes('name: Sync runtime database secret')
+  )
+    errors.push(
+      `${worker}: migration owner does not sync its database URL into the Worker.`
+    )
 }
 
 for (const [worker, contract] of Object.entries(CLOUDFLARE_WORKERS)) {
@@ -83,6 +91,31 @@ for (const [worker, contract] of Object.entries(CLOUDFLARE_WORKERS)) {
     errors.push(`${worker}: release contract has no matching wrangler.jsonc.`)
   if (!allowedMigrationOwners.has(contract.migrationOwner))
     errors.push(`${worker}: migrationOwner must be alembic, prisma, or none.`)
+  if (contract.migrationOwner !== 'none') {
+    if (!contract.databaseSecret)
+      errors.push(`${worker}: migration owner must declare databaseSecret.`)
+    if (!contract.runtimeDatabaseSecret)
+      errors.push(
+        `${worker}: migration owner must declare runtimeDatabaseSecret.`
+      )
+    if (!['accelerate', 'shared-direct'].includes(contract.runtimeDatabaseMode))
+      errors.push(
+        `${worker}: migration owner must declare runtimeDatabaseMode as accelerate or shared-direct.`
+      )
+    if (
+      contract.runtimeDatabaseSecret &&
+      !contract.requiredSecrets.includes(contract.runtimeDatabaseSecret)
+    )
+      errors.push(
+        `${worker}: runtimeDatabaseSecret must also be a required Worker secret.`
+      )
+  } else if (
+    contract.databaseSecret !== undefined ||
+    contract.runtimeDatabaseSecret !== undefined ||
+    contract.runtimeDatabaseMode !== undefined
+  ) {
+    errors.push(`${worker}: database secrets require a migration owner.`)
+  }
   if (contract.migrationOwner === 'alembic') {
     const expectedTable = contract.migrationVersionTable
     if (!expectedTable || expectedTable === 'alembic_version') {

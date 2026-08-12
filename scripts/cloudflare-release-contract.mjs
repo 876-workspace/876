@@ -9,7 +9,10 @@ export const CLOUDFLARE_WORKERS = {
   '876-api': {
     directory: 'apps/api',
     dependencies: [],
+    databaseSecret: 'API_DATABASE_URL',
     migrationOwner: 'prisma',
+    runtimeDatabaseSecret: 'DATABASE_URL',
+    runtimeDatabaseMode: 'accelerate',
     readinessUrl: 'https://876-api.1876.workers.dev/health',
     requiredSecrets: [
       'API_INTERNAL_KEY',
@@ -36,7 +39,10 @@ export const CLOUDFLARE_WORKERS = {
   '876-billing': {
     directory: 'apps/billing',
     dependencies: ['876-api', '876-billing-api', '876-widgets-api'],
+    databaseSecret: 'BILLING_DATABASE_URL',
     migrationOwner: 'prisma',
+    runtimeDatabaseSecret: 'BILLING_DIRECT_DATABASE_URL',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-billing.1876.workers.dev/api/ready',
     requiredSecrets: [
       'API_INTERNAL_KEY',
@@ -50,8 +56,11 @@ export const CLOUDFLARE_WORKERS = {
   '876-billing-api': {
     directory: 'apps/billing-api',
     dependencies: ['876-api'],
+    databaseSecret: 'BILLING_DATABASE_URL',
     migrationOwner: 'alembic',
     migrationVersionTable: 'billing_alembic_version',
+    runtimeDatabaseSecret: 'BILLING_DATABASE_URL',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-billing-api.1876.workers.dev/ready',
     requiredSecrets: [
       'BILLING_API_876_KEY',
@@ -68,7 +77,10 @@ export const CLOUDFLARE_WORKERS = {
       '876-storage-api',
       '876-widgets-api',
     ],
+    databaseSecret: 'CONSOLE_DATABASE_URL',
     migrationOwner: 'prisma',
+    runtimeDatabaseSecret: 'CONSOLE_DATABASE_URL',
+    runtimeDatabaseMode: 'accelerate',
     readinessUrl: 'https://876-console.1876.workers.dev/api/health',
     requiredSecrets: [
       'API_876_KEY',
@@ -102,7 +114,10 @@ export const CLOUDFLARE_WORKERS = {
   '876-couriers-api': {
     directory: 'apps/couriers-api',
     dependencies: ['876-api', '876-billing-api'],
+    databaseSecret: 'COURIERS_DATABASE_URL',
     migrationOwner: 'prisma',
+    runtimeDatabaseSecret: 'DATABASE_URL',
+    runtimeDatabaseMode: 'accelerate',
     readinessUrl: 'https://876-couriers-api.1876.workers.dev/health',
     requiredSecrets: [
       'API_876_KEY',
@@ -126,8 +141,11 @@ export const CLOUDFLARE_WORKERS = {
   '876-storage-api': {
     directory: 'apps/storage-api',
     dependencies: [],
+    databaseSecret: 'STORAGE_DATABASE_URL',
     migrationOwner: 'alembic',
     migrationVersionTable: 'storage_alembic_version',
+    runtimeDatabaseSecret: 'STORAGE_DATABASE_URL',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-storage-api.1876.workers.dev/ready',
     requiredSecrets: [
       'R2_ACCESS_KEY_ID',
@@ -145,7 +163,10 @@ export const CLOUDFLARE_WORKERS = {
   '876-widgets-api': {
     directory: 'apps/widgets-api',
     dependencies: [],
+    databaseSecret: 'WIDGETS_DATABASE_URL',
     migrationOwner: 'prisma',
+    runtimeDatabaseSecret: 'WIDGETS_DATABASE_URL',
+    runtimeDatabaseMode: 'accelerate',
     readinessUrl: 'https://876-widgets-api.1876.workers.dev/api/health',
     requiredSecrets: ['WIDGETS_DATABASE_URL', 'WIDGETS_SERVICE_KEY'],
   },
