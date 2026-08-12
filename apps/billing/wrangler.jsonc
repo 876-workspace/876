@@ -23,6 +23,9 @@
       "service": "876-billing",
     },
   ],
+  "secrets": {
+    "required": ["BILLING_DIRECT_DATABASE_URL"],
+  },
   // "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<HYPERDRIVE_ID>" }],
   // Non-secret service URLs. Secrets are set with `wrangler secret put`.
   "vars": {
