@@ -97,6 +97,7 @@ function createMembership(
     id: 'membership_island_123',
     role: 'owner',
     status: 'active',
+    permissions: [],
     organization: {
       id: 'organization_island_123',
       name: 'Island Logistics',

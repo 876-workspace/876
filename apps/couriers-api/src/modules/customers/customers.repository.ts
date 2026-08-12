@@ -76,6 +76,9 @@ export async function enrollTenantCustomer(options: {
       ? await tx.courierCustomerProfile.update({
           where: { id: existing.id },
           data: {
+            branchId: options.branchId,
+            status: options.status,
+            isCommercial: options.isCommercial,
             deletedAt: null,
             deletedBy: null,
             deletionReason: null,
