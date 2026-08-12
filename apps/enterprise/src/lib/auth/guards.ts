@@ -149,9 +149,7 @@ async function findActiveMembershipBySlug(
   // An empty list is the legitimate "no membership"; an error envelope is a real
   // failure and must not be downgraded to a silent access denial.
   const memberships = unwrapResult(result, 'routing memberships').data
-  return (
-    memberships.find((m) => m.organization.slug === slug) ?? null
-  )
+  return memberships.find((m) => m.organization.slug === slug) ?? null
 }
 
 export async function resolvePrimaryOrganizationPath(
