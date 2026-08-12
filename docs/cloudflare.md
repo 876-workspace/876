@@ -395,6 +395,30 @@ Build that lands before its migration job does not break.
   Worker twice.
 - Shared toolchain setup lives in `.github/actions/setup`.
 
+### Enforced release contract
+
+Every Worker must be declared in
+`scripts/cloudflare-release-contract.mjs`. The declaration owns its app
+directory, required runtime secret names, production readiness URL,
+dependencies, and migration owner. `pnpm check:cloudflare-release` scans every
+`apps/*/wrangler.jsonc` and fails when a Worker is undeclared, points at an
+unknown dependency, or has no deployment job/manual-dispatch option. This is
+also run before the deployment workflow evaluates path filters, so a newly
+introduced app cannot silently fall outside the release graph.
+
+Deploy jobs use two separate gates:
+
+1. `pnpm check:worker-secrets <worker>` verifies binding names without reading
+   or printing secret values.
+2. `pnpm check:worker-readiness <worker>` polls the Worker's declared readiness
+   endpoint and every declared dependency. A dependency response must be 2xx
+   JSON with `status: "ok"` or `status: "ready"`.
+
+`/health` is liveness only. Apps that can start while their database or an
+essential dependency is unavailable must expose a separate `/ready` endpoint
+and declare that URL. Do not use an unconditional health response as a release
+gate.
+
 ### Required GitHub configuration
 
 | Kind     | Name                                                                                                                                                          |
