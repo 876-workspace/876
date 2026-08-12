@@ -31,6 +31,8 @@ const CELL_DEFAULT_WIDTH: Record<
   badge: '4.5rem',
 }
 
+const MAX_LOADING_ROWS = 5
+
 function SkeletonCell({ column }: { column: DataTableSkeletonColumn }) {
   const kind = column.cell ?? 'text'
   const width = column.cellWidth ?? CELL_DEFAULT_WIDTH[kind]
@@ -81,17 +83,19 @@ function SkeletonCell({ column }: { column: DataTableSkeletonColumn }) {
  */
 function DataTableSkeleton({
   columns,
-  rows = 8,
+  rows = MAX_LOADING_ROWS,
   card = true,
   className,
 }: {
   columns: DataTableSkeletonColumn[]
-  /** Number of placeholder rows. Defaults to 8. */
+  /** Number of placeholder rows. Capped at 5. */
   rows?: number
   /** Wrap in the standard `876-card` surface, as loaded tables are. */
   card?: boolean
   className?: string
 }) {
+  const loadingRows = Math.min(rows, MAX_LOADING_ROWS)
+
   const table = (
     <div
       data-slot="table-container"
@@ -121,7 +125,7 @@ function DataTableSkeleton({
           </tr>
         </thead>
         <tbody data-slot="table-body" className="[&_tr:last-child]:border-0">
-          {Array.from({ length: rows }, (_, rowIndex) => (
+          {Array.from({ length: loadingRows }, (_, rowIndex) => (
             <tr
               key={rowIndex}
               data-slot="table-row"
