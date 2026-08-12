@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 
 import { requireBillingFeature } from '@/lib/auth/billing-context'
 
-export default async function CreditNotesLayout({
+export default async function VendorsLayout({
   children,
 }: {
   children: ReactNode
 }) {
-  await requireBillingFeature('invoices')
+  await requireBillingFeature('vendors')
   return children
 }

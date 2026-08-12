@@ -161,14 +161,6 @@ export const Nav: NavGroup[] = [
         feature: 'banking',
       },
       {
-        title: 'Documents',
-        href: '/documents',
-        icon: StickyNote,
-        color: 'var(--876-purple)',
-        permission: 'billing:access',
-        feature: 'documents',
-      },
-      {
         title: 'Payroll',
         href: '/payroll',
         icon: Users,
