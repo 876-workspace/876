@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { cookies } from 'next/headers'
 
 import { SidebarTrigger } from '@876/ui/sidebar'
+import { NavProgress } from '@876/ui/nav-progress'
 import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 import {
@@ -19,6 +20,7 @@ import { OrgSwitcher } from './org-switcher'
 import { TopbarActions } from './topbar-actions'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
+import { BillingPermissionsProvider } from '@/components/providers/permissions-provider'
 import type { Permission } from '@/types/access'
 import type { BillingFeatures as Features } from '@/types/features'
 
@@ -46,57 +48,60 @@ export async function Shell({
     : true
 
   return (
-    <AppShell defaultOpen={defaultSidebarOpen}>
-      <AppShellSidebarArea>
-        <WorkspaceSidebar
-          tenantName={tenantName}
-          permissions={permissions}
-          productFeatures={features.productFeatures}
-        />
-      </AppShellSidebarArea>
-      <AppShellContent>
-        <AppShellHeader className="border-b-0">
-          <SidebarTrigger />
+    <BillingPermissionsProvider permissions={permissions}>
+      <AppShell defaultOpen={defaultSidebarOpen}>
+        <NavProgress />
+        <AppShellSidebarArea>
+          <WorkspaceSidebar
+            tenantName={tenantName}
+            permissions={permissions}
+            productFeatures={features.productFeatures}
+          />
+        </AppShellSidebarArea>
+        <AppShellContent>
+          <AppShellHeader className="border-b-0">
+            <SidebarTrigger />
 
-          <div className="hidden min-w-0 flex-1 items-center md:flex">
-            {features.uiFeatures.searchBar && (
-              <TopbarSearch
-                permissions={permissions}
-                productFeatures={features.productFeatures}
-              />
-            )}
-          </div>
-
-          <div className="ml-auto flex items-center gap-2">
-            <div className="hidden items-center gap-1.5 md:flex">
-              {features.uiFeatures.orgSwitcher && (
-                <OrgSwitcher current={currentOrg} orgs={orgs} />
+            <div className="hidden min-w-0 flex-1 items-center md:flex">
+              {features.uiFeatures.searchBar && (
+                <TopbarSearch
+                  permissions={permissions}
+                  productFeatures={features.productFeatures}
+                />
               )}
-
-              <TopbarActions
-                showGlobalAdd={features.uiFeatures.globalAdd}
-                showAppSwitcher={features.uiFeatures.appSwitcher}
-              />
             </div>
 
-            <UserMenu
-              user={user}
-              showThemeSwitcher={features.uiFeatures.themeSwitcher}
-            />
-          </div>
-        </AppShellHeader>
+            <div className="ml-auto flex items-center gap-2">
+              <div className="hidden items-center gap-1.5 md:flex">
+                {features.uiFeatures.orgSwitcher && (
+                  <OrgSwitcher current={currentOrg} orgs={orgs} />
+                )}
 
-        {/* Navbar spans full content width; dock sits under it beside main. */}
-        <AppShellBody>
-          <AppShellMain>{children}</AppShellMain>
-          {features.widgets.notepad || features.uiFeatures.chat ? (
-            <SharedWidgetDock
-              enabledWidgetIds={features.widgets.notepad ? ['notepad'] : []}
-              chatEnabled={features.uiFeatures.chat}
-            />
-          ) : null}
-        </AppShellBody>
-      </AppShellContent>
-    </AppShell>
+                <TopbarActions
+                  showGlobalAdd={features.uiFeatures.globalAdd}
+                  showAppSwitcher={features.uiFeatures.appSwitcher}
+                />
+              </div>
+
+              <UserMenu
+                user={user}
+                showThemeSwitcher={features.uiFeatures.themeSwitcher}
+              />
+            </div>
+          </AppShellHeader>
+
+          {/* Navbar spans full content width; dock sits under it beside main. */}
+          <AppShellBody>
+            <AppShellMain>{children}</AppShellMain>
+            {features.widgets.notepad || features.uiFeatures.chat ? (
+              <SharedWidgetDock
+                enabledWidgetIds={features.widgets.notepad ? ['notepad'] : []}
+                chatEnabled={features.uiFeatures.chat}
+              />
+            ) : null}
+          </AppShellBody>
+        </AppShellContent>
+      </AppShell>
+    </BillingPermissionsProvider>
   )
 }

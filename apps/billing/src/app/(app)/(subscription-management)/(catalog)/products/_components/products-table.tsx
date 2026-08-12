@@ -35,7 +35,7 @@ export function ProductsTable({ products, emptyState }: Props) {
           <>
             <Link
               href={`/products/${product.id}`}
-              className="font-medium hover:underline"
+              className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
               onClick={(event) => event.stopPropagation()}
             >
               {product.name}

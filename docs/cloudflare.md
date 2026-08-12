@@ -25,14 +25,14 @@ Prisma Postgres databases.
 
 **Databases:** Prisma Postgres (production).
 
-| Prisma Postgres database ID    | Used by                   | Runtime env var        | CI secret               |
-| ------------------------------ | ------------------------- | ---------------------- | ----------------------- |
-| `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API              | `DATABASE_URL`         | `API_DATABASE_URL`      |
-| `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local         | `CONSOLE_DATABASE_URL` | `CONSOLE_DATABASE_URL`  |
-| `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local        | `DATABASE_URL`         | `COURIERS_DATABASE_URL` |
-| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing app + Billing API | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
-| `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API               | `WIDGETS_DATABASE_URL` | `WIDGETS_DATABASE_URL`  |
-| `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API               | `STORAGE_DATABASE_URL` | `STORAGE_DATABASE_URL`  |
+| Prisma Postgres database ID    | Used by                   | Runtime env var               | CI secret               |
+| ------------------------------ | ------------------------- | ----------------------------- | ----------------------- |
+| `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API              | `DATABASE_URL`                | `API_DATABASE_URL`      |
+| `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local         | `CONSOLE_DATABASE_URL`        | `CONSOLE_DATABASE_URL`  |
+| `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local        | `DATABASE_URL`                | `COURIERS_DATABASE_URL` |
+| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing app + Billing API | `BILLING_DIRECT_DATABASE_URL` | `BILLING_DATABASE_URL`  |
+| `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API               | `WIDGETS_DATABASE_URL`        | `WIDGETS_DATABASE_URL`  |
+| `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API               | `STORAGE_DATABASE_URL`        | `STORAGE_DATABASE_URL`  |
 
 Two services read a variable literally named `DATABASE_URL` at runtime — the
 identity API and Couriers — so the **CI secret names are always prefixed**, and

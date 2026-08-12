@@ -40,7 +40,7 @@ export function SubscriptionsTable({
               <div>
                 <Link
                   href={`/customers/${row.original.customer.id}`}
-                  className="font-medium hover:underline"
+                  className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
                   onClick={(event) => event.stopPropagation()}
                 >
                   {row.original.customer.name}
@@ -62,7 +62,7 @@ export function SubscriptionsTable({
               <div>
                 <Link
                   href={`/subscriptions/${row.original.id}`}
-                  className="font-medium hover:underline"
+                  className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
                   onClick={(event) => event.stopPropagation()}
                 >
                   {row.original.offering.productName}

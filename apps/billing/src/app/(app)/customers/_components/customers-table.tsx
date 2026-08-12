@@ -24,7 +24,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
       cell: ({ row }) => (
         <Link
           href={`/customers/${row.original.id}`}
-          className="font-medium hover:underline"
+          className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
           onClick={(event) => event.stopPropagation()}
         >
           {row.original.name}
@@ -36,7 +36,11 @@ export function CustomersTable({ customers, emptyState }: Props) {
       header: 'Company',
       cell: ({ row }) => (
         <span
-          className={row.original.companyName ? '' : 'text-muted-foreground'}
+          className={
+            row.original.companyName
+              ? 'text-foreground'
+              : 'text-muted-foreground'
+          }
         >
           {row.original.companyName ?? '—'}
         </span>
@@ -46,9 +50,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
       accessorKey: 'contactName',
       header: 'Contact',
       cell: ({ row }) => (
-        <span
-          className={row.original.contactName ? '' : 'text-muted-foreground'}
-        >
+        <span className="text-muted-foreground">
           {row.original.contactName ?? '—'}
         </span>
       ),
@@ -57,7 +59,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
       accessorKey: 'phone',
       header: 'Phone',
       cell: ({ row }) => (
-        <span className={row.original.phone ? '' : 'text-muted-foreground'}>
+        <span className="text-muted-foreground">
           {row.original.phone ?? '—'}
         </span>
       ),
@@ -79,6 +81,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
         emptyState={emptyState}
         columns={columns}
         data={customers}
+        className="text-[0.8125rem]"
         onRowClick={(customer) => router.push(`/customers/${customer.id}`)}
       />
     </div>

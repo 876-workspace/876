@@ -40,7 +40,7 @@ export function PricesTable({ prices, emptyState }: Props) {
           <>
             <Link
               href={`/prices/${price.id}`}
-              className="font-medium hover:underline"
+              className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
               onClick={(event) => event.stopPropagation()}
             >
               {price.item?.name ??
