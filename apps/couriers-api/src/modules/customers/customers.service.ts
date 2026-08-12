@@ -73,6 +73,7 @@ export async function createCustomer(
 ): Promise<Customer> {
   const tenant = await tenantRepo.findTenantById(tenantId)
   if (!tenant) throw missing('tenant')
+  const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
 
   // High-level domain operation: Billing customer creation is idempotent. Courier profile + mailbox creation is transactionally atomic within Couriers. The overall cross-service workflow is retry-safe/idempotent.
   const billingResult = await billing.createExternalCustomer(tenant.orgId, {
@@ -101,7 +102,6 @@ export async function createCustomer(
       httpStatus: 503,
     })
   }
-  const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
   for (let attempt = 0; attempt < MAX_ENROLLMENT_RETRY_ATTEMPTS; attempt += 1) {
     try {
       const result = await repo.enrollTenantCustomer({
@@ -145,7 +145,33 @@ export async function enrollCustomer(
   tenantId: string,
   input: CustomerEnrollmentBody
 ): Promise<CustomerEnrollment> {
-  if (!(await repo.tenantExists(tenantId))) throw missing('tenant')
+  const tenant = await tenantRepo.findTenantById(tenantId)
+  if (!tenant) throw missing('tenant')
+
+  const registryCustomer = await billing.retrieveCustomer(
+    tenant.orgId,
+    input.billing_customer_id
+  )
+  if (registryCustomer.error || !registryCustomer.data) {
+    if (registryCustomer.error?.code === 'customer/not-found')
+      throw missing('customer')
+    log.warn(
+      {
+        errorCode: registryCustomer.error?.code,
+        tenantId,
+        orgId: tenant.orgId,
+        billingCustomerId: input.billing_customer_id,
+      },
+      'customers.billing_enrollment_lookup_failed'
+    )
+    throw new AppHttpError({
+      code: 'customer/registry-unavailable',
+      message: 'The customer registry is temporarily unavailable.',
+      httpStatus: 503,
+    })
+  }
+  if (registryCustomer.data.status !== 'ACTIVE') throw missing('customer')
+
   for (let attempt = 0; attempt < MAX_ENROLLMENT_RETRY_ATTEMPTS; attempt += 1) {
     const branchId = await resolveCustomerBranchId(tenantId, input.branch_id)
     try {

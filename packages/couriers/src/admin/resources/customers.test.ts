@@ -77,6 +77,13 @@ const createCustomerBody = {
   is_commercial: true,
 }
 
+const enrollCustomerBody = {
+  billing_customer_id: 'billcus_sophia_brown',
+  branch_id: 'br_kingston/harbour',
+  status: 'ACTIVE' as const,
+  is_commercial: false,
+}
+
 const updateCustomerBody = {
   branch_id: null,
   status: 'SUSPENDED' as const,
@@ -206,10 +213,26 @@ describe('createCustomersResource', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  it('does not expose enroll as a public customer verb', async () => {
-    const fetchMock = successFetch(customer)
+  it('enrolls an existing Billing customer with the exact body', async () => {
+    const fetchMock = successFetch(customerEnrollment)
     const resource = createResource(fetchMock, internalKey)
-    expect('enroll' in resource).toBe(false)
+
+    const result = await resource.enroll(tenantId, enrollCustomerBody)
+
+    expect(result).toEqual({ data: customerEnrollment, error: null })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers/enrollments`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
+          'x-internal-key': internalKey,
+        },
+        body: JSON.stringify(enrollCustomerBody),
+      }
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('updates a customer with encoded identifiers and the exact body', async () => {
@@ -351,6 +374,10 @@ describe('createCustomersResource', () => {
     {
       name: 'create',
       invoke: (resource) => resource.create(tenantId, createCustomerBody),
+    },
+    {
+      name: 'enroll',
+      invoke: (resource) => resource.enroll(tenantId, enrollCustomerBody),
     },
     {
       name: 'update',

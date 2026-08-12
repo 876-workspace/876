@@ -5,7 +5,15 @@ import { useState } from 'react'
 import { request } from '@/lib/client/request'
 import type { TenantCreateInput, TenantProvisioned } from '@/types/tenant'
 
-export function SetupButton({ name, slug }: { name: string; slug: string }) {
+export function SetupButton({
+  name,
+  slug,
+  workspaceExists,
+}: {
+  name: string
+  slug: string
+  workspaceExists: boolean
+}) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -13,6 +21,11 @@ export function SetupButton({ name, slug }: { name: string; slug: string }) {
     if (busy) return
     setBusy(true)
     setError(null)
+
+    if (workspaceExists) {
+      window.location.assign('/')
+      return
+    }
 
     const activationResult = await request<{ alreadyActive?: boolean }>(
       '/api/activate',

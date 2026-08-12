@@ -4699,10 +4699,6 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
               "schema": {
                 "additionalProperties": false,
                 "properties": {
-                  "billing_customer_id": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
                   "branch_id": {
                     "anyOf": [
                       {
@@ -4714,8 +4710,61 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                       },
                     ],
                   },
+                  "company_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "customer_kind": {
+                    "default": "INDIVIDUAL",
+                    "enum": [
+                      "INDIVIDUAL",
+                      "BUSINESS",
+                    ],
+                    "type": "string",
+                  },
+                  "email": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "first_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "idempotency_key": {
+                    "maxLength": 255,
+                    "minLength": 8,
+                    "type": "string",
+                  },
                   "is_commercial": {
                     "type": "boolean",
+                  },
+                  "last_name": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
                   },
                   "status": {
                     "enum": [
@@ -4735,20 +4784,9 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                       },
                     ],
                   },
-                  "user_id": {
-                    "anyOf": [
-                      {
-                        "minLength": 1,
-                        "type": "string",
-                      },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
                 },
                 "required": [
-                  "billing_customer_id",
+                  "idempotency_key",
                 ],
                 "type": "object",
               },
@@ -6130,8 +6168,48 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                       },
                     ],
                   },
+                  "company_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "email": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "first_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
                   "is_commercial": {
                     "type": "boolean",
+                  },
+                  "last_name": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
                   },
                   "status": {
                     "enum": [

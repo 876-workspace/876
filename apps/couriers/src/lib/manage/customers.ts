@@ -7,9 +7,30 @@ import type { ServiceResult } from '@/types/api'
 import type { CouriersTenant } from '@/types/auth'
 import type {
   CustomerCreateParams,
+  CustomerEnrollmentParams,
   CustomerUpdateParams,
   CustomerView,
 } from '@/types/customer'
+
+export async function enrollManagedCustomer({
+  tenant,
+  params,
+}: {
+  tenant: CouriersTenant
+  params: CustomerEnrollmentParams
+}): ServiceResult<CustomerView> {
+  const result = await $876.couriers.customers.enroll(tenant.id, {
+    billing_customer_id: params.billingCustomerId,
+    branch_id: params.branchId,
+    ...(params.status === undefined ? {} : { status: params.status }),
+    ...(params.isCommercial === undefined
+      ? {}
+      : { is_commercial: params.isCommercial }),
+  })
+  if (result.error !== null) return couriersFailure(result.error)
+
+  return { data: toCustomerView(result.data.customer), error: null }
+}
 
 export async function createManagedCustomer({
   tenant,

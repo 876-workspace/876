@@ -183,6 +183,23 @@ export const customerCreateParamsSchema = z
   })
 export type CustomerCreateParams = z.input<typeof customerCreateParamsSchema>
 
+export const customerEnrollmentParamsSchema = z.strictObject({
+  billingCustomerId: z.string().min(1),
+  branchId: z.string().min(1),
+  isCommercial: z.boolean().optional(),
+  status: customerStatusSchema.optional(),
+})
+export type CustomerEnrollmentParams = z.input<
+  typeof customerEnrollmentParamsSchema
+>
+
+export interface GlobalCustomerOption {
+  id: string
+  name: string
+  email: string | null
+  phone: string | null
+}
+
 /**
  * `null` clears a value, an absent key leaves it alone. The party's name — a
  * first name for an individual, a company name for a business — is not

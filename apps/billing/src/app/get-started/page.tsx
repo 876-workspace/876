@@ -22,10 +22,8 @@ export default async function GetStartedPage() {
       redirect(`/login?${AUTH_RETURN_TO_PARAM}=/get-started`)
     redirect('/no-access')
   }
-  if (context.tenant && context.accessStatus === 'active') redirect('/')
-  if (context.role === 'member' || context.accessStatus === 'blocked') {
-    redirect('/no-access')
-  }
+  if (context.tenant) redirect('/')
+  if (context.role === 'member') redirect('/no-access')
 
   const organizationName = context.orgName ?? 'Your organization'
   const slug = `${context.orgSlug ?? 'billing'}-billing`
@@ -47,7 +45,11 @@ export default async function GetStartedPage() {
               payment collection are enabled automatically.
             </PageDescription>
           </PageHeader>
-          <SetupButton name={organizationName} slug={slug} />
+          <SetupButton
+            name={organizationName}
+            slug={slug}
+            workspaceExists={Boolean(context.tenant)}
+          />
         </div>
       </div>
     </main>
