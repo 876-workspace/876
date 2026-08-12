@@ -32,6 +32,7 @@ export type PlatformRoutingMembership = {
   id: string
   role: string
   status: string
+  permissions: string[]
   organization: {
     id: string
     name: string | null
