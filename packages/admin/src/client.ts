@@ -1,38 +1,11 @@
 /**
- * Admin API client factory.
+ * Admin API client factory — Core/platform admin only.
  *
  * Composes the internal-key-tier resource modules over one shared runtime.
- * Every `AdminDep` operation lives here and only here — consumer apps import
- * `@876/sdk` instead, so admin-only surface (e.g. platform-wide `users.list`)
- * never reaches their bundles. The surface of this client is exactly the set
- * of resource factories composed below.
- *
- * Embedded product clients (billing, storage, widgets) are compatibility
- * shims. Target direction per ecosystem plan: `@876/admin` = Core/platform
- * admin only; applications compose product tiers explicitly under their
- * local `$876` root (see `apps/console/src/lib/876/index.ts` for the
- * `createConsole876Client` pattern with `$876.couriers`). Billing/storage/
- * widgets remain here until all Console/consumer call sites migrate to
- * explicit composition, then this embedding will be removed. Do not add
- * new products here.
- *
- * @module @876/admin/client
+ * Product administration (billing, storage, widgets, couriers) is composed
+ * by `@876/client/server` under the unified `$876` root; this package
+ * exposes only Core/platform resources.
  */
-
-import {
-  create876AdminClient as create876BillingAdminClient,
-  type AdminClientOptions as BillingAdminClientOptions,
-} from '@876/billing/admin'
-import {
-  create876BillingIntegrationClient,
-  type IntegrationClientOptions as BillingIntegrationClientOptions,
-} from '@876/billing/integration'
-import { create876StorageClient, type StorageClientOptions } from '@876/storage'
-import {
-  createWidgetsClient,
-  type CreateWidgetsClientOptions,
-} from '@876/widgets/server'
-import { createWidgetsAdminClient } from '@876/widgets/server/admin'
 
 import { buildAdminRuntime } from './runtime'
 import { createAdminAddressesResource } from './resources/addresses'
@@ -58,14 +31,7 @@ import { createAdminCommunicationsResource } from './resources/communications'
 import { createAdminSubscriptionsResource } from './resources/subscriptions'
 import type { AdminPlatformClientOptions } from './types'
 
-export type Admin876ClientOptions = AdminPlatformClientOptions & {
-  /** Billing administration and cross-application integration configuration. */
-  billing?: BillingAdminClientOptions & BillingIntegrationClientOptions
-  /** Storage service configuration. */
-  storage?: StorageClientOptions
-  /** Widgets member and administration configuration. */
-  widgets?: CreateWidgetsClientOptions
-}
+export type Admin876ClientOptions = AdminPlatformClientOptions
 
 export function create876AdminClient(options: Admin876ClientOptions = {}) {
   const runtime = buildAdminRuntime(options)
@@ -96,8 +62,6 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
   } = createAdminOrgsResource(runtime)
   const subscriptions = createAdminSubscriptionsResource(runtime)
   const communications = createAdminCommunicationsResource(runtime)
-  const billing = create876BillingAdminClient(options.billing)
-  const widgets = createWidgetsClient(options.widgets)
 
   return {
     auditEvents: createAdminAuditEventsResource(runtime),
@@ -144,14 +108,7 @@ export function create876AdminClient(options: Admin876ClientOptions = {}) {
     addresses: createAdminAddressesResource(runtime),
     reservedUsernames: createAdminReservedUsernamesResource(runtime),
     billingAccounts: createAdminBillingAccountsResource(runtime),
-    // Top-level platform billing subscriptions (GET /billing/subscriptions/{id}) — distinct from organizations.subscriptions (org app-access)
     subscriptions,
-    storage: create876StorageClient(options.storage),
-    billing: {
-      ...billing,
-      integration: create876BillingIntegrationClient(options.billing),
-    },
-    widgets: { ...widgets, ...createWidgetsAdminClient(options.widgets) },
   }
 }
 
