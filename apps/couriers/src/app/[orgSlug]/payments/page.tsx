@@ -1,15 +1,9 @@
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@876/ui/empty'
-import { CreditCardIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
+
+import { PaymentsTable } from './_components/payments-table'
 
 const PAYMENT_STATUS_OPTIONS = [
   { value: 'all', label: 'All', headingLabel: 'All Payments' },
@@ -75,15 +69,7 @@ export default async function PaymentsPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <Empty className="py-14">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <CreditCardIcon />
-          </EmptyMedia>
-          <EmptyTitle>No payments</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <PaymentsTable emptyMessage={emptyMessage} />
     </Page>
   )
 }
