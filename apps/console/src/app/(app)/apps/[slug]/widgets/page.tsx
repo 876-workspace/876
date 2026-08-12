@@ -1,7 +1,11 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { WidgetHost } from '@876/widgets'
-import { getWidgetAppFeatureKeys, WIDGET_HOST_APP_SLUGS } from '@876/widgets'
+import {
+  getWidgetAppFeatureKeys,
+  getWidgetPlatformFeatureKeys,
+  WIDGET_HOST_APP_SLUGS,
+} from '@876/widgets'
 import { Badge } from '@876/ui/badge'
 import { buttonVariants } from '@876/ui/button'
 import { ChevronRight } from '@876/ui/icons'
@@ -38,19 +42,13 @@ export default async function AppWidgetsPage({
     ? widgetCatalog.filter((widget) => getWidgetAppFeatureKeys(widget, host))
     : []
 
-  const result = await $876.appFeatures.list(app.id, {
+  const result = await $876.features.list({
     limit: 100,
     includeTag: 'widget',
   })
   const features = new Map(
     (result.data?.data ?? []).map((feature) => [feature.slug, feature])
   )
-
-  const masterSlug =
-    host && widgets[0]
-      ? getWidgetAppFeatureKeys(widgets[0], host)?.parent
-      : undefined
-  const master = masterSlug ? features.get(masterSlug) : undefined
 
   return (
     <div className="space-y-5">
@@ -70,9 +68,20 @@ export default async function AppWidgetsPage({
               : undefined
             if (!keys) return null
             const feature = features.get(keys.widget)
-            // Effective availability is the master AND the widget flag — the
-            // same conjunction the evaluator applies at runtime.
-            const live = Boolean(master?.enabled && feature?.enabled)
+            const master = features.get(keys.parent)
+            const platformKeys = getWidgetPlatformFeatureKeys(widget)
+            const platformMaster = platformKeys
+              ? features.get(platformKeys.parent)
+              : null
+            const platformFeature = platformKeys
+              ? features.get(platformKeys.widget)
+              : null
+            const live = Boolean(
+              master?.enabled &&
+              feature?.enabled &&
+              (!platformKeys ||
+                (platformMaster?.enabled && platformFeature?.enabled))
+            )
 
             return (
               <Link

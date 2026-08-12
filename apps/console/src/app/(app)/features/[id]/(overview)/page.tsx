@@ -52,10 +52,6 @@ async function FeatureOverviewData({ params }: Props) {
           value={feature.enabled ? 'Yes' : 'No'}
         />
         <Field
-          label="Default value"
-          value={feature.default_value ? 'Yes' : 'No'}
-        />
-        <Field
           label="Consumer default"
           value={feature.consumer_default_enabled ? 'Enabled' : 'Disabled'}
         />

@@ -60,17 +60,12 @@ export default async function AppFeatureConfigPage({ params }: Props) {
         </p>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-2">
         <SignalTile
           icon={feature.enabled ? CheckCircle2 : XCircleIcon}
           label="App default"
           value={feature.enabled ? 'Enabled' : 'Disabled'}
           tone={feature.enabled ? 'success' : 'muted'}
-        />
-        <SignalTile
-          icon={Flag}
-          label="Default value"
-          value={feature.default_value ? 'True' : 'False'}
         />
         <SignalTile
           icon={Users}
@@ -81,21 +76,26 @@ export default async function AppFeatureConfigPage({ params }: Props) {
 
       <section className="border-876-surface-border border-y py-5">
         <h3 className="text-[0.8125rem] font-semibold">Resolution order</h3>
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
+        <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
           <ResolutionStep
             icon={Flag}
-            title="App default"
-            description={`${app.name} receives the base setting.`}
+            title="Global & parent switches"
+            description={`${app.name} and every parent flag must remain enabled.`}
+          />
+          <ResolutionStep
+            icon={ShieldCheck}
+            title="Subscription entitlement"
+            description="Product modules are a hard cap and cannot be bypassed by targeting."
           />
           <ResolutionStep
             icon={Users}
             title="Organization override"
-            description="An org can be forced on or off for this app."
+            description="An organization refines access inside the hard caps."
           />
           <ResolutionStep
             icon={User}
             title="User override"
-            description="A user override wins for targeted access."
+            description="A user is the final targeting override inside the hard caps."
           />
         </div>
       </section>

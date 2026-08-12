@@ -2,10 +2,6 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { $876 } from '@/lib/876'
-import {
-  findFeatureGroupByMasterSlug,
-  isFeatureGroupChild,
-} from '@/lib/feature-groups'
 import { resolveFeature } from '../../../../features/[id]/_data'
 import { resolveApp } from '../../_data'
 import { FeatureChildrenPanel } from './_components/feature-children-panel'
@@ -34,22 +30,17 @@ export default async function AppFeatureDetailPage({ params }: Props) {
   ])
   if (!app || !feature || feature.app_id !== app.id) notFound()
 
-  const featureGroup = findFeatureGroupByMasterSlug(feature.slug)
-  const { data: appFeaturesData } = featureGroup
-    ? await $876.appFeatures.list(app.id, { limit: 100 })
-    : { data: null }
+  const { data: appFeaturesData } = await $876.appFeatures.list(app.id, {
+    limit: 100,
+  })
   const childFeatures =
-    appFeaturesData?.data.filter((childFeature) =>
-      childFeature.parent_feature_id
-        ? childFeature.parent_feature_id === feature.id
-        : featureGroup
-          ? isFeatureGroupChild(featureGroup, childFeature.slug)
-          : false
+    appFeaturesData?.data.filter(
+      (childFeature) => childFeature.parent_feature_id === feature.id
     ) ?? []
 
   return (
     <div className="space-y-4">
-      {featureGroup && (
+      {childFeatures.length > 0 && (
         <FeatureChildrenPanel
           appSlug={slug}
           parentFeature={feature}
@@ -57,7 +48,7 @@ export default async function AppFeatureDetailPage({ params }: Props) {
         />
       )}
 
-      {!featureGroup && (
+      {childFeatures.length === 0 && (
         <section className="border-876-surface-border border-y py-5">
           <div className="min-w-0">
             <h3 className="text-base font-semibold">Flag overview</h3>

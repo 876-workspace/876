@@ -4,13 +4,12 @@ import { Info } from '@876/ui/icons'
 import { Alert, AlertTitle, AlertDescription } from '@876/ui/alert'
 
 import { $876 } from '@/lib/876'
-import { FEATURE_GROUPS } from '@/lib/feature-groups'
 import { CreateFeatureForm } from '@/features/access/components/create-feature-form'
 import { resolveApp } from '../../_data'
 
 type Props = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ group?: string }>
+  searchParams: Promise<{ parent?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -25,20 +24,17 @@ export default async function NewAppFeaturePage({
   searchParams,
 }: Props) {
   const { slug } = await params
-  const { group } = await searchParams
+  const { parent } = await searchParams
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const featureGroup = FEATURE_GROUPS.find((entry) => entry.id === group)
-  const parentFeature = featureGroup
-    ? (
-        await $876.appFeatures.list(app.id, {
-          limit: 100,
-        })
-      ).data?.data.find((feature) => feature.slug === featureGroup.masterSlug)
+  const parentFeature = parent
+    ? (await $876.features.retrieve(parent)).data
     : null
-  const title = featureGroup
-    ? `New ${featureGroup.title} Feature`
+  if (parentFeature && parentFeature.app_id !== app.id) notFound()
+
+  const title = parentFeature
+    ? `New ${parentFeature.name} child feature`
     : 'New Feature'
 
   return (
@@ -47,13 +43,13 @@ export default async function NewAppFeaturePage({
         <h1 className="876-page-title">{title}</h1>
       </div>
 
-      {featureGroup && (
+      {parentFeature && (
         <Alert variant="info" className="max-w-2xl">
           <Info />
           <AlertTitle>Child feature</AlertTitle>
           <AlertDescription>
             You are creating a new child feature under{' '}
-            <strong>{featureGroup.title}</strong>. It will automatically be
+            <strong>{parentFeature.name}</strong>. It will automatically be
             grouped with its parent in the feature list.
           </AlertDescription>
         </Alert>
@@ -63,11 +59,11 @@ export default async function NewAppFeaturePage({
         apps={[app]}
         defaultAppId={app.id}
         defaultDescription={
-          featureGroup
-            ? `Controls access to a ${featureGroup.title.toLowerCase()} capability.`
+          parentFeature
+            ? `Controls access to a ${parentFeature.name.toLowerCase()} capability.`
             : ''
         }
-        defaultSlug={featureGroup?.childSlugPrefix ?? ''}
+        defaultSlug={parentFeature ? `${parentFeature.slug}_` : ''}
         parentFeatureId={parentFeature?.id ?? null}
         lockApp
         returnHref={`/apps/${slug}/features`}
