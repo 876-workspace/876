@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Avatar, AvatarFallback } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
@@ -111,12 +112,19 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
   },
 ]
 
-export function PackagesTable({ packages }: { packages: PackageTableRow[] }) {
+export function PackagesTable({
+  packages,
+  emptyState,
+}: {
+  packages: PackageTableRow[]
+  emptyState?: ReactNode
+}) {
   return (
     <div className="876-card overflow-hidden">
       <DataTable
         columns={columns}
         data={packages}
+        emptyState={emptyState}
         rowClassName="cursor-pointer"
       />
     </div>

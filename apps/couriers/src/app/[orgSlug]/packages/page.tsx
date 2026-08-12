@@ -1,3 +1,11 @@
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { RectangleStackIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
@@ -51,6 +59,14 @@ export default async function PackagesPage({ params, searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus =
     status && PACKAGE_STATUS_VALUES.has(status) ? status : 'all'
+  const selectedLabel = PACKAGE_STATUS_OPTIONS.find(
+    (option) => option.value === selectedStatus
+  )?.label
+  const emptyMessage =
+    selectedStatus === 'all'
+      ? 'No packages yet.'
+      : `No ${selectedLabel?.toLowerCase() ?? selectedStatus} packages.`
+
   return (
     <Page>
       <ResourceToolbar
@@ -78,7 +94,20 @@ export default async function PackagesPage({ params, searchParams }: Props) {
         ]}
       />
 
-      <PackagesTable packages={[]} />
+      <PackagesTable
+        packages={[]}
+        emptyState={
+          <Empty className="border-0 py-6">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <RectangleStackIcon />
+              </EmptyMedia>
+              <EmptyTitle>No packages</EmptyTitle>
+              <EmptyDescription>{emptyMessage}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        }
+      />
     </Page>
   )
 }
