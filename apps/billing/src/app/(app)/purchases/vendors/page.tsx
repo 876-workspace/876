@@ -1,4 +1,5 @@
 import { Building2 } from '@876/ui/icons'
+import { Suspense } from 'react'
 import {
   Empty,
   EmptyDescription,
@@ -12,6 +13,7 @@ import { VendorsTable } from './_components/vendors-table'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
 import { service } from '@/lib/service'
 
 export const metadata = {
@@ -31,7 +33,15 @@ type Props = {
   }>
 }
 
-export default async function VendorsPage({ searchParams }: Props) {
+export default function VendorsPage({ searchParams }: Props) {
+  return (
+    <Suspense fallback={<BillingListPageSkeleton />}>
+      <VendorsPageData searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function VendorsPageData({ searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus =
     status === 'active' || status === 'archived' ? status : 'all'

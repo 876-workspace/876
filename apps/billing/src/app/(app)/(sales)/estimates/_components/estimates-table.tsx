@@ -33,7 +33,7 @@ export function EstimatesTable({ estimates, emptyState }: Props) {
       cell: ({ row }) => (
         <Link
           href={`/estimates/${row.original.id}`}
-          className="font-medium hover:underline"
+          className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
           onClick={(event) => event.stopPropagation()}
         >
           {row.original.number}

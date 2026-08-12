@@ -9,6 +9,9 @@ export default defineConfig({
       'server-only': fileURLToPath(
         new URL('./src/test/server-only-stub.ts', import.meta.url)
       ),
+      'next/navigation': fileURLToPath(
+        new URL('./src/test/next-navigation-stub.ts', import.meta.url)
+      ),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },

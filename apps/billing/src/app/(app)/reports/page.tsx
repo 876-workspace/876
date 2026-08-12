@@ -1,4 +1,5 @@
 import { BarChart3 } from '@876/ui/icons'
+import { Suspense } from 'react'
 import {
   Empty,
   EmptyDescription,
@@ -9,6 +10,7 @@ import {
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+import { BillingListPageSkeleton } from '@/components/patterns/billing-page-skeleton'
 import { formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
 
@@ -17,7 +19,15 @@ export const metadata = {
   description: 'Commercial performance reports grouped by currency.',
 }
 
-export default async function ReportsPage() {
+export default function ReportsPage() {
+  return (
+    <Suspense fallback={<BillingListPageSkeleton />}>
+      <ReportsPageData />
+    </Suspense>
+  )
+}
+
+async function ReportsPageData() {
   const context = await getWorkspaceContext()
   if (!context) return null
 
