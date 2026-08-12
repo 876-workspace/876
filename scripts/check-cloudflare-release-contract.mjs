@@ -49,6 +49,18 @@ for (const [worker, directory] of discovered) {
     errors.push(
       `${worker}: contract directory ${contract.directory} does not match ${directory}.`
     )
+  const wranglerSource = readFileSync(
+    path.join(directory, 'wrangler.jsonc'),
+    'utf8'
+  )
+  if (
+    wranglerSource.includes('.open-next/worker.js') &&
+    contract.migrationOwner !== 'none' &&
+    contract.runtimeDatabaseMode !== 'accelerate'
+  )
+    errors.push(
+      `${worker}: data-backed OpenNext Workers must use an Accelerate runtime database.`
+    )
 
   const appName = path.basename(directory)
   const jobName = appName === '876' ? 'app' : appName
