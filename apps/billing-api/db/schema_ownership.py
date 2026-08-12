@@ -5,11 +5,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 HEAD_REVISION = "202607220002"
+VERSION_TABLE = "billing_alembic_version"
 
 
 async def current_revision(connection: AsyncConnection) -> str | None:
     try:
-        result = await connection.execute(text("SELECT version_num FROM alembic_version LIMIT 1"))
+        result = await connection.execute(text(f"SELECT version_num FROM {VERSION_TABLE} LIMIT 1"))
     except SQLAlchemyError:
         return None
     value = result.scalar_one_or_none()

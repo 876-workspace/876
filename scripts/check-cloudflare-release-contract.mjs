@@ -83,6 +83,37 @@ for (const [worker, contract] of Object.entries(CLOUDFLARE_WORKERS)) {
     errors.push(`${worker}: release contract has no matching wrangler.jsonc.`)
   if (!allowedMigrationOwners.has(contract.migrationOwner))
     errors.push(`${worker}: migrationOwner must be alembic, prisma, or none.`)
+  if (contract.migrationOwner === 'alembic') {
+    const expectedTable = contract.migrationVersionTable
+    if (!expectedTable || expectedTable === 'alembic_version') {
+      errors.push(
+        `${worker}: Alembic services must declare a non-default migrationVersionTable.`
+      )
+    } else {
+      const migrationEnvPath = path.join(
+        contract.directory,
+        'migrations/env.py'
+      )
+      let migrationEnv = ''
+      try {
+        migrationEnv = readFileSync(migrationEnvPath, 'utf8')
+      } catch (error) {
+        if (error?.code !== 'ENOENT') throw error
+      }
+      if (!migrationEnv.includes(`VERSION_TABLE = "${expectedTable}"`))
+        errors.push(
+          `${worker}: ${migrationEnvPath} must define VERSION_TABLE as ${expectedTable}.`
+        )
+      if (!migrationEnv.includes('version_table=VERSION_TABLE'))
+        errors.push(
+          `${worker}: ${migrationEnvPath} must pass its namespaced version table to Alembic.`
+        )
+    }
+  } else if (contract.migrationVersionTable !== undefined) {
+    errors.push(
+      `${worker}: migrationVersionTable is only valid for Alembic services.`
+    )
+  }
   if (!contract.readinessUrl.startsWith('https://'))
     errors.push(`${worker}: readinessUrl must use HTTPS.`)
   if (!Array.isArray(contract.requiredSecrets))

@@ -15,6 +15,11 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 target_metadata = Base.metadata
 
+# Billing can share a Postgres instance with other 876 services. A dedicated
+# revision table prevents another service's Alembic head from being interpreted
+# as a Billing migration revision.
+VERSION_TABLE = "billing_alembic_version"
+
 
 def include_object(
     _object: object,
@@ -42,6 +47,7 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
         include_object=include_object,
+        version_table=VERSION_TABLE,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -53,6 +59,7 @@ def run_sync_migrations(connection: Connection) -> None:
         target_metadata=target_metadata,
         compare_type=True,
         include_object=include_object,
+        version_table=VERSION_TABLE,
     )
     with context.begin_transaction():
         context.run_migrations()

@@ -30,7 +30,7 @@ def _billing_columns(inspector: Inspector) -> Mapping[str, Collection[str]]:
     return {
         table_name: [column["name"] for column in inspector.get_columns(table_name)]
         for table_name in table_names
-        if table_name.startswith("billing_")
+        if table_name.startswith("billing_") and table_name != "billing_alembic_version"
     }
 
 

@@ -51,6 +51,7 @@ export const CLOUDFLARE_WORKERS = {
     directory: 'apps/billing-api',
     dependencies: ['876-api'],
     migrationOwner: 'alembic',
+    migrationVersionTable: 'billing_alembic_version',
     readinessUrl: 'https://876-billing-api.1876.workers.dev/ready',
     requiredSecrets: [
       'BILLING_API_876_KEY',
@@ -126,6 +127,7 @@ export const CLOUDFLARE_WORKERS = {
     directory: 'apps/storage-api',
     dependencies: [],
     migrationOwner: 'alembic',
+    migrationVersionTable: 'storage_alembic_version',
     readinessUrl: 'https://876-storage-api.1876.workers.dev/ready',
     requiredSecrets: [
       'R2_ACCESS_KEY_ID',
