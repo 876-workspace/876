@@ -19,7 +19,7 @@ export default async function OrganizationOnboardingPage() {
 
   if (!user) redirect('/app')
 
-  const primaryOrganizationPath = await resolvePrimaryOrganizationPath()
+  const primaryOrganizationPath = await resolvePrimaryOrganizationPath(user.id)
   if (primaryOrganizationPath) redirect(primaryOrganizationPath)
 
   return (

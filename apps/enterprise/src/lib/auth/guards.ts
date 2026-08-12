@@ -6,8 +6,8 @@ import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { unwrapOptional, unwrapResult } from '@876/core/client/lookup'
 import * as Sentry from '@sentry/nextjs'
 
-import { get876ServerClient } from '@/lib/876/server'
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
+import { getPlatformClient } from '@/lib/876/platform-client'
 
 import { consumerUrl } from './app-urls'
 import { getAuthSession, isSignedSession } from './session'
@@ -72,14 +72,20 @@ export async function requireOrgPermission(
 export async function findAuthRoutingUser(
   userId: string
 ): Promise<AuthRoutingUser | null> {
-  const $876 = await get876ServerClient()
-  const result = await $876.users.retrieve()
+  const client = await getPlatformClient()
+  const result = await client.users.retrieve({ id: userId })
 
   // Distinguish a real "user not found" (safe to treat as no account) from a
   // transient/server error, which throws rather than silently denying access.
-  const row = unwrapOptional(result, 'auth routing user')
+  const localUser = unwrapOptional(result, 'auth routing user')
+  const row =
+    localUser ??
+    unwrapOptional(
+      await client.users.retrieve({ workosId: userId }),
+      'auth routing user'
+    )
   if (!row) return null
-  if (!row.id || row.id !== userId || !row.email) return null
+  if (!row.id || !row.email) return null
   return {
     id: row.id,
     status: row.status ?? 'active',
@@ -108,7 +114,7 @@ export async function requireOrgMembership(
   const user = await findAuthRoutingUser(userId)
   if (!user) redirect(consumerUrl('/app'))
 
-  const membership = await findActiveMembershipBySlug(slug)
+  const membership = await findActiveMembershipBySlug(user.id, slug)
   if (!membership) redirect(`/no-access?slug=${encodeURIComponent(slug)}`)
 
   return { user, membership }
@@ -127,25 +133,33 @@ export async function findActiveOrgMembership(
   const user = await findAuthRoutingUser(sessionUserId)
   if (!user) return null
 
-  return findActiveMembershipBySlug(slug)
+  return findActiveMembershipBySlug(user.id, slug)
 }
 
 async function findActiveMembershipBySlug(
+  userId: string,
   slug: string
 ): Promise<ActiveMembership | null> {
-  const $876 = await get876ServerClient()
-  const result = await $876.memberships.list({
+  const client = await getPlatformClient()
+  const result = await client.memberships.listRouting({
+    userId,
+    orgSlug: slug,
     status: 'active',
   })
   // An empty list is the legitimate "no membership"; an error envelope is a real
   // failure and must not be downgraded to a silent access denial.
   const memberships = unwrapResult(result, 'routing memberships').data
-  return memberships.find((m) => m.organization.slug === slug) ?? null
+  return (
+    memberships.find((m) => m.organization.slug === slug) ?? null
+  )
 }
 
-export async function resolvePrimaryOrganizationPath(): Promise<string | null> {
-  const $876 = await get876ServerClient()
-  const result = await $876.memberships.list({
+export async function resolvePrimaryOrganizationPath(
+  userId: string
+): Promise<string | null> {
+  const client = await getPlatformClient()
+  const result = await client.memberships.listRouting({
+    userId,
     status: 'active',
   })
   const memberships = unwrapResult(result, 'routing memberships').data
@@ -160,8 +174,8 @@ export async function resolvePrimaryOrganizationPath(): Promise<string | null> {
   return first ? `/${first.organization.slug}/profile` : null
 }
 
-export async function resolveHomePathForUser(): Promise<string> {
-  const orgPath = await resolvePrimaryOrganizationPath()
+export async function resolveHomePathForUser(userId: string): Promise<string> {
+  const orgPath = await resolvePrimaryOrganizationPath(userId)
   if (orgPath) return orgPath
 
   return '/no-access'
@@ -170,8 +184,8 @@ export async function resolveHomePathForUser(): Promise<string> {
 export async function getEnabledEnterpriseFeatureSlugs(
   organizationId?: string
 ): Promise<Set<string>> {
-  const $876 = await get876ServerClient()
-  const result = await $876.features.evaluate({
+  const client = await getPlatformClient()
+  const result = await client.features.evaluate({
     organizationId,
     appSlug: ENTERPRISE_APP_SLUG,
   })
