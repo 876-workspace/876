@@ -51,7 +51,9 @@ export async function CustomersTableData({ params, searchParams }: Props) {
         await $876.couriers.customers.list(ctx.tenant.id, {
           ...(profileStatus === undefined ? {} : { status: profileStatus }),
           limit: 100,
-          ...(startingAfter === undefined ? {} : { starting_after: startingAfter }),
+          ...(startingAfter === undefined
+            ? {}
+            : { starting_after: startingAfter }),
         })
       )
       profiles.push(...page.data.map(toCustomerView))
@@ -59,7 +61,8 @@ export async function CustomersTableData({ params, searchParams }: Props) {
       if (!page.has_more || lastId === undefined) break
       startingAfter = lastId
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load customers.'
+      const message =
+        err instanceof Error ? err.message : 'Failed to load customers.'
       const match = message.match(/\(([^)]+)\):\s*(.*)/)
       customersError = {
         code: match?.[1] ?? 'couriers/unavailable',
@@ -74,7 +77,11 @@ export async function CustomersTableData({ params, searchParams }: Props) {
         <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
           {customersError.message}
         </div>
-        <CustomersTable customers={[]} orgSlug={orgSlug} emptyState={emptyState} />
+        <CustomersTable
+          customers={[]}
+          orgSlug={orgSlug}
+          emptyState={emptyState}
+        />
       </>
     )
   }
@@ -117,7 +124,11 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     'billing/database-not-ready',
     'billing/unreachable',
   ])
-  const registry = pages.find((page) => page.error && !benignCodes.has(page.error.code)) ?? pages.find((page) => page.error) ?? pages[0] ?? null
+  const registry =
+    pages.find((page) => page.error && !benignCodes.has(page.error.code)) ??
+    pages.find((page) => page.error) ??
+    pages[0] ??
+    null
   const displayRegistryError =
     registry?.error && !benignCodes.has(registry.error.code)
       ? registry.error
