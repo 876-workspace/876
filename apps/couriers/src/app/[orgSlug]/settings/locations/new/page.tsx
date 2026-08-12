@@ -44,9 +44,7 @@ async function NewBranchData({ orgSlug }: { orgSlug: string }) {
       </div>
     )
 
-  const branches = requireCouriersData(
-    await $876.branches.list(ctx.tenant.id)
-  )
+  const branches = requireCouriersData(await $876.branches.list(ctx.tenant.id))
 
   return (
     <BranchForm orgSlug={orgSlug} isFirstBranch={branches.data.length === 0} />

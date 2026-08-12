@@ -15,7 +15,10 @@ export function createAppsResource({
   const base = (platform as unknown as { apps: object }).apps as object
   if (!admin) return base as unknown as typeof base
   const adminApps = (admin as unknown as { apps: object }).apps as object
-  const withAdminRes = withAdmin(base as object, adminApps as object) as unknown as typeof base & { admin: typeof adminApps }
+  const withAdminRes = withAdmin(
+    base as object,
+    adminApps as object
+  ) as unknown as typeof base & { admin: typeof adminApps }
   return {
     ...(withAdminRes as object),
     ...(adminApps as object),

@@ -12,13 +12,26 @@ export function createUsersResource({
   admin?: Admin
 }) {
   const me = {
-    retrieve: (options?: unknown) => (platform as unknown as { users: { retrieve: (o?: unknown)=> Promise<unknown> } }).users.retrieve(options as never),
+    retrieve: (options?: unknown) =>
+      (
+        platform as unknown as {
+          users: { retrieve: (o?: unknown) => Promise<unknown> }
+        }
+      ).users.retrieve(options as never),
     update: (params: unknown, options?: unknown) =>
-      (platform as unknown as { users: { update: (p: unknown, o?: unknown)=> Promise<unknown> } }).users.update(params as never, options as never),
-    profile: (platform as unknown as { users: { profile: unknown } }).users.profile,
-    addresses: (platform as unknown as { users: { addresses: unknown } }).users.addresses,
-    contacts: (platform as unknown as { users: { contacts: unknown } }).users.contacts,
-    memberships: (platform as unknown as { users: { memberships: unknown } }).users.memberships,
+      (
+        platform as unknown as {
+          users: { update: (p: unknown, o?: unknown) => Promise<unknown> }
+        }
+      ).users.update(params as never, options as never),
+    profile: (platform as unknown as { users: { profile: unknown } }).users
+      .profile,
+    addresses: (platform as unknown as { users: { addresses: unknown } }).users
+      .addresses,
+    contacts: (platform as unknown as { users: { contacts: unknown } }).users
+      .contacts,
+    memberships: (platform as unknown as { users: { memberships: unknown } })
+      .users.memberships,
   }
 
   if (!admin) {
@@ -31,5 +44,8 @@ export function createUsersResource({
     me,
     admin: adminUsers,
     ...(adminUsers as object),
-  } as unknown as { me: typeof me; admin: typeof adminUsers } & typeof adminUsers
+  } as unknown as {
+    me: typeof me
+    admin: typeof adminUsers
+  } & typeof adminUsers
 }

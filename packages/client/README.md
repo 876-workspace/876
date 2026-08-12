@@ -21,7 +21,12 @@ await $876.invoices.create({ customerId, currency: 'JMD', lines: [] })
 await $876.invoices.finalize(invoiceId)
 await $876.payments.create({ customerId, amount: 1000 })
 
-await $876.packages.create({ customerId, weight: 10.5, weightUnit: 'kg', branchId })
+await $876.packages.create({
+  customerId,
+  weight: 10.5,
+  weightUnit: 'kg',
+  branchId,
+})
 await $876.packages.list()
 await $876.branches.list()
 await $876.warehouses.list()
@@ -40,15 +45,30 @@ export const $876 = create876ServerClient({
   app: 'couriers',
   apiKey: process.env.API_876_KEY,
   services: {
-    billing: { baseUrl: process.env.BILLING_API_URL, apiKey: process.env.API_876_KEY },
-    couriers: { baseUrl: process.env.COURIERS_API_URL, apiKey: process.env.COURIERS_API_KEY, internalKey: process.env.COURIERS_INTERNAL_KEY },
+    billing: {
+      baseUrl: process.env.BILLING_API_URL,
+      apiKey: process.env.API_876_KEY,
+    },
+    couriers: {
+      baseUrl: process.env.COURIERS_API_URL,
+      apiKey: process.env.COURIERS_API_KEY,
+      internalKey: process.env.COURIERS_INTERNAL_KEY,
+    },
     storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
-    widgets: { baseUrl: process.env.WIDGETS_API_URL, serviceKey: process.env.WIDGETS_SERVICE_KEY },
+    widgets: {
+      baseUrl: process.env.WIDGETS_API_URL,
+      serviceKey: process.env.WIDGETS_SERVICE_KEY,
+    },
   },
 })
 
 await $876.customers.create({ name: 'John', email: 'john@example.com' })
-await $876.packages.create({ customerId, weight: 8.5, weightUnit: 'kg', branchId })
+await $876.packages.create({
+  customerId,
+  weight: 8.5,
+  weightUnit: 'kg',
+  branchId,
+})
 
 // Console (platform-wide)
 export const $876 = create876ServerClient({
@@ -56,10 +76,19 @@ export const $876 = create876ServerClient({
   apiKey: process.env.API_876_KEY,
   internalKey: process.env.API_INTERNAL_KEY,
   services: {
-    billing: { baseUrl: process.env.BILLING_API_URL, internalKey: process.env.BILLING_INTERNAL_KEY },
-    couriers: { baseUrl: process.env.COURIERS_API_URL, internalKey: process.env.COURIERS_INTERNAL_KEY },
+    billing: {
+      baseUrl: process.env.BILLING_API_URL,
+      internalKey: process.env.BILLING_INTERNAL_KEY,
+    },
+    couriers: {
+      baseUrl: process.env.COURIERS_API_URL,
+      internalKey: process.env.COURIERS_INTERNAL_KEY,
+    },
     storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
-    widgets: { baseUrl: process.env.WIDGETS_API_URL, serviceKey: process.env.WIDGETS_SERVICE_KEY },
+    widgets: {
+      baseUrl: process.env.WIDGETS_API_URL,
+      serviceKey: process.env.WIDGETS_SERVICE_KEY,
+    },
   },
 })
 

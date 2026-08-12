@@ -64,11 +64,9 @@ export async function PATCH(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await $876.settings.update(
-    ctx.tenant.id,
-    parsed.data.module,
-    { is_enabled: parsed.data.isEnabled }
-  )
+  const result = await $876.settings.update(ctx.tenant.id, parsed.data.module, {
+    is_enabled: parsed.data.isEnabled,
+  })
   if (result.error)
     return apiJson(
       { error: result.error.message },

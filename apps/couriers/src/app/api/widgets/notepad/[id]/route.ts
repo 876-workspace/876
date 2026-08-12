@@ -23,25 +23,21 @@ export async function PATCH(request: Request, context: Context) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.notes.update(
-    { userId: access.userId },
-    id,
-    {
-      title: typeof record.title === 'string' ? record.title : undefined,
-      body: typeof record.body === 'string' ? record.body : undefined,
-      color:
-        typeof record.color === 'string'
-          ? (record.color as NoteColor)
+  const result = await $876.notes.update({ userId: access.userId }, id, {
+    title: typeof record.title === 'string' ? record.title : undefined,
+    body: typeof record.body === 'string' ? record.body : undefined,
+    color:
+      typeof record.color === 'string'
+        ? (record.color as NoteColor)
+        : undefined,
+    pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
+    collectionId:
+      record.collection_id === null
+        ? null
+        : typeof record.collection_id === 'string'
+          ? record.collection_id
           : undefined,
-      pinned: typeof record.pinned === 'boolean' ? record.pinned : undefined,
-      collectionId:
-        record.collection_id === null
-          ? null
-          : typeof record.collection_id === 'string'
-            ? record.collection_id
-            : undefined,
-    }
-  )
+  })
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,

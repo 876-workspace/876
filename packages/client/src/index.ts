@@ -1,6 +1,15 @@
-import { create876Client as createPlatformClient, type ClientOptions as PlatformClientOptions } from '@876/sdk'
-import { create876Client as createBillingClient, type ClientOptions as BillingClientOptions } from '@876/billing'
-import { create876CouriersClient, type ClientOptions as CouriersClientOptions } from '@876/couriers'
+import {
+  create876Client as createPlatformClient,
+  type ClientOptions as PlatformClientOptions,
+} from '@876/sdk'
+import {
+  create876Client as createBillingClient,
+  type ClientOptions as BillingClientOptions,
+} from '@876/billing'
+import {
+  create876CouriersClient,
+  type ClientOptions as CouriersClientOptions,
+} from '@876/couriers'
 import { createAuthResource } from './resources/auth.ts'
 import { createUsersResource } from './resources/users.ts'
 import { createOrganizationsResource } from './resources/organizations.ts'
@@ -44,10 +53,19 @@ export type ClientOptions = PlatformClientOptions & {
 }
 
 export function create876Client(options: ClientOptions = {}) {
-  const { app = '876' as AppId, billing: billingOptions, couriers: couriersOptions, ...platformOptions } = options
+  const {
+    app = '876' as AppId,
+    billing: billingOptions,
+    couriers: couriersOptions,
+    ...platformOptions
+  } = options
   const platform = createPlatformClient(platformOptions)
-  const billing = billingOptions ? createBillingClient(billingOptions) : undefined
-  const couriersAdmin = couriersOptions ? create876CouriersClient(couriersOptions as never) as unknown as never : undefined
+  const billing = billingOptions
+    ? createBillingClient(billingOptions)
+    : undefined
+  const couriersAdmin = couriersOptions
+    ? (create876CouriersClient(couriersOptions as never) as unknown as never)
+    : undefined
 
   const users = createUsersResource({ platform })
   const organizations = createOrganizationsResource({ platform })
@@ -66,10 +84,20 @@ export function create876Client(options: ClientOptions = {}) {
     departments: createDepartmentsResource(platform),
     employees: createEmployeesResource(platform),
     roles: createRolesResource(platform),
-    organizationMembers: (platform as unknown as { organizationMembers: unknown }).organizationMembers,
-    appAssignments: (platform as unknown as { appAssignments: unknown }).appAssignments,
+    organizationMembers: (
+      platform as unknown as { organizationMembers: unknown }
+    ).organizationMembers,
+    appAssignments: (platform as unknown as { appAssignments: unknown })
+      .appAssignments,
     invites: (platform as unknown as { invites: unknown }).invites,
-    customers: billing || couriersAdmin ? createCustomersResource({ app, billing: billing as never, couriersAdmin: couriersAdmin as never }) : undefined as unknown as ReturnType<typeof createCustomersResource>,
+    customers:
+      billing || couriersAdmin
+        ? createCustomersResource({
+            app,
+            billing: billing as never,
+            couriersAdmin: couriersAdmin as never,
+          })
+        : (undefined as unknown as ReturnType<typeof createCustomersResource>),
     products: createProductsResource(billing as never),
     plans: createPlansResource(billing as never),
     prices: createPricesResource(billing as never),
@@ -79,15 +107,29 @@ export function create876Client(options: ClientOptions = {}) {
     payments: createPaymentsResource(billing as never),
     subscriptions: createSubscriptionsResource(billing as never),
     taxRates: createTaxRatesResource(billing as never),
-    taxAuthorities: undefined as unknown as ReturnType<typeof createCustomersResource>,
+    taxAuthorities: undefined as unknown as ReturnType<
+      typeof createCustomersResource
+    >,
     bankAccounts: createBankAccountsResource(billing as never),
     bankTransactions: createBankTransactionsResource(billing as never),
-    packages: couriersAdmin ? createPackagesResource(couriersAdmin as never) : undefined as unknown as ReturnType<typeof createPackagesResource>,
-    branches: couriersAdmin ? createBranchesResource(couriersAdmin as never) : undefined as unknown as ReturnType<typeof createBranchesResource>,
-    warehouses: couriersAdmin ? createWarehousesResource(couriersAdmin as never) : undefined as unknown as ReturnType<typeof createWarehousesResource>,
-    mailboxes: couriersAdmin ? createMailboxesResource(couriersAdmin as never) : undefined as unknown as ReturnType<typeof createMailboxesResource>,
-    addresses: couriersAdmin ? createAddressesResource(couriersAdmin as never) : undefined as unknown as ReturnType<typeof createAddressesResource>,
-    tenants: couriersAdmin ? createTenantsResource(couriersAdmin as never) : undefined as unknown as ReturnType<typeof createTenantsResource>,
+    packages: couriersAdmin
+      ? createPackagesResource(couriersAdmin as never)
+      : (undefined as unknown as ReturnType<typeof createPackagesResource>),
+    branches: couriersAdmin
+      ? createBranchesResource(couriersAdmin as never)
+      : (undefined as unknown as ReturnType<typeof createBranchesResource>),
+    warehouses: couriersAdmin
+      ? createWarehousesResource(couriersAdmin as never)
+      : (undefined as unknown as ReturnType<typeof createWarehousesResource>),
+    mailboxes: couriersAdmin
+      ? createMailboxesResource(couriersAdmin as never)
+      : (undefined as unknown as ReturnType<typeof createMailboxesResource>),
+    addresses: couriersAdmin
+      ? createAddressesResource(couriersAdmin as never)
+      : (undefined as unknown as ReturnType<typeof createAddressesResource>),
+    tenants: couriersAdmin
+      ? createTenantsResource(couriersAdmin as never)
+      : (undefined as unknown as ReturnType<typeof createTenantsResource>),
     files: undefined as unknown as ReturnType<typeof createFilesResource>,
     uploads: undefined as unknown as ReturnType<typeof createUploadsResource>,
     notes: createNotesResource(undefined),
@@ -98,4 +140,8 @@ export function create876Client(options: ClientOptions = {}) {
 }
 
 export type Client876 = ReturnType<typeof create876Client>
-export type { BillingClientOptions, CouriersClientOptions, PlatformClientOptions }
+export type {
+  BillingClientOptions,
+  CouriersClientOptions,
+  PlatformClientOptions,
+}

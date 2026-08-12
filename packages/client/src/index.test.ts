@@ -10,10 +10,22 @@ describe('unified $876 resource model', () => {
       apiKey: '876_app_secret_test1234567890123456',
       internalKey: 'internal',
       services: {
-        billing: { baseUrl: 'http://billing', apiKey: '876_app_secret_test1234567890123456' } as never,
-        couriers: { baseUrl: 'http://couriers', apiKey: '876_app_secret_test1234567890123456', internalKey: '876_app_secret_test1234567890123456' } as never,
-        storage: { internalKey: '876_app_secret_test1234567890123456' } as never,
-        widgets: { baseUrl: 'http://widgets', serviceKey: '876_app_secret_test1234567890123456' } as never,
+        billing: {
+          baseUrl: 'http://billing',
+          apiKey: '876_app_secret_test1234567890123456',
+        } as never,
+        couriers: {
+          baseUrl: 'http://couriers',
+          apiKey: '876_app_secret_test1234567890123456',
+          internalKey: '876_app_secret_test1234567890123456',
+        } as never,
+        storage: {
+          internalKey: '876_app_secret_test1234567890123456',
+        } as never,
+        widgets: {
+          baseUrl: 'http://widgets',
+          serviceKey: '876_app_secret_test1234567890123456',
+        } as never,
       },
     }) as unknown as Record<string, unknown>
     expect('billing' in $876).toBe(false)
@@ -27,7 +39,12 @@ describe('unified $876 resource model', () => {
   it('exposes Billing resources at root', () => {
     const $876 = create876ServerClient({
       apiKey: '876_app_secret_test1234567890123456',
-      services: { billing: { baseUrl: 'http://billing', apiKey: '876_app_secret_test1234567890123456' } as never },
+      services: {
+        billing: {
+          baseUrl: 'http://billing',
+          apiKey: '876_app_secret_test1234567890123456',
+        } as never,
+      },
     })
     expect($876.customers).toBeDefined()
     expect($876.invoices).toBeDefined()
@@ -41,7 +58,13 @@ describe('unified $876 resource model', () => {
   it('exposes Couriers resources at root', () => {
     const $876 = create876ServerClient({
       apiKey: '876_app_secret_test1234567890123456',
-      services: { couriers: { baseUrl: 'http://couriers', apiKey: '876_app_secret_test1234567890123456', internalKey: '876_app_secret_test1234567890123456' } as never },
+      services: {
+        couriers: {
+          baseUrl: 'http://couriers',
+          apiKey: '876_app_secret_test1234567890123456',
+          internalKey: '876_app_secret_test1234567890123456',
+        } as never,
+      },
     })
     expect($876.packages).toBeDefined()
     expect($876.branches).toBeDefined()
@@ -52,7 +75,11 @@ describe('unified $876 resource model', () => {
   it('exposes Storage resources at root', () => {
     const $876 = create876ServerClient({
       apiKey: '876_app_secret_test1234567890123456',
-      services: { storage: { internalKey: '876_app_secret_test1234567890123456' } as never },
+      services: {
+        storage: {
+          internalKey: '876_app_secret_test1234567890123456',
+        } as never,
+      },
     })
     expect($876.files).toBeDefined()
     expect($876.uploads).toBeDefined()
@@ -73,14 +100,20 @@ describe('unified $876 resource model', () => {
   })
 
   it('server users has me and admin', () => {
-    const $876 = create876ServerClient({ apiKey: '876_app_secret_test1234567890123456', internalKey: '876_app_secret_test1234567890123456' })
+    const $876 = create876ServerClient({
+      apiKey: '876_app_secret_test1234567890123456',
+      internalKey: '876_app_secret_test1234567890123456',
+    })
     expect($876.users.me).toBeDefined()
     expect(($876.users as unknown as { admin: unknown }).admin).toBeDefined()
     expect($876.users.me.retrieve).toBeDefined()
   })
 
   it('server apps has admin', () => {
-    const $876 = create876ServerClient({ apiKey: '876_app_secret_test1234567890123456', internalKey: '876_app_secret_test1234567890123456' })
+    const $876 = create876ServerClient({
+      apiKey: '876_app_secret_test1234567890123456',
+      internalKey: '876_app_secret_test1234567890123456',
+    })
     expect($876.apps).toBeDefined()
     expect(($876.apps as unknown as { admin: unknown }).admin).toBeDefined()
   })

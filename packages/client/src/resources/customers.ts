@@ -11,7 +11,9 @@ export interface CreateCustomersResourceOptions {
   couriersAdmin?: CouriersAdminClient
 }
 
-export function createCustomersResource(options: CreateCustomersResourceOptions) : any {
+export function createCustomersResource(
+  options: CreateCustomersResourceOptions
+): any {
   const { app, billing, couriersAdmin } = options
 
   // Couriers app uses courier customer workflow; billing app uses billing customer; console uses admin
@@ -19,20 +21,33 @@ export function createCustomersResource(options: CreateCustomersResourceOptions)
     const base = couriersAdmin.customers
     // couriers customers currently requires tenantId; expose flat but keep tenantId param for now
     // admin variant is same but typed as admin
-    return withAdmin(base as unknown as object, base as unknown as object) as typeof base & { admin: typeof base }
+    return withAdmin(
+      base as unknown as object,
+      base as unknown as object
+    ) as typeof base & { admin: typeof base }
   }
 
   if (billing) {
-    const base = (billing as unknown as { customers: object }).customers as object
+    const base = (billing as unknown as { customers: object })
+      .customers as object
     // if we have admin billing, attach
-    const adminBase = (options.billingAdmin as unknown as { customers?: object } | undefined)?.customers as object | undefined
+    const adminBase = (
+      options.billingAdmin as unknown as { customers?: object } | undefined
+    )?.customers as object | undefined
     if (adminBase) {
-      return withAdmin(base as object, adminBase as object) as typeof base & { admin: typeof adminBase }
+      return withAdmin(base as object, adminBase as object) as typeof base & {
+        admin: typeof adminBase
+      }
     }
     // also support withAdmin via same base for console-like
-    return withAdmin(base as object, base as unknown as object) as typeof base & { admin: typeof base }
+    return withAdmin(
+      base as object,
+      base as unknown as object
+    ) as typeof base & { admin: typeof base }
   }
 
   // fallback: return empty that will error at runtime if not configured, but satisfies type
-  return { } as unknown as BillingClient['customers'] & { admin: BillingClient['customers'] }
+  return {} as unknown as BillingClient['customers'] & {
+    admin: BillingClient['customers']
+  }
 }

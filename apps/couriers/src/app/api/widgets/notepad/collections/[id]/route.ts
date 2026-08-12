@@ -22,19 +22,15 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const record =
     body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
-  const result = await $876.collections.update(
-    { userId: access.userId },
-    id,
-    {
-      name: typeof record.name === 'string' ? record.name : undefined,
-      color:
-        record.color === null
-          ? null
-          : typeof record.color === 'string'
-            ? (record.color as NoteColor)
-            : undefined,
-    }
-  )
+  const result = await $876.collections.update({ userId: access.userId }, id, {
+    name: typeof record.name === 'string' ? record.name : undefined,
+    color:
+      record.color === null
+        ? null
+        : typeof record.color === 'string'
+          ? (record.color as NoteColor)
+          : undefined,
+  })
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found')
@@ -52,10 +48,7 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $876.collections.delete(
-    { userId: access.userId },
-    id
-  )
+  const result = await $876.collections.delete({ userId: access.userId }, id)
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,

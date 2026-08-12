@@ -20,49 +20,49 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 
 ## Canonical resource table
 
-| Resource | Canonical public namespace | Owning service | Notes |
-|---|---|---|---|
-| Authentication | `$876.auth` | Core (`@876/sdk`) | login, register, session |
-| Users | `$876.users` | Core (`@876/sdk` / `@876/admin`) | `me` = self, `admin` = platform-wide |
-| Organizations | `$876.organizations` | Core | `admin` for platform-wide |
-| Memberships | `$876.memberships` | Core | org membership / team |
-| Applications | `$876.apps` | Core | `$876.apps.list()` = owned, `$876.apps.admin.*` = platform-wide |
-| Features | `$876.features` | Core | feature flags |
-| Entitlements | `$876.entitlements` | Core | org/user access to 876 apps/features (not Billing subscriptions) |
-| Locations | `$876.locations` | Core | organization locations |
-| Contacts | `$876.contacts` | Core | organization contacts |
-| Departments | `$876.departments` | Core | org departments |
-| Employees | `$876.employees` | Core | org employees |
-| Roles | `$876.roles` | Core / Couriers (courier roles remain `$876.roles`) | platform roles + courier roles (unified) |
-| Customers | `$876.customers` | Billing registry + app workflows | canonical financial registry = Billing; Couriers/Billing apps use same name, owning API orchestrates |
-| Products | `$876.products` | Billing commercial catalog | things commercially sold |
-| Plans | `$876.plans` | Billing | billing plans |
-| Prices | `$876.prices` | Billing | billing prices |
-| Price lists | `$876.priceLists` | Billing | price lists |
-| Addons | `$876.addons` | Billing | billing addons |
-| Estimates | `$876.estimates` | Billing | draft estimates |
-| Invoices | `$876.invoices` | Billing | `create` / `finalize` / `void` |
-| Payments | `$876.payments` | Billing | `create` / `apply` etc |
-| Refunds | `$876.refunds` | Billing | refunds |
-| Subscriptions | `$876.subscriptions` | Billing | commercial Billing subscriptions (`pause`/`resume`/`cancel`/… ) — not org app entitlements |
-| Tax rates | `$876.taxRates` | Billing | |
-| Tax authorities | `$876.taxAuthorities` | Billing | |
-| Bank accounts | `$876.bankAccounts` | Billing | |
-| Bank transactions | `$876.bankTransactions` | Billing | |
-| Discounts | `$876.discounts` | Billing | |
-| Payment modes | `$876.paymentModes` | Billing | |
-| Payment providers | `$876.paymentProviders` | Billing | |
-| Packages | `$876.packages` | Couriers | `create`/`list`/`retrieve`/`update` |
-| Deliveries | `$876.deliveries` | Couriers | future — not yet implemented |
-| Shipments | `$876.shipments` | Couriers | alias to packages (until distinct) |
-| Branches | `$876.branches` | Couriers | |
-| Warehouses | `$876.warehouses` | Couriers | |
-| Mailboxes | `$876.mailboxes` | Couriers | |
-| Addresses | `$876.addresses` | Couriers/Core | courier addresses when via Couriers |
-| Files | `$876.files` | Storage | server-only where STORAGE_INTERNAL_KEY required |
-| Uploads | `$876.uploads` | Storage | server-only |
-| Notes | `$876.notes` | Widgets | browser-safe via host BFF + server-direct |
-| Collections | `$876.collections` | Widgets | |
+| Resource          | Canonical public namespace | Owning service                                      | Notes                                                                                                |
+| ----------------- | -------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, session                                                                             |
+| Users             | `$876.users`               | Core (`@876/sdk` / `@876/admin`)                    | `me` = self, `admin` = platform-wide                                                                 |
+| Organizations     | `$876.organizations`       | Core                                                | `admin` for platform-wide                                                                            |
+| Memberships       | `$876.memberships`         | Core                                                | org membership / team                                                                                |
+| Applications      | `$876.apps`                | Core                                                | `$876.apps.list()` = owned, `$876.apps.admin.*` = platform-wide                                      |
+| Features          | `$876.features`            | Core                                                | feature flags                                                                                        |
+| Entitlements      | `$876.entitlements`        | Core                                                | org/user access to 876 apps/features (not Billing subscriptions)                                     |
+| Locations         | `$876.locations`           | Core                                                | organization locations                                                                               |
+| Contacts          | `$876.contacts`            | Core                                                | organization contacts                                                                                |
+| Departments       | `$876.departments`         | Core                                                | org departments                                                                                      |
+| Employees         | `$876.employees`           | Core                                                | org employees                                                                                        |
+| Roles             | `$876.roles`               | Core / Couriers (courier roles remain `$876.roles`) | platform roles + courier roles (unified)                                                             |
+| Customers         | `$876.customers`           | Billing registry + app workflows                    | canonical financial registry = Billing; Couriers/Billing apps use same name, owning API orchestrates |
+| Products          | `$876.products`            | Billing commercial catalog                          | things commercially sold                                                                             |
+| Plans             | `$876.plans`               | Billing                                             | billing plans                                                                                        |
+| Prices            | `$876.prices`              | Billing                                             | billing prices                                                                                       |
+| Price lists       | `$876.priceLists`          | Billing                                             | price lists                                                                                          |
+| Addons            | `$876.addons`              | Billing                                             | billing addons                                                                                       |
+| Estimates         | `$876.estimates`           | Billing                                             | draft estimates                                                                                      |
+| Invoices          | `$876.invoices`            | Billing                                             | `create` / `finalize` / `void`                                                                       |
+| Payments          | `$876.payments`            | Billing                                             | `create` / `apply` etc                                                                               |
+| Refunds           | `$876.refunds`             | Billing                                             | refunds                                                                                              |
+| Subscriptions     | `$876.subscriptions`       | Billing                                             | commercial Billing subscriptions (`pause`/`resume`/`cancel`/… ) — not org app entitlements           |
+| Tax rates         | `$876.taxRates`            | Billing                                             |                                                                                                      |
+| Tax authorities   | `$876.taxAuthorities`      | Billing                                             |                                                                                                      |
+| Bank accounts     | `$876.bankAccounts`        | Billing                                             |                                                                                                      |
+| Bank transactions | `$876.bankTransactions`    | Billing                                             |                                                                                                      |
+| Discounts         | `$876.discounts`           | Billing                                             |                                                                                                      |
+| Payment modes     | `$876.paymentModes`        | Billing                                             |                                                                                                      |
+| Payment providers | `$876.paymentProviders`    | Billing                                             |                                                                                                      |
+| Packages          | `$876.packages`            | Couriers                                            | `create`/`list`/`retrieve`/`update`                                                                  |
+| Deliveries        | `$876.deliveries`          | Couriers                                            | future — not yet implemented                                                                         |
+| Shipments         | `$876.shipments`           | Couriers                                            | alias to packages (until distinct)                                                                   |
+| Branches          | `$876.branches`            | Couriers                                            |                                                                                                      |
+| Warehouses        | `$876.warehouses`          | Couriers                                            |                                                                                                      |
+| Mailboxes         | `$876.mailboxes`           | Couriers                                            |                                                                                                      |
+| Addresses         | `$876.addresses`           | Couriers/Core                                       | courier addresses when via Couriers                                                                  |
+| Files             | `$876.files`               | Storage                                             | server-only where STORAGE_INTERNAL_KEY required                                                      |
+| Uploads           | `$876.uploads`             | Storage                                             | server-only                                                                                          |
+| Notes             | `$876.notes`               | Widgets                                             | browser-safe via host BFF + server-direct                                                            |
+| Collections       | `$876.collections`         | Widgets                                             |                                                                                                      |
 
 Future (documented, not yet implemented):
 `$876.events`, `$876.venues`, `$876.tickets`, `$876.jobs`, `$876.candidates`, `$876.jobApplications`, `$876.transactions`, `$876.activity` — do not add stub resources.
@@ -72,6 +72,7 @@ Future (documented, not yet implemented):
 ## Resource details — ownership & current SDK mapping
 
 ### auth
+
 - Public: `$876.auth`
 - Owner: Core API (FastAPI / Express core)
 - Normal: `$876.auth.login()` etc
@@ -79,6 +80,7 @@ Future (documented, not yet implemented):
 - Current package: `@876/sdk`
 
 ### users
+
 - Public: `$876.users.me.*` and `$876.users.admin.*`
 - Owner: Core
 - Normal: `$876.users.me.retrieve()`, `me.update()`, `me.profile.*`, `me.addresses.*`, `me.contacts.*`
@@ -87,11 +89,13 @@ Future (documented, not yet implemented):
 - Migration: do not preserve ambiguity where `users.retrieve()` means current user in one client and arbitrary user in another — split to `me` vs `admin`.
 
 ### organizations
+
 - Public: `$876.organizations` (+ `admin` for platform-wide)
 - Owner: Core
 - Current: `@876/sdk` + `@876/admin`
 
 ### apps
+
 - Public: `$876.apps` / `$876.apps.admin`
 - Owner: Core
 - Normal: `list` / `create` / `retrieve` / `current` (self-scoped)
@@ -99,6 +103,7 @@ Future (documented, not yet implemented):
 - Current: `@876/sdk` + `@876/admin`
 
 ### entitlements
+
 - Public: `$876.entitlements`
 - Owner: Core (org app-access)
 - Meaning: organization/user access to 876 applications/features. Distinct from Billing `$876.subscriptions` (recurring Billing agreement). Resolve collision: both previously called “subscriptions” — now `entitlements` = platform access, `subscriptions` = Billing.
@@ -106,15 +111,18 @@ Future (documented, not yet implemented):
 - Future: `$876.entitlements.list({ organizationId })`
 
 ### features
+
 - Public: `$876.features`
 - Owner: Core
 
 ### locations / contacts / departments / employees / roles
+
 - Public: `$876.locations` etc
 - Owner: Core (org-scoped)
 - Current: `@876/sdk` (`createOrgsResource` sub-resources) and `@876/admin`
 
 ### customers
+
 - Public: `$876.customers` (+ `admin` for cross-tenant)
 - Owner: Billing canonical registry; Couriers adds courier profile workflow
 - Current: `@876/billing` (`customers.create`/`account`/`recordOpeningBalance`) and `@876/couriers/admin` (`customers.list`/`retrieve`/`create`/`delete` with tenantId)
@@ -123,33 +131,39 @@ Future (documented, not yet implemented):
 - App context: `app: 'billing'` → Billing workflow; `app: 'couriers'` → Couriers workflow (still single `customers.create` verb).
 
 ### products / plans / prices / priceLists / addons
+
 - Public: `$876.products` etc
 - Owner: Billing
 - Current: `@876/billing` catalog resources
 - Normal: `list`/`retrieve`/`create` etc via Billing client
 
 ### invoices
+
 - Public: `$876.invoices`
 - Owner: Billing
 - Verbs: `create`, `finalize`, `void` (preserve Billing semantics — not generic CRUD)
 - Future: Couriers/Events create invoices internally via backend-to-backend Billing integration, not via client facade.
 
 ### payments
+
 - Public: `$876.payments`
 - Owner: Billing
 - Verbs: `list`, `create`, `retrieve`, `update`, `delete`, `apply`
 
 ### subscriptions
+
 - Public: `$876.subscriptions`
 - Owner: Billing (commercial)
 - Verbs: `create`, `pause`, `resume`, `cancel`, `reactivate`, `extend`, `bill`, `upcomingInvoice`, `previewProration`, `charges.create`, `discounts.create` etc — preserve real business actions, do not flatten to CRUD
 - Collisions: not to be confused with `entitlements`.
 
 ### taxRates / taxAuthorities / bankAccounts / bankTransactions / discounts / paymentModes / paymentProviders
+
 - Public: `$876.taxRates` etc
 - Owner: Billing
 
 ### packages / branches / warehouses / mailboxes
+
 - Public: `$876.packages` etc
 - Owner: Couriers API (`@876/couriers/admin`)
 - Current: `@876/couriers/admin` (`packages.create(tenantId, body)` etc)
@@ -157,12 +171,14 @@ Future (documented, not yet implemented):
 - Migration: remove tenantId from normal call sites; adapter supplies context or API infers from principal.
 
 ### files / uploads
+
 - Public: `$876.files`, `$876.uploads`
 - Owner: Storage (`@876/storage`)
 - Current: `@876/storage` (`files.retrieve`, `createReadUrl`, `delete`, `uploads.create`/`complete`)
 - Security: server-only where `STORAGE_INTERNAL_KEY` required — never expose to browser entry.
 
 ### notes / collections
+
 - Public: `$876.notes`, `$876.collections`
 - Owner: Widgets (`@876/widgets`)
 - Current: `@876/widgets/browser` (browser) + `@876/widgets/server` (server)
@@ -172,11 +188,11 @@ Future (documented, not yet implemented):
 
 ## Collision resolution
 
-| Collision | Resolution |
-|---|---|
-| `products` (Core org vs Billing catalog) | `$876.products` = Billing commercial catalog. Org app features are `$876.features` / `$876.entitlements`. |
-| `subscriptions` (org app access vs Billing recurring) | `$876.subscriptions` = Billing. Org access = `$876.entitlements`. |
-| `roles` / `addresses` / `locations` | `$876.roles`, `$876.addresses`, `$876.locations` = Core org resources; courier-specific roles/addresses remain same canonical names, owning service = Couriers when via courier tenant. |
+| Collision                                                      | Resolution                                                                                                                                                                                                  |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `products` (Core org vs Billing catalog)                       | `$876.products` = Billing commercial catalog. Org app features are `$876.features` / `$876.entitlements`.                                                                                                   |
+| `subscriptions` (org app access vs Billing recurring)          | `$876.subscriptions` = Billing. Org access = `$876.entitlements`.                                                                                                                                           |
+| `roles` / `addresses` / `locations`                            | `$876.roles`, `$876.addresses`, `$876.locations` = Core org resources; courier-specific roles/addresses remain same canonical names, owning service = Couriers when via courier tenant.                     |
 | `customers` / `organizations`/`tenants` / `team`/`memberships` | `$876.customers` = canonical (Billing registry + app workflow). `$876.organizations` = Core orgs. Tenant = internal Courier mapping, not public `$876.tenants`. `$876.memberships` = Core team/memberships. |
 
 ---
@@ -191,7 +207,11 @@ Objects created because of another app's activity carry `source`:
   "id": "inv_...",
   "customer_id": "cust_...",
   "organization_id": "org_...",
-  "source": { "app_id": "app_couriers", "object": "package", "object_id": "pkg_..." }
+  "source": {
+    "app_id": "app_couriers",
+    "object": "package",
+    "object_id": "pkg_..."
+  }
 }
 ```
 

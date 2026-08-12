@@ -17,7 +17,8 @@ export function createConsole876Client(requestId?: string) {
       couriers: {
         baseUrl: process.env.COURIERS_API_URL,
         apiKey: process.env.COURIERS_API_KEY,
-        internalKey: process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY,
+        internalKey:
+          process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY,
         requestId,
       },
       storage: {

@@ -103,24 +103,13 @@ function CondensedTitleFallback() {
   )
 }
 
-async function Identity({
-  orgSlug,
-  id,
-}: {
-  orgSlug: string
-  id: string
-}) {
+async function Identity({ orgSlug, id }: { orgSlug: string; id: string }) {
   const customer = await resolveCustomer(orgSlug, id)
   if (!customer) notFound()
 
   const { displayName, isActive, identity, mailbox, branch, profile } = customer
 
-  const meta = [
-    mailbox?.number,
-    branch?.name,
-    identity?.email,
-    identity?.phone,
-  ]
+  const meta = [mailbox?.number, branch?.name, identity?.email, identity?.phone]
     .filter(Boolean)
     .join(' · ')
 
@@ -168,13 +157,7 @@ function IdentityFallback() {
   )
 }
 
-async function HeaderActions({
-  orgSlug,
-  id,
-}: {
-  orgSlug: string
-  id: string
-}) {
+async function HeaderActions({ orgSlug, id }: { orgSlug: string; id: string }) {
   const customer = await resolveCustomer(orgSlug, id)
   if (!customer) return null
   return <CustomerActions orgSlug={orgSlug} id={id} />

@@ -1,13 +1,31 @@
 import 'server-only'
 
 import { create876AdminClient, type Admin876ClientOptions } from '@876/admin'
-import { create876Client as createPlatformClient, type ClientOptions as PlatformClientOptions } from '@876/sdk'
-import { create876Client as createBillingClient, type ClientOptions as BillingClientOptions } from '@876/billing'
-import { create876AdminClient as createBillingAdminClient, type AdminClientOptions as BillingAdminClientOptions } from '@876/billing/admin'
-import { create876BillingIntegrationClient, type IntegrationClientOptions as BillingIntegrationClientOptions } from '@876/billing/integration'
-import { create876CouriersAdminClient, type AdminClientOptions as CouriersAdminClientOptions } from '@876/couriers/admin'
+import {
+  create876Client as createPlatformClient,
+  type ClientOptions as PlatformClientOptions,
+} from '@876/sdk'
+import {
+  create876Client as createBillingClient,
+  type ClientOptions as BillingClientOptions,
+} from '@876/billing'
+import {
+  create876AdminClient as createBillingAdminClient,
+  type AdminClientOptions as BillingAdminClientOptions,
+} from '@876/billing/admin'
+import {
+  create876BillingIntegrationClient,
+  type IntegrationClientOptions as BillingIntegrationClientOptions,
+} from '@876/billing/integration'
+import {
+  create876CouriersAdminClient,
+  type AdminClientOptions as CouriersAdminClientOptions,
+} from '@876/couriers/admin'
 import { create876StorageClient, type StorageClientOptions } from '@876/storage'
-import { createWidgetsClient, type CreateWidgetsClientOptions } from '@876/widgets/server'
+import {
+  createWidgetsClient,
+  type CreateWidgetsClientOptions,
+} from '@876/widgets/server'
 import { createAuthResource } from './resources/auth.ts'
 import { createUsersResource } from './resources/users.ts'
 import { createOrganizationsResource } from './resources/organizations.ts'
@@ -54,7 +72,10 @@ export type ServerClientOptions = PlatformClientOptions & {
   internalKey?: string
   requestId?: string
   services?: {
-    billing?: (BillingClientOptions | BillingIntegrationClientOptions) & { internalKey?: string; baseUrl?: string }
+    billing?: (BillingClientOptions | BillingIntegrationClientOptions) & {
+      internalKey?: string
+      baseUrl?: string
+    }
     couriers?: CouriersAdminClientOptions & { baseUrl?: string }
     storage?: StorageClientOptions
     widgets?: CreateWidgetsClientOptions
@@ -81,74 +102,180 @@ export function create876ServerClient(options: ServerClientOptions = {}) {
     ...platformOptions
   } = options
 
-  const platform = createPlatformClient(platformOptions as PlatformClientOptions)
+  const platform = createPlatformClient(
+    platformOptions as PlatformClientOptions
+  )
 
-  const adminOptions = legacyAdmin ?? (internalKey ? { internalKey, apiKey: platformOptions.apiKey, requestId } as Admin876ClientOptions : undefined)
-  const platformAdmin = adminOptions ? create876AdminClient(adminOptions) : undefined
+  const adminOptions =
+    legacyAdmin ??
+    (internalKey
+      ? ({
+          internalKey,
+          apiKey: platformOptions.apiKey,
+          requestId,
+        } as Admin876ClientOptions)
+      : undefined)
+  const platformAdmin = adminOptions
+    ? create876AdminClient(adminOptions)
+    : undefined
 
-  const billingServices = services?.billing ?? legacyBilling as BillingIntegrationClientOptions | undefined
-  const hasBillingInternalKey = Boolean((services?.billing as unknown as { internalKey?: string } | undefined)?.internalKey)
-  const billingClient = billingServices && !hasBillingInternalKey ? createBillingClient(billingServices as BillingClientOptions) : undefined
-  const billingIntegration = billingServices && hasBillingInternalKey ? create876BillingIntegrationClient(billingServices as BillingIntegrationClientOptions) : undefined
-  const billingAdmin = (services?.billing as unknown as { internalKey?: string } | undefined)?.internalKey
-    ? createBillingAdminClient({ internalKey: (services?.billing as unknown as { internalKey: string }).internalKey, requestId } as BillingAdminClientOptions)
+  const billingServices =
+    services?.billing ??
+    (legacyBilling as BillingIntegrationClientOptions | undefined)
+  const hasBillingInternalKey = Boolean(
+    (services?.billing as unknown as { internalKey?: string } | undefined)
+      ?.internalKey
+  )
+  const billingClient =
+    billingServices && !hasBillingInternalKey
+      ? createBillingClient(billingServices as BillingClientOptions)
+      : undefined
+  const billingIntegration =
+    billingServices && hasBillingInternalKey
+      ? create876BillingIntegrationClient(
+          billingServices as BillingIntegrationClientOptions
+        )
+      : undefined
+  const billingAdmin = (
+    services?.billing as unknown as { internalKey?: string } | undefined
+  )?.internalKey
+    ? createBillingAdminClient({
+        internalKey: (services?.billing as unknown as { internalKey: string })
+          .internalKey,
+        requestId,
+      } as BillingAdminClientOptions)
     : undefined
   const billingForCustomers = (billingIntegration ?? billingClient) as unknown
   const billingForInvoices = (billingClient ?? billingIntegration) as unknown
-  const billingForProducts = (billingAdmin ?? billingClient ?? billingIntegration) as unknown
+  const billingForProducts = (billingAdmin ??
+    billingClient ??
+    billingIntegration) as unknown
 
-  const couriersServices = services?.couriers ?? legacyCouriersAdmin as CouriersAdminClientOptions | undefined
-  const couriersAdmin = couriersServices ? create876CouriersAdminClient(couriersServices as CouriersAdminClientOptions) : undefined
+  const couriersServices =
+    services?.couriers ??
+    (legacyCouriersAdmin as CouriersAdminClientOptions | undefined)
+  const couriersAdmin = couriersServices
+    ? create876CouriersAdminClient(
+        couriersServices as CouriersAdminClientOptions
+      )
+    : undefined
 
-  const storageOptions = services?.storage ?? legacyStorage as StorageClientOptions | undefined
-  const storage = storageOptions ? create876StorageClient(storageOptions) : undefined
+  const storageOptions =
+    services?.storage ?? (legacyStorage as StorageClientOptions | undefined)
+  const storage = storageOptions
+    ? create876StorageClient(storageOptions)
+    : undefined
 
-  const widgetsOptions = services?.widgets ?? legacyWidgets as CreateWidgetsClientOptions | undefined
-  const widgets = widgetsOptions ? createWidgetsClient(widgetsOptions) : undefined
+  const widgetsOptions =
+    services?.widgets ??
+    (legacyWidgets as CreateWidgetsClientOptions | undefined)
+  const widgets = widgetsOptions
+    ? createWidgetsClient(widgetsOptions)
+    : undefined
 
   // choose billing impl: prefer integration if available, else tenant client
-  const billing = (billingIntegration ?? billingClient) as unknown as Parameters<typeof createCustomersResource>[0]['billing']
+  const billing = (billingIntegration ??
+    billingClient) as unknown as Parameters<
+    typeof createCustomersResource
+  >[0]['billing']
 
   const adminSpread = (platformAdmin ?? {}) as Record<string, unknown>
   return {
     ...(adminSpread as object),
     auth: createAuthResource(platform),
-    users: createUsersResource({ platform, admin: platformAdmin }) as unknown as any,
-    organizations: createOrganizationsResource({ platform, admin: platformAdmin }) as unknown as any,
-    memberships: (platformAdmin ? Object.assign({}, createMembershipsResource(platform), (platformAdmin as unknown as { memberships: any }).memberships, { admin: (platformAdmin as unknown as { memberships: any }).memberships }) as any : createMembershipsResource(platform) as any),
-    apps: createAppsResource({ platform, admin: platformAdmin }) as unknown as any,
-    features: (platformAdmin ? Object.assign({}, createFeaturesResource(platform), (platformAdmin as unknown as { features: any }).features, { admin: (platformAdmin as unknown as { features: any }).features }) as any : createFeaturesResource(platform) as any),
+    users: createUsersResource({
+      platform,
+      admin: platformAdmin,
+    }) as unknown as any,
+    organizations: createOrganizationsResource({
+      platform,
+      admin: platformAdmin,
+    }) as unknown as any,
+    memberships: platformAdmin
+      ? (Object.assign(
+          {},
+          createMembershipsResource(platform),
+          (platformAdmin as unknown as { memberships: any }).memberships,
+          {
+            admin: (platformAdmin as unknown as { memberships: any })
+              .memberships,
+          }
+        ) as any)
+      : (createMembershipsResource(platform) as any),
+    apps: createAppsResource({
+      platform,
+      admin: platformAdmin,
+    }) as unknown as any,
+    features: platformAdmin
+      ? (Object.assign(
+          {},
+          createFeaturesResource(platform),
+          (platformAdmin as unknown as { features: any }).features,
+          { admin: (platformAdmin as unknown as { features: any }).features }
+        ) as any)
+      : (createFeaturesResource(platform) as any),
     entitlements: createEntitlementsResource(platform),
     locations: createLocationsResource(platform),
     contacts: createContactsResource(platform),
     departments: createDepartmentsResource(platform),
     employees: createEmployeesResource(platform),
     roles: createRolesResource(platform),
-    organizationMembers: (platform as unknown as { organizationMembers: any }).organizationMembers,
-    appAssignments: (platform as unknown as { appAssignments: any }).appAssignments,
+    organizationMembers: (platform as unknown as { organizationMembers: any })
+      .organizationMembers,
+    appAssignments: (platform as unknown as { appAssignments: any })
+      .appAssignments,
     invites: (platform as unknown as { invites: any }).invites,
-    auditEvents: (platformAdmin as unknown as { auditEvents?: unknown })?.auditEvents as unknown as any,
-    appFeatures: (platformAdmin as unknown as { appFeatures?: unknown })?.appFeatures as unknown as any,
-    appSubscriptions: (platformAdmin as unknown as { appSubscriptions?: unknown })?.appSubscriptions as unknown as any,
-    organizationFeatures: (platformAdmin as unknown as { organizationFeatures?: unknown })?.organizationFeatures as unknown as any,
-    messages: (platformAdmin as unknown as { messages?: unknown })?.messages as unknown as any,
-    calls: (platformAdmin as unknown as { calls?: unknown })?.calls as unknown as any,
-    phoneLookups: (platformAdmin as unknown as { phoneLookups?: unknown })?.phoneLookups as unknown as any,
-    identifications: (platformAdmin as unknown as { identifications?: unknown })?.identifications as unknown as any,
-    devices: (platformAdmin as unknown as { devices?: unknown })?.devices as unknown as any,
-    sessions: (platformAdmin as unknown as { sessions?: unknown })?.sessions as unknown as any,
-    authAttempts: (platformAdmin as unknown as { authAttempts?: unknown })?.authAttempts as unknown as any,
-    apiKeys: (platformAdmin as unknown as { apiKeys?: unknown })?.apiKeys as unknown as any,
-    modules: (platformAdmin as unknown as { modules?: unknown })?.modules as unknown as any,
-    reservedUsernames: (platformAdmin as unknown as { reservedUsernames?: unknown })?.reservedUsernames as unknown as any,
-    billingAccounts: (platformAdmin as unknown as { billingAccounts?: unknown })?.billingAccounts as unknown as any,
-    provisioning: (platformAdmin as unknown as { provisioning?: unknown })?.provisioning as unknown as any,
-    onboarding: (platformAdmin as unknown as { onboarding?: unknown })?.onboarding as unknown as any,
+    auditEvents: (platformAdmin as unknown as { auditEvents?: unknown })
+      ?.auditEvents as unknown as any,
+    appFeatures: (platformAdmin as unknown as { appFeatures?: unknown })
+      ?.appFeatures as unknown as any,
+    appSubscriptions: (
+      platformAdmin as unknown as { appSubscriptions?: unknown }
+    )?.appSubscriptions as unknown as any,
+    organizationFeatures: (
+      platformAdmin as unknown as { organizationFeatures?: unknown }
+    )?.organizationFeatures as unknown as any,
+    messages: (platformAdmin as unknown as { messages?: unknown })
+      ?.messages as unknown as any,
+    calls: (platformAdmin as unknown as { calls?: unknown })
+      ?.calls as unknown as any,
+    phoneLookups: (platformAdmin as unknown as { phoneLookups?: unknown })
+      ?.phoneLookups as unknown as any,
+    identifications: (platformAdmin as unknown as { identifications?: unknown })
+      ?.identifications as unknown as any,
+    devices: (platformAdmin as unknown as { devices?: unknown })
+      ?.devices as unknown as any,
+    sessions: (platformAdmin as unknown as { sessions?: unknown })
+      ?.sessions as unknown as any,
+    authAttempts: (platformAdmin as unknown as { authAttempts?: unknown })
+      ?.authAttempts as unknown as any,
+    apiKeys: (platformAdmin as unknown as { apiKeys?: unknown })
+      ?.apiKeys as unknown as any,
+    modules: (platformAdmin as unknown as { modules?: unknown })
+      ?.modules as unknown as any,
+    reservedUsernames: (
+      platformAdmin as unknown as { reservedUsernames?: unknown }
+    )?.reservedUsernames as unknown as any,
+    billingAccounts: (platformAdmin as unknown as { billingAccounts?: unknown })
+      ?.billingAccounts as unknown as any,
+    provisioning: (platformAdmin as unknown as { provisioning?: unknown })
+      ?.provisioning as unknown as any,
+    onboarding: (platformAdmin as unknown as { onboarding?: unknown })
+      ?.onboarding as unknown as any,
     permissions: (platform as unknown as { permissions: unknown }).permissions,
-    organizationMembersAdmin: (platformAdmin as unknown as { organizationMembers?: unknown })?.organizationMembers,
-    appAssignmentsAdmin: (platformAdmin as unknown as { appAssignments?: unknown })?.appAssignments,
+    organizationMembersAdmin: (
+      platformAdmin as unknown as { organizationMembers?: unknown }
+    )?.organizationMembers,
+    appAssignmentsAdmin: (
+      platformAdmin as unknown as { appAssignments?: unknown }
+    )?.appAssignments,
 
-    customers: createCustomersResource({ app, billing: billingForCustomers as never, billingAdmin: billingAdmin as never, couriersAdmin: couriersAdmin as never }) as unknown as any,
+    customers: createCustomersResource({
+      app,
+      billing: billingForCustomers as never,
+      billingAdmin: billingAdmin as never,
+      couriersAdmin: couriersAdmin as never,
+    }) as unknown as any,
     products: createProductsResource(billingForProducts as never),
     plans: createPlansResource(billingForProducts as never),
     prices: createPricesResource(billingForProducts as never),
@@ -160,7 +287,9 @@ export function create876ServerClient(options: ServerClientOptions = {}) {
     taxRates: createTaxRatesResource(billingForInvoices as never),
     taxAuthorities: undefined as unknown,
     bankAccounts: createBankAccountsResource(billingForProducts as never),
-    bankTransactions: createBankTransactionsResource(billingForProducts as never),
+    bankTransactions: createBankTransactionsResource(
+      billingForProducts as never
+    ),
     packages: createPackagesResource(couriersAdmin as never),
     branches: createBranchesResource(couriersAdmin as never),
     warehouses: createWarehousesResource(couriersAdmin as never),
@@ -182,4 +311,11 @@ export function create876ServerClient(options: ServerClientOptions = {}) {
 }
 
 export type ServerClient876 = ReturnType<typeof create876ServerClient>
-export type { Admin876ClientOptions, BillingIntegrationClientOptions, CouriersAdminClientOptions, CreateWidgetsClientOptions, PlatformClientOptions, StorageClientOptions }
+export type {
+  Admin876ClientOptions,
+  BillingIntegrationClientOptions,
+  CouriersAdminClientOptions,
+  CreateWidgetsClientOptions,
+  PlatformClientOptions,
+  StorageClientOptions,
+}

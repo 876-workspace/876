@@ -18,10 +18,7 @@ export const resolveCustomer = cache(async (orgSlug: string, id: string) => {
   ])
   if (!ctx?.tenant) return null
 
-  const customerResult = await $876.customers.retrieve(
-    ctx.tenant.id,
-    id
-  )
+  const customerResult = await $876.customers.retrieve(ctx.tenant.id, id)
   if (isCouriersNotFound(customerResult)) return null
 
   const profile = toCustomerView(requireCouriersData(customerResult))
@@ -56,10 +53,7 @@ export const resolveCustomerTitle = cache(
       get876Client(),
     ])
     if (!ctx?.tenant) return null
-    const customerResult = await $876.customers.retrieve(
-      ctx.tenant.id,
-      id
-    )
+    const customerResult = await $876.customers.retrieve(ctx.tenant.id, id)
     if (isCouriersNotFound(customerResult)) return null
     const profile = toCustomerView(requireCouriersData(customerResult))
     const registry = await request876.billing.customers.retrieve(
