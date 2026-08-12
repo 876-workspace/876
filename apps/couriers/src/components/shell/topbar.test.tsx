@@ -196,13 +196,13 @@ describe('Couriers topbar wrappers', () => {
       },
       {
         group: 'Transactions',
-        title: 'Invoices',
-        href: '/island-logistics/invoices',
+        title: 'Payments',
+        href: '/island-logistics/payments',
       },
       {
         group: 'Transactions',
-        title: 'Payments',
-        href: '/island-logistics/payments',
+        title: 'Disputes',
+        href: '/island-logistics/disputes',
       },
       {
         group: 'Settings',

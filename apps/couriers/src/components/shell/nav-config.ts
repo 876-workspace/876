@@ -73,8 +73,8 @@ export const nav: NavGroup[] = [
         icon: ReceiptPercentIcon,
         color: 'var(--876-purple)',
         children: [
-          { title: 'Invoices', href: '/invoices' },
           { title: 'Payments', href: '/payments' },
+          { title: 'Disputes', href: '/disputes' },
         ],
       },
       {
