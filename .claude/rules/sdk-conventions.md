@@ -4,7 +4,7 @@ Read this before adding or changing any data-access method in `@876/sdk`, `@876/
 
 ## The 876 platform in one line
 
-876 is **one identity that unlocks many product apps.** A single 876 account (consumer or enterprise) signs a user into every 876 surface — today the consumer app and Console; tomorrow product apps like "876 Eats", an "876 Commerce" storefront platform, and native/mobile clients. The FastAPI core (`@876/api`) owns identity, accounts, orgs, OAuth, and platform data; product apps add their own domains on top.
+876 is **one identity that unlocks many product apps.** A single 876 account (consumer or enterprise) signs a user into every 876 surface — today the consumer app and Console; tomorrow product apps like "876 Eats", an "876 Commerce" storefront platform, and native/mobile clients. The Core API (`@876/api`, Express) owns identity, accounts, orgs, OAuth, and platform data; product apps add their own domains on top.
 
 ## The model: one DX, tiered surface
 
@@ -100,10 +100,10 @@ The ecosystem is built to add apps without duplicating identity or re-shaping th
 
 - `@876/api` stays the identity/account/platform core. A product with a rich domain (orders, catalog, payments) gets its **own API service**, not bloat in `@876/api`.
 - Each product ships its **own SDK package** (`@876/<product>`) that builds on `@876/core/client` (runtime + transport) and these conventions, and depends on `@876/sdk` for identity/login. Same `<resource>.<verb>()` DX and `{ data, error }` envelope.
-- **Product SDKs remain independently packaged, versioned, and authenticated bounded contexts.** An application explicitly composes only the product namespaces it needs under its local `$876` root. For example, Couriers composes `create876CouriersAdminClient` inside `apps/couriers/src/lib/876/index.ts` and exposes `$876.couriers.*`, while a future Billing-only app would compose only `billing` and have no `couriers` property. `@876/client` does **not** become a registry of every product; composition happens inside the application that needs it.
-- `$` is reserved for `$876` as the ecosystem root. Do not introduce `$couriers`, `$billing`, `$careers`, etc. as application-level roots. Product factories remain named `create876CouriersAdminClient`, etc., but call sites use `$876.couriers.*`, `$876.billing.*`, etc.
+- **Product SDKs remain independently packaged, versioned, and authenticated bounded contexts.** Each owning package (`@876/billing`, `@876/couriers`, `@876/storage`, `@876/widgets`) keeps its transport and resource implementation. `@876/client` composes them into one canonical `$876.<resource>.<verb>()` surface (e.g. `$876.invoices` → Billing, `$876.packages` → Couriers, `$876.files` → Storage). Application code never imports the owning package directly — it imports `$876` from `@/lib/876`.
+- `$` is reserved for `$876` as the ecosystem root. Do not introduce `$couriers`, `$billing`, `$careers`, etc. as application-level roots. Product factories (`create876CouriersAdminClient`, `create876BillingIntegrationClient`, etc.) remain in their owning packages, but application call sites use the unified `$876.<resource>.<verb>()` via `@876/client` (e.g. `$876.packages.create()`, `$876.invoices.create()`, `$876.files.retrieve()`).
 - **Privileged resource availability is determined by which product client tier the application composes and remains enforced by the backing API.** The presence of a namespace in the TypeScript type does not bypass service authorization.
-- **No universal All876Client.** Do not create a central type or factory that lists every possible product. Applications compose capabilities explicitly; tree-shaking and bundle isolation follow from that.
+- 876 exposes one canonical object model. Product/service packages remain independently owned bounded contexts, but application call sites use `$876.<resource>.<verb>()`. `@876/client` maps each resource to its owning service. Cross-service business workflows are executed by the owning backend, never by application call sites or the facade.
 - **Universal cross-product resources** (e.g. a unified `orders` view spanning "876 Eats" and "876 Commerce") live in their own shared package/service that reads from the universal 876 user base.
 - Identity/auth **always** flows through `@876/sdk`; it is never re-implemented per product.
 - A React Native app or a hosted storefront consumes `@876/sdk` for the 876 account plus the relevant product SDK for product features.
