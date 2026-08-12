@@ -73,7 +73,6 @@ export function EditFeatureDialog({
   const [description, setDescription] = useState(feature.description ?? '')
   const [enabled, setEnabled] = useState(feature.enabled)
   const [scope, setScope] = useState(feature.scope)
-  const [defaultValue, setDefaultValue] = useState(feature.default_value)
   const [consumerDefaultEnabled, setConsumerDefaultEnabled] = useState(
     feature.consumer_default_enabled
   )
@@ -89,7 +88,7 @@ export function EditFeatureDialog({
       description: description.trim() || null,
       enabled,
       scope,
-      default_value: defaultValue,
+      default_value: enabled,
       consumer_default_enabled: consumerDefaultEnabled,
       app_id: lockApp ? feature.app_id : appId,
     })
@@ -171,17 +170,6 @@ export function EditFeatureDialog({
             />
             <Label htmlFor="edit-enabled" className="mb-0">
               Globally enabled
-            </Label>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Switch
-              id="edit-default-value"
-              checked={defaultValue}
-              onCheckedChange={setDefaultValue}
-            />
-            <Label htmlFor="edit-default-value" className="mb-0">
-              Default value
             </Label>
           </div>
 
@@ -326,8 +314,8 @@ export function FeatureToolbar({
   }
 
   const newFeatureHref = appSlug
-    ? `/apps/${appSlug}/features/new?group=${feature.slug}`
-    : `/features/new?group=${feature.slug}`
+    ? `/apps/${appSlug}/features/new?parent=${feature.id}`
+    : `/features/new?parent=${feature.id}`
 
   return (
     <>

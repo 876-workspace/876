@@ -3,7 +3,6 @@ import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { $876 } from '@/lib/876'
-import { FEATURE_GROUPS } from '@/lib/feature-groups'
 import { CreateFeatureForm } from '@/features/access/components/create-feature-form'
 
 export const metadata = { title: 'New Feature' }
@@ -11,33 +10,26 @@ export const metadata = { title: 'New Feature' }
 const APP_KINDS = ['internal', 'platform', 'product'] as const
 
 type Props = {
-  searchParams: Promise<{ group?: string }>
+  searchParams: Promise<{ parent?: string }>
 }
 
 export default async function NewFeaturePage({ searchParams }: Props) {
-  const { group } = await searchParams
-  const results = await Promise.all(
-    APP_KINDS.map((appKind) =>
+  const { parent } = await searchParams
+  const [parentResult, ...results] = await Promise.all([
+    parent ? $876.features.retrieve(parent) : Promise.resolve({ data: null }),
+    ...APP_KINDS.map((appKind) =>
       $876.apps.list({
         limit: 100,
         appKind,
         clientType: 'public',
         status: 'active',
       })
-    )
-  )
+    ),
+  ])
   const apps = results
     .flatMap((result) => result.data?.data ?? [])
     .sort((a, b) => a.name.localeCompare(b.name))
-  const featureGroup = FEATURE_GROUPS.find((entry) => entry.id === group)
-  const parentFeature = featureGroup
-    ? (
-        await $876.features.list({
-          limit: 100,
-          search: featureGroup.masterSlug,
-        })
-      ).data?.data.find((feature) => feature.slug === featureGroup.masterSlug)
-    : null
+  const parentFeature = parentResult.data
 
   return (
     <Page>
@@ -59,13 +51,15 @@ export default async function NewFeaturePage({ searchParams }: Props) {
 
       <CreateFeatureForm
         apps={apps}
+        defaultAppId={parentFeature?.app_id ?? null}
         defaultDescription={
-          featureGroup
-            ? `Controls access to a ${featureGroup.title.toLowerCase()} capability.`
+          parentFeature
+            ? `Controls access to a ${parentFeature.name.toLowerCase()} capability.`
             : ''
         }
-        defaultSlug={featureGroup?.childSlugPrefix ?? ''}
+        defaultSlug={parentFeature ? `${parentFeature.slug}_` : ''}
         parentFeatureId={parentFeature?.id ?? null}
+        lockApp={Boolean(parentFeature)}
       />
     </Page>
   )

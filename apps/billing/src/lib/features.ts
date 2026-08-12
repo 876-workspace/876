@@ -2,7 +2,11 @@ import 'server-only'
 
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { isWidgetEnabled, notepadWidgetMetadata } from '@876/widgets'
+import {
+  chatWidgetMetadata,
+  isWidgetEnabled,
+  notepadWidgetMetadata,
+} from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
@@ -17,7 +21,6 @@ const BILLING_THEME_SWITCHER_SLUG = 'billing_theme_switcher'
 const BILLING_GLOBAL_ADD_SLUG = 'billing_global_add'
 const BILLING_APP_SWITCHER_SLUG = 'billing_app_switcher'
 const BILLING_ORG_SWITCHER_SLUG = 'billing_org_switcher'
-const BILLING_CHAT_SLUG = 'billing_chat'
 const BILLING_SALES_SLUG = 'billing_sales'
 const BILLING_SALES_QUOTES_SLUG = 'billing_sales_quotes'
 const BILLING_SALES_ESTIMATES_SLUG = 'billing_sales_estimates'
@@ -105,7 +108,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       globalAdd: enabledSlugs.has(BILLING_GLOBAL_ADD_SLUG),
       appSwitcher: enabledSlugs.has(BILLING_APP_SWITCHER_SLUG),
       orgSwitcher: enabledSlugs.has(BILLING_ORG_SWITCHER_SLUG),
-      chat: enabledSlugs.has(BILLING_CHAT_SLUG),
+      chat: isWidgetEnabled(chatWidgetMetadata, 'billing', enabledSlugs),
     },
     productFeatures: {
       sales,

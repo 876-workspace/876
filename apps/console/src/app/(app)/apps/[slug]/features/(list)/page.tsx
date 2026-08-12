@@ -21,7 +21,7 @@ import { FEATURES_SKELETON_COLUMNS } from '../_components/features-skeleton-colu
 
 type Props = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ after?: string; before?: string }>
+  searchParams: Promise<{ q?: string; after?: string; before?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -55,40 +55,57 @@ async function FeaturesTableData({
   slug: string
   searchParams: Props['searchParams']
 }) {
-  const { after, before } = await searchParams
+  const { q, after, before } = await searchParams
+  const query = q?.trim() || undefined
 
   const app = await resolveApp(slug)
   if (!app) notFound()
 
-  const featureResult = await $876.appFeatures.list(app.id, {
-    limit: 25,
-    startingAfter: after,
-    endingBefore: before,
-    rootOnly: true,
-    excludeTag: 'widget',
-  })
+  const [featureResult, modulesResult] = await Promise.all([
+    $876.features.list({
+      appId: app.id,
+      limit: 100,
+      search: query,
+      startingAfter: query ? undefined : after,
+      endingBefore: query ? undefined : before,
+    }),
+    app.app_kind === 'product'
+      ? $876.modules.list(app.id, { includeArchived: false })
+      : Promise.resolve({ data: null, error: null }),
+  ])
 
   if (featureResult.error) throw new Error(featureResult.error.message)
+  if (modulesResult.error) throw new Error(modulesResult.error.message)
 
   const features = featureResult.data?.data ?? []
-  const firstId = features[0]?.id ?? null
-  const lastId = features.at(-1)?.id ?? null
-  const hasMore = featureResult.data?.has_more ?? false
+  const moduleFeatureIds = (modulesResult.data?.data ?? [])
+    .filter((module) => module.status === 'active' && module.feature_id)
+    .map((module) => module.feature_id as string)
 
   return (
     <AppFeaturesTable
       appSlug={slug}
       data={features}
-      hasMore={hasMore}
-      firstId={firstId}
-      lastId={lastId}
+      query={q ?? ''}
+      moduleFeatureIds={moduleFeatureIds}
+      hasMore={featureResult.data?.has_more ?? false}
+      firstId={features[0]?.id ?? null}
+      lastId={features.at(-1)?.id ?? null}
       toolbarAction={
-        <Link
-          href={`/apps/${slug}/features/new`}
-          className={buttonVariants({ variant: 'info', size: 'sm' })}
-        >
-          Create feature
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href={`/apps/${slug}/features/diagnostics`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Diagnose access
+          </Link>
+          <Link
+            href={`/apps/${slug}/features/new`}
+            className={buttonVariants({ variant: 'info', size: 'sm' })}
+          >
+            Create feature
+          </Link>
+        </div>
       }
       emptyState={
         <Empty>

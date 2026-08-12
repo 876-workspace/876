@@ -22,6 +22,7 @@ export type Widget = {
 }
 
 type WidgetRenderer = Omit<Widget, 'id' | 'label'>
+type PanelWidgetId = Exclude<WidgetId, 'chat'>
 
 const widgetRenderers = {
   notepad: {
@@ -33,17 +34,25 @@ const widgetRenderers = {
     panel: LiveLogsWidget,
     panelSize: 'xl',
   },
-} satisfies Record<WidgetId, WidgetRenderer>
+} satisfies Record<PanelWidgetId, WidgetRenderer>
 
 /**
  * Widgets available in the persistent right-hand widget bar. New widgets
  * are added here and rendered on demand.
  */
-export const widgets: Widget[] = widgetCatalog.map((metadata) => {
-  const renderer = widgetRenderers[metadata.id]
-  return {
-    id: metadata.id,
-    label: metadata.name,
-    ...renderer,
-  }
-})
+export const widgets: Widget[] = widgetCatalog
+  .filter(
+    (
+      metadata
+    ): metadata is (typeof widgetCatalog)[number] & {
+      id: PanelWidgetId
+    } => metadata.id !== 'chat'
+  )
+  .map((metadata) => {
+    const renderer = widgetRenderers[metadata.id]
+    return {
+      id: metadata.id,
+      label: metadata.name,
+      ...renderer,
+    }
+  })

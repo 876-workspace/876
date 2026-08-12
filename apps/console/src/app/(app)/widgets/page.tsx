@@ -4,7 +4,6 @@ import { WIDGET_HOST_APP_SLUGS } from '@876/widgets'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import {
-  CONSOLE_WIDGETS_FEATURE_SLUG,
   widgetCatalog,
   getConsoleWidgetDetailHref,
   getConsoleWidgetStatusFeatureSlug,
@@ -49,29 +48,9 @@ export default async function WidgetsPage({
   const apps = new Map(
     (appsResult.data?.data ?? []).map((app) => [app.slug, app])
   )
-  const allWidgetsFeature = features.get(CONSOLE_WIDGETS_FEATURE_SLUG)
   const visibleWidgets = widgetCatalog.filter(
     (widget) => distribution === 'all' || widget.distribution === distribution
   )
-
-  // The global switch is pinned to the top of the list and is deliberately
-  // exempt from the distribution filter — it governs every widget regardless
-  // of which subset is on screen.
-  const masterRow: WidgetTableRow = {
-    kind: 'master',
-    id: CONSOLE_WIDGETS_FEATURE_SLUG,
-    name: 'All widgets',
-    description: 'Global switch for every widget in Console.',
-    apps: ['Console'],
-    feature: allWidgetsFeature
-      ? {
-          id: allWidgetsFeature.id,
-          name: allWidgetsFeature.name,
-          enabled: allWidgetsFeature.enabled,
-        }
-      : null,
-    missingFeatureSlug: allWidgetsFeature ? null : CONSOLE_WIDGETS_FEATURE_SLUG,
-  }
 
   const widgetRows: WidgetTableRow[] = visibleWidgets.map((widget) => {
     const statusSlug = getConsoleWidgetStatusFeatureSlug(widget)
@@ -116,7 +95,7 @@ export default async function WidgetsPage({
         refresh
       />
 
-      <WidgetsTable data={[masterRow, ...widgetRows]} />
+      <WidgetsTable data={widgetRows} />
     </Page>
   )
 }

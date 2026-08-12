@@ -91,6 +91,15 @@ describe('getVisibleNav', () => {
     ])
   })
 
+  it('does not advertise an unimplemented Documents route', () => {
+    const items = visibleItems({
+      ...disabledFeatures,
+      documents: true,
+    })
+
+    expect(items.some((item) => item.title === 'Documents')).toBe(false)
+  })
+
   it('shows payments and banking only with their resource permissions', () => {
     const visible = getVisibleNav(
       [...permissions, 'payments:read', 'banking:read'],

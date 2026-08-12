@@ -8,6 +8,7 @@ import type {
   AdminFeature,
   AdminFeatureCreateParams,
   AdminFeatureEvaluateParams,
+  AdminFeatureEvaluationDecision,
   AdminFeatureGrants,
   AdminFeatureSearchParams,
   AdminFeatureUpdateParams,
@@ -64,6 +65,21 @@ export function createAdminFeaturesResource(runtime: AdminRuntime) {
         path: '/features/evaluate',
         query: params as Record<string, string | number | boolean | undefined>,
       })
+    },
+
+    /** Explains every input contributing to feature evaluation. */
+    evaluateDetails(params: AdminFeatureEvaluateParams) {
+      return adminRequest<AdminListResponse<AdminFeatureEvaluationDecision>>(
+        runtime,
+        {
+          method: 'GET',
+          path: '/features/evaluate/details',
+          query: params as Record<
+            string,
+            string | number | boolean | undefined
+          >,
+        }
+      )
     },
 
     /** Retrieves a single feature flag by ID. */

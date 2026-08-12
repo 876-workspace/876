@@ -28,7 +28,7 @@ export type WidgetDistribution = 'shared' | 'host'
 export type WidgetDataOwner = 'widgets' | 'external'
 
 export type WidgetVisual =
-  | { kind: 'icon'; icon: 'notepad' | 'terminal' }
+  | { kind: 'icon'; icon: 'notepad' | 'terminal' | 'chat' }
   | { kind: 'image'; src: string; alt: string }
 
 export interface WidgetFeatureKeys {
@@ -115,7 +115,51 @@ export const notepadWidgetMetadata = {
   },
 } as const satisfies WidgetMetadata
 
-export const widgetCatalog = [notepadWidgetMetadata] as const
+export const chatWidgetMetadata = {
+  object: 'widget',
+  id: 'chat',
+  name: '876 Chat',
+  description:
+    'Shared assistant rail controlled through the same platform, app, organization, and user feature hierarchy as other widgets.',
+  version: '1.0.0',
+  visual: { kind: 'icon', icon: 'chat' },
+  distribution: 'shared',
+  dataOwner: 'external',
+  ownership: 'account',
+  defaultPanel: { width: 384, height: 520 },
+  supportedHosts: ['console', 'billing', 'couriers'],
+  implementedHosts: ['console', 'billing', 'couriers'],
+  features: {
+    platform: {
+      parent: 'platform_widgets',
+      widget: 'platform_widgets_chat',
+    },
+    apps: {
+      console: {
+        parent: 'console_widgets',
+        widget: 'console_widgets_chat',
+      },
+      billing: {
+        parent: 'billing_widgets',
+        widget: 'billing_widgets_chat',
+      },
+      couriers: {
+        parent: 'couriers_widgets',
+        widget: 'couriers_widgets_chat',
+      },
+    },
+  },
+  administration: {
+    canListContent: false,
+    canEditContent: false,
+    canDeleteContent: false,
+  },
+} as const satisfies WidgetMetadata
+
+export const widgetCatalog = [
+  notepadWidgetMetadata,
+  chatWidgetMetadata,
+] as const
 
 export function getWidgetAppFeatureKeys(
   widget: WidgetMetadata,

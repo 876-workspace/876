@@ -1,5 +1,6 @@
 import { Prisma } from '@/db/generated/prisma/client'
 import { prisma } from '@/db/client'
+import { generateId } from '@/platform/ids'
 
 export type FeatureSeedRow = {
   id: string
@@ -165,4 +166,60 @@ export async function updateFeature(
 export async function listFeatures(): Promise<FeatureSeedRow[]> {
   const rows = await prisma.feature.findMany()
   return rows as unknown as FeatureSeedRow[]
+}
+
+export async function copyFeatureGrants(
+  sourceFeatureId: string,
+  targetFeatureId: string,
+  now: bigint
+): Promise<void> {
+  const [organizations, users] = await Promise.all([
+    prisma.orgFeature.findMany({ where: { featureId: sourceFeatureId } }),
+    prisma.userFeature.findMany({ where: { featureId: sourceFeatureId } }),
+  ])
+
+  await prisma.$transaction([
+    ...organizations.map((grant) =>
+      prisma.orgFeature.upsert({
+        where: {
+          organizationId_featureId: {
+            organizationId: grant.organizationId,
+            featureId: targetFeatureId,
+          },
+        },
+        create: {
+          id: generateId('orgFeature'),
+          organizationId: grant.organizationId,
+          featureId: targetFeatureId,
+          status: grant.status,
+          note: grant.note,
+          syncedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        },
+        update: {},
+      })
+    ),
+    ...users.map((grant) =>
+      prisma.userFeature.upsert({
+        where: {
+          userId_featureId: {
+            userId: grant.userId,
+            featureId: targetFeatureId,
+          },
+        },
+        create: {
+          id: generateId('userFeature'),
+          userId: grant.userId,
+          featureId: targetFeatureId,
+          status: grant.status,
+          note: grant.note,
+          syncedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        },
+        update: {},
+      })
+    ),
+  ])
 }

@@ -124,6 +124,20 @@ export const featureGrantsSchema = z
   })
   .meta({ id: 'FeatureGrants' })
 
+export const featureEvaluationDecisionSchema = z
+  .object({
+    object: z.literal('feature_evaluation'),
+    feature: featureSchema,
+    global_enabled: z.boolean(),
+    parent_enabled: z.boolean(),
+    module_gated: z.boolean(),
+    module_entitled: z.boolean(),
+    organization_override: z.boolean().nullable(),
+    user_override: z.boolean().nullable(),
+    enabled: z.boolean(),
+  })
+  .meta({ id: 'FeatureEvaluationDecision' })
+
 export const featureDeletedSchema = z.object({
   object: z.literal('feature'),
   id: z.string(),
@@ -230,6 +244,9 @@ export const orgFeatureParamsSchema = z.strictObject({
 })
 
 export type Feature = z.infer<typeof featureSchema>
+export type FeatureEvaluationDecision = z.infer<
+  typeof featureEvaluationDecisionSchema
+>
 export type UserFeature = z.infer<typeof userFeatureSchema>
 export type OrgFeature = z.infer<typeof orgFeatureSchema>
 export type CreateFeatureBody = z.infer<typeof createFeatureBodySchema>

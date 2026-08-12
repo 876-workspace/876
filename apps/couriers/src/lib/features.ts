@@ -2,7 +2,11 @@ import 'server-only'
 
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { isWidgetEnabled, notepadWidgetMetadata } from '@876/widgets'
+import {
+  chatWidgetMetadata,
+  isWidgetEnabled,
+  notepadWidgetMetadata,
+} from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
@@ -13,7 +17,6 @@ const COURIERS_THEME_SWITCHER_SLUG = 'couriers_theme_switcher'
 const COURIERS_GLOBAL_ADD_SLUG = 'couriers_global_add'
 const COURIERS_APP_SWITCHER_SLUG = 'couriers_app_switcher'
 const COURIERS_ORG_SWITCHER_SLUG = 'couriers_org_switcher'
-const COURIERS_CHAT_SLUG = 'couriers_chat'
 const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers_storage_org_logo_upload'
 const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
   searchBar: false,
@@ -79,7 +82,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       globalAdd: enabledSlugs.has(COURIERS_GLOBAL_ADD_SLUG),
       appSwitcher: enabledSlugs.has(COURIERS_APP_SWITCHER_SLUG),
       orgSwitcher: enabledSlugs.has(COURIERS_ORG_SWITCHER_SLUG),
-      chat: enabledSlugs.has(COURIERS_CHAT_SLUG),
+      chat: isWidgetEnabled(chatWidgetMetadata, 'couriers', enabledSlugs),
     },
     enabledWidgetIds,
   }

@@ -1,4 +1,4 @@
-import { notepadWidgetMetadata } from '@876/widgets'
+import { chatWidgetMetadata, notepadWidgetMetadata } from '@876/widgets'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -15,6 +15,9 @@ describe('Console widget feature controls', () => {
   it('resolves the canonical status switch for shared and app-only widgets', () => {
     expect(getConsoleWidgetStatusFeatureSlug(notepadWidgetMetadata)).toBe(
       'platform_widgets_notepad'
+    )
+    expect(getConsoleWidgetStatusFeatureSlug(chatWidgetMetadata)).toBe(
+      'platform_widgets_chat'
     )
     expect(getConsoleWidgetStatusFeatureSlug(liveLogsWidgetMetadata)).toBe(
       'console_widgets_live_logs'

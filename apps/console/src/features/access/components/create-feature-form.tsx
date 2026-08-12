@@ -46,7 +46,6 @@ export function CreateFeatureForm({
   const [description, setDescription] = useState(defaultDescription)
   const [scope, setScope] = useState('global')
   const [defaultEnabled, setDefaultEnabled] = useState(false)
-  const [defaultValue, setDefaultValue] = useState(false)
   const [consumerDefaultEnabled, setConsumerDefaultEnabled] = useState(false)
   const [serverSideOnly, setServerSideOnly] = useState(true)
   const [appId, setAppId] = useState(defaultAppId ?? '')
@@ -80,7 +79,7 @@ export function CreateFeatureForm({
         description: description.trim() || null,
         scope,
         default_enabled: defaultEnabled,
-        default_value: defaultValue,
+        default_value: defaultEnabled,
         consumer_default_enabled: consumerDefaultEnabled,
         server_side_only: serverSideOnly,
         parent_feature_id: parentFeatureId,
@@ -154,7 +153,7 @@ export function CreateFeatureForm({
             <div className="space-y-2">
               <Label>App</Label>
               <div className="border-input bg-muted/40 rounded-md border px-3 py-2 text-[0.8125rem]">
-                {selectedApp?.name ?? 'Current app'}
+                {selectedApp?.name ?? 'Platform (all apps)'}
               </div>
             </div>
           ) : (
@@ -203,16 +202,6 @@ export function CreateFeatureForm({
               checked={defaultEnabled}
               onCheckedChange={setDefaultEnabled}
               aria-label="Globally enabled"
-            />
-          </div>
-
-          <div className="border-876-surface-border flex items-center justify-between gap-4 rounded-md border p-3">
-            <Label htmlFor="feature-default-value">Default value</Label>
-            <Switch
-              id="feature-default-value"
-              checked={defaultValue}
-              onCheckedChange={setDefaultValue}
-              aria-label="Default value"
             />
           </div>
 

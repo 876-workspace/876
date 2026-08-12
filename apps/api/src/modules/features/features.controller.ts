@@ -82,6 +82,19 @@ export async function evaluateFeatures(
     )
 }
 
+export async function evaluateFeatureDetails(
+  req: Request,
+  res: Response
+): Promise<void> {
+  res
+    .status(200)
+    .json(
+      await service.evaluateFeatureDetails(
+        validQuery<EvaluateFeaturesQuery>(req)
+      )
+    )
+}
+
 export async function evaluateMyFeatures(
   req: Request,
   res: Response

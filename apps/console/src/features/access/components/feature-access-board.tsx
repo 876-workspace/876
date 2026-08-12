@@ -33,12 +33,15 @@ function overrideCount(flag: FlagTarget): number {
   return flag.orgOverrides.length + flag.userOverrides.length
 }
 
-function scopeIsLive(flags: AccessFlag[]): boolean {
+export function scopeIsLive(flags: AccessFlag[]): boolean {
   // A scope only grants access when its master and at least one child are on —
   // the same AND the evaluator applies.
   const master = flags.find((flag) => !flag.child)
   if (master && !master.enabled) return false
-  return flags.some((flag) => flag.child && flag.enabled)
+  const children = flags.filter((flag) => flag.child)
+  return children.length === 0
+    ? Boolean(master?.enabled)
+    : children.some((flag) => flag.enabled)
 }
 
 function initials(label: string): string {
@@ -65,7 +68,7 @@ export function FeatureAccessBoard({ scopes }: { scopes: AccessScope[] }) {
     <div className="space-y-4">
       <p className="text-muted-foreground text-[0.8125rem]">
         A user override wins over an organization override, which wins over the
-        app default. A disabled flag stays off regardless.
+        app default. Global, parent, and subscription caps always win.
       </p>
 
       <div className="876-card overflow-hidden">

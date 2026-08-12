@@ -26,7 +26,7 @@ export const liveLogsWidgetMetadata = {
   features: {
     apps: {
       console: {
-        parent: 'console_widgets',
+        parent: CONSOLE_WIDGETS_FEATURE_SLUG,
         widget: 'console_widgets_live_logs',
       },
     },

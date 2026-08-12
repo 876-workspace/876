@@ -243,6 +243,17 @@ export type FeatureEvaluationContext = {
   appSlug?: string | null
 }
 
+export type FeatureEvaluationDecision = {
+  feature: FeatureRow
+  globalEnabled: boolean
+  parentEnabled: boolean
+  moduleGated: boolean
+  moduleEntitled: boolean
+  organizationOverride: boolean | null
+  userOverride: boolean | null
+  enabled: boolean
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -569,12 +580,6 @@ export async function updateFeature(
   if (params.enabled !== undefined && params.enabled !== null) {
     updates.enabled = params.enabled
     providerUpdate.defaultEnabled = params.enabled
-    // Python checks widget tag on the pre-update feature and mirrors enabled into
-    // defaultValue when default_value param was not supplied.
-    const currentTags: string[] = (feature.tags as string[] | null) ?? []
-    if (currentTags.includes('widget') && params.defaultValue === undefined) {
-      updates.defaultValue = params.enabled
-    }
   }
 
   if (params.appIdSet) {
@@ -944,6 +949,16 @@ export async function evaluate(
   deps: FeaturesDeps,
   context: FeatureEvaluationContext
 ): Promise<FeatureRow[]> {
+  const decisions = await evaluateDetailed(deps, context)
+  return decisions
+    .filter((decision) => decision.enabled)
+    .map((decision) => decision.feature)
+}
+
+export async function evaluateDetailed(
+  deps: FeaturesDeps,
+  context: FeatureEvaluationContext
+): Promise<FeatureEvaluationDecision[]> {
   const app = await resolveApp(deps, context)
   const features = await deps.repository.listEvaluationFeatures(app?.id ?? null)
 
@@ -976,40 +991,48 @@ export async function evaluate(
     return current.id
   }
 
-  const decisions = new Map<string, boolean>()
+  const rolloutDecisions = new Map<string, boolean>()
+  const moduleEligibility = new Map<
+    string,
+    { gated: boolean; entitled: boolean }
+  >()
   for (const feature of features) {
-    const tags: string[] = (feature.tags as string[] | null) ?? []
-    if (tags.includes('widget')) {
-      decisions.set(
-        feature.id,
-        Boolean(feature.enabled && feature.defaultValue)
-      )
-    } else if (usesPlan && feature.appId !== null) {
+    rolloutDecisions.set(feature.id, feature.enabled)
+
+    if (usesPlan && feature.appId !== null) {
       const rootId = rootFeatureId(feature)
-      if (gatedFeatureIds.has(rootId)) {
-        decisions.set(feature.id, moduleFeatureIds.has(rootId))
-      } else {
-        decisions.set(feature.id, feature.enabled)
-      }
+      const gated = gatedFeatureIds.has(rootId)
+      moduleEligibility.set(feature.id, {
+        gated,
+        entitled: !gated || moduleFeatureIds.has(rootId),
+      })
     } else {
-      decisions.set(feature.id, feature.enabled)
+      moduleEligibility.set(feature.id, { gated: false, entitled: true })
     }
   }
 
+  const organizationOverrides = new Map<string, boolean>()
   if (context.organizationId) {
     const orgGrants = await deps.repository.listOrgFeatures(
       context.organizationId
     )
+    for (const grant of orgGrants) {
+      organizationOverrides.set(grant.featureId, grant.status === 'enabled')
+    }
     mergeGrants(
-      decisions,
+      rolloutDecisions,
       orgGrants.map((g) => ({ featureId: g.featureId, status: g.status }))
     )
   }
 
+  const userOverrides = new Map<string, boolean>()
   if (context.userId) {
     const userGrants = await deps.repository.listUserFeatures(context.userId)
+    for (const grant of userGrants) {
+      userOverrides.set(grant.featureId, grant.status === 'enabled')
+    }
     mergeGrants(
-      decisions,
+      rolloutDecisions,
       userGrants.map((g) => ({ featureId: g.featureId, status: g.status }))
     )
   }
@@ -1021,8 +1044,11 @@ export async function evaluate(
     if (effective.has(feature.id)) return effective.get(feature.id) as boolean
     if (resolving.has(feature.id)) return false
     resolving.add(feature.id)
+    const eligibility = moduleEligibility.get(feature.id)
     let allowed = Boolean(
-      feature.enabled && (decisions.get(feature.id) ?? false)
+      feature.enabled &&
+      (rolloutDecisions.get(feature.id) ?? false) &&
+      (eligibility?.entitled ?? true)
     )
     if (feature.parentFeatureId) {
       const parent = featuresById.get(feature.parentFeatureId)
@@ -1033,5 +1059,26 @@ export async function evaluate(
     return allowed
   }
 
-  return features.filter((feature) => resolve(feature))
+  return features.map((feature) => {
+    const parent = feature.parentFeatureId
+      ? featuresById.get(feature.parentFeatureId)
+      : null
+    const eligibility = moduleEligibility.get(feature.id) ?? {
+      gated: false,
+      entitled: true,
+    }
+
+    return {
+      feature,
+      globalEnabled: feature.enabled,
+      parentEnabled: feature.parentFeatureId
+        ? Boolean(parent && resolve(parent))
+        : true,
+      moduleGated: eligibility.gated,
+      moduleEntitled: eligibility.entitled,
+      organizationOverride: organizationOverrides.get(feature.id) ?? null,
+      userOverride: userOverrides.get(feature.id) ?? null,
+      enabled: resolve(feature),
+    }
+  })
 }

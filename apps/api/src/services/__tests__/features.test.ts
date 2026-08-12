@@ -11,6 +11,7 @@ import {
   createFeature,
   deleteFeature,
   evaluate,
+  evaluateDetailed,
   featurePrefixForAppSlug,
   featureSlugMatchesApp,
   grantOrgFeature,
@@ -610,7 +611,7 @@ describe('updateFeature', () => {
     expect(updated).toBeDefined()
   })
 
-  it('mirrors enabled into defaultValue for widget flags when defaultValue not supplied', async () => {
+  it('does not maintain a second widget availability switch in defaultValue', async () => {
     const f = makeFeature({
       tags: ['widget'],
       defaultValue: false,
@@ -622,7 +623,11 @@ describe('updateFeature', () => {
 
     expect(repository.updateFeature).toHaveBeenCalledWith(
       'ftr_1',
-      expect.objectContaining({ enabled: true, defaultValue: true })
+      expect.not.objectContaining({ defaultValue: expect.anything() })
+    )
+    expect(repository.updateFeature).toHaveBeenCalledWith(
+      'ftr_1',
+      expect.objectContaining({ enabled: true })
     )
   })
 
@@ -997,7 +1002,7 @@ describe('evaluate', () => {
     expect(result.map((f) => f.id)).toEqual(['ftr_1'])
   })
 
-  it('widget flags require both enabled and defaultValue', async () => {
+  it('uses enabled as the single global switch for widget flags', async () => {
     const widgetOn = makeFeature({
       id: 'ftr_w1',
       enabled: true,
@@ -1021,7 +1026,7 @@ describe('evaluate', () => {
       .mockResolvedValue([widgetOn, widgetOff, widgetDisabled] as never)
 
     const result = await evaluate(deps, {})
-    expect(result.map((f) => f.id)).toEqual(['ftr_w1'])
+    expect(result.map((f) => f.id)).toEqual(['ftr_w1', 'ftr_w2'])
   })
 
   it('plan gating: root gated flags enabled only when in moduleFeatureIds', async () => {
@@ -1085,6 +1090,121 @@ describe('evaluate', () => {
       organizationId: 'org_1',
     })
     expect(result).toHaveLength(0)
+  })
+
+  it('does not let organization or user grants bypass plan entitlement', async () => {
+    const app = makeApp({ id: 'app_1', appKind: 'product' })
+    repository.findAppById = vi.fn().mockResolvedValue(app as never)
+    const gated = makeFeature({
+      id: 'ftr_gated',
+      enabled: true,
+      appId: 'app_1',
+    })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([gated] as never)
+    repository.listPlanModuleFeatureIds = vi.fn().mockResolvedValue(new Set())
+    repository.listModuleFeatureIds = vi
+      .fn()
+      .mockResolvedValue(new Set(['ftr_gated']))
+    repository.listOrgFeatures = vi
+      .fn()
+      .mockResolvedValue([
+        { featureId: 'ftr_gated', status: 'enabled' },
+      ] as never)
+    repository.listUserFeatures = vi
+      .fn()
+      .mockResolvedValue([
+        { featureId: 'ftr_gated', status: 'enabled' },
+      ] as never)
+
+    const result = await evaluate(deps, {
+      appId: 'app_1',
+      organizationId: 'org_1',
+      userId: 'user_1',
+    })
+
+    expect(result).toHaveLength(0)
+  })
+
+  it('reports each effective-access gate for Console diagnostics', async () => {
+    const app = makeApp({ id: 'app_1', appKind: 'product' })
+    repository.findAppById = vi.fn().mockResolvedValue(app as never)
+    const root = makeFeature({
+      id: 'ftr_root',
+      enabled: true,
+      appId: 'app_1',
+    })
+    const child = makeFeature({
+      id: 'ftr_child',
+      enabled: true,
+      appId: 'app_1',
+      parentFeatureId: 'ftr_root',
+    })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([root, child] as never)
+    repository.listPlanModuleFeatureIds = vi.fn().mockResolvedValue(new Set())
+    repository.listModuleFeatureIds = vi
+      .fn()
+      .mockResolvedValue(new Set(['ftr_root']))
+    repository.listOrgFeatures = vi
+      .fn()
+      .mockResolvedValue([
+        { featureId: 'ftr_child', status: 'disabled' },
+      ] as never)
+    repository.listUserFeatures = vi
+      .fn()
+      .mockResolvedValue([
+        { featureId: 'ftr_child', status: 'enabled' },
+      ] as never)
+
+    const result = await evaluateDetailed(deps, {
+      appId: 'app_1',
+      organizationId: 'org_1',
+      userId: 'user_1',
+    })
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        feature: root,
+        globalEnabled: true,
+        parentEnabled: true,
+        moduleGated: true,
+        moduleEntitled: false,
+        organizationOverride: null,
+        userOverride: null,
+        enabled: false,
+      }),
+      expect.objectContaining({
+        feature: child,
+        globalEnabled: true,
+        parentEnabled: false,
+        moduleGated: true,
+        moduleEntitled: false,
+        organizationOverride: false,
+        userOverride: true,
+        enabled: false,
+      }),
+    ])
+  })
+
+  it('reports a missing parent as disabled instead of implying access', async () => {
+    const orphan = makeFeature({
+      id: 'ftr_orphan',
+      enabled: true,
+      parentFeatureId: 'ftr_missing',
+    })
+    repository.listEvaluationFeatures = vi
+      .fn()
+      .mockResolvedValue([orphan] as never)
+
+    const [decision] = await evaluateDetailed(deps, {})
+
+    expect(decision).toMatchObject({
+      parentEnabled: false,
+      enabled: false,
+    })
   })
 
   it('platform flags (appId null) ignore plan gating', async () => {

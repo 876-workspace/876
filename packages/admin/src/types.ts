@@ -684,6 +684,18 @@ export type AdminFeature = {
   updated_at: number
 }
 
+export type AdminFeatureEvaluationDecision = {
+  object: 'feature_evaluation'
+  feature: AdminFeature
+  global_enabled: boolean
+  parent_enabled: boolean
+  module_gated: boolean
+  module_entitled: boolean
+  organization_override: boolean | null
+  user_override: boolean | null
+  enabled: boolean
+}
+
 export type AdminFeatureCreateParams = {
   name: string
   slug?: string

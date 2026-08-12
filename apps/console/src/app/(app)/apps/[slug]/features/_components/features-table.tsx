@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { AdminFeature } from '@876/admin'
 import { DataTable } from '@876/ui/data-table'
+import { Badge } from '@876/ui/badge'
+import { Button } from '@876/ui/button'
 import { Switch } from '@876/ui/switch'
 import { toast } from 'sonner'
 import { Input } from '@876/ui/input'
@@ -18,6 +20,8 @@ import { formatDate } from '@/lib/format'
 type Props = {
   appSlug: string
   data: AdminFeature[]
+  query: string
+  moduleFeatureIds: string[]
   hasMore: boolean
   firstId: string | null
   lastId: string | null
@@ -67,13 +71,20 @@ function ToggleCell({ feature }: { feature: AdminFeature }) {
   )
 }
 
-function buildColumns(appSlug: string): ColumnDef<AdminFeature, unknown>[] {
+function buildColumns(
+  appSlug: string,
+  parentById: ReadonlyMap<string, AdminFeature>,
+  moduleFeatureIds: ReadonlySet<string>
+): ColumnDef<AdminFeature, unknown>[] {
   return [
     {
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
-        <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-3"
+          style={{ paddingLeft: row.original.parent_feature_id ? 20 : 0 }}
+        >
           <Link
             href={`/apps/${appSlug}/features/${row.original.id}`}
             className="hover:text-primary font-medium"
@@ -81,6 +92,13 @@ function buildColumns(appSlug: string): ColumnDef<AdminFeature, unknown>[] {
           >
             {row.original.name}
           </Link>
+          {row.original.parent_feature_id && (
+            <span className="text-muted-foreground text-xs">
+              under{' '}
+              {parentById.get(row.original.parent_feature_id)?.name ??
+                'parent flag'}
+            </span>
+          )}
         </div>
       ),
     },
@@ -103,6 +121,20 @@ function buildColumns(appSlug: string): ColumnDef<AdminFeature, unknown>[] {
       ),
     },
     {
+      id: 'controls',
+      header: 'Controls',
+      cell: ({ row }) => (
+        <div className="flex flex-wrap gap-1.5">
+          {row.original.tags.includes('widget') && (
+            <Badge variant="secondary">Widget</Badge>
+          )}
+          {moduleFeatureIds.has(row.original.id) && (
+            <Badge variant="outline">Subscription-gated</Badge>
+          )}
+        </div>
+      ),
+    },
+    {
       accessorKey: 'enabled',
       header: 'Enabled',
       cell: ({ row }) => <ToggleCell feature={row.original} />,
@@ -122,6 +154,8 @@ function buildColumns(appSlug: string): ColumnDef<AdminFeature, unknown>[] {
 export function AppFeaturesTable({
   appSlug,
   data,
+  query,
+  moduleFeatureIds,
   hasMore,
   firstId,
   lastId,
@@ -129,53 +163,97 @@ export function AppFeaturesTable({
   emptyState,
 }: Props) {
   const router = useRouter()
-  const [query, setQuery] = useState('')
-  const columns = buildColumns(appSlug)
+  const parentById = useMemo(
+    () => new Map(data.map((feature) => [feature.id, feature])),
+    [data]
+  )
+  const gatedIds = useMemo(() => {
+    const moduleRoots = new Set(moduleFeatureIds)
+    const result = new Set<string>()
 
-  const filtered = data
-    .filter((feature) => {
-      const q = query.trim().toLowerCase()
-      if (!q) return true
-      return (
-        feature.name.toLowerCase().includes(q) ||
-        feature.slug.toLowerCase().includes(q)
+    for (const feature of data) {
+      let current: AdminFeature | undefined = feature
+      const visited = new Set<string>()
+      while (current && !visited.has(current.id)) {
+        visited.add(current.id)
+        if (moduleRoots.has(current.id)) {
+          result.add(feature.id)
+          break
+        }
+        current = current.parent_feature_id
+          ? parentById.get(current.parent_feature_id)
+          : undefined
+      }
+    }
+
+    return result
+  }, [data, moduleFeatureIds, parentById])
+  const columns = buildColumns(appSlug, parentById, gatedIds)
+
+  const ordered = useMemo(() => {
+    const byParent = new Map<string | null, AdminFeature[]>()
+    for (const feature of data) {
+      const siblings = byParent.get(feature.parent_feature_id) ?? []
+      siblings.push(feature)
+      byParent.set(feature.parent_feature_id, siblings)
+    }
+    for (const siblings of byParent.values()) {
+      siblings.sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
       )
-    })
-    .sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
-    )
+    }
+
+    const result: AdminFeature[] = []
+    const visited = new Set<string>()
+    function append(feature: AdminFeature) {
+      if (visited.has(feature.id)) return
+      visited.add(feature.id)
+      result.push(feature)
+      for (const child of byParent.get(feature.id) ?? []) append(child)
+    }
+    for (const root of byParent.get(null) ?? []) append(root)
+    for (const feature of data) append(feature)
+    return result
+  }, [data])
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:w-80 lg:w-96">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search feature flags…"
-            className="pl-9"
-            aria-label="Search feature flags"
-          />
-        </div>
+        <form className="flex w-full gap-2 sm:w-auto" method="get">
+          <div className="relative w-full sm:w-80 lg:w-96">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              name="q"
+              defaultValue={query}
+              placeholder="Search feature flags…"
+              className="pl-9"
+              aria-label="Search feature flags"
+            />
+          </div>
+          <Button type="submit" variant="outline" size="sm">
+            Search
+          </Button>
+        </form>
         {toolbarAction}
       </div>
 
       <div className="876-card overflow-hidden">
         <DataTable
           columns={columns}
-          data={filtered}
+          data={ordered}
           emptyState={emptyState}
           onRowClick={(feature) =>
             router.push(`/apps/${appSlug}/features/${feature.id}`)
           }
         />
-        <CursorPagination
-          firstId={firstId}
-          lastId={lastId}
-          hasMore={hasMore}
-          count={data.length}
-        />
+        {!query.trim() && (
+          <CursorPagination
+            firstId={firstId}
+            lastId={lastId}
+            hasMore={hasMore}
+            count={data.length}
+          />
+        )}
       </div>
     </div>
   )

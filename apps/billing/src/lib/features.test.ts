@@ -22,9 +22,11 @@ describe('getFeatures', () => {
           { slug: 'billing_search_bar' },
           { slug: 'billing_theme_switcher' },
           { slug: 'billing_org_switcher' },
-          { slug: 'billing_chat' },
+          { slug: 'platform_widgets_chat' },
+          { slug: 'billing_widgets_chat' },
           { slug: 'billing_sales' },
           { slug: 'billing_sales_quotes' },
+          { slug: 'billing_sales_estimates' },
           { slug: 'billing_sales_invoices' },
           { slug: 'billing_subscriptions' },
           { slug: 'billing_purchases' },
@@ -60,7 +62,7 @@ describe('getFeatures', () => {
     expect(result.productFeatures).toEqual({
       sales: true,
       quotes: true,
-      estimates: false,
+      estimates: true,
       invoices: true,
       subscriptions: true,
       purchases: true,
@@ -116,6 +118,23 @@ describe('getFeatures', () => {
       payroll: false,
     })
     expect(result.widgets).toEqual({ notepad: false })
+  })
+
+  it('does not render Chat when either widget master is unavailable', async () => {
+    mocks.evaluate.mockResolvedValue({
+      data: {
+        data: [
+          { slug: 'platform_widgets_chat' },
+          { slug: 'billing_widgets' },
+          { slug: 'billing_widgets_chat' },
+        ],
+      },
+      error: null,
+    })
+
+    const result = await getFeatures({ userId: 'user_without_widget_master' })
+
+    expect(result.uiFeatures.chat).toBe(false)
   })
 
   it('keeps the organization switcher disabled when its feature key is absent', async () => {

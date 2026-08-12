@@ -85,6 +85,12 @@ export const EVALUATE_FEATURES_RESPONSES = {
   404: { description: 'App, user, or organization not found.' },
 } as const
 
+export const EVALUATE_FEATURE_DETAILS_SUMMARY =
+  'Explain feature evaluation decisions'
+
+export const EVALUATE_FEATURE_DETAILS_DESCRIPTION =
+  'Returns every applicable feature with its global, parent, module entitlement, organization, user, and final evaluation state. **Admin only**.'
+
 export const GRANT_USER_FEATURE_SUMMARY = 'Grant feature to user'
 
 export const GRANT_USER_FEATURE_DESCRIPTION =

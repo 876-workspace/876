@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  chatWidgetMetadata,
   getRequiredWidgetFeatureSlugs,
   getWidgetFeatureSlugs,
   isWidgetEnabled,
@@ -9,9 +10,12 @@ import {
   widgetCatalog,
 } from './catalog'
 
-describe('Notepad widget catalog', () => {
+describe('shared widget catalog', () => {
   it('exports portable widgets only', () => {
-    expect(widgetCatalog.map((widget) => widget.id)).toEqual(['notepad'])
+    expect(widgetCatalog.map((widget) => widget.id)).toEqual([
+      'notepad',
+      'chat',
+    ])
     expect(widgetCatalog.map((widget) => widget.id)).not.toContain('live_logs')
   })
 
@@ -59,5 +63,35 @@ describe('Notepad widget catalog', () => {
       'couriers_widgets',
       'couriers_widgets_notepad',
     ])
+  })
+
+  it('requires platform and app gates before enabling Chat', () => {
+    const billingRequirements = getRequiredWidgetFeatureSlugs(
+      chatWidgetMetadata,
+      'billing'
+    )
+
+    expect(billingRequirements).toEqual([
+      'platform_widgets',
+      'platform_widgets_chat',
+      'billing_widgets',
+      'billing_widgets_chat',
+    ])
+    expect(
+      isWidgetEnabled(
+        chatWidgetMetadata,
+        'billing',
+        new Set(billingRequirements)
+      )
+    ).toBe(true)
+    expect(
+      isWidgetEnabled(
+        chatWidgetMetadata,
+        'billing',
+        new Set(
+          billingRequirements.filter((slug) => slug !== 'billing_widgets')
+        )
+      )
+    ).toBe(false)
   })
 })

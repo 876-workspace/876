@@ -10,6 +10,7 @@ import {
   evaluateFeaturesQuerySchema,
   evaluateMeQuerySchema,
   featureDeletedSchema,
+  featureEvaluationDecisionSchema,
   featureGrantsSchema,
   featureIdParamsSchema,
   featureSchema,
@@ -81,6 +82,21 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
       },
     },
     handler: controller.evaluateMyFeatures,
+  })
+
+  api.get({
+    path: '/evaluate/details',
+    operationId: 'features-evaluate_feature_details',
+    summary: docs.EVALUATE_FEATURE_DETAILS_SUMMARY,
+    description: docs.EVALUATE_FEATURE_DETAILS_DESCRIPTION,
+    request: { query: evaluateFeaturesQuerySchema },
+    responses: {
+      200: {
+        description: 'Feature evaluation decisions returned.',
+        schema: listObjectSchema(featureEvaluationDecisionSchema),
+      },
+    },
+    handler: controller.evaluateFeatureDetails,
   })
 
   api.get({

@@ -24,7 +24,12 @@ import {
   serializeUserFeature,
   serializeUserFeatureGrantItem,
 } from './features.serializers'
-import type { Feature, OrgFeature, UserFeature } from './features.schemas'
+import type {
+  Feature,
+  FeatureEvaluationDecision,
+  OrgFeature,
+  UserFeature,
+} from './features.schemas'
 
 const log = getLogger('features')
 
@@ -322,6 +327,34 @@ export async function evaluateFeatures(
     data: rows.map(serializeFeature),
     hasMore: false,
     url: '/features/evaluate',
+  })
+}
+
+export async function evaluateFeatureDetails(
+  query: EvaluateFeaturesQuery
+): Promise<ListObject<FeatureEvaluationDecision>> {
+  const deps = getDeps()
+  const decisions = await svc.evaluateDetailed(deps, {
+    userId: query.userId ?? null,
+    organizationId: query.organizationId ?? null,
+    appId: query.appId ?? null,
+    appSlug: query.appSlug ?? null,
+  })
+
+  return listObject({
+    data: decisions.map((decision) => ({
+      object: 'feature_evaluation' as const,
+      feature: serializeFeature(decision.feature),
+      global_enabled: decision.globalEnabled,
+      parent_enabled: decision.parentEnabled,
+      module_gated: decision.moduleGated,
+      module_entitled: decision.moduleEntitled,
+      organization_override: decision.organizationOverride,
+      user_override: decision.userOverride,
+      enabled: decision.enabled,
+    })),
+    hasMore: false,
+    url: '/features/evaluate/details',
   })
 }
 

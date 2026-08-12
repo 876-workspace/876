@@ -250,6 +250,36 @@ describe('getFeatures', () => {
     })
   })
 
+  it('requires the shared and Couriers widget hierarchy for Chat', async () => {
+    mocks.evaluate.mockResolvedValue(
+      createEvaluationResult([
+        'platform_widgets',
+        'platform_widgets_chat',
+        'couriers_widgets',
+        'couriers_widgets_chat',
+      ])
+    )
+
+    const enabled = await getFeatures({
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+    expect(enabled.uiFeatures.chat).toBe(true)
+
+    mocks.evaluate.mockResolvedValue(
+      createEvaluationResult([
+        'platform_widgets_chat',
+        'couriers_widgets',
+        'couriers_widgets_chat',
+      ])
+    )
+    const missingPlatformMaster = await getFeatures({
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+    expect(missingPlatformMaster.uiFeatures.chat).toBe(false)
+  })
+
   it.each([
     [
       'evaluation error',
