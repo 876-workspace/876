@@ -1,4 +1,5 @@
 export {
+  chatWidgetMetadata,
   getRequiredWidgetFeatureSlugs,
   getWidgetAppFeatureKeys,
   getWidgetFeatureSlugs,

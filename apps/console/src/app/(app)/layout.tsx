@@ -53,7 +53,7 @@ export default async function ConsoleRootLayout({
           user={{ name: displayName, email: user.email, avatar: user.avatar }}
           uiFeatures={uiFeatures}
           widgetRail={
-            enabledWidgetIds.length > 0 ? (
+            enabledWidgetIds.length > 0 || uiFeatures.chat ? (
               <WidgetBar
                 auditEvents={auditEvents}
                 enabledWidgetIds={enabledWidgetIds}

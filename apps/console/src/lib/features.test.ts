@@ -131,6 +131,22 @@ describe('getConsoleFeatures', () => {
     })
   })
 
+  it('treats Chat as a widget and excludes it from the panel widget list', async () => {
+    mocks.featuresEvaluate.mockResolvedValue(
+      listResult([
+        'platform_widgets',
+        'platform_widgets_chat',
+        'console_widgets',
+        'console_widgets_chat',
+      ])
+    )
+
+    const result = await getConsoleFeatures({ widgets: widgetCatalog })
+
+    expect(result.uiFeatures.chat).toBe(true)
+    expect(result.enabledWidgetIds).not.toContain('chat')
+  })
+
   it('requires both platform and app flags for shared widgets and keeps private widgets app-scoped', async () => {
     mocks.featuresEvaluate.mockResolvedValue(
       listResult([

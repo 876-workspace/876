@@ -1,15 +1,13 @@
 import 'server-only'
 
 import * as Sentry from '@sentry/nextjs'
-import { isWidgetEnabled } from '@876/widgets'
+import { chatWidgetMetadata, isWidgetEnabled } from '@876/widgets'
 
 import { $876 } from '@/lib/876'
 import { listConsoleApps } from '@/lib/apps-catalog'
 import { CONSOLE_APP_SLUG } from '@/lib/console-app'
 import { logger } from '@/lib/logger'
 import type { ConsoleFeatureRequest, ConsoleFeatures } from '@/types/features'
-
-export const CHAT_FEATURE_SLUG = 'console_chat'
 
 const DISABLED_FEATURES: ConsoleFeatures = {
   enabledWidgetIds: [],
@@ -96,10 +94,11 @@ export async function getConsoleFeatures({
     globalAdd: enabledSlugs.has('console_global_add'),
     appSwitcher: enabledSlugs.has('console_app_switcher'),
     searchBar: enabledSlugs.has('console_search_bar'),
-    chat: enabledSlugs.has(CHAT_FEATURE_SLUG),
+    chat: isWidgetEnabled(chatWidgetMetadata, 'console', enabledSlugs),
   }
 
   const enabledWidgetIds = widgets
+    .filter((widget) => widget.id !== chatWidgetMetadata.id)
     .filter((widget) => isWidgetEnabled(widget, 'console', enabledSlugs))
     .map((widget) => widget.id)
 
