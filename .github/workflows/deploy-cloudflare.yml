@@ -290,12 +290,6 @@ jobs:
         run: pnpm --filter @876/billing-app exec prisma migrate deploy
         env:
           BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
-      - name: Sync runtime database secret
-        run: |
-          printf '%s' "$BILLING_DIRECT_DATABASE_URL" |
-            pnpm --filter @876/billing-app exec wrangler secret put BILLING_DIRECT_DATABASE_URL
-        env:
-          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Deploy
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm --filter @876/billing-app run deploy
