@@ -1,10 +1,9 @@
 import 'server-only'
 
-import { withAccelerate } from '@prisma/extension-accelerate'
+import { PrismaPg } from '@prisma/adapter-pg'
 import {
   createQueryGuard,
   createRequestScopedResolver,
-  requireAccelerateUrl,
   type QueryFailure,
 } from '@876/core/db'
 import * as Sentry from '@sentry/nextjs'
@@ -92,12 +91,15 @@ function reportDbFailure(
 }
 
 function createPrisma() {
-  const accelerateUrl = requireAccelerateUrl(process.env.BILLING_DATABASE_URL, {
-    variable: 'BILLING_DATABASE_URL',
-    datastore: '876 Billing',
-  })
+  const connectionString = process.env.BILLING_DIRECT_DATABASE_URL
+  if (!connectionString)
+    throw new Error(
+      'BILLING_DIRECT_DATABASE_URL is not set; 876 Billing DB unavailable.'
+    )
 
-  const client = new PrismaClient({ accelerateUrl })
+  const adapter = new PrismaPg({ connectionString })
+
+  return new PrismaClient({ adapter })
     .$extends({
       query: {
         $allModels: {
@@ -122,10 +124,6 @@ function createPrisma() {
         }),
       },
     })
-
-  // Keep the existing service-facing extension type stable. Accelerate is
-  // applied at runtime for pooling; cacheStrategy is intentionally deferred.
-  return client.$extends(withAccelerate()) as unknown as typeof client
 }
 
 type Prisma = ReturnType<typeof createPrisma>
@@ -173,10 +171,12 @@ const resolvePrisma = createRequestScopedResolver<Prisma>({
  * The client is built on first property access, not at import. `next build`
  * imports every route module to collect page data, so eager construction made
  * the connection string a build-time requirement — and the Cloudflare build
- * environment has no `BILLING_DATABASE_URL`, only the Worker runtime does.
+ * environment has no `BILLING_DIRECT_DATABASE_URL`; only the Worker runtime
+ * does.
  *
- * On Cloudflare Workers the client is scoped to the in-flight request, while
- * Accelerate owns the remote connection pool. See `@876/core/db`.
+ * On Cloudflare Workers the client and its pg adapter are scoped to the
+ * in-flight request so a pooled socket cannot leak into a later invocation.
+ * See `@876/core/db`.
  */
 export const prisma = new Proxy({} as Prisma, {
   get(_target, property) {
