@@ -37,7 +37,7 @@ export function createConsoleClient(options: ConsoleServerClientOptions) {
 
   return {
     ...core,
-    products: { admin: platformAdmin.products },
+    entitlementPlans: { admin: platformAdmin.products },
     plans: { admin: billingAdmin.plans },
     prices: { admin: billingAdmin.prices },
     customers: withAdmin(billingIntegration.customers, billingAdmin.customers),

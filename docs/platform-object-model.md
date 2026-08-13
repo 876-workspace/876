@@ -67,6 +67,17 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 Future (documented, not yet implemented):
 `$876.events`, `$876.venues`, `$876.tickets`, `$876.jobs`, `$876.candidates`, `$876.jobApplications`, `$876.transactions`, `$876.activity` — do not add stub resources.
 
+**Entitlement plans vs commercial products.** The Core per-app plan/price
+catalog (Core `/products`) is exposed as **`$876.entitlementPlans`** (with
+`.admin` in Console), so `$876.products` is unambiguously the **Billing
+commercial catalog** on every surface — resolving the one namespace collision the
+PR #254 review found. Add `$876.entitlementPlans` to the resource table when this
+section is next revised. (`$876.subscriptions.admin` was also reviewed as a
+possible collision but is **not** one — `@876/admin`'s top-level `subscriptions`
+is `/billing/subscriptions`, distinct from the org→app entitlement at
+`$876.organizations.admin.subscriptions`.) See [ADR-011](architecture/011-unified-facade-namespace-invariants.md)
+and `packages/client/src/resource-manifest.ts`.
+
 ---
 
 ## Resource details — ownership & current SDK mapping

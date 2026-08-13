@@ -44,7 +44,9 @@ export type CoreSurfaceBase = {
   organizationMembers: SDK876Client['organizationMembers']
   appAssignments: SDK876Client['appAssignments']
   invites: SDK876Client['invites']
-  products: SDK876Client['products']
+  mobileNumbers: SDK876Client['mobileNumbers']
+  mobileNumberVerifications: SDK876Client['mobileNumberVerifications']
+  entitlementPlans: SDK876Client['products']
 }
 
 /**
@@ -119,7 +121,9 @@ function createCoreSurfaceBase(platform: SDK876Client): CoreSurfaceBase {
     organizationMembers: platform.organizationMembers,
     appAssignments: platform.appAssignments,
     invites: platform.invites,
-    products: platform.products,
+    mobileNumbers: platform.mobileNumbers,
+    mobileNumberVerifications: platform.mobileNumberVerifications,
+    entitlementPlans: platform.products,
   }
 }
 

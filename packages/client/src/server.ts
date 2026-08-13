@@ -39,9 +39,25 @@ export function create876ServerClient(
       return createCouriersClient(options)
     case 'billing':
       return createBillingClient(options)
+    case '876':
+    case 'enterprise':
+      return createPlatformServerClient(options)
     default:
-      return createPlatformServerClient(options as PlatformServerClientOptions)
+      return assertNever(options)
   }
+}
+
+/**
+ * Exhaustiveness guard for the app dispatch above. If a new app id is added to
+ * `ServerClientOptions` without a matching composer, `options` is no longer
+ * `never` here and this fails to compile — a new app can never silently fall
+ * through to the platform surface.
+ */
+function assertNever(options: never): never {
+  const app = (options as { app?: string }).app
+  throw new Error(
+    `Unsupported 876 app for create876ServerClient: ${String(app)}`
+  )
 }
 
 export type ServerClient876 =
