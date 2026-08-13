@@ -29,7 +29,7 @@ export default async function NewAppFeaturePage({
   if (!app) notFound()
 
   const parentFeature = parent
-    ? (await $876.features.retrieve(parent)).data
+    ? (await $876.features.admin.retrieve(parent)).data
     : null
   if (parentFeature && parentFeature.app_id !== app.id) notFound()
 

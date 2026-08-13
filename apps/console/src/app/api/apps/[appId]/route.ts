@@ -28,7 +28,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid app status.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.apps.update(appId, body)
+  const { data, error } = await $876.apps.admin.update(appId, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update app.' },
@@ -48,7 +48,7 @@ export async function DELETE(
   if (response) return response
 
   const { appId } = await context.params
-  const { data, error } = await $876.apps.delete(appId)
+  const { data, error } = await $876.apps.admin.delete(appId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to delete app.' },

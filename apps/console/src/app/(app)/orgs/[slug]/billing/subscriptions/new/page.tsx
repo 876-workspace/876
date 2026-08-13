@@ -25,7 +25,7 @@ export default async function NewBillingSubscriptionPage({ params }: Props) {
 
   const [accounts, productsResult] = await Promise.all([
     resolveOrgBillingAccounts(org.id),
-    $876.products.list({ status: 'active' }),
+    $876.products.admin.list({ status: 'active' }),
   ])
 
   return (

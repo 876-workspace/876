@@ -9,7 +9,7 @@ import { $876 } from '@/lib/876'
  * each tab page dedupe to a single fetch per request.
  */
 export const resolveOrg = cache(async (slug: string) => {
-  const result = await $876.organizations.retrieve({
+  const result = await $876.organizations.admin.retrieve({
     slug,
     includeDeleted: true,
   })
@@ -19,7 +19,7 @@ export const resolveOrg = cache(async (slug: string) => {
 
 /** Cached membership list for an organization (id-keyed). */
 export const resolveOrgMembers = cache(async (orgId: string) => {
-  const result = await $876.memberships.list({
+  const result = await $876.memberships.admin.list({
     organizationId: orgId,
     limit: 50,
   })
@@ -33,7 +33,7 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
 })
 
 export const resolveOrgSubscriptions = cache(async (orgId: string) => {
-  const result = await $876.organizations.subscriptions.list({
+  const result = await $876.organizations.admin.subscriptions.list({
     organizationId: orgId,
   })
   if (result.error) throw new Error(result.error.message)

@@ -70,7 +70,7 @@ async function SecurityData({ params }: Props) {
 }
 
 async function AuthMethodsData({ userId }: { userId: string }) {
-  const accountsResult = await $876.users.listAccounts(userId)
+  const accountsResult = await $876.users.admin.listAccounts(userId)
   const accounts = accountsResult.error ? [] : accountsResult.data.data
   return <AuthMethodsSection userId={userId} accounts={accounts} />
 }
@@ -96,7 +96,7 @@ function describeDevice(device: {
 }
 
 async function DevicesData({ userId }: { userId: string }) {
-  const result = await $876.users.listDevices(userId, { limit: 20 })
+  const result = await $876.users.admin.listDevices(userId, { limit: 20 })
   const devices: DeviceRow[] = result.error
     ? []
     : result.data.data.map((device) => ({
@@ -116,7 +116,7 @@ async function DevicesData({ userId }: { userId: string }) {
 }
 
 async function SessionsData({ userId }: { userId: string }) {
-  const result = await $876.users.listSessions(userId, { limit: 20 })
+  const result = await $876.users.admin.listSessions(userId, { limit: 20 })
   const sessions: SessionRow[] = result.error
     ? []
     : result.data.data.map((session) => ({
@@ -134,7 +134,7 @@ async function SessionsData({ userId }: { userId: string }) {
 }
 
 async function SignInActivityData({ userId }: { userId: string }) {
-  const result = await $876.users.listAuthAttempts(userId, { limit: 20 })
+  const result = await $876.users.admin.listAuthAttempts(userId, { limit: 20 })
   const attempts: AttemptRow[] = result.error
     ? []
     : result.data.data.map((attempt) => ({
@@ -160,7 +160,7 @@ async function IdentificationsData({ userId }: { userId: string }) {
 }
 
 async function PinData({ userId }: { userId: string }) {
-  const result = await $876.users.pin.retrieve(userId)
+  const result = await $876.users.admin.pin.retrieve(userId)
   if (result.error) return null
   return <PinSection userId={userId} pin={result.data} />
 }

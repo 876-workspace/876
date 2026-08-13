@@ -52,7 +52,7 @@ export default async function SubscriptionDetailPage({ params }: Props) {
 
   if (!subscription) notFound()
 
-  const { data: org } = await $876.organizations.retrieve({
+  const { data: org } = await $876.organizations.admin.retrieve({
     id: subscription.organization_id,
   })
 

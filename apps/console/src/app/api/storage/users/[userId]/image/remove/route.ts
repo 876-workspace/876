@@ -14,7 +14,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { userId } = await context.params
-  const retrieveResult = await $876.users.retrieve({ id: userId })
+  const retrieveResult = await $876.users.admin.retrieve({ id: userId })
   if (retrieveResult.error || !retrieveResult.data)
     return apiJson(
       { error: retrieveResult.error ?? 'Failed to retrieve the user.' },
@@ -28,7 +28,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { status: 409 }
     )
 
-  const updateResult = await $876.users.update(userId, {
+  const updateResult = await $876.users.admin.update(userId, {
     avatar_file_id: null,
     avatar: null,
   })

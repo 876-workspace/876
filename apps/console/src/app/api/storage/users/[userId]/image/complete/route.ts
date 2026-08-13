@@ -39,7 +39,7 @@ export async function POST(request: NextRequest, context: Context) {
       { status: 400, code: 'storage/upload-verification-failed' }
     )
 
-  const updateResult = await $876.users.update(userId, {
+  const updateResult = await $876.users.admin.update(userId, {
     avatar_file_id: file.id,
     avatar: file.url,
   })

@@ -68,7 +68,7 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
   let hasMore = false
 
   if (isSearching) {
-    const result = await $876.users.search({
+    const result = await $876.users.admin.search({
       query: q!,
       limit: 50,
       status: userStatus,
@@ -76,7 +76,7 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
     if (result.error) throw new Error(result.error.message)
     users = result.data.data
   } else {
-    const result = await $876.users.list({
+    const result = await $876.users.admin.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,
@@ -89,7 +89,7 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
 
   const enrollmentsMap: Record<string, AdminUserApp[]> = {}
   if (users.length > 0) {
-    const result = await $876.users.listAppsByUsers(users.map((u) => u.id))
+    const result = await $876.users.admin.listAppsByUsers(users.map((u) => u.id))
     if (!result.error && result.data) {
       for (const group of result.data.data) {
         enrollmentsMap[group.user_id] = group.data ?? []

@@ -32,14 +32,14 @@ export default async function AppFeatureAccessPage({ params }: Props) {
   if (!app || !feature || feature.app_id !== app.id) notFound()
 
   // Children AND with this flag, so they belong on the same screen.
-  const siblingsResult = await $876.features.list({ limit: 100, appId: app.id })
+  const siblingsResult = await $876.features.admin.list({ limit: 100, appId: app.id })
   const children = (siblingsResult.data?.data ?? []).filter(
     (entry) => entry.parent_feature_id === feature.id
   )
 
   const family = [feature, ...children]
   const grantsById = await loadGrants(family, (id) =>
-    $876.features.retrieveGrants(id)
+    $876.features.admin.retrieveGrants(id)
   )
 
   return (

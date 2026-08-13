@@ -6,7 +6,7 @@ import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-/** Searches users. Pure transport over `$876.users.search`. */
+/** Searches users. Pure transport over `$876.users.admin.search`. */
 export async function GET(request: NextRequest): Promise<Response> {
   const { response } = await requireConsolePermission('console:users')
   if (response) return response
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     return apiJson({ data: [] })
   }
 
-  const { data, error } = await $876.users.search({ query, limit: 10 })
+  const { data, error } = await $876.users.admin.search({ query, limit: 10 })
   if (error) {
     return apiJson(
       { error: error.message ?? 'Search failed.' },

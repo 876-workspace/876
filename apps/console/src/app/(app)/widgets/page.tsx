@@ -39,8 +39,8 @@ export default async function WidgetsPage({
       ? requestedDistribution
       : 'all'
   const [featuresResult, appsResult] = await Promise.all([
-    $876.features.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.list({ limit: 100, clientType: 'public' }),
+    $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
+    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
   ])
   const features = new Map(
     (featuresResult.data?.data ?? []).map((feature) => [feature.slug, feature])

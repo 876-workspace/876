@@ -30,7 +30,7 @@ type Props = {
 export default async function FeaturesPage({ searchParams }: Props) {
   const { after, before } = await searchParams
   const [featuresResult, ...appResults] = await Promise.all([
-    $876.features.list({
+    $876.features.admin.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,
@@ -38,7 +38,7 @@ export default async function FeaturesPage({ searchParams }: Props) {
       excludeTag: 'widget',
     }),
     ...APP_KINDS.map((appKind) =>
-      $876.apps.list({
+      $876.apps.admin.list({
         limit: 100,
         appKind,
         clientType: 'public',

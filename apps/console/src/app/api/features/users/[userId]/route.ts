@@ -21,7 +21,7 @@ export async function POST(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.users.grantFeature(userId, body)
+  const { data, error } = await $876.users.admin.grantFeature(userId, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update user feature.' },

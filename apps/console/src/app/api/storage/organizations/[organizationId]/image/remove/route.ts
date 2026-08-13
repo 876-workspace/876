@@ -14,7 +14,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
   if (response) return response
 
   const { organizationId } = await context.params
-  const retrieveResult = await $876.organizations.retrieve({
+  const retrieveResult = await $876.organizations.admin.retrieve({
     id: organizationId,
   })
   if (retrieveResult.error || !retrieveResult.data)
@@ -32,7 +32,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
       { status: 409 }
     )
 
-  const updateResult = await $876.organizations.update(organizationId, {
+  const updateResult = await $876.organizations.admin.update(organizationId, {
     logo_file_id: null,
     logo_url: null,
   })

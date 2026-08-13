@@ -24,7 +24,7 @@ export async function POST(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.subscriptions.createItem(
+  const { data, error } = await $876.subscriptions.admin.createItem(
     subscriptionId,
     body
   )

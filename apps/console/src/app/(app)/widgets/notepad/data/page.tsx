@@ -44,7 +44,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
     (
       await Promise.all(
         ownerIds.map(async (id) => {
-          const { data } = await $876.users.retrieve({ id })
+          const { data } = await $876.users.admin.retrieve({ id })
           return [id, data] as const
         })
       )
@@ -52,7 +52,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
   )
 
   const apps = new Map(
-    (await $876.apps.list({ limit: 100, clientType: 'public' })).data?.data.map(
+    (await $876.apps.admin.list({ limit: 100, clientType: 'public' })).data?.data.map(
       (app) => [app.slug, app.name]
     ) ?? []
   )

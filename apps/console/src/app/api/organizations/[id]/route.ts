@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 
 type Context = { params: Promise<{ id: string }> }
 
-/** Updates an organization's fields. Pure transport over `$876.organizations.update`. */
+/** Updates an organization's fields. Pure transport over `$876.organizations.admin.update`. */
 export async function PATCH(
   request: NextRequest,
   context: Context
@@ -22,7 +22,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.organizations.update(id, body)
+  const { data, error } = await $876.organizations.admin.update(id, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update organization.' },
@@ -49,7 +49,7 @@ export async function DELETE(
 
   const { id } = await context.params
 
-  const { data, error } = await $876.organizations.delete(id, {
+  const { data, error } = await $876.organizations.admin.delete(id, {
     deletedBy: caller.id,
   })
   if (error || !data) {

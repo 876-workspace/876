@@ -14,20 +14,20 @@ export async function create(
 ): ServiceResult<AdminUser & { warning?: string }> {
   const { organization_name, ...userParams } = params
 
-  const { data: user, error: userError } = await $876.users.create(userParams)
+  const { data: user, error: userError } = await $876.users.admin.create(userParams)
   if (userError || !user) {
     return err(userError?.message ?? 'Failed to create user.')
   }
 
   if (organization_name?.trim()) {
-    const { data: org, error: orgError } = await $876.organizations.create({
+    const { data: org, error: orgError } = await $876.organizations.admin.create({
       name: organization_name.trim(),
     })
     if (orgError || !org) {
       return ok(user, 'User created but organization could not be created.')
     }
 
-    const { error: membershipError } = await $876.memberships.create({
+    const { error: membershipError } = await $876.memberships.admin.create({
       user_id: user.id,
       organization_id: org.id,
       role: 'owner',

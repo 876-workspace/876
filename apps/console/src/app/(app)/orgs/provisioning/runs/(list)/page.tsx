@@ -49,8 +49,8 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
       startingAfter: query.after,
       limit: 50,
     }),
-    $876.apps.list({ limit: 100 }),
-    $876.organizations.list({ limit: 100 }),
+    $876.apps.admin.list({ limit: 100 }),
+    $876.organizations.admin.list({ limit: 100 }),
   ])
   if (runsResult.error || !runsResult.data)
     throw new Error(

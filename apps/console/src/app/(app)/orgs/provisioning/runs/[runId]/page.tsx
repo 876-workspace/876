@@ -29,8 +29,8 @@ export default async function ProvisioningRunPage({ params }: Props) {
     throw new Error(result.error?.message ?? 'Failed to load provisioning run.')
   const run = result.data
   const [appResult, organizationResult] = await Promise.all([
-    $876.apps.retrieve(run.app_id),
-    $876.organizations.retrieve({ id: run.organization_id }),
+    $876.apps.admin.retrieve(run.app_id),
+    $876.organizations.admin.retrieve({ id: run.organization_id }),
   ])
   const app = appResult.data
   const organization = organizationResult.data

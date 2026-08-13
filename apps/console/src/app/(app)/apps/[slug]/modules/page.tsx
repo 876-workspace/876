@@ -15,7 +15,7 @@ export default async function AppModulesPage({ params }: Props) {
   const [modulesResult, featuresResult] = await Promise.all([
     $876.modules.list(app.id, { includeArchived: true }),
     canManage
-      ? $876.features.list({ appId: app.id, rootOnly: true, limit: 100 })
+      ? $876.features.admin.list({ appId: app.id, rootOnly: true, limit: 100 })
       : Promise.resolve({ data: null, error: null }),
   ])
   if (modulesResult.error) throw new Error(modulesResult.error.message)

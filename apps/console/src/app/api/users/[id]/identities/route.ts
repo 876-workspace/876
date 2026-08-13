@@ -16,7 +16,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await context.params
-  const memberships = await $876.memberships.list({ userId: id, limit: 50 })
+  const memberships = await $876.memberships.admin.list({ userId: id, limit: 50 })
   if (memberships.error || !memberships.data)
     return apiJson(
       { error: memberships.error?.message ?? 'Failed to load identities.' },
@@ -25,7 +25,7 @@ export async function GET(
 
   const data = await Promise.all(
     memberships.data.data.map(async (membership) => {
-      const org = await $876.organizations.retrieve({
+      const org = await $876.organizations.admin.retrieve({
         id: membership.organization_id,
       })
       return { membership, org: org.error ? null : org.data }

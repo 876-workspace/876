@@ -33,7 +33,7 @@ export default async function FeatureDiagnosticsPage({
     ? Boolean(organizationId)
     : Boolean(organizationId || userId)
   const result = canEvaluate
-    ? await $876.features.evaluateDetails({
+    ? await $876.features.admin.evaluateDetails({
         appId: app.id,
         organizationId: organizationId || undefined,
         userId: userId || undefined,

@@ -16,7 +16,7 @@ export const resolveApp = cache(async (slug: string) => {
 })
 
 export const resolveProduct = cache(async (appId: string, slugOrId: string) => {
-  const { data } = await $876.products.list({ appId })
+  const { data } = await $876.products.admin.list({ appId })
   return (
     data?.data.find(
       (product) => product.id === slugOrId || product.slug === slugOrId

@@ -68,7 +68,7 @@ async function OrganizationBillingData({ slug }: { slug: string }) {
 }
 
 async function BillingWorkspace({ orgId }: { orgId: string }) {
-  const billingWorkspace = await $876.organizations.retrieve(orgId)
+  const billingWorkspace = await $876.organizations.admin.retrieve(orgId)
   if (!billingWorkspace.data) return null
   return (
     <div className="876-card grid gap-4 p-4 text-[0.8125rem] sm:grid-cols-3">

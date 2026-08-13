@@ -18,7 +18,7 @@ import { $876 } from '@/lib/876'
  * filtering to `internal` is what once made /apps/876-couriers 404.
  */
 export const listConsoleApps = cache(async (): Promise<AdminApp[] | null> => {
-  const { data, error } = await $876.apps.list({
+  const { data, error } = await $876.apps.admin.list({
     limit: 100,
     clientType: 'public',
   })

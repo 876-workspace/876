@@ -65,7 +65,7 @@ async function AppSettingsData({ slug }: { slug: string }) {
 }
 
 async function AppSettingsContent({ app }: { app: AdminApp }) {
-  const { data: orgList } = await $876.organizations.list({ limit: 100 })
+  const { data: orgList } = await $876.organizations.admin.list({ limit: 100 })
   const orgs: OrgOption[] = (orgList?.data ?? []).map((org) => ({
     id: org.id,
     name: org.name ?? org.slug,
@@ -78,7 +78,7 @@ async function AppSettingsContent({ app }: { app: AdminApp }) {
     app.organization_id &&
     !orgs.some((org) => org.id === app.organization_id)
   ) {
-    const { data: owningOrg } = await $876.organizations.retrieve({
+    const { data: owningOrg } = await $876.organizations.admin.retrieve({
       id: app.organization_id,
     })
     orgs.unshift({

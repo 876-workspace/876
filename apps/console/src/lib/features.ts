@@ -64,7 +64,7 @@ export async function getConsoleFeatures({
     return DISABLED_FEATURES
   }
 
-  const enabledResult = await $876.features.evaluate({
+  const enabledResult = await $876.features.admin.evaluate({
     appId: consoleApp.id,
     userId,
   })

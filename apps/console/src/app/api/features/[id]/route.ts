@@ -22,7 +22,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.features.update(id, body)
+  const { data, error } = await $876.features.admin.update(id, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update feature.' },
@@ -41,7 +41,7 @@ export async function DELETE(
   if (response) return response
 
   const { id } = await context.params
-  const { data, error } = await $876.features.delete(id)
+  const { data, error } = await $876.features.admin.delete(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to delete feature.' },

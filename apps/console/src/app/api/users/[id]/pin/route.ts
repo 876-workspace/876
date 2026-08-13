@@ -13,7 +13,7 @@ export async function POST(
   if (response) return response
   const { id } = await context.params
   const body = await request.json()
-  const result = await $876.users.pin.set(id, { pin: body.pin })
+  const result = await $876.users.admin.pin.set(id, { pin: body.pin })
   return result.error
     ? apiJson({ error: result.error.message }, { status: 400 })
     : apiJson({ data: result.data })
@@ -26,7 +26,7 @@ export async function DELETE(
   const { response } = await requireConsolePermission('console:users')
   if (response) return response
   const { id } = await context.params
-  const result = await $876.users.pin.delete(id)
+  const result = await $876.users.admin.pin.delete(id)
   return result.error
     ? apiJson({ error: result.error.message }, { status: 400 })
     : apiJson({ data: result.data })

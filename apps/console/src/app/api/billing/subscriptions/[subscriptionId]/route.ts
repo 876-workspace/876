@@ -24,7 +24,7 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.subscriptions.update(subscriptionId, body)
+  const { data, error } = await $876.subscriptions.admin.update(subscriptionId, body)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to update subscription.' },
@@ -43,8 +43,8 @@ export async function DELETE(
   if (response) return response
 
   const { subscriptionId } = await context.params
-  const existing = await $876.subscriptions.retrieve(subscriptionId)
-  const { data, error } = await $876.subscriptions.delete(subscriptionId)
+  const existing = await $876.subscriptions.admin.retrieve(subscriptionId)
+  const { data, error } = await $876.subscriptions.admin.delete(subscriptionId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete subscription.' },
