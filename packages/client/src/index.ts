@@ -20,6 +20,7 @@ export function create876Client(options: ClientOptions = {}) {
   return {
     auth: platform.auth,
     oauth: platform.oauth,
+    auditEvents: platform.auditEvents,
 
     users: {
       me: platform.users,

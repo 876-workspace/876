@@ -25,7 +25,7 @@ export default async function OrganizationAppsPage({
 
   const client = await get876ServerClient()
   const [subscriptionsResult, productsResult] = await Promise.all([
-    client.subscriptions.list(membership.organization.id),
+    client.entitlements.list(membership.organization.id),
     client.products.list(),
   ])
   const loadError = subscriptionsResult.error ?? productsResult.error

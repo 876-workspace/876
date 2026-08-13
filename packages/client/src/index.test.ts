@@ -98,6 +98,15 @@ describe('unified $876 resource model', () => {
     expect($876.entitlements).toBeDefined()
     expect($876.entitlements.list).toBeDefined()
   })
+
+  it('keeps Enterprise on the core entitlement and product surface', () => {
+    const $876 = create876ServerClient({
+      app: 'enterprise',
+      apiKey: '876_app_secret_test1234567890123456',
+    })
+    expect($876.entitlements.retrieve).toBeDefined()
+    expect($876.products.list).toBeDefined()
+  })
 })
 
 describe('create876Client browser', () => {
@@ -106,6 +115,7 @@ describe('create876Client browser', () => {
     expect($876.auth).toBeDefined()
     expect($876.organizations).toBeDefined()
     expect($876.users.me).toBeDefined()
+    expect($876.auditEvents.create).toBeDefined()
     expect($876.notes).toBeDefined()
     expect($876.collections).toBeDefined()
   })

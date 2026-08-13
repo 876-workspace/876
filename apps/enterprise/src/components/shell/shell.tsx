@@ -62,7 +62,7 @@ async function buildAppsSlot(
   orgSlug: string
 ): Promise<ReactNode> {
   const client = await get876ServerClient()
-  const result = await client.subscriptions.list(orgId)
+  const result = await client.entitlements.list(orgId)
   // Navigation degrades to an empty group on failure — never crash the shell.
   const subscriptions = (result.data?.data ?? []).filter(
     (subscription) =>

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { create876Client } from '@876/client'
+import { create876ServerClient } from '@876/client/server'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -16,7 +16,8 @@ export async function get876ServerClient() {
     throw new Error('A signed-in session is required to create the 876 client.')
   }
 
-  return create876Client({
+  return create876ServerClient({
+    app: 'enterprise',
     baseUrl: process.env.API_URL,
     apiKey: process.env.API_876_KEY,
     accessToken: session.accessToken,
