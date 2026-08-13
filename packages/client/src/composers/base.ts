@@ -27,6 +27,7 @@ interface AdminNamespaces {
 export type CoreSurfaceBase = {
   auth: SDK876Client['auth']
   oauth: SDK876Client['oauth']
+  oauthGrants: SDK876Client['oauthGrants']
   auditEvents: SDK876Client['auditEvents']
   users: { me: SDK876Client['users'] }
   organizations: SDK876Client['organizations']
@@ -101,6 +102,7 @@ function createCoreSurfaceBase(platform: SDK876Client): CoreSurfaceBase {
   return {
     auth: platform.auth,
     oauth: platform.oauth,
+    oauthGrants: platform.oauthGrants,
     auditEvents: platform.auditEvents,
     users: { me: platform.users },
     organizations: platform.organizations,

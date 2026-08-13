@@ -97,6 +97,8 @@ describe('unified $876 resource model', () => {
     })
     expect($876.entitlements).toBeDefined()
     expect($876.entitlements.list).toBeDefined()
+    expect($876.oauthGrants.list).toBeDefined()
+    expect($876.oauthGrants.revoke).toBeDefined()
   })
 
   it('keeps Enterprise on the core entitlement and product surface', () => {
