@@ -44,13 +44,13 @@ Three supporting invariants (each is elaborated in
 
 ## 2. Problem statement
 
-| Problem                                                                                                                                              | Effect                                                                                                                 |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `$876.products` resolves to Core entitlement plans in Enterprise/Console but the Billing commercial catalog in Billing                               | Same noun, two different entities. `docs/platform-object-model.md` already declares `products` = Billing.              |
-| Console `$876.subscriptions.admin` resolves to **Core** org→app subscriptions, under the noun the ontology reserves for Billing recurring agreements | Reintroduces the exact collision `$876.entitlements` was created to remove; also duplicates `$876.entitlements.admin`. |
-| Resources omitted from the composed surface (#255 `auditEvents`/facade resources, #256 `oauthGrants`) were only caught by failing Cloudflare builds  | Surface completeness depended on a reviewer remembering every resource.                                                |
-| Browser `create876Client({ app })` forwarded `app` into the SDK's `z.strictObject` options parser, which throws on unknown keys                      | `create876Client({ app })` failed at runtime — a latent bug behind an inert, misleading option.                        |
-| `create876ServerClient` dispatch used a non-exhaustive `default` that cast to platform options                                                       | A future app id could silently fall through to the platform surface instead of failing.                                |
+| Problem                                                                                                                                             | Effect                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$876.products` resolves to Core entitlement plans in Enterprise/Console but the Billing commercial catalog in Billing                              | Same noun, two different entities. `docs/platform-object-model.md` already declares `products` = Billing.                                                                                                                        |
+| ~~Console `$876.subscriptions.admin`~~ — reviewed and found **not** a collision                                                                     | `@876/admin`'s top-level `subscriptions` hits `/billing/subscriptions` (platform billing records); the org→app entitlement is separately `$876.organizations.admin.subscriptions`. The architecture already keeps them distinct. |
+| Resources omitted from the composed surface (#255 `auditEvents`/facade resources, #256 `oauthGrants`) were only caught by failing Cloudflare builds | Surface completeness depended on a reviewer remembering every resource.                                                                                                                                                          |
+| Browser `create876Client({ app })` forwarded `app` into the SDK's `z.strictObject` options parser, which throws on unknown keys                     | `create876Client({ app })` failed at runtime — a latent bug behind an inert, misleading option.                                                                                                                                  |
+| `create876ServerClient` dispatch used a non-exhaustive `default` that cast to platform options                                                      | A future app id could silently fall through to the platform surface instead of failing.                                                                                                                                          |
 
 ## 3. Decisions
 
@@ -105,14 +105,14 @@ privileged operations under `.admin`.
 
 ### 3.4 Namespace migration — PLANNED, phased, not in this change
 
-The `products` / `subscriptions` collisions require renaming the **Core
-entitlement-plan catalog** off the Billing-reserved nouns:
+The `products` collision requires renaming the **Core entitlement-plan
+catalog** off the Billing `products` noun:
 
 - Expose the Core app-plan catalog as **`$876.entitlementPlans`** (with
   `.admin`); keep `$876.products` exclusively the Billing commercial catalog.
-- Route Console's org→app subscription administration through
-  **`$876.entitlements.admin`** only; remove `$876.subscriptions.admin` as an
-  alias for Core subscriptions.
+
+(The review also proposed removing `$876.subscriptions.admin`; on inspection
+that is not a collision — see §2 — so it is left as-is.)
 
 This is deferred because its blast radius spans multiple Next apps
 (Console ~13 call sites for `$876.products.admin`, Enterprise `client.products`,

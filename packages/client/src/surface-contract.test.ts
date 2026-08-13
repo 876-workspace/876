@@ -76,11 +76,8 @@ describe('resource ownership manifest', () => {
     }
   })
 
-  it('records exactly the two known facade namespace collisions', () => {
-    expect(KNOWN_COLLISIONS.map((c) => c.resource)).toEqual([
-      'products',
-      'subscriptions',
-    ])
+  it('records exactly the known facade namespace collision (products only)', () => {
+    expect(KNOWN_COLLISIONS.map((c) => c.resource)).toEqual(['products'])
   })
 
   it('only records collisions for resources that exist in the manifest', () => {

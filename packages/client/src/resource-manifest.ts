@@ -130,24 +130,23 @@ export type CanonicalResource = keyof typeof RESOURCE_MANIFEST
  * These are recorded — not silently tolerated — so the debt is visible in code
  * and so the surface-contract test can assert the set does not *grow*. The
  * planned resolution (rename the core entitlement-plan catalog off the Billing
- * `products`/`subscriptions` nouns) is tracked in ADR-011.
+ * `products` noun) is tracked in ADR-011.
+ *
+ * Note: the review also flagged `$876.subscriptions` as a collision, but that
+ * was a misread — `@876/admin`'s top-level `subscriptions` hits
+ * `/billing/subscriptions` (platform billing records), and the org→app
+ * entitlement is correctly namespaced separately at
+ * `$876.organizations.admin.subscriptions`. The architecture already keeps them
+ * distinct, so `subscriptions` is intentionally not listed here.
  */
 export const KNOWN_COLLISIONS = [
   {
     resource: 'products',
     canonicalOwner: 'billing',
     conflictingUse:
-      'Enterprise/platform `$876.products` and Console `$876.products.admin` resolve to the Core entitlement-plan catalog (@876/admin.products), not the Billing commercial catalog.',
+      'Enterprise/platform `$876.products` and Console `$876.products.admin` resolve to the Core entitlement-plan catalog (@876/admin.products → Core `/products`), not the Billing commercial catalog.',
     plannedResolution:
       'Expose the core catalog as `$876.entitlementPlans` and keep `$876.products` exclusively Billing. See ADR-011.',
-  },
-  {
-    resource: 'subscriptions',
-    canonicalOwner: 'billing',
-    conflictingUse:
-      'Console `$876.subscriptions.admin` resolves to Core org→app entitlement subscriptions (@876/admin.subscriptions), duplicating `$876.entitlements.admin` under the Billing-reserved `subscriptions` noun.',
-    plannedResolution:
-      "Route Console's org→app subscription administration through `$876.entitlements.admin` only. See ADR-011.",
   },
 ] as const satisfies ReadonlyArray<{
   resource: CanonicalResource
