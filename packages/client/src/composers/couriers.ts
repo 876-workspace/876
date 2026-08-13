@@ -8,12 +8,10 @@ export function createCouriersClient(options: CouriersServerClientOptions) {
   const storage = requireCapability(services.storage, 'storage')
   const widgets = requireCapability(services.widgets?.member, 'widgets.member')
   const core = createCoreSurface({ platform: services.platform })
-  const couriersClient = services.couriers?.client
-  const couriersAdmin = services.couriers?.admin
-  const couriers = (couriersClient ?? (couriersAdmin as unknown as typeof couriersClient)) as NonNullable<typeof couriersClient>
-  if (!couriers) {
-    requireCapability(undefined, 'couriers.client')
-  }
+  const couriers = requireCapability(
+    services.couriers?.client,
+    'couriers.client'
+  )
   return {
     ...core,
     customers: couriers.customers,
