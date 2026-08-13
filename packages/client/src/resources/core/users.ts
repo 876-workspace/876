@@ -4,10 +4,9 @@ import { withAdmin, type WithAdmin } from '../../internal/with-admin.ts'
 
 type MeResource = SDK876Client['users']
 
-export type UsersResource = { me: MeResource } | WithAdmin<
-  { me: MeResource },
-  Admin876Client['users']
->
+export type UsersResource =
+  | { me: MeResource }
+  | WithAdmin<{ me: MeResource }, Admin876Client['users']>
 
 export function createUsersResource({
   platform,

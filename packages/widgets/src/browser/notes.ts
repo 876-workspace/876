@@ -23,7 +23,6 @@ export type BrowserNotesResult<T> =
   | { data: T; error: null }
   | { data: null; error: string; status?: number }
 
-
 const MEMBER_BASE = '/api/widgets/notepad'
 const MEMBER_COLLECTIONS = '/api/widgets/notepad/collections'
 const ADMIN_BASE = '/api/widgets/admin/notepad'

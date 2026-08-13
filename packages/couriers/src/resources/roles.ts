@@ -15,19 +15,39 @@ export function createRolesResource(runtime: Runtime) {
   const path = '/v1/me/roles'
   return {
     list() {
-      return SessionRequest<RoleList>(runtime, { method: 'GET', path }, roleListSchema)
+      return SessionRequest<RoleList>(
+        runtime,
+        { method: 'GET', path },
+        roleListSchema
+      )
     },
     retrieve(id: string) {
-      return SessionRequest<Role>(runtime, { method: 'GET', path: `${path}/${encodeURIComponent(id)}` }, roleSchema)
+      return SessionRequest<Role>(
+        runtime,
+        { method: 'GET', path: `${path}/${encodeURIComponent(id)}` },
+        roleSchema
+      )
     },
     create(body: CreateRoleBody) {
-      return SessionRequest<Role>(runtime, { method: 'POST', path, body }, roleSchema)
+      return SessionRequest<Role>(
+        runtime,
+        { method: 'POST', path, body },
+        roleSchema
+      )
     },
     update(id: string, body: UpdateRoleBody) {
-      return SessionRequest<Role>(runtime, { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body }, roleSchema)
+      return SessionRequest<Role>(
+        runtime,
+        { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body },
+        roleSchema
+      )
     },
     delete(id: string) {
-      return SessionRequest<DeletedRole>(runtime, { method: 'DELETE', path: `${path}/${encodeURIComponent(id)}` }, deletedRoleSchema)
+      return SessionRequest<DeletedRole>(
+        runtime,
+        { method: 'DELETE', path: `${path}/${encodeURIComponent(id)}` },
+        deletedRoleSchema
+      )
     },
   }
 }

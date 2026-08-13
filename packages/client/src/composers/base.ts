@@ -2,7 +2,10 @@ import type { Admin876Client } from '@876/admin'
 import type { SDK876Client } from '@876/sdk'
 import { withAdmin } from '../internal/with-admin'
 
-export function createCoreSurface(args: { platform: SDK876Client; admin: Admin876Client }): ReturnType<typeof createCoreSurfaceImpl> & {
+export function createCoreSurface(args: {
+  platform: SDK876Client
+  admin: Admin876Client
+}): ReturnType<typeof createCoreSurfaceImpl> & {
   auditEvents: Admin876Client['auditEvents']
   apiKeys: Admin876Client['apiKeys']
   modules: Admin876Client['modules']
@@ -22,21 +25,43 @@ export function createCoreSurface(args: { platform: SDK876Client; admin: Admin87
   calls: Admin876Client['calls']
   phoneLookups: Admin876Client['phoneLookups']
 }
-export function createCoreSurface(args: { platform: SDK876Client; admin?: undefined }): ReturnType<typeof createCoreSurfaceImpl>
-export function createCoreSurface(args: { platform: SDK876Client; admin?: Admin876Client }): unknown {
+export function createCoreSurface(args: {
+  platform: SDK876Client
+  admin?: undefined
+}): ReturnType<typeof createCoreSurfaceImpl>
+export function createCoreSurface(args: {
+  platform: SDK876Client
+  admin?: Admin876Client
+}): unknown {
   return createCoreSurfaceImpl(args)
 }
 
-function createCoreSurfaceImpl({ platform, admin }: { platform: SDK876Client; admin?: Admin876Client }) {
+function createCoreSurfaceImpl({
+  platform,
+  admin,
+}: {
+  platform: SDK876Client
+  admin?: Admin876Client
+}) {
   const base = {
     auth: platform.auth,
     oauth: platform.oauth,
-    users: admin ? withAdmin({ me: platform.users }, admin.users) : { me: platform.users },
-    organizations: admin ? withAdmin(platform.organizations, admin.organizations) : platform.organizations,
+    users: admin
+      ? withAdmin({ me: platform.users }, admin.users)
+      : { me: platform.users },
+    organizations: admin
+      ? withAdmin(platform.organizations, admin.organizations)
+      : platform.organizations,
     apps: admin ? withAdmin(platform.apps, admin.apps) : platform.apps,
-    memberships: admin ? withAdmin(platform.memberships, admin.memberships) : platform.memberships,
-    features: admin ? withAdmin(platform.features, admin.features) : platform.features,
-    entitlements: admin ? withAdmin(platform.subscriptions, admin.subscriptions) : platform.subscriptions,
+    memberships: admin
+      ? withAdmin(platform.memberships, admin.memberships)
+      : platform.memberships,
+    features: admin
+      ? withAdmin(platform.features, admin.features)
+      : platform.features,
+    entitlements: admin
+      ? withAdmin(platform.subscriptions, admin.subscriptions)
+      : platform.subscriptions,
     locations: platform.locations,
     contacts: platform.contacts,
     departments: platform.departments,

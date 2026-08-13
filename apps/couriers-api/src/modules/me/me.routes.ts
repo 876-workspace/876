@@ -177,7 +177,10 @@ export function createMeRouter(resolveGuards: GuardResolver) {
       res
         .status(201)
         .json(
-          await packagesService.createPackage(tenant.id, req.valid.body as never)
+          await packagesService.createPackage(
+            tenant.id,
+            req.valid.body as never
+          )
         )
     },
   })
@@ -307,7 +310,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     handler: async (req, res) => {
       const tenant = req.tenant!
       const { id } = req.valid.params as IdParams
-      res.status(200).json(await customersService.retrieveCustomer(tenant.id, id))
+      res
+        .status(200)
+        .json(await customersService.retrieveCustomer(tenant.id, id))
     },
   })
 
@@ -349,7 +354,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Customer deleted.',
-        schema: successEnvelopeSchema(deletedObjectSchema('courier_customer_profile')),
+        schema: successEnvelopeSchema(
+          deletedObjectSchema('courier_customer_profile')
+        ),
       },
     },
     handler: async (req, res) => {
@@ -621,7 +628,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     handler: async (req, res) => {
       const tenant = req.tenant!
       const { id } = req.valid.params as IdParams
-      res.status(200).json(await warehousesService.retrieveWarehouse(tenant.id, id))
+      res
+        .status(200)
+        .json(await warehousesService.retrieveWarehouse(tenant.id, id))
     },
   })
 
@@ -737,7 +746,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
       const { id } = req.valid.params as IdParams
       res
         .status(200)
-        .json(await teamService.updateRole(tenant.id, id, req.valid.body as never))
+        .json(
+          await teamService.updateRole(tenant.id, id, req.valid.body as never)
+        )
     },
   })
 
@@ -777,7 +788,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     },
     handler: async (req, res) => {
       const tenant = req.tenant!
-      const { status } = (req.valid.query ?? {}) as { status?: 'active' | 'inactive' }
+      const { status } = (req.valid.query ?? {}) as {
+        status?: 'active' | 'inactive'
+      }
       res.status(200).json({
         object: 'list',
         data: await teamService.listMembers(tenant.id, status),
@@ -804,7 +817,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
       const tenant = req.tenant!
       res
         .status(201)
-        .json(await teamService.createMember(tenant.id, req.valid.body as never))
+        .json(
+          await teamService.createMember(tenant.id, req.valid.body as never)
+        )
     },
   })
 
@@ -826,7 +841,9 @@ export function createMeRouter(resolveGuards: GuardResolver) {
       const { id } = req.valid.params as IdParams
       res
         .status(200)
-        .json(await teamService.updateMember(tenant.id, id, req.valid.body as never))
+        .json(
+          await teamService.updateMember(tenant.id, id, req.valid.body as never)
+        )
     },
   })
 
@@ -903,7 +920,8 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     security: 'session',
     middleware: [resolveCurrentTenant],
     operationId: 'me-settings-modules-preferences-retrieve',
-    summary: 'Retrieve resolved preferences for one of the caller’s own modules',
+    summary:
+      'Retrieve resolved preferences for one of the caller’s own modules',
     request: { params: idParamsSchema },
     responses: {
       200: {
@@ -926,7 +944,10 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     middleware: [resolveCurrentTenant],
     operationId: 'me-settings-modules-preferences-update',
     summary: 'Update resolved preferences for one of the caller’s own modules',
-    request: { params: idParamsSchema, body: modulePreferencesUpdateBodySchema },
+    request: {
+      params: idParamsSchema,
+      body: modulePreferencesUpdateBodySchema,
+    },
     responses: {
       200: {
         description: 'Module preferences updated.',

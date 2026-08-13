@@ -10,9 +10,17 @@ function consoleOptions() {
     apiKey: '876_app_secret_test1234567890123456',
     internalKey: 'internal',
     services: {
-      platformAdmin: { internalKey: 'internal', apiKey: '876_app_secret_test1234567890123456' },
+      platformAdmin: {
+        internalKey: 'internal',
+        apiKey: '876_app_secret_test1234567890123456',
+      },
       billing: { admin: { internalKey: 'billing-internal' } },
-      couriers: { admin: { internalKey: 'couriers-internal', apiKey: '876_app_secret_test1234567890123456' } },
+      couriers: {
+        admin: {
+          internalKey: 'couriers-internal',
+          apiKey: '876_app_secret_test1234567890123456',
+        },
+      },
       storage: { internalKey: 'storage-internal' },
       widgets: {
         member: { baseUrl: 'http://localhost:4003', serviceKey: 'widgets-key' },
@@ -24,7 +32,10 @@ function consoleOptions() {
 
 describe('unified $876 resource model', () => {
   it('does not expose product namespaces', () => {
-    const $876 = create876ServerClient(consoleOptions()) as unknown as Record<string, unknown>
+    const $876 = create876ServerClient(consoleOptions()) as unknown as Record<
+      string,
+      unknown
+    >
     expect('billing' in $876).toBe(false)
     expect('couriers' in $876).toBe(false)
     expect('storage' in $876).toBe(false)
@@ -47,8 +58,12 @@ describe('unified $876 resource model', () => {
     expect('invoices' in browser).toBe(false)
     expect('products' in browser).toBe(false)
     expect('admin' in browser).toBe(false)
-    expect((browser.users as unknown as { admin?: unknown }).admin).toBeUndefined()
-    expect((browser.apps as unknown as { admin?: unknown }).admin).toBeUndefined()
+    expect(
+      (browser.users as unknown as { admin?: unknown }).admin
+    ).toBeUndefined()
+    expect(
+      (browser.apps as unknown as { admin?: unknown }).admin
+    ).toBeUndefined()
   })
 
   it('server users has me and admin only when platformAdmin configured', () => {
@@ -63,8 +78,12 @@ describe('unified $876 resource model', () => {
   it('server apps/organizations/features have admin under .admin, not spread', () => {
     const $876 = create876ServerClient(consoleOptions())
     expect(($876.apps as unknown as { admin?: unknown }).admin).toBeDefined()
-    expect(($876.organizations as unknown as { admin?: unknown }).admin).toBeDefined()
-    expect(($876.features as unknown as { admin?: unknown }).admin).toBeDefined()
+    expect(
+      ($876.organizations as unknown as { admin?: unknown }).admin
+    ).toBeDefined()
+    expect(
+      ($876.features as unknown as { admin?: unknown }).admin
+    ).toBeDefined()
     expect(($876.apps as unknown as { list: unknown }).list).toBeDefined()
   })
 

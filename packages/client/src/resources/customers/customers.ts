@@ -24,16 +24,12 @@ export function createCustomersResource({
 
   if (app === 'billing' && billingTenant) {
     const base: BillingClient['customers'] = billingTenant.customers
-    return billingAdmin
-      ? withAdmin(base, billingAdmin.customers)
-      : base
+    return billingAdmin ? withAdmin(base, billingAdmin.customers) : base
   }
 
   if (billingTenant) {
     const base: BillingClient['customers'] = billingTenant.customers
-    return billingAdmin
-      ? withAdmin(base, billingAdmin.customers)
-      : base
+    return billingAdmin ? withAdmin(base, billingAdmin.customers) : base
   }
 
   if (couriersAdmin) {

@@ -13,16 +13,32 @@ export function createBranchesResource(runtime: Runtime) {
   const path = '/v1/me/branches'
   return {
     list(params: Record<string, unknown> = {}) {
-      return SessionRequest<BranchList>(runtime, { method: 'GET', path, query: params as never }, branchListSchema)
+      return SessionRequest<BranchList>(
+        runtime,
+        { method: 'GET', path, query: params as never },
+        branchListSchema
+      )
     },
     retrieve(id: string) {
-      return SessionRequest<Branch>(runtime, { method: 'GET', path: `${path}/${encodeURIComponent(id)}` }, branchSchema)
+      return SessionRequest<Branch>(
+        runtime,
+        { method: 'GET', path: `${path}/${encodeURIComponent(id)}` },
+        branchSchema
+      )
     },
     create(body: CreateBranchBody) {
-      return SessionRequest<Branch>(runtime, { method: 'POST', path, body }, branchSchema)
+      return SessionRequest<Branch>(
+        runtime,
+        { method: 'POST', path, body },
+        branchSchema
+      )
     },
     update(id: string, body: UpdateBranchBody) {
-      return SessionRequest<Branch>(runtime, { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body }, branchSchema)
+      return SessionRequest<Branch>(
+        runtime,
+        { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body },
+        branchSchema
+      )
     },
   }
 }

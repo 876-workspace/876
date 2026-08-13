@@ -14,16 +14,32 @@ export function createPackagesResource(runtime: Runtime) {
   const path = '/v1/me/packages'
   return {
     list(params: ListPackagesParams = {}) {
-      return SessionRequest<PackageList>(runtime, { method: 'GET', path, query: params }, packageListSchema)
+      return SessionRequest<PackageList>(
+        runtime,
+        { method: 'GET', path, query: params },
+        packageListSchema
+      )
     },
     retrieve(id: string) {
-      return SessionRequest<Package>(runtime, { method: 'GET', path: `${path}/${encodeURIComponent(id)}` }, packageSchema)
+      return SessionRequest<Package>(
+        runtime,
+        { method: 'GET', path: `${path}/${encodeURIComponent(id)}` },
+        packageSchema
+      )
     },
     create(body: CreatePackageBody) {
-      return SessionRequest<Package>(runtime, { method: 'POST', path, body }, packageSchema)
+      return SessionRequest<Package>(
+        runtime,
+        { method: 'POST', path, body },
+        packageSchema
+      )
     },
     update(id: string, body: UpdatePackageBody) {
-      return SessionRequest<Package>(runtime, { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body }, packageSchema)
+      return SessionRequest<Package>(
+        runtime,
+        { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body },
+        packageSchema
+      )
     },
   }
 }

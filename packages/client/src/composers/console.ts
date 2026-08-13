@@ -7,12 +7,27 @@ import type { ConsoleServerClientOptions } from '../internal/types'
 export function createConsoleClient(options: ConsoleServerClientOptions) {
   const services = createServiceClients(options)
   const platform = services.platform
-  const platformAdmin = requireCapability(services.platformAdmin, 'platformAdmin')
-  const billingAdmin = requireCapability(services.billing?.admin, 'billing.admin')
-  const couriersAdmin = requireCapability(services.couriers?.admin, 'couriers.admin')
+  const platformAdmin = requireCapability(
+    services.platformAdmin,
+    'platformAdmin'
+  )
+  const billingAdmin = requireCapability(
+    services.billing?.admin,
+    'billing.admin'
+  )
+  const couriersAdmin = requireCapability(
+    services.couriers?.admin,
+    'couriers.admin'
+  )
   const storage = requireCapability(services.storage, 'storage')
-  const widgetsMember = requireCapability(services.widgets?.member, 'widgets.member')
-  const widgetsAdmin = requireCapability(services.widgets?.admin, 'widgets.admin')
+  const widgetsMember = requireCapability(
+    services.widgets?.member,
+    'widgets.member'
+  )
+  const widgetsAdmin = requireCapability(
+    services.widgets?.admin,
+    'widgets.admin'
+  )
 
   const core = createCoreSurface({ platform, admin: platformAdmin })
 
