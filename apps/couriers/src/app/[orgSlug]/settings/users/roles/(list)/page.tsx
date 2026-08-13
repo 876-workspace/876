@@ -3,7 +3,7 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toRoleView } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 
 import { RolesShell } from '../_components/roles-shell'
 import { RolesTable } from '../_components/roles-table'
@@ -39,9 +39,10 @@ async function RolesData({ params }: Props) {
       </div>
     )
 
-  const roles = requireCouriersData(
-    await $876.roles.list(ctx.tenant.id)
-  ).data.map(toRoleView)
+  const $876 = await get876Client()
+  const roles = requireCouriersData(await $876.roles.list()).data.map(
+    toRoleView
+  )
 
   return <RolesTable orgSlug={orgSlug} roles={roles} />
 }

@@ -1,20 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockGetManageContext, mockCouriers } = vi.hoisted(() => {
-  return {
-    mockGetManageContext: vi.fn(),
-    mockCouriers: {
-      branches: { list: vi.fn().mockResolvedValue({ data: { data: [] } }) },
-    },
+const { mockGetManageContext, mockGet876Client, mockBranches } = vi.hoisted(
+  () => {
+    return {
+      mockGetManageContext: vi.fn(),
+      mockGet876Client: vi.fn(),
+      mockBranches: vi.fn().mockResolvedValue({ data: { data: [] } }),
+    }
   }
-})
+)
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mockGetManageContext,
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: { couriers: mockCouriers },
+  get876Client: mockGet876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   requireCouriersData: <T>(result: { data: T }) => result.data,
@@ -32,7 +33,9 @@ describe('Branches settings page data', () => {
       tenant: { id: TENANT_ID },
       role: 'owner',
     })
-    mockCouriers.branches.list.mockResolvedValue({ data: { data: [] } })
+    mockGet876Client.mockImplementation(() => ({
+      branches: { list: mockBranches },
+    }))
   })
 
   it('fetches branches for the tenant without scheduling a reconcile', async () => {
@@ -40,7 +43,7 @@ describe('Branches settings page data', () => {
       params: Promise.resolve({ orgSlug: 'island-logistics' }),
     })
 
-    expect(mockCouriers.branches.list).toHaveBeenCalledWith(TENANT_ID)
+    expect(mockBranches).toHaveBeenCalledWith()
   })
 
   it('does not fetch when there is no tenant', async () => {
@@ -50,6 +53,6 @@ describe('Branches settings page data', () => {
       params: Promise.resolve({ orgSlug: 'island-logistics' }),
     })
 
-    expect(mockCouriers.branches.list).not.toHaveBeenCalled()
+    expect(mockBranches).not.toHaveBeenCalled()
   })
 })

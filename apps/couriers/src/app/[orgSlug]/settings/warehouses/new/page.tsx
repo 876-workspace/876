@@ -5,7 +5,7 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 
 import { WarehouseForm } from '../_components/warehouse-form'
 
@@ -44,9 +44,8 @@ async function NewWarehouseData({ orgSlug }: { orgSlug: string }) {
       </div>
     )
 
-  const warehouses = requireCouriersData(
-    await $876.warehouses.list(ctx.tenant.id)
-  )
+  const $876 = await get876Client()
+  const warehouses = requireCouriersData(await $876.warehouses.list())
 
   return (
     <WarehouseForm

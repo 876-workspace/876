@@ -9,7 +9,7 @@ import {
   requireCouriersData,
   toRoleView,
 } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 
 import { RoleForm } from '../_components/role-form'
 
@@ -42,7 +42,8 @@ async function RoleData({ orgSlug, roleId }: RoleDataProps) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
-  const roleResult = await $876.roles.retrieve(ctx.tenant.id, roleId)
+  const $876 = await get876Client()
+  const roleResult = await $876.roles.retrieve(roleId)
   if (isCouriersNotFound(roleResult)) notFound()
   const role = toRoleView(requireCouriersData(roleResult))
 
