@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
-  get876Client: vi.fn(),
   listProfiles: vi.fn(),
   listCustomers: vi.fn(),
 }))
@@ -14,7 +13,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+  couriersAdmin: { customers: { list: mocks.listProfiles } },
   billingIntegration: { customers: { list: mocks.listCustomers } },
 }))
 vi.mock('@/lib/couriers', () => ({
@@ -73,9 +72,6 @@ function listResult<T>(data: T[], hasMore = false) {
 describe('Couriers customers page data', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue(context)
-    mocks.get876Client.mockResolvedValue({
-      customers: { list: mocks.listProfiles },
-    })
     mocks.listProfiles.mockResolvedValue([])
   })
 
@@ -110,6 +106,9 @@ describe('Couriers customers page data', () => {
     )
 
     expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
+    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
+      limit: 100,
+    })
     // The primary contact's email is preferred for the business row.
     expect(screen.getByText('nia@bluemountain.test')).toBeVisible()
     // Identity is resolved by id for the enrolled set only.
@@ -439,7 +438,7 @@ describe('Couriers customers page data', () => {
     )
 
     expect(screen.getByText('Suspended Person')).toBeVisible()
-    expect(mocks.listProfiles).toHaveBeenCalledWith({
+    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
       limit: 100,
       status: 'SUSPENDED',
     })
@@ -456,7 +455,7 @@ describe('Couriers customers page data', () => {
     )
 
     // The filter applies to the courier profile, not the registry customer.
-    expect(mocks.listProfiles).toHaveBeenCalledWith({
+    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
       limit: 100,
       status: 'SUSPENDED',
     })
