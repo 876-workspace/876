@@ -5,6 +5,8 @@ import { create876CouriersAdminClient } from '@876/couriers/admin'
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 import { headers } from 'next/headers'
 
+import { getAccessToken } from '@/lib/auth/session'
+
 function getCouriersAdminOptions(requestId?: string) {
   return {
     baseUrl: process.env.COURIERS_API_URL,
@@ -35,6 +37,12 @@ function createCouriers876Client(requestId?: string) {
         },
       },
       couriers: {
+        client: {
+          baseUrl: process.env.COURIERS_API_URL,
+          apiKey: process.env.API_876_KEY!,
+          accessToken: 'placeholder',
+          requestId,
+        },
         admin: getCouriersAdminOptions(requestId),
       },
       storage: {
@@ -42,8 +50,10 @@ function createCouriers876Client(requestId?: string) {
         requestId,
       },
       widgets: {
-        baseUrl: process.env.WIDGETS_API_URL,
-        serviceKey: process.env.WIDGETS_SERVICE_KEY,
+        member: {
+          baseUrl: process.env.WIDGETS_API_URL,
+          serviceKey: process.env.WIDGETS_SERVICE_KEY,
+        },
       },
     },
   })
@@ -70,8 +80,47 @@ export const billingIntegration = create876BillingIntegrationClient(
 )
 
 export async function get876Client() {
-  const requestId = (await headers()).get('x-request-id') ?? undefined
-  return createCouriers876Client(requestId)
+  const [accessToken, requestHeaders] = await Promise.all([
+    getAccessToken(),
+    headers(),
+  ])
+  const requestId = requestHeaders.get('x-request-id') ?? undefined
+  if (!accessToken) {
+    return $876 as unknown as ReturnType<typeof createCouriers876Client>
+  }
+  return create876ServerClient({
+    app: 'couriers',
+    apiKey: process.env.API_876_KEY!,
+    accessToken,
+    requestId,
+    services: {
+      couriers: {
+        client: {
+          baseUrl: process.env.COURIERS_API_URL,
+          apiKey: process.env.API_876_KEY!,
+          accessToken,
+          requestId,
+        },
+      },
+      billing: {
+        tenant: {
+          baseUrl: process.env.BILLING_API_URL,
+          apiKey: process.env.API_876_KEY!,
+          requestId,
+        },
+      },
+      storage: {
+        internalKey: process.env.STORAGE_INTERNAL_KEY!,
+        requestId,
+      },
+      widgets: {
+        member: {
+          baseUrl: process.env.WIDGETS_API_URL,
+          serviceKey: process.env.WIDGETS_SERVICE_KEY,
+        },
+      },
+    },
+  }) as unknown as ReturnType<typeof createCouriers876Client>
 }
 
 export type Couriers876Client = ReturnType<typeof createCouriers876Client>

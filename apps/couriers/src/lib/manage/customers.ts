@@ -19,13 +19,14 @@ export async function enrollManagedCustomer({
   tenant: CouriersTenant
   params: CustomerEnrollmentParams
 }): ServiceResult<CustomerView> {
-  const result = await $876.customers.enroll(tenant.id, {
-    billing_customer_id: params.billingCustomerId,
-    branch_id: params.branchId,
-    ...(params.status === undefined ? {} : { status: params.status }),
-    ...(params.isCommercial === undefined
-      ? {}
-      : { is_commercial: params.isCommercial }),
+  const { get876Client } = await import('@/lib/876')
+  const client = await get876Client()
+  const result = await client.customers.create({
+    mode: 'existing',
+    billingCustomerId: params.billingCustomerId,
+    branchId: params.branchId,
+    status: params.status,
+    isCommercial: params.isCommercial,
   })
   if (result.error !== null) return couriersFailure(result.error)
 
@@ -39,20 +40,21 @@ export async function createManagedCustomer({
   tenant: CouriersTenant
   params: CustomerCreateParams
 }): ServiceResult<CustomerView> {
-  const result = await $876.customers.create(tenant.id, {
-    idempotency_key: params.idempotencyKey,
-    customer_kind: params.customerKind ?? 'INDIVIDUAL',
-    ...(params.firstName === undefined ? {} : { first_name: params.firstName }),
-    ...(params.lastName === undefined ? {} : { last_name: params.lastName }),
-    ...(params.companyName === undefined
-      ? {}
-      : { company_name: params.companyName }),
-    email: params.email ?? null,
-    phone: params.phone ?? null,
-    ...(params.branchId === undefined ? {} : { branch_id: params.branchId }),
+  const { get876Client } = await import('@/lib/876')
+  const client = await get876Client()
+  const result = await client.customers.create({
+    mode: 'new',
+    idempotencyKey: params.idempotencyKey,
+    customerKind: params.customerKind ?? 'INDIVIDUAL',
+    firstName: params.firstName,
+    lastName: params.lastName,
+    companyName: params.companyName,
+    email: params.email ?? undefined,
+    phone: params.phone ?? undefined,
+    branchId: params.branchId,
     status: params.status,
-    is_commercial: params.isCommercial,
-    trn: params.trn ?? null,
+    isCommercial: params.isCommercial,
+    trn: params.trn ?? undefined,
   })
   if (result.error !== null) return couriersFailure(result.error)
   return { data: toCustomerView(result.data), error: null }
@@ -67,20 +69,22 @@ export async function updateManagedCustomer({
   id: string
   params: CustomerUpdateParams
 }): ServiceResult<CustomerView> {
-  const result = await $876.customers.update(tenant.id, id, {
-    ...(params.firstName === undefined ? {} : { first_name: params.firstName }),
-    ...(params.lastName === undefined ? {} : { last_name: params.lastName }),
+  const { get876Client } = await import('@/lib/876')
+  const client = await get876Client()
+  const result = await client.customers.update(id, {
+    ...(params.firstName === undefined ? {} : { firstName: params.firstName }),
+    ...(params.lastName === undefined ? {} : { lastName: params.lastName }),
     ...(params.companyName === undefined
       ? {}
-      : { company_name: params.companyName }),
+      : { companyName: params.companyName }),
     ...(params.email === undefined ? {} : { email: params.email }),
     ...(params.phone === undefined ? {} : { phone: params.phone }),
-    ...(params.branchId === undefined ? {} : { branch_id: params.branchId }),
+    ...(params.branchId === undefined ? {} : { branchId: params.branchId }),
     ...(params.status === undefined ? {} : { status: params.status }),
     ...(params.trn === undefined ? {} : { trn: params.trn }),
     ...(params.isCommercial === undefined
       ? {}
-      : { is_commercial: params.isCommercial }),
+      : { isCommercial: params.isCommercial }),
   })
   if (result.error !== null) {
     if (result.error.code === 'customer/identity-locked')

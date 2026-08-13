@@ -1,5 +1,6 @@
 export { createTenantsRouter } from './tenants.routes'
+export * from './tenants.service'
+export * from './tenants.schemas'
+export * from './tenants.serializers'
 export * as tenantsService from './tenants.service'
 export * as tenantsRepository from './tenants.repository'
-export { serializeTenant, type TenantRow } from './tenants.serializers'
-export { tenantSchema, type Tenant } from './tenants.schemas'

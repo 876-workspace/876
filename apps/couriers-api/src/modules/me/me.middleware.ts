@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 
 import { getPrincipal } from '@/http/auth'
 import { errors } from '@/http/errors'
-import { retrieveTenantByOrgId } from '@/modules/tenants/tenants.service'
+import { retrieveTenantByOrgId } from '@/modules/tenants'
 
 /**
  * Resolves the authenticated caller's own Courier tenant from the bearer
@@ -29,10 +29,6 @@ export async function resolveCurrentTenant(
 }
 
 declare global {
-  // `namespace` is the only way to augment Express's Request type here; the
-  // config registers the TypeScript parser but not the plugin that owns
-  // no-namespace, so disabling that rule would reference a rule ESLint
-  // cannot resolve.
   namespace Express {
     interface Request {
       tenant?: {

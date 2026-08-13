@@ -9,7 +9,7 @@ import { getPrincipal } from '@/http/auth'
 import { errors } from '@/http/errors'
 import { resolveCurrentTenant } from './me.middleware'
 
-import * as customersService from '@/modules/customers/customers.service'
+import * as customersService from '@/modules/customers'
 import {
   customerSchema,
   customerEnrollmentBodySchema,
@@ -21,28 +21,28 @@ import {
   mailboxCreateBodySchema,
   mailboxUpdateBodySchema,
   mailboxSchema,
-} from '@/modules/customers/customers.schemas'
-import * as packagesService from '@/modules/packages/packages.service'
+} from '@/modules/customers'
+import * as packagesService from '@/modules/packages'
 import {
   packageSchema,
   listPackagesQuerySchema,
   createPackageBodySchema,
   updatePackageBodySchema,
-} from '@/modules/packages/packages.schemas'
-import * as branchesService from '@/modules/branches/branches.service'
+} from '@/modules/packages'
+import * as branchesService from '@/modules/branches'
 import {
   branchSchema,
   createBranchBodySchema,
   updateBranchBodySchema,
   listBranchesQuerySchema,
-} from '@/modules/branches/branches.schemas'
-import * as warehousesService from '@/modules/warehouses/warehouses.service'
+} from '@/modules/branches'
+import * as warehousesService from '@/modules/warehouses'
 import {
   warehouseSchema,
   createWarehouseBodySchema,
   updateWarehouseBodySchema,
-} from '@/modules/warehouses/warehouses.schemas'
-import * as teamService from '@/modules/team/team.service'
+} from '@/modules/warehouses'
+import * as teamService from '@/modules/team'
 import {
   roleSchema,
   teamMemberSchema,
@@ -51,30 +51,30 @@ import {
   memberBodySchema,
   memberPatchBodySchema,
   memberListQuerySchema,
-} from '@/modules/team/team.schemas'
-import * as settingsService from '@/modules/settings/settings.service'
+} from '@/modules/team'
+import * as settingsService from '@/modules/settings'
 import {
   moduleKeySchema,
   moduleStateSchema,
   modulePreferencesSchema,
   modulePreferencesUpdateBodySchema,
   toggleBodySchema,
-} from '@/modules/settings/settings.schemas'
-import * as addressesService from '@/modules/addresses/addresses.service'
+} from '@/modules/settings'
+import * as addressesService from '@/modules/addresses'
 import {
   addressSchema,
   addressCreateBodySchema,
   addressUpdateBodySchema,
   listAddressesQuerySchema,
-} from '@/modules/addresses/addresses.schemas'
-import * as mailboxesService from '@/modules/mailboxes/mailboxes.service'
+} from '@/modules/addresses'
+import * as mailboxesService from '@/modules/mailboxes'
 import {
   mailboxSchema as tenantMailboxSchema,
   listMailboxesQuerySchema,
-} from '@/modules/mailboxes/mailboxes.schemas'
-import * as tenantsService from '@/modules/tenants/tenants.service'
-import { tenantSchema } from '@/modules/tenants/tenants.schemas'
-import { idParamsSchema, type IdParams } from '@/modules/team/team.schemas'
+} from '@/modules/mailboxes'
+import * as tenantsService from '@/modules/tenants'
+import { tenantSchema } from '@/modules/tenants'
+import { idParamsSchema, type IdParams } from '@/modules/team'
 
 /**
  * Application-context Couriers routes. The tenant is resolved from the
