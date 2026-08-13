@@ -20,9 +20,13 @@ export async function POST(request: NextRequest, context: Context) {
 
   const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
   const $876 = createConsole876Client(requestId)
-  const { data, error } = await $876.customers.admin.create(organizationId, body, {
-    idempotencyKey: `console:${requestId}`,
-  })
+  const { data, error } = await $876.customers.admin.create(
+    organizationId,
+    body,
+    {
+      idempotencyKey: `console:${requestId}`,
+    }
+  )
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to create Billing customer.' },

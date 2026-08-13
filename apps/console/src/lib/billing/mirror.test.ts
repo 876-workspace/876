@@ -32,9 +32,28 @@ vi.mock('@/lib/876', () => ({
     memberships: { list: mocks.membershipsList },
   },
   $876: {
-    organizations: { admin: { retrieve: mocks.orgRetrieve, list: mocks.orgList, subscriptions: { list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }) } } },
-    products: { admin: { create: mocks.productCreate, retrieve: mocks.productRetrieve, list: mocks.productList } },
-    subscriptions: { admin: { create: mocks.subscriptionCreate, retrieve: mocks.subscriptionRetrieve } },
+    organizations: {
+      admin: {
+        retrieve: mocks.orgRetrieve,
+        list: mocks.orgList,
+        subscriptions: {
+          list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }),
+        },
+      },
+    },
+    products: {
+      admin: {
+        create: mocks.productCreate,
+        retrieve: mocks.productRetrieve,
+        list: mocks.productList,
+      },
+    },
+    subscriptions: {
+      admin: {
+        create: mocks.subscriptionCreate,
+        retrieve: mocks.subscriptionRetrieve,
+      },
+    },
     memberships: { admin: { list: mocks.membershipsList } },
     users: { admin: { retrieve: mocks.usersRetrieve } },
     plans: { admin: { create: mocks.planCreate } },
@@ -214,10 +233,22 @@ function setUpMocks() {
     success({ object: 'subscription', id: 'blsub_1' })
   )
   mocks.productList.mockReturnValue(
-    success({ object: 'list', data: [], has_more: false, url: '/products', total_count: 0 })
+    success({
+      object: 'list',
+      data: [],
+      has_more: false,
+      url: '/products',
+      total_count: 0,
+    })
   )
   mocks.orgList.mockReturnValue(
-    success({ object: 'list', data: [], has_more: false, url: '/organizations', total_count: 0 })
+    success({
+      object: 'list',
+      data: [],
+      has_more: false,
+      url: '/organizations',
+      total_count: 0,
+    })
   )
 }
 

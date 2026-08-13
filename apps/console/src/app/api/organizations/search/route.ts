@@ -16,7 +16,10 @@ export async function GET(request: NextRequest): Promise<Response> {
     return apiJson({ data: [] })
   }
 
-  const { data, error } = await $876.organizations.admin.search({ query, limit: 10 })
+  const { data, error } = await $876.organizations.admin.search({
+    query,
+    limit: 10,
+  })
   if (error) {
     return apiJson(
       { error: error.message ?? 'Search failed.' },

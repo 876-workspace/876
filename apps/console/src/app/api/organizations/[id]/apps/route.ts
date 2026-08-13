@@ -32,11 +32,14 @@ export async function POST(
     return apiJson({ error: 'Provide app_slug or app_id.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.organizations.admin.subscriptions.create(orgId, {
-    appSlug: body.app_slug,
-    appId: body.app_id,
-    priceId: body.price_id,
-  })
+  const { data, error } = await $876.organizations.admin.subscriptions.create(
+    orgId,
+    {
+      appSlug: body.app_slug,
+      appId: body.app_id,
+      priceId: body.price_id,
+    }
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to create subscription.' },

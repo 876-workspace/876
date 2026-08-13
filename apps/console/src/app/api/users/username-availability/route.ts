@@ -17,9 +17,12 @@ export async function GET(request: NextRequest): Promise<Response> {
   const excludeUserId =
     request.nextUrl.searchParams.get('exclude_user_id') ?? undefined
 
-  const { data, error } = await $876.users.admin.checkUsernameAvailability(username, {
-    excludeUserId,
-  })
+  const { data, error } = await $876.users.admin.checkUsernameAvailability(
+    username,
+    {
+      excludeUserId,
+    }
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to check username.' },

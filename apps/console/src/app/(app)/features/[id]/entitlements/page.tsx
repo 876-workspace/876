@@ -22,7 +22,10 @@ export default async function FeatureEntitlementsPage({ params }: Props) {
   // Children AND with this flag, so they belong on the same screen — an admin
   // reading "enabled" here needs to see what that does and does not switch on.
   const [siblingsResult, appsResult] = await Promise.all([
-    $876.features.admin.list({ limit: 100, appId: feature.app_id ?? undefined }),
+    $876.features.admin.list({
+      limit: 100,
+      appId: feature.app_id ?? undefined,
+    }),
     $876.apps.admin.list({ limit: 100, clientType: 'public' }),
   ])
   const children = (siblingsResult.data?.data ?? []).filter(

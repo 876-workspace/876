@@ -47,7 +47,10 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (access.response) return access.response
 
   const { id } = await context.params
-  const result = await $876.notes.admin.delete({ userId: access.sessionUser.id }, id)
+  const result = await $876.notes.admin.delete(
+    { userId: access.sessionUser.id },
+    id
+  )
   if (result.error)
     return apiError(result.error.message, {
       status: result.error.message.includes('not found') ? 404 : 502,

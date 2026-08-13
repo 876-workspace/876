@@ -16,7 +16,9 @@ type Props = {
 export default async function NewFeaturePage({ searchParams }: Props) {
   const { parent } = await searchParams
   const [parentResult, ...results] = await Promise.all([
-    parent ? $876.features.admin.retrieve(parent) : Promise.resolve({ data: null }),
+    parent
+      ? $876.features.admin.retrieve(parent)
+      : Promise.resolve({ data: null }),
     ...APP_KINDS.map((appKind) =>
       $876.apps.admin.list({
         limit: 100,

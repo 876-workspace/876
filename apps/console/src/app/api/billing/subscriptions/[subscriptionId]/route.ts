@@ -24,7 +24,10 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.subscriptions.admin.update(subscriptionId, body)
+  const { data, error } = await $876.subscriptions.admin.update(
+    subscriptionId,
+    body
+  )
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to update subscription.' },

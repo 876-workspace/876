@@ -44,7 +44,10 @@ export async function DELETE(
   if (response) return response
 
   const { userId, featureId } = await context.params
-  const { data, error } = await $876.users.admin.revokeFeature(userId, featureId)
+  const { data, error } = await $876.users.admin.revokeFeature(
+    userId,
+    featureId
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to revoke user feature.' },

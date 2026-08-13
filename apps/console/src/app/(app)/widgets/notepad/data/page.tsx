@@ -52,9 +52,9 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
   )
 
   const apps = new Map(
-    (await $876.apps.admin.list({ limit: 100, clientType: 'public' })).data?.data.map(
-      (app) => [app.slug, app.name]
-    ) ?? []
+    (
+      await $876.apps.admin.list({ limit: 100, clientType: 'public' })
+    ).data?.data.map((app) => [app.slug, app.name]) ?? []
   )
 
   const rows: AdminNoteRow[] = notes.map((entry) => {

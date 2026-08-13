@@ -20,7 +20,11 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.users.admin.updateAddress(id, addressId, body)
+  const { data, error } = await $876.users.admin.updateAddress(
+    id,
+    addressId,
+    body
+  )
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to update address.' },

@@ -89,7 +89,9 @@ async function UsersTableData({ searchParams }: Pick<Props, 'searchParams'>) {
 
   const enrollmentsMap: Record<string, AdminUserApp[]> = {}
   if (users.length > 0) {
-    const result = await $876.users.admin.listAppsByUsers(users.map((u) => u.id))
+    const result = await $876.users.admin.listAppsByUsers(
+      users.map((u) => u.id)
+    )
     if (!result.error && result.data) {
       for (const group of result.data.data) {
         enrollmentsMap[group.user_id] = group.data ?? []
