@@ -9,12 +9,13 @@ export const $876 = create876ServerClient({
     billing: {
       tenant: {
         baseUrl: process.env.BILLING_API_URL,
-        apiKey: process.env.BILLING_API_876_KEY!,
       },
     },
     widgets: {
-      baseUrl: process.env.WIDGETS_API_URL,
-      serviceKey: process.env.WIDGETS_SERVICE_KEY,
+      member: {
+        baseUrl: process.env.WIDGETS_API_URL,
+        serviceKey: process.env.WIDGETS_SERVICE_KEY,
+      },
     },
   },
 })
