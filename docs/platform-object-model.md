@@ -67,6 +67,13 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 Future (documented, not yet implemented):
 `$876.events`, `$876.venues`, `$876.tickets`, `$876.jobs`, `$876.candidates`, `$876.jobApplications`, `$876.transactions`, `$876.activity` — do not add stub resources.
 
+**Known deviations (this table is the target; the code is not fully there yet).** Two nouns currently resolve to a _different_ entity depending on app context, violating the "one noun, one meaning" rule above:
+
+- `$876.products` — resolves to the **Core entitlement-plan catalog** on the Enterprise/platform surface and `$876.products.admin` in Console, instead of the Billing commercial catalog this table declares. Planned fix: expose the core catalog as `$876.entitlementPlans`.
+- `$876.subscriptions.admin` — resolves in Console to **Core org→app subscriptions**, under the noun reserved here for Billing recurring agreements. Planned fix: use `$876.entitlements.admin` only.
+
+Both are recorded machine-readably in `packages/client/src/resource-manifest.ts` (`KNOWN_COLLISIONS`) and the phased migration is [ADR-011](architecture/011-unified-facade-namespace-invariants.md).
+
 ---
 
 ## Resource details — ownership & current SDK mapping
