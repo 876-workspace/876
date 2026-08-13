@@ -1,6 +1,6 @@
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
-import { billingIntegration, get876Client } from '@/lib/876'
+import { billingIntegration, couriersAdmin } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toCustomerView } from '@/lib/couriers'
 import { customerStatusSchema, type CustomerView } from '@/types/customer'
@@ -42,15 +42,13 @@ export async function CustomersTableData({ params, searchParams }: Props) {
       />
     )
 
-  const request876 = await get876Client()
-
   const profiles: CustomerView[] = []
   let customersError: { code: string; message: string } | null = null
   let startingAfter: string | undefined
   for (;;) {
     try {
       const page = requireCouriersData(
-        await request876.customers.list({
+        await couriersAdmin.customers.list(ctx.tenant.id, {
           ...(profileStatus === undefined ? {} : { status: profileStatus }),
           limit: 100,
           ...(startingAfter === undefined
