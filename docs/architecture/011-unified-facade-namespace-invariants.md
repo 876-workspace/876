@@ -82,6 +82,16 @@ against.
 - **Surface-contract tests** lock per-app presence (the #255/#256 casualties)
   and absence (no cross-app leakage; browser never exposes server-only/admin
   resources).
+- **`mobileNumbers` / `mobileNumberVerifications`** — self-scoped
+  (`/users/me/mobile-numbers`) session-tier resources that existed in `@876/sdk`
+  but were absent from the composed surface (the same omission class as
+  #255/#256) — are added to the core base and browser surfaces and asserted by
+  the contract test.
+- **Dead composition layer removed.** `packages/client/src/resources/**` (40+
+  optional/undefined resource adapters) had **zero importers** — a second,
+  divergent composition system beside the live composers. Its one useful output,
+  the canonical ownership rules, is now carried by `resource-manifest.ts`, so the
+  tree is deleted, leaving a single source of composition truth.
 
 ### 3.3 `.admin` is a privilege tier, not a second resource
 
@@ -131,7 +141,16 @@ change:
   entitlement. Verify the default `876-billing` provisioning entitlement's
   intent before changing it.
 - **Verify the customer-ensure outbox wiring** survives the TypeScript
-  provisioning port end-to-end.
+  provisioning port end-to-end. Finding from this review: `provisionOrganization`
+  accepts an optional `enqueueCustomerEnsure` hook that defaults to a
+  `NOOP_ENQUEUE`, and **every production caller** (`organization-bootstrap.ts`,
+  `organizations.service.ts`, `auth.ts`) invokes it **without** injecting the
+  hook — so at the provisioning call path the org customer-ensure is a no-op.
+  This is flagged, not fixed here, because the correct invariant is nuanced (per
+  `customer-architecture.md`: **orgs** emit `customer.ensure`, free **user**
+  accounts must not) and a separate reconcile/outbox path may cover it — it needs
+  an end-to-end provisioning→outbox test and product certainty before any change,
+  not a blind wiring edit.
 - **Typed per-app service constructors** to replace the `unknown`/`never` casts
   in `createServiceClients()`.
 
