@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const result = await $876.couriersRoles.create(ctx.tenant.id, params)
+  const result = await $876.roles.create(ctx.tenant.id, params)
   if (result.error)
     return apiJson(
       { error: result.error.message },

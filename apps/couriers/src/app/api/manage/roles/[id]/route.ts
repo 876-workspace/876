@@ -41,7 +41,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await $876.couriersRoles.update(ctx.tenant.id, id, params)
+  const result = await $876.roles.update(ctx.tenant.id, id, params)
   if (result.error)
     return apiJson(
       { error: result.error.message },
@@ -67,7 +67,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await $876.couriersRoles.delete(ctx.tenant.id, id)
+  const result = await $876.roles.delete(ctx.tenant.id, id)
   if (result.error)
     return apiJson(
       { error: result.error.message },

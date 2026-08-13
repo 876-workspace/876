@@ -91,7 +91,7 @@ async function UsersSettingsData({ params, searchParams }: Props) {
 
   const platform = await getPlatformClient()
   const [membersResult, roleViews, invitesResult] = await Promise.all([
-    $876.team.list(ctx.tenant.id, { status }),
+    $876.memberships.list(ctx.tenant.id, { status }),
     listTeamRoles(ctx.tenant.id),
     platform.invites.list(ctx.orgId),
   ])

@@ -42,7 +42,7 @@ async function RoleData({ orgSlug, roleId }: RoleDataProps) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return null
 
-  const roleResult = await $876.couriersRoles.retrieve(ctx.tenant.id, roleId)
+  const roleResult = await $876.roles.retrieve(ctx.tenant.id, roleId)
   if (isCouriersNotFound(roleResult)) notFound()
   const role = toRoleView(requireCouriersData(roleResult))
 

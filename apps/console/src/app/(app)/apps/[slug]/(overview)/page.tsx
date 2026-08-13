@@ -14,7 +14,7 @@ import {
 } from '@876/ui/card'
 import { Button } from '@876/ui/button'
 import { Skeleton } from '@876/ui/skeleton'
-import { $876 } from '@/lib/876'
+import { $876, billingAdmin } from '@/lib/876'
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await $876.stats.apps.retrieve(sourceAppId)
+    const result = await billingAdmin.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',

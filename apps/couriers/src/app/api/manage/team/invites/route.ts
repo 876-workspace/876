@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const roleResult = await $876.couriersRoles.retrieve(
+  const roleResult = await $876.roles.retrieve(
     ctx.tenant.id,
     parsed.data.roleId
   )

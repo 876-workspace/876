@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { $876 } from '@/lib/876'
+import { billingAdmin } from '@/lib/876'
 import { resolveApp } from '../../../_data'
 import { SubscribersTable } from './_components/subscribers-table'
 
@@ -9,7 +9,7 @@ type Props = { params: Promise<{ slug: string; planSlug: string }> }
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await $876.stats.apps.retrieve(sourceAppId)
+    const result = await billingAdmin.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',

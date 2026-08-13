@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { get876Client } from '@/lib/876'
+import { billingIntegration } from '@/lib/876'
 import { ensureSharedCoreUserCustomer } from '@/lib/finance/customers'
 import { getError, type CouriersErrorCode } from '@/lib/errors'
 import type {
@@ -33,9 +33,8 @@ export async function ensurePortalCustomer(
   if (!isPortalNotFound(existing))
     return localFailure('portal/enrollment-failed')
 
-  const $876 = await get876Client()
   const billingCustomer = await ensureSharedCoreUserCustomer(
-    $876.billing,
+    billingIntegration,
     params.tenant.orgId,
     {
       id: params.userId,

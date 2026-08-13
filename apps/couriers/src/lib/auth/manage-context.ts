@@ -3,7 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
 
-import { $876 } from '@/lib/876'
+import { couriersAdmin } from '@/lib/876'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { toCouriersTenant } from '@/lib/couriers'
@@ -82,7 +82,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    const tenant = await $876.tenants.retrieve({
+    const tenant = await couriersAdmin.tenants.retrieve({
       organizationId: match.organization.id,
     })
     resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
@@ -97,7 +97,7 @@ export const getManageContext = cache(async function getManageContext(
     resolvedOrgSlug = match.organization.slug
     resolvedOrgLogoUrl = match.organization.logo_url
     resolvedRole = match.role as OrgRole
-    const tenant = await $876.tenants.retrieve({
+    const tenant = await couriersAdmin.tenants.retrieve({
       organizationId: orgId,
     })
     resolvedTenant = tenant.data ? toCouriersTenant(tenant.data) : null
@@ -105,7 +105,7 @@ export const getManageContext = cache(async function getManageContext(
     // Email login: pick first active org with a courier tenant; fall back to first active org.
     for (const m of memberships) {
       if (m.organization.status !== 'active') continue
-      const tenant = await $876.tenants.retrieve({
+      const tenant = await couriersAdmin.tenants.retrieve({
         organizationId: m.organization.id,
       })
       if (tenant.data) {
