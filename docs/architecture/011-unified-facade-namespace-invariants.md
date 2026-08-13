@@ -3,7 +3,7 @@
 | Field            | Value                                                                                                                                                                                                    |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Document ID**  | ADR-011 / SPEC-FACADE-INVARIANTS                                                                                                                                                                         |
-| **Status**       | Accepted (invariants + hardening); namespace migration **Planned / phased**                                                                                                                              |
+| **Status**       | Accepted — invariants + hardening + the `products`→`entitlementPlans` migration landed; remaining items in §4 are follow-ups                                                                             |
 | **Audience**     | Platform engineers, product app authors, agents                                                                                                                                                          |
 | **Primary code** | `packages/client`, `docs/platform-object-model.md`                                                                                                                                                       |
 | **Related**      | PR #254 (unified facade), #255/#256 (missing-resource repairs), #257 (auth-tier repair), [platform-object-model](../platform-object-model.md), [sdk-conventions](../../.claude/rules/sdk-conventions.md) |
@@ -19,8 +19,9 @@ rather than microservice topology. That direction is sound and is kept.
 An adversarial architecture review of #254 (and its repair chain #255–#257)
 found that the facade, being flat, can **hide real semantic collisions** at the
 scale 876 is built for. This ADR records the invariants a unified facade must
-hold, the concrete violations found, and the hardening landed now versus the
-migration deferred to a dedicated change.
+hold, the concrete violations found, the hardening and the one real namespace
+collision (`products`) resolved here, and the deeper items deferred as follow-ups
+(§4).
 
 The governing invariant:
 
@@ -92,6 +93,9 @@ against.
   divergent composition system beside the live composers. Its one useful output,
   the canonical ownership rules, is now carried by `resource-manifest.ts`, so the
   tree is deleted, leaving a single source of composition truth.
+- **`products` collision resolved (see §3.4).** The Core entitlement-plan
+  catalog is exposed as `$876.entitlementPlans`; `$876.products` is now
+  Billing-only. `KNOWN_COLLISIONS` is consequently empty.
 
 ### 3.3 `.admin` is a privilege tier, not a second resource
 
@@ -103,25 +107,29 @@ soft-delete). There are no "admin products" as a separate entity; there are
 resource) by swapping the whole root between privilege tiers — nest the
 privileged operations under `.admin`.
 
-### 3.4 Namespace migration — PLANNED, phased, not in this change
+### 3.4 Namespace migration — LANDED
 
-The `products` collision requires renaming the **Core entitlement-plan
+The `products` collision is resolved by renaming the **Core entitlement-plan
 catalog** off the Billing `products` noun:
 
-- Expose the Core app-plan catalog as **`$876.entitlementPlans`** (with
-  `.admin`); keep `$876.products` exclusively the Billing commercial catalog.
+- The Core app-plan catalog is exposed as **`$876.entitlementPlans`** (the base
+  surface noun, with `.admin` in Console); **`$876.products` is now exclusively
+  the Billing commercial catalog.**
+- Call sites updated: Console's 9 `$876.products.admin.list` pages/`_data`
+  became `$876.entitlementPlans.admin.list`; Enterprise's 2 `client.products`
+  facade reads became `client.entitlementPlans`.
+- **Deliberately not renamed** (they are not the facade): `coreAdmin.products.*`
+  (Console route handlers + `mirror.ts`, the narrow `@876/admin` client), the
+  browser RPC `client.products.*` (`@/lib/client`, Console + Billing), the
+  `/api/products` route paths, and the `Product` type — all keep `products`
+  because a rename there would either break a route/contract or touch a
+  different surface than the one that collided.
 
 (The review also proposed removing `$876.subscriptions.admin`; on inspection
 that is not a collision — see §2 — so it is left as-is.)
 
-This is deferred because its blast radius spans multiple Next apps
-(Console ~13 call sites for `$876.products.admin`, Enterprise `client.products`,
-plus browser typed clients and route handlers) and needs a full multi-app
-typecheck/Cloudflare-build verification and product sign-off — exactly the class
-of change this repo's process wants isolated and reviewed on its own. Until it
-lands, the collisions are **recorded** in `KNOWN_COLLISIONS` so the debt is
-visible in code and CI, and the surface-contract test prevents the collision set
-from growing.
+`KNOWN_COLLISIONS` is now empty; it is retained as a typed, asserted list so the
+surface-contract test fails if a new collision is ever introduced.
 
 ## 4. Out of scope (tracked, not decided here)
 

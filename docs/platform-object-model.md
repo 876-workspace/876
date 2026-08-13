@@ -67,11 +67,16 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 Future (documented, not yet implemented):
 `$876.events`, `$876.venues`, `$876.tickets`, `$876.jobs`, `$876.candidates`, `$876.jobApplications`, `$876.transactions`, `$876.activity` — do not add stub resources.
 
-**Known deviation (this table is the target; the code is not fully there yet).** One noun currently resolves to a _different_ entity depending on app context, violating the "one noun, one meaning" rule above:
-
-- `$876.products` — resolves to the **Core entitlement-plan catalog** on the Enterprise/platform surface and `$876.products.admin` in Console, instead of the Billing commercial catalog this table declares. Planned fix: expose the core catalog as `$876.entitlementPlans`.
-
-This is recorded machine-readably in `packages/client/src/resource-manifest.ts` (`KNOWN_COLLISIONS`) and the phased migration is [ADR-011](architecture/011-unified-facade-namespace-invariants.md). (`$876.subscriptions.admin` was also reviewed as a possible collision but is **not** one — `@876/admin`'s top-level `subscriptions` is `/billing/subscriptions`, distinct from the org→app entitlement at `$876.organizations.admin.subscriptions`.)
+**Entitlement plans vs commercial products.** The Core per-app plan/price
+catalog (Core `/products`) is exposed as **`$876.entitlementPlans`** (with
+`.admin` in Console), so `$876.products` is unambiguously the **Billing
+commercial catalog** on every surface — resolving the one namespace collision the
+PR #254 review found. Add `$876.entitlementPlans` to the resource table when this
+section is next revised. (`$876.subscriptions.admin` was also reviewed as a
+possible collision but is **not** one — `@876/admin`'s top-level `subscriptions`
+is `/billing/subscriptions`, distinct from the org→app entitlement at
+`$876.organizations.admin.subscriptions`.) See [ADR-011](architecture/011-unified-facade-namespace-invariants.md)
+and `packages/client/src/resource-manifest.ts`.
 
 ---
 
