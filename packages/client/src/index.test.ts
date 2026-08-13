@@ -14,7 +14,10 @@ function consoleOptions() {
         internalKey: 'internal',
         apiKey: '876_app_secret_test1234567890123456',
       },
-      billing: { admin: { internalKey: 'billing-internal' } },
+      billing: {
+        integration: { internalKey: 'billing-internal' },
+        admin: { internalKey: 'billing-internal' },
+      },
       couriers: {
         admin: {
           internalKey: 'couriers-internal',

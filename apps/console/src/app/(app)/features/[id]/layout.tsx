@@ -26,7 +26,7 @@ export default async function FeatureDetailLayout({ children, params }: Props) {
   // the actions toolbar alone, and awaiting it here would suppress loading.tsx
   // for every route beneath this layout, so it is passed down unresolved and
   // unwrapped behind the toolbar's own Suspense boundary.
-  const apps: Promise<AdminApp[]> = $876.apps
+  const apps: Promise<AdminApp[]> = $876.apps.admin
     .list({ appKind: 'internal', limit: 100 })
     .then((result) => result.data?.data ?? [])
 

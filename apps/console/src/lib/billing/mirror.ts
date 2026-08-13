@@ -10,7 +10,7 @@ import type {
 import type { CustomerCreateParams } from '@876/billing/admin'
 import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 
-import { $876, coreAdmin } from '@/lib/876'
+import { $876, billingAdmin, coreAdmin } from '@/lib/876'
 
 /**
  * One-way Console -> Billing mirror. Core stays the entitlement source of
@@ -136,7 +136,7 @@ export async function mirrorCoreProductPrices(
 
   // Control-plane workflow: Console intentionally coordinates Core entitlements + Billing commercial projection.
   // Uses standard create() (idempotent via externalReference/sourceAppId) — Billing service handles idempotency.
-  const createdProduct = await $876.products.admin.create({
+  const createdProduct = await billingAdmin.products.create({
     sourceAppId: product.app_id,
     slug: product.app_slug ?? product.app_id,
     name: product.app_name ?? product.app_slug ?? product.app_id,
@@ -289,7 +289,7 @@ export async function mirrorCoreSubscription(
     return false
   }
 
-  const createdSubscription = await $876.subscriptions.admin.create({
+  const createdSubscription = await billingAdmin.subscriptions.create({
     externalReference: subscription.id,
     sourceAppId: subscription.app_id,
     customerId: createdCustomer.data.id,

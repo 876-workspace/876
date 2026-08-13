@@ -60,7 +60,7 @@ async function TeamTableData() {
 
   const teamMembers: TeamMember[] = await Promise.all(
     grants.map(async (grant) => {
-      const identity = await $876.users
+      const identity = await $876.users.admin
         .retrieve({ id: grant.userId })
         .then((res) => res.data)
         .catch(() => null)

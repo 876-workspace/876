@@ -1,16 +1,14 @@
 import 'server-only'
 
-import { create876ServerClient } from '@876/client/server'
+import { createWidgetsClient } from '@876/widgets/server'
 
 /**
- * Ordinary, member-scoped 876 client used by Console-hosted product surfaces.
- * The factory—not a nested namespace—keeps these calls distinct from the
- * privileged Console client exported by `@/lib/876`.
+ * Ordinary, member-scoped widgets client used by Console-hosted product
+ * surfaces. A distinct factory — not a nested namespace — keeps these calls
+ * separate from the privileged Console client exported by `@/lib/876`.
  */
-export const $876Member = create876ServerClient({
-  widgets: {
-    baseUrl: process.env.WIDGETS_API_URL,
-    serviceKey: process.env.WIDGETS_SERVICE_KEY,
-    host: 'console',
-  },
+export const $876Member = createWidgetsClient({
+  baseUrl: process.env.WIDGETS_API_URL,
+  serviceKey: process.env.WIDGETS_SERVICE_KEY,
+  host: 'console',
 })

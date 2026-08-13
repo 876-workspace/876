@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { billingAdmin } from '@/lib/876'
+import { $876, billingAdmin } from '@/lib/876'
 import { resolveApp } from '../../../_data'
 import { SubscribersTable } from './_components/subscribers-table'
 

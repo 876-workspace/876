@@ -3,6 +3,7 @@ import 'server-only'
 import { create876AdminClient } from '@876/admin'
 import { create876ServerClient } from '@876/client/server'
 import { create876AdminClient as createBillingAdminClient } from '@876/billing/admin'
+import { create876BillingIntegrationClient } from '@876/billing/integration'
 import { createWidgetsAdminClient } from '@876/widgets/server/admin'
 
 function getBillingAdminOptions(requestId?: string) {
@@ -34,12 +35,12 @@ export function createConsole876Client(requestId?: string) {
   return create876ServerClient({
     app: 'console',
     apiKey: process.env.API_876_KEY,
-    internalKey: process.env.API_INTERNAL_KEY!,
     requestId,
     services: {
       platformAdmin: getPlatformAdminOptions(requestId),
       billing: {
         admin: getBillingAdminOptions(requestId),
+        integration: getBillingAdminOptions(requestId),
       },
       couriers: {
         admin: {
@@ -71,6 +72,14 @@ export const coreAdmin = create876AdminClient(getPlatformAdminOptions())
  * Not for use in app UI code outside `src/lib/`.
  */
 export const billingAdmin = createBillingAdminClient(getBillingAdminOptions())
+
+/**
+ * Internal Billing integration client for organization-scoped Billing
+ * resources that collide with Core resources on the canonical facade.
+ */
+export const billingIntegration = create876BillingIntegrationClient(
+  getBillingAdminOptions()
+)
 
 /**
  * Internal Widgets admin client for Console-specific widget administration

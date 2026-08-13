@@ -57,7 +57,7 @@ export interface ConsoleServerClientOptions extends BaseServerOptions {
     platformAdmin: Admin876ClientOptions
     billing: {
       admin: BillingAdminClientOptions
-      integration?: BillingIntegrationClientOptions
+      integration: BillingIntegrationClientOptions
     }
     couriers: {
       admin: CouriersAdminClientOptions

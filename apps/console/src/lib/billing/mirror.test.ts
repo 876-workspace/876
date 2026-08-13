@@ -24,6 +24,10 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/876', () => ({
+  billingAdmin: {
+    products: { create: mocks.productCreate },
+    subscriptions: { create: mocks.subscriptionCreate },
+  },
   coreAdmin: {
     products: { retrieve: mocks.productRetrieve, list: mocks.productList },
     subscriptions: { retrieve: mocks.subscriptionRetrieve },

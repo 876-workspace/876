@@ -31,7 +31,7 @@ export default async function NotepadWidgetDataPage({ searchParams }: Props) {
   if (!isSignedSession(session)) return null
 
   const actor = { userId: session.user.id }
-  const notesResult = await $876.notes.list(actor, {
+  const notesResult = await $876.notes.admin.list(actor, {
     ownerAccountId: owner || undefined,
     limit: 50,
   })

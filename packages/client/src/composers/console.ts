@@ -15,6 +15,10 @@ export function createConsoleClient(options: ConsoleServerClientOptions) {
     services.billing?.admin,
     'billing.admin'
   )
+  const billingIntegration = requireCapability(
+    services.billing?.integration,
+    'billing.integration'
+  )
   const couriersAdmin = requireCapability(
     services.couriers?.admin,
     'couriers.admin'
@@ -33,11 +37,11 @@ export function createConsoleClient(options: ConsoleServerClientOptions) {
 
   return {
     ...core,
-    products: { admin: billingAdmin.products },
+    products: { admin: platformAdmin.products },
     plans: { admin: billingAdmin.plans },
     prices: { admin: billingAdmin.prices },
-    customers: { admin: billingAdmin.customers },
-    subscriptions: { admin: billingAdmin.subscriptions },
+    customers: withAdmin(billingIntegration.customers, billingAdmin.customers),
+    subscriptions: { admin: platformAdmin.subscriptions },
     packages: { admin: couriersAdmin.packages },
     branches: { admin: couriersAdmin.branches },
     warehouses: { admin: couriersAdmin.warehouses },
