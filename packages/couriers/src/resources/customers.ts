@@ -3,9 +3,11 @@ import type { Runtime } from '../runtime'
 import {
   customerListSchema,
   customerSchema,
+  customerEnrollmentSchema,
   deletedCustomerSchema,
   type CreateCustomerBody,
   type Customer,
+  type CustomerEnrollment,
   type CustomerEnrollmentBody,
   type CustomerList,
   type DeletedCustomer,
@@ -13,7 +15,6 @@ import {
   type ListCustomersParams,
   type UpdateCustomerBody,
 } from '../admin/types/customer.schema'
-import { customerSchema as enrollmentCustomerSchema } from '../admin/types/customer.schema'
 
 export type CreateCustomerParams =
   | ({
@@ -39,7 +40,9 @@ export type CreateCustomerParams =
       userId?: string | null
     }
 
-function toCreateCustomerBody(params: Extract<CreateCustomerParams, { mode?: 'new' } | { mode?: undefined }>): CreateCustomerBody {
+function toCreateCustomerBody(
+  params: Extract<CreateCustomerParams, { mode?: 'new' } | { mode?: undefined }>
+): CreateCustomerBody {
   const kind = params.customerKind ?? 'INDIVIDUAL'
   return {
     idempotency_key: params.idempotencyKey,
@@ -60,10 +63,18 @@ export function createCustomersResource(runtime: Runtime) {
   const path = '/v1/me/customers'
   return {
     list(params: ListCustomersParams = {}) {
-      return SessionRequest<CustomerList>(runtime, { method: 'GET', path, query: params }, customerListSchema)
+      return SessionRequest<CustomerList>(
+        runtime,
+        { method: 'GET', path, query: params },
+        customerListSchema
+      )
     },
     retrieve(id: string) {
-      return SessionRequest<Customer>(runtime, { method: 'GET', path: `${path}/${encodeURIComponent(id)}` }, customerSchema)
+      return SessionRequest<Customer>(
+        runtime,
+        { method: 'GET', path: `${path}/${encodeURIComponent(id)}` },
+        customerSchema
+      )
     },
     create(params: CreateCustomerParams) {
       if ((params as { mode?: string }).mode === 'existing') {
@@ -75,16 +86,36 @@ export function createCustomersResource(runtime: Runtime) {
           is_commercial: p.isCommercial,
           user_id: p.userId ?? undefined,
         }
-        return SessionRequest<Customer>(runtime, { method: 'POST', path: `${path}/enrollments`, body }, customerSchema)
+        return SessionRequest<CustomerEnrollment>(
+          runtime,
+          { method: 'POST', path: `${path}/enrollments`, body },
+          customerEnrollmentSchema
+        )
       }
       const body = toCreateCustomerBody(params as never)
-      return SessionRequest<Customer>(runtime, { method: 'POST', path, body }, customerSchema)
+      return SessionRequest<Customer>(
+        runtime,
+        { method: 'POST', path, body },
+        customerSchema
+      )
     },
     update(id: string, body: UpdateCustomerBody) {
-      return SessionRequest<Customer>(runtime, { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body }, customerSchema)
+      return SessionRequest<Customer>(
+        runtime,
+        { method: 'PATCH', path: `${path}/${encodeURIComponent(id)}`, body },
+        customerSchema
+      )
     },
     delete(id: string, body?: DeleteCustomerBody) {
-      return SessionRequest<DeletedCustomer>(runtime, { method: 'DELETE', path: `${path}/${encodeURIComponent(id)}`, ...(body ? { body } : {}) }, deletedCustomerSchema)
+      return SessionRequest<DeletedCustomer>(
+        runtime,
+        {
+          method: 'DELETE',
+          path: `${path}/${encodeURIComponent(id)}`,
+          ...(body ? { body } : {}),
+        },
+        deletedCustomerSchema
+      )
     },
   }
 }

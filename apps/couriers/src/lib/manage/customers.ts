@@ -1,6 +1,5 @@
 import 'server-only'
 
-import { $876 } from '@/lib/876'
 import { couriersErrorStatus, toCustomerView } from '@/lib/couriers'
 import { getError, type CouriersErrorCode } from '@/lib/errors'
 import type { ServiceResult } from '@/types/api'
@@ -29,6 +28,11 @@ export async function enrollManagedCustomer({
     isCommercial: params.isCommercial,
   })
   if (result.error !== null) return couriersFailure(result.error)
+  if (result.data.object !== 'courier_customer_enrollment')
+    return couriersFailure({
+      code: 'couriers/unexpected-response',
+      message: 'Enrollment did not return a customer.',
+    })
 
   return { data: toCustomerView(result.data.customer), error: null }
 }
@@ -57,6 +61,11 @@ export async function createManagedCustomer({
     trn: params.trn ?? undefined,
   })
   if (result.error !== null) return couriersFailure(result.error)
+  if (result.data.object !== 'courier_customer_profile')
+    return couriersFailure({
+      code: 'couriers/unexpected-response',
+      message: 'Customer creation did not return a customer.',
+    })
   return { data: toCustomerView(result.data), error: null }
 }
 
