@@ -16,11 +16,9 @@ vi.mock('@/lib/auth/route-guard', () => ({
 
 vi.mock('@/lib/876', () => ({
   $876: {
-    storage: {
-      uploads: { create: mocks.create, complete: mocks.complete },
-      files: { delete: mocks.deleteFile },
-    },
-    organizations: { retrieve: mocks.retrieve, update: mocks.update },
+    uploads: { create: mocks.create, complete: mocks.complete },
+    files: { delete: mocks.deleteFile },
+    organizations: { admin: { retrieve: mocks.retrieve, update: mocks.update } },
   },
 }))
 

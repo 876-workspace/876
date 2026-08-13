@@ -19,22 +19,27 @@ const mocks = vi.hoisted(() => ({
   priceCreate: vi.fn(),
   customerCreate: vi.fn(),
   subscriptionCreate: vi.fn(),
+  orgList: vi.fn(),
+  productList: vi.fn(),
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: {
-    organizations: { retrieve: mocks.orgRetrieve },
-    products: { retrieve: mocks.productRetrieve },
+  coreAdmin: {
+    products: { retrieve: mocks.productRetrieve, list: mocks.productList },
     subscriptions: { retrieve: mocks.subscriptionRetrieve },
-    memberships: { list: mocks.membershipsList },
+    organizations: { retrieve: mocks.orgRetrieve, list: mocks.orgList },
     users: { retrieve: mocks.usersRetrieve },
-    billing: {
-      products: { create: mocks.productCreate },
-      plans: { create: mocks.planCreate },
-      prices: { create: mocks.priceCreate },
-      customers: { create: mocks.customerCreate },
-      subscriptions: { create: mocks.subscriptionCreate },
-    },
+    memberships: { list: mocks.membershipsList },
+  },
+  $876: {
+    organizations: { admin: { retrieve: mocks.orgRetrieve, list: mocks.orgList, subscriptions: { list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }) } } },
+    products: { admin: { create: mocks.productCreate, retrieve: mocks.productRetrieve, list: mocks.productList } },
+    subscriptions: { admin: { create: mocks.subscriptionCreate, retrieve: mocks.subscriptionRetrieve } },
+    memberships: { admin: { list: mocks.membershipsList } },
+    users: { admin: { retrieve: mocks.usersRetrieve } },
+    plans: { admin: { create: mocks.planCreate } },
+    prices: { admin: { create: mocks.priceCreate } },
+    customers: { admin: { create: mocks.customerCreate } },
   },
 }))
 
@@ -207,6 +212,12 @@ function setUpMocks() {
   )
   mocks.subscriptionCreate.mockReturnValue(
     success({ object: 'subscription', id: 'blsub_1' })
+  )
+  mocks.productList.mockReturnValue(
+    success({ object: 'list', data: [], has_more: false, url: '/products', total_count: 0 })
+  )
+  mocks.orgList.mockReturnValue(
+    success({ object: 'list', data: [], has_more: false, url: '/organizations', total_count: 0 })
   )
 }
 
