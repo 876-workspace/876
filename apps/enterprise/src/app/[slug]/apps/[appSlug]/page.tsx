@@ -33,7 +33,10 @@ export default async function OrganizationAppDetailPage({
 
   const [appResult, productsResult] = await Promise.all([
     client.apps.retrieve(subscription.app_id),
-    client.products.list({ appId: subscription.app_id, status: 'active' }),
+    client.entitlementPlans.list({
+      appId: subscription.app_id,
+      status: 'active',
+    }),
   ])
   const app = appResult.data
   if (!app || app.app_kind === 'internal') notFound()

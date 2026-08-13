@@ -45,7 +45,7 @@ async function AppSubscribersShell({ slug }: { slug: string }) {
 async function SubscribersTableData({ app }: { app: AdminApp }) {
   const [subscriptionsResult, productsResult] = await Promise.all([
     $876.appSubscriptions.list(app.id),
-    $876.products.admin.list({ appId: app.id, status: 'active' }),
+    $876.entitlementPlans.admin.list({ appId: app.id, status: 'active' }),
   ])
   const subscriptions = subscriptionsResult.data ?? []
   const prices = (productsResult.data?.data ?? []).flatMap((product) =>
