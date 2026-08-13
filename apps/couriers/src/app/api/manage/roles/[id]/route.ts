@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus, toRoleView } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { roleUpdateParamsSchema } from '@/types/role'
 
 export const runtime = 'nodejs'
@@ -41,7 +41,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await $876.roles.update(ctx.tenant.id, id, params)
+  const $876 = await get876Client()
+  const result = await $876.roles.update(id, params)
   if (result.error)
     return apiJson(
       { error: result.error.message },
@@ -67,7 +68,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await $876.roles.delete(ctx.tenant.id, id)
+  const $876 = await get876Client()
+  const result = await $876.roles.delete(id)
   if (result.error)
     return apiJson(
       { error: result.error.message },

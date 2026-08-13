@@ -18,12 +18,10 @@ vi.mock('@/lib/876/platform-client', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/876', () => ({
-  $876: {
-    couriers: {
-      tenants: {
-        create: mocks.createTenant,
-        update: mocks.updateTenant,
-      },
+  couriersAdmin: {
+    tenants: {
+      create: mocks.createTenant,
+      update: mocks.updateTenant,
     },
   },
 }))

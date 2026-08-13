@@ -10,7 +10,7 @@ import {
   toWarehouseUpdateBody,
   toWarehouseView,
 } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { warehouseUpdateParamsSchema } from '@/types/warehouse'
 
 export const runtime = 'nodejs'
@@ -43,8 +43,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const tenantId = ctx.tenant.id
-
   const rest = { ...(body as Record<string, unknown>) }
   delete rest.orgSlug
   const parsed = warehouseUpdateParamsSchema.safeParse(rest)
@@ -54,8 +52,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
+  const $876 = await get876Client()
   const result = await $876.warehouses.update(
-    tenantId,
     id,
     toWarehouseUpdateBody(parsed.data)
   )

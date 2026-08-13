@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  get876Client: vi.fn(),
   couriersErrorStatus: vi.fn((error: { code: string }) => {
     if (error.code.endsWith('/not-found')) return 404
     return error.code === 'team/last-active-admin' ? 400 : 409
@@ -15,7 +16,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 vi.mock('@/lib/876', () => ({
-  $876: { couriers: { team: { update: mocks.update, delete: mocks.delete } } },
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -48,6 +49,9 @@ function ctx(
 describe('Couriers team member route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.get876Client.mockImplementation(() => ({
+      memberships: { update: mocks.update, delete: mocks.delete },
+    }))
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.update.mockResolvedValue({
       data: {
@@ -159,7 +163,7 @@ describe('Couriers team member route', () => {
       expect(body.data.status).toBe('inactive')
       expect(body.error).toBeNull()
       expect(mocks.update).toHaveBeenCalledTimes(1)
-      expect(mocks.update).toHaveBeenCalledWith('ten_123', 'tmem_123', {
+      expect(mocks.update).toHaveBeenCalledWith('tmem_123', {
         role_id: 'role_staff',
         status: 'inactive',
       })
@@ -258,7 +262,7 @@ describe('Couriers team member route', () => {
       expect(body.error).toBeNull()
       expect(mocks.getManageContext).toHaveBeenCalledWith('island-logistics')
       expect(mocks.delete).toHaveBeenCalledTimes(1)
-      expect(mocks.delete).toHaveBeenCalledWith('ten_123', 'tmem_123')
+      expect(mocks.delete).toHaveBeenCalledWith('tmem_123')
     })
 
     it('propagates not-found from the service', async () => {

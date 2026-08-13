@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getError } from '@/lib/errors'
 import { getFeatures } from '@/lib/features'
-import { $876 } from '@/lib/876'
+import { storage876 } from '@/lib/876'
 import { organizationLogoUploadStartSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       message: 'Organization logo uploads are not enabled.',
     })
 
-  const result = await $876.uploads.create({
+  const result = await storage876.uploads.create({
     route_key: 'organization.primaryLogo',
     owner_type: 'organization',
     owner_id: ctx.orgId,

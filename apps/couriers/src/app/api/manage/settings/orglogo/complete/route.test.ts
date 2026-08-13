@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: { storage: { uploads: { complete: mocks.complete } } },
+  storage876: { uploads: { complete: mocks.complete } },
 }))
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,

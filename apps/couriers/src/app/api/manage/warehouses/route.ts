@@ -10,7 +10,7 @@ import {
   toWarehouseCreateBody,
   toWarehouseView,
 } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { warehouseCreateParamsSchema } from '@/types/warehouse'
 
 export const runtime = 'nodejs'
@@ -39,8 +39,6 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const tenantId = ctx.tenant.id
-
   const params = { ...(body as Record<string, unknown>) }
   delete params.orgSlug
   const parsed = warehouseCreateParamsSchema.safeParse(params)
@@ -50,8 +48,8 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
+  const $876 = await get876Client()
   const result = await $876.warehouses.create(
-    tenantId,
     toWarehouseCreateBody(parsed.data)
   )
   if (result.error)

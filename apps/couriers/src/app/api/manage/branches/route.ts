@@ -10,7 +10,7 @@ import {
   toBranchCreateBody,
   toBranchView,
 } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { branchCreateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -39,8 +39,6 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const tenantId = ctx.tenant.id
-
   const params = { ...(body as Record<string, unknown>) }
   delete params.orgSlug
   const parsed = branchCreateParamsSchema.safeParse(params)
@@ -50,10 +48,8 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
 
-  const result = await $876.branches.create(
-    tenantId,
-    toBranchCreateBody(parsed.data)
-  )
+  const $876 = await get876Client()
+  const result = await $876.branches.create(toBranchCreateBody(parsed.data))
   if (result.error)
     return apiJson(
       { error: result.error.message },

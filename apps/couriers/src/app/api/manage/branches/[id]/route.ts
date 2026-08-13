@@ -10,7 +10,7 @@ import {
   toBranchUpdateBody,
   toBranchView,
 } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { branchUpdateParamsSchema } from '@/types/branch'
 
 export const runtime = 'nodejs'
@@ -43,8 +43,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const tenantId = ctx.tenant.id
-
   const rest = { ...(body as Record<string, unknown>) }
   delete rest.orgSlug
   const parsed = branchUpdateParamsSchema.safeParse(rest)
@@ -54,11 +52,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       { status: 422 }
     )
 
-  const result = await $876.branches.update(
-    tenantId,
-    id,
-    toBranchUpdateBody(parsed.data)
-  )
+  const $876 = await get876Client()
+  const result = await $876.branches.update(id, toBranchUpdateBody(parsed.data))
   if (result.error)
     return apiJson(
       { error: result.error.message },
