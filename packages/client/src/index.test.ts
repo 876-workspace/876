@@ -49,8 +49,10 @@ describe('unified $876 resource model', () => {
   })
 
   it('server client requires an app context', () => {
-    // @ts-expect-error app is required
-    create876ServerClient({ apiKey: '876_app_secret_test1234567890123456' })
+    expect(() =>
+      // @ts-expect-error app is required
+      create876ServerClient({ apiKey: '876_app_secret_test1234567890123456' })
+    ).toThrow(/Unsupported 876 app/)
   })
 
   it('browser client has no server-only/privileged resources', () => {
