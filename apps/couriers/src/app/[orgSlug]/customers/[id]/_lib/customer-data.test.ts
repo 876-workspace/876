@@ -15,14 +15,11 @@ vi.mock('@/lib/auth/manage-context', () => ({
 
 vi.mock('@/lib/876', () => ({
   get876Client: mocks.get876Client,
-  $876: {
-    couriers: {
-      customers: {
-        retrieve: mocks.couriersRetrieve,
-        mailboxes: { list: mocks.mailboxesList },
-      },
-      branches: { retrieve: mocks.couriersBranchesRetrieve },
-    },
+  billingIntegration: {
+    customers: { retrieve: mocks.billingRetrieve },
+  },
+  couriersAdmin: {
+    customers: { mailboxes: { list: mocks.mailboxesList } },
   },
 }))
 
@@ -85,8 +82,8 @@ describe('resolveCustomer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     const request876 = {
-      billing: { customers: { retrieve: mocks.billingRetrieve } },
-      couriers: { customers: { mailboxes: { list: mocks.mailboxesList } } },
+      customers: { retrieve: mocks.couriersRetrieve },
+      branches: { retrieve: mocks.couriersBranchesRetrieve },
     }
     mocks.getManageContext.mockResolvedValue(tenantCtx())
     mocks.get876Client.mockResolvedValue(request876)
@@ -145,13 +142,10 @@ describe('resolveCustomer', () => {
 
   it('resolves profile via toCustomerView and fetches identity, mailboxes, branch', async () => {
     const result = await resolveCustomer('island-logistics', 'cprof_123')
-    expect(mocks.couriersRetrieve).toHaveBeenCalledWith('ten_123', 'cprof_123')
+    expect(mocks.couriersRetrieve).toHaveBeenCalledWith('cprof_123')
     expect(mocks.billingRetrieve).toHaveBeenCalledWith('org_123', 'cus_123')
     expect(mocks.mailboxesList).toHaveBeenCalledWith('ten_123', 'cprof_123')
-    expect(mocks.couriersBranchesRetrieve).toHaveBeenCalledWith(
-      'ten_123',
-      'br_king'
-    )
+    expect(mocks.couriersBranchesRetrieve).toHaveBeenCalledWith('br_king')
     expect(result?.profile.id).toBe('cprof_123')
     expect(result?.profile.billingCustomerId).toBe('cus_123')
     expect(result?.identity?.name).toBe('Marlon Brown')
@@ -212,7 +206,7 @@ describe('resolveCustomerTitle', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     const request876 = {
-      billing: { customers: { retrieve: mocks.billingRetrieve } },
+      customers: { retrieve: mocks.couriersRetrieve },
     }
     mocks.getManageContext.mockResolvedValue(tenantCtx())
     mocks.get876Client.mockResolvedValue(request876)

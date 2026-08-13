@@ -3,7 +3,7 @@ import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { $876 } from '@/lib/876'
+import { billingIntegration, get876Client } from '@/lib/876'
 import type { GlobalCustomerOption } from '@/types/customer'
 import { AddCustomerPanel } from '../_components/add-customer-panel'
 
@@ -35,7 +35,8 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
         You do not have permission to manage customers.
       </div>
     )
-  const branches = await $876.branches.list(ctx.tenant.id)
+  const $876 = await get876Client()
+  const branches = await $876.branches.list()
   if (branches.error)
     return (
       <div className="border-destructive/30 bg-destructive/5 text-destructive max-w-2xl rounded-lg border p-4 text-sm">
@@ -44,7 +45,7 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
     )
 
   const [enrolled, global] = await Promise.all([
-    listEnrolledCustomerIds(ctx.tenant.id),
+    listEnrolledCustomerIds($876),
     listGlobalCustomers(ctx.orgId),
   ])
   const selectionError = enrolled.error ?? global.error
@@ -66,13 +67,13 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
 type LoadResult<T> = { data: T; error: null } | { data: null; error: string }
 
 async function listEnrolledCustomerIds(
-  tenantId: string
+  client: Awaited<ReturnType<typeof get876Client>>
 ): Promise<LoadResult<Set<string>>> {
   const ids = new Set<string>()
   let startingAfter: string | undefined
 
   for (;;) {
-    const result = await $876.customers.list(tenantId, {
+    const result = await client.customers.list({
       limit: 100,
       ...(startingAfter ? { starting_after: startingAfter } : {}),
     })
@@ -94,7 +95,7 @@ async function listGlobalCustomers(
   let startingAfter: string | undefined
 
   for (;;) {
-    const page = await $876.customers.list(organizationId, {
+    const page = await billingIntegration.customers.list(organizationId, {
       status: 'ACTIVE',
       limit: 100,
       ...(startingAfter ? { starting_after: startingAfter } : {}),

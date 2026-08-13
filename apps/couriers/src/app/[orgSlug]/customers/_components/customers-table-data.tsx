@@ -1,6 +1,6 @@
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
-import { $876, get876Client } from '@/lib/876'
+import { billingIntegration, get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toCustomerView } from '@/lib/couriers'
 import { customerStatusSchema, type CustomerView } from '@/types/customer'
@@ -42,13 +42,15 @@ export async function CustomersTableData({ params, searchParams }: Props) {
       />
     )
 
+  const request876 = await get876Client()
+
   const profiles: CustomerView[] = []
   let customersError: { code: string; message: string } | null = null
   let startingAfter: string | undefined
   for (;;) {
     try {
       const page = requireCouriersData(
-        await $876.customers.list(ctx.tenant.id, {
+        await request876.customers.list({
           ...(profileStatus === undefined ? {} : { status: profileStatus }),
           limit: 100,
           ...(startingAfter === undefined
@@ -99,8 +101,6 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     profile.billingCustomerId ? [profile.billingCustomerId] : []
   )
 
-  const request876 = await get876Client()
-
   // The registry caps a list at 100, and this workspace's profile count is not
   // bounded by that — a tenant with 150 customers would otherwise render 50 rows
   // with an opaque id where the name belongs. Ask for them a page at a time and
@@ -112,7 +112,7 @@ export async function CustomersTableData({ params, searchParams }: Props) {
 
   const pages = await Promise.all(
     idPages.map((ids) =>
-      request876.billing.customers.list(ctx.orgId, {
+      billingIntegration.customers.list(ctx.orgId, {
         limit: REGISTRY_PAGE,
         ids,
       })

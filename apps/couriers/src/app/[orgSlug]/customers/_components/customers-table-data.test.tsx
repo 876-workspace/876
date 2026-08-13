@@ -15,7 +15,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
 }))
 vi.mock('@/lib/876', () => ({
   get876Client: mocks.get876Client,
-  $876: { couriers: { customers: { list: mocks.listProfiles } } },
+  billingIntegration: { customers: { list: mocks.listCustomers } },
 }))
 vi.mock('@/lib/couriers', () => ({
   requireCouriersData: (result: unknown) => {
@@ -74,7 +74,7 @@ describe('Couriers customers page data', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue(context)
     mocks.get876Client.mockResolvedValue({
-      billing: { customers: { list: mocks.listCustomers } },
+      customers: { list: mocks.listProfiles },
     })
     mocks.listProfiles.mockResolvedValue([])
   })
@@ -439,7 +439,7 @@ describe('Couriers customers page data', () => {
     )
 
     expect(screen.getByText('Suspended Person')).toBeVisible()
-    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
+    expect(mocks.listProfiles).toHaveBeenCalledWith({
       limit: 100,
       status: 'SUSPENDED',
     })
@@ -456,7 +456,7 @@ describe('Couriers customers page data', () => {
     )
 
     // The filter applies to the courier profile, not the registry customer.
-    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
+    expect(mocks.listProfiles).toHaveBeenCalledWith({
       limit: 100,
       status: 'SUSPENDED',
     })
