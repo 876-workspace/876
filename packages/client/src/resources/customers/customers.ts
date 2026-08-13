@@ -1,9 +1,9 @@
 import type { Client as BillingClient } from '@876/billing'
 import type { AdminClient as BillingAdminClient } from '@876/billing/admin'
 import type { CouriersAdminClient } from '@876/couriers/admin'
-import { withAdmin } from '../internal/with-admin.ts'
-import type { AppId } from '../context/types.ts'
-import type { ServiceClients } from '../internal/types.ts'
+import { withAdmin } from '../../internal/with-admin.ts'
+import type { AppId } from '../../context/types.ts'
+import type { ServiceClients } from '../../internal/types.ts'
 
 export function createCustomersResource({
   app,
@@ -17,7 +17,9 @@ export function createCustomersResource({
   const couriersAdmin = services.couriers?.admin
 
   if (app === 'couriers' && couriersAdmin) {
-    return couriersAdmin.customers
+    const { enroll, ...rest } = couriersAdmin.customers
+    void enroll
+    return rest as Omit<CouriersAdminClient['customers'], 'enroll'>
   }
 
   if (app === 'billing' && billingTenant) {
@@ -35,7 +37,9 @@ export function createCustomersResource({
   }
 
   if (couriersAdmin) {
-    return couriersAdmin.customers
+    const { enroll, ...rest } = couriersAdmin.customers
+    void enroll
+    return rest as Omit<CouriersAdminClient['customers'], 'enroll'>
   }
 
   if (billingAdmin) {

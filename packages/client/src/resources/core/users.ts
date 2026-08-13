@@ -1,6 +1,6 @@
 import type { Admin876Client } from '@876/admin'
 import type { SDK876Client } from '@876/sdk'
-import { withAdmin, type WithAdmin } from '../internal/with-admin.ts'
+import { withAdmin, type WithAdmin } from '../../internal/with-admin.ts'
 
 type MeResource = SDK876Client['users']
 

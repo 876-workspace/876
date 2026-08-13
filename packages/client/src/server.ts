@@ -1,57 +1,55 @@
 import 'server-only'
 
-import { createAuthResource } from './resources/auth.ts'
-import { createUsersResource } from './resources/users.ts'
-import { createOrganizationsResource } from './resources/organizations.ts'
-import { createAppsResource } from './resources/apps.ts'
-import { createMembershipsResource } from './resources/memberships.ts'
-import { createFeaturesResource } from './resources/features.ts'
-import { createEntitlementsResource } from './resources/entitlements.ts'
-import { createLocationsResource } from './resources/locations.ts'
-import { createContactsResource } from './resources/contacts.ts'
-import { createDepartmentsResource } from './resources/departments.ts'
-import { createEmployeesResource } from './resources/employees.ts'
-import { createRolesResource } from './resources/roles.ts'
-import { createCustomersResource } from './resources/customers.ts'
-import { createProductsResource } from './resources/products.ts'
-import { createPlansResource } from './resources/plans.ts'
-import { createPricesResource } from './resources/prices.ts'
-import { createPriceListsResource } from './resources/price-lists.ts'
-import { createAddonsResource } from './resources/addons.ts'
-import { createInvoicesResource } from './resources/invoices.ts'
-import { createPaymentsResource } from './resources/payments.ts'
-import { createSubscriptionsResource } from './resources/subscriptions.ts'
-import { createTaxRatesResource } from './resources/tax-rates.ts'
-import { createTaxAuthoritiesResource } from './resources/tax-authorities.ts'
-import { createBankAccountsResource } from './resources/bank-accounts.ts'
-import { createBankTransactionsResource } from './resources/bank-transactions.ts'
-import { createPackagesResource } from './resources/packages.ts'
-import { createBranchesResource } from './resources/branches.ts'
-import { createWarehousesResource } from './resources/warehouses.ts'
-import { createMailboxesResource } from './resources/mailboxes.ts'
-import { createAddressesResource } from './resources/addresses.ts'
-import { createCouriersRolesResource } from './resources/couriers-roles.ts'
-import { createTeamResource } from './resources/team.ts'
-import { createSettingsResource } from './resources/settings.ts'
-import { createTenantsResource } from './resources/tenants.ts'
-import { createStatsResource } from './resources/stats.ts'
-import { createItemsResource } from './resources/items.ts'
-import { createFilesResource } from './resources/files.ts'
-import { createUploadsResource } from './resources/uploads.ts'
-import { createNotesResource } from './resources/notes.ts'
-import { createCollectionsResource } from './resources/collections.ts'
+import { createAuthResource } from './resources/core/auth.ts'
+import { createUsersResource } from './resources/core/users.ts'
+import { createOrganizationsResource } from './resources/core/organizations.ts'
+import { createAppsResource } from './resources/core/apps.ts'
+import { createMembershipsResource } from './resources/core/memberships.ts'
+import { createFeaturesResource } from './resources/core/features.ts'
+import { createEntitlementsResource } from './resources/core/entitlements.ts'
+import { createLocationsResource } from './resources/core/locations.ts'
+import { createContactsResource } from './resources/core/contacts.ts'
+import { createDepartmentsResource } from './resources/core/departments.ts'
+import { createEmployeesResource } from './resources/core/employees.ts'
+import { createRolesResource } from './resources/core/roles.ts'
+import { createCustomersResource } from './resources/customers/customers.ts'
+import { createProductsResource } from './resources/finance/products.ts'
+import { createPlansResource } from './resources/finance/plans.ts'
+import { createPricesResource } from './resources/finance/prices.ts'
+import { createPriceListsResource } from './resources/finance/price-lists.ts'
+import { createAddonsResource } from './resources/finance/addons.ts'
+import { createDiscountsResource } from './resources/finance/discounts.ts'
+import { createInvoicesResource } from './resources/finance/invoices.ts'
+import { createInvoicePreferencesResource } from './resources/finance/invoice-preferences.ts'
+import { createPaymentsResource } from './resources/finance/payments.ts'
+import { createPaymentModesResource } from './resources/finance/payment-modes.ts'
+import { createPaymentProvidersResource } from './resources/finance/payment-providers.ts'
+import { createPaymentTermsResource } from './resources/finance/payment-terms.ts'
+import { createSubscriptionsResource } from './resources/finance/subscriptions.ts'
+import { createTaxRatesResource } from './resources/finance/tax-rates.ts'
+import { createTaxAuthoritiesResource } from './resources/finance/tax-authorities.ts'
+import { createBankAccountsResource } from './resources/finance/bank-accounts.ts'
+import { createBankTransactionsResource } from './resources/finance/bank-transactions.ts'
+import { createSalespeopleResource } from './resources/finance/salespeople.ts'
+import { createItemsResource } from './resources/finance/items.ts'
+import { createPackagesResource } from './resources/logistics/packages.ts'
+import { createBranchesResource } from './resources/logistics/branches.ts'
+import { createWarehousesResource } from './resources/logistics/warehouses.ts'
+import { createMailboxesResource } from './resources/logistics/mailboxes.ts'
+import { createAddressesResource } from './resources/logistics/addresses.ts'
+import { createFilesResource } from './resources/storage/files.ts'
+import { createUploadsResource } from './resources/storage/uploads.ts'
+import { createNotesResource } from './resources/widgets/notes.ts'
+import { createCollectionsResource } from './resources/widgets/collections.ts'
 import { createServiceClients } from './internal/create-service-clients.ts'
 import type { ServerClientOptions } from './internal/types.ts'
 
-/**
- * Composes the unified `$876.<resource>.<verb>()` surface for server
- * runtimes. Each resource is deliberately wired to the owning service tier
- * — no admin spread, no legacy options, no casted tier fallbacks.
- */
 export function create876ServerClient(options: ServerClientOptions) {
   const services = createServiceClients(options)
   const { platform, platformAdmin, billing, couriers, storage, widgets } =
     services
+
+  const couriersAdmin = couriers?.admin
 
   return {
     auth: createAuthResource(platform),
@@ -71,7 +69,10 @@ export function create876ServerClient(options: ServerClientOptions) {
       admin: platformAdmin,
     }),
 
-    memberships: createMembershipsResource(platform),
+    memberships: createMembershipsResource({
+      platform,
+      couriersAdmin,
+    }),
 
     features: createFeaturesResource({
       platform,
@@ -84,7 +85,11 @@ export function create876ServerClient(options: ServerClientOptions) {
     contacts: createContactsResource(platform),
     departments: createDepartmentsResource(platform),
     employees: createEmployeesResource(platform),
-    roles: createRolesResource(platform),
+
+    roles: createRolesResource({
+      platform,
+      couriersAdmin,
+    }),
 
     customers: createCustomersResource({ app: options.app, services }),
 
@@ -102,14 +107,22 @@ export function create876ServerClient(options: ServerClientOptions) {
     }),
     priceLists: createPriceListsResource(billing?.tenant),
     addons: createAddonsResource(billing?.tenant),
+    discounts: createDiscountsResource(billing?.tenant),
     invoices: createInvoicesResource({
       tenant: billing?.tenant,
       integration: billing?.integration,
     }),
+    invoicePreferences: createInvoicePreferencesResource(billing?.tenant),
     payments: createPaymentsResource({
       tenant: billing?.tenant,
       integration: billing?.integration,
     }),
+    paymentModes: createPaymentModesResource({
+      tenant: billing?.tenant,
+      integration: billing?.integration,
+    }),
+    paymentProviders: createPaymentProvidersResource(billing?.tenant),
+    paymentTerms: createPaymentTermsResource(billing?.tenant),
     subscriptions: createSubscriptionsResource({
       tenant: billing?.tenant,
       admin: billing?.admin,
@@ -121,19 +134,15 @@ export function create876ServerClient(options: ServerClientOptions) {
       integration: billing?.integration,
     }),
     bankTransactions: createBankTransactionsResource(billing?.tenant),
+    salespeople: createSalespeopleResource(billing?.tenant),
 
-    packages: createPackagesResource(couriers?.admin),
-    branches: createBranchesResource(couriers?.admin),
-    warehouses: createWarehousesResource(couriers?.admin),
-    mailboxes: createMailboxesResource(couriers?.admin),
-    addresses: createAddressesResource(couriers?.admin),
-    couriersRoles: createCouriersRolesResource(couriers?.admin),
-    team: createTeamResource(couriers?.admin),
-    settings: createSettingsResource(couriers?.admin),
-    tenants: createTenantsResource(couriers?.admin),
+    packages: createPackagesResource(couriersAdmin),
+    branches: createBranchesResource(couriersAdmin),
+    warehouses: createWarehousesResource(couriersAdmin),
+    mailboxes: createMailboxesResource(couriersAdmin),
+    addresses: createAddressesResource(couriersAdmin),
 
     items: createItemsResource(billing?.integration),
-    stats: createStatsResource(billing?.admin),
 
     files: createFilesResource(storage),
     uploads: createUploadsResource(storage),
