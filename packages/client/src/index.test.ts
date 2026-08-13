@@ -103,13 +103,13 @@ describe('unified $876 resource model', () => {
     expect($876.oauthGrants.revoke).toBeDefined()
   })
 
-  it('keeps Enterprise on the core entitlement and product surface', () => {
+  it('keeps Enterprise on the core entitlement and entitlement-plan surface', () => {
     const $876 = create876ServerClient({
       app: 'enterprise',
       apiKey: '876_app_secret_test1234567890123456',
     })
     expect($876.entitlements.retrieve).toBeDefined()
-    expect($876.products.list).toBeDefined()
+    expect($876.entitlementPlans.list).toBeDefined()
   })
 })
 

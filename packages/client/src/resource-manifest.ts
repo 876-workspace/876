@@ -56,6 +56,10 @@ export const RESOURCE_MANIFEST = {
     owner: 'core',
     meaning: 'org/user access to 876 apps (org→app subscriptions, NOT billing)',
   },
+  entitlementPlans: {
+    owner: 'core',
+    meaning: 'per-app entitlement plan/price catalog (Core /products)',
+  },
   locations: { owner: 'core', meaning: 'organization locations' },
   contacts: { owner: 'core', meaning: 'organization contacts' },
   departments: { owner: 'core', meaning: 'org departments' },
@@ -122,35 +126,26 @@ export type CanonicalResource = keyof typeof RESOURCE_MANIFEST
 
 /**
  * Known, deliberate disagreements between the composed surface and the
- * canonical ontology in `docs/platform-object-model.md`. Each entry is a real
- * collision the adversarial review of PR #254 surfaced: the same public noun
- * resolves to a *different logical entity* depending on app context, which is
- * exactly what a unified facade must not allow.
+ * canonical ontology in `docs/platform-object-model.md`: the same public noun
+ * resolving to a *different logical entity* depending on app context, which a
+ * unified facade must not allow.
  *
- * These are recorded — not silently tolerated — so the debt is visible in code
- * and so the surface-contract test can assert the set does not *grow*. The
- * planned resolution (rename the core entitlement-plan catalog off the Billing
- * `products` noun) is tracked in ADR-011.
+ * This list is now **empty** — the one confirmed collision (`$876.products`
+ * meaning the Core entitlement-plan catalog on Enterprise/Console but the
+ * Billing commercial catalog in Billing) has been resolved: the Core catalog is
+ * exposed as `$876.entitlementPlans` and `$876.products` is Billing-only. See
+ * ADR-011. (The review also flagged `$876.subscriptions`, but that was a misread
+ * — `@876/admin`'s top-level `subscriptions` is `/billing/subscriptions`, and the
+ * org→app entitlement is separately `$876.organizations.admin.subscriptions`.)
  *
- * Note: the review also flagged `$876.subscriptions` as a collision, but that
- * was a misread — `@876/admin`'s top-level `subscriptions` hits
- * `/billing/subscriptions` (platform billing records), and the org→app
- * entitlement is correctly namespaced separately at
- * `$876.organizations.admin.subscriptions`. The architecture already keeps them
- * distinct, so `subscriptions` is intentionally not listed here.
+ * It is kept as a typed, asserted list so the surface-contract test fails if a
+ * new collision is ever introduced.
  */
-export const KNOWN_COLLISIONS = [
-  {
-    resource: 'products',
-    canonicalOwner: 'billing',
-    conflictingUse:
-      'Enterprise/platform `$876.products` and Console `$876.products.admin` resolve to the Core entitlement-plan catalog (@876/admin.products → Core `/products`), not the Billing commercial catalog.',
-    plannedResolution:
-      'Expose the core catalog as `$876.entitlementPlans` and keep `$876.products` exclusively Billing. See ADR-011.',
-  },
-] as const satisfies ReadonlyArray<{
+export interface KnownCollision {
   resource: CanonicalResource
   canonicalOwner: ServiceOwner
   conflictingUse: string
   plannedResolution: string
-}>
+}
+
+export const KNOWN_COLLISIONS: readonly KnownCollision[] = []

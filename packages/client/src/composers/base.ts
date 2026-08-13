@@ -46,7 +46,7 @@ export type CoreSurfaceBase = {
   invites: SDK876Client['invites']
   mobileNumbers: SDK876Client['mobileNumbers']
   mobileNumberVerifications: SDK876Client['mobileNumberVerifications']
-  products: SDK876Client['products']
+  entitlementPlans: SDK876Client['products']
 }
 
 /**
@@ -123,7 +123,7 @@ function createCoreSurfaceBase(platform: SDK876Client): CoreSurfaceBase {
     invites: platform.invites,
     mobileNumbers: platform.mobileNumbers,
     mobileNumberVerifications: platform.mobileNumberVerifications,
-    products: platform.products,
+    entitlementPlans: platform.products,
   }
 }
 

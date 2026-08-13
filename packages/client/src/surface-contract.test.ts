@@ -76,8 +76,8 @@ describe('resource ownership manifest', () => {
     }
   })
 
-  it('records exactly the known facade namespace collision (products only)', () => {
-    expect(KNOWN_COLLISIONS.map((c) => c.resource)).toEqual(['products'])
+  it('records no unresolved facade namespace collisions', () => {
+    expect(KNOWN_COLLISIONS.map((c) => c.resource)).toEqual([])
   })
 
   it('only records collisions for resources that exist in the manifest', () => {
@@ -98,7 +98,10 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     expect($876.oauthGrants.revoke).toBeTypeOf('function')
     // #255 casualties
     expect($876.auditEvents.create).toBeTypeOf('function')
-    expect($876.products.list).toBeTypeOf('function')
+    // Core entitlement-plan catalog is `entitlementPlans`, never `products`
+    // (products is Billing-only) — the resolved collision guard
+    expect($876.entitlementPlans.list).toBeTypeOf('function')
+    expect(has($876, 'products')).toBe(false)
     // entitlements is the core noun, must never revert to `subscriptions`
     expect($876.entitlements.list).toBeTypeOf('function')
     // self-scoped user resources that were present in the SDK but missing from
@@ -131,6 +134,8 @@ describe('per-app resource boundaries (no cross-app leakage)', () => {
     expect($876.payments).toBeDefined()
     expect($876.customers).toBeDefined()
     expect($876.subscriptions).toBeDefined()
+    // `products` on the Billing surface is the commercial catalog (Billing-owned)
+    expect($876.products.list).toBeTypeOf('function')
     expect(has($876, 'packages')).toBe(false)
     expect(has($876, 'branches')).toBe(false)
   })
