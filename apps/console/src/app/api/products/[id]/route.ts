@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { coreAdmin } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import {
   mirrorCoreProductPrices,
@@ -26,7 +26,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.products.update(id, body)
+  const { data, error } = await coreAdmin.products.update(id, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to update product.' },
@@ -47,7 +47,7 @@ export async function DELETE(
   if (response) return response
 
   const { id } = await context.params
-  const { data, error } = await $876.products.archive(id)
+  const { data, error } = await coreAdmin.products.archive(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to archive product.' },
@@ -55,7 +55,7 @@ export async function DELETE(
     )
   }
 
-  const product = await $876.products.retrieve(id)
+  const product = await coreAdmin.products.retrieve(id)
   const billingSynced = product.data
     ? await mirrorCoreProductPrices(product.data, product.data.prices)
     : false

@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (access.response) return access.response
 
   const url = new URL(request.url)
-  const result = await $876.notes.list(
+  const result = await $876.notes.admin.list(
     { userId: access.sessionUser.id },
     {
       ownerAccountId: url.searchParams.get('owner_account_id') ?? undefined,
