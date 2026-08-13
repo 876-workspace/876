@@ -371,7 +371,8 @@ export async function findDefaultPriceForApp(
   appId: string
 ): Promise<{ id: string } | null> {
   const row = await prisma.price.findFirst({
-    where: { productId: appId },
+    where: { product: { appId, status: 'active' }, status: 'active' },
+    orderBy: [{ product: { createdAt: 'asc' } }, { createdAt: 'asc' }],
     select: { id: true },
   })
   return row

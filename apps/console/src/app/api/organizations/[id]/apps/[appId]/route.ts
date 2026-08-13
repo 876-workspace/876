@@ -48,7 +48,7 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await $876.organizations.subscriptions.update(
+  const { data, error } = await $876.organizations.admin.subscriptions.update(
     orgId,
     appId,
     {

@@ -43,7 +43,7 @@ async function AppPlansShell({ slug }: { slug: string }) {
 }
 
 async function PlansTableData({ app }: { app: AdminApp }) {
-  const { data } = await $876.products.list({ appId: app.id })
+  const { data } = await $876.products.admin.list({ appId: app.id })
   const products = data?.data ?? []
 
   return <PlansTable data={products} appId={app.id} appSlug={app.slug} />

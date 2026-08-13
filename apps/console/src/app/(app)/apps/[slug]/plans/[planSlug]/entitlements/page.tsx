@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const app = await resolveApp(slug)
   if (!app) return { title: 'Plan Entitlements not found' }
 
-  const { data } = await $876.products.list({ appId: app.id })
+  const { data } = await $876.products.admin.list({ appId: app.id })
   const products = data?.data ?? []
   const product = products.find((p) => p.slug === planSlug || p.id === planSlug)
 
@@ -27,7 +27,7 @@ export default async function PlanEntitlementsPage({ params }: Props) {
   if (!app || app.app_kind !== 'product') notFound()
 
   const [productsResult, modulesResult] = await Promise.all([
-    $876.products.list({ appId: app.id }),
+    $876.products.admin.list({ appId: app.id }),
     $876.modules.list(app.id, { includeArchived: true }),
   ])
   const products = productsResult.data?.data ?? []

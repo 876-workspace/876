@@ -19,7 +19,7 @@ export const metadata = {
 export default async function BillingPage() {
   const [accountsResult, subscriptionsResult] = await Promise.all([
     $876.billingAccounts.list({ limit: 25 }),
-    $876.subscriptions.list({ limit: 25 }),
+    $876.subscriptions.admin.list({ limit: 25 }),
   ])
 
   const accounts: AdminBillingAccount[] = accountsResult.data?.data ?? []

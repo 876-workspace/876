@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   update: vi.fn(),
   delete: vi.fn(),
+  get876Client: vi.fn(),
   couriersErrorStatus: vi.fn((error: { code: string }) =>
     error.code === 'role/in-use' ? 409 : 400
   ),
@@ -14,7 +15,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 vi.mock('@/lib/876', () => ({
-  $876: { couriers: { roles: { update: mocks.update, delete: mocks.delete } } },
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -50,6 +51,9 @@ function ctx(
 describe('Couriers role route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.get876Client.mockImplementation(() => ({
+      roles: { update: mocks.update, delete: mocks.delete },
+    }))
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.update.mockResolvedValue({
       data: { id: 'role_dispatcher', name: 'Dispatch' },
@@ -136,7 +140,7 @@ describe('Couriers role route', () => {
       expect(body.data).toEqual({ id: 'role_dispatcher', name: 'Dispatch' })
       expect(body.error).toBeNull()
       expect(mocks.update).toHaveBeenCalledTimes(1)
-      expect(mocks.update).toHaveBeenCalledWith('ten_123', 'role_dispatcher', {
+      expect(mocks.update).toHaveBeenCalledWith('role_dispatcher', {
         name: 'Dispatch',
         permissions: ['packages.view'],
       })
@@ -235,7 +239,7 @@ describe('Couriers role route', () => {
       expect(body.error).toBeNull()
       expect(mocks.getManageContext).toHaveBeenCalledWith('island-logistics')
       expect(mocks.delete).toHaveBeenCalledTimes(1)
-      expect(mocks.delete).toHaveBeenCalledWith('ten_123', 'role_dispatcher')
+      expect(mocks.delete).toHaveBeenCalledWith('role_dispatcher')
     })
 
     it('propagates role-in-use conflicts from the service', async () => {

@@ -1,20 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { mockGetManageContext, mockCouriers } = vi.hoisted(() => {
-  return {
-    mockGetManageContext: vi.fn(),
-    mockCouriers: {
-      warehouses: { list: vi.fn().mockResolvedValue({ data: { data: [] } }) },
-    },
+const { mockGetManageContext, mockGet876Client, mockWarehouses } = vi.hoisted(
+  () => {
+    return {
+      mockGetManageContext: vi.fn(),
+      mockGet876Client: vi.fn(),
+      mockWarehouses: vi.fn().mockResolvedValue({ data: { data: [] } }),
+    }
   }
-})
+)
 
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mockGetManageContext,
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: { couriers: mockCouriers },
+  get876Client: mockGet876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   requireCouriersData: <T>(result: { data: T }) => result.data,
@@ -32,7 +33,9 @@ describe('Warehouses settings page data', () => {
       tenant: { id: TENANT_ID },
       role: 'owner',
     })
-    mockCouriers.warehouses.list.mockResolvedValue({ data: { data: [] } })
+    mockGet876Client.mockImplementation(() => ({
+      warehouses: { list: mockWarehouses },
+    }))
   })
 
   it('fetches warehouses for the tenant without scheduling a reconcile', async () => {
@@ -40,7 +43,7 @@ describe('Warehouses settings page data', () => {
       params: Promise.resolve({ orgSlug: 'island-logistics' }),
     })
 
-    expect(mockCouriers.warehouses.list).toHaveBeenCalledWith(TENANT_ID)
+    expect(mockWarehouses).toHaveBeenCalledWith()
   })
 
   it('does not fetch when there is no tenant', async () => {
@@ -50,6 +53,6 @@ describe('Warehouses settings page data', () => {
       params: Promise.resolve({ orgSlug: 'island-logistics' }),
     })
 
-    expect(mockCouriers.warehouses.list).not.toHaveBeenCalled()
+    expect(mockWarehouses).not.toHaveBeenCalled()
   })
 })

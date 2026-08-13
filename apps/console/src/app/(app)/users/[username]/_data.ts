@@ -11,8 +11,8 @@ import { $876 } from '@/lib/876'
  */
 export const resolveUser = cache(async (username: string) => {
   const result = username.startsWith('user_')
-    ? await $876.users.retrieve({ id: username, includeDeleted: true })
-    : await $876.users.retrieve({
+    ? await $876.users.admin.retrieve({ id: username, includeDeleted: true })
+    : await $876.users.admin.retrieve({
         username,
         includeDeleted: true,
       })
@@ -25,13 +25,13 @@ export const resolveUser = cache(async (username: string) => {
  * overview (count + preview), and the addresses tab share a single fetch.
  */
 export const resolveUserAddresses = cache(async (userId: string) => {
-  const result = await $876.users.listAddresses(userId)
+  const result = await $876.users.admin.listAddresses(userId)
   return result.error ? [] : result.data.data
 })
 
 /** The user's saved contacts. Cached and shared the same way as addresses. */
 export const resolveUserContacts = cache(async (userId: string) => {
-  const result = await $876.users.listContacts(userId)
+  const result = await $876.users.admin.listContacts(userId)
   return result.error ? [] : result.data.data
 })
 
@@ -41,7 +41,7 @@ export const resolveUserContacts = cache(async (userId: string) => {
  * so it is no longer fetched as part of the eager page/layout load.
  */
 export const resolveUserProfile = cache(async (userId: string) => {
-  const result = await $876.users.retrieveProfile(userId)
+  const result = await $876.users.admin.retrieveProfile(userId)
   return result.error ? null : result.data
 })
 
@@ -60,7 +60,7 @@ export const resolveUserMcRole = cache(async (userId: string) => {
  * without the per-org N+1 (org details load lazily when the panel opens).
  */
 export const resolveUserMembershipCount = cache(async (userId: string) => {
-  const result = await $876.memberships.list({ userId, limit: 50 })
+  const result = await $876.memberships.admin.list({ userId, limit: 50 })
   if (result.error) return 0
   return result.data.total_count ?? result.data.data.length
 })
@@ -70,6 +70,6 @@ export const resolveUserMembershipCount = cache(async (userId: string) => {
  * Used to show which 876-powered products the user has accessed.
  */
 export const resolveUserApps = cache(async (userId: string) => {
-  const result = await $876.users.listApps(userId)
+  const result = await $876.users.admin.listApps(userId)
   return result.error ? [] : result.data.data
 })

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.subscriptions.create(body)
+  const { data, error } = await $876.subscriptions.admin.create(body)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to create subscription.' },

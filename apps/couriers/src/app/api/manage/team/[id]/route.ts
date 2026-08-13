@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { couriersErrorStatus, toTeamMemberView } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 import { teamMemberUpdateParamsSchema } from '@/types/team'
 
 export const runtime = 'nodejs'
@@ -41,7 +41,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await $876.couriers.team.update(ctx.tenant.id, id, {
+  const $876 = await get876Client()
+  const result = await $876.memberships.update(id, {
     ...(params.roleId === undefined ? {} : { role_id: params.roleId }),
     ...(params.status === undefined ? {} : { status: params.status }),
   })
@@ -70,7 +71,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
   const { id } = await context.params
-  const result = await $876.couriers.team.delete(ctx.tenant.id, id)
+  const $876 = await get876Client()
+  const result = await $876.memberships.delete(id)
   if (result.error)
     return apiJson(
       { error: result.error.message },

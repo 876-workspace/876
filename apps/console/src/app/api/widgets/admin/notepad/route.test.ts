@@ -11,8 +11,8 @@ vi.mock('@/lib/auth/route-guard', () => ({
 
 vi.mock('@/lib/876', () => ({
   $876: {
-    widgets: {
-      notes: {
+    notes: {
+      admin: {
         list: mocks.list,
       },
     },

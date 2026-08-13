@@ -12,11 +12,9 @@ vi.mock('@/lib/widgets-auth', () => ({
 
 vi.mock('@/lib/876/member', () => ({
   $876Member: {
-    widgets: {
-      notes: {
-        list: mocks.list,
-        create: mocks.create,
-      },
+    notes: {
+      list: mocks.list,
+      create: mocks.create,
     },
   },
 }))

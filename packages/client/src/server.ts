@@ -1,55 +1,59 @@
 import 'server-only'
-
+import { createConsoleClient, type Console876Client } from './composers/console'
 import {
-  create876BillingIntegrationClient,
-  type IntegrationClientOptions as BillingIntegrationClientOptions,
-} from '@876/billing/integration'
+  createCouriersClient,
+  type Couriers876Client,
+} from './composers/couriers'
+import { createBillingClient, type Billing876Client } from './composers/billing'
 import {
-  create876Client as createPlatformClient,
-  type ClientOptions as PlatformClientOptions,
-} from '@876/sdk'
-import { create876StorageClient, type StorageClientOptions } from '@876/storage'
-import {
-  createWidgetsClient,
-  type CreateWidgetsClientOptions,
-} from '@876/widgets/server'
+  createPlatformServerClient,
+  type Platform876Client,
+} from './composers/platform'
+import type {
+  BillingServerClientOptions,
+  ConsoleServerClientOptions,
+  CouriersServerClientOptions,
+  PlatformServerClientOptions,
+  ServerClientOptions,
+} from './internal/types'
 
-export type ServerClientOptions = PlatformClientOptions & {
-  /** Storage service configuration. */
-  storage?: StorageClientOptions
-  /** Cross-application Billing configuration. */
-  billing?: BillingIntegrationClientOptions
-  /** Widgets data-service configuration. */
-  widgets?: CreateWidgetsClientOptions
-}
-
-/**
- * Creates a server-only 876 root for product applications.
- *
- * Secret service credentials stay within this entry point. The resulting
- * client exposes `$876.storage`, `$876.billing`, and `$876.widgets` alongside
- * the ordinary platform namespaces.
- */
-export function create876ServerClient(options: ServerClientOptions = {}) {
-  const {
-    storage: storageOptions,
-    billing: billingOptions,
-    widgets: widgetsOptions,
-    ...platformOptions
-  } = options
-  return {
-    ...createPlatformClient(platformOptions),
-    storage: create876StorageClient(storageOptions),
-    billing: create876BillingIntegrationClient(billingOptions),
-    widgets: createWidgetsClient(widgetsOptions),
+export function create876ServerClient(
+  options: ConsoleServerClientOptions
+): Console876Client
+export function create876ServerClient(
+  options: CouriersServerClientOptions
+): Couriers876Client
+export function create876ServerClient(
+  options: BillingServerClientOptions
+): Billing876Client
+export function create876ServerClient(
+  options: PlatformServerClientOptions
+): Platform876Client
+export function create876ServerClient(
+  options: ServerClientOptions
+): Console876Client | Couriers876Client | Billing876Client | Platform876Client {
+  switch (options.app) {
+    case 'console':
+      return createConsoleClient(options)
+    case 'couriers':
+      return createCouriersClient(options)
+    case 'billing':
+      return createBillingClient(options)
+    default:
+      return createPlatformServerClient(options as PlatformServerClientOptions)
   }
 }
 
-export type ServerClient876 = ReturnType<typeof create876ServerClient>
+export type ServerClient876 =
+  | Console876Client
+  | Couriers876Client
+  | Billing876Client
+  | Platform876Client
 
-export type {
-  BillingIntegrationClientOptions,
-  CreateWidgetsClientOptions,
-  PlatformClientOptions,
-  StorageClientOptions,
-}
+export type { Couriers876Client } from './composers/couriers'
+export type { Admin876ClientOptions } from '@876/admin'
+export type { IntegrationClientOptions as BillingIntegrationClientOptions } from '@876/billing/integration'
+export type { AdminClientOptions as CouriersAdminClientOptions } from '@876/couriers/admin'
+export type { CreateWidgetsClientOptions } from '@876/widgets/server'
+export type { StorageClientOptions } from '@876/storage'
+export type { ServerClientOptions } from './internal/types'

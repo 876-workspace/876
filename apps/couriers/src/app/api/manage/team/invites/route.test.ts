@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   getPlatformClient: vi.fn(),
   retrieveRole: vi.fn(),
   createInvite: vi.fn(),
+  get876Client: vi.fn(),
   couriersErrorStatus: vi.fn(() => 502),
 }))
 
@@ -15,7 +16,7 @@ vi.mock('@/lib/876/platform-client', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/876', () => ({
-  $876: { couriers: { roles: { retrieve: mocks.retrieveRole } } },
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -55,6 +56,9 @@ const validBody = {
 describe('Couriers team invite route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.get876Client.mockImplementation(() => ({
+      roles: { retrieve: mocks.retrieveRole },
+    }))
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.retrieveRole.mockResolvedValue({
       data: { id: 'role_admin', system_key: 'admin' },
@@ -168,7 +172,7 @@ describe('Couriers team invite route', () => {
       status: 'pending',
     })
     expect(body.error).toBeNull()
-    expect(mocks.retrieveRole).toHaveBeenCalledWith('ten_123', 'role_admin')
+    expect(mocks.retrieveRole).toHaveBeenCalledWith('role_admin')
     expect(mocks.createInvite).toHaveBeenCalledTimes(1)
     expect(mocks.createInvite).toHaveBeenCalledWith('org_123', {
       email: 'alejandra@example.com',

@@ -42,7 +42,7 @@ export default async function AppWidgetsPage({
     ? widgetCatalog.filter((widget) => getWidgetAppFeatureKeys(widget, host))
     : []
 
-  const result = await $876.features.list({
+  const result = await $876.features.admin.list({
     limit: 100,
     includeTag: 'widget',
   })

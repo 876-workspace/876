@@ -77,7 +77,7 @@ async function AppsTableData({ searchParams }: Pick<Props, 'searchParams'>) {
   }
   const results = await Promise.all(
     FIRST_PARTY_KINDS.map((kind) =>
-      $876.apps.list({
+      $876.apps.admin.list({
         limit: 100,
         appKind: kind,
         clientType: 'public',

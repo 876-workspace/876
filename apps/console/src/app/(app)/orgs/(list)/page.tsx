@@ -81,7 +81,7 @@ async function OrganizationsTableData({
   let hasMore = false
 
   if (isSearching) {
-    const result = await $876.organizations.search({
+    const result = await $876.organizations.admin.search({
       query: q!,
       limit: 50,
       status: orgStatus,
@@ -89,7 +89,7 @@ async function OrganizationsTableData({
     if (result.error) throw new Error(result.error.message)
     orgs = result.data.data
   } else {
-    const result = await $876.organizations.list({
+    const result = await $876.organizations.admin.list({
       limit: 25,
       startingAfter: after,
       endingBefore: before,
@@ -103,7 +103,7 @@ async function OrganizationsTableData({
   const orgIds = orgs.map((o) => o.id)
   const subscriptionsMap: Record<string, AdminSubscription[]> = {}
   if (orgIds.length > 0) {
-    const batchResult = await $876.organizations.subscriptions.list({
+    const batchResult = await $876.organizations.admin.subscriptions.list({
       organizationIds: orgIds,
     })
     if (batchResult.data?.data) {

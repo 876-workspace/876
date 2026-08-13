@@ -8,7 +8,7 @@ import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { couriersErrorStatus } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -40,10 +40,8 @@ export async function POST(request: NextRequest) {
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
 
-  const roleResult = await $876.couriers.roles.retrieve(
-    ctx.tenant.id,
-    parsed.data.roleId
-  )
+  const $876 = await get876Client()
+  const roleResult = await $876.roles.retrieve(parsed.data.roleId)
   if (roleResult.error) {
     if (roleResult.error.code.endsWith('/not-found'))
       return apiJson({ error: 'Role not found.' }, { status: 404 })

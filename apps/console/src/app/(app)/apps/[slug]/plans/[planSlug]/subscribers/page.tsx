@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { $876 } from '@/lib/876'
+import { $876, billingAdmin } from '@/lib/876'
 import { resolveApp } from '../../../_data'
 import { SubscribersTable } from './_components/subscribers-table'
 
@@ -9,7 +9,7 @@ type Props = { params: Promise<{ slug: string; planSlug: string }> }
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
-    const result = await $876.billing.stats.apps.retrieve(sourceAppId)
+    const result = await billingAdmin.stats.apps.retrieve(sourceAppId)
     if (result.error) {
       console.error(
         '[console.billing.stats] app stats retrieve failed:',
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const app = await resolveApp(slug)
   if (!app) return { title: 'Plan Subscribers not found' }
 
-  const { data } = await $876.products.list({ appId: app.id })
+  const { data } = await $876.products.admin.list({ appId: app.id })
   const products = data?.data ?? []
   const product = products.find((p) => p.slug === planSlug || p.id === planSlug)
 
@@ -49,7 +49,7 @@ export default async function PlanSubscribersPage({ params }: Props) {
 
   if (!app || app.app_kind !== 'product') notFound()
 
-  const { data } = await $876.products.list({ appId: app.id })
+  const { data } = await $876.products.admin.list({ appId: app.id })
   const products = data?.data ?? []
 
   const product = products.find((p) => p.slug === planSlug || p.id === planSlug)

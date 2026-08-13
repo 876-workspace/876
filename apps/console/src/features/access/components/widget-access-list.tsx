@@ -30,8 +30,8 @@ const HOST_LABELS: Record<WidgetHost, string> = {
  */
 export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
   const [featuresResult, appsResult] = await Promise.all([
-    $876.features.list({ limit: 100, includeTag: 'widget' }),
-    $876.apps.list({ limit: 100, clientType: 'public' }),
+    $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
+    $876.apps.admin.list({ limit: 100, clientType: 'public' }),
   ])
 
   const bySlug = new Map(
@@ -80,7 +80,7 @@ export async function WidgetAccessList({ widget }: { widget: WidgetMetadata }) {
       .filter((feature): feature is AdminFeature => feature !== undefined)
   )
   const grantsById = await loadGrants(resolved, (id) =>
-    $876.features.retrieveGrants(id)
+    $876.features.admin.retrieveGrants(id)
   )
 
   const scopes: AccessScope[] = scopeSpecs.map((spec) => {

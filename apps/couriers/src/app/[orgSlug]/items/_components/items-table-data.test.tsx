@@ -13,7 +13,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 vi.mock('@/lib/876', () => ({
-  get876Client: mocks.get876Client,
+  billingIntegration: { items: { list: mocks.listItems } },
 }))
 vi.mock('next/navigation', () => ({
   usePathname: () => '/island-logistics/items',
@@ -51,9 +51,7 @@ function listResult<T>(data: T[], hasMore = false) {
 describe('Couriers items page data', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue(context)
-    mocks.get876Client.mockResolvedValue({
-      billing: { items: { list: mocks.listItems } },
-    })
+    mocks.get876Client.mockResolvedValue({})
   })
 
   it('when catalog items exist, formats prices and displays catalog fields', async () => {

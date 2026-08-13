@@ -786,7 +786,7 @@ repo = UserRepository(db)  # where db is injected via Depends(get_db)
 3. **Factory determines privilege** — both ordinary and admin clients use
    `$876.resource.verb()`. The admin factory exposes privileged verbs while the
    ordinary factory omits them. Deeper nesting is reserved for genuine
-   subsystems such as `$876.storage.buckets.*`.
+   subsystems such as `$876.files.*`.
 
 ---
 

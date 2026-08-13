@@ -12,9 +12,13 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/console-app', () => ({ CONSOLE_APP_SLUG: 'console' }))
 vi.mock('@/lib/876', () => ({
   $876: {
-    apps: { list: mocks.appsList },
+    apps: {
+      admin: { list: mocks.appsList },
+    },
     features: {
-      evaluate: mocks.featuresEvaluate,
+      admin: {
+        evaluate: mocks.featuresEvaluate,
+      },
     },
   },
 }))

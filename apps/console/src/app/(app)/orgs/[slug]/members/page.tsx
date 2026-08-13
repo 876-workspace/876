@@ -50,7 +50,7 @@ async function InviteMemberData({ slug }: { slug: string }) {
 async function MembersTableData({ slug }: { slug: string }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
-  const membershipsResult = await $876.memberships.list({
+  const membershipsResult = await $876.memberships.admin.list({
     organizationId: org.id,
     limit: 50,
   })
@@ -59,7 +59,7 @@ async function MembersTableData({ slug }: { slug: string }) {
   const userIds = [...new Set(memberships.map((m) => m.user_id))]
   const [usersResult, invitesResult] = await Promise.all([
     userIds.length > 0
-      ? $876.users.list({ ids: userIds, limit: 100 })
+      ? $876.users.admin.list({ ids: userIds, limit: 100 })
       : Promise.resolve({
           data: {
             object: 'list',
@@ -69,7 +69,7 @@ async function MembersTableData({ slug }: { slug: string }) {
             total_count: 0,
           },
           error: null,
-        } as unknown as Awaited<ReturnType<typeof $876.users.list>>),
+        } as unknown as Awaited<ReturnType<typeof $876.users.admin.list>>),
     $876.invites.list(org.id),
   ])
   const usersById: Record<string, AdminUser> = {}

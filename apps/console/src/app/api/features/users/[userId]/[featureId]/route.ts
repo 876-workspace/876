@@ -21,7 +21,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.users.updateFeature(
+  const { data, error } = await $876.users.admin.updateFeature(
     userId,
     featureId,
     body
@@ -44,7 +44,10 @@ export async function DELETE(
   if (response) return response
 
   const { userId, featureId } = await context.params
-  const { data, error } = await $876.users.revokeFeature(userId, featureId)
+  const { data, error } = await $876.users.admin.revokeFeature(
+    userId,
+    featureId
+  )
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to revoke user feature.' },

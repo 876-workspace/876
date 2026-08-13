@@ -16,7 +16,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.features.create(body)
+  const { data, error } = await $876.features.admin.create(body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to create feature.' },

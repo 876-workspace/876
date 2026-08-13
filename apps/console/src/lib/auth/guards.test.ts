@@ -22,7 +22,11 @@ const mocks = vi.hoisted(() => ({
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 
 vi.mock('@/lib/876', () => ({
-  $876: { users: { retrieve: mocks.retrieveUser } },
+  $876: {
+    users: {
+      admin: { retrieve: mocks.retrieveUser },
+    },
+  },
 }))
 
 vi.mock('@/lib/service', () => ({

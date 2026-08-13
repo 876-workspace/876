@@ -69,7 +69,7 @@ async function BillingSubscriptionsData({
   const [accounts, subscriptions, productsResult] = await Promise.all([
     resolveOrgBillingAccounts(org.id),
     resolveOrgSubscriptions(org.id),
-    $876.products.list({ status: 'active' }),
+    $876.products.admin.list({ status: 'active' }),
   ])
 
   return (

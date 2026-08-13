@@ -1,44 +1,52 @@
 import {
-  create876Client as createBillingClient,
-  type ClientOptions as BillingClientOptions,
-} from '@876/billing'
-import {
   create876Client as createPlatformClient,
   type ClientOptions as PlatformClientOptions,
 } from '@876/sdk'
-import { browserCollections, browserNotes } from '@876/widgets/browser'
+import { browserNotes, browserCollections } from '@876/widgets/browser'
+import type { AppId } from './context/types.ts'
 
-export type ClientOptions = PlatformClientOptions & {
-  /** Tenant-scoped Billing configuration. */
-  billing?: BillingClientOptions
-}
-
-const widgets = {
-  notes: {
-    list: browserNotes.list,
-    create: browserNotes.create,
-    update: browserNotes.update,
-    delete: browserNotes.delete,
-  },
-  collections: browserCollections,
+export interface ClientOptions extends PlatformClientOptions {
+  app?: AppId
 }
 
 /**
- * Creates the client-safe root for the 876 ecosystem.
- *
- * Feature packages remain independently maintained, while applications use
- * one branded root: `$876.auth.*`, `$876.billing.*`, and `$876.widgets.*`.
- * Server-only services are composed by `@876/client/server`.
+ * Browser-safe `$876` client. Only resources that can genuinely work in a
+ * browser runtime are composed — server-only/privileged resources are simply
+ * absent from the type, never typed as `undefined`.
  */
 export function create876Client(options: ClientOptions = {}) {
-  const { billing: billingOptions, ...platformOptions } = options
+  const platform = createPlatformClient(options)
+
   return {
-    ...createPlatformClient(platformOptions),
-    billing: createBillingClient(billingOptions),
-    widgets,
+    auth: platform.auth,
+    oauth: platform.oauth,
+
+    users: {
+      me: platform.users,
+    },
+
+    organizations: platform.organizations,
+    memberships: platform.memberships,
+    apps: platform.apps,
+    features: platform.features,
+    entitlements: platform.subscriptions,
+
+    locations: platform.locations,
+    contacts: platform.contacts,
+    departments: platform.departments,
+    employees: platform.employees,
+    roles: platform.roles,
+
+    organizationMembers: platform.organizationMembers,
+    appAssignments: platform.appAssignments,
+    invites: platform.invites,
+
+    permissions: platform.permissions,
+
+    notes: browserNotes,
+    collections: browserCollections,
   }
 }
 
 export type Client876 = ReturnType<typeof create876Client>
-
-export type { BillingClientOptions, PlatformClientOptions }
+export type { PlatformClientOptions }

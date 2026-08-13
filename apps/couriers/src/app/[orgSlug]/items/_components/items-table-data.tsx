@@ -6,7 +6,7 @@ import {
   EmptyTitle,
 } from '@876/ui/empty'
 import { CircleStackIcon } from '@876/ui/icons'
-import { get876Client } from '@/lib/876'
+import { billingIntegration } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 import { ItemsTable } from './items-table'
@@ -44,8 +44,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) return <ItemsTable items={[]} emptyState={emptyState} />
 
-  const $876 = await get876Client()
-  const items = await $876.billing.items.list(ctx.orgId, {
+  const items = await billingIntegration.items.list(ctx.orgId, {
     active: activeFilter,
   })
 

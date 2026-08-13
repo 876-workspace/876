@@ -54,7 +54,7 @@ async function BillingCustomersShell({ slug }: { slug: string }) {
 }
 
 async function BillingCustomersData({ org }: { org: AdminOrganization }) {
-  const { data, error } = await $876.billing.integration.customers.list(org.id)
+  const { data, error } = await $876.customers.list(org.id)
 
   return (
     <>

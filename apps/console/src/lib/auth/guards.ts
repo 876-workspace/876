@@ -40,7 +40,7 @@ export async function requireSession(returnTo: string) {
  * request, which is exactly the scope a session-derived read wants.
  */
 const retrieveUser = cache(async function retrieveUser(userId: string) {
-  const { data } = await $876.users.retrieve({ id: userId })
+  const { data } = await $876.users.admin.retrieve({ id: userId })
   return data ?? null
 })
 

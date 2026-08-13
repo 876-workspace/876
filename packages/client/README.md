@@ -1,79 +1,110 @@
-# @876/client
+# @876/client — Unified 876 Object Model
 
-The unified JavaScript client for 876 applications. Feature transports remain
-in their owning packages, while application code branches from one `$876`
-root.
+One `$876` for the entire ecosystem. Application code describes business objects, not service topology.
 
 ```ts
 import { create876Client } from '@876/client'
 
-const $876 = create876Client({
-  baseUrl: '/api',
-  billing: { baseUrl: '/api/billing' },
+export const $876 = create876Client({
+  app: 'enterprise',
+  apiKey: process.env.API_876_KEY,
 })
 
-const { data, error } = await $876.auth.login({
-  identifier: 'user@example.com',
-  password: 'example-password',
+await $876.auth.login({ identifier: 'user@example.com', password: '...' })
+
+await $876.users.me.retrieve()
+await $876.organizations.retrieve({ id: orgId })
+await $876.apps.list()
+
+await $876.customers.create({ name: 'John Brown', email: 'john@example.com' })
+await $876.invoices.create({ customerId, currency: 'JMD', lines: [] })
+await $876.invoices.finalize(invoiceId)
+await $876.payments.create({ customerId, amount: 1000 })
+
+await $876.packages.create({
+  customerId,
+  weight: 10.5,
+  weightUnit: 'kg',
+  branchId,
 })
+await $876.packages.list()
+await $876.branches.list()
+await $876.warehouses.list()
+
+await $876.files.retrieve(fileId, { sourceAppId: '876-couriers', actorUserId })
+await $876.notes.list({ userId })
 ```
 
-Product servers use the guarded server entry point:
+Product servers use the guarded server entry:
 
 ```ts
 import 'server-only'
 import { create876ServerClient } from '@876/client/server'
 
 export const $876 = create876ServerClient({
+  app: 'couriers',
   apiKey: process.env.API_876_KEY,
-  storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
-  widgets: {
-    baseUrl: process.env.WIDGETS_API_URL,
-    serviceKey: process.env.WIDGETS_SERVICE_KEY,
+  services: {
+    billing: {
+      baseUrl: process.env.BILLING_API_URL,
+      apiKey: process.env.API_876_KEY,
+    },
+    couriers: {
+      baseUrl: process.env.COURIERS_API_URL,
+      apiKey: process.env.COURIERS_API_KEY,
+      internalKey: process.env.COURIERS_INTERNAL_KEY,
+    },
+    storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
+    widgets: {
+      baseUrl: process.env.WIDGETS_API_URL,
+      serviceKey: process.env.WIDGETS_SERVICE_KEY,
+    },
   },
 })
 
-await $876.storage.uploads.create(params)
-await $876.widgets.notes.list({ userId })
-```
+await $876.customers.create({ name: 'John', email: 'john@example.com' })
+await $876.packages.create({
+  customerId,
+  weight: 8.5,
+  weightUnit: 'kg',
+  branchId,
+})
 
-Product applications compose additional product namespaces under their local `$876` root. For example, the Couriers app adds `couriers` inside `apps/couriers/src/lib/876/index.ts`:
-
-```ts
-import 'server-only'
-import { create876ServerClient } from '@876/client/server'
-import { create876CouriersAdminClient } from '@876/couriers/admin'
-
-function createCouriers876Client(requestId?: string) {
-  const ecosystem = create876ServerClient({
-    apiKey: process.env.API_876_KEY,
-    requestId /* ... */,
-  })
-  return {
-    ...ecosystem,
-    couriers: create876CouriersAdminClient({
+// Console (platform-wide)
+export const $876 = create876ServerClient({
+  app: 'console',
+  apiKey: process.env.API_876_KEY,
+  internalKey: process.env.API_INTERNAL_KEY,
+  services: {
+    billing: {
+      baseUrl: process.env.BILLING_API_URL,
+      internalKey: process.env.BILLING_INTERNAL_KEY,
+    },
+    couriers: {
       baseUrl: process.env.COURIERS_API_URL,
-      apiKey: process.env.COURIERS_API_KEY,
-      internalKey: process.env.API_INTERNAL_KEY,
-      requestId,
-    }),
-  }
-}
+      internalKey: process.env.COURIERS_INTERNAL_KEY,
+    },
+    storage: { internalKey: process.env.STORAGE_INTERNAL_KEY },
+    widgets: {
+      baseUrl: process.env.WIDGETS_API_URL,
+      serviceKey: process.env.WIDGETS_SERVICE_KEY,
+    },
+  },
+})
 
-export const $876 = createCouriers876Client()
+await $876.users.admin.list()
+await $876.apps.admin.list()
+await $876.customers.admin.list()
+await $876.packages.admin.list({ tenantId })
 ```
 
-`@876/client` itself does not import `@876/couriers` — the Couriers namespace is composed locally so only the Couriers app has `$876.couriers` and other apps do not. The `$` prefix is reserved for the `$876` ecosystem root; do not create `$couriers`, `$billing`, etc. as separate application roots.
+**Rules:**
 
-Privileged platform administration remains isolated in `@876/admin` and is
-available only to Console.
+- `$876.<resource>.<verb>()` — resources are plural (`users`, `customers`, `packages`, `invoices`, `payments`, `files`, `notes`).
+- Normal operations are root (`$876.apps.list()`); platform-wide admin is `.admin` (`$876.apps.admin.list()`).
+- Service packages (`@876/sdk`, `@876/admin`, `@876/billing`, `@876/couriers`, `@876/storage`, `@876/widgets`) remain bounded contexts. Only `@876/client` knows the topology.
+- `app: 'couriers' | 'billing' | 'console' | 'enterprise' | '876'` is routing metadata, never authorization — backend principal is authority.
+- No `$876.billing`, `$876.couriers`, `$876.storage`, `$876.widgets` — those are internal.
+- Cross-service workflows live in the owning backend, never in the SDK.
 
-Both factories expose resource-first operations:
-
-```ts
-await $876.organizations.retrieve(organizationId)
-await $876.memberships.list({ status: 'active' })
-```
-
-The factory determines privilege. An admin client can expose
-`$876.users.create(...)`; the ordinary client cannot.
+See `docs/platform-object-model.md` for the canonical ontology.

@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: { storage: { uploads: { create: mocks.create } } },
+  storage876: { uploads: { create: mocks.create } },
 }))
 vi.mock('@/lib/features', () => ({
   getFeatures: mocks.getFeatures,

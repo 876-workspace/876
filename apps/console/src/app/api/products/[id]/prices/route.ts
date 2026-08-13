@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { coreAdmin } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import {
   mirrorCoreProductPrices,
@@ -26,7 +26,7 @@ export async function POST(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.products.createPrice(id, body)
+  const { data, error } = await coreAdmin.products.createPrice(id, body)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to create price.' },
@@ -34,7 +34,7 @@ export async function POST(
     )
   }
 
-  const product = await $876.products.retrieve(id)
+  const product = await coreAdmin.products.retrieve(id)
   let billingSynced = false
   if (!product.data) {
     console.error(

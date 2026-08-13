@@ -14,8 +14,10 @@ vi.mock('@/lib/auth/route-guard', () => ({
 vi.mock('@/lib/876', () => ({
   $876: {
     features: {
-      retrieve: mocks.retrieve,
-      update: mocks.update,
+      admin: {
+        retrieve: mocks.retrieve,
+        update: mocks.update,
+      },
     },
   },
 }))

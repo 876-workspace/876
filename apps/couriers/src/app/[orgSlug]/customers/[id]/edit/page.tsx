@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
-import { $876, get876Client } from '@/lib/876'
+import { billingIntegration, get876Client } from '@/lib/876'
 import { getManageContext } from '@/lib/auth/manage-context'
 import {
   isCouriersNotFound,
@@ -37,20 +37,15 @@ async function EditCustomerData({
   orgSlug: string
   id: string
 }) {
-  const [ctx, request876] = await Promise.all([
-    getManageContext(orgSlug),
-    get876Client(),
-  ])
+  const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
-  const customerResult = await $876.couriers.customers.retrieve(
-    ctx.tenant.id,
-    id
-  )
+  const $876 = await get876Client()
+  const customerResult = await $876.customers.retrieve(id)
   if (isCouriersNotFound(customerResult)) notFound()
   const profile = toCustomerView(requireCouriersData(customerResult))
   const [branchesResult, registry] = await Promise.all([
-    $876.couriers.branches.list(ctx.tenant.id),
-    request876.billing.customers.retrieve(
+    $876.branches.list(),
+    billingIntegration.customers.retrieve(
       ctx.tenant.orgId,
       profile.billingCustomerId
     ),

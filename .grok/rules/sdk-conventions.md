@@ -4,7 +4,7 @@ Read this before adding or changing any data-access method in `@876/sdk`, `@876/
 
 ## The 876 platform in one line
 
-876 is **one identity that unlocks many product apps.** A single 876 account (consumer or enterprise) signs a user into every 876 surface — today the consumer app and Console; tomorrow product apps like "876 Eats", an "876 Commerce" storefront platform, and native/mobile clients. The FastAPI core (`@876/api`) owns identity, accounts, orgs, OAuth, and platform data; product apps add their own domains on top.
+876 is **one identity that unlocks many product apps.** A single 876 account (consumer or enterprise) signs a user into every 876 surface — today the consumer app and Console; tomorrow product apps like "876 Eats", an "876 Commerce" storefront platform, and native/mobile clients. The Core API (`@876/api`, Express) owns identity, accounts, orgs, OAuth, and platform data; product apps add their own domains on top.
 
 ## The model: one DX, tiered surface
 
@@ -16,7 +16,7 @@ Every data call reads the same way — `$876.<resource>.<verb>()` — but the **
 | Platform admin         | `@876/admin` (`$876`) | `x-internal-key` (`API_INTERNAL_KEY`)              | **server only**        | every `AdminDep` operation — full CRUD/list/search across `users`, `orgs`, `memberships`, `roles`, `features`, app mutations |
 | Shared primitives      | `@876/core`           | —                                                  | both                   | error registry, ids, timestamps, types, transport                                                                            |
 
-**Gating rule (verifiable, not a judgment call):** a `<resource>.<verb>` may live in `@876/sdk` **only if its backing FastAPI endpoint is API-key/session auth — never `AdminDep`.** If the endpoint requires `AdminDep`, the method belongs in `@876/admin` only. This is why platform-wide operations like `orgs.list()` or `users.create()` are admin-only and must never appear in the consumer SDK, even though they share the `$876.<resource>.<verb>()` shape.
+**Gating rule (verifiable, not a judgment call):** a `<resource>.<verb>` may live in `@876/sdk` **only if its backing Express endpoint is API-key/session auth — never `AdminDep`.** If the endpoint requires `AdminDep`, the method belongs in `@876/admin` only. This is why platform-wide operations like `orgs.list()` or `users.create()` are admin-only and must never appear in the consumer SDK, even though they share the `$876.<resource>.<verb>()` shape.
 
 **Enterprise placement:** the enterprise app is not a separate tier. Org-scoped operations backed by session/API-key (non-`AdminDep`) endpoints — e.g. a member-facing `memberships.list()` for the member's own org — go in `@876/sdk`; the privileged platform-wide equivalents stay in `@876/admin`. Differences in field visibility between tiers (consumer sees their full profile, an org admin sees basic member fields, Console sees everything) are an **API serializer concern** — distinct endpoints/response shapes per auth tier — never SDK-side filtering.
 
@@ -47,13 +47,19 @@ There is **exactly one `$876` per app**, imported from `@/lib/876` (`src/lib/876
 - **Console (admin):** `apps/console/src/lib/876.ts`
   ```ts
   import 'server-only'
-  import { create876AdminClient } from '@876/admin'
-  export const $876 = create876AdminClient({
-    internalKey: process.env.API_INTERNAL_KEY,
+  import { create876ServerClient } from '@876/client/server'
+  export const $876 = create876ServerClient({
+    app: 'console',
     apiKey: process.env.API_876_KEY,
+    internalKey: process.env.API_INTERNAL_KEY!,
+    services: {
+      billing: { admin: { internalKey: process.env.BILLING_INTERNAL_KEY! } },
+      couriers: { admin: { internalKey: process.env.COURIERS_INTERNAL_KEY! } },
+      storage: { internalKey: process.env.STORAGE_INTERNAL_KEY! },
+      widgets: { serviceKey: process.env.WIDGETS_SERVICE_KEY! },
+    },
   })
   ```
-  The admin runtime resolves the base URL from `API_URL` in the environment — no `baseUrl` option is passed.
 - **Consumer app, server-side (API-key tier):** `apps/876/src/lib/876.ts`
   ```ts
   import 'server-only'
@@ -66,7 +72,7 @@ There is **exactly one `$876` per app**, imported from `@/lib/876` (`src/lib/876
 - **Enterprise:** `apps/enterprise/src/lib/876.ts` — `export const $876 = create876Client({ baseUrl: '/api' })`, bound to the same-origin `/api` proxy.
 - **Consumer app, browser:** no browser `$876`; the browser auth client is `authClient` (`apps/876/src/lib/auth/client.ts`) and mutation transport is `client` (`apps/876/src/lib/client/`).
 
-Call sites then read: `const { data } = await $876.users.list({ limit: 25 })`.
+Call sites then read: `const { data } = await $876.users.admin.list({ limit: 25 })` (platform-wide) or `await $876.users.me.retrieve()` (self). No ` $876.billing.*` / ` $876.couriers.*` namespaces — use `$876.<resource>.<verb>()` (e.g. `$876.invoices.create()`, `$876.packages.create()`).
 
 ## Client-initiated mutations — no server actions
 
@@ -76,7 +82,7 @@ Server components read through `$876` directly. Mutations triggered from **clien
 - Typed client (browser): `client` from `@/lib/client` (`apps/876/src/lib/client/`, `apps/console/src/lib/client/`) — mutation endpoints only, not a second mirror of `$876`. Components do e.g. `client.roles.create(params)`.
 - No-JS form posts may use a native `<form action="/api/..." method="post">` that calls `$876` and redirects.
 
-This keeps one testable RPC surface, no server actions, and no business logic in Next.js (it lives in FastAPI). The rule is recorded in `.claude/rules/api-access.md`.
+This keeps one testable RPC surface, no server actions, and no business logic in Next.js (it lives in the owning Express API). The rule is recorded in `.claude/rules/api-access.md`.
 
 ## The one privileged exception in the consumer app
 
@@ -86,9 +92,9 @@ Future improvement (not yet built): a session-scoped `/auth/me` (`SessionDep`) e
 
 ## Adding a resource or method
 
-1. Add the FastAPI route in `apps/api` with its auth dependency.
+1. Add the Express route in `apps/api` with its auth dependency.
 2. Add the typed method to the correct tier per the gating rule — `@876/admin` (if `AdminDep`) and/or `@876/sdk` (if API-key/session and self-scoped). Match the verb vocabulary. SDK methods validate responses with Zod schemas defined per-category under `packages/sdk/src/types/<resource>.ts`.
-3. Call it through the package's `$876` — never a raw `fetch` to FastAPI.
+3. Call it through the package's `$876` — never a raw `fetch` to the Express API.
 
 ## Types
 
@@ -100,10 +106,10 @@ The ecosystem is built to add apps without duplicating identity or re-shaping th
 
 - `@876/api` stays the identity/account/platform core. A product with a rich domain (orders, catalog, payments) gets its **own API service**, not bloat in `@876/api`.
 - Each product ships its **own SDK package** (`@876/<product>`) that builds on `@876/core/client` (runtime + transport) and these conventions, and depends on `@876/sdk` for identity/login. Same `<resource>.<verb>()` DX and `{ data, error }` envelope.
-- **Product SDKs remain independently packaged, versioned, and authenticated bounded contexts.** An application explicitly composes only the product namespaces it needs under its local `$876` root. For example, Couriers composes `create876CouriersAdminClient` inside `apps/couriers/src/lib/876/index.ts` and exposes `$876.couriers.*`, while a future Billing-only app would compose only `billing` and have no `couriers` property. `@876/client` does **not** become a registry of every product; composition happens inside the application that needs it.
-- `$` is reserved for `$876` as the ecosystem root. Do not introduce `$couriers`, `$billing`, `$careers`, etc. as application-level roots. Product factories remain named `create876CouriersAdminClient`, etc., but call sites use `$876.couriers.*`, `$876.billing.*`, etc.
+- **Product SDKs remain independently packaged, versioned, and authenticated bounded contexts.** Each owning package (`@876/billing`, `@876/couriers`, `@876/storage`, `@876/widgets`) keeps its transport and resource implementation. `@876/client` composes them into one canonical `$876.<resource>.<verb>()` surface (e.g. `$876.invoices` → Billing, `$876.packages` → Couriers, `$876.files` → Storage). Application code never imports the owning package directly — it imports `$876` from `@/lib/876`.
+- `$` is reserved for `$876` as the ecosystem root. Do not introduce `$couriers`, `$billing`, `$careers`, etc. as application-level roots. Product factories (`create876CouriersAdminClient`, `create876BillingIntegrationClient`, etc.) remain in their owning packages, but application call sites use the unified `$876.<resource>.<verb>()` via `@876/client` (e.g. `$876.packages.create()`, `$876.invoices.create()`, `$876.files.retrieve()`).
 - **Privileged resource availability is determined by which product client tier the application composes and remains enforced by the backing API.** The presence of a namespace in the TypeScript type does not bypass service authorization.
-- **No universal All876Client.** Do not create a central type or factory that lists every possible product. Applications compose capabilities explicitly; tree-shaking and bundle isolation follow from that.
+- 876 exposes one canonical object model. Product/service packages remain independently owned bounded contexts, but application call sites use `$876.<resource>.<verb>()`. `@876/client` maps each resource to its owning service. Cross-service business workflows are executed by the owning backend, never by application call sites or the facade.
 - **Universal cross-product resources** (e.g. a unified `orders` view spanning "876 Eats" and "876 Commerce") live in their own shared package/service that reads from the universal 876 user base.
 - Identity/auth **always** flows through `@876/sdk`; it is never re-implemented per product.
 - A React Native app or a hosted storefront consumes `@876/sdk` for the 876 account plus the relevant product SDK for product features.

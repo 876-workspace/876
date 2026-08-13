@@ -62,7 +62,7 @@ async function FeaturesTableData({
   if (!app) notFound()
 
   const [featureResult, modulesResult] = await Promise.all([
-    $876.features.list({
+    $876.features.admin.list({
       appId: app.id,
       limit: 100,
       search: query,

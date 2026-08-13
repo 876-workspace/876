@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
 import { requireCouriersData, toRoleView } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 
 /**
  * The tenant's roles, deduplicated for the lifetime of one request.
@@ -12,8 +12,7 @@ import { $876 } from '@/lib/876'
  * wrapper the page issues the same tenant query twice — once blocking the
  * toolbar, once behind Suspense.
  */
-export const listTeamRoles = cache(async (tenantId: string) =>
-  requireCouriersData(await $876.couriers.roles.list(tenantId)).data.map(
-    toRoleView
-  )
-)
+export const listTeamRoles = cache(async (tenantId: string) => {
+  const $876 = await get876Client()
+  return requireCouriersData(await $876.roles.list()).data.map(toRoleView)
+})

@@ -21,12 +21,18 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/876', () => ({
   $876: {
     users: {
-      create: mocks.userCreate,
-      delete: mocks.userDelete,
-      update: mocks.userUpdate,
+      admin: {
+        create: mocks.userCreate,
+        delete: mocks.userDelete,
+        update: mocks.userUpdate,
+      },
     },
-    organizations: { create: mocks.orgCreate },
-    memberships: { create: mocks.membershipCreate },
+    organizations: {
+      admin: { create: mocks.orgCreate },
+    },
+    memberships: {
+      admin: { create: mocks.membershipCreate },
+    },
   },
 }))
 

@@ -3,7 +3,12 @@ import { NextRequest } from 'next/server'
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   updateManagedCustomer: vi.fn(),
-  delete: vi.fn(),
+  client: {
+    customers: {
+      delete: vi.fn(),
+    },
+  },
+  get876Client: vi.fn(),
   couriersErrorStatus: vi.fn((error: { code: string }) => {
     if (error.code.endsWith('/not-found')) return 404
     if (error.code === 'request/invalid') return 422
@@ -24,7 +29,7 @@ vi.mock('@/lib/manage/customers', () => ({
   updateManagedCustomer: mocks.updateManagedCustomer,
 }))
 vi.mock('@/lib/876', () => ({
-  $876: { couriers: { customers: { delete: mocks.delete } } },
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
@@ -76,12 +81,13 @@ function ctx(
 describe('customer [id] route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.get876Client.mockImplementation(() => mocks.client)
     mocks.getManageContext.mockResolvedValue(ctx('admin'))
     mocks.updateManagedCustomer.mockResolvedValue({
       data: { id: 'cprof_nkr' },
       error: null,
     })
-    mocks.delete.mockResolvedValue({
+    mocks.client.customers.delete.mockResolvedValue({
       data: {
         object: 'courier_customer_profile',
         id: 'cprof_nkr',
@@ -166,7 +172,7 @@ describe('customer [id] route', () => {
         context
       )
       expect(response.status).toBe(422)
-      expect(mocks.delete).not.toHaveBeenCalled()
+      expect(mocks.client.customers.delete).not.toHaveBeenCalled()
     })
     it('returns 401 with no session', async () => {
       mocks.getManageContext.mockResolvedValue(null)
@@ -174,7 +180,7 @@ describe('customer [id] route', () => {
       expect(response.status).toBe(401)
       const body = await response.json()
       expect(body.error.code).toBe('auth/no-session')
-      expect(mocks.delete).not.toHaveBeenCalled()
+      expect(mocks.client.customers.delete).not.toHaveBeenCalled()
     })
     it('returns auth/forbidden for a member', async () => {
       mocks.getManageContext.mockResolvedValue(ctx('member'))
@@ -182,16 +188,16 @@ describe('customer [id] route', () => {
       const body = await response.json()
       expect(response.status).toBe(403)
       expect(body.error.code).toBe('auth/forbidden')
-      expect(mocks.delete).not.toHaveBeenCalled()
+      expect(mocks.client.customers.delete).not.toHaveBeenCalled()
     })
     it('returns 404 without a tenant', async () => {
       mocks.getManageContext.mockResolvedValue(ctx('admin', null))
       const response = await DELETE(delRequest(), context)
       expect(response.status).toBe(404)
-      expect(mocks.delete).not.toHaveBeenCalled()
+      expect(mocks.client.customers.delete).not.toHaveBeenCalled()
     })
     it('maps a Couriers not-found error with couriersErrorStatus', async () => {
-      mocks.delete.mockResolvedValue({
+      mocks.client.customers.delete.mockResolvedValue({
         data: null,
         error: { code: 'customer/not-found', message: 'Not found.' },
       })
@@ -204,7 +210,7 @@ describe('customer [id] route', () => {
         code: 'customer/not-found',
         message: 'Not found.',
       })
-      expect(mocks.delete).toHaveBeenCalledTimes(1)
+      expect(mocks.client.customers.delete).toHaveBeenCalledTimes(1)
     })
     it('deletes with the exact tenant, id, and audit body', async () => {
       const response = await DELETE(delRequest(), context)
@@ -213,8 +219,8 @@ describe('customer [id] route', () => {
         data: { id: 'cprof_nkr', deleted: true },
         error: null,
       })
-      expect(mocks.delete).toHaveBeenCalledTimes(1)
-      expect(mocks.delete).toHaveBeenCalledWith('ten_nkr', 'cprof_nkr', {
+      expect(mocks.client.customers.delete).toHaveBeenCalledTimes(1)
+      expect(mocks.client.customers.delete).toHaveBeenCalledWith('cprof_nkr', {
         deleted_by: 'usr_ops',
       })
     })
@@ -229,12 +235,12 @@ describe('customer [id] route', () => {
         context
       )
       expect(response.status).toBe(200)
-      expect(mocks.delete).toHaveBeenCalledWith('ten_nkr', 'cprof_nkr', {
+      expect(mocks.client.customers.delete).toHaveBeenCalledWith('cprof_nkr', {
         deleted_by: 'usr_ops',
       })
     })
     it('strips the wire object discriminator from the browser response', async () => {
-      mocks.delete.mockResolvedValue({
+      mocks.client.customers.delete.mockResolvedValue({
         data: {
           object: 'courier_customer_profile',
           id: 'cprof_nkr',

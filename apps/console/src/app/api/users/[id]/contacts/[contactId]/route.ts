@@ -20,7 +20,11 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.users.updateContact(id, contactId, body)
+  const { data, error } = await $876.users.admin.updateContact(
+    id,
+    contactId,
+    body
+  )
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to update contact.' },
@@ -38,7 +42,7 @@ export async function DELETE(
   if (response) return response
 
   const { id, contactId } = await context.params
-  const { data, error } = await $876.users.deleteContact(id, contactId)
+  const { data, error } = await $876.users.admin.deleteContact(id, contactId)
   if (error || !data)
     return apiJson(
       { error: error?.message ?? 'Failed to delete contact.' },

@@ -24,7 +24,7 @@ export async function PATCH(
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const { data, error } = await $876.subscriptions.updateItem(
+  const { data, error } = await $876.subscriptions.admin.updateItem(
     subscriptionId,
     itemId,
     body
@@ -47,7 +47,7 @@ export async function DELETE(
   if (response) return response
 
   const { subscriptionId, itemId } = await context.params
-  const { data, error } = await $876.subscriptions.deleteItem(
+  const { data, error } = await $876.subscriptions.admin.deleteItem(
     subscriptionId,
     itemId
   )

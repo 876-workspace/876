@@ -1890,6 +1890,5109 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         ],
       },
     },
+    "/v1/me/addresses": {
+      "get": {
+        "operationId": "me-addresses-list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "is_active",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "country_code",
+            "schema": {
+              "maxLength": 2,
+              "minLength": 2,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Address",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Addresses returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own addresses",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-addresses-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "city": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "country_code": {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "latitude": {
+                    "maximum": 90,
+                    "minimum": -90,
+                    "type": "number",
+                  },
+                  "line1": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "line2": {
+                    "maxLength": 200,
+                    "type": "string",
+                  },
+                  "longitude": {
+                    "maximum": 180,
+                    "minimum": -180,
+                    "type": "number",
+                  },
+                  "name": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "postal_code": {
+                    "maxLength": 32,
+                    "type": "string",
+                  },
+                  "region_code": {
+                    "maxLength": 32,
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "name",
+                  "line1",
+                  "city",
+                  "country_code",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Address",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Address created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create an address in the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/addresses/{id}": {
+      "delete": {
+        "operationId": "me-addresses-delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Address",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Address deleted.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Delete one of the caller’s own addresses",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-addresses-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "city": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "country_code": {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "latitude": {
+                    "maximum": 90,
+                    "minimum": -90,
+                    "type": "number",
+                  },
+                  "line1": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "line2": {
+                    "maxLength": 200,
+                    "type": "string",
+                  },
+                  "longitude": {
+                    "maximum": 180,
+                    "minimum": -180,
+                    "type": "number",
+                  },
+                  "name": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "postal_code": {
+                    "maxLength": 32,
+                    "type": "string",
+                  },
+                  "region_code": {
+                    "maxLength": 32,
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Address",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Address updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own addresses",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/branches": {
+      "get": {
+        "operationId": "me-branches-list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Branch",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branches returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own branches",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-branches-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "name",
+                      "line1",
+                      "city",
+                      "country_code",
+                    ],
+                    "type": "object",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "phone": {
+                    "type": "string",
+                  },
+                  "settings": {
+                    "additionalProperties": {},
+                    "propertyNames": {
+                      "type": "string",
+                    },
+                    "type": "object",
+                  },
+                },
+                "required": [
+                  "name",
+                  "address",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Branch",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create a branch in the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/branches/{id}": {
+      "get": {
+        "operationId": "me-branches-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Branch",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve one of the caller’s own branches",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-branches-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "settings": {
+                    "additionalProperties": {},
+                    "propertyNames": {
+                      "type": "string",
+                    },
+                    "type": "object",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Branch",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Branch updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own branches",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/customers": {
+      "get": {
+        "operationId": "me-customers-list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "branch_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/CourierCustomerProfile",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customers returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own customers",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-customers-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "company_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "customer_kind": {
+                    "default": "INDIVIDUAL",
+                    "enum": [
+                      "INDIVIDUAL",
+                      "BUSINESS",
+                    ],
+                    "type": "string",
+                  },
+                  "email": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "first_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "idempotency_key": {
+                    "maxLength": 255,
+                    "minLength": 8,
+                    "type": "string",
+                  },
+                  "is_commercial": {
+                    "type": "boolean",
+                  },
+                  "last_name": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "status": {
+                    "enum": [
+                      "ACTIVE",
+                      "SUSPENDED",
+                    ],
+                    "type": "string",
+                  },
+                  "trn": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "required": [
+                  "idempotency_key",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create a customer in the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/customers/enrollments": {
+      "post": {
+        "operationId": "me-customers-enroll",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "billing_customer_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_commercial": {
+                    "type": "boolean",
+                  },
+                  "status": {
+                    "enum": [
+                      "ACTIVE",
+                      "SUSPENDED",
+                    ],
+                    "type": "string",
+                  },
+                  "user_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "required": [
+                  "billing_customer_id",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerEnrollment",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer enrolled.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Enroll an existing Billing customer into the caller’s tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/customers/{id}": {
+      "delete": {
+        "operationId": "me-customers-delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "deleted_by": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "deletion_reason": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "reason": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "deleted": {
+                          "const": true,
+                          "type": "boolean",
+                        },
+                        "id": {
+                          "type": "string",
+                        },
+                        "object": {
+                          "const": "courier_customer_profile",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "id",
+                        "deleted",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer deleted.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Soft-delete one of the caller’s own customers",
+        "tags": [
+          "Me",
+        ],
+      },
+      "get": {
+        "operationId": "me-customers-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve one of the caller’s own customers",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-customers-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "company_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "email": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "first_name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "is_commercial": {
+                    "type": "boolean",
+                  },
+                  "last_name": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "phone": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "status": {
+                    "enum": [
+                      "ACTIVE",
+                      "SUSPENDED",
+                    ],
+                    "type": "string",
+                  },
+                  "trn": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourierCustomerProfile",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Customer updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own customers",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/customers/{id}/mailboxes": {
+      "get": {
+        "operationId": "me-customers-mailboxes-list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Mailbox",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailboxes returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List one of the caller’s own customers’ mailboxes",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-customers-mailboxes-create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                  "number": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "pattern": "^[A-Za-z0-9-]+$",
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "number",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Mailbox",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailbox created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create a mailbox for one of the caller’s own customers",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/customers/{id}/mailboxes/{mailboxId}": {
+      "patch": {
+        "operationId": "me-customers-mailboxes-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                },
+                "required": [
+                  "is_primary",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Mailbox",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailbox updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own customers’ mailboxes",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/mailboxes": {
+      "get": {
+        "operationId": "me-mailboxes-list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "customer_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/TenantMailbox",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Mailboxes returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own mailboxes",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/packages": {
+      "get": {
+        "operationId": "me-packages-list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "PRE_ALERT",
+                "RECEIVED",
+                "IN_TRANSIT",
+                "ARRIVED",
+                "READY_FOR_PICKUP",
+                "COLLECTED",
+                "UNCLAIMED",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "branch_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Package",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Packages returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own packages",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-packages-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "actual_weight": {
+                    "anyOf": [
+                      {
+                        "exclusiveMinimum": 0,
+                        "type": "number",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "customer_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "mailbox_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "package_type": {
+                    "enum": [
+                      "CARTON",
+                      "ENVELOPE",
+                      "BAG",
+                      "PALLET",
+                      "OTHER",
+                    ],
+                    "type": "string",
+                  },
+                  "quantity": {
+                    "maximum": 9007199254740991,
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "status": {
+                    "enum": [
+                      "PRE_ALERT",
+                      "RECEIVED",
+                      "IN_TRANSIT",
+                      "ARRIVED",
+                      "READY_FOR_PICKUP",
+                      "COLLECTED",
+                      "UNCLAIMED",
+                    ],
+                    "type": "string",
+                  },
+                  "tracking_num": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "required": [
+                  "customer_id",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create a package in the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/packages/{id}": {
+      "get": {
+        "operationId": "me-packages-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Package not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve one of the caller’s own packages",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-packages-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "actual_weight": {
+                    "anyOf": [
+                      {
+                        "exclusiveMinimum": 0,
+                        "type": "number",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "description": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "mailbox_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "package_type": {
+                    "enum": [
+                      "CARTON",
+                      "ENVELOPE",
+                      "BAG",
+                      "PALLET",
+                      "OTHER",
+                    ],
+                    "type": "string",
+                  },
+                  "quantity": {
+                    "maximum": 9007199254740991,
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                  "status": {
+                    "enum": [
+                      "PRE_ALERT",
+                      "RECEIVED",
+                      "IN_TRANSIT",
+                      "ARRIVED",
+                      "READY_FOR_PICKUP",
+                      "COLLECTED",
+                      "UNCLAIMED",
+                    ],
+                    "type": "string",
+                  },
+                  "tracking_num": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Package",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own packages",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/roles": {
+      "get": {
+        "operationId": "me-roles-list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Role",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Roles returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own roles",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-roles-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "maxLength": 280,
+                    "type": "string",
+                  },
+                  "name": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "permissions": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "required": [
+                  "name",
+                  "permissions",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Role",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create a role in the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/roles/{id}": {
+      "delete": {
+        "operationId": "me-roles-delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Role",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role deleted.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Delete one of the caller’s own roles",
+        "tags": [
+          "Me",
+        ],
+      },
+      "get": {
+        "operationId": "me-roles-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Role",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve one of the caller’s own roles",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-roles-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "maxLength": 280,
+                    "type": "string",
+                  },
+                  "name": {
+                    "maxLength": 64,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "permissions": {
+                    "items": {
+                      "type": "string",
+                    },
+                    "type": "array",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Role",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Role updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own roles",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/settings/modules": {
+      "get": {
+        "operationId": "me-settings-modules-list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/OrganizationModule",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Module settings returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own module settings",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/settings/modules/{module}": {
+      "patch": {
+        "operationId": "me-settings-modules-toggle",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "is_enabled": {
+                    "type": "boolean",
+                  },
+                },
+                "required": [
+                  "is_enabled",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/OrganizationModule",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Module setting updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Toggle one of the caller’s own modules",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/settings/modules/{module}/preferences": {
+      "get": {
+        "operationId": "me-settings-modules-preferences-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ModulePreferences",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Module preferences returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve resolved preferences for one of the caller’s own modules",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-settings-modules-preferences-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "boolean",
+                    },
+                    {
+                      "type": "string",
+                    },
+                    {
+                      "type": "number",
+                    },
+                  ],
+                },
+                "propertyNames": {
+                  "type": "string",
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ModulePreferences",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Module preferences updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update resolved preferences for one of the caller’s own modules",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/team": {
+      "get": {
+        "operationId": "me-team-list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "active",
+                "inactive",
+              ],
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/TeamMember",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Team members returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own team members",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-team-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "role_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "user_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "user_id",
+                  "role_id",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamMember",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Team member created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Add a member to the caller’s own team",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/team/{id}": {
+      "delete": {
+        "operationId": "me-team-delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamMember",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Team member deleted.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Remove one of the caller’s own team members",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-team-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "role_id": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "status": {
+                    "enum": [
+                      "active",
+                      "inactive",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TeamMember",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Team member updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own team members",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/tenant": {
+      "get": {
+        "operationId": "me-tenant-retrieve",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Tenant",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Tenant returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Tenant not found.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/warehouses": {
+      "get": {
+        "operationId": "me-warehouses-list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/Warehouse",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouses returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "List the caller’s own warehouses",
+        "tags": [
+          "Me",
+        ],
+      },
+      "post": {
+        "operationId": "me-warehouses-create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "required": [
+                      "name",
+                      "line1",
+                      "city",
+                      "country_code",
+                    ],
+                    "type": "object",
+                  },
+                  "agent_name": {
+                    "maxLength": 120,
+                    "type": "string",
+                  },
+                  "code": {
+                    "maxLength": 16,
+                    "type": "string",
+                  },
+                  "instructions": {
+                    "maxLength": 500,
+                    "type": "string",
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                  "mailbox_placement": {
+                    "enum": [
+                      "RECIPIENT_LINE",
+                      "ADDRESS_LINE_1",
+                      "ADDRESS_LINE_2",
+                    ],
+                    "type": "string",
+                  },
+                  "mailbox_prefix": {
+                    "maxLength": 16,
+                    "type": "string",
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "operating_model": {
+                    "enum": [
+                      "OWNED",
+                      "AGENT",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "name",
+                  "address",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Warehouse",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouse created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Create a warehouse in the caller’s own tenant",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
+    "/v1/me/warehouses/{id}": {
+      "get": {
+        "operationId": "me-warehouses-retrieve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Warehouse",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouse returned.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Retrieve one of the caller’s own warehouses",
+        "tags": [
+          "Me",
+        ],
+      },
+      "patch": {
+        "operationId": "me-warehouses-update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "city": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "country_code": {
+                        "maxLength": 2,
+                        "minLength": 2,
+                        "type": "string",
+                      },
+                      "is_active": {
+                        "type": "boolean",
+                      },
+                      "latitude": {
+                        "maximum": 90,
+                        "minimum": -90,
+                        "type": "number",
+                      },
+                      "line1": {
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "line2": {
+                        "maxLength": 200,
+                        "type": "string",
+                      },
+                      "longitude": {
+                        "maximum": 180,
+                        "minimum": -180,
+                        "type": "number",
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      "postal_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                      "region_code": {
+                        "maxLength": 32,
+                        "type": "string",
+                      },
+                    },
+                    "type": "object",
+                  },
+                  "agent_name": {
+                    "anyOf": [
+                      {
+                        "maxLength": 120,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "code": {
+                    "anyOf": [
+                      {
+                        "maxLength": 16,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "instructions": {
+                    "anyOf": [
+                      {
+                        "maxLength": 500,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "is_primary": {
+                    "type": "boolean",
+                  },
+                  "mailbox_placement": {
+                    "enum": [
+                      "RECIPIENT_LINE",
+                      "ADDRESS_LINE_1",
+                      "ADDRESS_LINE_2",
+                    ],
+                    "type": "string",
+                  },
+                  "mailbox_prefix": {
+                    "anyOf": [
+                      {
+                        "maxLength": 16,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "name": {
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "operating_model": {
+                    "enum": [
+                      "OWNED",
+                      "AGENT",
+                    ],
+                    "type": "string",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Warehouse",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Warehouse updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "BearerToken": [],
+          },
+        ],
+        "summary": "Update one of the caller’s own warehouses",
+        "tags": [
+          "Me",
+        ],
+      },
+    },
     "/v1/portal/tenants/resolve": {
       "get": {
         "operationId": "portal-tenants-resolve",

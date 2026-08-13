@@ -48,7 +48,10 @@ export default async function ConsoleLoginPage({
  */
 async function getConsoleLogoUrl(): Promise<string | null> {
   try {
-    const { data } = await $876.apps.list({ appKind: 'internal', limit: 100 })
+    const { data } = await $876.apps.admin.list({
+      appKind: 'internal',
+      limit: 100,
+    })
     const app = data?.data.find((entry) => entry.slug === CONSOLE_APP_SLUG)
     return app?.logo_url ?? null
   } catch {

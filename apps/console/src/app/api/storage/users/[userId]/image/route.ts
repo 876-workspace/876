@@ -21,7 +21,7 @@ export async function POST(request: NextRequest, context: Context) {
 
   const { userId } = await context.params
   const { route_key, ...file } = parsed.data
-  const result = await $876.storage.uploads.create({
+  const result = await $876.uploads.create({
     route_key,
     owner_type: 'user',
     owner_id: userId,

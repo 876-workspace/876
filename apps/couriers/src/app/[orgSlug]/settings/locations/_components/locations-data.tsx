@@ -1,6 +1,6 @@
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toBranchView } from '@/lib/couriers'
-import { $876 } from '@/lib/876'
+import { get876Client } from '@/lib/876'
 
 import { LocationsCards } from './locations-cards'
 
@@ -17,11 +17,11 @@ export async function LocationsData({ params }: Props) {
       </div>
     )
 
-  const { id: tenantId } = ctx.tenant
+  const $876 = await get876Client()
 
-  const branches = requireCouriersData(
-    await $876.couriers.branches.list(tenantId)
-  ).data.map(toBranchView)
+  const branches = requireCouriersData(await $876.branches.list()).data.map(
+    toBranchView
+  )
 
   return (
     <LocationsCards

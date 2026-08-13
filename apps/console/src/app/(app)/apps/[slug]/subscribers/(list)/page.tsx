@@ -45,7 +45,7 @@ async function AppSubscribersShell({ slug }: { slug: string }) {
 async function SubscribersTableData({ app }: { app: AdminApp }) {
   const [subscriptionsResult, productsResult] = await Promise.all([
     $876.appSubscriptions.list(app.id),
-    $876.products.list({ appId: app.id, status: 'active' }),
+    $876.products.admin.list({ appId: app.id, status: 'active' }),
   ])
   const subscriptions = subscriptionsResult.data ?? []
   const prices = (productsResult.data?.data ?? []).flatMap((product) =>
@@ -61,7 +61,7 @@ async function SubscribersTableData({ app }: { app: AdminApp }) {
   const orgMap = new Map<string, AdminOrganization>()
   await Promise.all(
     orgIds.map(async (id) => {
-      const { data: org } = await $876.organizations.retrieve({ id })
+      const { data: org } = await $876.organizations.admin.retrieve({ id })
       if (org) orgMap.set(id, org)
     })
   )
