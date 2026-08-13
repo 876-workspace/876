@@ -104,6 +104,10 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     expect($876.products.list).toBeTypeOf('function')
     // entitlements is the core noun, must never revert to `subscriptions`
     expect($876.entitlements.list).toBeTypeOf('function')
+    // self-scoped user resources that were present in the SDK but missing from
+    // the composed surface (same omission class as #255/#256)
+    expect($876.mobileNumbers.list).toBeTypeOf('function')
+    expect($876.mobileNumberVerifications.create).toBeTypeOf('function')
   })
 
   it('exposes core identity on every server app surface', () => {

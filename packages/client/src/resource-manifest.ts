@@ -65,6 +65,14 @@ export const RESOURCE_MANIFEST = {
   organizationMembers: { owner: 'core', meaning: 'org member roster' },
   appAssignments: { owner: 'core', meaning: 'per-member app assignment' },
   invites: { owner: 'core', meaning: 'membership invitations' },
+  mobileNumbers: {
+    owner: 'core',
+    meaning: "the current user's own mobile numbers (/users/me)",
+  },
+  mobileNumberVerifications: {
+    owner: 'core',
+    meaning: "OTP verifications for the user's own mobile numbers",
+  },
 
   // Shared finance (owned by @876/billing)
   customers: {

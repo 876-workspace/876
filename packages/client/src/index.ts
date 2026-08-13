@@ -51,6 +51,9 @@ export function create876Client({
     appAssignments: platform.appAssignments,
     invites: platform.invites,
 
+    mobileNumbers: platform.mobileNumbers,
+    mobileNumberVerifications: platform.mobileNumberVerifications,
+
     permissions: platform.permissions,
 
     notes: browserNotes,
