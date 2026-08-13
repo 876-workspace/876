@@ -3,17 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   update: vi.fn(),
+  get876Client: vi.fn(),
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: {
-    couriers: {
-      customers: {
-        create: mocks.create,
-        update: mocks.update,
-      },
-    },
-  },
+  get876Client: mocks.get876Client,
 }))
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: (error: { code: string }) =>
@@ -65,6 +59,9 @@ const courierCustomer = {
 describe('managed customers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.get876Client.mockImplementation(() => ({
+      customers: { create: mocks.create, update: mocks.update },
+    }))
     mocks.create.mockResolvedValue({ data: courierCustomer, error: null })
     mocks.update.mockResolvedValue({ data: courierCustomer, error: null })
   })
@@ -84,16 +81,19 @@ describe('managed customers', () => {
       data: expect.objectContaining({ id: courierCustomer.id }),
       error: null,
     })
-    expect(mocks.create).toHaveBeenCalledWith(tenant.id, {
-      idempotency_key: 'submission-nkr-001',
-      customer_kind: 'INDIVIDUAL',
-      first_name: 'Marlon',
-      email: null,
-      phone: null,
-      branch_id: 'br_kingston',
+    expect(mocks.create).toHaveBeenCalledWith({
+      mode: 'new',
+      idempotencyKey: 'submission-nkr-001',
+      customerKind: 'INDIVIDUAL',
+      firstName: 'Marlon',
+      lastName: undefined,
+      companyName: undefined,
+      email: undefined,
+      phone: undefined,
+      branchId: 'br_kingston',
       status: undefined,
-      is_commercial: true,
-      trn: null,
+      isCommercial: true,
+      trn: undefined,
     })
   })
 
@@ -148,9 +148,8 @@ describe('managed customers', () => {
       code: 'customer/identity-locked',
     })
     expect(mocks.update).toHaveBeenCalledWith(
-      tenant.id,
       courierCustomer.id,
-      expect.objectContaining({ first_name: 'Andre' })
+      expect.objectContaining({ firstName: 'Andre' })
     )
   })
 
@@ -165,8 +164,8 @@ describe('managed customers', () => {
       data: expect.objectContaining({ id: courierCustomer.id }),
       error: null,
     })
-    expect(mocks.update).toHaveBeenCalledWith(tenant.id, courierCustomer.id, {
-      branch_id: 'br_mobay',
+    expect(mocks.update).toHaveBeenCalledWith(courierCustomer.id, {
+      branchId: 'br_mobay',
       trn: '123456789',
     })
   })
