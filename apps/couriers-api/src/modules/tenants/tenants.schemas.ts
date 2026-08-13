@@ -45,6 +45,12 @@ export type UpdateTenantBody = z.infer<typeof updateTenantBodySchema>
 export const tenantIdParamsSchema = z.strictObject({ id: z.string().min(1) })
 export type TenantIdParams = z.infer<typeof tenantIdParamsSchema>
 
+/** Cross-tenant admin routes keep the explicit tenant in the URL path. */
+export const tenantParamsSchema = z.strictObject({
+  tenantId: z.string().min(1),
+})
+export type TenantParams = z.infer<typeof tenantParamsSchema>
+
 export const tenantOrgIdParamsSchema = z.strictObject({
   orgId: z.string().min(1),
 })

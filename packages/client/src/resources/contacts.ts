@@ -1,7 +1,5 @@
-import type { create876Client as createPlatformClient } from '@876/sdk'
+import type { SDK876Client } from '@876/sdk'
 
-type Platform = ReturnType<typeof createPlatformClient>
-
-export function createContactsResource(platform: Platform) {
-  return (platform as unknown as { contacts: unknown }).contacts
+export function createContactsResource(platform: SDK876Client) {
+  return platform.contacts
 }

@@ -1,7 +1,5 @@
-import type { create876Client as createPlatformClient } from '@876/sdk'
+import type { SDK876Client } from '@876/sdk'
 
-type Platform = ReturnType<typeof createPlatformClient>
-
-export function createLocationsResource(platform: Platform) {
-  return (platform as unknown as { locations: unknown }).locations
+export function createLocationsResource(platform: SDK876Client) {
+  return platform.locations
 }

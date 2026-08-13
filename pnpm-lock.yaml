@@ -1199,9 +1199,15 @@ importers:
 
   packages/client:
     dependencies:
+      '@876/admin':
+        specifier: workspace:*
+        version: link:../admin
       '@876/billing':
         specifier: workspace:*
         version: link:../billing
+      '@876/couriers':
+        specifier: workspace:*
+        version: link:../couriers
       '@876/sdk':
         specifier: workspace:*
         version: link:../sdk

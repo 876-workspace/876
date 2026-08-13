@@ -1,29 +1,22 @@
-import type { create876AdminClient } from '@876/admin'
-import type { create876Client as createPlatformClient } from '@876/sdk'
-import { withAdmin } from '../internal/with-admin.ts'
+import type { Admin876Client } from '@876/admin'
+import type { SDK876Client } from '@876/sdk'
+import { withAdmin, type WithAdmin } from '../internal/with-admin.ts'
 
-type Platform = ReturnType<typeof createPlatformClient>
-type Admin = ReturnType<typeof create876AdminClient>
+type PlatformOrganizations = SDK876Client['organizations']
+
+export type OrganizationsResource =
+  | PlatformOrganizations
+  | WithAdmin<PlatformOrganizations, Admin876Client['organizations']>
 
 export function createOrganizationsResource({
   platform,
   admin,
 }: {
-  platform: Platform
-  admin?: Admin
-}) {
-  const base = (platform as unknown as { organizations: object })
-    .organizations as object
-  if (!admin) return base as unknown as typeof base
-  const adminOrgs = (admin as unknown as { organizations: object })
-    .organizations as object
-  const withAdminRes = withAdmin(
-    base as object,
-    adminOrgs as object
-  ) as unknown as typeof base & { admin: typeof adminOrgs }
-  // Also spread admin methods at top level for console backward compat ($876.organizations.list)
-  return {
-    ...(withAdminRes as object),
-    ...(adminOrgs as object),
-  } as unknown as typeof withAdminRes & typeof adminOrgs
+  platform: SDK876Client
+  admin?: Admin876Client
+}): OrganizationsResource {
+  const base: PlatformOrganizations = platform.organizations
+  if (!admin) return base
+  const adminOrgs = admin.organizations
+  return withAdmin(base, adminOrgs)
 }

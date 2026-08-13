@@ -1,10 +1,18 @@
+import type { AdminClient as BillingAdminClient } from '@876/billing/admin'
 import type { Client as BillingClient } from '@876/billing'
-import type { BillingIntegrationClient } from '@876/billing/integration'
+import { withAdmin } from '../internal/with-admin.ts'
 
-export function createPricesResource(
-  billing: BillingClient | BillingIntegrationClient | undefined
-): any {
-  if (!billing) return undefined as unknown as BillingClient['prices']
-  return (billing as unknown as any as { prices: BillingClient['prices'] })
-    .prices
+export function createPricesResource({
+  tenant,
+  admin,
+}: {
+  tenant?: BillingClient
+  admin?: BillingAdminClient
+}) {
+  const normal = tenant?.prices
+  const adminSurface = admin?.prices
+  if (normal && adminSurface) return withAdmin(normal, adminSurface)
+  if (normal) return normal
+  if (adminSurface) return { admin: adminSurface }
+  return undefined
 }

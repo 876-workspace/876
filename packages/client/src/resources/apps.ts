@@ -1,26 +1,22 @@
-import type { create876AdminClient } from '@876/admin'
-import type { create876Client as createPlatformClient } from '@876/sdk'
-import { withAdmin } from '../internal/with-admin.ts'
+import type { Admin876Client } from '@876/admin'
+import type { SDK876Client } from '@876/sdk'
+import { withAdmin, type WithAdmin } from '../internal/with-admin.ts'
 
-type Platform = ReturnType<typeof createPlatformClient>
-type Admin = ReturnType<typeof create876AdminClient>
+type PlatformApps = SDK876Client['apps']
+
+export type AppsResource =
+  | PlatformApps
+  | WithAdmin<PlatformApps, Admin876Client['apps']>
 
 export function createAppsResource({
   platform,
   admin,
 }: {
-  platform: Platform
-  admin?: Admin
-}) {
-  const base = (platform as unknown as { apps: object }).apps as object
-  if (!admin) return base as unknown as typeof base
-  const adminApps = (admin as unknown as { apps: object }).apps as object
-  const withAdminRes = withAdmin(
-    base as object,
-    adminApps as object
-  ) as unknown as typeof base & { admin: typeof adminApps }
-  return {
-    ...(withAdminRes as object),
-    ...(adminApps as object),
-  } as unknown as typeof withAdminRes & typeof adminApps
+  platform: SDK876Client
+  admin?: Admin876Client
+}): AppsResource {
+  const base: PlatformApps = platform.apps
+  if (!admin) return base
+  const adminApps = admin.apps
+  return withAdmin(base, adminApps)
 }

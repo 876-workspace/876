@@ -10,15 +10,18 @@ function createCouriers876Client(requestId?: string) {
     requestId,
     services: {
       billing: {
-        baseUrl: process.env.BILLING_API_URL,
-        apiKey: process.env.API_876_KEY,
-        requestId,
+        tenant: {
+          baseUrl: process.env.BILLING_API_URL,
+          apiKey: process.env.API_876_KEY!,
+          requestId,
+        },
       },
       couriers: {
-        baseUrl: process.env.COURIERS_API_URL,
-        apiKey: process.env.COURIERS_API_KEY,
-        internalKey: process.env.API_INTERNAL_KEY!,
-        requestId,
+        admin: {
+          baseUrl: process.env.COURIERS_API_URL,
+          internalKey: process.env.API_INTERNAL_KEY!,
+          requestId,
+        },
       },
       storage: {
         internalKey: process.env.STORAGE_INTERNAL_KEY!,

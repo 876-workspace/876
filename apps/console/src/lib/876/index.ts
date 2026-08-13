@@ -10,16 +10,19 @@ export function createConsole876Client(requestId?: string) {
     requestId,
     services: {
       billing: {
-        baseUrl: process.env.BILLING_API_URL,
-        internalKey: process.env.BILLING_INTERNAL_KEY,
-        requestId,
+        admin: {
+          baseUrl: process.env.BILLING_API_URL,
+          internalKey: process.env.BILLING_INTERNAL_KEY!,
+          requestId,
+        },
       },
       couriers: {
-        baseUrl: process.env.COURIERS_API_URL,
-        apiKey: process.env.COURIERS_API_KEY,
-        internalKey:
-          process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY,
-        requestId,
+        admin: {
+          baseUrl: process.env.COURIERS_API_URL,
+          internalKey:
+            process.env.COURIERS_INTERNAL_KEY ?? process.env.API_INTERNAL_KEY!,
+          requestId,
+        },
       },
       storage: {
         internalKey: process.env.STORAGE_INTERNAL_KEY!,

@@ -17,6 +17,7 @@ import { createTeamRouter } from '@/modules/team'
 import { createSettingsRouter } from '@/modules/settings'
 import { createTenantsRouter } from '@/modules/tenants'
 import { createWarehousesRouter } from '@/modules/warehouses'
+import { createMeRouter } from '@/modules/me'
 
 export function buildRoutes(): Router {
   const root = Router()
@@ -24,6 +25,7 @@ export function buildRoutes(): Router {
 
   root.use(healthRouter)
   root.use(createTenantsRouter(resolveGuards))
+  root.use(createMeRouter(resolveGuards))
   root.use(createAddressesRouter(resolveGuards))
   root.use(createBranchesRouter(resolveGuards))
   root.use(createCustomersRouter(resolveGuards))

@@ -1,10 +1,14 @@
 import type { Client as BillingClient } from '@876/billing'
 import type { BillingIntegrationClient } from '@876/billing/integration'
 
-export function createPaymentsResource(
-  billing: BillingClient | BillingIntegrationClient | undefined
-): any {
-  if (!billing) return undefined as unknown as BillingClient['payments']
-  return (billing as unknown as any as { payments: BillingClient['payments'] })
-    .payments
+export function createPaymentsResource({
+  tenant,
+  integration,
+}: {
+  tenant?: BillingClient
+  integration?: BillingIntegrationClient
+}) {
+  if (tenant) return tenant.payments
+  if (integration) return integration.payments
+  return undefined
 }
