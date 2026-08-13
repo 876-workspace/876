@@ -1,8 +1,14 @@
 import 'server-only'
 import { createConsoleClient, type Console876Client } from './composers/console'
-import { createCouriersClient, type Couriers876Client } from './composers/couriers'
+import {
+  createCouriersClient,
+  type Couriers876Client,
+} from './composers/couriers'
 import { createBillingClient, type Billing876Client } from './composers/billing'
-import { createPlatformServerClient, type Platform876Client } from './composers/platform'
+import {
+  createPlatformServerClient,
+  type Platform876Client,
+} from './composers/platform'
 import type {
   BillingServerClientOptions,
   ConsoleServerClientOptions,
@@ -11,12 +17,20 @@ import type {
   ServerClientOptions,
 } from './internal/types'
 
-export function create876ServerClient(options: ConsoleServerClientOptions): Console876Client
-export function create876ServerClient(options: CouriersServerClientOptions): Couriers876Client
-export function create876ServerClient(options: BillingServerClientOptions): Billing876Client
-export function create876ServerClient(options: PlatformServerClientOptions): Platform876Client
 export function create876ServerClient(
-  options: ServerClientOptions,
+  options: ConsoleServerClientOptions
+): Console876Client
+export function create876ServerClient(
+  options: CouriersServerClientOptions
+): Couriers876Client
+export function create876ServerClient(
+  options: BillingServerClientOptions
+): Billing876Client
+export function create876ServerClient(
+  options: PlatformServerClientOptions
+): Platform876Client
+export function create876ServerClient(
+  options: ServerClientOptions
 ): Console876Client | Couriers876Client | Billing876Client | Platform876Client {
   switch (options.app) {
     case 'console':
@@ -36,6 +50,7 @@ export type ServerClient876 =
   | Billing876Client
   | Platform876Client
 
+export type { Couriers876Client } from './composers/couriers'
 export type { Admin876ClientOptions } from '@876/admin'
 export type { IntegrationClientOptions as BillingIntegrationClientOptions } from '@876/billing/integration'
 export type { AdminClientOptions as CouriersAdminClientOptions } from '@876/couriers/admin'
