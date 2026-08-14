@@ -210,12 +210,14 @@ def test_identity_values_maps_party_snapshot_and_defaults_kind() -> None:
             "lastName": "Lovelace",
             "phone": "+1876",
             "customerKind": "BUSINESS",
+            "status": "ARCHIVED",
         },
         now=1_700,
     )
 
     assert values == {
         "customer_kind": CustomerKind.BUSINESS,
+        "status": CustomerStatus.ARCHIVED,
         "name": "Efesto",
         "email": "ap@efesto.test",
         "company_name": "Efesto Technologies",
@@ -485,6 +487,92 @@ async def test_ensure_updates_existing_customer_snapshot(
     assert existing.updated_at == 2_000
     # No new customer row — only an optional contact could be added.
     assert all(type(row).__name__ != "Customer" or row is existing for row in session.added) or session.added == []
+
+
+@pytest.mark.asyncio
+async def test_ensure_archives_an_existing_customer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tenant = _tenant()
+    existing = _customer(status=CustomerStatus.ACTIVE)
+    monkeypatch.setattr(
+        sync,
+        "get_settings",
+        lambda: SimpleNamespace(platform_tenant_slug=tenant.slug),
+    )
+    session = _FakeSession(
+        tenants_by_slug={tenant.slug: tenant},
+        customers=[existing],
+    )
+
+    result = await sync.ensure_core_customer(
+        session,  # type: ignore[arg-type]
+        {
+            "customerType": "CORE_ORGANIZATION",
+            "organizationId": "org_1",
+            "status": "ARCHIVED",
+        },
+    )
+
+    assert result == {"object": "acknowledgement", "id": "cus_1", "created": False}
+    assert existing.status == CustomerStatus.ARCHIVED
+    assert session.added == []
+
+
+@pytest.mark.asyncio
+async def test_ensure_archived_without_existing_customer_is_a_noop(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tenant = _tenant()
+    monkeypatch.setattr(
+        sync,
+        "get_settings",
+        lambda: SimpleNamespace(platform_tenant_slug=tenant.slug),
+    )
+    session = _FakeSession(tenants_by_slug={tenant.slug: tenant})
+
+    result = await sync.ensure_core_customer(
+        session,  # type: ignore[arg-type]
+        {
+            "customerType": "CORE_ORGANIZATION",
+            "organizationId": "org_1",
+            "status": "ARCHIVED",
+        },
+    )
+
+    assert result == {"object": "acknowledgement", "id": None, "created": False}
+    assert session.added == []
+    assert session.flush_count == 0
+
+
+@pytest.mark.asyncio
+async def test_ensure_reactivates_an_existing_archived_customer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tenant = _tenant()
+    existing = _customer(status=CustomerStatus.ARCHIVED)
+    monkeypatch.setattr(
+        sync,
+        "get_settings",
+        lambda: SimpleNamespace(platform_tenant_slug=tenant.slug),
+    )
+    session = _FakeSession(
+        tenants_by_slug={tenant.slug: tenant},
+        customers=[existing],
+    )
+
+    result = await sync.ensure_core_customer(
+        session,  # type: ignore[arg-type]
+        {
+            "customerType": "CORE_ORGANIZATION",
+            "organizationId": "org_1",
+            "status": "ACTIVE",
+        },
+    )
+
+    assert result == {"object": "acknowledgement", "id": "cus_1", "created": False}
+    assert existing.status == CustomerStatus.ACTIVE
+    assert session.added == []
 
 
 @pytest.mark.asyncio

@@ -113,6 +113,9 @@ def _identity_values(body: dict[str, Any], now: int) -> dict[str, Any]:
     if "customerKind" in body and body["customerKind"]:
         values["customer_kind"] = CustomerKind(str(body["customerKind"]))
 
+    if "status" in body:
+        values["status"] = CustomerStatus(str(body["status"]))
+
     for key, column in _SNAPSHOT_FIELDS:
         if key in body:
             values[column] = body[key]
@@ -145,6 +148,9 @@ async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> d
 
     values = _identity_values(body, now)
     if existing is None:
+        if values.get("status") == CustomerStatus.ARCHIVED:
+            return {"object": "acknowledgement", "id": None, "created": False}
+
         # A new row needs the non-nullable columns even when the payload omits
         # them; kind falls back to the party's link type.
         defaults = {
@@ -154,6 +160,7 @@ async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> d
                 else CustomerKind.INDIVIDUAL
             ),
             "name": str(body.get("name") or value),
+            "status": CustomerStatus.ACTIVE,
         }
         customer = Customer(
             id=_generated_id("cust"),
@@ -163,7 +170,6 @@ async def ensure_core_customer(session: AsyncSession, body: dict[str, Any]) -> d
             user_id=value if column == "user_id" else None,
             default_currency=tenant.default_currency,
             language=tenant.default_language,
-            status=CustomerStatus.ACTIVE,
             created_at=now,
             **{**defaults, **values},
         )
