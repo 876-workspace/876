@@ -1,0 +1,22 @@
+/// A tenant-owned government or regulatory body responsible for a tax.
+/// Country and subdivision use ISO codes so the model works outside Jamaica.
+model TaxAuthority {
+  id              String  @id
+  tenantId        String  @map("tenant_id")
+  name            String
+  description     String?
+  countryCode     String  @map("country_code")
+  subdivisionCode String? @map("subdivision_code")
+  isDefault       Boolean @default(false) @map("is_default")
+  isActive        Boolean @default(true) @map("is_active")
+  createdAt       Int     @map("created_at")
+  updatedAt       Int     @map("updated_at")
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_tax_authorities_tenant_id_fkey")
+  rates  TaxRate[]
+
+  @@unique([tenantId, id], map: "billing_tax_authorities_tenant_id_id_key")
+  @@unique([tenantId, name], map: "billing_tax_authorities_tenant_id_name_key")
+  @@index([tenantId, isActive], map: "billing_tax_authorities_tenant_id_is_active_idx")
+  @@map("billing_tax_authorities")
+}

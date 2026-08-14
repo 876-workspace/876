@@ -1,0 +1,40 @@
+
+model SubscriptionCharge {
+  id              String                            @id
+  tenantId        String                            @map("tenant_id")
+  subscriptionId  String                            @map("subscription_id")
+  customerId      String                            @map("customer_id")
+  addonId         String?                           @map("addon_id")
+  priceId         String?                           @map("price_id")
+  invoiceId       String?                           @map("invoice_id")
+  status          SubscriptionChargeStatus          @default(UNBILLED)
+  invoiceBehavior SubscriptionChargeInvoiceBehavior @default(INVOICE_IMMEDIATELY) @map("invoice_behavior")
+  description     String
+  quantity        Int                               @default(1)
+  unitAmount      BigInt                            @map("unit_amount")
+  currency        String                            @db.Char(3)
+  taxBehavior     TaxBehavior                       @default(EXCLUSIVE) @map("tax_behavior")
+  isTaxable       Boolean                           @default(true) @map("is_taxable")
+  serviceAt       Int?                              @map("service_at")
+  createdByUserId String?                           @map("created_by_user_id")
+  invoicedAt      Int?                              @map("invoiced_at")
+  voidedAt        Int?                              @map("voided_at")
+  createdAt       Int                               @map("created_at")
+  updatedAt       Int                               @map("updated_at")
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_charges_tenant_fkey")
+  subscription Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_charges_subscription_fkey")
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_charges_customer_fkey")
+  addon        Addon?        @relation(fields: [addonId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_charges_addon_fkey")
+  price        Price?        @relation(fields: [priceId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_charges_price_fkey")
+  invoice      Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_subscription_charges_invoice_fkey")
+  invoiceLines InvoiceLine[]
+
+  @@unique([tenantId, id], map: "billing_subscription_charges_tenant_id_id_key")
+  @@index([subscriptionId, status, createdAt], map: "billing_subscription_charges_subscription_idx")
+  @@index([customerId, status], map: "billing_subscription_charges_customer_idx")
+  @@index([invoiceId], map: "billing_subscription_charges_invoice_idx")
+  @@index([addonId], map: "billing_subscription_charges_addon_id_idx")
+  @@index([priceId], map: "billing_subscription_charges_price_id_idx")
+  @@map("billing_subscription_charges")
+}

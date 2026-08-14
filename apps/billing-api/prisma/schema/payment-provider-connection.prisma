@@ -1,0 +1,30 @@
+
+/// Tenant-owned merchant connection. Secret fields are references to an
+/// external secret store; raw credentials must never be persisted here.
+model PaymentProviderConnection {
+  id                     String                          @id
+  tenantId               String                          @map("tenant_id")
+  providerId             String                          @map("provider_id")
+  name                   String
+  environment            PaymentProviderEnvironment
+  status                 PaymentProviderConnectionStatus @default(PENDING)
+  merchantAccountId      String?                         @map("merchant_account_id")
+  credentialsReference   String?                         @map("credentials_reference")
+  webhookSecretReference String?                         @map("webhook_secret_reference")
+  settings               Json?
+  lastSyncedAt           Int?                            @map("last_synced_at")
+  createdAt              Int                             @map("created_at")
+  updatedAt              Int                             @map("updated_at")
+
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_provider_connections_tenant_fkey")
+  provider        PaymentProvider        @relation(fields: [providerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_provider_connections_provider_fkey")
+  payments        Payment[]
+  paymentAttempts PaymentAttempt[]
+  events          PaymentProviderEvent[]
+
+  @@unique([tenantId, id], map: "billing_payment_provider_connections_tenant_id_id_key")
+  @@unique([tenantId, providerId, name], map: "billing_provider_connections_tenant_provider_name_key")
+  @@index([tenantId, status], map: "billing_provider_connections_tenant_status_idx")
+  @@index([providerId], map: "billing_payment_provider_connections_provider_id_idx")
+  @@map("billing_payment_provider_connections")
+}

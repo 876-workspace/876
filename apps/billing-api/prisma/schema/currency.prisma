@@ -1,0 +1,16 @@
+/// A supported ISO-4217-like currency definition. Billing stores all monetary
+/// amounts in a currency's smallest unit and never converts across currencies.
+model Currency {
+  code          String  @id
+  name          String
+  symbol        String?
+  decimalPlaces Int     @default(2) @map("decimal_places")
+  isActive      Boolean @default(true) @map("is_active")
+  createdAt     Int     @map("created_at")
+  updatedAt     Int     @map("updated_at")
+
+  defaultForTenants Tenant[]         @relation("TenantDefaultCurrency")
+  tenantCurrencies  TenantCurrency[]
+
+  @@map("billing_currencies")
+}

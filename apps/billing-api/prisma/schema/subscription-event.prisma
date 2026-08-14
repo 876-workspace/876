@@ -1,0 +1,16 @@
+
+/// Immutable lifecycle history. It provides the audit trail for subscription
+/// metrics now and future entitlement/payment integrations later.
+model SubscriptionEvent {
+  id             String                @id
+  subscriptionId String                @map("subscription_id")
+  type           SubscriptionEventType
+  actorUserId    String?               @map("actor_user_id")
+  details        Json?
+  occurredAt     Int                   @map("occurred_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_subscription_events_subscription_id_fkey")
+
+  @@index([subscriptionId, occurredAt], map: "billing_subscription_events_subscription_id_occurred_at_idx")
+  @@map("billing_subscription_events")
+}

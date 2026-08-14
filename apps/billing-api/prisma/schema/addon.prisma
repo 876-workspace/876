@@ -1,0 +1,36 @@
+/// A modular product enhancement. Monetary terms live on immutable prices so
+/// catalog changes never rewrite an existing subscription agreement.
+model Addon {
+  id                    String        @id
+  tenantId              String        @map("tenant_id")
+  productId             String        @map("product_id")
+  code                  String
+  name                  String
+  description           String?
+  imageUrl              String?       @map("image_url")
+  type                  ItemType      @default(SERVICE)
+  priceType             PriceType     @default(RECURRING) @map("price_type")
+  intervalUnit          IntervalUnit? @map("interval_unit")
+  intervalCount         Int?          @map("interval_count")
+  unitName              String?       @map("unit_name")
+  taxCode               String?       @map("tax_code")
+  isTaxable             Boolean       @default(false) @map("is_taxable")
+  showInCheckout        Boolean       @default(true) @map("show_in_checkout")
+  allowPortalManagement Boolean       @default(false) @map("allow_portal_management")
+  isActive              Boolean       @default(true) @map("is_active")
+  metadata              Json?
+  createdAt             Int           @map("created_at")
+  updatedAt             Int           @map("updated_at")
+
+  tenant                Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_addons_tenant_fkey")
+  product               Product                    @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_addons_product_fkey")
+  prices                Price[]
+  planAssociations      PlanAddonAssociation[]
+  couponApplicabilities CouponAddonApplicability[]
+  subscriptionCharges   SubscriptionCharge[]
+
+  @@unique([tenantId, code], name: "billing_addons_tenant_code_key", map: "billing_addons_tenant_code_key")
+  @@index([tenantId, isActive], map: "billing_addons_tenant_active_idx")
+  @@index([productId], map: "billing_addons_product_idx")
+  @@map("billing_addons")
+}

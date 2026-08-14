@@ -1,0 +1,35 @@
+{
+  "catalog": {
+    "flat": 2500,
+    "per_unit": 1000,
+    "package": 1500,
+    "volume": 1010,
+    "tiered": 1210
+  },
+  "discounts": {
+    "percent_half_up": 1235,
+    "fixed_match": 2000,
+    "fixed_mismatch": 0
+  },
+  "taxes": {
+    "inclusive": 1500,
+    "exclusive": 1500,
+    "rounding": 24
+  },
+  "allocation": [16, 33, 52],
+  "late_fees": {
+    "fixed": 750,
+    "percent": 250
+  },
+  "renewal": {
+    "markup": 10500,
+    "markdown": 0
+  },
+  "intervals": {
+    "anchor": 1706659200,
+    "leap_month": 1709164800,
+    "year": 1738281600,
+    "week": 1707868800
+  },
+  "proration": 1400
+}

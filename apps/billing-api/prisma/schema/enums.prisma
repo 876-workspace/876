@@ -1,0 +1,574 @@
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+
+  @@map("BillingTenantStatus")
+}
+
+enum AppFinanceConnectionStatus {
+  PROVISIONING
+  ACTIVE
+  SUSPENDED
+  REVOKED
+
+  @@map("BillingAppFinanceConnectionStatus")
+}
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+
+  @@map("BillingMemberStatus")
+}
+
+enum CustomerType {
+  EXTERNAL
+  CORE_USER
+  CORE_ORGANIZATION
+
+  @@map("BillingCustomerType")
+}
+
+/// Public-facing customer classification shown in the invoicing UI. Independent
+/// of CustomerType (the 876 linkage): a BUSINESS may be external or a core org,
+/// an INDIVIDUAL may be external or a core user.
+enum CustomerKind {
+  INDIVIDUAL
+  BUSINESS
+
+  @@map("BillingCustomerKind")
+}
+
+enum CustomerStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("BillingCustomerStatus")
+}
+
+enum VendorStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@map("BillingVendorStatus")
+}
+
+enum ItemType {
+  GOOD
+  SERVICE
+
+  @@map("BillingItemType")
+}
+
+enum PricingModel {
+  FLAT
+  PER_UNIT
+  VOLUME
+  TIERED
+  PACKAGE
+
+  @@map("BillingPricingModel")
+}
+
+enum PriceType {
+  ONE_TIME
+  RECURRING
+
+  @@map("BillingPriceType")
+}
+
+enum AddonAssociationType {
+  OPTIONAL
+  RECOMMENDED
+  MANDATORY
+
+  @@map("BillingAddonAssociationType")
+}
+
+enum AddonAssociationEvent {
+  SUBSCRIPTION_ACTIVATION
+  PLAN_CHANGE
+  TRIAL_ACTIVATION
+
+  @@map("BillingAddonAssociationEvent")
+}
+
+enum AddonAssociationFrequency {
+  EVERY_OCCURRENCE
+  FIRST_OCCURRENCE
+
+  @@map("BillingAddonAssociationFrequency")
+}
+
+enum CouponDiscountPreference {
+  INVOICE_LEVEL
+  ITEM_LEVEL
+
+  @@map("BillingCouponDiscountPreference")
+}
+
+enum PriceListMode {
+  PERCENTAGE
+  CUSTOM
+
+  @@map("BillingPriceListMode")
+}
+
+enum PriceListDirection {
+  MARKUP
+  MARKDOWN
+
+  @@map("BillingPriceListDirection")
+}
+
+enum PriceListRounding {
+  NONE
+  NEAREST
+  UP
+  DOWN
+
+  @@map("BillingPriceListRounding")
+}
+
+enum IntervalUnit {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+
+  @@map("BillingIntervalUnit")
+}
+
+enum DocumentType {
+  QUOTE
+  INVOICE
+  ESTIMATE
+  PAYMENT
+  CREDIT_NOTE
+  REFUND
+
+  @@map("BillingDocumentType")
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELED
+
+  @@map("BillingQuoteStatus")
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELED
+
+  @@map("BillingEstimateStatus")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  SENT
+  PARTIALLY_PAID
+  OVERDUE
+  PAID
+  UNCOLLECTIBLE
+  VOID
+
+  @@map("BillingInvoiceStatus")
+}
+
+enum InvoiceBillingReason {
+  MANUAL
+  QUOTE
+  ESTIMATE
+  SUBSCRIPTION_CREATE
+  SUBSCRIPTION_CYCLE
+  SUBSCRIPTION_UPDATE
+  OPENING_BALANCE
+  LATE_FEE
+
+  @@map("BillingInvoiceBillingReason")
+}
+
+enum TaxBehavior {
+  EXCLUSIVE
+  INCLUSIVE
+
+  @@map("BillingTaxBehavior")
+}
+
+enum LateFeeCalculationType {
+  PERCENTAGE
+  FIXED
+
+  @@map("BillingLateFeeCalculationType")
+}
+
+enum CreditNoteStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  VOID
+
+  @@map("BillingCreditNoteStatus")
+}
+
+enum SubscriptionStatus {
+  DRAFT
+  TRIALING
+  ACTIVE
+  PAUSED
+  CANCELED
+  ENDED
+
+  @@map("BillingSubscriptionStatus")
+}
+
+enum SubscriptionEventType {
+  CREATED
+  ACTIVATED
+  TRIAL_STARTED
+  UPDATED
+  UPDATE_SCHEDULED
+  UPDATE_CANCELED
+  CHARGE_ADDED
+  COUPON_APPLIED
+  DISCOUNT_APPLIED
+  EXTENDED
+  PAUSE_SCHEDULED
+  PAUSED
+  RESUME_SCHEDULED
+  RESUMED
+  CANCELLATION_SCHEDULED
+  CANCELED
+  REACTIVATED
+  ENDED
+  DELETED
+  ENTITLEMENT_SYNCED
+  ENTITLEMENT_SYNC_FAILED
+  INVOICE_GENERATED
+  BILLING_FAILED
+
+  @@map("BillingSubscriptionEventType")
+}
+
+enum CollectionMethod {
+  SEND_INVOICE
+  AUTO_CHARGE
+
+  @@map("BillingCollectionMethod")
+}
+
+enum BillingTiming {
+  IN_ADVANCE
+  IN_ARREARS
+
+  @@map("BillingTiming")
+}
+
+enum ProrationBehavior {
+  CREATE_PRORATIONS
+  NONE
+  ALWAYS_INVOICE
+
+  @@map("BillingProrationBehavior")
+}
+
+enum SubscriptionInvoiceMode {
+  AUTO_FINALIZE
+  DRAFT
+
+  @@map("BillingSubscriptionInvoiceMode")
+}
+
+enum RenewalPricingPolicy {
+  RETAIN_EXISTING
+  USE_LATEST
+  MARKUP
+  MARKDOWN
+
+  @@map("BillingRenewalPricingPolicy")
+}
+
+enum SubscriptionCalendarMode {
+  ANNIVERSARY
+  FIXED_DATES
+
+  @@map("BillingSubscriptionCalendarMode")
+}
+
+enum SubscriptionChangeTiming {
+  IMMEDIATE
+  END_OF_TERM
+  SCHEDULED
+
+  @@map("BillingSubscriptionChangeTiming")
+}
+
+enum SubscriptionAmendmentStatus {
+  PENDING
+  APPLIED
+  CANCELED
+  FAILED
+
+  @@map("BillingSubscriptionAmendmentStatus")
+}
+
+enum SubscriptionPaymentFailureBehavior {
+  PREVENT_CHANGE
+  APPLY_CHANGE
+
+  @@map("BillingSubscriptionPaymentFailureBehavior")
+}
+
+enum SubscriptionLifecycleAction {
+  PAUSE
+  RESUME
+  CANCEL
+
+  @@map("BillingSubscriptionLifecycleAction")
+}
+
+enum SubscriptionScheduleStatus {
+  SCHEDULED
+  APPLIED
+  CANCELED
+  SKIPPED
+  FAILED
+
+  @@map("BillingSubscriptionScheduleStatus")
+}
+
+enum SubscriptionNotificationType {
+  DRAFT_INVOICE_READY
+  ADVANCE_BILLING_FAILED
+
+  @@map("BillingSubscriptionNotificationType")
+}
+
+enum SubscriptionNotificationStatus {
+  PENDING
+  SENT
+  FAILED
+
+  @@map("BillingSubscriptionNotificationStatus")
+}
+
+enum PauseUnbilledChargeBehavior {
+  RETAIN
+  INVOICE_IMMEDIATELY
+
+  @@map("BillingPauseUnbilledChargeBehavior")
+}
+
+enum PauseCreditBehavior {
+  NONE
+  PRORATE_CREDIT
+
+  @@map("BillingPauseCreditBehavior")
+}
+
+enum ResumeBillingBehavior {
+  CONTINUE_EXISTING_PERIOD
+  START_NEW_PERIOD
+
+  @@map("BillingResumeBillingBehavior")
+}
+
+enum AdvanceBillingMethod {
+  INVOICE
+
+  @@map("BillingAdvanceBillingMethod")
+}
+
+enum SubscriptionChargeStatus {
+  UNBILLED
+  INVOICED
+  VOID
+
+  @@map("BillingSubscriptionChargeStatus")
+}
+
+enum SubscriptionChargeInvoiceBehavior {
+  INVOICE_IMMEDIATELY
+  NEXT_INVOICE
+
+  @@map("BillingSubscriptionChargeInvoiceBehavior")
+}
+
+enum SubscriptionDiscountScope {
+  TRANSACTION
+  ITEM
+
+  @@map("BillingSubscriptionDiscountScope")
+}
+
+enum SubscriptionDiscountSource {
+  COUPON
+  MANUAL
+
+  @@map("BillingSubscriptionDiscountSource")
+}
+
+enum CustomViewVisibility {
+  PRIVATE
+  TENANT
+
+  @@map("BillingCustomViewVisibility")
+}
+
+enum CustomViewRuleOperator {
+  EQUALS
+  NOT_EQUALS
+  CONTAINS
+  IN
+  BEFORE
+  AFTER
+  IS_EMPTY
+  IS_NOT_EMPTY
+
+  @@map("BillingCustomViewRuleOperator")
+}
+
+enum BillingRunStatus {
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  SKIPPED
+
+  @@map("BillingRunStatus")
+}
+
+enum PaymentTermRule {
+  DUE_ON_RECEIPT
+  NET_DAYS
+  END_OF_MONTH
+  END_OF_NEXT_MONTH
+
+  @@map("BillingPaymentTermRule")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  AMOUNT
+
+  @@map("BillingDiscountType")
+}
+
+enum DiscountDuration {
+  ONCE
+  REPEATING
+  FOREVER
+
+  @@map("BillingDiscountDuration")
+}
+
+enum DiscountStatus {
+  ACTIVE
+  EXHAUSTED
+  CANCELED
+
+  @@map("BillingDiscountStatus")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
+
+  @@map("BillingPaymentStatus")
+}
+
+enum PaymentProviderEnvironment {
+  SANDBOX
+  LIVE
+
+  @@map("BillingPaymentProviderEnvironment")
+}
+
+enum PaymentProviderConnectionStatus {
+  PENDING
+  ACTIVE
+  DISABLED
+  ERROR
+
+  @@map("BillingPaymentProviderConnectionStatus")
+}
+
+enum PaymentAttemptStatus {
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELED
+
+  @@map("BillingPaymentAttemptStatus")
+}
+
+enum ProviderEventStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+  IGNORED
+
+  @@map("BillingProviderEventStatus")
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+
+  @@map("BillingLedgerDirection")
+}
+
+enum LedgerEntryType {
+  INVOICE_FINALIZED
+  INVOICE_VOIDED
+  PAYMENT_RECEIVED
+  PAYMENT_REVERSED
+  CREDIT_NOTE_ISSUED
+  CREDIT_NOTE_VOIDED
+  REFUND_ISSUED
+  WRITE_OFF
+  OPENING_BALANCE
+
+  @@map("BillingLedgerEntryType")
+}
+
+enum BankAccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  CASH
+  PAYPAL
+  UNDEPOSITED_FUNDS
+  PETTY_CASH
+
+  @@map("BillingBankAccountType")
+}
+
+enum BankTransactionType {
+  CREDIT
+  DEBIT
+
+  @@map("BillingBankTransactionType")
+}
+
+enum BankTransactionStatus {
+  UNCATEGORIZED
+  CATEGORIZED
+  MATCHED
+  EXCLUDED
+
+  @@map("BillingBankTransactionStatus")
+}

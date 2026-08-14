@@ -1,26 +1,52 @@
-FROM python:3.12-slim
+# Container image for @876/billing-api (Express). The build context is the
+# repository root because pnpm owns one workspace lockfile.
 
-WORKDIR /app
+FROM node:22-slim AS build
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=4004
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /repo
+RUN corepack enable
 
-COPY requirements.txt pyproject.toml ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
+COPY apps/billing-api/package.json apps/billing-api/
+COPY packages/core/package.json packages/core/
 
-COPY . .
+RUN pnpm install --frozen-lockfile --ignore-scripts --filter @876/billing-api...
 
-RUN useradd --create-home --uid 10001 billing-api \
-    && chown -R billing-api:billing-api /app
+COPY packages/core/src packages/core/src
 
-USER billing-api
+WORKDIR /repo/apps/billing-api
+COPY apps/billing-api/prisma ./prisma
+COPY apps/billing-api/prisma.config.ts apps/billing-api/tsconfig.json apps/billing-api/tsup.config.ts ./
+COPY apps/billing-api/src ./src
 
-EXPOSE $PORT
+RUN BILLING_DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' \
+  pnpm run db:generate \
+  && pnpm run build
 
-CMD ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port $PORT"]
+WORKDIR /repo
+RUN rm -rf node_modules apps/billing-api/node_modules \
+  && pnpm install --frozen-lockfile --prod --ignore-scripts --filter @876/billing-api...
+
+FROM node:22-slim AS runtime
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /repo/apps/billing-api
+ENV NODE_ENV=production
+ENV PORT=4004
+
+COPY --from=build /repo/node_modules /repo/node_modules
+COPY --from=build /repo/apps/billing-api/node_modules ./node_modules
+COPY --from=build /repo/apps/billing-api/dist ./dist
+COPY --from=build /repo/apps/billing-api/prisma ./prisma
+COPY --from=build /repo/apps/billing-api/package.json ./package.json
+
+USER node
+EXPOSE 4004
+CMD ["node", "dist/server.js"]

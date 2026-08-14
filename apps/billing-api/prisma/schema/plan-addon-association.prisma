@@ -1,0 +1,23 @@
+
+/// Availability and automation rules between a plan and an add-on.
+model PlanAddonAssociation {
+  id              String                    @id
+  tenantId        String                    @map("tenant_id")
+  planId          String                    @map("plan_id")
+  addonId         String                    @map("addon_id")
+  associationType AddonAssociationType      @default(OPTIONAL) @map("association_type")
+  events          AddonAssociationEvent[]   @default([SUBSCRIPTION_ACTIVATION])
+  frequency       AddonAssociationFrequency @default(EVERY_OCCURRENCE)
+  isActive        Boolean                   @default(true) @map("is_active")
+  createdAt       Int                       @map("created_at")
+  updatedAt       Int                       @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_plan_addon_associations_tenant_fkey")
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_plan_addon_associations_plan_fkey")
+  addon  Addon  @relation(fields: [addonId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_plan_addon_associations_addon_fkey")
+
+  @@unique([tenantId, planId, addonId], name: "billing_plan_addon_associations_key", map: "billing_plan_addon_associations_key")
+  @@index([planId, isActive], map: "billing_plan_addon_associations_plan_idx")
+  @@index([addonId, isActive], map: "billing_plan_addon_associations_addon_idx")
+  @@map("billing_plan_addon_associations")
+}

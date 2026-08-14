@@ -1,0 +1,47 @@
+import { PrismaPg } from '@prisma/adapter-pg'
+import { withAccelerate } from '@prisma/extension-accelerate'
+
+import { getSettings } from '@/config'
+import { getLogger } from '@/platform/logger'
+
+import { PrismaClient } from './generated/prisma/client'
+
+const log = getLogger('db')
+
+function createClient(): PrismaClient {
+  const { databaseUrl, environment } = getSettings()
+  if (!databaseUrl) throw new Error('BILLING_DATABASE_URL is not set.')
+
+  const logging: Array<'warn' | 'error'> =
+    environment === 'development' ? ['warn', 'error'] : ['error']
+  if (
+    databaseUrl.startsWith('prisma:') ||
+    databaseUrl.startsWith('prisma+postgres:')
+  ) {
+    return new PrismaClient({
+      accelerateUrl: databaseUrl,
+      log: logging,
+    }).$extends(withAccelerate()) as unknown as PrismaClient
+  }
+
+  return new PrismaClient({
+    adapter: new PrismaPg({ connectionString: databaseUrl }),
+    log: logging,
+  })
+}
+
+export const prisma = createClient()
+
+export async function disconnectDb(): Promise<void> {
+  await prisma.$disconnect()
+}
+
+export async function pingDb(): Promise<boolean> {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    return true
+  } catch (error) {
+    log.error({ err: error }, 'db.ping.failed')
+    return false
+  }
+}

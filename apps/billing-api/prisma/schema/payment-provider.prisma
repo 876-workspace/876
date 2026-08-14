@@ -1,0 +1,17 @@
+/// Provider catalog. Definitions contain presentation and adapter metadata,
+/// never tenant credentials or provider-specific payment state.
+model PaymentProvider {
+  id           String  @id
+  key          String  @unique
+  name         String
+  logoUrl      String? @map("logo_url")
+  adapter      String
+  capabilities Json?
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    Int     @map("created_at")
+  updatedAt    Int     @map("updated_at")
+
+  connections PaymentProviderConnection[]
+
+  @@map("billing_payment_providers")
+}

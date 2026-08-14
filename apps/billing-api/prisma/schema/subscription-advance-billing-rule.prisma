@@ -1,0 +1,14 @@
+
+model SubscriptionAdvanceBillingRule {
+  tenantId     String       @map("tenant_id")
+  intervalUnit IntervalUnit @map("interval_unit")
+  daysBefore   Int          @map("days_before")
+  createdAt    Int          @map("created_at")
+  updatedAt    Int          @map("updated_at")
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_advance_rules_tenant_fkey", onUpdate: Cascade)
+  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_advance_rules_preference_fkey", onUpdate: Cascade)
+
+  @@id([tenantId, intervalUnit])
+  @@map("billing_subscription_advance_rules")
+}

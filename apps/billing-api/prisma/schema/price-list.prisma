@@ -1,0 +1,30 @@
+/// A reusable pricing policy assignable to customers and transactions.
+/// Documents snapshot its name and resolved monetary amounts.
+model PriceList {
+  id                String              @id
+  tenantId          String              @map("tenant_id")
+  name              String
+  description       String?
+  mode              PriceListMode
+  direction         PriceListDirection?
+  percentage        Decimal?            @db.Decimal(7, 4)
+  currency          String?             @db.Char(3)
+  rounding          PriceListRounding   @default(NONE)
+  roundingPrecision Int                 @default(2) @map("rounding_precision")
+  isActive          Boolean             @default(true) @map("is_active")
+  createdAt         Int                 @map("created_at")
+  updatedAt         Int                 @map("updated_at")
+
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_price_lists_tenant_fkey")
+  entries       PriceListEntry[]
+  customers     Customer[]
+  quotes        Quote[]
+  estimates     Estimate[]
+  invoices      Invoice[]
+  subscriptions Subscription[]
+
+  @@unique([tenantId, id], map: "billing_price_lists_tenant_id_id_key")
+  @@unique([tenantId, name], name: "billing_price_lists_tenant_name_key", map: "billing_price_lists_tenant_name_key")
+  @@index([tenantId, isActive], map: "billing_price_lists_tenant_active_idx")
+  @@map("billing_price_lists")
+}

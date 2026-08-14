@@ -1,0 +1,11 @@
+
+model SubscriptionCalendarMonth {
+  tenantId String @map("tenant_id")
+  month    Int
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade, map: "billing_subscription_calendar_months_tenant_fkey", onUpdate: Cascade)
+  preference SubscriptionPreference @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade, map: "billing_subscription_calendar_months_preference_fkey", onUpdate: Cascade)
+
+  @@id([tenantId, month])
+  @@map("billing_subscription_calendar_months")
+}

@@ -1,0 +1,17 @@
+
+model CouponPlanApplicability {
+  id        String @id
+  tenantId  String @map("tenant_id")
+  couponId  String @map("coupon_id")
+  planId    String @map("plan_id")
+  createdAt Int    @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_plan_applicabilities_tenant_fkey")
+  coupon Coupon @relation(fields: [tenantId, couponId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_plan_applicabilities_coupon_fkey")
+  plan   Plan   @relation(fields: [planId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_plan_applicabilities_plan_fkey")
+
+  @@unique([tenantId, couponId, planId], name: "billing_coupon_plan_applicability_key", map: "billing_coupon_plan_applicability_key")
+  @@index([couponId], map: "billing_coupon_plan_applicability_coupon_idx")
+  @@index([planId], map: "billing_coupon_plan_applicability_plan_idx")
+  @@map("billing_coupon_plan_applicabilities")
+}

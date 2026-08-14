@@ -1,0 +1,94 @@
+/// A party billed by a tenant. Core user and organization identifiers
+/// are optional opaque references; an external customer has neither reference.
+/// For core-linked customers the identity fields (name, email, companyName)
+/// are a cached snapshot of the live 876 record — resolved live on the detail
+/// view and refreshed opportunistically (see `coreSyncedAt`).
+model Customer {
+  id                          String         @id
+  tenantId                    String         @map("tenant_id")
+  customerType                CustomerType   @default(EXTERNAL) @map("customer_type")
+  customerKind                CustomerKind   @default(INDIVIDUAL) @map("customer_kind")
+  organizationId              String?        @map("organization_id")
+  userId                      String?        @map("user_id")
+  externalReference           String?        @map("external_reference")
+  sourceAppId                 String?        @map("source_app_id")
+  sourceExternalReference     String?        @map("source_external_reference")
+  sourceIdempotencyKey        String?        @map("source_idempotency_key")
+  sourcePayloadHash           String?        @map("source_payload_hash")
+  customerNumber              String?        @map("customer_number")
+  /// Display name — the canonical label shown across the UI.
+  name                        String
+  salutation                  String?
+  firstName                   String?        @map("first_name")
+  lastName                    String?        @map("last_name")
+  companyName                 String?        @map("company_name")
+  email                       String?
+  /// Primary/mobile phone.
+  phone                       String?
+  workPhone                   String?        @map("work_phone")
+  website                     String?
+  notes                       String?
+  taxRegistrationNumber       String?        @map("tax_registration_number")
+  /// Legacy freeform billing address JSON. Retained for back-compat; new writes
+  /// go to the `billing_addresses` table via the `addresses` relation.
+  billingAddress              Json?          @map("billing_address")
+  metadata                    Json?
+  defaultCurrency             String?        @map("default_currency")
+  language                    String?        @map("language")
+  paymentTermId               String?        @map("payment_term_id")
+  salespersonId               String?        @map("salesperson_id")
+  priceListId                 String?        @map("price_list_id")
+  consolidatedBillingOverride Boolean?       @map("consolidated_billing_override")
+  taxBehaviorOverride         TaxBehavior?   @map("tax_behavior_override")
+  lateFeeExempt               Boolean        @default(false) @map("late_fee_exempt")
+  invoiceNotes                String?        @map("invoice_notes")
+  invoiceTerms                String?        @map("invoice_terms")
+  /// Denormalized AR position, in the customer currency's minor units.
+  /// outstandingReceivable = sum of open invoice balances; unusedCredits =
+  /// unapplied payments + open credit-note balances available to apply.
+  outstandingReceivable       BigInt         @default(0) @map("outstanding_receivable")
+  unusedCredits               BigInt         @default(0) @map("unused_credits")
+  /// Unix seconds of the last successful snapshot refresh from the live 876
+  /// record. Null for external (non-876) customers.
+  coreSyncedAt                Int?           @map("core_synced_at")
+  status                      CustomerStatus @default(ACTIVE)
+  createdAt                   Int            @map("created_at")
+  updatedAt                   Int            @map("updated_at")
+
+  tenant              Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_customers_tenant_id_fkey")
+  languageRecord      Language?                   @relation("CustomerLanguage", fields: [language], references: [code], onDelete: SetNull, onUpdate: Cascade, map: "billing_customers_language_fkey")
+  paymentTerm         PaymentTerm?                @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_customers_payment_term_fkey")
+  salesperson         Salesperson?                @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_customers_salesperson_fkey")
+  priceList           PriceList?                  @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_customers_price_list_fkey")
+  contacts            Contact[]
+  addresses           Address[]
+  quotes              Quote[]
+  estimates           Estimate[]
+  invoices            Invoice[]
+  payments            Payment[]
+  creditNotes         CreditNote[]
+  refunds             Refund[]
+  subscriptions       Subscription[]
+  subscriptionCharges SubscriptionCharge[]
+  promotionCodes      PromotionCode[]
+  couponEligibilities CouponCustomerEligibility[]
+  couponRedemptions   CouponRedemption[]
+  ledgerEntries       CustomerLedgerEntry[]
+  paymentAttempts     PaymentAttempt[]
+
+  @@unique([tenantId, id], map: "billing_customers_tenant_id_id_key")
+  @@unique([tenantId, organizationId], name: "billing_customers_tenant_id_organization_id_key", map: "billing_customers_tenant_id_organization_id_key")
+  @@unique([tenantId, userId], name: "billing_customers_tenant_id_user_id_key", map: "billing_customers_tenant_id_user_id_key")
+  @@unique([tenantId, externalReference], name: "billing_customers_tenant_id_external_reference_key", map: "billing_customers_tenant_id_external_reference_key")
+  @@unique([tenantId, customerNumber], map: "billing_customers_tenant_id_customer_number_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_customers_source_external_key", map: "billing_customers_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_customers_source_idempotency_key", map: "billing_customers_source_idempotency_key")
+  @@index([tenantId], map: "billing_customers_tenant_id_idx")
+  @@index([language], map: "billing_customers_language_idx")
+  @@index([tenantId, sourceAppId], map: "billing_customers_source_app_idx")
+  @@index([priceListId], map: "billing_customers_price_list_id_idx")
+  @@index([externalReference], map: "billing_customers_external_reference_idx")
+  @@index([paymentTermId], map: "billing_customers_payment_term_id_idx")
+  @@index([salespersonId], map: "billing_customers_salesperson_id_idx")
+  @@map("billing_customers")
+}
