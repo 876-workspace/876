@@ -141,6 +141,28 @@ describe('POST /users', () => {
     )
   })
 
+  it('honors an explicit email_verified over the provider identity', async () => {
+    authProvider.getUserByEmail.mockResolvedValue(
+      providerUser({ emailVerified: false })
+    )
+
+    const response = await request(createApp())
+      .post('/users')
+      .set(ADMIN_HEADERS)
+      .send({
+        email: 'alejandra@example.com',
+        first_name: 'Console',
+        last_name: 'Input',
+        username: 'alejandra',
+        email_verified: true,
+      })
+
+    expect(response.status).toBe(201)
+    expect(repository.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({ emailVerified: true })
+    )
+  })
+
   it('creates a WorkOS identity when no provider user exists', async () => {
     authProvider.getUserByEmail.mockResolvedValue(null)
     authProvider.register.mockResolvedValue(

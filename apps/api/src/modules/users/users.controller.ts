@@ -315,7 +315,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       workosUserId,
       email,
       username,
-      emailVerified: workosUser.emailVerified,
+      emailVerified: body.email_verified ?? workosUser.emailVerified,
       firstName: workosUser.firstName || body.first_name,
       lastName: workosUser.lastName || body.last_name,
       middleName: body.middle_name ?? null,
