@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+import { NoAccessActions } from './_components/no-access-actions'
 
 export const metadata = { title: 'Access restricted' }
 
@@ -22,6 +23,7 @@ export default async function NoAccessPage() {
             the organization&apos;s Billing subscription.
           </PageDescription>
         </PageHeader>
+        <NoAccessActions />
       </Page>
     </main>
   )
