@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "prisma migrate deploy && pnpm build:sw && next dev --turbopack --port 3002",
     "build:sw": "node ../../scripts/build-serwist.mjs",
-    "build": "opennextjs-cloudflare build",
+    "build": "pnpm build:sw && opennextjs-cloudflare build",
     "build:next": "pnpm build:sw && NEXT_TELEMETRY_DISABLED=1 next build --webpack",
     "start": "next start --port ${PORT:-3002}",
     "lint": "eslint",
@@ -19,10 +19,10 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:backfill": "tsx prisma/backfill.ts",
-    "cf:build": "opennextjs-cloudflare build",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf:build": "pnpm build:sw && opennextjs-cloudflare build",
+    "preview": "pnpm build:sw && opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "pnpm build:sw && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "pnpm build:sw && opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {

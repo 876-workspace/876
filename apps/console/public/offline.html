@@ -48,7 +48,9 @@
         line-height: 1.6;
       }
 
-      a {
+      button {
+        border: 0;
+        cursor: pointer;
         display: inline-block;
         border-radius: 0.5rem;
         background: #0a0a0a;
@@ -68,7 +70,7 @@
           color: #a3a3a3;
         }
 
-        a {
+        button {
           background: #fafafa;
           color: #0a0a0a;
         }
@@ -82,7 +84,8 @@
       </div>
       <h1>You are offline</h1>
       <p>Reconnect to continue using the operations console.</p>
-      <a href="/">Try again</a>
+      <button data-offline-retry type="button">Try again</button>
     </main>
+    <script src="/pwa/offline-recovery.js"></script>
   </body>
 </html>
