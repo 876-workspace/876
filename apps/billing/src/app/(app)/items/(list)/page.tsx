@@ -1,6 +1,6 @@
 import { CircleStackIcon } from '@876/ui/icons'
 import Link from 'next/link'
-import { Suspense } from 'react'
+import { Suspense, type ComponentProps } from 'react'
 import { buttonVariants } from '@876/ui/button'
 import {
   Empty,
@@ -65,7 +65,7 @@ async function ItemsTableData({ searchParams }: Props) {
 
   return (
     <ItemsTable
-      items={items}
+      items={items as unknown as ComponentProps<typeof ItemsTable>['items']}
       defaultCurrency={context.tenant.defaultCurrency}
       emptyState={
         <Empty className="py-14">

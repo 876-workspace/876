@@ -5,7 +5,7 @@ import { type StatusFilterOption } from '@876/ui/status-filter-heading'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { formatDate, formatMoney } from '@/lib/format'
-import { service } from '@/lib/service'
+import { service, type LegacyBillingRecord } from '@/lib/service'
 
 export const metadata = {
   title: 'Payments Received',
@@ -40,7 +40,9 @@ export default function PaymentsPage() {
 
 async function PaymentsPageData() {
   const context = await requirePagePermission('payments:read')
-  const payments = await service.payments.list(context.tenant.id)
+  const payments: LegacyBillingRecord[] = await service.payments.list(
+    context.tenant.id
+  )
   return (
     <>
       {payments.length === 0 ? (

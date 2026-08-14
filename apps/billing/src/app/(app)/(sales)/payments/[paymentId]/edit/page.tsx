@@ -10,7 +10,7 @@ import {
 
 import { PaymentForm } from '@/features/payments/components/payment-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { service } from '@/lib/service'
+import { service, type LegacyBillingRecord } from '@/lib/service'
 
 import { getPaymentFormData } from '../../_lib/form-data'
 
@@ -19,10 +19,16 @@ type Props = { params: Promise<{ paymentId: string }> }
 export default async function EditPaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:write')
   const { paymentId } = await params
-  const payment = await service.payments.retrieve(context.tenant.id, paymentId)
+  const payment: LegacyBillingRecord = await service.payments.retrieve(
+    context.tenant.id,
+    paymentId
+  )
   if (!payment) notFound()
 
-  const data = await getPaymentFormData(context.tenant.id, payment)
+  const data = await getPaymentFormData(
+    context.tenant.id,
+    payment as unknown as Parameters<typeof getPaymentFormData>[1]
+  )
 
   return (
     <Page>

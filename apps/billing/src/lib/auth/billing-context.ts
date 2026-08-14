@@ -7,10 +7,10 @@ import { redirect } from 'next/navigation'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getFeatures } from '@/lib/features'
 import { service } from '@/lib/service'
-import type { Tenant } from '@/lib/db'
 import type { Context, OrgRole } from '@/types/auth'
 import type { Permission } from '@/types/access'
 import type { BillingProductFeature } from '@/types/features'
+import type { Tenant } from '@/types/tenant'
 
 import { getAuthSession, isSignedSession } from './session'
 

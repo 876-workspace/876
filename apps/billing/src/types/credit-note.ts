@@ -19,6 +19,7 @@ export const CreditNoteStatusSchema = z.enum([
   'CLOSED',
   'VOID',
 ])
+export type CreditNoteStatus = z.infer<typeof CreditNoteStatusSchema>
 
 /** A single credit-note line; its total is computed by the service. */
 export const CreditNoteLineSchema = z.strictObject({

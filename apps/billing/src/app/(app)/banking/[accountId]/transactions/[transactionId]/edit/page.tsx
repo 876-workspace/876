@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { notFound, redirect } from 'next/navigation'
 
 import {
@@ -51,7 +52,12 @@ export default async function EditBankTransactionPage({ params }: Props) {
         accountId={account.id}
         currency={account.currency}
         decimalPlaces={decimalPlaces}
-        initial={{ ...transaction, amount: transaction.amount.toString() }}
+        initial={
+          {
+            ...transaction,
+            amount: transaction.amount.toString(),
+          } as unknown as ComponentProps<typeof BankTransactionForm>['initial']
+        }
       />
     </Page>
   )

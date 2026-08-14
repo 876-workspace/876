@@ -11,7 +11,7 @@ import { Page } from '@876/ui/page'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
-import { service } from '@/lib/service'
+import { service, type LegacyBillingRecord } from '@/lib/service'
 import { ReportsFallback, ReportsHeader } from './_components/reports-shell'
 
 export const metadata = {
@@ -34,7 +34,9 @@ async function ReportsPageData() {
   const context = await getWorkspaceContext()
   if (!context) return null
 
-  const overview = await service.dashboard.overview(context.tenant.id)
+  const overview: LegacyBillingRecord = await service.dashboard.overview(
+    context.tenant.id
+  )
 
   return (
     <section className="grid gap-4 lg:grid-cols-2">

@@ -1,9 +1,27 @@
-import type { listDocumentRecipients } from '@/lib/service/customers/list'
 import type { DocumentCustomerOption } from '@/types/customer'
 
-type DocumentRecipient = Awaited<
-  ReturnType<typeof listDocumentRecipients>
->[number]
+interface DocumentRecipient {
+  id: string
+  name: string
+  customerKind: 'INDIVIDUAL' | 'BUSINESS'
+  companyName: string | null
+  salutation: string | null
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  phone: string | null
+  workPhone: string | null
+  priceListId: string | null
+  contacts: Array<{
+    salutation: string | null
+    firstName: string | null
+    lastName: string | null
+    email: string | null
+    workPhone: string | null
+    mobilePhone: string | null
+  }>
+  addresses: DocumentCustomerOption['address'][]
+}
 
 export function toDocumentCustomerOption(
   customer: DocumentRecipient

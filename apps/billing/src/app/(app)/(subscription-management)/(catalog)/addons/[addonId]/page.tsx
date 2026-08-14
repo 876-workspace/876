@@ -21,7 +21,11 @@ export default async function AddonDetailPage({
       <div className="grid gap-4 md:grid-cols-3">
         <MetricCard
           label="Charge"
-          value={formatPriceCadence(addon)}
+          value={formatPriceCadence({
+            intervalCount: addon.intervalCount,
+            intervalUnit: addon.intervalUnit,
+            priceType: addon.priceType,
+          })}
           detail="Billing behavior"
         />
         <MetricCard

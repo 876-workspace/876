@@ -13,7 +13,11 @@ import {
 import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
-import { resolveCustomerParty, type PrimaryContact } from './_data'
+import {
+  resolveCustomerParty,
+  type PrimaryContact,
+  type CustomerPartyInput,
+} from './_data'
 
 interface Props {
   params: Promise<{ customerId: string }>
@@ -50,7 +54,9 @@ export default async function CustomerDetailPage({ params }: Props) {
   const customer = await resolveCustomer(context.tenant.id, customerId)
   if (!customer) notFound()
 
-  const party = await resolveCustomerParty(customer)
+  const party = await resolveCustomerParty(
+    customer as unknown as CustomerPartyInput
+  )
   const contact = party.contact
   const currency = (
     customer.defaultCurrency ?? context.tenant.defaultCurrency
