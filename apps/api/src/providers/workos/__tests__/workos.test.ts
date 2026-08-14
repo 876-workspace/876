@@ -304,6 +304,21 @@ describe('users', () => {
     expect(bodyOf(calls[0]!.init)['email_verified']).toBe(false)
   })
 
+  it('sends only changed names to the documented update-user endpoint', async () => {
+    const { calls } = stubFetch([{ status: 200, body: { id: 'user_1' } }])
+
+    await expect(
+      client().updateUser('user_1', { lastName: 'Reyes' })
+    ).resolves.toEqual({ id: 'user_1' })
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.url).toBe(
+      'https://api.workos.test/user_management/users/user_1'
+    )
+    expect(calls[0]?.init.method).toBe('PUT')
+    expect(bodyOf(calls[0]!.init)).toEqual({ last_name: 'Reyes' })
+  })
+
   it('returns the data array from a filtered list', async () => {
     stubFetch([{ status: 200, body: { data: [{ id: 'user_1' }] } }])
 

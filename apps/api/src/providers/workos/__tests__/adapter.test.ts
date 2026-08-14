@@ -14,6 +14,7 @@ import { isAuthEvent, isAuthSession } from '@/providers/auth'
 
 import { WorkOsAuthProvider, toProviderUser } from '../adapter'
 import { WorkOsClient } from '../client'
+import { WorkOsHttpError } from '../errors'
 
 const API_KEY = 'sk_test_workos_0123456789'
 
@@ -254,6 +255,70 @@ describe('user lookup', () => {
     stubFetch(200, { data: [] })
 
     await expect(provider().getUserByEmail('a@b.co')).resolves.toBeNull()
+  })
+})
+
+describe('user updates', () => {
+  it('delegates names to the client and returns the mapped provider user', async () => {
+    const client = new WorkOsClient({
+      apiKey: API_KEY,
+      baseUrl: 'https://api.workos.test',
+    })
+    const updateUser = vi.spyOn(client, 'updateUser').mockResolvedValue({
+      id: 'user_1',
+      email: 'alejandra@example.com',
+      first_name: 'Alejandra',
+      last_name: 'Reyes',
+      email_verified: true,
+    })
+    const authProvider = new WorkOsAuthProvider(client)
+
+    await expect(
+      authProvider.updateUser('user_1', {
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+      })
+    ).resolves.toEqual({
+      id: 'user_1',
+      email: 'alejandra@example.com',
+      firstName: 'Alejandra',
+      lastName: 'Reyes',
+      emailVerified: true,
+      avatar: null,
+      metadata: {},
+    })
+    expect(updateUser).toHaveBeenCalledTimes(1)
+    expect(updateUser).toHaveBeenCalledWith('user_1', {
+      firstName: 'Alejandra',
+      lastName: 'Reyes',
+    })
+  })
+
+  it('rethrows a normalized client error', async () => {
+    const client = new WorkOsClient({
+      apiKey: API_KEY,
+      baseUrl: 'https://api.workos.test',
+    })
+    const updateUser = vi
+      .spyOn(client, 'updateUser')
+      .mockRejectedValue(
+        new WorkOsHttpError(409, { code: 'email_address_conflict' })
+      )
+    const authProvider = new WorkOsAuthProvider(client)
+
+    const error = await authProvider
+      .updateUser('user_1', { firstName: 'Alejandra' })
+      .catch((caught: unknown) => caught)
+
+    expect(updateUser).toHaveBeenCalledTimes(1)
+    expect(updateUser).toHaveBeenCalledWith('user_1', {
+      firstName: 'Alejandra',
+    })
+    expect(isAppHttpError(error)).toBe(true)
+    expect(error).toMatchObject({
+      code: 'auth/email-already-exists',
+      httpStatus: 409,
+    })
   })
 })
 

@@ -151,6 +151,10 @@ export class WorkOsClient {
     return this.send('POST', path, { body })
   }
 
+  private put(path: string, body: Payload): Promise<Record<string, unknown>> {
+    return this.send('PUT', path, { body })
+  }
+
   /** Throws the raw {@link WorkOsHttpError}; see the module docstring. */
   private postAuth(
     path: string,
@@ -289,6 +293,21 @@ export class WorkOsClient {
       email_verified: params.emailVerified ?? false,
       metadata: params.metadata,
     })
+  }
+
+  updateUser(
+    userId: string,
+    params: {
+      firstName?: string | null
+      lastName?: string | null
+      email?: string | null
+    }
+  ): Promise<Record<string, unknown>> {
+    const body: Payload = {}
+    if (params.firstName !== undefined) body.first_name = params.firstName
+    if (params.lastName !== undefined) body.last_name = params.lastName
+    if (params.email !== undefined) body.email = params.email
+    return this.put(`/user_management/users/${userId}`, body)
   }
 
   async listUsers(email: string): Promise<Record<string, unknown>[]> {
