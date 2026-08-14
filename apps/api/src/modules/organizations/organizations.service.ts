@@ -1241,3 +1241,33 @@ export async function updateSubscription(
   }
   return serializeSubscription(row)
 }
+
+/**
+ * Apply a WorkOS `organization.updated` to the local org (WorkOS is source of
+ * record). No-op returning false when no local org matches the WorkOS id, so an
+ * unknown org does not error a webhook. Returns true when a row changed.
+ */
+export async function syncOrganizationFromWorkos(params: {
+  workosOrganizationId: string
+  name?: string | null
+}): Promise<boolean> {
+  const org = await repository.findOrganizationByWorkosId(
+    params.workosOrganizationId
+  )
+  if (!org) return false
+
+  if (params.name === undefined) return false
+  const updated = await repository.updateOrganization(org.id, {
+    name: params.name,
+    updatedAt: BigInt(nowUnixSeconds()),
+  })
+  return updated !== null
+}
+
+/** Resolve a local organization id from a WorkOS organization id, or null. */
+export async function findLocalOrgIdByWorkosId(
+  workosOrganizationId: string
+): Promise<string | null> {
+  const org = await repository.findOrganizationByWorkosId(workosOrganizationId)
+  return org ? org.id : null
+}

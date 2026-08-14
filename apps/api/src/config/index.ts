@@ -99,6 +99,7 @@ const envSchema = z.object({
   WORKOS_COOKIE_PASSWORD: str(),
   WORKOS_VAULT_ENABLED: booleanish(false),
   WORKOS_VAULT_KEY_CONTEXT: str('876'),
+  WORKOS_WEBHOOK_SECRET: str(),
 
   API_INTERNAL_KEY: str(),
   CORS_ALLOWED_ORIGINS: z
@@ -210,6 +211,10 @@ function build(env: NodeJS.ProcessEnv) {
       clientId: e.WORKOS_CLIENT_ID,
       redirectUri: e.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
       cookiePassword: e.WORKOS_COOKIE_PASSWORD,
+      // The webhook signing secret. Empty when inbound webhooks are not
+      // configured, in which case verification fails closed and the endpoint
+      // rejects every request.
+      webhookSecret: e.WORKOS_WEBHOOK_SECRET,
       // A configured override wins so a test or a self-hosted environment can
       // point at its own JWKS without reaching WorkOS.
       jwksUrl:

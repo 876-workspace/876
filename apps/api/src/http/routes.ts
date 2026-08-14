@@ -46,6 +46,7 @@ import {
   registerUserCoreRoutes,
 } from '@/modules/users'
 import { createTwilioWebhooksRouter } from '@/modules/twilio-webhooks'
+import { createWorkosWebhooksRouter } from '@/modules/workos-webhooks'
 
 /**
  * Router composition. The only file in `http/` allowed to import a module —
@@ -80,6 +81,7 @@ export function buildRoutes(): Router {
   // credential, mounted outside the protected router exactly as api/v1.py does.
   root.use(createAppsPublicRouter())
   root.use(createTwilioWebhooksRouter(resolveGuards))
+  root.use(createWorkosWebhooksRouter(resolveGuards))
 
   root.use(createAddressesRouter(resolveGuards))
   root.use(createAuditEventsRouter(resolveGuards))

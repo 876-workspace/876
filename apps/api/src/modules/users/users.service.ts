@@ -191,6 +191,42 @@ async function uniqueUsername(
 }
 
 // Core user helpers
+/**
+ * Apply a WorkOS `user.updated` to the local row (WorkOS is source of record).
+ * No-op returning false when no local user matches the WorkOS id, so an unknown
+ * or not-yet-synced user does not error a webhook. Returns true when a row changed.
+ */
+export async function syncUserFromWorkos(params: {
+  workosUserId: string
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+}): Promise<boolean> {
+  const user = await repo.findUserByWorkosId(params.workosUserId)
+  if (!user) return false
+
+  const updateData: Record<string, unknown> = {}
+  if (params.firstName !== undefined) updateData.firstName = params.firstName
+  if (params.lastName !== undefined) updateData.lastName = params.lastName
+  if (params.email !== undefined && params.email)
+    updateData.email = params.email
+  if (Object.keys(updateData).length === 0) return false
+
+  await repo.updateUser(user.id, {
+    ...updateData,
+    updatedAt: BigInt(nowUnixSeconds()),
+  } as never)
+  return true
+}
+
+/** Resolve a local user id from a WorkOS user id, or null when none matches. */
+export async function findLocalUserIdByWorkosId(
+  workosUserId: string
+): Promise<string | null> {
+  const user = await repo.findUserByWorkosId(workosUserId)
+  return user ? user.id : null
+}
+
 export async function requireUser(
   userId: string
 ): Promise<import('./users.serializers').UserRow> {

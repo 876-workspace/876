@@ -48,7 +48,19 @@ export function createApp(): Express {
   app.use(requestContext)
   // A bounded body size, always — an unbounded parser is a denial-of-service
   // surface on every route at once.
-  app.use(express.json({ limit: '1mb' }))
+  //
+  // `verify` captures the raw request bytes on `req.rawBody` before they are
+  // parsed. A signed webhook (WorkOS, Stripe) is signed over the exact bytes
+  // sent; re-serializing the parsed JSON reorders keys and drops whitespace, so
+  // the raw buffer is the only thing a signature check can trust.
+  app.use(
+    express.json({
+      limit: '1mb',
+      verify: (req, _res, buf) => {
+        ;(req as unknown as { rawBody?: Buffer }).rawBody = buf
+      },
+    })
+  )
   app.use(express.urlencoded({ extended: true, limit: '1mb' }))
   app.use(compression({ threshold: 1024 }))
   app.use(envelope)
