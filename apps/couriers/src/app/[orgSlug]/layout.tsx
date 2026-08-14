@@ -1,10 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
-
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { requireValidSession } from '@/lib/auth/guards'
 import { Shell } from '@/components/shell/shell'
 import { getAppsDirectory } from '@/lib/apps-directory'
 import { getFeatures } from '@/lib/features'
@@ -20,13 +18,10 @@ export default async function OrgLayout({
   const { orgSlug } = await params
   if (isReservedOrgSlug(orgSlug)) notFound()
 
-  const session = await getAuthSession()
-  if (!isSignedSession(session)) {
-    const loginParams = new URLSearchParams({
-      [AUTH_RETURN_TO_PARAM]: `/${orgSlug}`,
-    })
-    redirect(`/login?${loginParams.toString()}`)
-  }
+  // Validates the account against the identity API, not just the sealed cookie:
+  // a deleted or disabled account is signed out to /login rather than walked
+  // into the membership flow that would otherwise strand it on /no-access.
+  const sessionUser = await requireValidSession(`/${orgSlug}`)
 
   const ctx = await getManageContext(orgSlug)
   if (!ctx) redirect('/')
@@ -59,11 +54,10 @@ export default async function OrgLayout({
   const apps = getAppsDirectory(basePath)
   const user = {
     name:
-      [session.user.firstName, session.user.lastName]
-        .filter(Boolean)
-        .join(' ') || session.user.email,
-    email: session.user.email,
-    avatar: session.user.avatar ?? null,
+      [sessionUser.firstName, sessionUser.lastName].filter(Boolean).join(' ') ||
+      sessionUser.email,
+    email: sessionUser.email,
+    avatar: sessionUser.avatar ?? null,
   }
 
   return (
