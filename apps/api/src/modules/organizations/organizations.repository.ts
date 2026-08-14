@@ -294,6 +294,24 @@ export async function deleteOrganization(
   }
 }
 
+/**
+ * Soft-delete every live membership of an org — the cascade half of a
+ * reversible org Delete. Member *accounts* are untouched; only the link to this
+ * org is tombstoned, so a member's access is revoked immediately (the session
+ * guard rejects a membership whose org is deleted) while their identity, and any
+ * membership in another org, survives. Returns the number of memberships closed.
+ */
+export async function softDeleteMembershipsForOrg(
+  organizationId: string
+): Promise<number> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const result = await prisma.membership.updateMany({
+    where: { organizationId, deletedAt: null },
+    data: { deletedAt: now, updatedAt: now },
+  })
+  return result.count
+}
+
 export async function purgeOrganization(id: string): Promise<boolean> {
   try {
     await prisma.organization.delete({ where: { id } })

@@ -15,6 +15,8 @@ import {
   linkMembershipRole,
   provisionOrganization,
 } from '@/services/provisioning'
+import { enqueueCustomerArchiveForOrganization } from '@/services/billing-customer-sync'
+import { createBillingCustomerSyncRepository } from '@/services/billing-customer-sync.repository'
 import {
   deleteProviderOrganization,
   ensureProviderMembership,
@@ -519,38 +521,67 @@ export async function deleteOrganization(
       'organization/not-found',
       'No organization exists with the provided identifier.'
     )
-  const memberCount = await repository.countMembershipsForOrg(organizationId)
-  if (memberCount > 0) {
-    throw new AppHttpError({
-      code: 'organization/has-members',
-      message:
-        'Remove all members before deleting this organization, or purge it to permanently delete the organization and everything in it.',
-      httpStatus: 409,
-    })
-  }
-  const workosId = org.workosOrganizationId
+
+  // A reversible Delete: tombstone the org and cascade-close its memberships so
+  // members lose access at once, but leave the WorkOS organization in place —
+  // WorkOS is the source of record and Delete is recoverable. Only Purge removes
+  // the provider record. `.claude/rules/deletions.md` + ADR-012 §D1/D2.
+  const closedMemberships =
+    await repository.softDeleteMembershipsForOrg(organizationId)
   await repository.deleteOrganization(organizationId, deletedBy, reason)
-  // Drop the WorkOS organization too, so the provider does not accumulate orgs
-  // no 876 record points at. This runs after the local write and its failure is
-  // *not* swallowed: the helper already treats an already-absent provider
-  // record as success, so anything left is a real outage, and failing here
-  // rolls the tombstone back instead of half-deleting the org.
-  if (workosId) {
-    await deleteProviderOrganization(
-      getAuthProvider(getSettings()) as unknown as Parameters<
-        typeof deleteProviderOrganization
-      >[0],
-      workosId,
-      { localOrganizationId: organizationId }
-    )
-  }
+
+  // Tell the Billing registry the customer is gone. The org row survives as a
+  // tombstone, so the snapshot still resolves; best-effort because the reconcile
+  // sweep archives any deleted org it finds, so a hiccup here self-heals rather
+  // than rolling back the delete.
+  await archiveBillingCustomerForOrg(org)
 
   log.info(
-    { organization_id: organizationId, slug: org.slug },
+    {
+      organization_id: organizationId,
+      slug: org.slug,
+      memberships_closed: closedMemberships,
+    },
     'organizations.delete'
   )
 
   return { object: 'organization', id: organizationId, deleted: true }
+}
+
+/**
+ * Enqueue a Billing customer archive for an org, resolved from its identity
+ * snapshot. Best-effort: a failure is logged but never fails the delete/purge,
+ * because the reconcile sweep re-archives any deleted org it finds.
+ */
+async function archiveBillingCustomerForOrg(org: {
+  id: string
+  name: string | null
+  slug: string
+  doingBusinessAs?: string | null
+  primaryEmail?: string | null
+  primaryPhone?: string | null
+  primaryContactUserId?: string | null
+}): Promise<void> {
+  try {
+    await enqueueCustomerArchiveForOrganization(
+      { repository: createBillingCustomerSyncRepository() },
+      {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        doingBusinessAs: org.doingBusinessAs ?? null,
+        primaryEmail: org.primaryEmail ?? null,
+        primaryPhone: org.primaryPhone ?? null,
+        primaryContactUserId: org.primaryContactUserId ?? null,
+      },
+      nowUnixSeconds()
+    )
+  } catch (error) {
+    log.error(
+      { err: error, organization_id: org.id },
+      'organizations.archive_billing_customer_failed'
+    )
+  }
 }
 
 export async function purgeOrganization(
@@ -564,12 +595,17 @@ export async function purgeOrganization(
       'No organization exists with the provided identifier.'
     )
   const workosId = org.workosOrganizationId
+
+  // Archive the Billing customer *before* the hard delete, while the org row
+  // still exists for the snapshot to resolve. Purge is destructive, so there is
+  // no reconcile pass to fall back on for this row afterwards.
+  await archiveBillingCustomerForOrg(org)
+
   await repository.purgeOrganization(organizationId)
-  // Drop the WorkOS organization too, so the provider does not accumulate orgs
-  // no 876 record points at. This runs after the local write and its failure is
-  // *not* swallowed: the helper already treats an already-absent provider
-  // record as success, so anything left is a real outage, and failing here
-  // rolls the tombstone back instead of half-deleting the org.
+  // Purge is the destructive action: drop the WorkOS organization too, so the
+  // provider does not accumulate orgs no 876 record points at. Its failure is
+  // *not* swallowed — the helper already treats an already-absent provider
+  // record as success, so anything left is a real outage.
   if (workosId) {
     await deleteProviderOrganization(
       getAuthProvider(getSettings()) as unknown as Parameters<
