@@ -39,8 +39,14 @@ export async function requireSession(returnTo: string) {
  * See `.claude/rules/performance-server-side.md` §3.9 — `cache()` is per
  * request, which is exactly the scope a session-derived read wants.
  */
+const retrievePlatformUserResult = cache(
+  async function retrievePlatformUserResult(userId: string) {
+    return $876.users.admin.retrieve({ id: userId })
+  }
+)
+
 const retrieveUser = cache(async function retrieveUser(userId: string) {
-  const { data } = await $876.users.admin.retrieve({ id: userId })
+  const { data } = await retrievePlatformUserResult(userId)
   return data ?? null
 })
 
@@ -111,10 +117,13 @@ async function resolveEmailForBootstrapCheck(
   return data?.email?.trim().toLowerCase()
 }
 
-async function hydrateDisplay(
+type PlatformUserData = Awaited<ReturnType<typeof retrieveUser>>
+
+function hydrateDisplay(
   access: Access,
+  platformUser: PlatformUserData,
   sessionUser?: Pick<SessionUser, 'email' | 'firstName' | 'lastName'>
-): Promise<RoutingUser> {
+): RoutingUser {
   const base: RoutingUser = {
     ...access,
     firstName: sessionUser?.firstName?.trim() || null,
@@ -123,45 +132,68 @@ async function hydrateDisplay(
     avatar: null,
     banned: false,
   }
-  try {
-    const data = await retrieveUser(access.id)
-    if (!data) return base
-    return {
-      ...base,
-      firstName: data.first_name?.trim() || base.firstName,
-      lastName: data.last_name?.trim() || base.lastName,
-      email: data.email?.trim() || base.email,
-      avatar: data.avatar ?? null,
-      banned: Boolean(data.banned),
-    }
-  } catch {
-    return base
+  if (!platformUser) return base
+  return {
+    ...base,
+    firstName: platformUser.first_name?.trim() || base.firstName,
+    lastName: platformUser.last_name?.trim() || base.lastName,
+    email: platformUser.email?.trim() || base.email,
+    avatar: platformUser.avatar ?? null,
+    banned: Boolean(platformUser.banned),
   }
 }
 
-async function requireAccess(userId: string): Promise<Access> {
+async function requireAccess(
+  userId: string
+): Promise<{ access: Access; platformUser: PlatformUserData }> {
   const access = await findConsoleAccess(userId)
   if (!access) redirect('/access-denied?reason=no-account')
+
+  // The 876 identity behind this session must still exist and be usable. Console
+  // authorizes off its own team row, so a purged/deleted or disabled account
+  // would otherwise keep access on a stale cookie. Resolve the platform user
+  // once (reused for display) and sign a gone/disabled account out to /login.
+  // Only an explicit not-found or a disabled status triggers this — a platform
+  // outage (a thrown error or any other envelope) must never sign a valid admin
+  // out, so it fails open.
+  let platformUser: PlatformUserData = null
+  let accountState: 'ok' | 'gone' | 'disabled' = 'ok'
+  try {
+    const result = await retrievePlatformUserResult(userId)
+    platformUser = result.data ?? null
+    if (result.error?.code === 'user/not-found') accountState = 'gone'
+    else if (
+      platformUser &&
+      (platformUser.banned ||
+        (Boolean(platformUser.status) && platformUser.status !== 'active'))
+    ) {
+      accountState = 'disabled'
+    }
+  } catch {
+    // Platform outage — leave the session intact rather than sign an admin out.
+  }
+  if (accountState !== 'ok') redirect('/login')
+
   if (access.status !== 'active') redirect('/access-denied?reason=suspended')
   if (!hasPermission(access, CONSOLE_ACCESS_PERMISSION)) {
     redirect('/access-denied?reason=permission')
   }
-  return access
+  return { access, platformUser }
 }
 
 export async function requireConsoleAccount(
   userId: string,
   sessionUser?: Pick<SessionUser, 'email' | 'firstName' | 'lastName'>
 ): Promise<RoutingUser> {
-  const access = await requireAccess(userId)
-  return hydrateDisplay(access, sessionUser)
+  const { access, platformUser } = await requireAccess(userId)
+  return hydrateDisplay(access, platformUser, sessionUser)
 }
 
 export async function requireConsolePermission(
   userId: string,
   permission: string
 ): Promise<Access> {
-  const access = await requireAccess(userId)
+  const { access } = await requireAccess(userId)
   if (!hasPermission(access, permission)) redirect('/')
   return access
 }

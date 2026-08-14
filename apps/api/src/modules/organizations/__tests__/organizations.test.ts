@@ -1,5 +1,5 @@
 import request from 'supertest'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { signProviderJwt } from '@/platform/jwt'
 
@@ -83,6 +83,9 @@ const {
   orgInvite,
   appAssignment,
   apiKey,
+  deleteProviderOrganization,
+  enqueueCustomerArchiveForOrganization,
+  billingCustomerSyncRepository,
 } = vi.hoisted(() => ({
   organization: {
     findFirst: vi.fn(),
@@ -98,6 +101,7 @@ const {
     findMany: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     count: vi.fn(),
   },
   organizationRole: {
@@ -128,6 +132,9 @@ const {
   },
   appAssignment: { findMany: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
   apiKey: { findUnique: vi.fn(), update: vi.fn() },
+  deleteProviderOrganization: vi.fn(),
+  enqueueCustomerArchiveForOrganization: vi.fn(),
+  billingCustomerSyncRepository: { enqueue: vi.fn() },
 }))
 
 vi.mock('@/db/client', () => ({
@@ -166,8 +173,18 @@ vi.mock('@/services/provisioning', async (importOriginal) => ({
 
 vi.mock('@/services/identity-sync', () => ({
   ensureProviderMembership: vi.fn().mockResolvedValue('om_new'),
-  deleteProviderOrganization: vi.fn().mockResolvedValue(true),
+  deleteProviderOrganization,
   deleteProviderMembership: vi.fn().mockResolvedValue(true),
+}))
+
+vi.mock('@/services/billing-customer-sync', () => ({
+  enqueueCustomerArchiveForOrganization,
+}))
+
+vi.mock('@/services/billing-customer-sync.repository', () => ({
+  createBillingCustomerSyncRepository: vi.fn(
+    () => billingCustomerSyncRepository
+  ),
 }))
 
 vi.mock('@/services/finance-provisioning', () => ({
@@ -229,11 +246,16 @@ beforeEach(() => {
   organization.findMany.mockResolvedValue([organizationRow()])
   organization.create.mockResolvedValue(organizationRow())
   organization.update.mockResolvedValue(organizationRow())
+  organization.delete.mockResolvedValue(organizationRow())
 
   membership.findFirst.mockResolvedValue(membershipRow())
   membership.findUnique.mockResolvedValue(membershipRow())
   membership.findMany.mockResolvedValue([membershipRow()])
+  membership.updateMany.mockResolvedValue({ count: 1 })
   membership.count.mockResolvedValue(0)
+
+  deleteProviderOrganization.mockResolvedValue(true)
+  enqueueCustomerArchiveForOrganization.mockResolvedValue(undefined)
 
   organizationRole.findMany.mockResolvedValue([])
   organizationRole.findFirst.mockResolvedValue({
@@ -259,6 +281,10 @@ beforeEach(() => {
   orgInvite.findMany.mockResolvedValue([])
   orgInvite.findFirst.mockResolvedValue(null)
   appAssignment.findMany.mockResolvedValue([])
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 describe('GET /organizations', () => {
@@ -496,6 +522,128 @@ describe('DELETE /organizations/:orgId/members/:membershipId', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('membership/not-found')
     expect(membership.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('DELETE /organizations/:organizationId', () => {
+  it('soft-deletes an organization and its memberships without deleting it from the provider', async () => {
+    membership.count.mockResolvedValue(3)
+
+    const response = await request(createApp())
+      .delete('/organizations/org_4qR8?deleted_by=user_admin&reason=duplicate')
+      .set(ADMIN)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'organization',
+        id: 'org_4qR8',
+        deleted: true,
+      },
+      error: null,
+    })
+    expect(membership.updateMany).toHaveBeenCalledTimes(1)
+    expect(membership.updateMany).toHaveBeenCalledWith({
+      where: { organizationId: 'org_4qR8', deletedAt: null },
+      data: { deletedAt: BigInt(NOW), updatedAt: BigInt(NOW) },
+    })
+    expect(organization.update).toHaveBeenCalledTimes(1)
+    expect(organization.update).toHaveBeenCalledWith({
+      where: { id: 'org_4qR8' },
+      data: {
+        deletedAt: BigInt(NOW),
+        deletedBy: 'user_admin',
+        deletionReason: 'duplicate',
+        updatedAt: BigInt(NOW),
+      },
+      select: expect.any(Object),
+    })
+    expect(membership.count).not.toHaveBeenCalled()
+    expect(deleteProviderOrganization).not.toHaveBeenCalled()
+    expect(enqueueCustomerArchiveForOrganization).toHaveBeenCalledTimes(1)
+    expect(enqueueCustomerArchiveForOrganization).toHaveBeenCalledWith(
+      { repository: billingCustomerSyncRepository },
+      {
+        id: 'org_4qR8',
+        name: 'Reyes Logistics',
+        slug: 'reyes-logistics',
+        doingBusinessAs: null,
+        primaryEmail: null,
+        primaryPhone: null,
+        primaryContactUserId: null,
+      },
+      NOW
+    )
+    expect(organization.delete).not.toHaveBeenCalled()
+  })
+
+  it('still returns the tombstone when Billing archive enqueue rejects', async () => {
+    enqueueCustomerArchiveForOrganization.mockRejectedValue(
+      new Error('Billing unavailable')
+    )
+
+    const response = await request(createApp())
+      .delete('/organizations/org_4qR8')
+      .set(ADMIN)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'organization',
+        id: 'org_4qR8',
+        deleted: true,
+      },
+      error: null,
+    })
+    expect(membership.updateMany).toHaveBeenCalledTimes(1)
+    expect(organization.update).toHaveBeenCalledTimes(1)
+    expect(enqueueCustomerArchiveForOrganization).toHaveBeenCalledTimes(1)
+    expect(deleteProviderOrganization).not.toHaveBeenCalled()
+    expect(organization.delete).not.toHaveBeenCalled()
+  })
+})
+
+describe('DELETE /organizations/:organizationId/purge', () => {
+  it('archives and purges an organization before deleting its provider organization', async () => {
+    const response = await request(createApp())
+      .delete('/organizations/org_4qR8/purge?deleted_by=user_admin')
+      .set(ADMIN)
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: {
+        object: 'organization',
+        id: 'org_4qR8',
+        deleted: true,
+      },
+      error: null,
+    })
+    expect(enqueueCustomerArchiveForOrganization).toHaveBeenCalledTimes(1)
+    expect(enqueueCustomerArchiveForOrganization).toHaveBeenCalledWith(
+      { repository: billingCustomerSyncRepository },
+      {
+        id: 'org_4qR8',
+        name: 'Reyes Logistics',
+        slug: 'reyes-logistics',
+        doingBusinessAs: null,
+        primaryEmail: null,
+        primaryPhone: null,
+        primaryContactUserId: null,
+      },
+      NOW
+    )
+    expect(organization.delete).toHaveBeenCalledTimes(1)
+    expect(organization.delete).toHaveBeenCalledWith({
+      where: { id: 'org_4qR8' },
+    })
+    expect(deleteProviderOrganization).toHaveBeenCalledTimes(1)
+    expect(deleteProviderOrganization).toHaveBeenCalledWith(
+      expect.any(Object),
+      'org_workos_1',
+      { localOrganizationId: 'org_4qR8' }
+    )
+    expect(membership.updateMany).not.toHaveBeenCalled()
+    expect(organization.update).not.toHaveBeenCalled()
   })
 })
 

@@ -215,7 +215,8 @@ describe('Console auth guards', () => {
         last_name: 'Reyes',
         email: 'alejandra@example.com',
         avatar: 'https://cdn.example.com/avatar.png',
-        banned: 1,
+        status: 'active',
+        banned: false,
       },
       error: null,
     })
@@ -234,12 +235,64 @@ describe('Console auth guards', () => {
       lastName: 'Reyes',
       email: 'alejandra@example.com',
       avatar: 'https://cdn.example.com/avatar.png',
-      banned: true,
+      banned: false,
     })
-    // Once, for display hydration. The bootstrap check reads the address off
-    // the sealed session when it is the session's own id, so it costs nothing.
+    // One platform read, in requireAccess — reused for display. The bootstrap
+    // check reads the address off the sealed session when it is the session's
+    // own id, so it costs nothing.
     expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).not.toHaveBeenCalled()
+  })
+
+  it('signs a deleted account (user/not-found) out to /login', async () => {
+    mocks.retrieveUser.mockResolvedValue({
+      data: null,
+      error: { code: 'user/not-found', message: 'No user.' },
+    })
+    mocks.retrieveTeamMember.mockResolvedValue({
+      userId: activeAccess.id,
+      roleName: activeAccess.role,
+      status: activeAccess.status,
+      role: { permissions: activeAccess.permissions },
+    })
+
+    await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
+      path: '/login',
+    })
+  })
+
+  it('signs a banned account out to /login', async () => {
+    mocks.retrieveUser.mockResolvedValue({
+      data: { status: 'active', banned: true },
+      error: null,
+    })
+    mocks.retrieveTeamMember.mockResolvedValue({
+      userId: activeAccess.id,
+      roleName: activeAccess.role,
+      status: activeAccess.status,
+      role: { permissions: activeAccess.permissions },
+    })
+
+    await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
+      path: '/login',
+    })
+  })
+
+  it('signs a suspended account out to /login', async () => {
+    mocks.retrieveUser.mockResolvedValue({
+      data: { status: 'suspended', banned: false },
+      error: null,
+    })
+    mocks.retrieveTeamMember.mockResolvedValue({
+      userId: activeAccess.id,
+      roleName: activeAccess.role,
+      status: activeAccess.status,
+      role: { permissions: activeAccess.permissions },
+    })
+
+    await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
+      path: '/login',
+    })
   })
 
   it('uses safe display defaults when identity hydration returns no data', async () => {

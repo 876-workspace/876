@@ -11,6 +11,7 @@ export type BillingCustomerOutboxRow = {
   email: string | null
   occurredAt: bigint
   status: string
+  customerStatus: string
   attemptCount: number
   availableAt: bigint
   lockedAt: bigint | null
