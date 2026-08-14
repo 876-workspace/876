@@ -394,13 +394,14 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
     }
   }
 
-  // Push name edits back to WorkOS (source of record) so a later sync does not revert
-  // them. Best-effort: a WorkOS hiccup must not fail an update the DB already applied;
-  // inbound WorkOS webhooks reconcile eventually.
-  // Follow-up: email changes are deferred — they carry WorkOS verification semantics.
-  const namePushed =
-    updateData.firstName !== undefined || updateData.lastName !== undefined
-  if (namePushed && localSaveSucceeded && updated.workosUserId) {
+  // Push profile edits back to WorkOS (source of record) so a later sync does not
+  // revert them. Best-effort: a WorkOS hiccup must not fail an update the DB already
+  // applied; inbound WorkOS webhooks reconcile eventually.
+  const profilePushed =
+    updateData.firstName !== undefined ||
+    updateData.lastName !== undefined ||
+    updateData.email !== undefined
+  if (profilePushed && localSaveSucceeded && updated.workosUserId) {
     try {
       const settings = getSettings()
       const authProvider = getAuthProvider(settings)
@@ -410,6 +411,9 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
           : {}),
         ...(updateData.lastName !== undefined
           ? { lastName: updateData.lastName as string | null }
+          : {}),
+        ...(updateData.email !== undefined
+          ? { email: updateData.email as string | null }
           : {}),
       })
     } catch (error) {

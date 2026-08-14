@@ -202,7 +202,11 @@ export class WorkOsAuthProvider {
 
   async updateUser(
     userId: string,
-    params: { firstName?: string | null; lastName?: string | null }
+    params: {
+      firstName?: string | null
+      lastName?: string | null
+      email?: string | null
+    }
   ): Promise<ProviderUser> {
     try {
       return toProviderUser(await this.client.updateUser(userId, params))

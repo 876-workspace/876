@@ -157,7 +157,27 @@ describe('PATCH /users/:userId', () => {
     })
   })
 
-  it('does not push WorkOS when the update has no name field', async () => {
+  it('pushes a changed email to WorkOS', async () => {
+    const updated = userRow({ email: 'alex@example.com' })
+    repository.updateUser.mockResolvedValue(updated)
+
+    const response = await request(createApp())
+      .patch('/users/user_2kL9')
+      .set(ADMIN_HEADERS)
+      .send({ email: 'alex@example.com' })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      data: serializedUser(updated),
+      error: null,
+    })
+    expect(authProvider.updateUser).toHaveBeenCalledTimes(1)
+    expect(authProvider.updateUser).toHaveBeenCalledWith('user_workos_1', {
+      email: 'alex@example.com',
+    })
+  })
+
+  it('does not push WorkOS when no pushable profile field changed', async () => {
     const updated = userRow({ status: 'suspended' })
     repository.updateUser.mockResolvedValue(updated)
 

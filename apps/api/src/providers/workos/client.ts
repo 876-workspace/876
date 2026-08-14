@@ -297,11 +297,16 @@ export class WorkOsClient {
 
   updateUser(
     userId: string,
-    params: { firstName?: string | null; lastName?: string | null }
+    params: {
+      firstName?: string | null
+      lastName?: string | null
+      email?: string | null
+    }
   ): Promise<Record<string, unknown>> {
     const body: Payload = {}
     if (params.firstName !== undefined) body.first_name = params.firstName
     if (params.lastName !== undefined) body.last_name = params.lastName
+    if (params.email !== undefined) body.email = params.email
     return this.put(`/user_management/users/${userId}`, body)
   }
 
