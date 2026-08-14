@@ -40,6 +40,12 @@ export const del = (orgId: string) =>
     }
   )
 
+export const restore = (orgId: string) =>
+  request<AdminOrganization>(
+    `/api/organizations/${encodeURIComponent(orgId)}/restore`,
+    { method: 'POST' }
+  )
+
 export const purge = (orgId: string) =>
   request<AdminDeletedOrganization>(
     `/api/organizations/${encodeURIComponent(orgId)}/purge`,
@@ -113,6 +119,7 @@ export const organizations = {
   update,
   del,
   delete: del,
+  restore,
   purge,
   search,
   startImageUpload,
