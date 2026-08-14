@@ -71,7 +71,7 @@ honors the incoming status. Reconcile includes deleted orgs as `ARCHIVED`.
      `CustomerStatus(str(body["status"]))` (import from `db.models.generated.enums`).
    - In `ensure_core_customer`: when `existing is None` **and** the requested status is
      `ARCHIVED`, return a no-op acknowledgement (`{"object": "acknowledgement", "id": None,
-     "created": False}`) — never materialize a customer that was never active. When existing
+"created": False}`) — never materialize a customer that was never active. When existing
      is not None, the status update flows through the existing setattr loop.
 
 ## Tests (write real, failing-capable tests per .claude/rules/testing.md)

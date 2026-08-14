@@ -40,6 +40,7 @@ the harness used by `users-batch.test.ts` in the same folder.
   call `deleteProviderUser`, asserts `enqueueCustomerArchiveForUser` invoked before purge.
 
 ## 3. `ensureFromWorkos` disabled-account rejection — new file
+
 `apps/api/src/modules/auth/__tests__/ensure-from-workos.test.ts`
 
 Behavior in `apps/api/src/modules/auth/auth.repository.ts` (`ensureFromWorkos` +
