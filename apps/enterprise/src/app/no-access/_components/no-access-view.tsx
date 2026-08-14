@@ -1,18 +1,33 @@
 'use client'
 
 import Link from 'next/link'
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
+import { useState } from 'react'
+
+import { $876 } from '@/lib/876'
 
 export function NoAccessView({ orgSlug }: { orgSlug?: string }) {
+  const [signingOut, setSigningOut] = useState(false)
+
   const heading = orgSlug
     ? `You don't have access to this workspace`
     : `No workspace access`
 
   const body = orgSlug
-    ? `Your account isn't a member of the ${orgSlug} workspace. Ask a workspace admin to invite you, or switch to an account that has access.`
-    : `Your account doesn't have an active membership in any workspace. Ask a workspace admin to invite you, or switch to an account that has access.`
+    ? `Your account isn't a member of the ${orgSlug} workspace. Ask a workspace admin to invite you, or sign out and use an account that has access.`
+    : `Your account doesn't have an active membership in any workspace. Ask a workspace admin to invite you, or sign out and use an account that has access.`
 
-  const switchHref = `/login?${AUTH_RETURN_TO_PARAM}=/`
+  // A real sign-out: clear the session *before* navigating. A plain link to
+  // /login would leave the session active and the login page would redirect
+  // straight back here (ADR-013 — no-access UX standard).
+  async function handleSignOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await $876.auth.logout()
+    } finally {
+      window.location.href = '/login'
+    }
+  }
 
   return (
     <main className="bg-background text-foreground grid min-h-dvh place-items-center px-4 py-10">
@@ -38,12 +53,14 @@ export function NoAccessView({ orgSlug }: { orgSlug?: string }) {
         <p className="text-muted-foreground mt-2 text-sm leading-6">{body}</p>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-          <Link
-            href={switchHref}
-            className="bg-foreground text-background hover:bg-foreground/90 inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-semibold transition-colors"
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="bg-foreground text-background hover:bg-foreground/90 inline-flex h-9 items-center justify-center rounded-full px-4 text-xs font-semibold transition-colors disabled:opacity-60"
           >
-            Change account
-          </Link>
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
           <Link
             href={process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}
             className="border-border bg-background hover:bg-accent inline-flex h-9 items-center justify-center rounded-full border px-4 text-xs font-semibold transition-colors"

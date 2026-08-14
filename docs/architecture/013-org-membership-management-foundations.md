@@ -59,7 +59,8 @@ future apps (`.claude/rules/app-layout.md`):
   `settings/team/invite` (invite) — dedicated pages, not dialogs.
 - List: `ResourceToolbar` + a status-filtered member table (active / invited /
   suspended). The Add action is **Invite**, not "create user" — you never create
-  an identity from a team screen, you invite an existing/為-to-exist account.
+  an identity from a team screen, you invite an existing (or to-be-created)
+  account.
 - A member row shows the person (tier-1), their role (a `<Badge>`), and status;
   role changes and removal are member-detail actions.
 - Console's access board (`apps/console/src/components/access/`) is the reference
