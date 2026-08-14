@@ -8,6 +8,7 @@ import {
   Lock,
   MoreHorizontalIcon,
   Pencil,
+  RefreshCw,
   Trash,
 } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
@@ -24,11 +25,13 @@ import type { AdminUser } from '@876/admin'
 import { BanUserDialog } from './ban-user-dialog'
 import { DeleteUserDialog } from './delete-user-dialog'
 import { PurgeUserDialog } from './purge-user-dialog'
+import { RestoreUserDialog } from './restore-user-dialog'
 
 type Props = { user: AdminUser }
 
 export function UserActions({ user }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
   const [purgeOpen, setPurgeOpen] = useState(false)
   const [banOpen, setBanOpen] = useState(false)
   const isDeleted = user.deleted_at !== null
@@ -38,10 +41,19 @@ export function UserActions({ user }: Props) {
   const editHref = `/users/${user.username ?? user.id}/edit`
 
   const destructiveItems = isDeleted ? (
-    <DropdownMenuItem variant="destructive" onClick={() => setPurgeOpen(true)}>
-      <Trash className="size-4" />
-      Purge
-    </DropdownMenuItem>
+    <>
+      <DropdownMenuItem onClick={() => setRestoreOpen(true)}>
+        <RefreshCw className="size-4" />
+        Restore
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        variant="destructive"
+        onClick={() => setPurgeOpen(true)}
+      >
+        <Trash className="size-4" />
+        Purge
+      </DropdownMenuItem>
+    </>
   ) : (
     <>
       <DropdownMenuItem
@@ -152,6 +164,12 @@ export function UserActions({ user }: Props) {
       <DeleteUserDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
+        userId={user.id}
+        displayName={displayName}
+      />
+      <RestoreUserDialog
+        open={restoreOpen}
+        onOpenChange={setRestoreOpen}
         userId={user.id}
         displayName={displayName}
       />

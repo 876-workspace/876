@@ -183,6 +183,17 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
     },
 
     /**
+     * Restores a soft-deleted organization (clears the tombstone, re-opens closed
+     * memberships, re-activates the Billing customer). Returns the live organization.
+     */
+    restore(orgId: string) {
+      return adminRequest<AdminOrganization>(runtime, {
+        method: 'POST',
+        path: `/organizations/${orgId}/restore`,
+      })
+    },
+
+    /**
      * Returns memberships for an organization.
      *
      * @param orgId - The ID of the organization.

@@ -269,10 +269,10 @@ export async function updateOrganization(
 export async function deleteOrganization(
   id: string,
   deletedBy: string | null,
-  reason: string | null
+  reason: string | null,
+  now: bigint = BigInt(Math.floor(Date.now() / 1000))
 ): Promise<OrganizationRow | null> {
   try {
-    const now = BigInt(Math.floor(Date.now() / 1000))
     const row = await prisma.organization.update({
       where: { id },
       data: {
@@ -302,14 +302,58 @@ export async function deleteOrganization(
  * membership in another org, survives. Returns the number of memberships closed.
  */
 export async function softDeleteMembershipsForOrg(
-  organizationId: string
+  organizationId: string,
+  now: bigint = BigInt(Math.floor(Date.now() / 1000))
 ): Promise<number> {
-  const now = BigInt(Math.floor(Date.now() / 1000))
   const result = await prisma.membership.updateMany({
     where: { organizationId, deletedAt: null },
     data: { deletedAt: now, updatedAt: now },
   })
   return result.count
+}
+
+/**
+ * Restore the memberships an org Delete closed. Matches on the exact `deletedAt`
+ * the cascade wrote (the shared delete timestamp), so a member removed *before*
+ * the org was deleted — with a different `deletedAt` — is correctly left closed.
+ */
+export async function restoreMembershipsForOrg(
+  organizationId: string,
+  closedAt: bigint
+): Promise<number> {
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const result = await prisma.membership.updateMany({
+    where: { organizationId, deletedAt: closedAt },
+    data: { deletedAt: null, updatedAt: now },
+  })
+  return result.count
+}
+
+/** Clear an org's tombstone. Returns the restored row, or null if it does not exist. */
+export async function restoreOrganization(
+  id: string
+): Promise<OrganizationRow | null> {
+  try {
+    const now = BigInt(Math.floor(Date.now() / 1000))
+    const row = await prisma.organization.update({
+      where: { id },
+      data: {
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+        updatedAt: now,
+      },
+      select: ORGANIZATION_SELECT,
+    })
+    return row as unknown as OrganizationRow
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    )
+      return null
+    throw error
+  }
 }
 
 export async function purgeOrganization(id: string): Promise<boolean> {

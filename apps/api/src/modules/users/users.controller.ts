@@ -11,7 +11,10 @@ import { getAuthProvider } from '@/providers/workos/adapter'
 import type { ProviderUser } from '@/providers/auth'
 import { deleteProviderUser } from '@/services/identity-sync'
 import { resolveMemberPermissions } from '@/services/provisioning'
-import { enqueueCustomerArchiveForUser } from '@/services/billing-customer-sync'
+import {
+  enqueueCustomerArchiveForUser,
+  enqueueCustomerEnsureForUser,
+} from '@/services/billing-customer-sync'
 import { createBillingCustomerSyncRepository } from '@/services/billing-customer-sync.repository'
 
 import * as repo from './users.repository'
@@ -460,6 +463,37 @@ async function archiveBillingCustomerForUser(user: {
   }
 }
 
+async function ensureBillingCustomerForUser(user: {
+  id: string
+  email: string | null
+  name?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  username?: string | null
+  phone?: string | null
+}): Promise<void> {
+  try {
+    await enqueueCustomerEnsureForUser(
+      { repository: createBillingCustomerSyncRepository() },
+      {
+        id: user.id,
+        email: user.email ?? null,
+        name: user.name ?? null,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
+        username: user.username ?? null,
+        phone: user.phone ?? null,
+      },
+      nowUnixSeconds()
+    )
+  } catch (error) {
+    log.error(
+      { err: error, user_id: user.id },
+      'users.ensure_billing_customer_failed'
+    )
+  }
+}
+
 export async function purgeUser(req: Request, res: Response): Promise<void> {
   const { user_id } = req.params as { user_id: string }
   const user = await repo.findUserById(user_id, true)
@@ -482,6 +516,37 @@ export async function purgeUser(req: Request, res: Response): Promise<void> {
   log.info({ user_id, email: user.email }, 'users.purge')
 
   res.json({ object: 'user', id: user_id, deleted: true })
+}
+
+export async function restoreUser(req: Request, res: Response): Promise<void> {
+  const { user_id } = req.params as { user_id: string }
+  const user = await repo.findUserById(user_id, true)
+  if (!user)
+    throw new AppHttpError({
+      code: 'user/not-found',
+      message: 'No user exists with the provided identifier.',
+      httpStatus: 404,
+    })
+
+  // Idempotent: a live user is returned as-is with no side effects.
+  if (user.deletedAt === null) {
+    res.json(serializers.serializeUser(user))
+    return
+  }
+
+  const restored = await repo.restoreUser(user_id)
+  if (!restored)
+    throw new AppHttpError({
+      code: 'user/not-found',
+      message: 'No user exists with the provided identifier.',
+      httpStatus: 404,
+    })
+
+  await ensureBillingCustomerForUser(restored)
+
+  log.info({ user_id, email: restored.email }, 'users.restore')
+
+  res.json(serializers.serializeUser(restored))
 }
 
 export async function banUser(req: Request, res: Response): Promise<void> {

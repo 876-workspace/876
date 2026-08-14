@@ -246,6 +246,17 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
     },
 
     /**
+     * Restores a soft-deleted user (clears the tombstone, re-activates the Billing
+     * customer). The user must sign in again. Returns the live user.
+     */
+    restore(userId: string) {
+      return adminRequest<AdminUser>(runtime, {
+        method: 'POST',
+        path: `/users/${userId}/restore`,
+      })
+    },
+
+    /**
      * Checks whether a username can be claimed (format + reserved list + already
      * taken, including soft-deleted holders).
      *

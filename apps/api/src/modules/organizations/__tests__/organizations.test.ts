@@ -179,6 +179,7 @@ vi.mock('@/services/identity-sync', () => ({
 
 vi.mock('@/services/billing-customer-sync', () => ({
   enqueueCustomerArchiveForOrganization,
+  enqueueCustomerEnsureForOrganization: vi.fn(),
 }))
 
 vi.mock('@/services/billing-customer-sync.repository', () => ({

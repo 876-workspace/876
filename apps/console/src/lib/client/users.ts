@@ -56,6 +56,11 @@ export const del = (userId: string) =>
     method: 'DELETE',
   })
 
+export const restore = (userId: string) =>
+  request<AdminUser>(`/api/users/${encodeURIComponent(userId)}/restore`, {
+    method: 'POST',
+  })
+
 export const purge = (userId: string) =>
   request<AdminDeletedUser>(`/api/users/${encodeURIComponent(userId)}/purge`, {
     method: 'DELETE',
@@ -218,6 +223,7 @@ export const users = {
   update,
   del,
   delete: del,
+  restore,
   purge,
   createProfile,
   retrieveProfile,

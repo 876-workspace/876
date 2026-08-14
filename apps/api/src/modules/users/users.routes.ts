@@ -506,6 +506,22 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
     handler: controller.purgeUser,
   })
 
+  api.post({
+    path: '/:user_id/restore',
+    security: 'admin',
+    operationId: 'users-restore_user',
+    summary: 'Restore user',
+    description:
+      'Restores a soft-deleted user: clears the tombstone and re-registers the ' +
+      'Billing customer as active. The user must sign in again.',
+    request: { params: userIdParamsSchema },
+    responses: {
+      200: { description: 'User restored.', schema: userSchema },
+      404: docs.DELETE_USER_RESPONSES[404],
+    },
+    handler: controller.restoreUser,
+  })
+
   api.get({
     path: '/:user_id',
     security: 'admin',

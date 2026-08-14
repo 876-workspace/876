@@ -475,6 +475,25 @@ export function registerOrganizationRoutes(resolveGuards: GuardResolver) {
     handler: controller.purgeOrganization,
   })
 
+  api.post({
+    path: '/:organization_id/restore',
+    security: 'admin',
+    operationId: 'organizations-restore_organization',
+    summary: 'Restore organization',
+    description:
+      'Restores a soft-deleted organization: clears the tombstone, re-opens the ' +
+      'memberships the delete closed, and re-registers the Billing customer as active.',
+    request: { params: organizationIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Organization restored.',
+        schema: organizationSchema,
+      },
+      404: { description: 'Organization not found.' },
+    },
+    handler: controller.restoreOrganization,
+  })
+
   api.get({
     path: '/:organization_id',
     security: 'admin',

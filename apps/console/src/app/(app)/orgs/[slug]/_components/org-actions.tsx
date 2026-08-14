@@ -6,6 +6,7 @@ import {
   ArrowDownFromLine,
   MoreHorizontalIcon,
   Pencil,
+  RefreshCw,
   Trash,
 } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
@@ -21,19 +22,30 @@ import {
 import type { AdminOrganization } from '@876/admin'
 import { DeleteOrgDialog } from './delete-org-dialog'
 import { PurgeOrgDialog } from './purge-org-dialog'
+import { RestoreOrgDialog } from './restore-org-dialog'
 
 type Props = { org: AdminOrganization }
 
 export function OrgActions({ org }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
   const [purgeOpen, setPurgeOpen] = useState(false)
   const isDeleted = org.deleted_at !== null
 
   const destructiveItems = isDeleted ? (
-    <DropdownMenuItem variant="destructive" onClick={() => setPurgeOpen(true)}>
-      <Trash className="size-4" />
-      Purge
-    </DropdownMenuItem>
+    <>
+      <DropdownMenuItem onClick={() => setRestoreOpen(true)}>
+        <RefreshCw className="size-4" />
+        Restore
+      </DropdownMenuItem>
+      <DropdownMenuItem
+        variant="destructive"
+        onClick={() => setPurgeOpen(true)}
+      >
+        <Trash className="size-4" />
+        Purge
+      </DropdownMenuItem>
+    </>
   ) : (
     <>
       <DropdownMenuItem
@@ -119,6 +131,12 @@ export function OrgActions({ org }: Props) {
       <DeleteOrgDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
+        orgId={org.id}
+        orgName={org.name ?? ''}
+      />
+      <RestoreOrgDialog
+        open={restoreOpen}
+        onOpenChange={setRestoreOpen}
         orgId={org.id}
         orgName={org.name ?? ''}
       />

@@ -12,6 +12,7 @@ vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 vi.mock('@/lib/auth/billing-context', () => ({
   getWorkspaceContext: mocks.getWorkspaceContext,
 }))
+vi.mock('@/lib/client/request', () => ({ request: vi.fn() }))
 
 import NoAccessPage from './page'
 
@@ -35,6 +36,10 @@ describe('NoAccessPage', () => {
 
     expect(
       screen.getByRole('heading', { name: 'Billing access is restricted' })
+    ).toBeTruthy()
+    expect(screen.getByRole('button', { name: /sign out/i })).toBeTruthy()
+    expect(
+      screen.getByRole('link', { name: /go to my 876 account/i })
     ).toBeTruthy()
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
