@@ -219,6 +219,14 @@ export async function syncUserFromWorkos(params: {
   return true
 }
 
+/** Resolve a local user id from a WorkOS user id, or null when none matches. */
+export async function findLocalUserIdByWorkosId(
+  workosUserId: string
+): Promise<string | null> {
+  const user = await repo.findUserByWorkosId(workosUserId)
+  return user ? user.id : null
+}
+
 export async function requireUser(
   userId: string
 ): Promise<import('./users.serializers').UserRow> {
