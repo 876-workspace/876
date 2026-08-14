@@ -14,3 +14,8 @@ export {
   serializeSubscription,
   type SubscriptionRow,
 } from './organizations.serializers'
+
+export {
+  syncOrganizationFromWorkos,
+  findLocalOrgIdByWorkosId,
+} from './organizations.service'
