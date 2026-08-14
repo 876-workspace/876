@@ -1,55 +1,113 @@
-# API Backend Rules
+# Express API Backend Rules
 
-Read this before editing `apps/api`, API contracts, OpenAPI docs, provider integrations, repositories, or admin/SDK methods that call the API.
+Read this before editing `apps/api`, `apps/couriers-api`, `apps/billing-api`,
+API contracts, OpenAPI docs, provider integrations, repositories, or typed
+client methods.
 
-## Structure
+## Fixed stack and assembly
 
-- `apps/api/main.py` creates the FastAPI app, installs CORS, registers the `AppHTTPException` handler, includes `api/v1.py`, and applies `core/openapi.py`.
-- `apps/api/api/v1.py` is the router composition layer. Add domain routers there; do not put endpoint logic in it.
-- Domain modules live in `apps/api/domains/<domain>/`:
-  - `router.py` owns FastAPI routes, dependency wiring, HTTP status codes, and serialization helpers.
-  - `schemas.py` owns Pydantic request/response models, field descriptions, aliases, examples, and Stripe-style resource shapes.
-  - `docs.py` owns route-level OpenAPI metadata: summaries, descriptions, response maps, and operation documentation.
-- Database models stay in `apps/api/db/models.py`; database access goes through `apps/api/db/repositories/`.
-- Shared backend utilities stay in `apps/api/core/`, provider adapters in `apps/api/providers/`, and narrow helpers in `apps/api/utils/`.
+The canonical data-service stack is Express 5, strict TypeScript/ESM, Node
+22+, Prisma 7, Zod 4, OpenAPI generated from Zod, Vitest/Supertest, Pino, and
+Cloudflare Containers.
 
-## Route Design
+`src/app.ts` builds the application in this order: Helmet, explicit CORS,
+`trust proxy`, request context, bounded JSON/form parsing, compression,
+response envelope, generated OpenAPI, central route composition, final 404,
+and final error handling. `src/server.ts` owns process startup and shutdown.
 
-- Keep route docs out of `router.py`; reference constants from the domain `docs.py`.
-- In `docs.py`, group route docs by operation type in alphabetical order and keep each endpoint block ordered as `*_SUMMARY`, `*_DESCRIPTION`, then `*_RESPONSES`.
-- Keep schema field docs and examples in `schemas.py`; do not move Pydantic `Field(...)` descriptions into `docs.py`.
-- Use `AppHTTPException` for expected client-safe failures. Do not return raw provider errors, database errors, status fields, secrets, tokens, or unsafe metadata to clients.
-- Route handlers should return Pydantic response models or `ListObject[T]`; use deletion tombstones such as `{ object: "user", id, deleted: true }`.
-- Stub endpoints may define documented schemas but must not add repository, DB, or provider logic until implemented.
-- For org-to-app subscription endpoints, use the `subscriptions` table/`Subscription` model (not `OrgFeature`/features); place under `AdminDep` in `domains/organizations/router.py`; include a batch endpoint (`/app-access/batch?organization_ids=...`) to avoid N+1 in list views. Use `selectinload` on the `app` relationship so `app.slug` is available during serialization. Use `AppHTTPException(http_status_code=...)` — not `status_code=`.
+## Bounded modules
 
-## Auth And Boundaries
+Normal domains live at `src/modules/<domain>/` and contain only the layers the
+domain needs:
 
-- `require_api_key` protects the top-level protected router and validates `876_app_secret_*` API keys.
-- `AdminDep` requires `x-internal-key` to match `API_INTERNAL_KEY`; when the key is empty, admin routes reject requests.
-- `SessionDep` and OAuth bearer handling belong in `core/security.py` and OAuth/auth domains.
-- All database access, provider calls, and business logic belong in the owning FastAPI service (`apps/api`, `apps/billing-api`, or `apps/widgets-api`); Next.js apps must call through `@876/sdk`, `@876/admin`, `@876/billing`, or the owning BFF, never raw FastAPI fetches.
-- `@876/admin` server-side calls use `internalKey: process.env.API_INTERNAL_KEY`; never expose this key to browser code.
-- **App-local datastores (scoped exception).** Core identity and shared-platform data always goes through `apps/api`. However, an app's own _local operational data_ — data that is internal to exactly one app and meaningless to the rest of the platform — may use that app's own datastore instead. Rules: (1) it must never store or duplicate identity tables (users, orgs, memberships, features); (2) any reference to a core 876 entity must be an opaque ID column with **no cross-DB foreign key**; (3) imports must be server-only and must not be exposed to the browser. The first instance is Console's in-app Prisma datastore (`apps/console/prisma/`). See `.claude/rules/platform-services.md` for the three-bucket placement model and worked examples.
-- **Console role/permission catalog relocation.** The Console user/access roster and role definitions (`consoledb.user`, `consoledb.role` in `apps/console/src/lib/db/`) are being moved **out** of the identity API and into Console's in-app datastore. The identity API no longer owns "who can use Console" — that authorization happens app-locally in Console's route handlers before calling `$876`.
+- `*.routes.ts`: path, security declaration, validation, response contracts,
+  OpenAPI registration, and controller selection.
+- `*.controller.ts`: read already-validated values, call one service operation,
+  select the HTTP status, and return the response.
+- `*.service.ts`: orchestration, business rules, transactions exposed by the
+  repository, and calls to public module/provider interfaces.
+- `*.repository.ts` or `repositories/`: all Prisma/database access.
+- `*.schemas.ts`, `*.serializers.ts`, and `*.docs.ts`: runtime contracts, wire
+  representation, and operation documentation.
+- `index.ts`: the module's public interface. Never import another module's
+  internal files.
 
-## Contracts
+Do not create top-level `routes/`, `controllers/`, `services/`, or
+`repositories/` collections. Do not recreate dynamic dispatchers or generic
+ORM resource services. Related resource families may share one bounded module
+with explicit sub-repositories.
 
-- Every app-owned serialized resource includes a literal `object` discriminator.
-- Lists use `ListObject[T]`: `{ object: "list", data, has_more, url, total_count }`.
-- Cursor pagination uses `starting_after` / `ending_before` with item IDs and repository cursor helpers.
-- App-owned timestamps are Unix seconds.
-- SDK/API boundaries use `{ data, error }` envelopes where the client package owns transport results.
-- Changing API contracts usually requires updating `packages/admin/src/client.ts` or `packages/sdk/src/client.ts` and their tests.
+## Layer boundaries
 
-## Tests And Checks
+- Controllers must not import Prisma or contain business rules.
+- Services must not import Express request/response types.
+- Only repositories may import the generated Prisma client.
+- Providers own outbound service/vendor transport; provider SDK calls do not
+  belong in repositories or controllers.
+- Cross-module calls use public `index.ts` exports. New cross-module database
+  joins are prohibited.
+- Next.js applications never import a data service's Prisma client and never
+  duplicate financial/provider business logic.
 
-- API checks from repo root:
-  - `pnpm --filter @876/api typecheck`
-  - `pnpm --filter @876/api test`
-  - `pnpm --filter @876/api lint`
-- Direct checks from `apps/api`:
-  - `python -m mypy . tests`
-  - `python -m pytest`
-  - `python -m ruff check .`
-- Add or update tests under `apps/api/tests` when route behavior, auth dependencies, OpenAPI output, or response schemas change.
+Dependency-cruiser enforces these rules; every data-service change must run its
+`boundaries` script.
+
+## Routes, auth, and contracts
+
+- Declare route security once in the typed route specification. The same
+  declaration drives guards, principal requirements, OpenAPI, and tests.
+- Attach guards per route, never with a broad `router.use()`, so nonexistent
+  paths return 404 rather than credential errors.
+- Store verified principals outside writable request state.
+- Use Zod for params/query/body validation and generate OpenAPI from the same
+  declarations.
+- Use the central error and envelope middleware. Expected client-safe errors
+  must not expose HTTP status fields, raw database/provider errors, secrets, or
+  tokens.
+- Every app-owned resource has a literal `object` discriminator. Lists use
+  `{ object: "list", data, has_more, url, total_count }`; timestamps are Unix
+  seconds and pagination uses item-ID cursors.
+- Existing versioned contracts are compatibility oracles. Do not change casing,
+  operation IDs, statuses, errors, or response shapes during a framework/ORM
+  migration unless the compatibility change is intentional and tested.
+
+Billing has four credential kinds (`internal`, `scheduler`, `app_api_key`, and
+`oauth`) and requires exactly one supplied credential. Its integration guard
+must enforce token/app identity, membership, tenant state, OAuth scope, and
+finance-connection scope. Integration creates preserve byte-compatible
+idempotency canonicalization and hash behavior.
+
+## Database and financial safety
+
+- Prisma schema and migrations belong to the service that owns the data.
+- Preserve existing mapped table/column names and Decimal/BigInt semantics.
+- Do not combine an ORM/framework migration with a table redesign.
+- Billing uses one writer lease and never dual-writes. Recurring workers must
+  preserve row locking, `SKIP LOCKED`, billing-run idempotency, rollback, and
+  retry behavior.
+- Financial calculations and idempotency canonicalization require frozen
+  cross-implementation fixtures, not Node-only self-consistency tests.
+
+## Required checks
+
+For each affected Express service run:
+
+```bash
+pnpm --filter <workspace> typecheck
+pnpm --filter <workspace> lint
+pnpm --filter <workspace> boundaries
+pnpm --filter <workspace> test
+pnpm --filter <workspace> build
+```
+
+Billing changes also run:
+
+```bash
+pnpm --filter @876/billing-api db:validate
+pnpm --filter @876/billing-api db:drift
+pnpm --filter @876/billing-api api:contract:check
+```
+
+Tests that cover HTTP behavior must exercise the assembled Express middleware
+with Supertest. Repository tests may use narrow fakes, but route/auth/envelope
+tests must not call controllers directly.

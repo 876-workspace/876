@@ -400,7 +400,7 @@ const createdSubscription = await $876.billing.subscriptions.create({
 
 **Commands:** `pnpm --filter @876/billing typecheck`, `pnpm --filter @876/billing test` (6 suites, 88 tests)
 
-**Boundaries:** Browser never uses admin/integration (secret key). Money/logic lives in `apps/billing-api` (FastAPI), not in Next app.
+**Boundaries:** Browser never uses admin/integration credentials. Money and financial logic live in the Express `apps/billing-api` data plane, not in the Next.js app.
 
 ---
 
@@ -523,7 +523,7 @@ import { cn } from '@876/ui/lib/utils'
 | `@876/console`                        | `apps/console`     | `createConsole876Client` (`@876/admin` + `@876/couriers/admin` + billing/storage/widgets compat) | yes (`service.*`) | Control plane. `service.team.*` local, `$876.*` remote per §4.2. No `$couriers` root.                          |
 | `@876/billing-app`                    | `apps/billing`     | `create876Client` (tenant) + `service.tenants.create` local                                      | yes               | Finance workspaces; `service.tenants.create` is public `create`, internal `runProvisioning`/`ensureWorkspace`. |
 | `apps/api`                            | `apps/api`         | FastAPI (`main.py` → `domains/*/router.py`)                                                      | owns Core DB      | Auth, users, orgs, memberships, features, apps.                                                                |
-| `apps/billing-api`                    | `apps/billing-api` | FastAPI                                                                                          | owns Billing DB   | Financial data plane, `POST /api/v1/admin/.../ensure` backing Billing `create()`.                              |
+| `apps/billing-api`                    | `apps/billing-api` | Express 5 + TypeScript + Prisma                                                                  | owns Billing DB   | Financial data plane, provider workflows, scheduled billing, and `POST /api/v1/admin/.../ensure`.              |
 | `apps/couriers` / `apps/couriers-api` | `apps/couriers*`   | Next + Express                                                                                   | owns Couriers DB  | `customers.create` orchestrates Billing + mailbox.                                                             |
 | `apps/widgets-api`                    | `apps/widgets-api` | Next + Prisma                                                                                    | owns Widgets DB   | `notes`, `collections`.                                                                                        |
 

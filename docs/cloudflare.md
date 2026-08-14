@@ -30,7 +30,6 @@ Prisma Postgres databases.
 | `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API       | `DATABASE_URL`         | `API_DATABASE_URL`      |
 | `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local  | `CONSOLE_DATABASE_URL` | `CONSOLE_DATABASE_URL`  |
 | `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local | `DATABASE_URL`         | `COURIERS_DATABASE_URL` |
-| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing app        | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
 | `db_cmsjqva230ecs2mdvu7bnc88p` | Billing API        | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
 | `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API        | `WIDGETS_DATABASE_URL` | `WIDGETS_DATABASE_URL`  |
 | `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API        | `STORAGE_DATABASE_URL` | `STORAGE_DATABASE_URL`  |
@@ -229,7 +228,10 @@ Health: `GET /health` on the Worker URL (proxied into the container).
 
 - Image: `apps/billing-api/Dockerfile` (port 4004).
 - Cron: `*/5 * * * *` → Worker `scheduled` handler (billing sweep).
-- Keep `BILLING_WRITER=none` until finance cutover (see billing cutover docs).
+- Prisma migrations run from the deployment workflow before the container is
+  deployed; the Billing presentation Worker never runs database migrations.
+- Keep `BILLING_WRITER=none` and `BILLING_SWEEP_ENABLED=false` until finance
+  cutover (see the Billing API cutover runbook).
 
 ---
 
@@ -284,13 +286,14 @@ Couriers, affected users are routed to onboarding and see
 **876 console:** `API_876_KEY`, `API_INTERNAL_KEY`, `API_URL`, `BILLING_*`,
 `CONSOLE_DATABASE_URL`, `NEXT_PUBLIC_*`, `WIDGETS_*`, `WORKOS_COOKIE_PASSWORD`.
 
-**876-billing:** `API_INTERNAL_KEY`, `API_URL`, `BILLING_*`, `SESSION_*`,
-`NEXT_PUBLIC_*`, `WIDGETS_*`.
+**876-billing:** `API_INTERNAL_KEY`, `API_URL`, `BILLING_API_876_KEY`,
+`BILLING_INTERNAL_KEY`, `SESSION_*`, `NEXT_PUBLIC_*`, `WIDGETS_*`. This Worker
+has no Billing database binding.
 
 **876-billing-api:** `API_URL`, `BILLING_API_876_KEY`,
 `BILLING_API_PRIMARY_INSTANCE`, `BILLING_DATABASE_URL`,
-`BILLING_INTERNAL_KEY`, `CORS_ALLOWED_ORIGINS`, `ENVIRONMENT`, `LOG_LEVEL`,
-`PORT`.
+`BILLING_INTERNAL_KEY`, `BILLING_SCHEDULER_KEY`, `BILLING_SWEEP_ENABLED`,
+`BILLING_WRITER`, `CORS_ALLOWED_ORIGINS`, `ENVIRONMENT`, `LOG_LEVEL`, `PORT`.
 
 **876-couriers-api:** `PORT`, `ENVIRONMENT`, `LOG_LEVEL`, `DATABASE_URL`,
 `API_876_KEY`, `API_INTERNAL_KEY`, `CORS_ALLOWED_ORIGINS`,

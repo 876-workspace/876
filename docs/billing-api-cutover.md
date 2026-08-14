@@ -1,100 +1,87 @@
-# Billing API database cutover
+# Billing API Express cutover
 
-The Billing backend migration uses one explicit writer lease and never dual
-writes. The Next.js backend and FastAPI service may run together for shadow
-reads, but only the runtime named by `BILLING_WRITER` may mutate financial
-data.
+The Billing migration uses a single explicit writer lease and never dual
+writes. The old FastAPI deployment and the Express candidate may serve shadow
+reads during rollout, but only one runtime may mutate financial data.
 
 ## Controls
 
-| Variable                      | Runtime             | Purpose                                           |
-| ----------------------------- | ------------------- | ------------------------------------------------- |
-| `BILLING_WRITER`              | Billing UI + API    | `legacy`, `fastapi`, or `none`                    |
-| `BILLING_DATABASE_URL`        | Billing API         | Database owned by FastAPI after cutover           |
-| `BILLING_LEGACY_DATABASE_URL` | Reconciliation only | Frozen source database used for digest comparison |
+| Variable | Purpose |
+| --- | --- |
+| `BILLING_WRITER` | `fastapi`, `express`, or `none`; `legacy` remains accepted only for a pre-migration UI rollback |
+| `BILLING_DATABASE_URL` | Runtime Billing PostgreSQL connection |
+| `BILLING_DIRECT_DATABASE_URL` | Direct PostgreSQL connection for Prisma migrations |
+| `BILLING_LEGACY_DATABASE_URL` | Optional read-only source for one-off reconciliation |
+| `BILLING_SWEEP_ENABLED` | Cloudflare scheduler switch; keep `false` until Express owns writes |
+| `BILLING_SCHEDULER_KEY` | Dedicated credential for `/internal/billing-sweep` |
 
-FastAPI rejects `POST`, `PUT`, `PATCH`, and `DELETE` below `/api/v1` unless
-the writer is `fastapi`. The legacy Prisma client rejects every model mutation
-unless the writer is `legacy`. `none` therefore creates a fail-closed freeze
-window.
+All mutating `/api/v1` requests fail with `billing/writer-inactive` unless the
+runtime owns the lease. `none` is the fail-closed handoff state.
 
-## Prepare
+## Preflight
 
-1. Deploy both runtimes with `BILLING_WRITER=legacy`. FastAPI serves shadow
-   reads but rejects mutations.
-2. Set the FastAPI `BILLING_DATABASE_URL`.
-   - For the existing Billing database, run the adoption migration in place.
-   - For a new database, restore the source with PostgreSQL backup/restore so
-     enum types, constraints, and transaction boundaries are retained. Do not
-     copy financial rows through application APIs.
-3. Run the schema adoption and confirm the expected revision:
+1. Deploy Express with `BILLING_WRITER=none` and
+   `BILLING_SWEEP_ENABLED=false`.
+2. Apply the Prisma ledger to the existing database and verify no drift:
 
    ```bash
-   pnpm --filter @876/billing-api db:migrate
+   pnpm --filter @876/billing-api db:validate
+   pnpm --filter @876/billing-api db:baseline -- --dry-run
+   pnpm --filter @876/billing-api db:baseline
+   pnpm --filter @876/billing-api db:deploy
    pnpm --filter @876/billing-api db:migration:check
+   pnpm --filter @876/billing-api db:drift
    ```
 
-4. Confirm `/ready` reports `migration: "current"`. The endpoint remains
-   `not_ready` while the Alembic revision is missing or stale.
+3. Run the service gates:
 
-## Freeze and reconcile
+   ```bash
+   pnpm --filter @876/billing-api api:contract:check
+   pnpm --filter @876/billing-api env:check
+   pnpm --filter @876/billing-api cutover:check -- --base-url https://876-billing-api.1876.workers.dev
+   ```
 
-1. Set `BILLING_WRITER=none` on both runtimes and stop legacy and FastAPI
-   schedulers. Verify mutation requests return `billing/writer-inactive`.
-2. Set `BILLING_LEGACY_DATABASE_URL` for the one-off reconciliation process.
-3. Compare every mapped table:
+4. Compare representative read responses from FastAPI and Express, including
+   tenant, integration, document, payment, subscription, and billing-engine
+   state. Existing idempotency keys must replay identically.
+
+## Freeze and hand off
+
+1. Disable the old scheduler.
+2. Set the old deployment and Express deployment to `BILLING_WRITER=none`.
+3. Confirm a mutation sent to each deployment returns
+   `billing/writer-inactive` and includes its writer header.
+4. If separate databases were used during validation, reconcile them while
+   writes remain frozen:
 
    ```bash
    pnpm --filter @876/billing-api db:reconcile
    ```
 
-The command reads both databases in repeatable-read transactions, orders each
-table by its primary key, and hashes every column value. It emits JSON without
-database URLs. Exit code `0` means every row count and digest matches, `1`
-means at least one table differs, and `2` means the check could not complete.
-Use repeatable `--table <name>` arguments to investigate named mismatches.
+   Do not continue unless every table count and canonical digest matches.
 
-Do not continue while the report has `matches: false`.
-
-## Activate FastAPI
-
-1. Keep legacy writes frozen.
-2. Set `BILLING_WRITER=fastapi` on both runtimes. This enables FastAPI writes
-   and keeps Prisma mutations blocked.
-3. Route service clients to `BILLING_API_URL`, then run the deployment gate:
-
-   ```bash
-   BILLING_API_URL=https://billing-api.example.com \
-     pnpm --filter @876/billing-api cutover:check
-   ```
-
-   The command emits a secret-free JSON report and fails unless health,
-   readiness, the `fastapi` writer lease, and all 187 frozen v1 operations
-   match the deployment.
-
-4. Verify a read, an idempotent mutation, and the matching financial record.
-5. Re-enable only the FastAPI scheduler after the billing-engine phase is
-   deployed.
+5. Set the Express Worker to `BILLING_WRITER=express`, deploy it, and route
+   production Billing traffic to it. Keep `BILLING_SWEEP_ENABLED=false`.
+6. Run smoke operations in order: customer creation, item creation, invoice
+   creation/finalization, payment creation/application, subscription lifecycle,
+   integration idempotency replay, and one explicitly targeted billing run.
+7. Set `BILLING_SWEEP_ENABLED=true` only after the smoke operations and
+   billing-run records are correct.
 
 ## Observe
 
-Scrape `/metrics` for request volume, latency, status, active writer metadata,
-and rejected mutation counts. Route labels use FastAPI templates rather than
-raw resource IDs. Alert on readiness failures, any unexpected writer rejection
-after cutover, elevated 5xx responses, and scheduler failures.
-
-The Billing UI no longer publishes its old `/api/billing/*` or `/api/admin/*`
-handlers and no longer runs Prisma migrations. Its `/api/v1/*` browser surface
-is an authenticated BFF for the standalone service. A temporary Prisma read
-projection remains for server-rendered pages; `BILLING_WRITER=fastapi` keeps it
-read-only until those page queries are moved to `@876/billing`.
+Monitor `/metrics`, `/ready`, application logs, Sentry, database connection
+usage, writer rejections, provider-event retries, billing-run failures, and
+duplicate-invoice invariants. The Billing Next.js app is HTTP-only and no
+longer runs Prisma migrations or reads the financial database directly.
 
 ## Rollback
 
-1. Set `BILLING_WRITER=none` on both runtimes before changing traffic.
-2. If both runtimes share the same database, set the lease to `legacy` and
-   restore legacy routing after confirming no migration newer than the legacy
-   schema has been applied.
-3. If databases are separate, keep writes frozen. Reconcile the databases and
-   restore the authoritative target into the rollback database before granting
-   the legacy writer lease. Never reverse traffic onto a stale financial copy.
+1. Immediately set `BILLING_SWEEP_ENABLED=false` and
+   `BILLING_WRITER=none` before changing traffic.
+2. Because Prisma preserves the existing table/column layout, the previous
+   FastAPI image may be redeployed read-only for diagnosis. Grant it
+   `BILLING_WRITER=fastapi` only after verifying no incompatible migration was
+   applied and reconciling all financial state.
+3. Never grant both deployments a writer lease and never route writes to a
+   stale database copy.

@@ -7,8 +7,7 @@ fixes the module shape, the layer responsibilities, the contract surface, the
 auth tiers, and the database conventions so a new service inherits the whole
 pattern instead of inventing a fifth one.
 
-Companion to `.agents/rules/api-backend.md` (which still governs the FastAPI
-services until each is migrated), `.agents/rules/stripe-api-pattern.md`
+Companion to `.agents/rules/api-backend.md`, `.agents/rules/stripe-api-pattern.md`
 (resource shapes), `.agents/rules/sdk-conventions.md` (the client surface these
 services are consumed through), and `.agents/rules/platform-services.md`
 (which bounded context owns what).
@@ -157,7 +156,7 @@ Rules:
 Routes register themselves into an OpenAPI registry as they are defined, so a
 route cannot exist undocumented. The prose lives in `*.docs.ts` as plain
 exported constants — summaries, descriptions, response examples — mirroring the
-`docs.py` split the FastAPI services already use, and for the same reason:
+documentation split the other Express services use, and for the same reason:
 route files stay readable when the documentation is somewhere else.
 
 `/openapi.json` is served from the registry. A snapshot test asserts the
