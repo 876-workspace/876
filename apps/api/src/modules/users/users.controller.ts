@@ -11,6 +11,8 @@ import { getAuthProvider } from '@/providers/workos/adapter'
 import { getWorkOsClient } from '@/providers/workos/client'
 import { deleteProviderUser } from '@/services/identity-sync'
 import { resolveMemberPermissions } from '@/services/provisioning'
+import { enqueueCustomerArchiveForUser } from '@/services/billing-customer-sync'
+import { createBillingCustomerSyncRepository } from '@/services/billing-customer-sync.repository'
 
 import * as repo from './users.repository'
 import * as service from './users.service'
@@ -391,18 +393,56 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
     query.reason ?? null
   )
 
-  // A tombstoned account must not be able to authenticate, and WorkOS has no
-  // "disable" state — deleting the provider user is what revokes the
-  // credentials. The local row survives as the tombstone of record. Running it
-  // after the local write means a provider failure rolls the tombstone back
-  // rather than leaving the account half-deleted and still able to sign in.
-  await deleteProviderUser(getAuthProvider(getSettings()), user.workosUserId, {
-    localUserId: user.id,
-  })
+  // A reversible Delete leaves the WorkOS user in place — WorkOS is the source
+  // of record and Delete is recoverable. The tombstone is what blocks the
+  // account: `ensureFromWorkos` refuses to seal a session for a deleted workosId
+  // or email, and the app session guards reject a deleted account. Only Purge
+  // removes the provider user. (`.claude/rules/deletions.md` + ADR-012 §D1.)
+  // Revoke any live sessions immediately so an already-signed-in tab is cut off
+  // rather than waiting for its next guarded navigation.
+  await repo.deleteAllSessionsForUser(user_id)
+
+  await archiveBillingCustomerForUser(user)
 
   log.info({ user_id, email: user.email }, 'users.delete')
 
   res.json({ object: 'user', id: user_id, deleted: true })
+}
+
+/**
+ * Enqueue a Billing customer archive for a user (only meaningful when an app
+ * previously enrolled them as a customer). Best-effort: a failure is logged, not
+ * raised, so it never fails the delete/purge.
+ */
+async function archiveBillingCustomerForUser(user: {
+  id: string
+  email: string | null
+  name?: string | null
+  firstName?: string | null
+  lastName?: string | null
+  username?: string | null
+  phone?: string | null
+}): Promise<void> {
+  try {
+    await enqueueCustomerArchiveForUser(
+      { repository: createBillingCustomerSyncRepository() },
+      {
+        id: user.id,
+        email: user.email ?? null,
+        name: user.name ?? null,
+        firstName: user.firstName ?? null,
+        lastName: user.lastName ?? null,
+        username: user.username ?? null,
+        phone: user.phone ?? null,
+      },
+      nowUnixSeconds()
+    )
+  } catch (error) {
+    log.error(
+      { err: error, user_id: user.id },
+      'users.archive_billing_customer_failed'
+    )
+  }
 }
 
 export async function purgeUser(req: Request, res: Response): Promise<void> {
@@ -414,8 +454,12 @@ export async function purgeUser(req: Request, res: Response): Promise<void> {
       message: 'No user exists with the provided identifier.',
       httpStatus: 404,
     })
+  // Archive the Billing customer before the row is gone, then hard-delete.
+  await archiveBillingCustomerForUser(user)
+  await repo.deleteAllSessionsForUser(user_id)
   await repo.purgeUser(user_id)
 
+  // Purge is destructive: remove the WorkOS user too.
   await deleteProviderUser(getAuthProvider(getSettings()), user.workosUserId, {
     localUserId: user.id,
   })
