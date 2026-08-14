@@ -1,27 +1,32 @@
+import Link from 'next/link'
+
+import { buttonVariants } from '@876/ui/button'
 import { ShieldCheck } from '@876/ui/icons'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { MembersTable } from '@/features/access/components/members-table'
+import { PendingInvites } from '@/features/access/components/pending-invites'
 import {
   normalizeOrgRole,
   requirePagePermission,
 } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import { getPlatformClient } from '@/lib/876/platform-client'
-import type { MemberView } from '@/types/access'
+import type { InviteView, MemberView } from '@/types/access'
 
 export const metadata = { title: 'Users - Billing settings' }
 
 export default async function UsersPage() {
   const context = await requirePagePermission('members:read')
   const platform = await getPlatformClient()
-  const [roles, grants, membershipsResult] = await Promise.all([
+  const [roles, grants, membershipsResult, invitesResult] = await Promise.all([
     service.roles.list(context.tenant.id),
     service.members.list(context.tenant.id),
     platform.memberships.list({
       organizationId: context.orgId,
       limit: 100,
     }),
+    platform.invites.list(context.orgId),
   ])
   const memberships = (membershipsResult.data?.data ?? []).filter(
     (membership) => membership.status === 'active'
@@ -66,13 +71,38 @@ export default async function UsersPage() {
       },
     ]
   })
+  const invites: InviteView[] = (invitesResult.data?.data ?? []).flatMap(
+    (invite) => {
+      if (invite.status !== 'pending') return []
+      return [
+        {
+          id: invite.id,
+          email: invite.email,
+          role: invite.role ?? 'Viewer',
+          status: invite.status,
+          expiresAt: invite.expires_at,
+        },
+      ]
+    }
+  )
+  const canManage = context.permissions.includes('members:write')
 
   return (
     <Page>
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
-      <PageHeader>
-        <PageTitle>Users</PageTitle>
-      </PageHeader>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <PageHeader className="mb-0">
+          <PageTitle>Users</PageTitle>
+        </PageHeader>
+        {canManage ? (
+          <Link
+            href="/settings/users/invite"
+            className={buttonVariants({ variant: 'info' })}
+          >
+            Invite
+          </Link>
+        ) : null}
+      </div>
 
       <div className="border-border bg-muted/20 mb-5 flex gap-3 rounded-2xl border p-4">
         <ShieldCheck className="text-876-blue mt-0.5 size-5 shrink-0" />
@@ -92,9 +122,16 @@ export default async function UsersPage() {
         members={members}
         roles={roles}
         currentUserId={context.userId}
-        canManage={context.permissions.includes('members:write')}
+        canManage={canManage}
         canGrantOwner={context.access.role.slug === 'owner'}
       />
+
+      {invites.length > 0 ? (
+        <section className="mt-8">
+          <h2 className="876-section-title mb-3">Pending invites</h2>
+          <PendingInvites invites={invites} canManage={canManage} />
+        </section>
+      ) : null}
 
       {membershipsResult.data?.has_more ? (
         <p className="text-muted-foreground mt-3 text-xs">
