@@ -255,6 +255,31 @@ export async function softDeleteUser(
   }
 }
 
+/** Clear a user's tombstone. Returns the restored row, or null if it does not exist. */
+export async function restoreUser(id: string): Promise<UserRow | null> {
+  try {
+    const now = BigInt(Math.floor(Date.now() / 1000))
+    const row = await prisma.user.update({
+      where: { id },
+      data: {
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+        updatedAt: now,
+      },
+      select: USER_SELECT,
+    })
+    return row as unknown as UserRow
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    )
+      return null
+    throw error
+  }
+}
+
 export async function purgeUser(id: string): Promise<boolean> {
   try {
     await prisma.user.delete({ where: { id } })
