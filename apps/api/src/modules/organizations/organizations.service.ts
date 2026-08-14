@@ -394,6 +394,27 @@ export async function retrieveOrganizationBySlug(
   return serializeOrganization(org)
 }
 
+/**
+ * The org fields that feed the Billing customer snapshot (legal/trading name,
+ * contact channels, primary-contact link). A change to any of these must re-emit
+ * `customer.ensure` so a rename or contact change follows into Billing without
+ * waiting for the reconcile sweep. Slug and status are deliberately excluded —
+ * neither appears in the snapshot.
+ */
+const BILLING_SNAPSHOT_FIELDS = [
+  'name',
+  'doing_business_as',
+  'primary_email',
+  'primary_phone',
+  'primary_contact_user_id',
+] as const
+
+function touchesBillingSnapshot(
+  explicitlySet: Record<string, unknown>
+): boolean {
+  return BILLING_SNAPSHOT_FIELDS.some((field) => field in explicitlySet)
+}
+
 export async function updateOrganization(
   organizationId: string,
   body: OrganizationUpdateBody
@@ -468,6 +489,11 @@ export async function updateOrganization(
     )
   }
 
+  // A rename / contact change must follow into the Billing registry so the
+  // customer snapshot does not go stale until the next reconcile.
+  if (touchesBillingSnapshot(explicitlySet))
+    await ensureBillingCustomerForOrg(updated)
+
   return serializeOrganization(updated)
 }
 
@@ -510,6 +536,12 @@ export async function updateOrganizationProfile(
       'organization/not-found',
       'No organization exists with the provided identifier.'
     )
+
+  // Mirror the admin update path: an org admin renaming the org or changing its
+  // primary contact re-registers the Billing customer snapshot.
+  if (touchesBillingSnapshot(explicitlySet))
+    await ensureBillingCustomerForOrg(updated)
+
   return serializeOrganization(updated)
 }
 
