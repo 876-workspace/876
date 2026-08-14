@@ -163,6 +163,14 @@ export async function purgeOrganization(
     )
 }
 
+export async function restoreOrganization(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const { organization_id } = validParams<{ organization_id: string }>(req)
+  res.status(200).json(await service.restoreOrganization(organization_id))
+}
+
 export async function listOrganizationMemberships(
   req: Request,
   res: Response

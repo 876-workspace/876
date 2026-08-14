@@ -15,7 +15,10 @@ import {
   linkMembershipRole,
   provisionOrganization,
 } from '@/services/provisioning'
-import { enqueueCustomerArchiveForOrganization } from '@/services/billing-customer-sync'
+import {
+  enqueueCustomerArchiveForOrganization,
+  enqueueCustomerEnsureForOrganization,
+} from '@/services/billing-customer-sync'
 import { createBillingCustomerSyncRepository } from '@/services/billing-customer-sync.repository'
 import {
   deleteProviderOrganization,
@@ -526,9 +529,12 @@ export async function deleteOrganization(
   // members lose access at once, but leave the WorkOS organization in place —
   // WorkOS is the source of record and Delete is recoverable. Only Purge removes
   // the provider record. `.claude/rules/deletions.md` + ADR-012 §D1/D2.
-  const closedMemberships =
-    await repository.softDeleteMembershipsForOrg(organizationId)
-  await repository.deleteOrganization(organizationId, deletedBy, reason)
+  const now = BigInt(nowUnixSeconds())
+  const closedMemberships = await repository.softDeleteMembershipsForOrg(
+    organizationId,
+    now
+  )
+  await repository.deleteOrganization(organizationId, deletedBy, reason, now)
 
   // Tell the Billing registry the customer is gone. The org row survives as a
   // tombstone, so the snapshot still resolves; best-effort because the reconcile
@@ -584,6 +590,42 @@ async function archiveBillingCustomerForOrg(org: {
   }
 }
 
+/**
+ * Enqueue a Billing customer.ensure for a restored org. Best-effort (mirrors
+ * archiveBillingCustomerForOrg): the snapshot status derives from the now-cleared
+ * tombstone, so this un-archives the customer as ACTIVE.
+ */
+async function ensureBillingCustomerForOrg(org: {
+  id: string
+  name: string | null
+  slug: string
+  doingBusinessAs?: string | null
+  primaryEmail?: string | null
+  primaryPhone?: string | null
+  primaryContactUserId?: string | null
+}): Promise<void> {
+  try {
+    await enqueueCustomerEnsureForOrganization(
+      { repository: createBillingCustomerSyncRepository() },
+      {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        doingBusinessAs: org.doingBusinessAs ?? null,
+        primaryEmail: org.primaryEmail ?? null,
+        primaryPhone: org.primaryPhone ?? null,
+        primaryContactUserId: org.primaryContactUserId ?? null,
+      },
+      nowUnixSeconds()
+    )
+  } catch (error) {
+    log.error(
+      { err: error, organization_id: org.id },
+      'organizations.ensure_billing_customer_failed'
+    )
+  }
+}
+
 export async function purgeOrganization(
   organizationId: string,
   deletedBy: string | null
@@ -622,6 +664,52 @@ export async function purgeOrganization(
   )
 
   return { object: 'organization', id: organizationId, deleted: true }
+}
+
+/**
+ * Restore a soft-deleted org: clear its tombstone, un-cascade the memberships the
+ * Delete closed, and re-register it in Billing as ACTIVE. Idempotent — restoring a
+ * live org returns it unchanged with no side effects.
+ */
+export async function restoreOrganization(
+  organizationId: string
+): Promise<Organization> {
+  const org = await repository.findOrganizationById(organizationId, true)
+  if (!org)
+    throw notFound(
+      'organization/not-found',
+      'No organization exists with the provided identifier.'
+    )
+
+  // Idempotent: a live org is returned as-is; no membership or Billing side effects.
+  if (org.deletedAt === null) return serializeOrganization(org)
+
+  const closedAt = org.deletedAt
+  const restoredMemberships = await repository.restoreMembershipsForOrg(
+    organizationId,
+    closedAt
+  )
+  const restored = await repository.restoreOrganization(organizationId)
+  if (!restored)
+    throw notFound(
+      'organization/not-found',
+      'No organization exists with the provided identifier.'
+    )
+
+  // Re-emit customer.ensure with the cleared tombstone → ACTIVE, un-archiving the
+  // Billing customer. Best-effort; the reconcile sweep self-heals a hiccup.
+  await ensureBillingCustomerForOrg(restored)
+
+  log.info(
+    {
+      organization_id: organizationId,
+      slug: restored.slug,
+      memberships_restored: restoredMemberships,
+    },
+    'organizations.restore'
+  )
+
+  return serializeOrganization(restored)
 }
 
 export async function listOrganizationMemberships(
