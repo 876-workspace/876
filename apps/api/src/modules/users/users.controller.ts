@@ -381,14 +381,45 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
   if (body.email_verified !== undefined && body.email_verified !== null)
     updateData.emailVerified = body.email_verified
   let updated = user
+  let localSaveSucceeded = false
   if (Object.keys(updateData).length > 0) {
     const now = BigInt(nowUnixSeconds())
     const saved = await repo.updateUser(user_id, {
       ...updateData,
       updatedAt: now,
     } as never)
-    if (saved) updated = saved
+    if (saved) {
+      updated = saved
+      localSaveSucceeded = true
+    }
   }
+
+  // Push name edits back to WorkOS (source of record) so a later sync does not revert
+  // them. Best-effort: a WorkOS hiccup must not fail an update the DB already applied;
+  // inbound WorkOS webhooks reconcile eventually.
+  // Follow-up: email changes are deferred — they carry WorkOS verification semantics.
+  const namePushed =
+    updateData.firstName !== undefined || updateData.lastName !== undefined
+  if (namePushed && localSaveSucceeded && updated.workosUserId) {
+    try {
+      const settings = getSettings()
+      const authProvider = getAuthProvider(settings)
+      await authProvider.updateUser(updated.workosUserId, {
+        ...(updateData.firstName !== undefined
+          ? { firstName: updateData.firstName as string | null }
+          : {}),
+        ...(updateData.lastName !== undefined
+          ? { lastName: updateData.lastName as string | null }
+          : {}),
+      })
+    } catch (error) {
+      log.warn(
+        { err: error, user_id, workos_user_id: updated.workosUserId },
+        'users.workos_profile_push_failed'
+      )
+    }
+  }
+
   res.json(serializers.serializeUser(updated))
 }
 
