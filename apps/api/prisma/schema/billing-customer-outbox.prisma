@@ -12,6 +12,7 @@ model BillingCustomerOutbox {
   email            String? @db.VarChar
   occurredAt       BigInt  @map("occurred_at")
   status           String  @db.VarChar
+  customerStatus   String  @default("ACTIVE") @map("customer_status") @db.VarChar
   attemptCount     Int     @map("attempt_count")
   availableAt      BigInt  @map("available_at")
   lockedAt         BigInt? @map("locked_at")

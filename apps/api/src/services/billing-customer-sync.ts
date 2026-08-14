@@ -7,6 +7,7 @@ export const CUSTOMER_EVENT_TYPE = 'customer.ensure'
 export type PartySnapshot = {
   subjectType: string
   subjectId: string
+  status: string
   customerKind: string
   name: string
   email: string | null
@@ -30,6 +31,8 @@ export type OrganizationRow = {
   primaryEmail?: string | null
   primaryPhone?: string | null
   primaryContactUserId?: string | null
+  deletedAt?: bigint | null
+  status?: string | null
 }
 
 export type UserRow = {
@@ -40,6 +43,8 @@ export type UserRow = {
   lastName?: string | null
   username?: string | null
   phone?: string | null
+  deletedAt?: bigint | null
+  status?: string | null
 }
 
 export type MembershipRow = {
@@ -59,6 +64,7 @@ export type BillingCustomerOutboxRow = {
   email: string | null
   occurredAt: bigint
   status: string
+  customerStatus: string
   attemptCount: number
   availableAt: bigint
   lockedAt: bigint | null
@@ -126,6 +132,15 @@ function customerNameForUser(user: UserRow): string {
   )
 }
 
+function lifecycleStatus(
+  deletedAt: bigint | null | undefined,
+  rowStatus: string | null | undefined
+): 'ACTIVE' | 'ARCHIVED' {
+  return deletedAt != null || (rowStatus != null && rowStatus !== 'active')
+    ? 'ARCHIVED'
+    : 'ACTIVE'
+}
+
 async function resolveOrgPrimaryContact(
   repository: BillingCustomerSyncRepository,
   organization: OrganizationRow
@@ -176,6 +191,7 @@ export async function snapshotForOrganization(
   return {
     subjectType: 'organization',
     subjectId: organization.id,
+    status: lifecycleStatus(organization.deletedAt, organization.status),
     customerKind: 'BUSINESS',
     name,
     email: (primaryEmail as string | null) ?? contact?.email ?? null,
@@ -196,6 +212,7 @@ export function snapshotForUser(user: UserRow): PartySnapshot {
   return {
     subjectType: 'user',
     subjectId: user.id,
+    status: lifecycleStatus(user.deletedAt, user.status),
     customerKind: 'INDIVIDUAL',
     name: customerNameForUser(user),
     email,
@@ -228,6 +245,7 @@ function applySnapshot(
 ): void {
   event.name = snapshot.name
   event.email = snapshot.email
+  event.customerStatus = snapshot.status
   event.customerKind = snapshot.customerKind
   event.companyName = snapshot.companyName
   event.firstName = snapshot.firstName
@@ -261,6 +279,7 @@ async function enqueueCustomerEnsure(
         await deps.repository.updateOutboxEvent(latest.id, {
           name: latest.name,
           email: latest.email,
+          customerStatus: latest.customerStatus,
           customerKind: latest.customerKind,
           companyName: latest.companyName,
           firstName: latest.firstName,
@@ -293,6 +312,7 @@ async function enqueueCustomerEnsure(
     email: snapshot.email,
     occurredAt: BigInt(now),
     status: 'pending',
+    customerStatus: 'ACTIVE',
     attemptCount: 0,
     availableAt: BigInt(now),
     lockedAt: null,
@@ -335,10 +355,31 @@ export async function enqueueCustomerEnsureForUser(
   await enqueueCustomerEnsure(deps, snapshot, now)
 }
 
+export async function enqueueCustomerArchiveForOrganization(
+  deps: BillingCustomerSyncDeps,
+  organization: OrganizationRow,
+  now: number
+): Promise<void> {
+  const snapshot = await snapshotForOrganization(deps, organization)
+  snapshot.status = 'ARCHIVED'
+  await enqueueCustomerEnsure(deps, snapshot, now)
+}
+
+export async function enqueueCustomerArchiveForUser(
+  deps: BillingCustomerSyncDeps,
+  user: UserRow,
+  now: number
+): Promise<void> {
+  const snapshot = snapshotForUser(user)
+  snapshot.status = 'ARCHIVED'
+  await enqueueCustomerEnsure(deps, snapshot, now)
+}
+
 export function customerEventPayload(
   event: BillingCustomerOutboxRow
 ): Record<string, unknown> {
   const common: Record<string, unknown> = {
+    status: event.customerStatus,
     customerKind:
       event.customerKind ??
       (event.subjectType === 'organization' ? 'BUSINESS' : 'INDIVIDUAL'),

@@ -21,6 +21,8 @@ export function createBillingCustomerSyncRepository(): BillingCustomerSyncReposi
           lastName: true,
           username: true,
           phone: true,
+          status: true,
+          deletedAt: true,
         },
       })
       return (row as UserRow | null) ?? null
@@ -73,6 +75,8 @@ export function createBillingCustomerSyncRepository(): BillingCustomerSyncReposi
           primaryEmail: true,
           primaryPhone: true,
           primaryContactUserId: true,
+          status: true,
+          deletedAt: true,
         },
       })
       return rows as OrganizationRow[]

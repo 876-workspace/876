@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   CUSTOMER_EVENT_TYPE,
   customerEventPayload,
+  enqueueCustomerArchiveForOrganization,
+  enqueueCustomerArchiveForUser,
   enqueueCustomerEnsureForOrganization,
   enqueueCustomerEnsureForUser,
   enqueueReconcileAll,
@@ -11,7 +13,6 @@ import {
   snapshotForUser,
 } from '../billing-customer-sync'
 import type {
-  BillingCustomerSyncDeps,
   BillingCustomerSyncRepository,
   BillingCustomerOutboxRow,
 } from '../billing-customer-sync'
@@ -42,6 +43,8 @@ function organization(overrides: Record<string, unknown> = {}) {
     primaryEmail: null,
     primaryPhone: null,
     primaryContactUserId: null,
+    deletedAt: null,
+    status: 'active',
     ...overrides,
   }
 }
@@ -55,6 +58,8 @@ function user(overrides: Record<string, unknown> = {}) {
     name: null,
     username: null,
     phone: null,
+    deletedAt: null,
+    status: 'active',
     ...overrides,
   }
 }
@@ -89,6 +94,7 @@ describe('snapshotForOrganization', () => {
     )
 
     expect(snapshot.customerKind).toBe('BUSINESS')
+    expect(snapshot.status).toBe('ACTIVE')
     expect(snapshot.companyName).toBe('Efesto Technologies')
     expect(snapshot.contactUserId).toBe('user_1')
     expect(snapshot.contactFirstName).toBe('Ada')
@@ -197,6 +203,27 @@ describe('snapshotForOrganization', () => {
     )
     expect(snapshot.contactUserId).toBe('user_owner')
   })
+
+  it.each([
+    { overrides: { deletedAt: 1n }, reason: 'a deletion timestamp' },
+    {
+      overrides: { status: 'suspended' },
+      reason: 'a non-active row status',
+    },
+  ])(
+    'returns ARCHIVED for an organization with $reason',
+    async ({ overrides }) => {
+      const repo = makeRepository()
+      repo.listMembershipsByOrganizationId.mockResolvedValue([])
+
+      const snapshot = await snapshotForOrganization(
+        { repository: repo },
+        organization(overrides) as never
+      )
+
+      expect(snapshot.status).toBe('ARCHIVED')
+    }
+  )
 })
 
 describe('snapshotForUser', () => {
@@ -205,6 +232,7 @@ describe('snapshotForUser', () => {
     expect(snapshot.subjectType).toBe('user')
     expect(snapshot.subjectId).toBe('user_1')
     expect(snapshot.customerKind).toBe('INDIVIDUAL')
+    expect(snapshot.status).toBe('ACTIVE')
     expect(snapshot.name).toBe('Ada Lovelace')
     expect(snapshot.email).toBe('ada@example.com')
     expect(snapshot.firstName).toBe('Ada')
@@ -267,6 +295,15 @@ describe('snapshotForUser', () => {
     )
     expect(snapshot.name).toBe('Lovelace')
   })
+
+  it.each([
+    { overrides: { deletedAt: 1n }, reason: 'a deletion timestamp' },
+    { overrides: { status: 'banned' }, reason: 'a non-active row status' },
+  ])('returns ARCHIVED for a user with $reason', ({ overrides }) => {
+    const snapshot = snapshotForUser(user(overrides) as never)
+
+    expect(snapshot.status).toBe('ARCHIVED')
+  })
 })
 
 describe('customerEventPayload', () => {
@@ -291,6 +328,7 @@ describe('customerEventPayload', () => {
       payloadHash: 'hash',
       occurredAt: BigInt(1_700_000_000),
       status: 'pending',
+      customerStatus: 'ARCHIVED',
       attemptCount: 0,
       availableAt: BigInt(1_700_000_000),
       lockedAt: null,
@@ -320,6 +358,7 @@ describe('customerEventPayload', () => {
       payloadHash: 'hash',
       occurredAt: BigInt(1_700_000_000),
       status: 'pending',
+      customerStatus: 'ACTIVE',
       attemptCount: 0,
       availableAt: BigInt(1_700_000_000),
       lockedAt: null,
@@ -332,6 +371,7 @@ describe('customerEventPayload', () => {
     expect(customerEventPayload(organizationEvent)).toEqual({
       customerType: 'CORE_ORGANIZATION',
       customerKind: 'BUSINESS',
+      status: 'ARCHIVED',
       organizationId: 'org_1',
       name: 'Efesto',
       companyName: 'Efesto Technologies',
@@ -351,6 +391,7 @@ describe('customerEventPayload', () => {
     expect(customerEventPayload(userEvent)).toEqual({
       customerType: 'CORE_USER',
       customerKind: 'INDIVIDUAL',
+      status: 'ACTIVE',
       userId: 'user_1',
       name: 'Ada Lovelace',
       email: 'ada@example.com',
@@ -381,6 +422,7 @@ describe('customerEventPayload', () => {
       payloadHash: null,
       occurredAt: BigInt(1_700_000_000),
       status: 'pending',
+      customerStatus: 'ACTIVE',
       attemptCount: 0,
       availableAt: BigInt(1_700_000_000),
       lockedAt: null,
@@ -399,6 +441,7 @@ describe('customerEventPayload', () => {
       name: 'Efesto',
       email: null,
       customerKind: null,
+      customerStatus: 'ACTIVE',
       companyName: null,
       firstName: null,
       lastName: null,
@@ -440,6 +483,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
     expect(data.subjectType).toBe('organization')
     expect(data.subjectId).toBe('org_1')
     expect(data.status).toBe('pending')
+    expect(data.customerStatus).toBe('ACTIVE')
     expect(data.customerKind).toBe('BUSINESS')
     expect(data.name).toBe('Efesto Technologies')
   })
@@ -466,6 +510,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       payloadHash: 'placeholder',
       occurredAt: BigInt(NOW),
       status: 'pending',
+      customerStatus: 'ACTIVE',
       attemptCount: 0,
       availableAt: BigInt(NOW),
       lockedAt: null,
@@ -528,6 +573,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       payloadHash: 'old_hash',
       occurredAt: BigInt(NOW),
       status: 'pending',
+      customerStatus: 'ACTIVE',
       attemptCount: 0,
       availableAt: BigInt(NOW),
       lockedAt: null,
@@ -555,6 +601,10 @@ describe('enqueueCustomerEnsureForOrganization', () => {
 
     expect(repo.createOutboxEvent).not.toHaveBeenCalled()
     expect(repo.updateOutboxEvent).toHaveBeenCalledOnce()
+    expect(repo.updateOutboxEvent).toHaveBeenCalledWith(
+      'bce_existing',
+      expect.objectContaining({ customerStatus: 'ACTIVE' })
+    )
     expect(pending.contactLastName).toBe('Byron')
   })
 
@@ -601,6 +651,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       payloadHash: deliveredHash,
       occurredAt: BigInt(NOW),
       status: 'delivered',
+      customerStatus: 'ACTIVE',
       attemptCount: 1,
       availableAt: BigInt(NOW),
       lockedAt: null,
@@ -659,6 +710,7 @@ describe('enqueueCustomerEnsureForOrganization', () => {
       payloadHash: firstHash,
       occurredAt: BigInt(NOW),
       status: 'delivered',
+      customerStatus: 'ACTIVE',
       attemptCount: 1,
       availableAt: BigInt(NOW),
       lockedAt: null,
@@ -724,6 +776,7 @@ describe('enqueueCustomerEnsureForUser', () => {
       payloadHash: null,
       occurredAt: BigInt(NOW),
       status: 'pending',
+      customerStatus: 'ACTIVE',
       attemptCount: 0,
       availableAt: BigInt(NOW),
       lockedAt: null,
@@ -752,6 +805,47 @@ describe('enqueueCustomerEnsureForUser', () => {
       NOW
     )
     expect(repo.createOutboxEvent).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('enqueueCustomerArchiveForOrganization', () => {
+  it('enqueues an ARCHIVED customer.ensure payload', async () => {
+    const repo = makeRepository()
+    repo.listMembershipsByOrganizationId.mockResolvedValue([])
+    repo.findLatestOutboxBySubject.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(async (data) => data)
+
+    await enqueueCustomerArchiveForOrganization(
+      { repository: repo },
+      organization() as never,
+      NOW
+    )
+
+    expect(repo.createOutboxEvent).toHaveBeenCalledTimes(1)
+    const event = repo.createOutboxEvent.mock
+      .calls[0]?.[0] as BillingCustomerOutboxRow
+    expect(event.eventType).toBe(CUSTOMER_EVENT_TYPE)
+    expect(event.customerStatus).toBe('ARCHIVED')
+  })
+})
+
+describe('enqueueCustomerArchiveForUser', () => {
+  it('enqueues an ARCHIVED customer.ensure event', async () => {
+    const repo = makeRepository()
+    repo.findLatestOutboxBySubject.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(async (data) => data)
+
+    await enqueueCustomerArchiveForUser(
+      { repository: repo },
+      user() as never,
+      NOW
+    )
+
+    expect(repo.createOutboxEvent).toHaveBeenCalledTimes(1)
+    const event = repo.createOutboxEvent.mock
+      .calls[0]?.[0] as BillingCustomerOutboxRow
+    expect(event.eventType).toBe(CUSTOMER_EVENT_TYPE)
+    expect(event.customerStatus).toBe('ARCHIVED')
   })
 })
 
@@ -788,6 +882,26 @@ describe('enqueueReconcileAll', () => {
 
     expect(counts).toEqual({ organizations: 1, users: 0 })
     expect(repo.createOutboxEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('enqueues an ARCHIVED ensure event for a deleted organization', async () => {
+    const repo = makeRepository()
+    repo.listOrganizations.mockResolvedValue([
+      organization({ deletedAt: 1n }) as never,
+    ])
+    repo.listKnownUserIds.mockResolvedValue([])
+    repo.listMembershipsByOrganizationId.mockResolvedValue([])
+    repo.findLatestOutboxBySubject.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(async (data) => data)
+
+    const counts = await enqueueReconcileAll({ repository: repo }, NOW)
+
+    expect(counts).toEqual({ organizations: 1, users: 0 })
+    expect(repo.createOutboxEvent).toHaveBeenCalledTimes(1)
+    const event = repo.createOutboxEvent.mock
+      .calls[0]?.[0] as BillingCustomerOutboxRow
+    expect(event.eventType).toBe(CUSTOMER_EVENT_TYPE)
+    expect(event.customerStatus).toBe('ARCHIVED')
   })
 
   it('skips users whose row is gone', async () => {
