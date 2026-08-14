@@ -229,3 +229,34 @@ export function findOrganization(
     select: { id: true },
   })
 }
+
+/**
+ * The organization fields the Billing customer snapshot needs, for enqueuing a
+ * `customer.ensure` at provisioning time. Kept beside the `{ id }` existence
+ * read rather than reaching into the billing sync repo, so provisioning owns the
+ * one query it issues.
+ */
+export function findOrganizationForCustomerEnsure(
+  organizationId: string
+): Promise<{
+  id: string
+  name: string | null
+  slug: string
+  doingBusinessAs: string | null
+  primaryEmail: string | null
+  primaryPhone: string | null
+  primaryContactUserId: string | null
+} | null> {
+  return prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      doingBusinessAs: true,
+      primaryEmail: true,
+      primaryPhone: true,
+      primaryContactUserId: true,
+    },
+  })
+}

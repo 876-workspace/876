@@ -13,8 +13,14 @@ const { prisma } = vi.hoisted(() => ({
     price: { findFirst: vi.fn() },
     orgContact: { findMany: vi.fn(), create: vi.fn() },
     appAssignment: { upsert: vi.fn() },
-    membership: { update: vi.fn() },
+    membership: { update: vi.fn(), findMany: vi.fn() },
     organization: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn() },
+    billingCustomerOutbox: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
   },
 }))
 
@@ -196,6 +202,31 @@ describe('provisionOrganization', () => {
     expect(Object.keys(roles).length).toBe(DEFAULT_ORG_ROLES.length)
     expect(prisma.subscription.create).toHaveBeenCalledTimes(2)
     expect(enqueue).toHaveBeenCalledWith(ORG, NOW)
+  })
+
+  it('enqueues a customer.ensure by default when no hook is injected', async () => {
+    prisma.organization.findUnique.mockResolvedValue({
+      id: ORG,
+      name: 'Island Logistics',
+      slug: 'island-logistics',
+      doingBusinessAs: null,
+      primaryEmail: null,
+      primaryPhone: null,
+      primaryContactUserId: null,
+    })
+    prisma.membership.findMany.mockResolvedValue([])
+    prisma.billingCustomerOutbox.findFirst.mockResolvedValue(null)
+    prisma.billingCustomerOutbox.create.mockResolvedValue({})
+
+    await provisionOrganization(ORG, NOW)
+
+    expect(prisma.billingCustomerOutbox.create).toHaveBeenCalledTimes(1)
+    const event = prisma.billingCustomerOutbox.create.mock.calls[0]![0]!
+      .data as Record<string, unknown>
+    expect(event.eventType).toBe('customer.ensure')
+    expect(event.subjectType).toBe('organization')
+    expect(event.subjectId).toBe(ORG)
+    expect(event.customerStatus).toBe('ACTIVE')
   })
 
   it('does not notify the registry when the organization is gone', async () => {

@@ -7,6 +7,8 @@ import {
 
 import * as repository from './provisioning.repository'
 import type { OrgRoleRow } from './provisioning.repository'
+import { enqueueCustomerEnsureForOrganization } from './billing-customer-sync'
+import { createBillingCustomerSyncRepository } from './billing-customer-sync.repository'
 
 /**
  * Organization provisioning: default roles, app entitlements, member
@@ -59,7 +61,35 @@ export type EnqueueCustomerEnsure = (
   now: number
 ) => Promise<void>
 
-const NOOP_ENQUEUE: EnqueueCustomerEnsure = async () => {}
+/**
+ * The default `customer.ensure` enqueue used by every org-creation path (admin
+ * create, business signup, product-app onboarding), so a new org lands in the
+ * Billing registry at creation rather than only on the reconcile sweep.
+ *
+ * Best-effort: a failure is logged, never raised — an org must be creatable even
+ * when the billing outbox write hiccups, and the reconcile sweep re-ensures any
+ * org it finds. Tests inject their own enqueue and never reach this.
+ */
+const defaultEnqueueCustomerEnsure: EnqueueCustomerEnsure = async (
+  organizationId,
+  now
+) => {
+  try {
+    const organization =
+      await repository.findOrganizationForCustomerEnsure(organizationId)
+    if (!organization) return
+    await enqueueCustomerEnsureForOrganization(
+      { repository: createBillingCustomerSyncRepository() },
+      organization,
+      now
+    )
+  } catch (error) {
+    log.error(
+      { err: error, org_id: organizationId },
+      'provisioning.customer_ensure_failed'
+    )
+  }
+}
 
 /**
  * Idempotently seed an organization's default system roles.
@@ -185,7 +215,10 @@ export async function provisionOrganization(
 
   const organization = await repository.findOrganization(organizationId)
   if (organization)
-    await (options.enqueueCustomerEnsure ?? NOOP_ENQUEUE)(organizationId, now)
+    await (options.enqueueCustomerEnsure ?? defaultEnqueueCustomerEnsure)(
+      organizationId,
+      now
+    )
 
   return roles
 }
