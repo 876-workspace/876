@@ -87,6 +87,16 @@ export interface MemberUpdated {
   userId: string
 }
 
+export type InviteView = {
+  id: string
+  email: string
+  role: string
+  status: string
+  expiresAt: number
+}
+
+export type InviteCreateInput = { email: string; role?: string }
+
 export interface MemberView {
   userId: string
   firstName: string

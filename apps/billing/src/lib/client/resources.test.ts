@@ -12,6 +12,7 @@ import { discounts } from './discounts'
 import { invoices } from './invoices'
 import { invoicePreferences } from './invoice-preferences'
 import { items } from './items'
+import { invites } from './invites'
 import { members } from './members'
 import { paymentModes } from './payment-modes'
 import { paymentProviders } from './payment-providers'
@@ -37,7 +38,7 @@ type RequestCase = {
   name: string
   act: () => unknown
   url: string
-  init: RequestInit
+  init?: RequestInit
 }
 
 const EMPTY = {} as never
@@ -174,6 +175,26 @@ const cases: RequestCase[] = [
     act: () => invoicePreferences.assessLateFees(),
     url: '/api/v1/invoice-preferences/assess-late-fees',
     init: { method: 'POST' },
+  },
+  {
+    name: 'lists invites',
+    act: () => invites.list(),
+    url: '/api/team/invites',
+  },
+  {
+    name: 'creates an invite',
+    act: () => invites.create({ email: 'ada@example.com', role: 'admin' }),
+    url: '/api/team/invites',
+    init: {
+      method: 'POST',
+      body: '{"email":"ada@example.com","role":"admin"}',
+    },
+  },
+  {
+    name: 'revokes an invite',
+    act: () => invites.revoke('invite /1'),
+    url: '/api/team/invites/invite%20%2F1',
+    init: { method: 'DELETE' },
   },
   {
     name: 'creates a coupon',
@@ -553,7 +574,8 @@ describe('Billing browser resource clients', () => {
     await act()
 
     expect(requestMock).toHaveBeenCalledTimes(1)
-    expect(requestMock).toHaveBeenCalledWith(url, init)
+    if (init) expect(requestMock).toHaveBeenCalledWith(url, init)
+    else expect(requestMock).toHaveBeenCalledWith(url)
   })
 
   it('exposes every resource facade on the root client', () => {
@@ -568,6 +590,7 @@ describe('Billing browser resource clients', () => {
       discounts,
       invoices,
       invoicePreferences,
+      invites,
       members,
       paymentModes,
       paymentProviders,

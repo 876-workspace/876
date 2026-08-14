@@ -10,6 +10,7 @@ import { customers } from './customers'
 import { invoices } from './invoices'
 import { invoicePreferences } from './invoice-preferences'
 import { items } from './items'
+import { invites } from './invites'
 import { members } from './members'
 import { paymentModes } from './payment-modes'
 import { paymentProviders } from './payment-providers'
@@ -40,6 +41,7 @@ export const client = {
   invoices,
   invoicePreferences,
   items,
+  invites,
   members,
   paymentModes,
   paymentProviders,
