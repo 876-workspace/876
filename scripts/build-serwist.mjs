@@ -5,13 +5,12 @@
 // from an app workspace keeps compilation on the build machine and lets
 // OpenNext ship the result as a static asset.
 
-import { execFileSync } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
 import { mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { build } from 'esbuild'
+import { assetRevision, buildOfflineRecovery } from './build-pwa-assets.mjs'
 
 const appDir = process.cwd()
 const scriptDir = dirname(fileURLToPath(import.meta.url))
@@ -21,31 +20,16 @@ const packageJson = JSON.parse(
 const appName = packageJson.name?.match(/^@876\/(.+)$/)?.[1]
 if (!appName) throw new Error('Serwist builds require an @876 app workspace')
 
-function resolveRevision() {
-  const fromEnvironment =
-    process.env.WORKERS_CI_COMMIT_SHA ??
-    process.env.GITHUB_SHA ??
-    process.env.CF_PAGES_COMMIT_SHA
-  if (fromEnvironment) return fromEnvironment
+await buildOfflineRecovery(appDir)
 
-  try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], {
-      cwd: appDir,
-      encoding: 'utf-8',
-    }).trim()
-  } catch {
-    return randomUUID()
-  }
-}
-
-const revision = resolveRevision()
 const precacheEntries = [
   '/offline.html',
+  '/pwa/offline-recovery.js',
   '/pwa/icon-192.png',
   '/pwa/icon-512.png',
   '/pwa/icon-maskable-512.png',
   '/pwa/apple-touch-icon.png',
-].map((url) => ({ url, revision }))
+].map((url) => ({ url, revision: assetRevision(appDir, url) }))
 
 mkdirSync(join(appDir, 'public'), { recursive: true })
 

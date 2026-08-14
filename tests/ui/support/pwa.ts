@@ -82,10 +82,11 @@ export async function expectShellOnlyPwa({
       page.getByRole('heading', { name: 'You are offline' })
     ).toBeVisible()
     await expect(page.getByText(offlineMessage)).toBeVisible()
-    await expect(page.getByRole('link', { name: 'Try again' })).toHaveAttribute(
-      'href',
-      '/'
-    )
+
+    const retry = page.getByRole('button', { name: 'Try again' })
+    await expect(retry).toBeVisible()
+    await expect(retry).toBeEnabled()
+    await expect(retry).toHaveAttribute('data-offline-retry', '')
   } finally {
     await context.setOffline(false)
   }

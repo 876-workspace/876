@@ -6,39 +6,31 @@
 // `spawnSync`. Both are build-machine operations, so they happen here instead
 // and ship as a static asset.
 
-import { execFileSync } from 'node:child_process'
-import { randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { build } from 'esbuild'
+import {
+  assetRevision,
+  buildRevision,
+  buildOfflineRecovery,
+} from '../../../scripts/build-pwa-assets.mjs'
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), '..')
 
-/**
- * Precache revision. Cloudflare Workers Builds and GitHub Actions both expose
- * the commit; a local build falls back to git, then to a random value so the
- * worker still updates.
- */
-function resolveRevision() {
-  const fromEnv =
-    process.env.WORKERS_CI_COMMIT_SHA ??
-    process.env.GITHUB_SHA ??
-    process.env.CF_PAGES_COMMIT_SHA
-  if (fromEnv) return fromEnv
+await buildOfflineRecovery(appDir)
 
-  try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], {
-      cwd: appDir,
-      encoding: 'utf-8',
-    }).trim()
-  } catch {
-    return randomUUID()
-  }
-}
-
-const precacheEntries = [{ url: '/~offline', revision: resolveRevision() }]
+const precacheEntries = [
+  {
+    url: '/~offline',
+    revision: buildRevision(appDir),
+  },
+  {
+    url: '/pwa/offline-recovery.js',
+    revision: assetRevision(appDir, 'pwa/offline-recovery.js'),
+  },
+]
 
 mkdirSync(join(appDir, 'public'), { recursive: true })
 

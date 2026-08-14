@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { OfflineRecovery } from '@876/ui/offline-recovery'
 
 export const metadata: Metadata = {
   title: 'Offline | 876',
@@ -16,6 +17,7 @@ export default function OfflinePage() {
         <p className="text-muted-foreground">
           Reconnect to continue using the app.
         </p>
+        <OfflineRecovery className="bg-foreground text-background rounded-md px-4 py-3 text-sm font-semibold" />
       </div>
     </main>
   )
