@@ -114,6 +114,8 @@ jobs:
               - '.dockerignore'
             billing-api:
               - 'apps/billing-api/**'
+              - *shared
+              - '.dockerignore'
             storage-api:
               - 'apps/storage-api/**'
             console:
@@ -244,19 +246,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: apps/billing-api/requirements.txt
-      - name: Install migration dependencies
-        working-directory: apps/billing-api
-        run: python -m pip install -r requirements.txt
-      - name: Apply migrations
-        working-directory: apps/billing-api
-        run: python -m alembic upgrade head
+      - name: Adopt the Billing migration ledger
+        run: pnpm --filter @876/billing-api run db:baseline
         env:
-          BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      - name: Apply migrations
+        run: pnpm --filter @876/billing-api run db:deploy
+        env:
+          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Sync runtime database secret
         working-directory: apps/billing-api
         run: |
@@ -345,10 +342,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - name: Apply migrations
-        run: pnpm --filter @876/billing-app exec prisma migrate deploy
-        env:
-          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-billing
       - name: Deploy
