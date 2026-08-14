@@ -11,6 +11,7 @@
 import { getLogger } from '@/platform/logger'
 
 import { seedBootstrap } from './bootstrap'
+import { seedDefaultAppPrices } from './default-prices'
 import { seedGeoCatalog } from './geo'
 import { seedAllFeatures } from './features'
 import { seedFirstPartyProvisioningManifests } from './provisioning'
@@ -30,6 +31,7 @@ export type RunSeedsSummary = {
   > | null
   features: Awaited<ReturnType<typeof seedAllFeatures>> | null
   plans: Awaited<ReturnType<typeof seedPlans>> | null
+  defaultPrices: Awaited<ReturnType<typeof seedDefaultAppPrices>> | null
 }
 
 /**
@@ -40,6 +42,7 @@ export type RunSeedsSummary = {
  * 3. provisioning — first_party_provisioning (manifests)
  * 4. features — feature_catalog (PostHog + local catalog)
  * 5. plans — platform_plan_modules + billing_plan_assignments
+ * 6. defaultPrices — free default prices for subscribable apps
  */
 export async function runSeeds(
   options: RunSeedsOptions = {}
@@ -53,6 +56,7 @@ export async function runSeeds(
     provisioning: null,
     features: null,
     plans: null,
+    defaultPrices: null,
   }
 
   if (shouldRun('bootstrap')) {
@@ -83,6 +87,15 @@ export async function runSeeds(
     log.info('seeds.plans.started')
     summary.plans = await seedPlans()
     log.info({ summary: summary.plans }, 'seeds.plans.completed')
+  }
+
+  if (shouldRun('defaultPrices')) {
+    log.info('seeds.default_prices.started')
+    summary.defaultPrices = await seedDefaultAppPrices()
+    log.info(
+      { summary: summary.defaultPrices },
+      'seeds.default_prices.completed'
+    )
   }
 
   return summary
