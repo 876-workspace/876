@@ -8,7 +8,7 @@ import { generateId, generatePlatformOwnerUserId } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { getAuthProvider } from '@/providers/workos/adapter'
-import { getWorkOsClient } from '@/providers/workos/client'
+import type { ProviderUser } from '@/providers/auth'
 import { deleteProviderUser } from '@/services/identity-sync'
 import { resolveMemberPermissions } from '@/services/provisioning'
 import { enqueueCustomerArchiveForUser } from '@/services/billing-customer-sync'
@@ -239,21 +239,37 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     })
   }
 
-  const settings = getSettings()
-  const workos = getWorkOsClient(settings)
+  // Resolve all local-only constraints before creating a provider identity. A
+  // rejected username must not leave an orphaned WorkOS user behind.
+  const username = body.username
+    ? await service.assertUsernameAvailable(body.username)
+    : await service.uniqueUsername(
+        service.normalizeUsername(email.split('@', 1)[0] ?? 'user'),
+        new Set<string>(),
+        null
+      )
 
-  // A provider failure aborts the whole operation. The alternative a draft of
-  // this port took — inventing a local id when WorkOS is unreachable — writes a
-  // user row whose `workos_user_id` points at nothing, so the account exists,
-  // looks healthy in Console, and can never sign in.
-  let workosUser: Record<string, unknown>
+  const settings = getSettings()
+  const authProvider = getAuthProvider(settings)
+
+  // WorkOS may already own the identity even when the local database does not,
+  // for example after a partial migration or an interrupted reconciliation.
+  // Adopt that identity instead of attempting a duplicate provider create.
+  let workosUser: ProviderUser
+  let workosUserCreated = false
   try {
-    workosUser = await workos.createUser({
-      email,
-      firstName: body.first_name,
-      lastName: body.last_name,
-      emailVerified: false,
-    })
+    const existingWorkosUser = await authProvider.getUserByEmail(email)
+    if (existingWorkosUser) {
+      workosUser = existingWorkosUser
+    } else {
+      workosUser = await authProvider.register({
+        email,
+        firstName: body.first_name,
+        lastName: body.last_name,
+        emailVerified: false,
+      })
+      workosUserCreated = true
+    }
   } catch (error) {
     if (error instanceof AppHttpError) throw error
     log.error({ err: error, email }, 'workos.create_user failed')
@@ -264,8 +280,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     })
   }
 
-  const workosUserId = workosUser['id']
-  if (typeof workosUserId !== 'string' || !workosUserId) {
+  if (!workosUser.id) {
     log.error({ email }, 'workos.create_user returned no id')
     throw new AppHttpError({
       code: 'user/provider-error',
@@ -273,13 +288,14 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       httpStatus: 502,
     })
   }
+  const workosUserId = workosUser.id
 
   // Password-setup email, best-effort: the account is usable and the address
   // can be verified later, whereas raising here strands a user that was
   // already created in the provider.
   if (settings.workos.clientId) {
     try {
-      await workos.createPasswordReset(email, settings.workos.clientId)
+      await authProvider.sendRecovery(email, settings.workos.clientId)
     } catch (error) {
       log.warn(
         { err: error, email, workos_user_id: workosUserId },
@@ -288,36 +304,35 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     }
   }
 
-  // An explicitly chosen username is rejected if invalid, reserved, or taken; a
-  // derived one is normalized and made unique.
-  const username = body.username
-    ? await service.assertUsernameAvailable(body.username)
-    : await service.uniqueUsername(
-        service.normalizeUsername(email.split('@', 1)[0] ?? 'user'),
-        new Set<string>(),
-        null
-      )
-
   const now = BigInt(nowUnixSeconds())
   const isOwner = isPlatformOwnerEmail(email)
   const userId = isOwner ? generatePlatformOwnerUserId() : generateId('user')
 
-  const user = await repo.createUser({
-    id: userId,
-    workosUserId,
-    email,
-    username,
-    emailVerified: body.email_verified ?? false,
-    firstName: body.first_name,
-    lastName: body.last_name,
-    middleName: body.middle_name ?? null,
-    avatar: body.avatar ?? null,
-    role: isOwner ? 'owner' : 'user',
-    platformRole: isOwner ? 'owner' : null,
-    status: body.status ?? 'active',
-    createdAt: now,
-    updatedAt: now,
-  })
+  let user: repo.UserRow
+  try {
+    user = await repo.createUser({
+      id: userId,
+      workosUserId,
+      email,
+      username,
+      emailVerified: body.email_verified ?? workosUser.emailVerified,
+      firstName: workosUser.firstName || body.first_name,
+      lastName: workosUser.lastName || body.last_name,
+      middleName: body.middle_name ?? null,
+      avatar: body.avatar ?? workosUser.avatar,
+      role: isOwner ? 'owner' : 'user',
+      platformRole: isOwner ? 'owner' : null,
+      status: body.status ?? 'active',
+      createdAt: now,
+      updatedAt: now,
+    })
+  } catch (error) {
+    if (workosUserCreated)
+      await deleteProviderUser(authProvider, workosUserId, {
+        localUserId: userId,
+      })
+    throw error
+  }
 
   await repo.createProfileForUser(userId, now)
 
