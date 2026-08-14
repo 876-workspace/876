@@ -247,3 +247,58 @@ export async function deleteMembership(
 
   return { object: 'membership', id: membershipId, deleted: true }
 }
+
+/**
+ * Apply a WorkOS `organization_membership.created`/`.updated` to the local row
+ * (WorkOS is source of record). Matches on the WorkOS membership id: an existing
+ * row has its role/status updated; when none exists yet, one is created only if
+ * the local org and user both resolve (the caller passes them), otherwise it is
+ * skipped rather than fabricated. Returns the action taken.
+ */
+export async function upsertMembershipFromWorkos(params: {
+  workosMembershipId: string
+  organizationId: string | null
+  userId: string | null
+  role: string
+  status: string
+}): Promise<'updated' | 'created' | 'skipped'> {
+  const existing = await repository.findMembershipByWorkosId(
+    params.workosMembershipId
+  )
+  const now = BigInt(nowUnixSeconds())
+
+  if (existing) {
+    await repository.updateMembership(existing.id, {
+      role: params.role,
+      status: params.status,
+      updatedAt: now,
+    })
+    return 'updated'
+  }
+
+  if (!params.organizationId || !params.userId) return 'skipped'
+
+  await repository.createMembership({
+    id: generateId('membership'),
+    organizationId: params.organizationId,
+    userId: params.userId,
+    workosMembershipId: params.workosMembershipId,
+    role: params.role,
+    status: params.status,
+    createdAt: now,
+    updatedAt: now,
+  })
+  return 'created'
+}
+
+/**
+ * Apply a WorkOS `organization_membership.deleted` by soft-deleting the local
+ * membership matched on its WorkOS id. Returns false when none matches.
+ */
+export async function removeMembershipByWorkosId(
+  workosMembershipId: string
+): Promise<boolean> {
+  const existing = await repository.findMembershipByWorkosId(workosMembershipId)
+  if (!existing) return false
+  return repository.deleteMembership(existing.id)
+}
