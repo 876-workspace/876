@@ -73,6 +73,26 @@ export function findUserByUsername(username: string): Promise<UserRow | null> {
   })
 }
 
+/**
+ * A returning account must be usable before we seal it a session. Deletion is
+ * already refused above (`auth/account-deleted`); this closes the other disabled
+ * states so a banned or suspended user cannot simply re-authenticate through
+ * WorkOS. `inactive` is deliberately allowed — it is the pre-verification state
+ * of a brand-new account still completing sign-up.
+ */
+async function assertAccountUsable(user: {
+  banned: boolean
+  status: string
+}): Promise<void> {
+  if (!user.banned && user.status !== 'suspended') return
+  const { AppHttpError } = await import('@/platform/errors')
+  throw new AppHttpError({
+    code: 'auth/account-suspended',
+    message: 'This account has been suspended.',
+    httpStatus: 403,
+  })
+}
+
 export async function ensureFromWorkos(providerUser: {
   id: string
   email: string
@@ -113,6 +133,7 @@ export async function ensureFromWorkos(providerUser: {
 
   const existingByWorkos = await findUserByWorkosId(providerUser.id)
   if (existingByWorkos) {
+    await assertAccountUsable(existingByWorkos)
     const isOwner = isPlatformOwnerEmail(normalizedEmail)
     return prisma.user.update({
       where: { id: existingByWorkos.id },
@@ -131,6 +152,7 @@ export async function ensureFromWorkos(providerUser: {
 
   const existingByEmail = await findUserByEmail(normalizedEmail)
   if (existingByEmail) {
+    await assertAccountUsable(existingByEmail)
     if (!providerUser.emailVerified) {
       const { AppHttpError } = await import('@/platform/errors')
       throw new AppHttpError({
