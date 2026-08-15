@@ -30,7 +30,11 @@ export default async function PriceDetailPage({ params }: Props) {
         <MetricCard
           label="Amount"
           value={formatMoney(price.unitAmount, price.currency)}
-          detail={formatPriceCadence(price)}
+          detail={formatPriceCadence({
+            intervalCount: price.intervalCount,
+            intervalUnit: price.intervalUnit,
+            priceType: price.priceType,
+          })}
         />
         <MetricCard
           label="Subscriptions"

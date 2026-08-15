@@ -132,7 +132,7 @@ any future app against the standard. Reference primitives: couriers
 
 - Core→Billing sync: `apps/api/src/services/billing-customer-sync.ts` (+ `.repository.ts`),
   `apps/api/src/workers/billing-customer-dispatch.ts`, billing-api
-  `apps/billing-api/domains/billing/workflows/customer_sync.py`.
+  `apps/billing-api/src/modules/customers/customers.service.ts` (+ repository).
 - Deletion: `organizations.service.ts` (`deleteOrganization`/`purgeOrganization`),
   `users.controller.ts` (`deleteUser`/`purgeUser`), `platform/deletion.ts`.
 - Auth choke point: `apps/api/src/modules/auth/auth.repository.ts` (`ensureFromWorkos`,
@@ -161,7 +161,7 @@ any future app against the standard. Reference primitives: couriers
 
 ```
 pnpm --filter @876/api typecheck && pnpm --filter @876/api test && pnpm --filter @876/api lint
-cd apps/billing-api && .venv/bin/python -m pytest tests/test_customer_sync.py -q
+pnpm --filter @876/billing-api typecheck && pnpm --filter @876/billing-api test
 pnpm --filter @876/couriers-app typecheck && pnpm --filter @876/couriers-app test
 pnpm --filter @876/console typecheck && pnpm --filter @876/console test
 pnpm --filter @876/enterprise typecheck

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import type { Tenant } from '@/lib/db'
 import type { MemberAccess, Permission } from './access'
+import type { Tenant } from './tenant'
 
 export type SessionUser = {
   id: string

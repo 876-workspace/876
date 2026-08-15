@@ -1,0 +1,30 @@
+
+/// A contact person attached to a customer. For an external customer these are
+/// hand-entered people; for a core 876 organization the owner is seeded as the
+/// default primary contact (members are never bulk-imported). `userId` is an
+/// optional opaque 876 user reference — no cross-DB foreign key.
+model Contact {
+  id           String  @id
+  tenantId     String  @map("tenant_id")
+  customerId   String  @map("customer_id")
+  userId       String? @map("user_id")
+  salutation   String?
+  firstName    String? @map("first_name")
+  lastName     String? @map("last_name")
+  email        String?
+  workPhone    String? @map("work_phone")
+  mobilePhone  String? @map("mobile_phone")
+  isPrimary    Boolean @default(false) @map("is_primary")
+  /// Unix seconds of the last snapshot refresh for a core-linked contact.
+  coreSyncedAt Int?    @map("core_synced_at")
+  createdAt    Int     @map("created_at")
+  updatedAt    Int     @map("updated_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_contacts_tenant_id_fkey")
+  customer Customer @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_contacts_customer_fkey")
+
+  @@unique([tenantId, id], map: "billing_contacts_tenant_id_id_key")
+  @@index([tenantId, customerId], map: "billing_contacts_tenant_customer_idx")
+  @@index([customerId], map: "billing_contacts_customer_id_idx")
+  @@map("billing_contacts")
+}

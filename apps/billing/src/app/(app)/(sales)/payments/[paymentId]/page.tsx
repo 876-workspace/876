@@ -13,14 +13,17 @@ import {
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { service } from '@/lib/service'
+import { service, type LegacyBillingRecord } from '@/lib/service'
 
 type Props = { params: Promise<{ paymentId: string }> }
 
 export default async function PaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:read')
   const { paymentId } = await params
-  const payment = await service.payments.retrieve(context.tenant.id, paymentId)
+  const payment: LegacyBillingRecord = await service.payments.retrieve(
+    context.tenant.id,
+    paymentId
+  )
   if (!payment) notFound()
 
   const allocated = payment.invoiceAllocations.reduce(

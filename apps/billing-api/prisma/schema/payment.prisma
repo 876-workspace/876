@@ -1,0 +1,53 @@
+/// Money manually recorded as received from a customer. Provider collection
+/// remains outside this model; allocations only settle tenant-owned invoices.
+model Payment {
+  id                      String        @id
+  tenantId                String        @map("tenant_id")
+  sourceAppId             String?       @map("source_app_id")
+  sourceExternalReference String?       @map("source_external_reference")
+  sourceIdempotencyKey    String?       @map("source_idempotency_key")
+  sourcePayloadHash       String?       @map("source_payload_hash")
+  customerId              String        @map("customer_id")
+  paymentModeId           String        @map("payment_mode_id")
+  depositAccountId        String        @map("deposit_account_id")
+  providerConnectionId    String?       @map("provider_connection_id")
+  number                  String
+  status                  PaymentStatus @default(SUCCEEDED)
+  revision                Int           @default(0)
+  providerPaymentId       String?       @map("provider_payment_id")
+  amount                  BigInt
+  /// Portion of `amount` not yet allocated to invoices — held as customer
+  /// credit (advance / overpayment), refundable or appliable to future invoices.
+  unappliedAmount         BigInt        @default(0) @map("unapplied_amount")
+  bankCharges             BigInt        @default(0) @map("bank_charges")
+  currency                String        @db.Char(3)
+  paymentDate             Int           @map("payment_date")
+  referenceNumber         String?       @map("reference_number") @db.VarChar(120)
+  notes                   String?       @db.Text
+  createdAt               Int           @map("created_at")
+  updatedAt               Int           @map("updated_at")
+
+  tenant             Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payments_tenant_id_fkey")
+  customer           Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_customer_fkey")
+  paymentMode        PaymentMode                @relation(fields: [tenantId, paymentModeId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_mode_fkey")
+  depositAccount     BankAccount                @relation(fields: [tenantId, depositAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_deposit_account_fkey")
+  providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_provider_connection_fkey")
+  invoiceAllocations PaymentAllocation[]
+  refunds            Refund[]
+  bankTransaction    BankTransaction?
+  ledgerEntries      CustomerLedgerEntry[]
+  paymentAttempts    PaymentAttempt[]
+
+  @@unique([tenantId, id], map: "billing_payments_tenant_id_id_key")
+  @@unique([tenantId, number], map: "billing_payments_tenant_id_number_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_payments_source_external_key", map: "billing_payments_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_payments_source_idempotency_key", map: "billing_payments_source_idempotency_key")
+  @@unique([providerConnectionId, providerPaymentId], name: "billing_payments_provider_external_key", map: "billing_payments_provider_external_key")
+  @@index([tenantId, sourceAppId], map: "billing_payments_source_app_idx")
+  @@index([tenantId, customerId, paymentDate], map: "billing_payments_tenant_customer_date_idx")
+  @@index([tenantId, depositAccountId], map: "billing_payments_tenant_deposit_account_idx")
+  @@index([customerId], map: "billing_payments_customer_id_idx")
+  @@index([depositAccountId], map: "billing_payments_deposit_account_id_idx")
+  @@index([paymentModeId], map: "billing_payments_payment_mode_id_idx")
+  @@map("billing_payments")
+}

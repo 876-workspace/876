@@ -15,7 +15,7 @@ import { type StatusFilterOption } from '@876/ui/status-filter-heading'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { StreamingResourcePage } from '@/components/patterns/streaming-resource-page'
 import { service } from '@/lib/service'
-import type { CreditNoteStatus } from '@/lib/db'
+import type { CreditNoteStatus } from '@/types/credit-note'
 
 export const metadata = {
   title: 'Credit Notes',

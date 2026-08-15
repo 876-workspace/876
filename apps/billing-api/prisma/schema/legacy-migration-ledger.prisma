@@ -1,0 +1,15 @@
+/// Historical migration marker retained during the zero-data-migration ORM
+/// cutover. Express does not read or write this table.
+model AlembicVersion {
+  versionNum String @id(map: "alembic_version_pkc") @db.VarChar(32) @map("version_num")
+
+  @@map("alembic_version")
+}
+
+/// Billing's historical Alembic marker. Prisma owns all future migrations,
+/// but preserving this row keeps the framework replacement schema-neutral.
+model BillingAlembicVersion {
+  versionNum String @id(map: "billing_alembic_version_pkc") @db.VarChar(32) @map("version_num")
+
+  @@map("billing_alembic_version")
+}

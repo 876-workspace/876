@@ -1,0 +1,20 @@
+
+/// Quantity tiers used by volume and graduated/tiered prices. No provider
+/// calculation is performed in this foundation; the structure is preserved for
+/// a future calculation engine or provider adapter.
+model PriceTier {
+  id         String  @id
+  priceId    String  @map("price_id")
+  fromUnit   Int     @default(1) @map("from_unit")
+  toUnit     Int?    @map("to_unit")
+  unitAmount BigInt? @map("unit_amount")
+  flatAmount BigInt? @map("flat_amount")
+  createdAt  Int     @map("created_at")
+  updatedAt  Int     @map("updated_at")
+
+  price Price @relation(fields: [priceId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_price_tiers_price_id_fkey")
+
+  @@unique([priceId, fromUnit], name: "billing_price_tiers_price_id_from_unit_key", map: "billing_price_tiers_price_id_from_unit_key")
+  @@index([priceId], map: "billing_price_tiers_price_id_idx")
+  @@map("billing_price_tiers")
+}

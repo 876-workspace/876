@@ -11,6 +11,7 @@
       "name": "billing-api-876",
       "class_name": "BillingApiContainer",
       "image": "./Dockerfile",
+      "image_build_context": "../../",
       "max_instances": 3,
     },
   ],
@@ -28,21 +29,21 @@
       "new_sqlite_classes": ["BillingApiContainer"],
     },
   ],
-  // Run the provider-neutral Billing sweep every five minutes.
-  // Keep disabled in dashboard until BILLING_WRITER=fastapi if desired;
-  // the handler is a no-op until /internal/billing-sweep exists on the API.
+  // The Worker checks BILLING_SWEEP_ENABLED before contacting the scheduler
+  // container and authenticates the internal route with a dedicated secret.
   "triggers": {
     "crons": ["*/5 * * * *"],
   },
   "vars": {
     "API_URL": "https://876-api.1876.workers.dev",
     // Bump to restart primary container for BILLING_WRITER activation.
-    "BILLING_API_PRIMARY_INSTANCE": "primary-20260812-release-readiness",
+    "BILLING_API_PRIMARY_INSTANCE": "primary-20260814-express",
+    "BILLING_SWEEP_ENABLED": "false",
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",
     "PORT": "4004",
-    // Active writer for couriers customer registry via integrations.
-    "BILLING_WRITER": "fastapi",
+    // Flip as part of the controlled writer cutover after parity checks.
+    "BILLING_WRITER": "none",
   },
   "observability": {
     "enabled": true,

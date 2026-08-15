@@ -1,0 +1,17 @@
+
+model CouponCustomerEligibility {
+  id         String @id
+  tenantId   String @map("tenant_id")
+  couponId   String @map("coupon_id")
+  customerId String @map("customer_id")
+  createdAt  Int    @map("created_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_customer_eligibilities_tenant_fkey")
+  coupon   Coupon   @relation(fields: [tenantId, couponId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_customer_eligibilities_coupon_fkey")
+  customer Customer @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_customer_eligibilities_customer_fkey")
+
+  @@unique([tenantId, couponId, customerId], name: "billing_coupon_customer_eligibility_key", map: "billing_coupon_customer_eligibility_key")
+  @@index([couponId], map: "billing_coupon_customer_eligibility_coupon_idx")
+  @@index([customerId], map: "billing_coupon_customer_eligibility_customer_idx")
+  @@map("billing_coupon_customer_eligibilities")
+}

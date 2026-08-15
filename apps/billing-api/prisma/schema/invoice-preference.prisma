@@ -1,0 +1,21 @@
+/// Workspace invoice defaults. Historical invoices snapshot every resolved
+/// value they need; changing preferences never rewrites posted documents.
+model InvoicePreference {
+  tenantId                 String                 @id @map("tenant_id")
+  defaultTaxBehavior       TaxBehavior            @default(EXCLUSIVE) @map("default_tax_behavior")
+  defaultNotes             String?                @map("default_notes")
+  defaultTerms             String?                @map("default_terms")
+  allowEditingSentInvoices Boolean                @default(false) @map("allow_editing_sent_invoices")
+  lateFeesEnabled          Boolean                @default(false) @map("late_fees_enabled")
+  lateFeeCalculationType   LateFeeCalculationType @default(PERCENTAGE) @map("late_fee_calculation_type")
+  lateFeePercent           Decimal?               @map("late_fee_percent") @db.Decimal(7, 4)
+  lateFeeAmount            BigInt?                @map("late_fee_amount")
+  lateFeeGraceDays         Int                    @default(0) @map("late_fee_grace_days")
+  lateFeeGenerateAsDraft   Boolean                @default(true) @map("late_fee_generate_as_draft")
+  createdAt                Int                    @map("created_at")
+  updatedAt                Int                    @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_invoice_preferences_tenant_id_fkey")
+
+  @@map("billing_invoice_preferences")
+}

@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { notFound } from 'next/navigation'
 
 import { DocumentLines } from '@/features/documents/components/document-lines'
@@ -18,7 +19,14 @@ export default async function QuoteLinesPage({
 
   return (
     <>
-      <DocumentLines lines={quote.lines} currency={quote.currency} />
+      <DocumentLines
+        lines={
+          quote.lines as unknown as ComponentProps<
+            typeof DocumentLines
+          >['lines']
+        }
+        currency={quote.currency}
+      />
     </>
   )
 }

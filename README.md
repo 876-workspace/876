@@ -16,7 +16,7 @@
 | `@876/billing-app`  | `apps/billing`      | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
 | `@876/widgets-api`  | `apps/widgets-api`  | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
 | `@876/api`          | `apps/api`          | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
-| `@876/billing-api`  | `apps/billing-api`  | 4004 | FastAPI Billing service — finance workspaces, customers, invoices; its own Postgres and Alembic migrations. |
+| `@876/billing-api`  | `apps/billing-api`  | 4004 | Express Billing financial data plane; owns its PostgreSQL schema and Prisma migrations. |
 | `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
 
 ## Packages

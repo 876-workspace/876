@@ -1,0 +1,94 @@
+/// A commercial invoice document. It deliberately does not equal a payment,
+/// accounting journal entry, or provider-hosted payment page.
+model Invoice {
+  id                      String               @id
+  tenantId                String               @map("tenant_id")
+  sourceAppId             String?              @map("source_app_id")
+  sourceExternalReference String?              @map("source_external_reference")
+  sourceIdempotencyKey    String?              @map("source_idempotency_key")
+  sourcePayloadHash       String?              @map("source_payload_hash")
+  customerId              String               @map("customer_id")
+  priceListId             String?              @map("price_list_id")
+  priceListName           String?              @map("price_list_name")
+  quoteId                 String?              @unique @map("quote_id")
+  estimateId              String?              @unique @map("estimate_id")
+  subscriptionId          String?              @map("subscription_id")
+  paymentTermId           String?              @map("payment_term_id")
+  salespersonId           String?              @map("salesperson_id")
+  number                  String
+  status                  InvoiceStatus        @default(DRAFT)
+  billingReason           InvoiceBillingReason @default(MANUAL) @map("billing_reason")
+  currency                String
+  orderNumber             String?              @map("order_number")
+  referenceNumber         String?              @map("reference_number")
+  subject                 String?
+  taxBehavior             TaxBehavior          @default(EXCLUSIVE) @map("tax_behavior")
+  customerName            String?              @map("customer_name")
+  customerEmail           String?              @map("customer_email")
+  billingAddressSnapshot  Json?                @map("billing_address_snapshot")
+  shippingAddressSnapshot Json?                @map("shipping_address_snapshot")
+  issueAt                 Int?                 @map("issue_at")
+  dueAt                   Int?                 @map("due_at")
+  sentAt                  Int?                 @map("sent_at")
+  paidAt                  Int?                 @map("paid_at")
+  voidedAt                Int?                 @map("voided_at")
+  finalizedAt             Int?                 @map("finalized_at")
+  servicePeriodStart      Int?                 @map("service_period_start")
+  servicePeriodEnd        Int?                 @map("service_period_end")
+  subtotalAmount          BigInt               @default(0) @map("subtotal_amount")
+  taxAmount               BigInt               @default(0) @map("tax_amount")
+  discountAmount          BigInt               @default(0) @map("discount_amount")
+  shippingAmount          BigInt               @default(0) @map("shipping_amount")
+  adjustmentAmount        BigInt               @default(0) @map("adjustment_amount")
+  totalAmount             BigInt               @default(0) @map("total_amount")
+  amountDue               BigInt               @default(0) @map("amount_due")
+  amountPaid              BigInt               @default(0) @map("amount_paid")
+  amountCredited          BigInt               @default(0) @map("amount_credited")
+  amountWrittenOff        BigInt               @default(0) @map("amount_written_off")
+  paymentTermName         String?              @map("payment_term_name")
+  salespersonName         String?              @map("salesperson_name")
+  notes                   String?
+  terms                   String?
+  metadata                Json?
+  createdAt               Int                  @map("created_at")
+  updatedAt               Int                  @map("updated_at")
+
+  tenant                    Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_invoices_tenant_id_fkey")
+  customer                  Customer                         @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_customer_id_fkey")
+  priceList                 PriceList?                       @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_price_list_fkey")
+  quote                     Quote?                           @relation("QuoteConvertedInvoice", fields: [quoteId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_quote_id_fkey")
+  estimate                  Estimate?                        @relation("EstimateConvertedInvoice", fields: [estimateId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_estimate_fkey")
+  subscription              Subscription?                    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_subscription_id_fkey")
+  lateFeeAssessments        LateFeeAssessment[]              @relation("LateFeeSourceInvoice")
+  lateFeeAssessment         LateFeeAssessment?               @relation("LateFeeInvoice")
+  billingRuns               SubscriptionBillingRun[]
+  subscriptionLinks         InvoiceSubscription[]
+  subscriptionNotifications SubscriptionNotificationOutbox[]
+  subscriptionCharges       SubscriptionCharge[]
+  paymentTerm               PaymentTerm?                     @relation(fields: [tenantId, paymentTermId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_payment_term_fkey")
+  salesperson               Salesperson?                     @relation(fields: [tenantId, salespersonId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_salesperson_fkey")
+  lines                     InvoiceLine[]
+  allocations               PaymentAllocation[]
+  creditNoteAllocations     CreditNoteAllocation[]
+  creditNotes               CreditNote[]                     @relation("InvoiceCreditNotes")
+  ledgerEntries             CustomerLedgerEntry[]
+  paymentAttempts           PaymentAttempt[]
+  couponRedemptions         CouponRedemption[]
+
+  @@unique([tenantId, id], map: "billing_invoices_tenant_id_id_key")
+  @@unique([tenantId, number], name: "billing_invoices_tenant_id_number_key", map: "billing_invoices_tenant_id_number_key")
+  @@unique([tenantId, sourceAppId, sourceExternalReference], name: "billing_invoices_source_external_key", map: "billing_invoices_source_external_key")
+  @@unique([tenantId, sourceAppId, sourceIdempotencyKey], name: "billing_invoices_source_idempotency_key", map: "billing_invoices_source_idempotency_key")
+  @@index([tenantId, status], map: "billing_invoices_tenant_id_status_idx")
+  @@index([tenantId, sourceAppId], map: "billing_invoices_source_app_idx")
+  @@index([customerId], map: "billing_invoices_customer_id_idx")
+  @@index([priceListId], map: "billing_invoices_price_list_id_idx")
+  @@index([subscriptionId], map: "billing_invoices_subscription_id_idx")
+  @@index([tenantId, dueAt], map: "billing_invoices_tenant_due_at_idx")
+  @@index([tenantId, billingReason], map: "billing_invoices_tenant_billing_reason_idx")
+  @@index([tenantId, orderNumber], map: "billing_invoices_order_number_idx")
+  @@index([tenantId, referenceNumber], map: "billing_invoices_reference_number_idx")
+  @@index([paymentTermId], map: "billing_invoices_payment_term_id_idx")
+  @@index([salespersonId], map: "billing_invoices_salesperson_id_idx")
+  @@map("billing_invoices")
+}

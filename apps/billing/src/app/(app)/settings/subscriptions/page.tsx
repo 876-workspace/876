@@ -1,3 +1,5 @@
+import type { ComponentProps } from 'react'
+
 import {
   Page,
   PageBreadcrumb,
@@ -30,20 +32,24 @@ export default async function SubscriptionSettingsPage() {
         </PageDescription>
       </PageHeader>
       <SubscriptionPreferenceForm
-        initial={{
-          ...preferences,
-          advanceBillingMethod: 'INVOICE',
-          advanceRules: preferences.advanceRules.map((rule) => ({
-            intervalUnit: rule.intervalUnit,
-            daysBefore: rule.daysBefore,
-          })),
-          calendarDays: preferences.calendarDays.map(
-            (entry) => entry.dayOfMonth
-          ),
-          calendarMonths: preferences.calendarMonths.map(
-            (entry) => entry.month
-          ),
-        }}
+        initial={
+          {
+            ...preferences,
+            advanceBillingMethod: 'INVOICE',
+            advanceRules: preferences.advanceRules.map((rule) => ({
+              intervalUnit: rule.intervalUnit,
+              daysBefore: rule.daysBefore,
+            })),
+            calendarDays: preferences.calendarDays.map(
+              (entry) => entry.dayOfMonth
+            ),
+            calendarMonths: preferences.calendarMonths.map(
+              (entry) => entry.month
+            ),
+          } as unknown as ComponentProps<
+            typeof SubscriptionPreferenceForm
+          >['initial']
+        }
         canManage={canManage}
       />
     </Page>

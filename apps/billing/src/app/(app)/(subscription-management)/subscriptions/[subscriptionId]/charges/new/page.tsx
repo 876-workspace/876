@@ -5,7 +5,7 @@ import { PageBreadcrumb } from '@876/ui/page'
 import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
 import { SubscriptionChargeForm } from '@/features/subscriptions/components/subscription-charge-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { service } from '@/lib/service'
+import { service, type LegacyBillingRecord } from '@/lib/service'
 
 export const metadata = { title: 'Add subscription charge' }
 
@@ -32,7 +32,7 @@ export default async function NewSubscriptionChargePage({
   const decimalPlaces =
     currencies.find((entry) => entry.currency.code === currency)?.currency
       .decimalPlaces ?? 2
-  const oneTime = addons.flatMap((addon) =>
+  const oneTime = (addons as LegacyBillingRecord[]).flatMap((addon) =>
     addon.planAssociations.some(
       (association) => association.isActive && association.planId === plan?.id
     )

@@ -20,6 +20,10 @@
     "./proxy": {
       "types": "./src/proxy.ts",
       "default": "./src/proxy.ts"
+    },
+    "./server": {
+      "types": "./src/server/index.ts",
+      "default": "./src/server/index.ts"
     }
   },
   "scripts": {

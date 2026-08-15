@@ -17,7 +17,7 @@ import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
 import { CustomerActions } from './_components/customer-actions'
-import { resolveCustomerParty } from './_data'
+import { resolveCustomerParty, type CustomerPartyInput } from './_data'
 
 function initialsOf(name: string): string {
   return (
@@ -46,7 +46,9 @@ export default async function CustomerDetailLayout({
 
   const isOrg =
     customer.customerType === 'CORE_ORGANIZATION' && customer.organizationId
-  const party = await resolveCustomerParty(customer)
+  const party = await resolveCustomerParty(
+    customer as unknown as CustomerPartyInput
+  )
 
   const base = `/customers/${customer.id}`
   const currency = (

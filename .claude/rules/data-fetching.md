@@ -1,7 +1,7 @@
 # Data Fetching Boundaries
 
 All database access, provider calls, and business logic belong in the owning
-FastAPI data service: `apps/api` for core platform data, `apps/billing-api` for
+owning HTTP data service: `apps/api` for core platform data, `apps/billing-api` for
 financial data, and `apps/widgets-api` for widget data. Next.js apps **must
 not** contain raw `fetch` calls to FastAPI or any direct DB/provider access.
 

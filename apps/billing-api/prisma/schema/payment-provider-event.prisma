@@ -1,0 +1,25 @@
+/// Durable provider-event inbox. Adapters verify signatures before inserting;
+/// workers acknowledge, deduplicate, then process events asynchronously.
+model PaymentProviderEvent {
+  id              String              @id
+  tenantId        String              @map("tenant_id")
+  connectionId    String              @map("connection_id")
+  externalEventId String              @map("external_event_id")
+  eventType       String              @map("event_type")
+  status          ProviderEventStatus @default(RECEIVED)
+  payload         Json?
+  errorMessage    String?             @map("error_message")
+  occurredAt      Int?                @map("occurred_at")
+  receivedAt      Int                 @map("received_at")
+  processedAt     Int?                @map("processed_at")
+  createdAt       Int                 @map("created_at")
+  updatedAt       Int                 @map("updated_at")
+
+  tenant     Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_provider_events_tenant_fkey")
+  connection PaymentProviderConnection @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_provider_events_connection_fkey")
+
+  @@unique([tenantId, id], map: "billing_payment_provider_events_tenant_id_id_key")
+  @@unique([connectionId, externalEventId], map: "billing_provider_events_connection_external_key")
+  @@index([tenantId, status, receivedAt], map: "billing_provider_events_tenant_status_date_idx")
+  @@map("billing_payment_provider_events")
+}

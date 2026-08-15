@@ -1,0 +1,57 @@
+name: Billing API container image
+
+on:
+  pull_request:
+    paths:
+      - 'apps/billing-api/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.dockerignore'
+      - '.github/workflows/billing-api-image.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: billing-api-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/billing-api/Dockerfile
+          push: false
+          load: true
+          tags: 876-billing-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Boot the image and verify the HTTP surface
+        run: |
+          docker run -d --name billing-api-ci \
+            -e BILLING_DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' \
+            -e BILLING_WRITER=none \
+            -e PORT=4004 \
+            -p 4004:4004 \
+            876-billing-api:ci
+
+          for i in $(seq 1 30); do
+            if curl -sf -m 3 http://localhost:4004/health >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "${ready:-0}" != "1" ]; then
+            docker logs billing-api-ci
+            exit 1
+          fi
+
+          curl -sf -m 5 http://localhost:4004/health
+          curl -sf -m 30 http://localhost:4004/openapi.json >/dev/null
+      - name: Container logs
+        if: always()
+        run: docker logs billing-api-ci || true

@@ -86,7 +86,9 @@ export default async function CustomerStatementPage({
               </thead>
               <tbody>
                 {account.statement.map((entry) => {
-                  const reference = statementReference(entry)
+                  const reference = statementReference(
+                    entry as unknown as Parameters<typeof statementReference>[0]
+                  )
                   return (
                     <tr key={entry.id} className="border-b last:border-b-0">
                       <td className="px-5 py-4 tabular-nums">

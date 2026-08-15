@@ -1,12 +1,16 @@
 import { apiSuccess } from '@876/core/api'
-
-import { prisma } from '@/lib/db'
+import { create876BillingServerClient } from '@876/billing/server'
 
 export const runtime = 'nodejs'
 
 export async function GET(): Promise<Response> {
   try {
-    await prisma.tenant.findFirst({ select: { id: true } })
+    const billing = create876BillingServerClient({
+      baseUrl: process.env.BILLING_API_URL,
+      public: true,
+    })
+    const result = await billing.request({ path: '/ready' })
+    if (result.error) throw new Error(result.error.message)
 
     return apiSuccess({
       object: 'readiness',
@@ -14,7 +18,7 @@ export async function GET(): Promise<Response> {
       service: 'billing',
     })
   } catch (error) {
-    console.error('Billing readiness database probe failed', {
+    console.error('Billing API readiness probe failed', {
       name: error instanceof Error ? error.name : 'UnknownError',
       message:
         error instanceof Error ? error.message : 'Non-Error value thrown',

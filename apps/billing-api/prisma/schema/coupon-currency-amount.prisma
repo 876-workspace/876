@@ -1,0 +1,20 @@
+
+/// Currency-specific fixed discount values. The original amount/currency pair
+/// on Coupon remains the base-currency fallback for existing integrations.
+model CouponCurrencyAmount {
+  id        String @id
+  tenantId  String @map("tenant_id")
+  couponId  String @map("coupon_id")
+  currency  String @db.Char(3)
+  amountOff BigInt @map("amount_off")
+  createdAt Int    @map("created_at")
+  updatedAt Int    @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_currency_amounts_tenant_fkey")
+  coupon Coupon @relation(fields: [tenantId, couponId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_coupon_currency_amounts_coupon_fkey")
+
+  @@unique([tenantId, couponId, currency], name: "billing_coupon_currency_amounts_coupon_currency_key", map: "billing_coupon_currency_amounts_coupon_currency_key")
+  @@index([couponId], map: "billing_coupon_currency_amounts_coupon_idx")
+  @@index([tenantId, currency], map: "billing_coupon_currency_amounts_tenant_currency_idx")
+  @@map("billing_coupon_currency_amounts")
+}

@@ -6,7 +6,7 @@ import {
   DashboardHeader,
 } from '@/components/patterns/page-skeleton'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { service } from '@/lib/service'
+import { service, type LegacyBillingRecord } from '@/lib/service'
 
 export const metadata = {
   title: 'Dashboard',
@@ -26,7 +26,9 @@ export default function DashboardPage() {
 
 async function DashboardPageData() {
   const context = await requirePagePermission('dashboard:read')
-  const overview = await service.dashboard.overview(context.tenant.id)
+  const overview: LegacyBillingRecord = await service.dashboard.overview(
+    context.tenant.id
+  )
 
   return (
     <div className="grid gap-6">

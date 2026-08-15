@@ -6,6 +6,7 @@ import { DetailField } from '@/components/patterns/detail/detail-field'
 import { DetailActionList } from '@/components/patterns/detail/detail-action-list'
 import { MetricCard } from '@/components/patterns/metric-card'
 import { resolveCreditNote } from '@/app/(app)/_lib/detail-data'
+import type { LegacyBillingRecord } from '@/lib/service'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 
@@ -23,7 +24,10 @@ export default async function CreditNoteDetailPage({ params }: Props) {
   const context = await getWorkspaceContext()
   if (!context) return null
 
-  const creditNote = await resolveCreditNote(context.tenant.id, creditNoteId)
+  const creditNote: LegacyBillingRecord = await resolveCreditNote(
+    context.tenant.id,
+    creditNoteId
+  )
   if (!creditNote) notFound()
 
   return (

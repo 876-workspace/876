@@ -12,9 +12,9 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 | ------------------ | ------------------ | ---- | ----------------------------------------------------------------- |
 | `@876/app`         | `apps/876`         | 3000 | Consumer app, org workspaces, auth pages, OAuth provider UI, PWA. |
 | `@876/console`     | `apps/console`     | 3002 | Internal Console.                                                 |
-| `@876/api`         | `apps/api`         | 4000 | FastAPI backend; owns database/provider server calls.             |
+| `@876/api`         | `apps/api`         | 4000 | Express identity/platform data service; owns DB/provider calls.   |
 | `@876/billing-app` | `apps/billing`     | 3004 | Billing SaaS presentation layer and authenticated API BFF.        |
-| `@876/billing-api` | `apps/billing-api` | 4004 | FastAPI financial data plane, providers, and scheduled billing.   |
+| `@876/billing-api` | `apps/billing-api` | 4004 | Express financial data plane, providers, and scheduled billing.   |
 | `@876/widgets-api` | `apps/widgets-api` | 3005 | Widget-owned data service backed by dedicated Postgres.           |
 
 ### Shared packages
@@ -31,7 +31,7 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ```bash
 pnpm dev                          # Product apps + API + Widgets API in parallel
-pnpm dev:api                      # FastAPI only (uvicorn --reload)
+pnpm dev:api                      # Express identity API only
 pnpm dev:app                      # Consumer app only
 pnpm dev:console                  # Console app + API + Widgets API
 
@@ -41,18 +41,20 @@ pnpm --filter @876/console typecheck
 pnpm --filter @876/api typecheck
 pnpm --filter @876/sdk typecheck
 pnpm --filter @876/core typecheck
-pnpm --filter @876/api test       # pytest
+pnpm --filter @876/api test       # vitest
+pnpm --filter @876/billing-api test
+pnpm --filter @876/billing-api boundaries
+pnpm --filter @876/billing-api api:contract:check
 pnpm --filter @876/sdk test       # vitest
 pnpm check                        # format + lint + typecheck + test (run before committing)
 ```
 
-API can also be run directly from `apps/api`:
+The Express data services can also be run directly:
 
 ```bash
-python -m uvicorn main:app --host 0.0.0.0 --port 4000 --reload
-python -m pytest
-python -m mypy . tests
-python -m ruff check .
+pnpm --filter @876/api dev
+pnpm --filter @876/billing-api dev
+pnpm --filter @876/couriers-api dev
 ```
 
 ## Required Context
@@ -69,7 +71,7 @@ python -m ruff check .
 
 ## Boundaries
 
-- **All database access, provider calls, and business logic belong in the owning FastAPI data service** (`apps/api`, `apps/billing-api`, or `apps/widgets-api`). Next.js apps must not contain raw `fetch` calls to FastAPI or any direct DB/provider access. Frontends fetch over HTTP via the owning typed package or BFF.
+- **All database access, provider calls, and business logic belong in the owning data service** (`apps/api`, `apps/billing-api`, or `apps/widgets-api`). Next.js apps must not contain direct DB/provider access or bypass the owning typed package/BFF. Billing database access belongs exclusively to `apps/billing-api` repositories.
 - `@876/app` and `@876/console` fetch data exclusively through `@876/sdk` (consumer/auth) or `@876/admin` (Console server components).
 - `@876/admin` server-side calls use `internalKey: process.env.API_INTERNAL_KEY`. Never expose this key to the browser.
 - `@876/sdk` is request-only auth/OAuth transport; apps own cookies, session stores, and navigation.
@@ -96,24 +98,21 @@ Permission helpers live in each app's `src/lib/auth/guards.ts`:
 - `@876/app`: `requireSession`, `requireConsumerAccount`, `requireEnterpriseMembership`, `requireConsumerFeature`, `hasPermission`
 - `@876/console`: `requireConsoleAccount`, `requireConsolePermission`, `hasPermission`
 
-Platform permissions are derived from `users.role` via `apps/api/core/permissions.py`. The API returns a `permissions: string[]` field on every user response.
+Platform permissions are derived from `users.role` via `apps/api/src/platform/permissions.ts`. The API returns a `permissions: string[]` field on every user response.
 
-## API Architecture (FastAPI)
+## API Architecture (Express)
 
-Entry: `main.py` → `api/v1.py`. Domain routers live in `domains/<name>/router.py`; route-level OpenAPI docs live in matching `docs.py`; Pydantic contracts live in matching `schemas.py`.
+`apps/api`, `apps/couriers-api`, and `apps/billing-api` use Express 5, strict
+TypeScript/ESM, Prisma 7, Zod 4, generated OpenAPI, Vitest/Supertest, Pino, and
+Cloudflare Containers. `src/app.ts` assembles middleware and route composition;
+bounded domains live under `src/modules/<domain>/` with routes, controllers,
+services, repositories, schemas, serializers, docs, and tests.
 
-| Domain        | Path prefix      | Auth                                                                    |
-| ------------- | ---------------- | ----------------------------------------------------------------------- |
-| auth          | `/auth`          | Public / session                                                        |
-| oauth         | `/oauth`         | Public / bearer                                                         |
-| users         | `/users`         | AdminDep (internal key) except `/oauth-grants`, `/ensure` (app API key) |
-| organizations | `/organizations` | AdminDep                                                                |
-| memberships   | `/memberships`   | AdminDep                                                                |
-| features      | `/features`      | AdminDep                                                                |
-| apps          | `/apps`          | ApiKeyDep + AdminDep where required                                     |
-| health        | `/health`        | Public                                                                  |
-
-`require_api_key` protects the top-level protected router and validates `876_app_secret_*` API keys. `AdminDep` requires the `x-internal-key` header to match `API_INTERNAL_KEY`; when `API_INTERNAL_KEY` is empty, admin routes reject all requests. DB models live in `db/models.py`; repositories in `db/repositories/`. See `.agents/rules/api-backend.md` for backend route, schema, docs, auth, and testing rules.
+Routes declare security, validation, responses, OpenAPI metadata, and a thin
+controller. Services own orchestration; only repositories import Prisma.
+Cross-module access goes through public `index.ts` exports. Route-local guards
+are required so nonexistent paths remain 404s rather than auth failures. See
+`.agents/rules/api-backend.md` for the full standard.
 
 ## Data Fetching Pattern
 
@@ -133,7 +132,8 @@ function getAdminClient() {
 
 Adding a new API operation:
 
-1. Add the endpoint to `apps/api` (FastAPI router + repository method).
+1. Add the endpoint to the owning Express module (route, Zod schema, service,
+   repository, docs, and middleware-level tests).
 2. Add the typed method to `@876/admin` (`packages/admin/src/client.ts`) or `@876/sdk`.
 3. Call through the package in the Next.js app — never fetch directly.
 

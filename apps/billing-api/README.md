@@ -1,57 +1,78 @@
 # 876 Billing API
 
-Python FastAPI data plane for 876 Billing. This service will own Billing's
-database access, financial business logic, integrations, and scheduled work.
-The Next.js Billing application remains the presentation layer.
+Express 5 financial data plane for 876 Billing. The service owns the Billing
+PostgreSQL schema, all financial business rules, provider integration state,
+the frozen v1 HTTP contract, and scheduled recurring billing. The Next.js
+Billing application is a presentation layer and has no database client.
 
 ## Development
 
 ```bash
+pnpm --filter @876/billing-api db:generate
 pnpm --filter @876/billing-api dev
-pnpm --filter @876/billing-api lint
 pnpm --filter @876/billing-api typecheck
+pnpm --filter @876/billing-api lint
+pnpm --filter @876/billing-api boundaries
 pnpm --filter @876/billing-api test
+pnpm --filter @876/billing-api build
 ```
 
-The canonical versioned API prefix is `/api/v1`. Liveness, readiness, and
-Prometheus telemetry are available at `/health`, `/ready`, and `/metrics`.
+The public v1 prefix is `/api/v1`. Liveness, readiness, generated OpenAPI, and
+Prometheus telemetry are exposed at `/health`, `/ready`, `/openapi.json`, and
+`/metrics`. Internal projections and the scheduler endpoint live under
+`/internal` and require service credentials.
+
+## Architecture
+
+Each bounded context under `src/modules` owns its routes, controllers,
+services, repositories, schemas, serializers, documentation, and tests.
+Controllers handle HTTP only, services own orchestration and business rules,
+and repositories are the only application layer allowed to import Prisma.
+Cross-module calls use the owning module's public `index.ts`.
+
+Billing preserves the frozen contract at
+`apps/billing/contracts/v1/openapi.json`. Runtime validation remains Zod-based;
+the generated v1 compatibility manifest preserves the legacy OpenAPI rendering
+without replacing route declarations or runtime validation.
+
+```bash
+pnpm --filter @876/billing-api api:contract:check
+```
 
 ## Database ownership
 
-Alembic owns schema changes after revision `202607220001`. The adoption
-revision adopts the exact legacy Prisma schema without replaying DDL and
-refuses empty, partial, or drifted schemas. New environments restore the
-Billing database before Alembic adopts it. Revision `202607220002` creates the
-vendor table that existed in the Prisma schema but was absent from its migration
-history.
+Prisma 7 owns the exact existing Billing schema and migration ledger under
+`prisma/`. The migration baseline adopts the existing production schema; it
+does not recreate or rename financial tables.
 
 ```bash
-pnpm --filter @876/billing-api db:migrate
+pnpm --filter @876/billing-api db:validate
+pnpm --filter @876/billing-api db:baseline -- --dry-run
 pnpm --filter @876/billing-api db:migration:check
-pnpm --filter @876/billing-api db:reconcile
-pnpm --filter @876/billing-api cutover:check -- --base-url http://localhost:4004
+pnpm --filter @876/billing-api db:drift
+pnpm --filter @876/billing-api db:deploy
 ```
+
+`db:baseline` is an idempotent adoption guard for existing environments. It
+requires zero structural drift and a complete Billing-only table sample before
+removing a fixed list of historical identity-service ledger rows and marking
+the already-existing vendor table migration applied. It refuses unknown rows,
+partial schemas, or migrations that still require DDL.
 
 ## Billing engine
 
-The internal `POST /api/v1/admin/billing/run` operation and the scheduler CLI
-run the same bounded, provider-neutral engine. Both require the FastAPI service
-to own writes. Subscription-period runs and provider events are idempotent, and
-workers claim due rows with PostgreSQL `SKIP LOCKED` so overlapping scheduler
-deliveries do not produce duplicate invoices.
+The admin action, Cloudflare scheduled request, and CLI call the same billing
+engine service. Due subscriptions are claimed with PostgreSQL
+`FOR UPDATE ... SKIP LOCKED`; billing-run records and provider events preserve
+retry idempotency.
 
 ```bash
-BILLING_WRITER=fastapi pnpm --filter @876/billing-api billing:run -- --limit 100
+BILLING_WRITER=express pnpm --filter @876/billing-api billing:run -- --limit 100
 ```
 
-The command exits non-zero when any subscription fails, while preserving the
-successful per-subscription transactions and durable failure records for retry.
+`BILLING_WRITER` is the single-writer lease. Use `none` while validating a
+deployment and switch to `express` only during the controlled cutover. The API
+rejects mutating traffic while it is not the selected writer.
 
-`BILLING_WRITER` is the shared single-writer lease. Its valid values are
-`legacy`, `fastapi`, and `none`; missing or invalid configuration fails closed.
-The reconciliation command requires `BILLING_WRITER=none` operationally and
-reads its source from `BILLING_LEGACY_DATABASE_URL` and target from
-`BILLING_DATABASE_URL`.
-
-See [the cutover runbook](../../docs/billing-api-cutover.md) for the ordered
-handoff and rollback procedure.
+See [the cutover runbook](../../docs/billing-api-cutover.md) and
+[Cloudflare operations](../../docs/cloudflare.md).

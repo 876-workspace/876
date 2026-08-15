@@ -12,6 +12,22 @@ export const TenantCreateSchema = z.strictObject({
 export type TenantCreateParams = z.infer<typeof TenantCreateSchema>
 export type TenantCreateInput = z.input<typeof TenantCreateSchema>
 
+/** Billing workspace projected from the Billing data plane. */
+export interface Tenant {
+  id: string
+  organizationId: string | null
+  slug: string
+  name: string
+  status: 'ACTIVE' | 'SUSPENDED' | 'CLOSED'
+  countryCode: string
+  defaultCurrency: string
+  defaultLanguage: string
+  provisioningVersion: number
+  provisionedAt: number
+  createdAt: number
+  updatedAt: number
+}
+
 export interface TenantProvisioned {
   object: 'billing_tenant'
   id: string

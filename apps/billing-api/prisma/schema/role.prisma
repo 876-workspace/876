@@ -1,0 +1,22 @@
+/// A tenant-scoped collection of permissions. System roles establish
+/// safe defaults; organizations may add custom roles without affecting others.
+model Role {
+  id          String   @id
+  tenantId    String   @map("tenant_id")
+  slug        String
+  name        String
+  description String   @default("")
+  permissions String[]
+  isSystem    Boolean  @default(false) @map("is_system")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   Int      @map("created_at")
+  updatedAt   Int      @map("updated_at")
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_roles_tenant_id_fkey")
+  members Member[]
+
+  @@unique([tenantId, id], map: "billing_roles_tenant_id_id_key")
+  @@unique([tenantId, slug], map: "billing_roles_tenant_id_slug_key")
+  @@index([tenantId], map: "billing_roles_tenant_id_idx")
+  @@map("billing_roles")
+}
