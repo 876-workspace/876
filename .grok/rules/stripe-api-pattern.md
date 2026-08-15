@@ -94,8 +94,8 @@ Lists use a dedicated Stripe-like container:
 interface ApiList<T> {
   object: 'list'
   data: T[]
-  has_more: boolean
-  total_count?: number
+  hasMore: boolean
+  totalCount?: number
   url: string
 }
 ```
@@ -106,14 +106,16 @@ Search results use Stripe's search container spelling:
 interface ApiSearchResult<T> {
   object: 'search_result'
   data: T[]
-  has_more: boolean
-  next_page: string | null
-  total_count?: number
+  hasMore: boolean
+  nextPage: string | null
+  totalCount?: number
   url: string
 }
 ```
 
-Use `object: 'list'` for ordinary pagination and `object: 'search_result'` when the endpoint uses a query language or search cursor. `next_page` is opaque; callers must pass it back without parsing it.
+Use `object: 'list'` for ordinary pagination and `object: 'search_result'` when the endpoint uses a query language or search cursor. `nextPage` is opaque; callers must pass it back without parsing it.
+
+Note: the `object` token values (`'list'`, `'search_result'`) are stable protocol strings — do not rename them. The property names (`hasMore`, `totalCount`, `nextPage`) are camelCase per the platform TypeScript convention.
 
 ## Type Naming Rules
 
