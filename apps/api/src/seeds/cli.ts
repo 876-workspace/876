@@ -17,7 +17,7 @@ async function main(): Promise<void> {
   const help = args.includes('--help') || args.includes('-h')
 
   if (help) {
-    console.log(`Usage: pnpm node:seed [--only=bootstrap,geo,provisioning,features,plans]
+    console.log(`Usage: pnpm node:seed [--only=bootstrap,geo,provisioning,features,plans,defaultPrices]
 
 Seeds the platform database idempotently. Each seed only creates absent rows
 and never clobbers operator-changed values. Re-running is safe.
@@ -34,6 +34,7 @@ Options:
     'provisioning',
     'features',
     'plans',
+    'defaultPrices',
   ])
   if (only && only.some((name) => !valid.has(name))) {
     console.error(

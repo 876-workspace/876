@@ -117,11 +117,15 @@ describe('seedDefaultRoles', () => {
 })
 
 describe('provisionOrgApps', () => {
-  it('subscribes the org to Enterprise and Billing', async () => {
+  it('subscribes the org to Enterprise, Billing, and Invoice', async () => {
     const provisioned = await provisionOrgApps(ORG)
 
-    expect(provisioned).toEqual(['app_876-enterprise', 'app_876-billing'])
-    expect(prisma.subscription.create).toHaveBeenCalledTimes(2)
+    expect(provisioned).toEqual([
+      'app_876-enterprise',
+      'app_876-billing',
+      'app_876-invoice',
+    ])
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
   })
 
   it('additionally subscribes the app the signup came through', async () => {
@@ -139,7 +143,11 @@ describe('provisionOrgApps', () => {
       sourceAppId: 'app_876-billing',
     })
 
-    expect(provisioned).toEqual(['app_876-enterprise', 'app_876-billing'])
+    expect(provisioned).toEqual([
+      'app_876-enterprise',
+      'app_876-billing',
+      'app_876-invoice',
+    ])
   })
 
   it('skips an app the org is already subscribed to', async () => {
@@ -157,7 +165,7 @@ describe('provisionOrgApps', () => {
   it('attaches the default price as a line item', async () => {
     await provisionOrgApps(ORG)
 
-    expect(prisma.subscriptionItem.create).toHaveBeenCalledTimes(2)
+    expect(prisma.subscriptionItem.create).toHaveBeenCalledTimes(3)
     const data = prisma.subscriptionItem.create.mock.calls[0]?.[0]
       .data as Record<string, unknown>
     expect(data.priceId).toBe('prc_1')
@@ -169,7 +177,7 @@ describe('provisionOrgApps', () => {
 
     const provisioned = await provisionOrgApps(ORG)
 
-    expect(provisioned).toHaveLength(2)
+    expect(provisioned).toHaveLength(3)
     expect(prisma.subscriptionItem.create).not.toHaveBeenCalled()
   })
 
@@ -187,7 +195,7 @@ describe('provisionOrgApps', () => {
 
     const provisioned = await provisionOrgApps(ORG)
 
-    expect(provisioned).toEqual(['app_876-enterprise'])
+    expect(provisioned).toEqual(['app_876-enterprise', 'app_876-invoice'])
   })
 })
 
@@ -200,7 +208,7 @@ describe('provisionOrganization', () => {
     })
 
     expect(Object.keys(roles).length).toBe(DEFAULT_ORG_ROLES.length)
-    expect(prisma.subscription.create).toHaveBeenCalledTimes(2)
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
     expect(enqueue).toHaveBeenCalledWith(ORG, NOW)
   })
 
