@@ -127,7 +127,7 @@ export const userSchema = z
     object: z.literal('user'),
     id: z.string(),
     email: z.email(),
-    created_at: z.number().int(),
+    createdAt: z.number().int(),
   })
   .meta({ id: 'User', description: 'A platform user account.' })
 
@@ -138,10 +138,12 @@ Rules:
 
 - **Schemas are named `camelCase` ending in `Schema`**; inferred types are
   `PascalCase`. Same as `.claude/rules/types.md`.
-- **Wire field names are `snake_case`** (`created_at`, `has_more`,
-  `starting_after`) because that is the existing platform contract. Internal
-  TypeScript is `camelCase`. The serializer is where the two meet — never leak a
-  Prisma field name straight onto the wire.
+- **Wire field names are `camelCase`** (`createdAt`, `hasMore`,
+  `startingAfter`) — the same as internal TypeScript. 876-owned contracts use
+  camelCase end-to-end. The serializer is responsible for representation
+  decisions (BigInt → Unix seconds, omitting private fields, object
+  discriminator, provider object → 876 object) — **not** casing translation.
+  Never introduce a snake_case property on a 876-owned TypeScript schema.
 - **Every serialized resource carries a literal `object` discriminator**
   (`z.literal('user')`), per `.claude/rules/stripe-api-pattern.md`.
 - **Request schemas are strict** (`z.strictObject`) so unknown fields are
@@ -171,10 +173,10 @@ returns the resource itself and never hand-builds the envelope.
 Lists use the platform list object, always:
 
 ```ts
-{ object: 'list', data: T[], has_more: boolean, url: string, total_count: number | null }
+{ object: 'list', data: T[], hasMore: boolean, url: string, totalCount: number | null }
 ```
 
-Cursor pagination is `starting_after` / `ending_before` on item IDs. Never
+Cursor pagination is `startingAfter` / `endingBefore` on item IDs. Never
 offset/limit on a public list endpoint.
 
 Errors are thrown, not returned:

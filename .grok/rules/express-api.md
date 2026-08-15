@@ -7,10 +7,9 @@ fixes the module shape, the layer responsibilities, the contract surface, the
 auth tiers, and the database conventions so a new service inherits the whole
 pattern instead of inventing a fifth one.
 
-Companion to `.grok/rules/api-backend.md` (which still governs the FastAPI
-services until each is migrated), `.grok/rules/stripe-api-pattern.md`
-(resource shapes), `.grok/rules/sdk-conventions.md` (the client surface these
-services are consumed through), and `.grok/rules/platform-services.md`
+Companion to `.claude/rules/api-backend.md`, `.claude/rules/stripe-api-pattern.md`
+(resource shapes), `.claude/rules/sdk-conventions.md` (the client surface these
+services are consumed through), and `.claude/rules/platform-services.md`
 (which bounded context owns what).
 
 ## The stack, fixed
@@ -73,7 +72,7 @@ apps/<service>/
 **Never create top-level `routes/`, `controllers/`, `services/`, or
 `repositories/` directories.** That layout is what most Express tutorials show
 and it is the same failure this repo already banned for Next apps in
-`.grok/rules/app-structure.md`: at 300+ endpoints it produces a `services/`
+`.claude/rules/app-structure.md`: at 300+ endpoints it produces a `services/`
 directory of 100 peer files where nothing tells you what may import what, and
 the dependency graph becomes circular within a year. The layer belongs _inside_
 the module, where the compiler can see the boundary.
@@ -128,7 +127,7 @@ export const userSchema = z
     object: z.literal('user'),
     id: z.string(),
     email: z.email(),
-    created_at: z.number().int(),
+    createdAt: z.number().int(),
   })
   .meta({ id: 'User', description: 'A platform user account.' })
 
@@ -138,13 +137,15 @@ export type User = z.infer<typeof userSchema>
 Rules:
 
 - **Schemas are named `camelCase` ending in `Schema`**; inferred types are
-  `PascalCase`. Same as `.grok/rules/types.md`.
-- **Wire field names are `snake_case`** (`created_at`, `has_more`,
-  `starting_after`) because that is the existing platform contract. Internal
-  TypeScript is `camelCase`. The serializer is where the two meet — never leak a
-  Prisma field name straight onto the wire.
+  `PascalCase`. Same as `.claude/rules/types.md`.
+- **Wire field names are `camelCase`** (`createdAt`, `hasMore`,
+  `startingAfter`) — the same as internal TypeScript. 876-owned contracts use
+  camelCase end-to-end. The serializer is responsible for representation
+  decisions (BigInt → Unix seconds, omitting private fields, object
+  discriminator, provider object → 876 object) — **not** casing translation.
+  Never introduce a snake_case property on a 876-owned TypeScript schema.
 - **Every serialized resource carries a literal `object` discriminator**
-  (`z.literal('user')`), per `.grok/rules/stripe-api-pattern.md`.
+  (`z.literal('user')`), per `.claude/rules/stripe-api-pattern.md`.
 - **Request schemas are strict** (`z.strictObject`) so unknown fields are
   rejected. Response schemas are plain `z.object`.
 - **Validation happens in one place**: a `validate({ body, query, params })`
@@ -157,7 +158,7 @@ Rules:
 Routes register themselves into an OpenAPI registry as they are defined, so a
 route cannot exist undocumented. The prose lives in `*.docs.ts` as plain
 exported constants — summaries, descriptions, response examples — mirroring the
-`docs.py` split the FastAPI services already use, and for the same reason:
+documentation split the other Express services use, and for the same reason:
 route files stay readable when the documentation is somewhere else.
 
 `/openapi.json` is served from the registry. A snapshot test asserts the
@@ -172,10 +173,10 @@ returns the resource itself and never hand-builds the envelope.
 Lists use the platform list object, always:
 
 ```ts
-{ object: 'list', data: T[], has_more: boolean, url: string, total_count: number | null }
+{ object: 'list', data: T[], hasMore: boolean, url: string, totalCount: number | null }
 ```
 
-Cursor pagination is `starting_after` / `ending_before` on item IDs. Never
+Cursor pagination is `startingAfter` / `endingBefore` on item IDs. Never
 offset/limit on a public list endpoint.
 
 Errors are thrown, not returned:
@@ -202,7 +203,7 @@ throw new AppHttpError({
 
 ## Auth tiers
 
-The tier model from `.grok/rules/platform-services.md` is implemented as
+The tier model from `.claude/rules/platform-services.md` is implemented as
 composable Express middleware, one per tier:
 
 | Middleware                                            | Credential                 | Grants                                           |
@@ -238,7 +239,7 @@ Non-negotiable:
   directory.
 - **The database is snake_case; the client is camelCase.** Every model carries
   `@@map("table_name")` and every column `@map("column_name")`. Renaming a table
-  or column is forbidden by `.grok/rules/naming.md` — the map attribute is how
+  or column is forbidden by `.claude/rules/naming.md` — the map attribute is how
   a readable client coexists with the existing schema.
 - **Migrations are files, never startup DDL.** A service must not run `ALTER
 TABLE` from its boot path. Schema changes are `prisma migrate` files, applied
@@ -246,7 +247,7 @@ TABLE` from its boot path. Schema changes are `prisma migrate` files, applied
 - **An existing database is introspected and baselined**, never recreated:
   `prisma db pull` → split → `prisma migrate diff` → `migrate resolve --applied`.
 - **Only `*.repository.ts` imports the prisma client.**
-- **Soft deletes per `.grok/rules/deletions.md`.** End-user reads filter
+- **Soft deletes per `.claude/rules/deletions.md`.** End-user reads filter
   `deleted_at IS NULL`; admin reads opt in with an explicit `includeDeleted`.
 - References to another bounded context are **opaque ID columns with no
   cross-database foreign key**.
@@ -300,7 +301,7 @@ endpoint, and never included in an error body.
 
 ## Testing
 
-Follows `.grok/rules/testing.md`. Service-specific additions:
+Follows `.claude/rules/testing.md`. Service-specific additions:
 
 - Tests live in `__tests__/` beside the module they cover.
 - `app.ts` exports the assembled app without listening, so **supertest drives
@@ -325,7 +326,7 @@ Follows `.grok/rules/testing.md`. Service-specific additions:
 - Do not leak a provider or database error message to a client.
 - Do not run DDL at startup; ship a migration.
 - Do not rename a database table, column, env var, or error code — they are
-  contracts (`.grok/rules/naming.md`).
+  contracts (`.claude/rules/naming.md`).
 - Do not read `process.env` outside `config/`.
 - Do not trust a client-supplied `app_id`, `owner_id`, or realm.
 - Do not install `express-async-errors`; Express 5 handles it.
