@@ -34,11 +34,11 @@ export function listObjectSchema<T extends z.ZodTypeAny>(item: T) {
   return z.object({
     object: z.literal('list').meta({ description: "Always 'list'." }),
     data: z.array(item).meta({ description: 'Array of objects in this page.' }),
-    has_more: z.boolean().meta({
+    hasMore: z.boolean().meta({
       description: 'Whether there are more objects beyond this page.',
     }),
     url: z.string().meta({ description: 'The URL for this list endpoint.' }),
-    total_count: z
+    totalCount: z
       .number()
       .int()
       .nullable()
@@ -49,9 +49,9 @@ export function listObjectSchema<T extends z.ZodTypeAny>(item: T) {
 export type ListObject<T> = {
   object: 'list'
   data: T[]
-  has_more: boolean
+  hasMore: boolean
   url: string
-  total_count: number | null
+  totalCount: number | null
 }
 
 export function listObject<T>(options: {
@@ -63,9 +63,9 @@ export function listObject<T>(options: {
   return {
     object: 'list',
     data: options.data,
-    has_more: options.hasMore,
+    hasMore: options.hasMore,
     url: options.url,
-    total_count: options.totalCount ?? null,
+    totalCount: options.totalCount ?? null,
   }
 }
 
@@ -88,8 +88,8 @@ export function deletedObjectSchema(object: string) {
 
 export const paginationQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(25),
-  starting_after: z.string().optional(),
-  ending_before: z.string().optional(),
+  startingAfter: z.string().optional(),
+  endingBefore: z.string().optional(),
 })
 
 export type PaginationQuery = z.infer<typeof paginationQuerySchema>
@@ -123,8 +123,8 @@ export async function paginateByCursor<Row>(options: {
   const { query, loadAnchor, cursorOf, fetch } = options
   const take = query.limit + 1
 
-  if (query.starting_after) {
-    const anchor = await loadAnchor(query.starting_after)
+  if (query.startingAfter) {
+    const anchor = await loadAnchor(query.startingAfter)
     if (!anchor) return { data: [], hasMore: false }
 
     const rows = await fetch({
@@ -138,8 +138,8 @@ export async function paginateByCursor<Row>(options: {
     }
   }
 
-  if (query.ending_before) {
-    const anchor = await loadAnchor(query.ending_before)
+  if (query.endingBefore) {
+    const anchor = await loadAnchor(query.endingBefore)
     if (!anchor) return { data: [], hasMore: false }
 
     const rows = await fetch({

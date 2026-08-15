@@ -62,11 +62,11 @@ export interface ApiList<
   /**
    * Whether there are more items after this page.
    */
-  has_more: boolean
+  hasMore: boolean
   /**
    * Total number of items, when available.
    */
-  total_count?: number
+  totalCount?: number
 }
 
 /**
@@ -86,15 +86,15 @@ export interface ApiSearchResult<
   /**
    * Whether there are more items after this page.
    */
-  has_more: boolean
+  hasMore: boolean
   /**
    * A cursor for fetching the next page of results.
    */
-  next_page: string | null
+  nextPage: string | null
   /**
    * Total number of results, when available.
    */
-  total_count?: number
+  totalCount?: number
 }
 
 /**
@@ -119,8 +119,8 @@ export function apiListSchema<TItem extends ApiObject<string>>(
   return z.strictObject({
     object: z.literal('list'),
     data: z.array(itemSchema),
-    has_more: z.boolean(),
-    total_count: z.int().nonnegative().optional(),
+    hasMore: z.boolean(),
+    totalCount: z.int().nonnegative().optional(),
     url: z.string().trim().min(1),
   })
 }
@@ -137,9 +137,9 @@ export function apiSearchResultSchema<TItem extends ApiObject<string>>(
   return z.strictObject({
     object: z.literal('search_result'),
     data: z.array(itemSchema),
-    has_more: z.boolean(),
-    next_page: z.string().trim().min(1).nullable(),
-    total_count: z.int().nonnegative().optional(),
+    hasMore: z.boolean(),
+    nextPage: z.string().trim().min(1).nullable(),
+    totalCount: z.int().nonnegative().optional(),
     url: z.string().trim().min(1),
   })
 }
