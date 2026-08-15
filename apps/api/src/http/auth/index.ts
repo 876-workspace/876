@@ -7,6 +7,7 @@ export {
 export {
   anonymousPrincipal,
   getApiKey,
+  getAppId,
   getPrincipal,
   type ApiKeyRecord,
   type Principal,

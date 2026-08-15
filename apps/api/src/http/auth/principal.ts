@@ -82,3 +82,30 @@ export function getApiKey(req: Request): ApiKeyRecord | null {
 export function setApiKey(req: Request, record: ApiKeyRecord): void {
   apiKeys.set(req, record)
 }
+
+/**
+ * The acting app id for the request, taken from the validated credential.
+ *
+ * Prefers the API-key record, then the resolved principal — both are set by a
+ * guard from the credential, so a client cannot claim to be a different app.
+ * The trailing `state`/`appId` reads are the ported Python tests' fallback,
+ * which stub the raw request rather than going through a guard.
+ */
+export function getAppId(req: Request): string | null {
+  const record = getApiKey(req)
+  if (record?.appId) return record.appId
+
+  const principal = getPrincipal(req)
+  if (principal.appId) return principal.appId
+
+  const state = (
+    req as unknown as { state?: { app_id?: string; appId?: string } }
+  ).state
+  if (state?.app_id) return state.app_id
+  if (state?.appId) return state.appId
+
+  const anyReq = req as unknown as Record<string, unknown>
+  if (typeof anyReq['appId'] === 'string') return anyReq['appId'] as string
+
+  return null
+}
