@@ -70,7 +70,8 @@ export type OrganizationBootstrapRepository = {
 
 export type ProvisionOrganizationFn = (
   organizationId: string,
-  now: number
+  now: number,
+  options?: { sourceAppId?: string | null }
 ) => Promise<Record<string, { id: string }>>
 
 export type OrganizationBootstrapDeps = {
@@ -186,7 +187,12 @@ export async function resolveRegistrationSlug(
 
 export async function bootstrapExistingUser(
   deps: OrganizationBootstrapDeps,
-  params: { ownerUserId: string; name: string; slug?: string | null }
+  params: {
+    ownerUserId: string
+    name: string
+    slug?: string | null
+    sourceAppId?: string | null
+  }
 ): Promise<OrganizationRow> {
   const user = await deps.repository.findUserById(params.ownerUserId)
   if (!user) {
@@ -243,7 +249,9 @@ export async function bootstrapExistingUser(
       updatedAt: nowBigint,
     })
 
-    const orgRoles = await deps.provisionOrganization(organization.id, now)
+    const orgRoles = await deps.provisionOrganization(organization.id, now, {
+      sourceAppId: params.sourceAppId ?? null,
+    })
     const ownerRole = (orgRoles as Record<string, { id: string } | undefined>)[
       OWNER_ROLE_NAME
     ]
@@ -299,6 +307,7 @@ export class OrganizationBootstrapService {
     ownerUserId: string
     name: string
     slug?: string | null
+    sourceAppId?: string | null
   }): Promise<OrganizationRow> {
     return bootstrapExistingUser(this.deps, params)
   }
@@ -358,7 +367,7 @@ export function createOrganizationBootstrapDeps(): OrganizationBootstrapDeps {
         workos.deleteOrganization(organizationId),
     },
     repository,
-    provisionOrganization: (organizationId, now) =>
-      provisionOrganization(organizationId, now),
+    provisionOrganization: (organizationId, now, options) =>
+      provisionOrganization(organizationId, now, options),
   }
 }

@@ -336,7 +336,8 @@ describe('bootstrapExistingUser', () => {
     )
     expect(deps.provisionOrganization).toHaveBeenCalledWith(
       expect.any(String),
-      NOW
+      NOW,
+      { sourceAppId: null }
     )
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -344,6 +345,44 @@ describe('bootstrapExistingUser', () => {
         roleId: 'rol_owner',
         workosMembershipId: 'wos_mem_1',
       })
+    )
+  })
+
+  it('provisions the org onto the signup app when a source app is given', async () => {
+    const deps = makeDeps()
+    deps.repository.findUserById.mockResolvedValue({
+      id: 'user_1',
+      workosUserId: 'wos_user_1',
+    } as never)
+    deps.repository.findOrganizationBySlug.mockResolvedValue(null)
+    deps.provider.createOrganization.mockResolvedValue({ id: 'wos_org_1' })
+    deps.provider.createOrganizationMembership.mockResolvedValue({
+      id: 'wos_mem_1',
+    })
+    deps.repository.createOrganization.mockImplementation(async (data) => ({
+      id: data.id,
+      workosOrganizationId: data.workosOrganizationId,
+      name: data.name,
+      slug: data.slug,
+      status: data.status,
+      metadata: data.metadata,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    }))
+    deps.repository.createMembership.mockResolvedValue({} as never)
+
+    await bootstrapExistingUser(deps, {
+      ownerUserId: 'user_1',
+      name: 'Acme',
+      slug: null,
+      sourceAppId: 'app_couriers',
+    })
+
+    expect(deps.provisionOrganization).toHaveBeenCalledTimes(1)
+    expect(deps.provisionOrganization).toHaveBeenCalledWith(
+      expect.stringMatching(/^org_/),
+      NOW,
+      { sourceAppId: 'app_couriers' }
     )
   })
 
