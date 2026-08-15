@@ -12,8 +12,11 @@ export default async function AppLayout({
 }) {
   await requireValidSession('/')
 
+  // A signed-in account with no organization has somewhere to go: it creates
+  // one. Stranding it on /no-access is the defect `product-org-signup` exists
+  // to prevent — no-access answers "not permitted", not "no org yet".
   const context = await getInvoiceContext()
-  if (!context) redirect('/no-access')
+  if (!context) redirect('/onboarding')
 
   if (
     context.accessStatus !== 'active' &&
