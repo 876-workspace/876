@@ -29,6 +29,7 @@
     "API_URL": "https://876-api.1876.workers.dev",
     "COURIERS_API_URL": "https://876-couriers-api.1876.workers.dev",
     "WIDGETS_API_URL": "https://876-widgets-api.1876.workers.dev",
+    "NEXT_PUBLIC_APP_URL": "https://876-app.1876.workers.dev",
     "BILLING_URL": "https://876-billing.1876.workers.dev",
     "BILLING_API_URL": "https://876-billing-api.1876.workers.dev",
     "STORAGE_API_URL": "https://876-storage-api.1876.workers.dev",

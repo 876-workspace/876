@@ -13,7 +13,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   if (!context) {
     const session = await getAuthSession()
     if (!isSignedSession(session)) redirect(`/login?${AUTH_RETURN_TO_PARAM}=/`)
-    redirect('/no-access')
+    // Signed in with no organization yet (brand-new signup, incl. social): send
+    // them to create their org rather than stranding them on /no-access.
+    redirect('/get-started')
   }
   if (!context.tenant) {
     redirect(context.role === 'member' ? '/no-access' : '/get-started')
