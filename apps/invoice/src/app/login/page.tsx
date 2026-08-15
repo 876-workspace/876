@@ -1,19 +1,29 @@
-export default function LoginPage() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-4 rounded-lg border p-6 text-center">
-        <h1 className="text-xl font-semibold">Sign in to 876 Invoice</h1>
-        <p className="text-muted-foreground text-sm">
-          You will be redirected to 876 to sign in.
-        </p>
-        <a
-          href={`${appUrl}/login?return_to=${encodeURIComponent('/')}`}
-          className="bg-primary text-primary-foreground inline-flex rounded-md px-4 py-2 text-sm"
-        >
-          Continue to 876
-        </a>
-      </div>
-    </div>
-  )
+import { resolveRelativeReturnTo } from '@876/core/auth/return-to'
+import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+
+import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+
+import { EmbeddedAuth } from './_components/embedded-auth'
+
+export const metadata: Metadata = {
+  title: 'Login',
+  robots: { index: false, follow: false },
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string | string[]; return_to?: string }>
+}) {
+  const params = await searchParams
+  const rawReturnTo = Array.isArray(params.returnTo)
+    ? params.returnTo[0]
+    : (params.returnTo ?? params.return_to)
+  const returnTo = resolveRelativeReturnTo(rawReturnTo, '/')
+
+  const session = await getAuthSession()
+  if (isSignedSession(session)) redirect(returnTo)
+
+  return <EmbeddedAuth returnTo={returnTo} />
 }
