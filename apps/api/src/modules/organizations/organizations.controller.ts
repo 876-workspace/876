@@ -37,11 +37,17 @@ export async function bootstrapOrganization(
   res: Response
 ): Promise<void> {
   const body = validBody<{
-    ownerUserId: string
+    owner_user_id: string
     name: string
     slug?: string | null
   }>(req)
-  res.status(201).json(await service.bootstrapOrganization(body))
+  res.status(201).json(
+    await service.bootstrapOrganization({
+      ownerUserId: body.owner_user_id,
+      name: body.name,
+      slug: body.slug,
+    })
+  )
 }
 
 export async function setupOrganization(
