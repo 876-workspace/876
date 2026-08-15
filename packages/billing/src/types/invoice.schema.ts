@@ -1,12 +1,14 @@
 import { z } from 'zod'
 
 import type {
+  Invoice,
+  InvoiceList,
   InvoiceCreated,
   InvoicePreference,
   InvoicePreferenceUpdated,
   LateFeeRun,
 } from './invoice'
-import { createdResourceSchema } from './common.schema'
+import { createdResourceSchema, listSchema } from './common.schema'
 
 /**
  * The schema for a created invoice response.
@@ -52,3 +54,7 @@ export const LateFeeRunSchema = z.strictObject({
   skipped: z.number().int().nonnegative(),
   hasMore: z.boolean(),
 }) satisfies z.ZodType<LateFeeRun>
+export const InvoiceSchema = z.strictObject({ object: z.literal('invoice'), id: z.string().min(1) }).passthrough() satisfies z.ZodType<Invoice>
+
+export const InvoiceListSchema = listSchema(InvoiceSchema) satisfies z.ZodType<InvoiceList>
+

@@ -355,3 +355,24 @@ export interface InvoiceCreated {
    */
   id: string
 }
+/**
+ * Parameters for listing invoices.
+ */
+export interface InvoiceListParams {
+  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+}
+
+/**
+ * A tenant invoice resource returned by the list endpoint.
+ * The API guarantees object/id and uses a passthrough shape for forward compat.
+ */
+export type Invoice = {
+  object: 'invoice'
+  id: string
+} & Record<string, unknown>
+
+/**
+ * Paginated list of invoices.
+ */
+export type InvoiceList = import('./common').List<Invoice>
+

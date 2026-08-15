@@ -17,6 +17,8 @@ export {
   CouponSchema,
   CustomerAccountSchema,
   CustomerCreatedSchema,
+  InvoiceSchema,
+  InvoiceListSchema,
   InvoiceCreatedSchema,
   InvoicePreferenceSchema,
   InvoicePreferenceUpdatedSchema,

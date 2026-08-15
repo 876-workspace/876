@@ -53,6 +53,9 @@ export { CustomerCreatedSchema, CustomerAccountSchema } from './customer.schema'
 
 // Invoice
 export type {
+  InvoiceListParams,
+  Invoice,
+  InvoiceList,
   DocumentLineCreateParams,
   InvoiceCreateParams,
   InvoicePreferenceUpdateParams,
@@ -64,6 +67,8 @@ export type {
   InvoiceCreated,
 } from './invoice'
 export {
+  InvoiceSchema,
+  InvoiceListSchema,
   InvoiceCreatedSchema,
   InvoicePreferenceSchema,
   InvoicePreferenceUpdatedSchema,
