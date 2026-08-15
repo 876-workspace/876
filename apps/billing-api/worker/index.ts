@@ -2,7 +2,7 @@ import { Container, getContainer } from '@cloudflare/containers'
 
 /**
  * Cloudflare Containers front door for the Billing Express data plane.
- * Keep BILLING_WRITER=none until the finance cutover runbook flips ownership.
+ * BILLING_WRITER=express: this service owns finance writes after cutover.
  * See docs/cloudflare.md and docs/billing-api-cutover.md.
  */
 export class BillingApiContainer extends Container<Env> {
