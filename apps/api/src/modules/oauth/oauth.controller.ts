@@ -483,10 +483,17 @@ export async function introspect(req: Request, res: Response): Promise<void> {
     return
   }
 
+  // The session row is the revocation record — a sign-in token outlives any
+  // one request, so a revoked or expired session has to stop introspecting as
+  // active even while its token is still inside its own `exp`.
   const session = await repository.findSessionByTokenHash(
     service.sha256Hash(body.token)
   )
-  if (!session || Number(session.expiresAt) < nowUnixSeconds()) {
+  if (
+    !session ||
+    session.revokedAt != null ||
+    Number(session.expiresAt) < nowUnixSeconds()
+  ) {
     res.status(200).json({ active: false })
     return
   }

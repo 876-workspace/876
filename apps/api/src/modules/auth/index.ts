@@ -7,3 +7,4 @@
  * `@/services/auth`.
  */
 export { createAuthRouter } from './auth.routes'
+export { findLiveSession } from './auth.repository'

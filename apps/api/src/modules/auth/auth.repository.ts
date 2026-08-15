@@ -1,5 +1,6 @@
 import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
+import { nowUnixSeconds } from '@/platform/timestamps'
 import { isPlatformOwnerEmail } from '@/config'
 
 /**
@@ -335,6 +336,22 @@ export function findSessionById(sessionId: string) {
 
 export function deleteSession(sessionId: string) {
   return prisma.session.deleteMany({ where: { id: sessionId } })
+}
+
+/**
+ * Whether a session is still good, for the guard that authorizes its token.
+ *
+ * A session token outlives any single request by design, so the row — not the
+ * token's own expiry — decides whether it still authorizes anything. Returns
+ * `false` for a session that was deleted, revoked, or has expired.
+ */
+export async function findLiveSession(sessionId: string): Promise<boolean> {
+  const row = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { expiresAt: true, revokedAt: true },
+  })
+  if (!row || row.revokedAt !== null) return false
+  return Number(row.expiresAt) > nowUnixSeconds()
 }
 
 export function findAppById(appId: string) {

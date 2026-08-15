@@ -196,6 +196,7 @@ export function findSessionByTokenHash(tokenHash: string): Promise<{
   id: string
   appId: string | null
   expiresAt: bigint
+  revokedAt: bigint | null
   user: UserRow
 } | null> {
   return prisma.session.findUnique({
@@ -204,6 +205,7 @@ export function findSessionByTokenHash(tokenHash: string): Promise<{
       id: true,
       appId: true,
       expiresAt: true,
+      revokedAt: true,
       user: { select: USER_SELECT },
     },
   })

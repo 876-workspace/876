@@ -44,6 +44,8 @@ export type AuthDependencies = {
   findApiKeyByHash(keyHash: string): Promise<ApiKeyRecord | null>
   /** Record that a key was used. Never allowed to fail the request. */
   markApiKeyUsed(apiKeyId: string, at: number): Promise<void>
+  /** Whether the session a bearer token names is still live. */
+  findLiveSession(sessionId: string): Promise<boolean>
 }
 
 export type AuthGuards = {
@@ -70,6 +72,17 @@ function guard(
 function isRealm(value: unknown): value is Realm {
   return value === 'consumer' || value === 'enterprise'
 }
+
+/**
+ * The session-liveness lookup, injected by the composition root.
+ *
+ * `attachPrincipal` is imported as a plain middleware by route files, so it
+ * cannot be handed dependencies the way the guard factory is — and `http/` may
+ * not import a module to fetch them itself (.claude/rules/express-api.md).
+ * `createAuthGuards` registers it once at assembly. This holds no request or
+ * user state; it is the wiring, not the data.
+ */
+let findLiveSession: ((sessionId: string) => Promise<boolean>) | null = null
 
 /**
  * Populate the principal without demanding anything of it.
@@ -138,10 +151,34 @@ async function resolvePrincipal(req: Request): Promise<Principal> {
     )
   }
 
+  // A token that names a session is only as good as that session. Sign-in
+  // tokens live as long as the session itself, so the row — not the token's
+  // `exp` — is what signing out, revoking a device, or expiring a session acts
+  // on. Without this, a token stayed valid here long after its session was
+  // gone.
+  if (typeof claims.sid === 'string' && claims.sid) {
+    if (!findLiveSession) {
+      log.error(
+        { reason: 'session_lookup_unwired', path: req.path },
+        'auth.bearer.rejected'
+      )
+      throw errors.invalidToken()
+    }
+    if (!(await findLiveSession(claims.sid))) {
+      log.warn(
+        { reason: 'session_not_live', path: req.path },
+        'auth.bearer.rejected'
+      )
+      throw errors.invalidToken()
+    }
+  }
+
   const realm = isRealm(claims.realm) ? claims.realm : 'consumer'
   // `aud` on an access token is the OAuth client id of the app the token was
   // minted for — not the app row id an API key resolves to. Both answer "which
-  // app is acting", from different credentials.
+  // app is acting", from different credentials. A sign-in token carries no
+  // `aud`: it is the user acting as themselves, so the acting app is whichever
+  // app key the request presented.
   const appId = typeof claims.aud === 'string' ? claims.aud : base.appId
 
   bindActor({ userId: claims.sub, appId: appId ?? undefined, realm })
@@ -156,6 +193,8 @@ async function resolvePrincipal(req: Request): Promise<Principal> {
 }
 
 export function createAuthGuards(deps: AuthDependencies): AuthGuards {
+  findLiveSession = deps.findLiveSession
+
   const requireApiKey = guard(async (req) => {
     const presented = readApiKey(req)
 
