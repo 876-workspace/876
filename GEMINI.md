@@ -221,8 +221,9 @@ Adding a new API operation:
 - Every serialized resource includes a Stripe-style `object` discriminator (`"object": "user"`).
 - SDK/API results use `{ data, error }` envelopes.
 - Timestamps are Unix seconds.
-- List responses: `{ object: "list", data: T[], has_more: bool, url: string, total_count: int | null }`.
-- Cursor pagination via `starting_after` / `ending_before` (item ID-based).
+- List responses: `{ object: "list", data: T[], hasMore: bool, url: string, totalCount: int | null }`.
+- Cursor pagination via `startingAfter` / `endingBefore` (item ID-based).
+- All 876-owned TypeScript wire fields are camelCase end-to-end (Zod schemas, serializers, SDK params/results).
 - Client-safe errors must not include HTTP status fields.
 
 ## UI Copy

@@ -114,6 +114,40 @@ The ecosystem is built to add apps without duplicating identity or re-shaping th
 - Identity/auth **always** flows through `@876/sdk`; it is never re-implemented per product.
 - A React Native app or a hosted storefront consumes `@876/sdk` for the 876 account plus the relevant product SDK for product features.
 
+## Contract casing
+
+SDK parameters and returned resources use **camelCase** end-to-end.
+
+The public `$876.<resource>.<verb>()` TypeScript surface must never expose snake_case
+fields for 876-owned resources. This applies to method params, returned resource
+objects, and list/search containers.
+
+**Good:**
+
+```ts
+const { data } = await $876.users.list({ startingAfter: lastId, limit: 25 })
+data.firstName // ✅
+data.createdAt // ✅
+data.hasMore // ✅
+```
+
+**Never:**
+
+```ts
+data.first_name // ❌
+data.created_at // ❌
+data.has_more // ❌
+```
+
+Do not introduce transport-only casing conversions (e.g. a `camelizeKeys()`
+middleware or a manual spread that renames fields) between an Express service and
+its owning TypeScript package. The contract is defined by the Zod schema and the
+serializer; runtime key magic weakens compile-time guarantees.
+
+**Exceptions (same as naming.md):** provider-owned payloads, HTTP headers, error
+code strings, `object` discriminator token values, and anything that originates
+outside the 876-owned TypeScript layer.
+
 ## Known follow-up (not yet done)
 
 The shared request runtime now lives in `@876/core/client` (transport, env/base-URL resolution) and both tier packages compose per-resource factory modules over it. Remaining: `@876/sdk` (Zod schemas in `src/types/`) and `@876/admin` (`src/types.ts`) still restate the resource shapes they have in common; `@876/core`-owned resource schemas would remove that. Deferred — do not let it block resource additions.
