@@ -37,13 +37,13 @@
   "vars": {
     "API_URL": "https://876-api.1876.workers.dev",
     // Bump to restart primary container for BILLING_WRITER activation.
-    "BILLING_API_PRIMARY_INSTANCE": "primary-20260814-express",
+    "BILLING_API_PRIMARY_INSTANCE": "primary-20260815-express",
     "BILLING_SWEEP_ENABLED": "false",
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",
     "PORT": "4004",
-    // Flip as part of the controlled writer cutover after parity checks.
-    "BILLING_WRITER": "none",
+    // Express is the active writer (FastAPI→Express cutover completed).
+    "BILLING_WRITER": "express",
   },
   "observability": {
     "enabled": true,
