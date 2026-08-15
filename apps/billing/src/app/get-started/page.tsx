@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import type { ReactNode } from 'react'
 
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
@@ -7,6 +8,7 @@ import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 import { getContext } from '@/lib/auth/billing-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
+import { CreateOrganization } from './_components/create-organization'
 import { SetupButton } from './_components/setup-button'
 
 export const metadata: Metadata = {
@@ -14,20 +16,15 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function GetStartedPage() {
-  const context = await getContext()
-  if (!context) {
-    const session = await getAuthSession()
-    if (!isSignedSession(session))
-      redirect(`/login?${AUTH_RETURN_TO_PARAM}=/get-started`)
-    redirect('/no-access')
-  }
-  if (context.tenant) redirect('/')
-  if (context.role === 'member') redirect('/no-access')
-
-  const organizationName = context.orgName ?? 'Your organization'
-  const slug = `${context.orgSlug ?? 'billing'}-billing`
-
+function GetStartedCard({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: string
+  children: ReactNode
+}) {
   return (
     <main className="bg-background flex min-h-dvh items-center justify-center px-6 py-12">
       <div className="mx-auto w-full max-w-md">
@@ -37,21 +34,60 @@ export default async function GetStartedPage() {
           </div>
           <p className="876-eyebrow mb-2">876 Billing</p>
           <PageHeader className="mb-7">
-            <PageTitle className="mb-2">Set up your workspace</PageTitle>
+            <PageTitle className="mb-2">{title}</PageTitle>
             <PageDescription className="leading-relaxed">
-              Create the Billing workspace for {organizationName}. We will
-              provision Jamaican dollars, English, Tax Administration Jamaica,
-              standard GCT, access roles, and payment modes. No invoices or
-              payment collection are enabled automatically.
+              {description}
             </PageDescription>
           </PageHeader>
-          <SetupButton
-            name={organizationName}
-            slug={slug}
-            workspaceExists={Boolean(context.tenant)}
-          />
+          {children}
         </div>
       </div>
     </main>
+  )
+}
+
+export default async function GetStartedPage() {
+  const session = await getAuthSession()
+  if (!isSignedSession(session))
+    redirect(`/login?${AUTH_RETURN_TO_PARAM}=/get-started`)
+
+  const context = await getContext()
+
+  // Signed in but no organization yet — the brand-new-signup case. Create the
+  // owner's organization first; the reload then lands on the workspace step.
+  if (!context) {
+    const suggestedName =
+      [session.user.firstName, session.user.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim() || ''
+
+    return (
+      <GetStartedCard
+        title="Create your organization"
+        description="876 Billing runs on your organization. Name it to get started — you can rename it later in settings."
+      >
+        <CreateOrganization suggestedName={suggestedName} />
+      </GetStartedCard>
+    )
+  }
+
+  if (context.tenant) redirect('/')
+  if (context.role === 'member') redirect('/no-access')
+
+  const organizationName = context.orgName ?? 'Your organization'
+  const slug = `${context.orgSlug ?? 'billing'}-billing`
+
+  return (
+    <GetStartedCard
+      title="Set up your workspace"
+      description={`Create the Billing workspace for ${organizationName}. We will provision Jamaican dollars, English, Tax Administration Jamaica, standard GCT, access roles, and payment modes. No invoices or payment collection are enabled automatically.`}
+    >
+      <SetupButton
+        name={organizationName}
+        slug={slug}
+        workspaceExists={Boolean(context.tenant)}
+      />
+    </GetStartedCard>
   )
 }
