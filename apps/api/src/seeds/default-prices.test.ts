@@ -65,10 +65,10 @@ describe('seedDefaultAppPrices', () => {
 
     // ASSERT
     expect(result).toEqual({
-      appsConsidered: 4,
+      appsConsidered: 5,
       pricesCreated: 1,
       skippedExistingPrice: 0,
-      skippedMissingApp: 3,
+      skippedMissingApp: 4,
     })
     expect(repository.createProduct).toHaveBeenCalledTimes(1)
     expect(repository.createProduct).toHaveBeenCalledWith({
@@ -99,10 +99,10 @@ describe('seedDefaultAppPrices', () => {
 
     // ASSERT
     expect(result).toEqual({
-      appsConsidered: 4,
+      appsConsidered: 5,
       pricesCreated: 0,
       skippedExistingPrice: 1,
-      skippedMissingApp: 3,
+      skippedMissingApp: 4,
     })
     expect(repository.findActivePriceForApp).toHaveBeenCalledTimes(1)
     expect(repository.findActivePriceForApp).toHaveBeenCalledWith(
@@ -129,10 +129,10 @@ describe('seedDefaultAppPrices', () => {
 
     // ASSERT
     expect(result).toEqual({
-      appsConsidered: 4,
+      appsConsidered: 5,
       pricesCreated: 1,
       skippedExistingPrice: 0,
-      skippedMissingApp: 3,
+      skippedMissingApp: 4,
     })
     expect(repository.findProductBySlug).toHaveBeenCalledTimes(1)
     expect(repository.findProductBySlug).toHaveBeenCalledWith(
@@ -167,12 +167,12 @@ describe('seedDefaultAppPrices', () => {
 
     // ASSERT
     expect(result).toEqual({
-      appsConsidered: 4,
+      appsConsidered: 5,
       pricesCreated: 1,
       skippedExistingPrice: 0,
-      skippedMissingApp: 3,
+      skippedMissingApp: 4,
     })
-    expect(repository.findAppBySlug).toHaveBeenCalledTimes(4)
+    expect(repository.findAppBySlug).toHaveBeenCalledTimes(5)
     expect(repository.findAppBySlug).toHaveBeenNthCalledWith(1, '876-consumer')
     expect(repository.findAppBySlug).toHaveBeenNthCalledWith(
       2,
@@ -180,6 +180,7 @@ describe('seedDefaultAppPrices', () => {
     )
     expect(repository.findAppBySlug).toHaveBeenNthCalledWith(3, '876-couriers')
     expect(repository.findAppBySlug).toHaveBeenNthCalledWith(4, '876-billing')
+    expect(repository.findAppBySlug).toHaveBeenNthCalledWith(5, '876-invoice')
     expect(repository.createProduct).toHaveBeenCalledWith({
       id: 'product_generated',
       slug: '876-enterprise-free',
