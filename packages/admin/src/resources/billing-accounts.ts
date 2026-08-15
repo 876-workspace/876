@@ -17,7 +17,7 @@ export function createAdminBillingAccountsResource(runtime: AdminRuntime) {
         method: 'GET',
         path: '/billing/accounts',
         query: {
-          organization_id: params?.organizationId,
+          organizationId: params?.organizationId,
           limit: params?.limit,
         },
       })

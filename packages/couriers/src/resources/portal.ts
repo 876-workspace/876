@@ -30,8 +30,8 @@ import {
 export type ListPortalPackagesParams = {
   status?: PortalPackageStatus
   limit?: number
-  starting_after?: string
-  ending_before?: string
+  startingAfter?: string
+  endingBefore?: string
 }
 
 export function createPortalResource(runtime: Runtime) {

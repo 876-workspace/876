@@ -124,7 +124,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         query: {
           ...toCursorQuery(params),
           search: params?.search,
-          include_deleted: params?.includeDeleted,
+          includeDeleted: params?.includeDeleted,
           consoleAccess: params?.consoleAccess,
           status: params?.status,
           ids: params?.ids?.join(','),
@@ -164,7 +164,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
           method: 'GET',
           path: `/users/by-username/${params.username}`,
           query: {
-            include_deleted: params.includeDeleted,
+            includeDeleted: params.includeDeleted,
           },
         })
       }
@@ -172,7 +172,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         method: 'GET',
         path: `/users/${params.id}`,
         query: {
-          include_deleted: params.includeDeleted,
+          includeDeleted: params.includeDeleted,
         },
       })
     },
@@ -220,7 +220,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         path: `/users/${userId}`,
         query: options
           ? {
-              deleted_by: options.deletedBy,
+              deletedBy: options.deletedBy,
               reason: options.reason,
             }
           : undefined,
@@ -240,7 +240,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         method: 'DELETE',
         path: `/users/${userId}/purge`,
         query: options?.deletedBy
-          ? { deleted_by: options.deletedBy }
+          ? { deletedBy: options.deletedBy }
           : undefined,
       })
     },
@@ -274,7 +274,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         path: '/users/username-availability',
         query: {
           username,
-          exclude_user_id: options?.excludeUserId,
+          excludeUserId: options?.excludeUserId,
         },
       })
     },
@@ -487,7 +487,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
       return adminRequest<AdminListResponse<AdminUserAppsGroup>>(runtime, {
         method: 'GET',
         path: '/users/apps',
-        query: { user_ids: userIds.join(',') },
+        query: { userIds: userIds.join(',') },
       })
     },
 
@@ -598,8 +598,8 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
           method: 'POST',
           path: `/users/${userId}/identifications/${type}/disclose`,
           body: {
-            organization_id: params.organizationId,
-            app_slug: params.appSlug,
+            organizationId: params.organizationId,
+            appSlug: params.appSlug,
             reason: params.reason,
           },
         })
@@ -614,7 +614,7 @@ export function createAdminUsersResource(runtime: AdminRuntime) {
         return adminRequest<AdminUserIdentification>(runtime, {
           method: 'POST',
           path: `/users/${userId}/identifications/${type}/verify`,
-          body: { verified_by: params.verifiedBy },
+          body: { verifiedBy: params.verifiedBy },
         })
       },
     },

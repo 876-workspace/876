@@ -11,25 +11,25 @@ function createTeamFixture(overrides: Record<string, unknown> = {}) {
   return {
     object: 'team_member' as const,
     id: 'tm_kgn_8e2f1a3b',
-    tenant_id: 'ten_kgn_7f3a9b2c',
-    user_id: 'usr_kgn_2a9c4d1e',
-    role_id: 'role_kgn_4d2a1f8e',
-    role_name: 'Dispatch Supervisor',
-    role_system_key: null,
+    tenantId: 'ten_kgn_7f3a9b2c',
+    userId: 'usr_kgn_2a9c4d1e',
+    roleId: 'role_kgn_4d2a1f8e',
+    roleName: 'Dispatch Supervisor',
+    roleSystemKey: null,
     status: 'active' as const,
-    created_at: 1710000000,
-    updated_at: 1710000000,
+    createdAt: 1710000000,
+    updatedAt: 1710000000,
     ...overrides,
   }
 }
 
 function createTeamListFixture(tenantId = 'ten_kgn_7f3a9b2c') {
-  const member = createTeamFixture({ tenant_id: tenantId })
+  const member = createTeamFixture({ tenantId: tenantId })
   return {
     object: 'list' as const,
     data: [member],
-    has_more: false,
-    total_count: 1,
+    hasMore: false,
+    totalCount: 1,
     url: `/v1/tenants/${tenantId}/team`,
   }
 }
@@ -110,15 +110,15 @@ describe('admin team resource', () => {
     it('adds a Delivery Driver to the Kingston team', async () => {
       const tenantId = 'ten/kgn 001'
       const body = {
-        user_id: 'usr_kgn_5b8e3f2a',
-        role_id: 'role_kgn_4d2a1f8e',
+        userId: 'usr_kgn_5b8e3f2a',
+        roleId: 'role_kgn_4d2a1f8e',
       }
       const fixture = createTeamFixture({
         id: 'tm_kgn_9c1d2e3f',
-        tenant_id: tenantId,
-        user_id: body.user_id,
-        role_id: body.role_id,
-        role_name: 'Delivery Driver',
+        tenantId: tenantId,
+        userId: body.user_id,
+        roleId: body.role_id,
+        roleName: 'Delivery Driver',
         status: 'active',
       })
       const fetchMock = vi
@@ -160,8 +160,8 @@ describe('admin team resource', () => {
       const resource = createTeamResource(runtime)
 
       const result = await resource.create('ten_kgn_7f3a9b2c', {
-        user_id: 'usr_kgn_5b8e3f2a',
-        role_id: 'role_kgn_4d2a1f8e',
+        userId: 'usr_kgn_5b8e3f2a',
+        roleId: 'role_kgn_4d2a1f8e',
       })
 
       expect(result).toEqual({
@@ -182,8 +182,8 @@ describe('admin team resource', () => {
       const resource = createTeamResource(runtime)
 
       const result = await resource.create('ten_kgn_7f3a9b2c', {
-        user_id: 'usr_kgn_5b8e3f2a',
-        role_id: 'role_kgn_4d2a1f8e',
+        userId: 'usr_kgn_5b8e3f2a',
+        roleId: 'role_kgn_4d2a1f8e',
       })
 
       expect(result).toEqual({
@@ -203,7 +203,7 @@ describe('admin team resource', () => {
       const body = { status: 'inactive' as const }
       const fixture = createTeamFixture({
         id: memberId,
-        tenant_id: tenantId,
+        tenantId: tenantId,
         status: body.status,
       })
       const fetchMock = vi
@@ -248,7 +248,7 @@ describe('admin team resource', () => {
         'ten_kgn_7f3a9b2c',
         'tm_kgn_8e2f1a3b',
         {
-          role_id: 'role_kgn_9b1c2d3e',
+          roleId: 'role_kgn_9b1c2d3e',
         }
       )
 

@@ -7,12 +7,12 @@ export const organizationLocationSiteKindSchema = z.enum([
 
 export const syncOrganizationLocationBodySchema = z.strictObject({
   kind: organizationLocationSiteKindSchema,
-  site_id: z.string().min(1),
+  siteId: z.string().min(1),
 })
 
 export const organizationLocationReconciliationSchema = z.object({
   object: z.literal('organization_location_reconciliation'),
-  tenant_id: z.string(),
+  tenantId: z.string(),
   attempted: z.number().int().nonnegative(),
   succeeded: z.number().int().nonnegative(),
   failed: z.number().int().nonnegative(),

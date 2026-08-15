@@ -22,40 +22,40 @@ const invalidResponse = {
 const address = {
   object: 'address' as const,
   id: addressId,
-  tenant_id: tenantId,
+  tenantId: tenantId,
   name: 'Home',
   line1: '56 Harbour Street',
   line2: 'Ground Floor',
   city: 'Kingston',
-  region_code: '13',
-  region_name: 'Kingston',
-  country_code: 'JM',
-  postal_code: null,
+  regionCode: '13',
+  regionName: 'Kingston',
+  countryCode: 'JM',
+  postalCode: null,
   latitude: 17.9712,
   longitude: -76.792,
-  is_active: true,
-  created_at: 1_776_048_000,
-  updated_at: 1_776_134_400,
+  isActive: true,
+  createdAt: 1_776_048_000,
+  updatedAt: 1_776_134_400,
 }
 
 const customerAddress = {
   object: 'customer_address' as const,
   id: customerAddressId,
-  tenant_id: tenantId,
-  customer_id: customerId,
-  address_id: addressId,
+  tenantId: tenantId,
+  customerId: customerId,
+  addressId: addressId,
   type: 'HOME' as const,
-  is_default: true,
+  isDefault: true,
   address,
-  created_at: 1_776_048_000,
-  updated_at: 1_776_134_400,
+  createdAt: 1_776_048_000,
+  updatedAt: 1_776_134_400,
 }
 
 const customerAddressList = {
   object: 'list' as const,
   data: [customerAddress],
-  has_more: false,
-  total_count: 1,
+  hasMore: false,
+  totalCount: 1,
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/customers/${encodeURIComponent(customerId)}/addresses`,
 }
 
@@ -67,27 +67,27 @@ const deletedCustomerAddress = {
 
 const createBody = {
   type: 'WORK' as const,
-  is_default: false,
+  isDefault: false,
   address: {
     name: 'Work',
     line1: '14 Sunset Boulevard',
     line2: 'Freeport',
     city: 'Montego Bay',
-    country_code: 'JM',
-    region_code: '08',
-    postal_code: 'JMCJS12',
+    countryCode: 'JM',
+    regionCode: '08',
+    postalCode: 'JMCJS12',
     latitude: 18.4729,
     longitude: -77.9217,
-    is_active: true,
+    isActive: true,
   },
 }
 
 const updateBody = {
   type: 'SHIPPING' as const,
-  is_default: true,
+  isDefault: true,
   address: {
     line2: 'Dispatch Hall',
-    postal_code: 'JMKN02',
+    postalCode: 'JMKN02',
   },
 }
 
@@ -139,7 +139,7 @@ describe('customers.addresses', () => {
     const resource = createResource(fetchMock, internalKey)
 
     await resource.addresses.list(tenantId, customerId, {
-      starting_after: customerAddressId,
+      startingAfter: customerAddressId,
     })
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -153,7 +153,7 @@ describe('customers.addresses', () => {
     const resource = createResource(fetchMock, internalKey)
 
     await resource.addresses.list(tenantId, customerId, {
-      ending_before: customerAddressId,
+      endingBefore: customerAddressId,
     })
 
     expect(fetchMock).toHaveBeenCalledWith(

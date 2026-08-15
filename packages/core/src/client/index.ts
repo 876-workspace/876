@@ -373,8 +373,8 @@ export function toCursorQuery(params: CursorPageParams = {}): {
 } {
   return {
     limit: params.limit,
-    starting_after: params.startingAfter,
-    ending_before: params.endingBefore,
+    startingAfter: params.startingAfter,
+    endingBefore: params.endingBefore,
   }
 }
 

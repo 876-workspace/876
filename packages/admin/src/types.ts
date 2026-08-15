@@ -7,14 +7,14 @@ export type AdminPhoneLookup = {
   object: 'phone_lookup'
   valid: boolean
   e164: string | null
-  national_format: string | null
-  country_code: string | null
-  carrier_name: string | null
-  line_type: string | null
-  mobile_country_code: string | null
-  mobile_network_code: string | null
-  line_type_requested: boolean
-  created_at: number
+  nationalFormat: string | null
+  countryCode: string | null
+  carrierName: string | null
+  lineType: string | null
+  mobileCountryCode: string | null
+  mobileNetworkCode: string | null
+  lineTypeRequested: boolean
+  createdAt: number
 }
 
 export type AdminPhoneLookupCreateParams = {
@@ -26,29 +26,29 @@ export type AdminCommunicationMessage = {
   object: 'communication_message'
   id: string
   provider: string
-  provider_sid: string | null
+  providerSid: string | null
   channel: 'sms' | 'whatsapp'
   direction: string
   status: string
-  to_number: string
-  from_number: string | null
-  messaging_service_sid: string | null
-  content_sid: string | null
-  template_key: string | null
-  body_preview: string | null
-  body_hash: string
-  user_id: string | null
-  organization_id: string | null
-  app_id: string | null
-  client_reference: string | null
-  idempotency_key: string
-  provider_error_code: string | null
-  sent_at: number | null
-  delivered_at: number | null
-  read_at: number | null
-  failed_at: number | null
-  created_at: number
-  updated_at: number
+  toNumber: string
+  fromNumber: string | null
+  messagingServiceSid: string | null
+  contentSid: string | null
+  templateKey: string | null
+  bodyPreview: string | null
+  bodyHash: string
+  userId: string | null
+  organizationId: string | null
+  appId: string | null
+  clientReference: string | null
+  idempotencyKey: string
+  providerErrorCode: string | null
+  sentAt: number | null
+  deliveredAt: number | null
+  readAt: number | null
+  failedAt: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminCommunicationMessageCreateParams = {
@@ -66,24 +66,24 @@ export type AdminCommunicationCall = {
   object: 'communication_call'
   id: string
   provider: string
-  provider_sid: string | null
+  providerSid: string | null
   direction: string
   status: string
-  to_number: string
-  from_number: string | null
-  template_key: string
-  user_id: string | null
-  organization_id: string | null
-  app_id: string | null
-  client_reference: string | null
-  idempotency_key: string
-  duration_seconds: number | null
-  provider_error_code: string | null
-  started_at: number | null
-  answered_at: number | null
-  completed_at: number | null
-  created_at: number
-  updated_at: number
+  toNumber: string
+  fromNumber: string | null
+  templateKey: string
+  userId: string | null
+  organizationId: string | null
+  appId: string | null
+  clientReference: string | null
+  idempotencyKey: string
+  durationSeconds: number | null
+  providerErrorCode: string | null
+  startedAt: number | null
+  answeredAt: number | null
+  completedAt: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminCommunicationCallCreateParams = {
@@ -105,27 +105,27 @@ export type AdminUser = {
   id: string
   /** Name of the user's primary organization, if they belong to one. */
   company: string | null
-  company_short_name: string | null
-  company_logo: string | null
-  workos_user_id: string
-  stripe_customer_id: string | null
+  companyShortName: string | null
+  companyLogo: string | null
+  workosUserId: string
+  stripeCustomerId: string | null
   email: string
   username: string | null
-  email_verified: boolean
-  first_name: string
-  last_name: string
-  middle_name: string | null
+  emailVerified: boolean
+  firstName: string
+  lastName: string
+  middleName: string | null
   avatar: string | null
-  avatar_file_id: string | null
+  avatarFileId: string | null
   status: string
-  platform_role: string | null
+  platformRole: string | null
   banned: boolean
-  banned_reason: string | null
-  deleted_at: number | null
-  deleted_by: string | null
-  deletion_reason: string | null
-  created_at: number
-  updated_at: number
+  bannedReason: string | null
+  deletedAt: number | null
+  deletedBy: string | null
+  deletionReason: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminUsernameAvailability = {
@@ -141,39 +141,39 @@ export type AdminAuditEvent = {
   id: string
   event: string
   source: string
-  app_name: string
-  app_id: string | null
-  user_id: string | null
+  appName: string
+  appId: string | null
+  userId: string | null
   path: string | null
   search: string | null
   referrer: string | null
   title: string | null
-  request_id: string | null
-  session_id: string | null
-  distinct_id: string | null
+  requestId: string | null
+  sessionId: string | null
+  distinctId: string | null
   properties: Record<string, unknown>
-  created_at: number
+  createdAt: number
 }
 
 export type AdminConsumerProfile = {
   object: 'consumer_profile'
   id: string
-  user_id: string
+  userId: string
   email: string
   username: string | null
-  first_name: string
-  last_name: string
-  middle_name: string | null
+  firstName: string
+  lastName: string
+  middleName: string | null
   nickname: string | null
   avatar: string | null
-  avatar_file_id: string | null
+  avatarFileId: string | null
   gender: 'male' | 'female' | 'other' | null
-  phone_number: string | null
-  date_of_birth: string | null
+  phoneNumber: string | null
+  dateOfBirth: string | null
   language: string | null
   timezone: string | null
-  created_at: number
-  updated_at: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminConsumerProfileUpdateParams = Partial<
@@ -203,32 +203,32 @@ export type AdminConsumerContactUser = {
   id: string
   email: string
   username: string | null
-  first_name: string
-  last_name: string
-  middle_name: string | null
+  firstName: string
+  lastName: string
+  middleName: string | null
   avatar: string | null
-  avatar_file_id: string | null
+  avatarFileId: string | null
 }
 
 export type AdminConsumerContact = {
   object: 'user_contact'
   id: string
-  owner_user_id: string
-  contact_user_id: string
-  contact_user: AdminConsumerContactUser
+  ownerUserId: string
+  contactUserId: string
+  contactUser: AdminConsumerContactUser
   nickname: string | null
   notes: string | null
-  created_at: number
-  updated_at: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminAccount = {
   object: 'account'
   id: string
-  provider_id: string
-  provider_type: string
-  created_at: number
-  updated_at: number
+  providerId: string
+  providerType: string
+  createdAt: number
+  updatedAt: number
 }
 
 /**
@@ -240,26 +240,26 @@ export type AdminAccount = {
 export type AdminUserIdentification = {
   object: 'user_identification'
   id: string
-  user_id: string
+  userId: string
   type: string
   label: string
-  country_code: string | null
-  value_masked: string
+  countryCode: string | null
+  valueMasked: string
   verified: boolean
-  verified_at: number | null
-  created_at: number
-  updated_at: number
+  verifiedAt: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminUserIdentificationCreateParams = {
   type: string
   value: string
-  country_code?: string | null
+  countryCode?: string | null
 }
 
 export type AdminUserIdentificationUpdateParams = {
   value: string
-  country_code?: string | null
+  countryCode?: string | null
 }
 
 export type AdminDeletedUserIdentification = {
@@ -279,9 +279,9 @@ export type AdminUserIdentificationDisclosure = {
   object: 'user_identification_disclosure'
   type: string
   value: string
-  country_code: string | null
+  countryCode: string | null
   verified: boolean
-  disclosed_at: number
+  disclosedAt: number
 }
 
 export type AdminUserIdentificationVerifyParams = {
@@ -307,15 +307,15 @@ export type AdminDeletedConsumerContact = {
 
 export type AdminUserCreateParams = {
   email: string
-  first_name: string
-  last_name: string
-  middle_name?: string | null
+  firstName: string
+  lastName: string
+  middleName?: string | null
   username?: string | null
-  email_verified?: boolean | null
+  emailVerified?: boolean | null
   avatar?: string | null
   status?: string | null
   /** Enterprise only: create a new org with this name and add the user as owner. */
-  organization_name?: string | null
+  organizationName?: string | null
 }
 
 export type AdminUserUpdateParams = Partial<
@@ -343,80 +343,80 @@ export type AdminDeletedUser = {
 export type AdminOrganization = {
   object: 'organization'
   id: string
-  workos_organization_id: string | null
+  workosOrganizationId: string | null
   name: string | null
-  short_name: string | null
-  doing_business_as: string | null
+  shortName: string | null
+  doingBusinessAs: string | null
   // Business identity
   industry: string | null
-  business_type: string | null
-  registration_number: string | null
+  businessType: string | null
+  registrationNumber: string | null
   trn: string | null
-  nis_number: string | null
-  gct_number: string | null
-  tax_id: string | null
-  incorporation_date: string | null
+  nisNumber: string | null
+  gctNumber: string | null
+  taxId: string | null
+  incorporationDate: string | null
   slug: string
   status: string
-  logo_url: string | null
-  logo_file_id: string | null
+  logoUrl: string | null
+  logoFileId: string | null
   // Contact
-  primary_phone: string | null
-  primary_email: string | null
+  primaryPhone: string | null
+  primaryEmail: string | null
   fax: string | null
-  website_url: string | null
-  support_url: string | null
-  primary_contact_user_id: string | null
+  websiteUrl: string | null
+  supportUrl: string | null
+  primaryContactUserId: string | null
   // Locale
   timezone: string | null
   language: string | null
   // Address
-  address_line1: string | null
-  address_line2: string | null
+  addressLine1: string | null
+  addressLine2: string | null
   city: string | null
-  region_id: string | null
-  country_code: string | null
+  regionId: string | null
+  countryCode: string | null
   // Financial
-  currency_code: string | null
+  currencyCode: string | null
   // Enrollment
-  enrollment_completed_at: number | null
+  enrollmentCompletedAt: number | null
   metadata: Record<string, unknown> | null
-  deleted_at: number | null
-  deleted_by: string | null
-  deletion_reason: string | null
-  created_at: number
-  updated_at: number
+  deletedAt: number | null
+  deletedBy: string | null
+  deletionReason: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminOrganizationCreateParams = {
-  workos_organization_id?: string | null
+  workosOrganizationId?: string | null
   /** Organization display name. Recommended but optional on the admin tier. */
   name?: string | null
-  short_name?: string | null
+  shortName?: string | null
   /** URL-safe unique identifier. Auto-generated from ID if omitted. */
   slug?: string | null
   status?: string | null
-  primary_phone?: string | null
-  primary_email?: string | null
-  website_url?: string | null
-  support_url?: string | null
-  address_line1?: string | null
-  address_line2?: string | null
+  primaryPhone?: string | null
+  primaryEmail?: string | null
+  websiteUrl?: string | null
+  supportUrl?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
   city?: string | null
-  region_id?: string | null
-  country_code?: string | null
-  currency_code?: string | null
-  doing_business_as?: string | null
+  regionId?: string | null
+  countryCode?: string | null
+  currencyCode?: string | null
+  doingBusinessAs?: string | null
   industry?: string | null
-  business_type?: string | null
-  registration_number?: string | null
+  businessType?: string | null
+  registrationNumber?: string | null
   trn?: string | null
-  nis_number?: string | null
-  gct_number?: string | null
-  tax_id?: string | null
-  incorporation_date?: string | null
+  nisNumber?: string | null
+  gctNumber?: string | null
+  taxId?: string | null
+  incorporationDate?: string | null
   fax?: string | null
-  primary_contact_user_id?: string | null
+  primaryContactUserId?: string | null
   timezone?: string | null
   language?: string | null
   metadata?: Record<string, unknown> | null
@@ -478,12 +478,12 @@ export type AdminOrgSetupParams = {
 export type AdminInviteToken = {
   object: 'invite_token'
   id: string
-  organization_id: string
+  organizationId: string
   email: string
   role: string
   status: string
-  expires_at: number
-  created_at: number
+  expiresAt: number
+  createdAt: number
 }
 
 export type AdminInviteCreateParams = {
@@ -502,29 +502,29 @@ export type AdminApp = {
   id: string
   name: string
   slug: string
-  feature_prefix: string
-  organization_id: string | null
-  client_id: string
-  client_type: string
-  app_kind: AdminAppKind
+  featurePrefix: string
+  organizationId: string | null
+  clientId: string
+  clientType: string
+  appKind: AdminAppKind
   status: AdminAppStatus
-  allowed_redirect_uris: string[]
-  allowed_logout_uris: string[]
-  logo_url: string | null
-  logo_file_id: string | null
-  homepage_url: string | null
+  allowedRedirectUris: string[]
+  allowedLogoutUris: string[]
+  logoUrl: string | null
+  logoFileId: string | null
+  homepageUrl: string | null
   type: string
-  scopes_allowed: string[]
-  created_at: number
-  updated_at: number
+  scopesAllowed: string[]
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminAppPublic = {
   object: 'app'
   name: string
-  logo_url: string | null
-  logo_file_id: string | null
-  app_kind: AdminAppKind
+  logoUrl: string | null
+  logoFileId: string | null
+  appKind: AdminAppKind
 }
 
 export type AdminAppCreateParams = {
@@ -541,12 +541,12 @@ export type AdminAppCreateParams = {
 
 export type AdminAppUpdateParams = Partial<{
   name: string
-  logo_url: string | null
-  logo_file_id: string | null
-  homepage_url: string | null
-  app_kind: AdminAppKind
+  logoUrl: string | null
+  logoFileId: string | null
+  homepageUrl: string | null
+  appKind: AdminAppKind
   status: AdminAppStatus
-  organization_id: string | null
+  organizationId: string | null
 }>
 
 export type AdminAppCreated = AdminApp & {
@@ -585,12 +585,12 @@ export type AdminDeletedProvisioningNote = {
 export type AdminApiKey = {
   object: 'api_key'
   id: string
-  app_id: string
+  appId: string
   name: string | null
   revoked: boolean
-  expires_at: number | null
-  last_used_at: number | null
-  created_at: number
+  expiresAt: number | null
+  lastUsedAt: number | null
+  createdAt: number
 }
 
 export type AdminApiKeyCreated = AdminApiKey & {
@@ -605,7 +605,7 @@ export type AdminDeletedApiKey = {
 
 export type AdminApiKeyCreateParams = {
   name?: string
-  expires_at?: number
+  expiresAt?: number
 }
 
 export type AdminApiKeyUpdateParams = {
@@ -615,19 +615,19 @@ export type AdminApiKeyUpdateParams = {
 export type AdminMembership = {
   object: 'membership'
   id: string
-  organization_id: string
-  user_id: string
-  workos_membership_id: string | null
+  organizationId: string
+  userId: string
+  workosMembershipId: string | null
   role: string
-  role_id: string | null
+  roleId: string | null
   status: string
-  created_at: number
-  updated_at: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminMembershipCreateParams = {
-  organization_id: string
-  user_id: string
+  organizationId: string
+  userId: string
   role?: string
   status?: string
 }
@@ -635,7 +635,7 @@ export type AdminMembershipCreateParams = {
 export type AdminMembershipUpdateParams = Partial<{
   role: string
   status: string
-  workos_membership_id: string | null
+  workosMembershipId: string | null
 }>
 
 export type AdminDeletedMembership = {
@@ -662,37 +662,37 @@ export type AdminFeature = {
   object: 'feature'
   id: string
   provider: string
-  provider_feature_id: string | null
-  provider_environment_id: string | null
+  providerFeatureId: string | null
+  providerEnvironmentId: string | null
   slug: string
   name: string
   description: string | null
   tags: string[]
   enabled: boolean
-  default_value: boolean
-  value_type: string | null
+  defaultValue: boolean
+  valueType: string | null
   value: unknown
-  server_side_only: boolean
-  archived_at: number | null
-  parent_feature_id: string | null
-  provider_metadata: Record<string, unknown> | null
-  consumer_default_enabled: boolean
+  serverSideOnly: boolean
+  archivedAt: number | null
+  parentFeatureId: string | null
+  providerMetadata: Record<string, unknown> | null
+  consumerDefaultEnabled: boolean
   scope: string
-  app_id: string | null
-  synced_at: number
-  created_at: number
-  updated_at: number
+  appId: string | null
+  syncedAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminFeatureEvaluationDecision = {
   object: 'feature_evaluation'
   feature: AdminFeature
-  global_enabled: boolean
-  parent_enabled: boolean
-  module_gated: boolean
-  module_entitled: boolean
-  organization_override: boolean | null
-  user_override: boolean | null
+  globalEnabled: boolean
+  parentEnabled: boolean
+  moduleGated: boolean
+  moduleEntitled: boolean
+  organizationOverride: boolean | null
+  userOverride: boolean | null
   enabled: boolean
 }
 
@@ -700,31 +700,31 @@ export type AdminFeatureCreateParams = {
   name: string
   slug?: string
   description?: string | null
-  default_enabled?: boolean
+  defaultEnabled?: boolean
   scope?: string
-  consumer_default_enabled?: boolean
-  default_value?: boolean | null
-  value_type?: string | null
+  consumerDefaultEnabled?: boolean
+  defaultValue?: boolean | null
+  valueType?: string | null
   value?: unknown
   tags?: string[]
-  server_side_only?: boolean
-  parent_feature_id?: string | null
-  app_id: string | null
+  serverSideOnly?: boolean
+  parentFeatureId?: string | null
+  appId: string | null
 }
 
 export type AdminFeatureUpdateParams = {
   description?: string | null
   enabled?: boolean
-  app_id?: string | null
+  appId?: string | null
   tags?: string[]
-  consumer_default_enabled?: boolean
+  consumerDefaultEnabled?: boolean
   scope?: string
-  default_value?: boolean
-  value_type?: string | null
+  defaultValue?: boolean
+  valueType?: string | null
   value?: unknown
-  server_side_only?: boolean
+  serverSideOnly?: boolean
   archived?: boolean
-  parent_feature_id?: string | null
+  parentFeatureId?: string | null
 }
 
 export type AdminFeatureSearchParams = {
@@ -742,18 +742,18 @@ export type AdminDeletedFeature = {
 export type AdminUserFeature = {
   object: 'user_feature'
   id: string
-  user_id: string
-  feature_id: string
+  userId: string
+  featureId: string
   slug: string
   status: string
   note: string | null
-  synced_at: number | null
-  created_at: number
-  updated_at: number
+  syncedAt: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminUserFeatureGrantParams = {
-  feature_id: string
+  featureId: string
   enabled?: boolean
   note?: string | null
 }
@@ -772,60 +772,60 @@ export type AdminDeletedUserFeature = {
 export type AdminOrgFeature = {
   object: 'org_feature'
   id: string
-  organization_id: string
-  feature_id: string
+  organizationId: string
+  featureId: string
   slug: string
   status: string
   note: string | null
-  synced_at: number
-  created_at: number
-  updated_at: number
+  syncedAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 /** An organization override, carrying the identity needed to render it. */
 export type AdminOrgFeatureGrantItem = {
   object: 'org_feature_grant'
   id: string
-  organization_id: string
-  feature_id: string
+  organizationId: string
+  featureId: string
   slug: string
   status: string
   note: string | null
-  organization_name: string | null
-  organization_slug: string
-  organization_logo_url: string | null
-  created_at: number
-  updated_at: number
+  organizationName: string | null
+  organizationSlug: string
+  organizationLogoUrl: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 /** A user override, carrying the identity needed to render it. */
 export type AdminUserFeatureGrantItem = {
   object: 'user_feature_grant'
   id: string
-  user_id: string
-  feature_id: string
+  userId: string
+  featureId: string
   slug: string
   status: string
   note: string | null
-  user_email: string
-  user_first_name: string
-  user_last_name: string
-  user_username: string | null
-  user_avatar: string | null
-  created_at: number
-  updated_at: number
+  userEmail: string
+  userFirstName: string
+  userLastName: string
+  userUsername: string | null
+  userAvatar: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 /** Every override attached to one feature. Not paginated — `has_more` is always false. */
 export type AdminFeatureGrants = {
   object: 'feature_grants'
-  feature_id: string
+  featureId: string
   organizations: AdminListResponse<AdminOrgFeatureGrantItem>
   users: AdminListResponse<AdminUserFeatureGrantItem>
 }
 
 export type AdminOrgFeatureGrantParams = {
-  feature_id: string
+  featureId: string
   enabled?: boolean
   note?: string | null
 }
@@ -853,18 +853,18 @@ export type AdminUserApp = {
   id: string
   name: string
   slug: string
-  logo_url: string | null
-  logo_file_id: string | null
-  homepage_url: string | null
-  app_kind: 'internal' | 'platform' | 'product' | 'external'
+  logoUrl: string | null
+  logoFileId: string | null
+  homepageUrl: string | null
+  appKind: 'internal' | 'platform' | 'product' | 'external'
   status: string
-  enrolled_at: number
-  last_seen_at: number
+  enrolledAt: number
+  lastSeenAt: number
 }
 
 export type AdminUserAppsGroup = {
   object: 'user_apps'
-  user_id: string
+  userId: string
   data: AdminUserApp[]
 }
 
@@ -883,39 +883,39 @@ export type AdminOAuthGrant = {
 export type AdminListResponse<T> = {
   object: 'list'
   data: T[]
-  has_more: boolean
+  hasMore: boolean
   url: string
-  total_count: number | null
+  totalCount: number | null
 }
 
 export type AdminDevice = {
   object: 'device'
   id: string
-  user_id: string
+  userId: string
   fingerprint: string
   confidence: string
-  device_type: string
-  device_brand: string | null
-  device_model: string | null
-  os_name: string | null
-  os_version: string | null
-  browser_name: string | null
-  browser_version: string | null
-  is_bot: boolean
+  deviceType: string
+  deviceBrand: string | null
+  deviceModel: string | null
+  osName: string | null
+  osVersion: string | null
+  browserName: string | null
+  browserVersion: string | null
+  isBot: boolean
   label: string | null
   trusted: boolean
-  trusted_at: number | null
-  trusted_by: string | null
-  blocked_at: number | null
-  blocked_by: string | null
-  block_reason: string | null
-  first_seen_at: number
-  last_seen_at: number
-  last_ip: string | null
-  last_country_code: string | null
-  sign_in_count: number
-  created_at: number
-  updated_at: number
+  trustedAt: number | null
+  trustedBy: string | null
+  blockedAt: number | null
+  blockedBy: string | null
+  blockReason: string | null
+  firstSeenAt: number
+  lastSeenAt: number
+  lastIp: string | null
+  lastCountryCode: string | null
+  signInCount: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminAuthAttempt = {
@@ -923,60 +923,60 @@ export type AdminAuthAttempt = {
   id: string
   event: string
   outcome: string
-  failure_code: string | null
+  failureCode: string | null
   identifier: string | null
-  user_id: string | null
-  app_id: string | null
-  session_id: string | null
+  userId: string | null
+  appId: string | null
+  sessionId: string | null
   realm: string | null
-  device_id: string | null
-  device_fingerprint: string | null
-  ip_address: string | null
-  ip_country_code: string | null
-  ip_region_code: string | null
-  ip_region: string | null
-  ip_city: string | null
-  ip_postal_code: string | null
-  ip_timezone: string | null
-  ip_latitude: string | null
-  ip_longitude: string | null
-  ip_asn: string | null
-  ip_as_organization: string | null
-  user_agent: string | null
-  device_type: string | null
-  device_brand: string | null
-  device_model: string | null
-  os_name: string | null
-  os_version: string | null
-  browser_name: string | null
-  browser_version: string | null
-  is_bot: boolean
-  context_trusted: boolean
-  risk_score: number | null
-  risk_reasons: string[] | null
-  request_id: string | null
-  created_at: number
+  deviceId: string | null
+  deviceFingerprint: string | null
+  ipAddress: string | null
+  ipCountryCode: string | null
+  ipRegionCode: string | null
+  ipRegion: string | null
+  ipCity: string | null
+  ipPostalCode: string | null
+  ipTimezone: string | null
+  ipLatitude: string | null
+  ipLongitude: string | null
+  ipAsn: string | null
+  ipAsOrganization: string | null
+  userAgent: string | null
+  deviceType: string | null
+  deviceBrand: string | null
+  deviceModel: string | null
+  osName: string | null
+  osVersion: string | null
+  browserName: string | null
+  browserVersion: string | null
+  isBot: boolean
+  contextTrusted: boolean
+  riskScore: number | null
+  riskReasons: string[] | null
+  requestId: string | null
+  createdAt: number
 }
 
 export type AdminSession = {
   object: 'session'
   id: string
-  user_id: string
-  app_id: string | null
-  expires_at: number
-  ip_address: string | null
-  user_agent: string | null
-  device_id: string | null
-  ip_country_code: string | null
-  ip_region: string | null
-  ip_city: string | null
-  ip_asn: string | null
-  ip_as_organization: string | null
-  last_seen_at: number | null
-  revoked_at: number | null
-  revoked_by: string | null
-  created_at: number
-  updated_at: number
+  userId: string
+  appId: string | null
+  expiresAt: number
+  ipAddress: string | null
+  userAgent: string | null
+  deviceId: string | null
+  ipCountryCode: string | null
+  ipRegion: string | null
+  ipCity: string | null
+  ipAsn: string | null
+  ipAsOrganization: string | null
+  lastSeenAt: number | null
+  revokedAt: number | null
+  revokedBy: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminAuthAttemptSummary = {
@@ -984,9 +984,9 @@ export type AdminAuthAttemptSummary = {
   window: '24h' | '7d' | '30d'
   total: number
   outcomes: Record<string, number>
-  top_countries: { value: string; count: number }[]
-  top_failure_codes: { value: string; count: number }[]
-  top_failure_ips: { value: string; count: number }[]
+  topCountries: { value: string; count: number }[]
+  topFailureCodes: { value: string; count: number }[]
+  topFailureIps: { value: string; count: number }[]
 }
 
 export type AdminDeletedSession = {
@@ -996,9 +996,9 @@ export type AdminDeletedSession = {
 }
 export type AdminDeletedUserSessions = {
   object: 'session_list'
-  user_id: string
+  userId: string
   deleted: true
-  revoked_count: number
+  revokedCount: number
 }
 
 export type AdminSearchResponse<T> = Omit<AdminListResponse<T>, 'object'> & {
@@ -1008,19 +1008,19 @@ export type AdminSearchResponse<T> = Omit<AdminListResponse<T>, 'object'> & {
 export type AdminAddress = {
   object: 'address'
   id: string
-  user_id: string | null
-  organization_id: string | null
+  userId: string | null
+  organizationId: string | null
   type: 'billing' | 'shipping' | 'home' | 'work' | 'other'
   label: string | null
   line1: string | null
   line2: string | null
   city: string | null
-  region_id: string | null
-  country_code: string | null
-  postal_code: string | null
-  is_default: boolean
-  created_at: number
-  updated_at: number
+  regionId: string | null
+  countryCode: string | null
+  postalCode: string | null
+  isDefault: boolean
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminAddressCreateParams = {
@@ -1043,10 +1043,10 @@ export type AdminAddressUpdateParams = Partial<{
   line1: string | null
   line2: string | null
   city: string | null
-  region_id: string | null
-  country_code: string | null
-  postal_code: string | null
-  is_default: boolean
+  regionId: string | null
+  countryCode: string | null
+  postalCode: string | null
+  isDefault: boolean
 }>
 
 export type AdminDeletedAddress = {
@@ -1059,7 +1059,7 @@ export type ReservedUsername = {
   object: 'reserved_username'
   username: string
   reason: string | null
-  created_at: number
+  createdAt: number
 }
 
 export type ReservedUsernameCreateParams = {
@@ -1081,41 +1081,41 @@ export type UnlinkedAccount = {
 
 export type SessionRevoke = {
   object: 'session_revoke'
-  user_id: string
-  sessions_revoked: number
+  userId: string
+  sessionsRevoked: number
 }
 
 export type AdminBillingAccount = {
   object: 'billing_account'
   id: string
-  organization_id: string
+  organizationId: string
   name: string | null
   email: string | null
-  invoice_email: string | null
+  invoiceEmail: string | null
   currency: string | null
-  tax_exempt: string | null
+  taxExempt: string | null
   balance: number
-  default_payment_method_id: string | null
-  invoice_settings: Record<string, unknown> | null
-  preferred_locales: Record<string, unknown> | null
+  defaultPaymentMethodId: string | null
+  invoiceSettings: Record<string, unknown> | null
+  preferredLocales: Record<string, unknown> | null
   address: Record<string, unknown> | null
   shipping: Record<string, unknown> | null
   metadata: Record<string, unknown> | null
-  created_at: number
-  updated_at: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminBillingAccountCreateParams = {
-  organization_id: string
+  organizationId: string
   name?: string | null
   email?: string | null
-  invoice_email?: string | null
+  invoiceEmail?: string | null
   currency?: string | null
-  tax_exempt?: string | null
+  taxExempt?: string | null
   balance?: number
-  default_payment_method_id?: string | null
-  invoice_settings?: Record<string, unknown> | null
-  preferred_locales?: Record<string, unknown> | null
+  defaultPaymentMethodId?: string | null
+  invoiceSettings?: Record<string, unknown> | null
+  preferredLocales?: Record<string, unknown> | null
   address?: Record<string, unknown> | null
   shipping?: Record<string, unknown> | null
   metadata?: Record<string, unknown> | null
@@ -1145,17 +1145,17 @@ export type AdminSubscriptionStatus =
 export type AdminSubscriptionItem = {
   object: 'subscription_item'
   id: string
-  price_id: string
-  product_id: string | null
-  product_slug: string | null
-  product_name: string | null
+  priceId: string
+  productId: string | null
+  productSlug: string | null
+  productName: string | null
   quantity: number
-  billing_thresholds: Record<string, unknown> | null
+  billingThresholds: Record<string, unknown> | null
   metadata: Record<string, unknown> | null
 }
 
 export type AdminSubscriptionItemCreateParams = {
-  price_id: string
+  priceId: string
   quantity?: number
   metadata?: Record<string, unknown> | null
 }
@@ -1173,47 +1173,47 @@ export type AdminDeletedSubscriptionItem = {
 export type AdminSubscription = {
   object: 'subscription'
   id: string
-  billing_account_id: string | null
-  organization_id: string
-  app_id: string
-  app_slug: string | null
-  app_name: string | null
-  app_logo_url: string | null
-  app_kind: 'internal' | 'platform' | 'product' | 'external' | null
+  billingAccountId: string | null
+  organizationId: string
+  appId: string
+  appSlug: string | null
+  appName: string | null
+  appLogoUrl: string | null
+  appKind: 'internal' | 'platform' | 'product' | 'external' | null
   status: AdminSubscriptionStatus
-  provider_status: string | null
-  status_reason: string | null
-  finance_lifecycle_version: number
-  collection_method: string
-  billing_cycle_anchor: number | null
+  providerStatus: string | null
+  statusReason: string | null
+  financeLifecycleVersion: number
+  collectionMethod: string
+  billingCycleAnchor: number | null
   items: AdminSubscriptionItem[]
-  current_period_start: number | null
-  current_period_end: number | null
-  cancel_at: number | null
-  cancel_at_period_end: boolean
-  canceled_at: number | null
-  ended_at: number | null
-  pause_collection: Record<string, unknown> | null
-  trial_start: number | null
-  trial_end: number | null
-  start_date: number | null
-  default_payment_method_id: string | null
-  latest_invoice_id: string | null
-  pending_update: Record<string, unknown> | null
-  schedule_id: string | null
+  currentPeriodStart: number | null
+  currentPeriodEnd: number | null
+  cancelAt: number | null
+  cancelAtPeriodEnd: boolean
+  canceledAt: number | null
+  endedAt: number | null
+  pauseCollection: Record<string, unknown> | null
+  trialStart: number | null
+  trialEnd: number | null
+  startDate: number | null
+  defaultPaymentMethodId: string | null
+  latestInvoiceId: string | null
+  pendingUpdate: Record<string, unknown> | null
+  scheduleId: string | null
   metadata: Record<string, unknown> | null
-  created_at: number
-  updated_at: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminSubscriptionCreateParams = {
-  billing_account_id?: string | null
-  organization_id: string
-  app_id: string
-  price_id?: string | null
+  billingAccountId?: string | null
+  organizationId: string
+  appId: string
+  priceId?: string | null
   status?: AdminSubscriptionStatus
-  collection_method?: string
-  cancel_at_period_end?: boolean
+  collectionMethod?: string
+  cancelAtPeriodEnd?: boolean
   metadata?: Record<string, unknown> | null
 }
 
@@ -1230,37 +1230,37 @@ export type AdminDeletedSubscription = {
 export type AdminPrice = {
   object: 'price'
   id: string
-  product_id: string
-  unit_amount: number
+  productId: string
+  unitAmount: number
   currency: string
   /** Recurring billing interval. Null for a price with no recurring charge. */
-  billing_interval: 'month' | 'year' | null
-  interval_count: number | null
+  billingInterval: 'month' | 'year' | null
+  intervalCount: number | null
   status: 'active' | 'archived'
   active: boolean
-  lookup_key: string | null
+  lookupKey: string | null
   name: string | null
   nickname: string | null
   type: string
-  billing_scheme: string
-  tiers_mode: string | null
+  billingScheme: string
+  tiersMode: string | null
   tiers: Record<string, unknown> | null
   recurring: Record<string, unknown> | null
-  tax_behavior: string | null
-  transform_quantity: Record<string, unknown> | null
-  unit_amount_decimal: string | null
-  trial_period_days: number | null
+  taxBehavior: string | null
+  transformQuantity: Record<string, unknown> | null
+  unitAmountDecimal: string | null
+  trialPeriodDays: number | null
   metadata: Record<string, unknown> | null
-  archived_at: number | null
-  created_at: number
-  updated_at: number
+  archivedAt: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminPriceCreateParams = {
-  unit_amount?: number
+  unitAmount?: number
   currency?: string
-  billing_interval?: 'month' | 'year' | null
-  interval_count?: number | null
+  billingInterval?: 'month' | 'year' | null
+  intervalCount?: number | null
   name?: string
   nickname?: string
 }
@@ -1279,68 +1279,68 @@ export type AdminProduct = {
   name: string
   description: string | null
   /** ID of the app this product is scoped to. Null for platform-wide products. */
-  app_id: string | null
-  app_slug: string | null
-  app_name: string | null
-  app_logo_url: string | null
-  app_kind: 'internal' | 'platform' | 'product' | 'external' | null
+  appId: string | null
+  appSlug: string | null
+  appName: string | null
+  appLogoUrl: string | null
+  appKind: 'internal' | 'platform' | 'product' | 'external' | null
   status: 'active' | 'archived'
   active: boolean
-  statement_descriptor: string | null
-  unit_label: string | null
-  tax_code_id: string | null
-  lookup_key: string | null
+  statementDescriptor: string | null
+  unitLabel: string | null
+  taxCodeId: string | null
+  lookupKey: string | null
   metadata: Record<string, unknown> | null
-  archived_at: number | null
+  archivedAt: number | null
   prices: AdminPrice[]
   /** Durable application modules included in this plan. */
-  module_ids: string[]
-  created_at: number
-  updated_at: number
+  moduleIds: string[]
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminProductCreateParams = {
   slug: string
   name: string
   description?: string | null
-  app_id?: string | null
-  tax_code_id?: string | null
-  module_ids?: string[]
+  appId?: string | null
+  taxCodeId?: string | null
+  moduleIds?: string[]
   price: AdminPriceCreateParams
 }
 
 export type AdminProductModulesReplaceParams = {
-  module_ids: string[]
+  moduleIds: string[]
 }
 
 export type AdminApplicationModule = {
   object: 'application_module'
   id: string
-  app_id: string
+  appId: string
   key: string
   name: string
   description: string | null
-  feature_id: string | null
-  feature_slug: string | null
+  featureId: string | null
+  featureSlug: string | null
   status: 'active' | 'archived'
   position: number
-  created_at: number
-  updated_at: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminApplicationModuleCreateParams = {
-  app_id: string
+  appId: string
   key: string
   name: string
   description?: string | null
-  feature_id?: string | null
+  featureId?: string | null
   position?: number
 }
 
 export type AdminApplicationModuleUpdateParams = Partial<{
   name: string
   description: string | null
-  feature_id: string | null
+  featureId: string | null
   status: 'active' | 'archived'
   position: number
 }>
@@ -1356,7 +1356,7 @@ export type AdminProductUpdateParams = Partial<{
   name: string
   description: string | null
   active: boolean
-  tax_code_id: string | null
+  taxCodeId: string | null
 }>
 
 export type AdminDeletedProduct = {
@@ -1368,33 +1368,33 @@ export type AdminDeletedProduct = {
 export type AdminSubscriptionBatch = {
   object: 'list'
   data: AdminSubscription[]
-  total_count: number
+  totalCount: number
 }
 
 export type AdminOrgRole = {
   object: 'organization_role'
   id: string
-  organization_id: string
+  organizationId: string
   name: string
-  display_name: string
+  displayName: string
   description: string | null
   permissions: string[]
   /** True for default roles seeded at org creation; immutable through the API. */
-  is_system: boolean
-  members_count: number | null
-  created_at: number
-  updated_at: number
+  isSystem: boolean
+  membersCount: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminOrgRoleCreateParams = {
   name: string
-  display_name: string
+  displayName: string
   description?: string | null
   permissions: string[]
 }
 
 export type AdminOrgRoleUpdateParams = Partial<{
-  display_name: string
+  displayName: string
   description: string | null
   permissions: string[]
 }>
@@ -1413,62 +1413,62 @@ export type AdminPermissionCatalog = {
 export type AdminOrgMember = {
   object: 'organization_member'
   id: string
-  user_id: string
+  userId: string
   role: string
-  role_id: string | null
+  roleId: string | null
   status: string
-  first_name: string | null
-  last_name: string | null
+  firstName: string | null
+  lastName: string | null
   email: string | null
   avatar: string | null
-  created_at: number
+  createdAt: number
 }
 
 export type AdminAppAssignment = {
   object: 'app_assignment'
   id: string
-  organization_id: string
-  user_id: string
-  app_id: string
-  app_slug: string | null
-  app_name: string | null
+  organizationId: string
+  userId: string
+  appId: string
+  appSlug: string | null
+  appName: string | null
   status: string
   /** User ID of the member who granted access. Null for system grants. */
-  assigned_by: string | null
-  created_at: number
-  updated_at: number
+  assignedBy: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminAppAssignmentCreateParams = {
-  user_id: string
-  app_id?: string
-  app_slug?: string
+  userId: string
+  appId?: string
+  appSlug?: string
 }
 
 export type AdminOrgLocation = {
   object: 'org_location'
   id: string
-  organization_id: string
+  organizationId: string
   name: string
   code: string | null
   type: string
   status: string
-  is_primary: boolean
+  isPrimary: boolean
   phone: string | null
   email: string | null
   line1: string | null
   line2: string | null
   city: string | null
-  region_id: string | null
-  country_code: string | null
-  postal_code: string | null
+  regionId: string | null
+  countryCode: string | null
+  postalCode: string | null
   timezone: string | null
   metadata: Record<string, unknown> | null
-  deleted_at: number | null
-  deleted_by: string | null
-  deletion_reason: string | null
-  created_at: number
-  updated_at: number
+  deletedAt: number | null
+  deletedBy: string | null
+  deletionReason: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminOrgLocationCreateParams = {
@@ -1476,15 +1476,15 @@ export type AdminOrgLocationCreateParams = {
   code?: string | null
   type?: string
   status?: string
-  is_primary?: boolean
+  isPrimary?: boolean
   phone?: string | null
   email?: string | null
   line1?: string | null
   line2?: string | null
   city?: string | null
-  region_id?: string | null
-  country_code?: string | null
-  postal_code?: string | null
+  regionId?: string | null
+  countryCode?: string | null
+  postalCode?: string | null
   timezone?: string | null
   metadata?: Record<string, unknown> | null
 }
@@ -1500,34 +1500,34 @@ export type AdminDeletedOrgLocation = {
 export type AdminOrgContact = {
   object: 'org_contact'
   id: string
-  organization_id: string
+  organizationId: string
   /** Platform user ID when the contact is an org member; null for external contacts. */
-  user_id: string | null
-  first_name: string
-  last_name: string | null
+  userId: string | null
+  firstName: string
+  lastName: string | null
   title: string | null
   type: string
-  is_primary: boolean
+  isPrimary: boolean
   email: string | null
   phone: string | null
   mobile: string | null
   notes: string | null
   metadata: Record<string, unknown> | null
-  deleted_at: number | null
-  deleted_by: string | null
-  deletion_reason: string | null
-  created_at: number
-  updated_at: number
+  deletedAt: number | null
+  deletedBy: string | null
+  deletionReason: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminOrgContactCreateParams = {
-  first_name: string
+  firstName: string
   /** Link the contact to a platform user (must be an active org member). */
-  user_id?: string | null
-  last_name?: string | null
+  userId?: string | null
+  lastName?: string | null
   title?: string | null
   type?: string
-  is_primary?: boolean
+  isPrimary?: boolean
   email?: string | null
   phone?: string | null
   mobile?: string | null
@@ -1546,27 +1546,27 @@ export type AdminDeletedOrgContact = {
 export type AdminOrgDepartment = {
   object: 'org_department'
   id: string
-  organization_id: string
+  organizationId: string
   name: string
   code: string | null
   description: string | null
-  parent_department_id: string | null
-  head_membership_id: string | null
+  parentDepartmentId: string | null
+  headMembershipId: string | null
   status: string
   metadata: Record<string, unknown> | null
-  deleted_at: number | null
-  deleted_by: string | null
-  deletion_reason: string | null
-  created_at: number
-  updated_at: number
+  deletedAt: number | null
+  deletedBy: string | null
+  deletionReason: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminOrgDepartmentCreateParams = {
   name: string
   code?: string | null
   description?: string | null
-  parent_department_id?: string | null
-  head_membership_id?: string | null
+  parentDepartmentId?: string | null
+  headMembershipId?: string | null
   status?: string
   metadata?: Record<string, unknown> | null
 }
@@ -1583,45 +1583,45 @@ export type AdminDeletedOrgDepartment = {
 export type AdminEmployeeProfile = {
   object: 'employee_profile'
   id: string
-  membership_id: string
-  organization_id: string
-  user_id: string | null
-  employee_number: string | null
-  job_title: string | null
-  department_id: string | null
-  location_id: string | null
-  manager_membership_id: string | null
-  employment_type: string | null
-  employment_status: string
+  membershipId: string
+  organizationId: string
+  userId: string | null
+  employeeNumber: string | null
+  jobTitle: string | null
+  departmentId: string | null
+  locationId: string | null
+  managerMembershipId: string | null
+  employmentType: string | null
+  employmentStatus: string
   division: string | null
-  cost_center: string | null
-  work_email: string | null
-  work_phone: string | null
-  start_date: number | null
-  end_date: number | null
+  costCenter: string | null
+  workEmail: string | null
+  workPhone: string | null
+  startDate: number | null
+  endDate: number | null
   metadata: Record<string, unknown> | null
-  deleted_at: number | null
-  deleted_by: string | null
-  deletion_reason: string | null
-  created_at: number
-  updated_at: number
+  deletedAt: number | null
+  deletedBy: string | null
+  deletionReason: string | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminEmployeeProfileCreateParams = {
-  membership_id: string
-  employee_number?: string | null
-  job_title?: string | null
-  department_id?: string | null
-  location_id?: string | null
-  manager_membership_id?: string | null
-  employment_type?: string | null
-  employment_status?: string
+  membershipId: string
+  employeeNumber?: string | null
+  jobTitle?: string | null
+  departmentId?: string | null
+  locationId?: string | null
+  managerMembershipId?: string | null
+  employmentType?: string | null
+  employmentStatus?: string
   division?: string | null
-  cost_center?: string | null
-  work_email?: string | null
-  work_phone?: string | null
-  start_date?: number | null
-  end_date?: number | null
+  costCenter?: string | null
+  workEmail?: string | null
+  workPhone?: string | null
+  startDate?: number | null
+  endDate?: number | null
   metadata?: Record<string, unknown> | null
 }
 
@@ -1670,23 +1670,23 @@ import type {
 
 export type AdminUserPin = {
   object: 'pin'
-  user_id: string
+  userId: string
   scope: string
-  is_set: boolean
-  set_at: number | null
-  last_verified_at: number | null
-  failed_attempts: number
-  locked_until: number | null
+  isSet: boolean
+  setAt: number | null
+  lastVerifiedAt: number | null
+  failedAttempts: number
+  lockedUntil: number | null
 }
 
 export type AdminUserPinVerification = {
   object: 'pin_verification'
   verified: boolean
-  locked_until: number | null
+  lockedUntil: number | null
 }
 
 export type AdminDeletedUserPin = {
   object: 'pin'
-  user_id: string
+  userId: string
   deleted: true
 }

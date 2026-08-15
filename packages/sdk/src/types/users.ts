@@ -10,16 +10,16 @@ export const sdk876CurrentUserSchema = z.strictObject({
   id: nonEmptyString,
   email: nonEmptyString,
   username: nullableString,
-  email_verified: z.boolean(),
-  first_name: z.string(),
-  last_name: z.string(),
-  middle_name: nullableString,
+  emailVerified: z.boolean(),
+  firstName: z.string(),
+  lastName: z.string(),
+  middleName: nullableString,
   avatar: nullableString,
-  avatar_file_id: nullableString.optional(),
+  avatarFileId: nullableString.optional(),
   status: z.string(),
   banned: z.boolean(),
-  created_at: z.number(),
-  updated_at: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
 })
 
 export const sdk876RoutingOrganizationSchema = z.strictObject({
@@ -27,7 +27,7 @@ export const sdk876RoutingOrganizationSchema = z.strictObject({
   name: nullableString,
   slug: nonEmptyString,
   status: z.string(),
-  logo_url: nullableString,
+  logoUrl: nullableString,
 })
 
 export const sdk876RoutingMembershipSchema = z.strictObject({
@@ -41,9 +41,9 @@ export const sdk876RoutingMembershipSchema = z.strictObject({
 export const sdk876RoutingMembershipListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(sdk876RoutingMembershipSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().int().nullable().optional(),
+  totalCount: z.number().int().nullable().optional(),
 })
 
 export const sdk876GenderSchema = z.enum(['male', 'female', 'other'])
@@ -51,33 +51,33 @@ export const sdk876GenderSchema = z.enum(['male', 'female', 'other'])
 export const sdk876ConsumerProfileSchema = z.strictObject({
   object: z.literal('consumer_profile'),
   id: nonEmptyString,
-  user_id: nonEmptyString,
+  userId: nonEmptyString,
   email: nonEmptyString,
   username: nullableString,
-  first_name: z.string(),
-  last_name: z.string(),
-  middle_name: nullableString,
+  firstName: z.string(),
+  lastName: z.string(),
+  middleName: nullableString,
   nickname: nullableString,
   avatar: nullableString,
-  avatar_file_id: nullableString.optional(),
+  avatarFileId: nullableString.optional(),
   gender: sdk876GenderSchema.nullable(),
-  phone_number: nullableString,
-  date_of_birth: nullableString,
+  phoneNumber: nullableString,
+  dateOfBirth: nullableString,
   language: nullableString,
   timezone: nullableString,
-  created_at: z.number(),
-  updated_at: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
 })
 
 export const sdk876ConsumerProfileUpdateParamsSchema = z.strictObject({
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  middle_name: z.string().nullable().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  middleName: z.string().nullable().optional(),
   nickname: z.string().nullable().optional(),
   avatar: z.string().nullable().optional(),
   gender: sdk876GenderSchema.nullable().optional(),
-  phone_number: z.string().nullable().optional(),
-  date_of_birth: z.string().nullable().optional(),
+  phoneNumber: z.string().nullable().optional(),
+  dateOfBirth: z.string().nullable().optional(),
   language: z.string().nullable().optional(),
   timezone: z.string().nullable().optional(),
 })
@@ -85,27 +85,27 @@ export const sdk876ConsumerProfileUpdateParamsSchema = z.strictObject({
 export const sdk876ConsumerAddressSchema = z.strictObject({
   object: z.literal('address'),
   id: nonEmptyString,
-  user_id: nonEmptyString.nullable(),
-  organization_id: nonEmptyString.nullable(),
+  userId: nonEmptyString.nullable(),
+  organizationId: nonEmptyString.nullable(),
   type: z.enum(['home', 'work', 'other']),
   label: nullableString,
   line1: nullableString,
   line2: nullableString,
   city: nullableString,
-  region_id: nullableString,
-  country_code: nullableString,
-  postal_code: nullableString,
-  is_default: z.boolean(),
-  created_at: z.number(),
-  updated_at: z.number(),
+  regionId: nullableString,
+  countryCode: nullableString,
+  postalCode: nullableString,
+  isDefault: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
 })
 
 export const sdk876ConsumerAddressListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(sdk876ConsumerAddressSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().int().nullable(),
+  totalCount: z.number().int().nullable(),
 })
 
 export const sdk876ConsumerAddressCreateParamsSchema = z.strictObject({
@@ -134,31 +134,31 @@ export const sdk876ConsumerContactUserSchema = z.strictObject({
   id: nonEmptyString,
   email: nonEmptyString,
   username: nullableString,
-  first_name: z.string(),
-  last_name: z.string(),
-  middle_name: nullableString,
+  firstName: z.string(),
+  lastName: z.string(),
+  middleName: nullableString,
   avatar: nullableString,
-  avatar_file_id: nullableString.optional(),
+  avatarFileId: nullableString.optional(),
 })
 
 export const sdk876ConsumerContactSchema = z.strictObject({
   object: z.literal('user_contact'),
   id: nonEmptyString,
-  owner_user_id: nonEmptyString,
-  contact_user_id: nonEmptyString,
-  contact_user: sdk876ConsumerContactUserSchema,
+  ownerUserId: nonEmptyString,
+  contactUserId: nonEmptyString,
+  contactUser: sdk876ConsumerContactUserSchema,
   nickname: nullableString,
   notes: nullableString,
-  created_at: z.number(),
-  updated_at: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
 })
 
 export const sdk876ConsumerContactListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(sdk876ConsumerContactSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().int().nullable(),
+  totalCount: z.number().int().nullable(),
 })
 
 export const sdk876ConsumerContactCreateParamsSchema = z.strictObject({

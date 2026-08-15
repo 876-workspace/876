@@ -9,45 +9,45 @@ const verificationChannelSchema = z.enum(['sms', 'call', 'whatsapp'])
 export const mobileNumberSchema = z.strictObject({
   object: z.literal('mobile_number'),
   id: z.string().min(1),
-  user_id: z.string().min(1),
+  userId: z.string().min(1),
   number: z.string().regex(/^\+[1-9]\d{7,14}$/),
   type: mobileNumberTypeSchema,
-  is_primary: z.boolean(),
+  isPrimary: z.boolean(),
   // Always serialized by the API, null until a Lookup resolves them. Omitting
   // them from a strictObject rejects every real response as auth/invalid-response.
-  carrier_name: z.string().nullable(),
-  line_type: z.string().nullable(),
-  verification_status: z.string(),
-  verification_id: z.string().nullable(),
-  verified_at: z.number().int().nullable(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  carrierName: z.string().nullable(),
+  lineType: z.string().nullable(),
+  verificationStatus: z.string(),
+  verificationId: z.string().nullable(),
+  verifiedAt: z.number().int().nullable(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 /** A provider-owned verification challenge. It never includes an OTP value. */
 export const mobileNumberVerificationSchema = z.strictObject({
   object: z.literal('mobile_number_verification'),
   id: z.string().min(1),
-  mobile_number_id: z.string().min(1),
+  mobileNumberId: z.string().min(1),
   provider: z.string().nullable(),
-  provider_sid: z.string().nullable(),
+  providerSid: z.string().nullable(),
   channel: verificationChannelSchema.nullable(),
   status: z.string().nullable(),
-  attempt_count: z.number().int().nonnegative(),
-  last_sent_at: z.number().int().nullable(),
-  can_resend_at: z.number().int().nullable(),
-  verified_at: z.number().int().nullable(),
-  expires_at: z.number().int(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  attemptCount: z.number().int().nonnegative(),
+  lastSentAt: z.number().int().nullable(),
+  canResendAt: z.number().int().nullable(),
+  verifiedAt: z.number().int().nullable(),
+  expiresAt: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const mobileNumberListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(mobileNumberSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().int().nullable(),
+  totalCount: z.number().int().nullable(),
 })
 
 export const mobileNumberCreateParamsSchema = z.strictObject({

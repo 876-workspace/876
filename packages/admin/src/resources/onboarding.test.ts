@@ -22,8 +22,8 @@ describe('admin onboarding resource', () => {
       fetch: fetchMock,
     })
     const body = {
-      country_code: 'JM',
-      answers: { legal_name: 'Example Limited', locations: [] },
+      countryCode: 'JM',
+      answers: { legalName: 'Example Limited', locations: [] },
     }
 
     await $876.onboarding.replaceAnswers(
@@ -43,7 +43,7 @@ describe('admin onboarding resource', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue(
-        jsonResponse({ object: 'onboarding_catalog', schema_version: 1 })
+        jsonResponse({ object: 'onboarding_catalog', schemaVersion: 1 })
       )
     const $876 = create876AdminClient({
       baseUrl: 'https://api.test',

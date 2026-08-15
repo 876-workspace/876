@@ -15,7 +15,7 @@ describe('admin users resource', () => {
       jsonResponse({
         object: 'user',
         id: 'user_test',
-        avatar_file_id: null,
+        avatarFileId: null,
       })
     )
     const $876 = create876AdminClient({
@@ -25,14 +25,14 @@ describe('admin users resource', () => {
     })
 
     const result = await $876.users.update('user_test', {
-      avatar_file_id: null,
+      avatarFileId: null,
     })
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.test/users/user_test',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ avatar_file_id: null }),
+        body: JSON.stringify({ avatarFileId: null }),
       })
     )
     expect(result.data?.avatar_file_id).toBeNull()
@@ -43,14 +43,14 @@ describe('admin users resource', () => {
       jsonResponse({
         object: 'user_feature',
         id: 'uf_test',
-        user_id: 'user_test',
-        feature_id: 'feat_test',
+        userId: 'user_test',
+        featureId: 'feat_test',
         slug: 'test-feature',
         status: 'disabled',
         note: null,
-        synced_at: 1700000000,
-        created_at: 1700000000,
-        updated_at: 1700000000,
+        syncedAt: 1700000000,
+        createdAt: 1700000000,
+        updatedAt: 1700000000,
       })
     )
     const $876 = create876AdminClient({
@@ -81,20 +81,20 @@ describe('admin users resource', () => {
             {
               object: 'user_identification',
               id: 'uident_test',
-              user_id: 'user_test',
+              userId: 'user_test',
               type: 'trn',
               label: 'Taxpayer Registration Number',
-              country_code: 'JM',
-              value_masked: '••••••789',
+              countryCode: 'JM',
+              valueMasked: '••••••789',
               verified: false,
-              verified_at: null,
-              created_at: 1700000000,
-              updated_at: 1700000000,
+              verifiedAt: null,
+              createdAt: 1700000000,
+              updatedAt: 1700000000,
             },
           ],
-          has_more: false,
+          hasMore: false,
           url: '/users/user_test/identifications',
-          total_count: 1,
+          totalCount: 1,
         })
       )
       const $876 = create876AdminClient({
@@ -117,15 +117,15 @@ describe('admin users resource', () => {
         jsonResponse({
           object: 'user_identification',
           id: 'uident_new',
-          user_id: 'user_test',
+          userId: 'user_test',
           type: 'trn',
           label: 'Taxpayer Registration Number',
-          country_code: 'JM',
-          value_masked: '••••••789',
+          countryCode: 'JM',
+          valueMasked: '••••••789',
           verified: false,
-          verified_at: null,
-          created_at: 1700000000,
-          updated_at: 1700000000,
+          verifiedAt: null,
+          createdAt: 1700000000,
+          updatedAt: 1700000000,
         })
       )
       const $876 = create876AdminClient({
@@ -153,15 +153,15 @@ describe('admin users resource', () => {
         jsonResponse({
           object: 'user_identification',
           id: 'uident_test',
-          user_id: 'user_test',
+          userId: 'user_test',
           type: 'trn',
           label: 'Taxpayer Registration Number',
-          country_code: 'JM',
-          value_masked: '••••••321',
+          countryCode: 'JM',
+          valueMasked: '••••••321',
           verified: false,
-          verified_at: null,
-          created_at: 1700000000,
-          updated_at: 1700000001,
+          verifiedAt: null,
+          createdAt: 1700000000,
+          updatedAt: 1700000001,
         })
       )
       const $876 = create876AdminClient({
@@ -212,9 +212,9 @@ describe('admin users resource', () => {
           object: 'user_identification_disclosure',
           type: 'trn',
           value: '123456789',
-          country_code: 'JM',
+          countryCode: 'JM',
           verified: true,
-          disclosed_at: 1700000002,
+          disclosedAt: 1700000002,
         })
       )
       const $876 = create876AdminClient({
@@ -234,8 +234,8 @@ describe('admin users resource', () => {
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify({
-            organization_id: 'org_test',
-            app_slug: '876-couriers',
+            organizationId: 'org_test',
+            appSlug: '876-couriers',
             reason: 'JCA customs clearance',
           }),
         })
@@ -248,15 +248,15 @@ describe('admin users resource', () => {
         jsonResponse({
           object: 'user_identification',
           id: 'uident_test',
-          user_id: 'user_test',
+          userId: 'user_test',
           type: 'trn',
           label: 'Taxpayer Registration Number',
-          country_code: 'JM',
-          value_masked: '••••••789',
+          countryCode: 'JM',
+          valueMasked: '••••••789',
           verified: true,
-          verified_at: 1700000003,
-          created_at: 1700000000,
-          updated_at: 1700000003,
+          verifiedAt: 1700000003,
+          createdAt: 1700000000,
+          updatedAt: 1700000003,
         })
       )
       const $876 = create876AdminClient({
@@ -273,7 +273,7 @@ describe('admin users resource', () => {
         'https://api.test/users/user_test/identifications/trn/verify',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ verified_by: 'admin_42' }),
+          body: JSON.stringify({ verifiedBy: 'admin_42' }),
         })
       )
     })

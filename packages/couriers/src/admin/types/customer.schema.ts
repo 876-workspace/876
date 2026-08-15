@@ -8,40 +8,40 @@ const customerKindSchema = z.enum(['INDIVIDUAL', 'BUSINESS'])
 export const customerSchema = z.object({
   object: z.literal('courier_customer_profile'),
   id: z.string(),
-  tenant_id: z.string(),
-  user_id: z.string().nullable(),
-  billing_customer_id: z.string(),
-  branch_id: z.string().nullable(),
+  tenantId: z.string(),
+  userId: z.string().nullable(),
+  billingCustomerId: z.string(),
+  branchId: z.string().nullable(),
   status: customerStatusSchema,
   trn: z.string().nullable(),
-  is_commercial: z.boolean(),
-  first_seen_at: z.number().int(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
-  deleted_at: z.number().int().nullable(),
+  isCommercial: z.boolean(),
+  firstSeenAt: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+  deletedAt: z.number().int().nullable(),
 })
 
 export const customerListSchema = z.object({
   object: z.literal('list'),
   data: z.array(customerSchema),
-  has_more: z.boolean(),
-  total_count: z.number().int().nullable(),
+  hasMore: z.boolean(),
+  totalCount: z.number().int().nullable(),
   url: z.string(),
 })
 
 export const createCustomerBodySchema = z
   .strictObject({
-    idempotency_key: z.string().min(8).max(255),
-    customer_kind: customerKindSchema.default('INDIVIDUAL'),
-    first_name: z.string().trim().min(1).optional(),
-    last_name: z.string().trim().min(1).nullable().optional(),
-    company_name: z.string().trim().min(1).optional(),
+    idempotencyKey: z.string().min(8).max(255),
+    customerKind: customerKindSchema.default('INDIVIDUAL'),
+    firstName: z.string().trim().min(1).optional(),
+    lastName: z.string().trim().min(1).nullable().optional(),
+    companyName: z.string().trim().min(1).optional(),
     email: z.string().trim().pipe(z.email()).nullable().optional(),
     phone: z.string().trim().min(1).nullable().optional(),
-    branch_id: z.string().nullable().optional(),
+    branchId: z.string().nullable().optional(),
     status: customerStatusSchema.optional(),
     trn: z.string().trim().min(1).nullable().optional(),
-    is_commercial: z.boolean().optional(),
+    isCommercial: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
     const kind = value.customer_kind ?? 'INDIVIDUAL'
@@ -62,13 +62,13 @@ export const createCustomerBodySchema = z
   })
 
 export const updateCustomerBodySchema = z.strictObject({
-  branch_id: z.string().nullable().optional(),
+  branchId: z.string().nullable().optional(),
   status: customerStatusSchema.optional(),
   trn: z.string().nullable().optional(),
-  is_commercial: z.boolean().optional(),
-  first_name: z.string().trim().min(1).optional(),
-  last_name: z.string().trim().min(1).nullable().optional(),
-  company_name: z.string().trim().min(1).optional(),
+  isCommercial: z.boolean().optional(),
+  firstName: z.string().trim().min(1).optional(),
+  lastName: z.string().trim().min(1).nullable().optional(),
+  companyName: z.string().trim().min(1).optional(),
   email: z.string().trim().pipe(z.email()).nullable().optional(),
   phone: z.string().trim().min(1).nullable().optional(),
 })
@@ -86,26 +86,26 @@ export const customerEnrollmentSchema = z.object({
 })
 
 export const customerEnrollmentBodySchema = z.strictObject({
-  billing_customer_id: z.string().min(1),
-  user_id: z.string().min(1).nullable().optional(),
-  branch_id: z.string().min(1).nullable().optional(),
+  billingCustomerId: z.string().min(1),
+  userId: z.string().min(1).nullable().optional(),
+  branchId: z.string().min(1).nullable().optional(),
   status: customerStatusSchema.optional(),
-  is_commercial: z.boolean().optional(),
+  isCommercial: z.boolean().optional(),
 })
 
 export const deleteCustomerBodySchema = z.strictObject({
-  deleted_by: z.string().min(1).optional(),
+  deletedBy: z.string().min(1).optional(),
   reason: z.string().min(1).nullable().optional(),
-  deletion_reason: z.string().min(1).nullable().optional(),
+  deletionReason: z.string().min(1).nullable().optional(),
 })
 
 export const createMailboxBodySchema = z.strictObject({
   number: z.string(),
-  is_primary: z.boolean().optional(),
+  isPrimary: z.boolean().optional(),
 })
 
 export const updateMailboxBodySchema = z.strictObject({
-  is_primary: z.boolean(),
+  isPrimary: z.boolean(),
 })
 
 export type Customer = z.infer<typeof customerSchema>
@@ -115,10 +115,10 @@ export type DeletedCustomer = z.infer<typeof deletedCustomerSchema>
 export type CustomerEnrollment = z.infer<typeof customerEnrollmentSchema>
 export type ListCustomersParams = {
   status?: CustomerStatus
-  branch_id?: string
+  branchId?: string
   limit?: number
-  starting_after?: string
-  ending_before?: string
+  startingAfter?: string
+  endingBefore?: string
 }
 export type CreateCustomerBody = z.input<typeof createCustomerBodySchema>
 export type CustomerEnrollmentBody = z.input<

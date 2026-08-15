@@ -15,7 +15,7 @@ describe('admin provisioning resource', () => {
       jsonResponse({
         object: 'app',
         id: 'app_test',
-        logo_file_id: null,
+        logoFileId: null,
       })
     )
     const $876 = create876AdminClient({
@@ -24,13 +24,13 @@ describe('admin provisioning resource', () => {
       fetch: fetchMock,
     })
 
-    const result = await $876.apps.update('app_test', { logo_file_id: null })
+    const result = await $876.apps.update('app_test', { logoFileId: null })
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.test/apps/app_test',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify({ logo_file_id: null }),
+        body: JSON.stringify({ logoFileId: null }),
       })
     )
     expect(result.data?.logo_file_id).toBeNull()
@@ -69,22 +69,22 @@ describe('admin provisioning resource', () => {
       fetch: fetchMock,
     })
     const body = {
-      manifest_version: 1 as const,
+      manifestVersion: 1 as const,
       reconciliation: 'create_missing' as const,
-      preserve_tenant_overrides: true as const,
-      finance_dependency: 'embedded' as const,
-      finance_scopes: ['billing.customers.read'],
+      preserveTenantOverrides: true as const,
+      financeDependency: 'embedded' as const,
+      financeScopes: ['billing.customers.read'],
       resources: [
         {
-          resource_type: 'workspace',
+          resourceType: 'workspace',
           key: 'default',
           position: 0,
           properties: [
             {
               key: 'currency',
-              value_type: 'reference' as const,
-              reference_namespace: 'currency',
-              reference_key: 'JMD',
+              valueType: 'reference' as const,
+              referenceNamespace: 'currency',
+              referenceKey: 'JMD',
             },
           ],
         },
@@ -134,7 +134,7 @@ describe('admin provisioning resource', () => {
       'https://api.test/provisioning/runs/reconcile',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ app_id: '876-couriers' }),
+        body: JSON.stringify({ appId: '876-couriers' }),
       })
     )
   })

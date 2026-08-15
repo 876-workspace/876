@@ -29,15 +29,15 @@ export type AdminOnboardingField = {
   key: string
   label: string
   description: string | null
-  field_type: AdminOnboardingFieldType
+  fieldType: AdminOnboardingFieldType
   required: boolean
   sensitive: boolean
   placeholder: string | null
   pattern: string | null
-  min_items: number | null
-  required_when: { field_key: string; equals: AdminJsonValue } | null
+  minItems: number | null
+  requiredWhen: { fieldKey: string; equals: AdminJsonValue } | null
   options: AdminOnboardingOption[]
-  item_fields: AdminOnboardingField[]
+  itemFields: AdminOnboardingField[]
 }
 
 export type AdminOnboardingSection = {
@@ -50,29 +50,29 @@ export type AdminOnboardingSection = {
 
 export type AdminOnboardingCatalog = {
   object: 'onboarding_catalog'
-  target_type: AdminOnboardingTargetType
-  target_key: string
-  country_code: string
-  schema_version: 1
-  catalog_revision: number
+  targetType: AdminOnboardingTargetType
+  targetKey: string
+  countryCode: string
+  schemaVersion: 1
+  catalogRevision: number
   sections: AdminOnboardingSection[]
 }
 
 export type AdminOnboardingSession = {
   object: 'onboarding_session'
   id: string
-  organization_id: string
-  target_type: AdminOnboardingTargetType
-  target_key: string
-  country_code: string
-  schema_version: 1
-  catalog_revision: number
+  organizationId: string
+  targetType: AdminOnboardingTargetType
+  targetKey: string
+  countryCode: string
+  schemaVersion: 1
+  catalogRevision: number
   status: 'draft' | 'submitted' | 'completed' | 'needs_update'
   answers: Record<string, AdminJsonValue>
-  submitted_at: number | null
-  completed_at: number | null
-  created_at: number
-  updated_at: number
+  submittedAt: number | null
+  completedAt: number | null
+  createdAt: number
+  updatedAt: number
 }
 
 export type AdminOnboardingValidationIssue = {
@@ -88,7 +88,7 @@ export type AdminOnboardingValidation = {
 }
 
 export type AdminOnboardingAnswersReplaceParams = {
-  country_code: string
+  countryCode: string
   answers: Record<string, AdminJsonValue>
 }
 
@@ -106,7 +106,7 @@ export function createAdminOnboardingResource(runtime: AdminRuntime) {
       return adminRequest<AdminOnboardingCatalog>(runtime, {
         method: 'GET',
         path: `/onboarding/catalog/${targetPath(targetType, targetKey)}`,
-        query: { country_code: countryCode },
+        query: { countryCode: countryCode },
       })
     },
 
@@ -119,7 +119,7 @@ export function createAdminOnboardingResource(runtime: AdminRuntime) {
       return adminRequest<AdminOnboardingSession>(runtime, {
         method: 'GET',
         path: `/onboarding/organizations/${encodeURIComponent(organizationId)}/${targetPath(targetType, targetKey)}`,
-        query: { country_code: countryCode },
+        query: { countryCode: countryCode },
       })
     },
 
@@ -157,7 +157,7 @@ export function createAdminOnboardingResource(runtime: AdminRuntime) {
       return adminRequest<AdminOnboardingSession>(runtime, {
         method: 'POST',
         path: `/onboarding/organizations/${encodeURIComponent(organizationId)}/${targetPath(targetType, targetKey)}/submit`,
-        query: { country_code: countryCode },
+        query: { countryCode: countryCode },
       })
     },
   }

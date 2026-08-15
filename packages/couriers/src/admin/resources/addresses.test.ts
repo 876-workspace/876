@@ -20,27 +20,27 @@ const invalidResponse = {
 const address = {
   object: 'address' as const,
   id: addressId,
-  tenant_id: tenantId,
+  tenantId: tenantId,
   name: 'Kingston Harbour Depot',
   line1: '56 Harbour Street',
   line2: 'Ground Floor',
   city: 'Kingston',
-  region_code: '13',
-  region_name: 'Kingston',
-  country_code: 'JM',
-  postal_code: null,
+  regionCode: '13',
+  regionName: 'Kingston',
+  countryCode: 'JM',
+  postalCode: null,
   latitude: 17.9712,
   longitude: -76.792,
-  is_active: true,
-  created_at: 1_776_048_000,
-  updated_at: 1_776_134_400,
+  isActive: true,
+  createdAt: 1_776_048_000,
+  updatedAt: 1_776_134_400,
 }
 
 const addressList = {
   object: 'list' as const,
   data: [address],
-  has_more: false,
-  total_count: 1,
+  hasMore: false,
+  totalCount: 1,
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/addresses`,
 }
 
@@ -55,24 +55,24 @@ const createBody = {
   line1: '14 Sunset Boulevard',
   line2: 'Freeport',
   city: 'Montego Bay',
-  country_code: 'JM',
-  region_code: '08',
-  postal_code: 'JMCJS12',
+  countryCode: 'JM',
+  regionCode: '08',
+  postalCode: 'JMCJS12',
   latitude: 18.4729,
   longitude: -77.9217,
-  is_active: true,
+  isActive: true,
 }
 
 const updateBody = {
   name: 'Kingston Harbour Depot Updated',
   line2: 'Dispatch Hall',
-  postal_code: 'JMKN02',
-  is_active: false,
+  postalCode: 'JMKN02',
+  isActive: false,
 }
 
 const listParams = {
-  is_active: true,
-  country_code: 'JM',
+  isActive: true,
+  countryCode: 'JM',
   limit: 25,
 }
 
@@ -114,7 +114,7 @@ describe('createAddressesResource', () => {
     const fetchMock = successFetch(addressList)
     const resource = createResource(fetchMock, internalKey)
 
-    await resource.list(tenantId, { starting_after: addressId })
+    await resource.list(tenantId, { startingAfter: addressId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/addresses?starting_after=addr_kingston%2Fharbour+56`,
@@ -126,7 +126,7 @@ describe('createAddressesResource', () => {
     const fetchMock = successFetch(addressList)
     const resource = createResource(fetchMock, internalKey)
 
-    await resource.list(tenantId, { ending_before: addressId })
+    await resource.list(tenantId, { endingBefore: addressId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/addresses?ending_before=addr_kingston%2Fharbour+56`,

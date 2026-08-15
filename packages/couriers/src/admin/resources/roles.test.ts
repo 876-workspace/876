@@ -11,26 +11,26 @@ function createRoleFixture(overrides: Record<string, unknown> = {}) {
   return {
     object: 'role' as const,
     id: 'role_kgn_4d2a1f8e',
-    tenant_id: 'ten_kgn_7f3a9b2c',
+    tenantId: 'ten_kgn_7f3a9b2c',
     name: 'Dispatch Supervisor',
     description: 'Oversees daily dispatch and Kingston route assignments',
     permissions: ['roles.read', 'team.read', 'packages.read'],
-    is_default: false,
-    system_key: null,
-    member_count: 3,
-    created_at: 1710000000,
-    updated_at: 1710000000,
+    isDefault: false,
+    systemKey: null,
+    memberCount: 3,
+    createdAt: 1710000000,
+    updatedAt: 1710000000,
     ...overrides,
   }
 }
 
 function createRoleListFixture(tenantId = 'ten_kgn_7f3a9b2c') {
-  const role = createRoleFixture({ tenant_id: tenantId })
+  const role = createRoleFixture({ tenantId: tenantId })
   return {
     object: 'list' as const,
     data: [role],
-    has_more: false,
-    total_count: 1,
+    hasMore: false,
+    totalCount: 1,
     url: `/v1/tenants/${tenantId}/roles`,
   }
 }
@@ -116,7 +116,7 @@ describe('admin roles resource', () => {
       }
       const fixture = createRoleFixture({
         id: 'role_kgn_9b1c2d3e',
-        tenant_id: tenantId,
+        tenantId: tenantId,
         name: body.name,
         description: body.description,
         permissions: body.permissions,
@@ -206,7 +206,7 @@ describe('admin roles resource', () => {
       }
       const fixture = createRoleFixture({
         id: roleId,
-        tenant_id: tenantId,
+        tenantId: tenantId,
         name: body.name,
         permissions: body.permissions,
       })

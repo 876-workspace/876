@@ -25,21 +25,21 @@ export const sdk876AppSchema = z.object({
   id: nonEmptyString,
   name: z.string(),
   slug: z.string(),
-  feature_prefix: z.string(),
-  organization_id: z.string().nullable(),
-  client_id: z.string(),
-  client_type: z.string(),
-  app_kind: z.enum(['internal', 'platform', 'product', 'external']),
+  featurePrefix: z.string(),
+  organizationId: z.string().nullable(),
+  clientId: z.string(),
+  clientType: z.string(),
+  appKind: z.enum(['internal', 'platform', 'product', 'external']),
   status: appStatusSchema,
-  allowed_redirect_uris: z.array(z.string()),
-  allowed_logout_uris: z.array(z.string()),
-  logo_url: z.string().nullable(),
-  logo_file_id: z.string().nullable().optional(),
-  homepage_url: z.string().nullable(),
+  allowedRedirectUris: z.array(z.string()),
+  allowedLogoutUris: z.array(z.string()),
+  logoUrl: z.string().nullable(),
+  logoFileId: z.string().nullable().optional(),
+  homepageUrl: z.string().nullable(),
   type: z.string(),
-  scopes_allowed: z.array(z.string()),
-  created_at: z.number(),
-  updated_at: z.number(),
+  scopesAllowed: z.array(z.string()),
+  createdAt: z.number(),
+  updatedAt: z.number(),
 })
 
 /**
@@ -55,9 +55,9 @@ export const sdk876AppCreatedSchema = sdk876AppSchema.extend({
 export const sdk876AppListSchema = z.object({
   object: z.literal('list'),
   data: z.array(sdk876AppSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().int().nullable(),
+  totalCount: z.number().int().nullable(),
 })
 
 /** Parameters for `$876.apps.create`. */

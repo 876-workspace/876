@@ -96,8 +96,8 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
           path: '/provisioning/runs',
           query: {
             ...toCursorQuery(params),
-            organization_id: params?.organizationId,
-            app_id: params?.appId,
+            organizationId: params?.organizationId,
+            appId: params?.appId,
             status: params?.status,
           },
         })
@@ -122,8 +122,8 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
           method: 'POST',
           path: '/provisioning/runs/application/claim',
           body: {
-            organization_id: body.organizationId,
-            app_id: body.appId,
+            organizationId: body.organizationId,
+            appId: body.appId,
           },
         })
       },
@@ -149,10 +149,10 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
           method: 'POST',
           path: '/provisioning/runs/reconcile',
           body: {
-            app_id: body.appId,
-            organization_id: body.organizationId,
+            appId: body.appId,
+            organizationId: body.organizationId,
             limit: body.limit,
-            starting_after: body.startingAfter,
+            startingAfter: body.startingAfter,
           },
         })
       },
@@ -181,7 +181,7 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
           path: `/provisioning/manifests/${targetPath(targetType, targetKey)}/notes`,
           body: {
             body: body.body,
-            author_user_id: body.authorUserId,
+            authorUserId: body.authorUserId,
           },
         })
       },

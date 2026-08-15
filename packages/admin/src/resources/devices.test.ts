@@ -27,9 +27,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -51,9 +51,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -75,9 +75,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -99,9 +99,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -123,9 +123,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -147,9 +147,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -171,9 +171,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -195,9 +195,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -218,9 +218,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -242,9 +242,9 @@ describe('admin devices resource', () => {
       const payload = {
         object: 'list',
         data: [{ object: 'device', id: 'dev_2kL9mN4q' }],
-        has_more: false,
+        hasMore: false,
         url: '/devices',
-        total_count: 1,
+        totalCount: 1,
       }
       const fetchMock = vi.fn().mockResolvedValue(jsonResponse(payload))
       const $876 = create876AdminClient({
@@ -387,7 +387,7 @@ describe('admin devices resource', () => {
             label: undefined,
             trusted: undefined,
             blocked: true,
-            block_reason: 'Reported stolen',
+            blockReason: 'Reported stolen',
           }),
         })
       )
@@ -414,7 +414,7 @@ describe('admin devices resource', () => {
             label: null,
             trusted: undefined,
             blocked: undefined,
-            block_reason: undefined,
+            blockReason: undefined,
           }),
         })
       )
@@ -444,9 +444,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices/dev_2kL9mN4q/attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -468,9 +468,9 @@ describe('admin devices resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/devices/dev_2kL9mN4q/attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -498,16 +498,16 @@ describe('admin devices resource', () => {
           data: [
             {
               object: 'device_user',
-              user_id: 'user_4rT8xKp2',
-              device_id: 'dev_2kL9mN4q',
-              first_seen_at: 1700000000,
-              last_seen_at: 1700010000,
-              sign_in_count: 3,
+              userId: 'user_4rT8xKp2',
+              deviceId: 'dev_2kL9mN4q',
+              firstSeenAt: 1700000000,
+              lastSeenAt: 1700010000,
+              signInCount: 3,
             },
           ],
-          has_more: false,
+          hasMore: false,
           url: '/devices/dev_2kL9mN4q/users',
-          total_count: 1,
+          totalCount: 1,
         })
       )
       const $876 = create876AdminClient({

@@ -13,8 +13,8 @@ export type Result<T> = { data: T; error: null } | { data: null; error: Error }
 export interface List<T> {
   object: 'list'
   data: T[]
-  has_more: boolean
-  total_count: number | null
+  hasMore: boolean
+  totalCount: number | null
   url: string
 }
 

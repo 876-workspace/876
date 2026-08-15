@@ -80,7 +80,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         query: {
           ...toCursorQuery(params),
           search: params?.search,
-          include_deleted: params?.includeDeleted,
+          includeDeleted: params?.includeDeleted,
           status: params?.status,
         },
       })
@@ -101,7 +101,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           method: 'GET',
           path: `/organizations/by-slug/${params.slug}`,
           query: {
-            include_deleted: params.includeDeleted,
+            includeDeleted: params.includeDeleted,
           },
         })
       }
@@ -109,7 +109,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         method: 'GET',
         path: `/organizations/${params.id}`,
         query: {
-          include_deleted: params.includeDeleted,
+          includeDeleted: params.includeDeleted,
         },
       })
     },
@@ -157,7 +157,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         path: `/organizations/${orgId}`,
         query: options
           ? {
-              deleted_by: options.deletedBy,
+              deletedBy: options.deletedBy,
               reason: options.reason,
             }
           : undefined,
@@ -177,7 +177,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         method: 'DELETE',
         path: `/organizations/${orgId}/purge`,
         query: options?.deletedBy
-          ? { deleted_by: options.deletedBy }
+          ? { deletedBy: options.deletedBy }
           : undefined,
       })
     },
@@ -513,9 +513,9 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           method: 'POST',
           path: `/organizations/${orgId}/apps`,
           body: {
-            app_id: params.appId,
-            app_slug: params.appSlug,
-            price_id: params.priceId,
+            appId: params.appId,
+            appSlug: params.appSlug,
+            priceId: params.priceId,
           },
         })
       },
@@ -525,8 +525,8 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         appId: string,
         body: {
           status?: AdminSubscriptionStatus
-          price_id?: string
-          cancel_at_period_end?: boolean
+          priceId?: string
+          cancelAtPeriodEnd?: boolean
         }
       ) {
         return adminRequest<AdminSubscription>(runtime, {
@@ -545,7 +545,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           return adminRequest<AdminSubscriptionBatch>(runtime, {
             method: 'GET',
             path: '/organizations/app-access/batch',
-            query: { organization_ids: params.organizationIds.join(',') },
+            query: { organizationIds: params.organizationIds.join(',') },
           })
         }
         return adminRequest<AdminSubscription[]>(runtime, {
@@ -686,9 +686,9 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           method: 'GET',
           path: `/organizations/${orgId}/app-assignments`,
           query: {
-            user_id: params?.userId,
-            app_id: params?.appId,
-            include_revoked: params?.includeRevoked,
+            userId: params?.userId,
+            appId: params?.appId,
+            includeRevoked: params?.includeRevoked,
           },
         })
       },

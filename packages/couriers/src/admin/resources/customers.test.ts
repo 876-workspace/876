@@ -21,74 +21,74 @@ const invalidResponse = {
 const customer = {
   object: 'courier_customer_profile' as const,
   id: customerId,
-  tenant_id: tenantId,
-  user_id: 'user_sophia_brown',
-  billing_customer_id: 'billcus_sophia_brown',
-  branch_id: 'br_kingston/harbour',
+  tenantId: tenantId,
+  userId: 'user_sophia_brown',
+  billingCustomerId: 'billcus_sophia_brown',
+  branchId: 'br_kingston/harbour',
   status: 'ACTIVE' as const,
   trn: null,
-  is_commercial: false,
-  first_seen_at: 1_776_048_000,
-  created_at: 1_776_048_000,
-  updated_at: 1_776_134_400,
-  deleted_at: null,
+  isCommercial: false,
+  firstSeenAt: 1_776_048_000,
+  createdAt: 1_776_048_000,
+  updatedAt: 1_776_134_400,
+  deletedAt: null,
 }
 
 const customerList = {
   object: 'list' as const,
   data: [customer],
-  has_more: false,
-  total_count: 1,
+  hasMore: false,
+  totalCount: 1,
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/customers`,
 }
 
 const mailbox = {
   object: 'mailbox' as const,
   id: mailboxId,
-  tenant_id: tenantId,
-  customer_id: customerId,
+  tenantId: tenantId,
+  customerId: customerId,
   number: 'KIN-1842',
-  is_primary: true,
-  created_at: 1_776_048_000,
-  updated_at: 1_776_134_400,
+  isPrimary: true,
+  createdAt: 1_776_048_000,
+  updatedAt: 1_776_134_400,
 }
 
 const mailboxList = {
   object: 'list' as const,
   data: [mailbox],
-  has_more: false,
-  total_count: 1,
+  hasMore: false,
+  totalCount: 1,
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/customers/${encodeURIComponent(customerId)}/mailboxes`,
 }
 
 const listParams = {
   status: 'ACTIVE' as const,
-  branch_id: 'br_kingston/harbour',
+  branchId: 'br_kingston/harbour',
   limit: 50,
 }
 
 const createCustomerBody = {
-  idempotency_key: 'idem_12345678',
-  customer_kind: 'INDIVIDUAL' as const,
-  first_name: 'Marcia',
-  last_name: 'Campbell',
-  branch_id: 'br_montego_bay/freeport',
+  idempotencyKey: 'idem_12345678',
+  customerKind: 'INDIVIDUAL' as const,
+  firstName: 'Marcia',
+  lastName: 'Campbell',
+  branchId: 'br_montego_bay/freeport',
   status: 'ACTIVE' as const,
-  is_commercial: true,
+  isCommercial: true,
 }
 
 const enrollCustomerBody = {
-  billing_customer_id: 'billcus_sophia_brown',
-  branch_id: 'br_kingston/harbour',
+  billingCustomerId: 'billcus_sophia_brown',
+  branchId: 'br_kingston/harbour',
   status: 'ACTIVE' as const,
-  is_commercial: false,
+  isCommercial: false,
 }
 
 const updateCustomerBody = {
-  branch_id: null,
+  branchId: null,
   status: 'SUSPENDED' as const,
   trn: '123456789',
-  is_commercial: false,
+  isCommercial: false,
 }
 
 const deletedCustomer = {
@@ -105,11 +105,11 @@ const customerEnrollment = {
 
 const createMailboxBody = {
   number: 'MBJ-728',
-  is_primary: true,
+  isPrimary: true,
 }
 
 const updateMailboxBody = {
-  is_primary: false,
+  isPrimary: false,
 }
 
 function createResource(fetchMock: typeof fetch, key?: string) {
@@ -150,7 +150,7 @@ describe('createCustomersResource', () => {
     const fetchMock = successFetch(customerList)
     const resource = createResource(fetchMock, internalKey)
 
-    await resource.list(tenantId, { starting_after: customerId })
+    await resource.list(tenantId, { startingAfter: customerId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/customers?starting_after=cpr_kingston%2Fbrown+market`,
@@ -162,7 +162,7 @@ describe('createCustomersResource', () => {
     const fetchMock = successFetch(customerList)
     const resource = createResource(fetchMock, internalKey)
 
-    await resource.list(tenantId, { ending_before: customerId })
+    await resource.list(tenantId, { endingBefore: customerId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/customers?ending_before=cpr_kingston%2Fbrown+market`,
@@ -264,7 +264,7 @@ describe('createCustomersResource', () => {
   it('deletes a customer with optional audit metadata', async () => {
     const fetchMock = successFetch(deletedCustomer)
     const resource = createResource(fetchMock, internalKey)
-    const body = { deleted_by: 'usr_kingston', reason: 'duplicate' }
+    const body = { deletedBy: 'usr_kingston', reason: 'duplicate' }
 
     const result = await resource.delete(tenantId, customerId, body)
 

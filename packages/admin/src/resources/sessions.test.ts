@@ -27,9 +27,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -51,9 +51,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -75,9 +75,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -101,9 +101,9 @@ describe('admin sessions resource', () => {
           jsonResponse({
             object: 'list',
             data: [],
-            has_more: false,
+            hasMore: false,
             url: '/sessions',
-            total_count: 0,
+            totalCount: 0,
           })
         )
         const $876 = create876AdminClient({
@@ -126,9 +126,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -150,9 +150,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -174,9 +174,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -197,9 +197,9 @@ describe('admin sessions resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/sessions',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -219,9 +219,9 @@ describe('admin sessions resource', () => {
       const payload = {
         object: 'list',
         data: [{ object: 'session', id: 'sess_8nR5vBk3' }],
-        has_more: false,
+        hasMore: false,
         url: '/sessions',
-        total_count: 1,
+        totalCount: 1,
       }
       const fetchMock = vi.fn().mockResolvedValue(jsonResponse(payload))
       const $876 = create876AdminClient({
@@ -383,7 +383,7 @@ describe('admin sessions resource', () => {
       const fetchMock = vi.fn().mockResolvedValue(
         jsonResponse({
           object: 'deleted_user_sessions',
-          user_id: 'user_4rT8xKp2',
+          userId: 'user_4rT8xKp2',
           count: 3,
         })
       )
@@ -404,7 +404,7 @@ describe('admin sessions resource', () => {
     it('returns the deleted-user-sessions summary on success', async () => {
       const payload = {
         object: 'deleted_user_sessions',
-        user_id: 'user_4rT8xKp2',
+        userId: 'user_4rT8xKp2',
         count: 3,
       }
       const fetchMock = vi.fn().mockResolvedValue(jsonResponse(payload))

@@ -12,8 +12,8 @@ const mailboxId = 'mbx_kingston/1842 A'
 const mailboxList = {
   object: 'list' as const,
   data: [],
-  has_more: false,
-  total_count: 0,
+  hasMore: false,
+  totalCount: 0,
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/mailboxes`,
 }
 
@@ -35,9 +35,9 @@ describe('createMailboxesResource', () => {
     const resource = createResource(fetchMock)
 
     const result = await resource.list(tenantId, {
-      customer_id: 'cpr_kingston/brown market',
+      customerId: 'cpr_kingston/brown market',
       limit: 50,
-      starting_after: mailboxId,
+      startingAfter: mailboxId,
     })
 
     expect(result).toEqual({ data: mailboxList, error: null })
@@ -58,7 +58,7 @@ describe('createMailboxesResource', () => {
     const fetchMock = successFetch(mailboxList)
     const resource = createResource(fetchMock)
 
-    await resource.list(tenantId, { ending_before: mailboxId })
+    await resource.list(tenantId, { endingBefore: mailboxId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/mailboxes?ending_before=mbx_kingston%2F1842+A`,

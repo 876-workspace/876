@@ -44,8 +44,8 @@ export function createAdminMembershipsResource(runtime: AdminRuntime) {
         path: '/memberships',
         query: {
           ...toCursorQuery(params),
-          organization_id: params?.organizationId,
-          user_id: params?.userId,
+          organizationId: params?.organizationId,
+          userId: params?.userId,
         },
       })
     },

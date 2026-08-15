@@ -45,17 +45,17 @@ function toCreateCustomerBody(
 ): CreateCustomerBody {
   const kind = params.customerKind ?? 'INDIVIDUAL'
   return {
-    idempotency_key: params.idempotencyKey,
-    customer_kind: kind,
-    first_name: params.firstName,
-    last_name: params.lastName ?? null,
-    company_name: params.companyName,
+    idempotencyKey: params.idempotencyKey,
+    customerKind: kind,
+    firstName: params.firstName,
+    lastName: params.lastName ?? null,
+    companyName: params.companyName,
     email: params.email ?? null,
     phone: params.phone ?? null,
-    branch_id: params.branchId ?? null,
+    branchId: params.branchId ?? null,
     status: params.status,
     trn: params.trn ?? undefined,
-    is_commercial: params.isCommercial,
+    isCommercial: params.isCommercial,
   } as CreateCustomerBody
 }
 
@@ -80,11 +80,11 @@ export function createCustomersResource(runtime: Runtime) {
       if ((params as { mode?: string }).mode === 'existing') {
         const p = params as Extract<CreateCustomerParams, { mode: 'existing' }>
         const body: CustomerEnrollmentBody = {
-          billing_customer_id: p.billingCustomerId,
-          branch_id: p.branchId ?? null,
+          billingCustomerId: p.billingCustomerId,
+          branchId: p.branchId ?? null,
           status: p.status,
-          is_commercial: p.isCommercial,
-          user_id: p.userId ?? undefined,
+          isCommercial: p.isCommercial,
+          userId: p.userId ?? undefined,
         }
         return SessionRequest<CustomerEnrollment>(
           runtime,

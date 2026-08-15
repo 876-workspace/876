@@ -4,33 +4,33 @@ import type { Result } from './api.ts'
 export const sdk876PriceSchema = z.object({
   object: z.literal('price'),
   id: z.string(),
-  product_id: z.string(),
+  productId: z.string(),
 
-  billing_interval: z.string().nullable(),
-  interval_count: z.number().nullable(),
+  billingInterval: z.string().nullable(),
+  intervalCount: z.number().nullable(),
   status: z.string(),
 
-  unit_amount: z.number().nullable(),
-  unit_amount_decimal: z.string().nullable(),
+  unitAmount: z.number().nullable(),
+  unitAmountDecimal: z.string().nullable(),
   currency: z.string(),
 
-  lookup_key: z.string().nullable(),
+  lookupKey: z.string().nullable(),
   name: z.string().nullable(),
   nickname: z.string().nullable(),
   type: z.string(),
-  billing_scheme: z.string(),
-  tiers_mode: z.string().nullable(),
+  billingScheme: z.string(),
+  tiersMode: z.string().nullable(),
   tiers: z.array(z.record(z.string(), z.unknown())).nullable(),
   recurring: z.record(z.string(), z.unknown()).nullable(),
-  tax_behavior: z.string().nullable(),
-  transform_quantity: z.record(z.string(), z.unknown()).nullable(),
-  trial_period_days: z.number().nullable(),
+  taxBehavior: z.string().nullable(),
+  transformQuantity: z.record(z.string(), z.unknown()).nullable(),
+  trialPeriodDays: z.number().nullable(),
   active: z.boolean(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
 
-  created_at: z.number(),
-  updated_at: z.number(),
-  archived_at: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  archivedAt: z.number().nullable(),
 })
 
 export const sdk876ProductSchema = z.object({
@@ -39,33 +39,33 @@ export const sdk876ProductSchema = z.object({
   slug: z.string(),
   name: z.string(),
   description: z.string().nullable(),
-  app_id: z.string().nullable(),
-  app_slug: z.string().nullable(),
-  app_name: z.string().nullable(),
-  app_logo_url: z.string().nullable(),
-  app_kind: z.string().nullable(),
+  appId: z.string().nullable(),
+  appSlug: z.string().nullable(),
+  appName: z.string().nullable(),
+  appLogoUrl: z.string().nullable(),
+  appKind: z.string().nullable(),
 
   status: z.string(),
   active: z.boolean(),
-  statement_descriptor: z.string().nullable(),
-  unit_label: z.string().nullable(),
-  tax_code_id: z.string().nullable(),
-  lookup_key: z.string().nullable(),
+  statementDescriptor: z.string().nullable(),
+  unitLabel: z.string().nullable(),
+  taxCodeId: z.string().nullable(),
+  lookupKey: z.string().nullable(),
   metadata: z.record(z.string(), z.unknown()).nullable(),
 
   prices: z.array(sdk876PriceSchema),
 
-  created_at: z.number(),
-  updated_at: z.number(),
-  archived_at: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+  archivedAt: z.number().nullable(),
 })
 
 export const sdk876ProductListSchema = z.object({
   object: z.literal('list'),
   data: z.array(sdk876ProductSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().int().nullable(),
+  totalCount: z.number().int().nullable(),
 })
 
 export type Price = z.infer<typeof sdk876PriceSchema>

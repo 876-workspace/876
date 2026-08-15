@@ -19,21 +19,21 @@ export const customerAddressTypeSchema = z.enum([
 export const customerAddressSchema = z.object({
   object: z.literal('customer_address'),
   id: z.string(),
-  tenant_id: z.string(),
-  customer_id: z.string(),
-  address_id: z.string(),
+  tenantId: z.string(),
+  customerId: z.string(),
+  addressId: z.string(),
   type: customerAddressTypeSchema,
-  is_default: z.boolean(),
+  isDefault: z.boolean(),
   address: addressSchema,
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const customerAddressListSchema = z.object({
   object: z.literal('list'),
   data: z.array(customerAddressSchema),
-  has_more: z.boolean(),
-  total_count: z.number().int().nullable(),
+  hasMore: z.boolean(),
+  totalCount: z.number().int().nullable(),
   url: z.string(),
 })
 
@@ -45,13 +45,13 @@ export const deletedCustomerAddressSchema = z.object({
 
 export const createCustomerAddressBodySchema = z.strictObject({
   type: customerAddressTypeSchema.optional(),
-  is_default: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
   address: createAddressBodySchema,
 })
 
 export const updateCustomerAddressBodySchema = z.strictObject({
   type: customerAddressTypeSchema.optional(),
-  is_default: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
   address: updateAddressBodySchema.optional(),
 })
 
@@ -70,6 +70,6 @@ export type UpdateCustomerAddressBody = z.input<
 export type ListCustomerAddressesParams = {
   type?: CustomerAddressType
   limit?: number
-  starting_after?: string
-  ending_before?: string
+  startingAfter?: string
+  endingBefore?: string
 }

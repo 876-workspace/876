@@ -13,7 +13,7 @@ describe('admin modules resource', () => {
   it('lists an application module catalog including archived modules', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse({
-        data: { object: 'list', data: [], has_more: false, url: '/modules' },
+        data: { object: 'list', data: [], hasMore: false, url: '/modules' },
         error: null,
       })
     )
@@ -45,14 +45,14 @@ describe('admin modules resource', () => {
     })
 
     await $876.products.replaceModules('prd_test', {
-      module_ids: ['mod_sales'],
+      moduleIds: ['mod_sales'],
     })
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.test/products/prd_test/modules',
       expect.objectContaining({
         method: 'PUT',
-        body: JSON.stringify({ module_ids: ['mod_sales'] }),
+        body: JSON.stringify({ moduleIds: ['mod_sales'] }),
       })
     )
   })

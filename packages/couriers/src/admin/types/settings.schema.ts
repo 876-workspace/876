@@ -19,14 +19,14 @@ export const organizationModuleSchema = z.object({
   module: moduleKeySchema,
   label: z.string(),
   optional: z.boolean(),
-  is_enabled: z.boolean(),
+  isEnabled: z.boolean(),
 })
 
 export const organizationModuleListSchema = z.object({
   object: z.literal('list'),
   data: z.array(organizationModuleSchema),
-  has_more: z.boolean(),
-  total_count: z.number().int().nullable(),
+  hasMore: z.boolean(),
+  totalCount: z.number().int().nullable(),
   url: z.string(),
 })
 
@@ -37,7 +37,7 @@ export type OrganizationModuleList = z.infer<
 >
 
 export const toggleModuleBodySchema = z.strictObject({
-  is_enabled: z.boolean(),
+  isEnabled: z.boolean(),
 })
 
 export type ToggleModuleBody = z.input<typeof toggleModuleBodySchema>
@@ -48,7 +48,7 @@ export const modulePreferencesSchema = z.object({
   object: z.literal('module_preferences'),
   module: moduleKeySchema,
   preferences: z.record(z.string(), preferenceValueSchema),
-  updated_at: z.number().int().optional(),
+  updatedAt: z.number().int().optional(),
 })
 
 export const updateModulePreferencesBodySchema = z.record(

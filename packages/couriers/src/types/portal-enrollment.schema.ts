@@ -5,16 +5,16 @@ import { portalCustomerSchema } from './portal-customer.schema'
 const portalMailboxSchema = z.object({
   object: z.literal('mailbox'),
   id: z.string(),
-  tenant_id: z.string(),
-  customer_id: z.string(),
+  tenantId: z.string(),
+  customerId: z.string(),
   number: z.string(),
-  is_primary: z.boolean(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  isPrimary: z.boolean(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const portalEnrollmentBodySchema = z.strictObject({
-  billing_customer_id: z.string().min(1),
+  billingCustomerId: z.string().min(1),
 })
 
 export const portalEnrollmentSchema = z.object({

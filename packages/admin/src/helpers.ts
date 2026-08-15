@@ -7,15 +7,15 @@
 
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-export function isExpired(item: { expires_at: number | null }): boolean {
+export function isExpired(item: { expiresAt: number | null }): boolean {
   return item.expires_at !== null && item.expires_at < nowUnixSeconds()
 }
 
-export function isDefault(item: { is_default: boolean }): boolean {
+export function isDefault(item: { isDefault: boolean }): boolean {
   return item.is_default
 }
 
-export function isDeleted(item: { deleted_at: number | null }): boolean {
+export function isDeleted(item: { deletedAt: number | null }): boolean {
   return item.deleted_at !== null
 }
 

@@ -15,9 +15,9 @@ describe('admin auth resource', () => {
       jsonResponse({
         object: 'list',
         data: [],
-        has_more: false,
+        hasMore: false,
         url: '/auth/routing/memberships',
-        total_count: 0,
+        totalCount: 0,
       })
     )
     const $876 = create876AdminClient({
@@ -49,8 +49,8 @@ describe('admin auth resource', () => {
 
     await $876.users.create({
       email: 'yoda@example.com',
-      first_name: 'Yoda',
-      last_name: 'Jedi',
+      firstName: 'Yoda',
+      lastName: 'Jedi',
     })
 
     expect(fetchMock).toHaveBeenCalledWith(

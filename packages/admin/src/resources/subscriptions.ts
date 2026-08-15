@@ -25,8 +25,8 @@ export function createAdminSubscriptionsResource(runtime: AdminRuntime) {
         method: 'GET',
         path: '/billing/subscriptions',
         query: {
-          organization_id: params?.organizationId,
-          app_id: params?.appId,
+          organizationId: params?.organizationId,
+          appId: params?.appId,
           limit: params?.limit,
         },
       })

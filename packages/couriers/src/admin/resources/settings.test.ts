@@ -13,7 +13,7 @@ function createModuleFixture(overrides: Record<string, unknown> = {}) {
     module: 'deliveries' as const,
     label: 'Deliveries',
     optional: true,
-    is_enabled: true,
+    isEnabled: true,
     ...overrides,
   }
 }
@@ -24,26 +24,26 @@ function createModuleListFixture(tenantId = 'ten_kgn_7f3a9b2c') {
       module: 'general',
       label: 'General',
       optional: false,
-      is_enabled: true,
+      isEnabled: true,
     }),
     createModuleFixture({
       module: 'deliveries',
       label: 'Deliveries',
       optional: true,
-      is_enabled: true,
+      isEnabled: true,
     }),
     createModuleFixture({
       module: 'invoices',
       label: 'Invoices',
       optional: true,
-      is_enabled: false,
+      isEnabled: false,
     }),
   ]
   return {
     object: 'list' as const,
     data: modules,
-    has_more: false,
-    total_count: 3,
+    hasMore: false,
+    totalCount: 3,
     url: `/v1/tenants/${tenantId}/modules`,
   }
 }
@@ -52,10 +52,10 @@ const preferencesFixture = {
   object: 'module_preferences' as const,
   module: 'packages' as const,
   preferences: {
-    volumetric_divisor: 6000,
-    chargeable_weight_rule: 'greater_of',
+    volumetricDivisor: 6000,
+    chargeableWeightRule: 'greater_of',
   },
-  updated_at: 1_785_240_000,
+  updatedAt: 1_785_240_000,
 }
 
 describe('admin settings resource', () => {
@@ -133,12 +133,12 @@ describe('admin settings resource', () => {
     it('toggles the deliveries module for a Kingston tenant', async () => {
       const tenantId = 'ten/kgn 001'
       const moduleKey = 'deliveries'
-      const body = { is_enabled: false }
+      const body = { isEnabled: false }
       const fixture = createModuleFixture({
         module: moduleKey,
         label: 'Deliveries',
         optional: true,
-        is_enabled: body.is_enabled,
+        isEnabled: body.is_enabled,
       })
       const fetchMock = vi
         .fn<typeof fetch>()
@@ -167,12 +167,12 @@ describe('admin settings resource', () => {
     it('enables the invoices module', async () => {
       const tenantId = 'ten_kgn_7f3a9b2c'
       const moduleKey = 'invoices'
-      const body = { is_enabled: true }
+      const body = { isEnabled: true }
       const fixture = createModuleFixture({
         module: moduleKey,
         label: 'Invoices',
         optional: true,
-        is_enabled: true,
+        isEnabled: true,
       })
       const fetchMock = vi
         .fn<typeof fetch>()
@@ -214,7 +214,7 @@ describe('admin settings resource', () => {
       const resource = createSettingsResource(runtime)
 
       const result = await resource.update('ten_kgn_7f3a9b2c', 'deliveries', {
-        is_enabled: false,
+        isEnabled: false,
       })
 
       expect(result).toEqual({
@@ -235,7 +235,7 @@ describe('admin settings resource', () => {
       const resource = createSettingsResource(runtime)
 
       const result = await resource.update('ten_kgn_7f3a9b2c', 'deliveries', {
-        is_enabled: true,
+        isEnabled: true,
       })
 
       expect(result).toEqual({
@@ -280,7 +280,7 @@ describe('admin settings resource', () => {
       const resource = createSettingsResource(
         buildAdminRuntime({ baseUrl, apiKey, internalKey, fetch: fetchMock })
       )
-      const body = { volumetric_divisor: 6000 }
+      const body = { volumetricDivisor: 6000 }
 
       const result = await resource.preferences.update(
         'ten_kgn_7f3a9b2c',

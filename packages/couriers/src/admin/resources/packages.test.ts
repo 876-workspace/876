@@ -20,57 +20,57 @@ const invalidResponse = {
 const courierPackage = {
   object: 'package' as const,
   id: packageId,
-  tenant_id: tenantId,
-  customer_id: 'cpr_kingston_sophia_brown',
-  branch_id: 'br_kingston/harbour',
-  mailbox_id: 'mbx_kingston_1842',
-  tracking_num: '1ZJAM876042924',
+  tenantId: tenantId,
+  customerId: 'cpr_kingston_sophia_brown',
+  branchId: 'br_kingston/harbour',
+  mailboxId: 'mbx_kingston_1842',
+  trackingNum: '1ZJAM876042924',
   status: 'READY_FOR_PICKUP' as const,
-  package_type: 'CARTON' as const,
+  packageType: 'CARTON' as const,
   description: 'Kitchen appliances from Miami consolidation.',
   quantity: 2,
-  actual_weight: 8.75,
-  collected_at: null,
-  created_at: 1_776_048_000,
-  updated_at: 1_776_134_400,
+  actualWeight: 8.75,
+  collectedAt: null,
+  createdAt: 1_776_048_000,
+  updatedAt: 1_776_134_400,
 }
 
 const packageList = {
   object: 'list' as const,
   data: [courierPackage],
-  has_more: false,
-  total_count: 1,
+  hasMore: false,
+  totalCount: 1,
   url: `/v1/tenants/${encodeURIComponent(tenantId)}/packages`,
 }
 
 const listParams = {
   status: 'READY_FOR_PICKUP' as const,
-  customer_id: 'cpr_kingston/sophia brown',
-  branch_id: 'br_kingston/harbour',
+  customerId: 'cpr_kingston/sophia brown',
+  branchId: 'br_kingston/harbour',
   limit: 25,
 }
 
 const createPackageBody = {
-  customer_id: 'cpr_montego_bay/isaac grant',
-  branch_id: 'br_montego_bay/freeport',
-  mailbox_id: 'mbx_montego_bay_728',
-  tracking_num: 'JAMAICA-2026-8114',
+  customerId: 'cpr_montego_bay/isaac grant',
+  branchId: 'br_montego_bay/freeport',
+  mailboxId: 'mbx_montego_bay_728',
+  trackingNum: 'JAMAICA-2026-8114',
   status: 'PRE_ALERT' as const,
-  package_type: 'ENVELOPE' as const,
+  packageType: 'ENVELOPE' as const,
   description: 'Immigration documents for clearance.',
   quantity: 1,
-  actual_weight: 0.35,
+  actualWeight: 0.35,
 }
 
 const updatePackageBody = {
-  branch_id: null,
-  mailbox_id: null,
-  tracking_num: null,
+  branchId: null,
+  mailboxId: null,
+  trackingNum: null,
   status: 'COLLECTED' as const,
-  package_type: 'BAG' as const,
+  packageType: 'BAG' as const,
   description: 'Collected at the Kingston Harbour counter.',
   quantity: 3,
-  actual_weight: 9.2,
+  actualWeight: 9.2,
 }
 
 function createResource(fetchMock: typeof fetch, key?: string) {
@@ -111,7 +111,7 @@ describe('createPackagesResource', () => {
     const fetchMock = successFetch(packageList)
     const resource = createResource(fetchMock, internalKey)
 
-    await resource.list(tenantId, { starting_after: packageId })
+    await resource.list(tenantId, { startingAfter: packageId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/packages?starting_after=pkg_kingston%2F2026-0816+A`,
@@ -123,7 +123,7 @@ describe('createPackagesResource', () => {
     const fetchMock = successFetch(packageList)
     const resource = createResource(fetchMock, internalKey)
 
-    await resource.list(tenantId, { ending_before: packageId })
+    await resource.list(tenantId, { endingBefore: packageId })
 
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/packages?ending_before=pkg_kingston%2F2026-0816+A`,

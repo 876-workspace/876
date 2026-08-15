@@ -24,10 +24,10 @@ export function createAdminSessionsResource(runtime: AdminRuntime) {
         path: '/sessions',
         query: {
           ...toCursorQuery(params),
-          user_id: params?.userId,
+          userId: params?.userId,
           active: params?.active,
           status: params?.status,
-          device_id: params?.deviceId,
+          deviceId: params?.deviceId,
         },
       })
     },

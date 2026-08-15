@@ -11,27 +11,27 @@ const tenantId = 'ten_kingston/876'
 const customer = {
   object: 'courier_customer_profile' as const,
   id: 'cpr_kingston',
-  tenant_id: tenantId,
-  user_id: 'usr_kingston',
-  billing_customer_id: 'cus_kingston',
-  branch_id: null,
+  tenantId: tenantId,
+  userId: 'usr_kingston',
+  billingCustomerId: 'cus_kingston',
+  branchId: null,
   status: 'ACTIVE' as const,
-  is_commercial: false,
-  first_seen_at: 1,
-  created_at: 1,
-  updated_at: 1,
-  deleted_at: null,
+  isCommercial: false,
+  firstSeenAt: 1,
+  createdAt: 1,
+  updatedAt: 1,
+  deletedAt: null,
 }
 
 const mailbox = {
   object: 'mailbox' as const,
   id: 'mbx_kingston',
-  tenant_id: tenantId,
-  customer_id: customer.id,
+  tenantId: tenantId,
+  customerId: customer.id,
   number: 'KIN-1001',
-  is_primary: true,
-  created_at: 1,
-  updated_at: 1,
+  isPrimary: true,
+  createdAt: 1,
+  updatedAt: 1,
 }
 
 function createResource(fetchMock: typeof fetch) {
@@ -47,13 +47,13 @@ describe('portal resource', () => {
         data: {
           object: 'tenant',
           id: tenantId,
-          org_id: 'org_kingston',
+          orgId: 'org_kingston',
           slug: 'kingston',
           name: 'Kingston Couriers',
-          mailbox_prefix: 'KIN',
+          mailboxPrefix: 'KIN',
           status: 'ACTIVE',
-          created_at: 1,
-          updated_at: 1,
+          createdAt: 1,
+          updatedAt: 1,
         },
         error: null,
       })
@@ -84,7 +84,7 @@ describe('portal resource', () => {
 
     await expect(
       createResource(fetchMock).enrollments.create(tenantId, {
-        billing_customer_id: customer.billing_customer_id,
+        billingCustomerId: customer.billing_customer_id,
       })
     ).resolves.toMatchObject({ data: { customer, mailbox }, error: null })
     expect(fetchMock).toHaveBeenCalledWith(
@@ -97,7 +97,7 @@ describe('portal resource', () => {
           Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          billing_customer_id: customer.billing_customer_id,
+          billingCustomerId: customer.billing_customer_id,
         }),
       }
     )

@@ -32,18 +32,18 @@ export const sdk876AuditEventSchema = z.strictObject({
   id: z.string(),
   event: z.string(),
   source: z.string(),
-  app_name: z.string(),
-  app_id: z.string().nullable(),
-  user_id: z.string().nullable(),
+  appName: z.string(),
+  appId: z.string().nullable(),
+  userId: z.string().nullable(),
   path: z.string().nullable(),
   search: z.string().nullable(),
   referrer: z.string().nullable(),
   title: z.string().nullable(),
-  request_id: z.string().nullable(),
-  session_id: z.string().nullable(),
-  distinct_id: z.string().nullable(),
+  requestId: z.string().nullable(),
+  sessionId: z.string().nullable(),
+  distinctId: z.string().nullable(),
   properties: analyticsPropertiesSchema,
-  created_at: z.number(),
+  createdAt: z.number(),
 })
 
 export const sdk876AuditEventListSchema = apiListSchema(sdk876AuditEventSchema)
@@ -62,8 +62,8 @@ export type AuditEventResult = {
 export type AuditEventList = {
   object: 'list'
   data: AuditEvent[]
-  has_more: boolean
-  total_count?: number | null
+  hasMore: boolean
+  totalCount?: number | null
   url: string
 }
 
@@ -78,8 +78,8 @@ function apiListSchema<TItem>(itemSchema: z.ZodType<TItem>) {
   return z.strictObject({
     object: z.literal('list'),
     data: z.array(itemSchema),
-    has_more: z.boolean(),
-    total_count: z.number().nullable().optional(),
+    hasMore: z.boolean(),
+    totalCount: z.number().nullable().optional(),
     url: z.string(),
   })
 }

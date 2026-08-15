@@ -21,9 +21,9 @@ export function createAdminDevicesResource(runtime: AdminRuntime) {
         path: '/devices',
         query: {
           ...toCursorQuery(params),
-          user_id: params?.userId,
+          userId: params?.userId,
           fingerprint: params?.fingerprint,
-          device_type: params?.deviceType,
+          deviceType: params?.deviceType,
           trusted: params?.trusted,
           blocked: params?.blocked,
           q: params?.q,
@@ -52,7 +52,7 @@ export function createAdminDevicesResource(runtime: AdminRuntime) {
           label: params.label,
           trusted: params.trusted,
           blocked: params.blocked,
-          block_reason: params.blockReason,
+          blockReason: params.blockReason,
         },
       })
     },
@@ -67,11 +67,11 @@ export function createAdminDevicesResource(runtime: AdminRuntime) {
       return adminRequest<
         AdminListResponse<{
           object: 'device_user'
-          user_id: string
-          device_id: string
-          first_seen_at: number
-          last_seen_at: number
-          sign_in_count: number
+          userId: string
+          deviceId: string
+          firstSeenAt: number
+          lastSeenAt: number
+          signInCount: number
         }>
       >(runtime, { method: 'GET', path: `/devices/${deviceId}/users` })
     },

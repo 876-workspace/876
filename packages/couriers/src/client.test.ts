@@ -9,35 +9,35 @@ import { create876CouriersClient } from './index'
 const tenant = {
   object: 'tenant' as const,
   id: 'ten_1',
-  org_id: 'org_1',
+  orgId: 'org_1',
   slug: 'acme',
   name: 'Acme Couriers',
-  mailbox_prefix: null,
+  mailboxPrefix: null,
   status: 'ACTIVE',
-  created_at: 1,
-  updated_at: 2,
+  createdAt: 1,
+  updatedAt: 2,
 }
 
 const portalPackage = {
   object: 'package' as const,
   id: 'pkg_1',
-  tenant_id: 'ten_1',
-  customer_id: 'ccp_1',
-  branch_id: 'br_1',
-  mailbox_id: 'mbx_1',
-  tracking_num: 'TRACK-1',
+  tenantId: 'ten_1',
+  customerId: 'ccp_1',
+  branchId: 'br_1',
+  mailboxId: 'mbx_1',
+  trackingNum: 'TRACK-1',
   status: 'READY_FOR_PICKUP' as const,
-  package_type: 'CARTON' as const,
+  packageType: 'CARTON' as const,
   description: 'Books',
   quantity: 1,
-  actual_weight: 1.5,
-  chargeable_weight: 1.5,
+  actualWeight: 1.5,
+  chargeableWeight: 1.5,
   carrier: { id: 'car_1', name: 'Carrier One' },
   branch: { id: 'br_1', name: 'Kingston' },
   mailbox: { id: 'mbx_1', number: 'KIN-1001' },
-  collected_at: null,
-  created_at: 1,
-  updated_at: 2,
+  collectedAt: null,
+  createdAt: 1,
+  updatedAt: 2,
 }
 
 function successFetch() {
@@ -78,8 +78,8 @@ describe('Couriers client credential tiers', () => {
         data: {
           object: 'list',
           data: [portalPackage],
-          has_more: false,
-          total_count: null,
+          hasMore: false,
+          totalCount: null,
           url: '/v1/portal/tenants/ten_1/packages',
         },
         error: null,
@@ -95,14 +95,14 @@ describe('Couriers client credential tiers', () => {
     await expect(
       client.portal.packages.list('ten_1', {
         status: 'READY_FOR_PICKUP',
-        starting_after: 'pkg_previous',
+        startingAfter: 'pkg_previous',
       })
     ).resolves.toEqual({
       data: {
         object: 'list',
         data: [portalPackage],
-        has_more: false,
-        total_count: null,
+        hasMore: false,
+        totalCount: null,
         url: '/v1/portal/tenants/ten_1/packages',
       },
       error: null,

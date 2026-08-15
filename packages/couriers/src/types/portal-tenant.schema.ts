@@ -3,13 +3,13 @@ import { z } from 'zod'
 export const portalTenantSchema = z.object({
   object: z.literal('tenant'),
   id: z.string(),
-  org_id: z.string(),
+  orgId: z.string(),
   slug: z.string(),
   name: z.string(),
-  mailbox_prefix: z.string().nullable(),
+  mailboxPrefix: z.string().nullable(),
   status: z.literal('ACTIVE'),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export type PortalTenant = z.infer<typeof portalTenantSchema>

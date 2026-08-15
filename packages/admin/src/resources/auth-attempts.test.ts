@@ -27,9 +27,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -51,9 +51,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -75,9 +75,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -99,9 +99,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -123,9 +123,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -147,9 +147,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -171,9 +171,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -195,9 +195,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -219,9 +219,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -247,9 +247,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -273,9 +273,9 @@ describe('admin auth-attempts resource', () => {
         jsonResponse({
           object: 'list',
           data: [],
-          has_more: false,
+          hasMore: false,
           url: '/auth-attempts',
-          total_count: 0,
+          totalCount: 0,
         })
       )
       const $876 = create876AdminClient({
@@ -299,9 +299,9 @@ describe('admin auth-attempts resource', () => {
       const payload = {
         object: 'list',
         data: [{ object: 'auth_attempt', id: 'atmp_7pQ2wXr1' }],
-        has_more: false,
+        hasMore: false,
         url: '/auth-attempts',
-        total_count: 1,
+        totalCount: 1,
       }
       const fetchMock = vi.fn().mockResolvedValue(jsonResponse(payload))
       const $876 = create876AdminClient({
@@ -447,7 +447,7 @@ describe('admin auth-attempts resource', () => {
       const payload = {
         object: 'auth_attempt_summary',
         total: 99,
-        success_count: 80,
+        successCount: 80,
       }
       const fetchMock = vi.fn().mockResolvedValue(jsonResponse(payload))
       const $876 = create876AdminClient({

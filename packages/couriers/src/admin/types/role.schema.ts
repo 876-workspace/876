@@ -3,22 +3,22 @@ import { z } from 'zod'
 export const roleSchema = z.object({
   object: z.literal('role'),
   id: z.string(),
-  tenant_id: z.string(),
+  tenantId: z.string(),
   name: z.string(),
   description: z.string(),
   permissions: z.array(z.string()),
-  is_default: z.boolean(),
-  system_key: z.enum(['admin', 'staff']).nullable(),
-  member_count: z.number().int(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  isDefault: z.boolean(),
+  systemKey: z.enum(['admin', 'staff']).nullable(),
+  memberCount: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const roleListSchema = z.object({
   object: z.literal('list'),
   data: z.array(roleSchema),
-  has_more: z.boolean(),
-  total_count: z.number().int().nullable(),
+  hasMore: z.boolean(),
+  totalCount: z.number().int().nullable(),
   url: z.string(),
 })
 

@@ -217,16 +217,16 @@ export const auth876ProviderInfoSchema = z.strictObject({
   object: z.literal('auth_provider'),
   id: z.string().trim().min(1),
   label: z.string().trim().min(1),
-  icon_slug: z.string().trim().min(1),
+  iconSlug: z.string().trim().min(1),
 })
 
 /** The `{ object: 'list', data: [...] }` envelope from `GET /auth/providers`. */
 export const auth876ListProvidersResponseSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(auth876ProviderInfoSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string().trim().min(1),
-  total_count: z.number().int().nullable().optional(),
+  totalCount: z.number().int().nullable().optional(),
 })
 
 export const auth876VerifyEmailCodeResponseSchema = z.strictObject({
@@ -574,15 +574,15 @@ export const myDeviceSchema = z.strictObject({
   object: z.literal('my_device'),
   id: z.string(),
   name: z.string(),
-  device_type: z.string(),
-  os_name: z.string().nullable().optional(),
-  browser_name: z.string().nullable().optional(),
-  last_country_code: z.string().nullable().optional(),
+  deviceType: z.string(),
+  osName: z.string().nullable().optional(),
+  browserName: z.string().nullable().optional(),
+  lastCountryCode: z.string().nullable().optional(),
   trusted: z.boolean(),
-  sign_in_count: z.number(),
-  first_seen_at: z.number(),
-  last_seen_at: z.number(),
-  is_current: z.boolean(),
+  signInCount: z.number(),
+  firstSeenAt: z.number(),
+  lastSeenAt: z.number(),
+  isCurrent: z.boolean(),
 })
 
 export type MyDevice = z.infer<typeof myDeviceSchema>
@@ -590,13 +590,13 @@ export type MyDevice = z.infer<typeof myDeviceSchema>
 export const mySessionSchema = z.strictObject({
   object: z.literal('my_session'),
   id: z.string(),
-  device_id: z.string().nullable().optional(),
+  deviceId: z.string().nullable().optional(),
   city: z.string().nullable().optional(),
-  country_code: z.string().nullable().optional(),
-  created_at: z.number(),
-  last_seen_at: z.number().nullable().optional(),
-  expires_at: z.number(),
-  is_current: z.boolean(),
+  countryCode: z.string().nullable().optional(),
+  createdAt: z.number(),
+  lastSeenAt: z.number().nullable().optional(),
+  expiresAt: z.number(),
+  isCurrent: z.boolean(),
 })
 
 export type MySession = z.infer<typeof mySessionSchema>
@@ -604,17 +604,17 @@ export type MySession = z.infer<typeof mySessionSchema>
 export const myDeviceListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(myDeviceSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().nullable().optional(),
+  totalCount: z.number().nullable().optional(),
 })
 
 export const mySessionListSchema = z.strictObject({
   object: z.literal('list'),
   data: z.array(mySessionSchema),
-  has_more: z.boolean(),
+  hasMore: z.boolean(),
   url: z.string(),
-  total_count: z.number().nullable().optional(),
+  totalCount: z.number().nullable().optional(),
 })
 
 export const mySessionDeletedSchema = z.strictObject({
