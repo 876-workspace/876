@@ -1,52 +1,56 @@
 import { redirect } from 'next/navigation'
 
-import { InvoicesTable } from '@/components/invoices/invoices-table'
-import { getInvoiceContext } from '@/lib/auth/context'
 import { get876Client } from '@/lib/876'
+import { getInvoiceContext } from '@/lib/auth/context'
+
+import { InvoicesTable } from './_components/invoices-table'
+import { toInvoiceRow } from './_lib/invoice-row'
+
+/**
+ * The Billing workspace is provisioned asynchronously after the `876-invoice`
+ * entitlement lands, so a missing workspace means "still provisioning" — never
+ * "not subscribed", which the layout has already ruled out.
+ */
+const PROVISIONING_ERROR_CODES = new Set([
+  'billing/tenant-not-found',
+  'billing/unreachable',
+])
 
 export default async function InvoicesPage() {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  let invoices: any[] = []
-  let error: { message: string } | null = null
+  const $876 = await get876Client(context.orgId)
+  const result = await $876.invoices.list()
 
-  try {
-    const client = await get876Client(context.orgId)
-    const result = await client.invoices.list()
-    if (result.error) error = result.error
-    else invoices = result.data.data as any[]
-  } catch (e) {
-    error = {
-      message: e instanceof Error ? e.message : 'Failed to load invoices',
-    }
-  }
+  if (result.error) {
+    const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
+    console.error('invoice.invoices.list_failed', {
+      code: result.error.code,
+      orgId: context.orgId,
+    })
 
-  if (error) {
-    if (error.message.toLowerCase().includes('not authenticated'))
-      redirect('/login')
     return (
       <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Invoices</h1>
-        <div className="border-destructive/50 bg-destructive/5 rounded-lg border p-4 text-sm">
-          Failed to load invoices: {error.message}
+        <h1 className="876-page-title">Invoices</h1>
+        <div className="rounded-lg border border-dashed p-10 text-center">
+          <p className="text-sm font-medium">
+            {provisioning
+              ? 'Setting up your Invoice workspace'
+              : 'Invoices are unavailable right now'}
+          </p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Please try again shortly.
+          </p>
         </div>
-        <p className="text-muted-foreground text-sm">
-          If your workspace is provisioning, please try again shortly.
-        </p>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Invoices</h1>
-        <p className="text-muted-foreground text-sm">
-          Invoices for this organization.
-        </p>
-      </div>
-      <InvoicesTable invoices={invoices} />
+      <h1 className="876-page-title">Invoices</h1>
+      <InvoicesTable invoices={result.data.data.map(toInvoiceRow)} />
     </div>
   )
 }

@@ -1,41 +1,61 @@
-import type { Invoice } from '@876/billing'
+import { Badge } from '@876/ui/badge'
+import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@876/ui/table'
 
-export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
+import { formatAmount, formatDate, type InvoiceRow } from '../_lib/invoice-row'
+
+export function InvoicesTable({ invoices }: { invoices: InvoiceRow[] }) {
   if (invoices.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-10 text-center">
-        <p className="text-sm font-medium">No invoices yet</p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Invoices for this organization will appear here.
-        </p>
-      </div>
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>No invoices yet</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
     )
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr>
-            <th className="px-4 py-2 text-left font-medium">Invoice</th>
-            <th className="px-4 py-2 text-left font-medium">Status</th>
-            <th className="px-4 py-2 text-left font-medium">ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {invoices.map((inv) => (
-            <tr key={inv.id} className="border-t">
-              <td className="px-4 py-2">
-                {String((inv as any).number ?? inv.id)}
-              </td>
-              <td className="px-4 py-2">
-                {String((inv as any).status ?? '—')}
-              </td>
-              <td className="px-4 py-2 font-mono text-xs">{inv.id}</td>
-            </tr>
+    <div className="overflow-x-auto rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Invoice</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Due</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {invoices.map((invoice) => (
+            <TableRow key={invoice.id}>
+              <TableCell className="font-medium">{invoice.number}</TableCell>
+              <TableCell>
+                {invoice.customerName ?? (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary">{invoice.status}</Badge>
+              </TableCell>
+              <TableCell className="text-muted-foreground tabular-nums">
+                {formatDate(invoice.dueAt)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {formatAmount(invoice.totalAmount, invoice.currency)}
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
