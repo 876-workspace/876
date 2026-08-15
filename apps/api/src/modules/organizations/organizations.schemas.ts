@@ -55,7 +55,7 @@ export const organizationDeleteSchema = z.object({
 })
 
 export const organizationBootstrapBodySchema = z.strictObject({
-  ownerUserId: z.string().min(1),
+  owner_user_id: z.string().min(1),
   name: z.string().min(1),
   slug: z.string().optional().nullable(),
 })
