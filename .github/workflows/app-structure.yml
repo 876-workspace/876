@@ -33,6 +33,13 @@ jobs:
       - name: Structural invariants
         run: pnpm check:structure
 
+      # Every bundled Express service must inline its @876/* workspace deps into
+      # the container bundle. These packages ship raw TypeScript, so an
+      # un-inlined import builds green but crashes the container at boot with
+      # ERR_MODULE_NOT_FOUND (this is how PR #274 took the deployed API down).
+      - name: Service bundle inlining
+        run: pnpm check:service-bundle
+
       # `pnpm check` reaches this task through Turbo locally. Run the service's
       # own command here as well so an API-only pull request cannot bypass the
       # dependency-cruiser module and Prisma boundaries.
