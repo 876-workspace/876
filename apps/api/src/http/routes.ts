@@ -4,7 +4,7 @@ import type { GuardResolver } from '@/http/api-router'
 import { createAuthGuards, type AuthGuards } from '@/http/auth'
 import { createAddressesRouter } from '@/modules/addresses'
 import { createAuditEventsRouter } from '@/modules/audit-events'
-import { createAuthRouter } from '@/modules/auth'
+import { createAuthRouter, findLiveSession } from '@/modules/auth'
 import { createAuthAttemptsRouter } from '@/modules/auth-attempts'
 import { createBillingRouter } from '@/modules/billing'
 import {
@@ -119,12 +119,13 @@ export function buildRoutes(): Router {
 }
 
 /**
- * The auth guards, wired to the `apps` module's credential lookup.
+ * The auth guards, wired to the `apps` module's credential lookup and the
+ * `auth` module's session-liveness check.
  *
- * Exposed separately so a test can build the same guards over a stub lookup.
+ * Exposed separately so a test can build the same guards over stub lookups.
  */
 export function buildAuthGuards(): AuthGuards {
-  return createAuthGuards({ findApiKeyByHash, markApiKeyUsed })
+  return createAuthGuards({ findApiKeyByHash, markApiKeyUsed, findLiveSession })
 }
 
 /**

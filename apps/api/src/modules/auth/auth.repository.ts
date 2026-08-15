@@ -1,5 +1,6 @@
 import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
+import { nowUnixSeconds } from '@/platform/timestamps'
 import { isPlatformOwnerEmail } from '@/config'
 
 /**
@@ -335,6 +336,37 @@ export function findSessionById(sessionId: string) {
 
 export function deleteSession(sessionId: string) {
   return prisma.session.deleteMany({ where: { id: sessionId } })
+}
+
+/**
+ * Whether a session is still good, for the guard that authorizes its token.
+ *
+ * A session token outlives any single request by design, so the row — not the
+ * token's own expiry — decides whether it still authorizes anything. Returns
+ * `false` for a session that was deleted, revoked, or has expired.
+ */
+export async function findLiveSession(sessionId: string): Promise<boolean> {
+  const row = await prisma.session.findUnique({
+    where: { id: sessionId },
+    select: { expiresAt: true, revokedAt: true },
+  })
+  if (!row || row.revokedAt !== null) return false
+  return Number(row.expiresAt) > nowUnixSeconds()
+}
+
+/**
+ * Point a session row at a freshly minted token.
+ *
+ * Switching the active account re-seals the cookie, and the token sealed into
+ * it has to be one `/oauth/introspect` can still match — so the session's
+ * credential is rotated rather than reissued alongside the old one. One live
+ * token per session is the invariant.
+ */
+export function rotateSessionToken(sessionId: string, tokenHash: string) {
+  return prisma.session.updateMany({
+    where: { id: sessionId },
+    data: { tokenHash, updatedAt: BigInt(nowUnixSeconds()) },
+  })
 }
 
 export function findAppById(appId: string) {

@@ -42,6 +42,37 @@ function pickFirst<T>(...values: (T | null | undefined)[]): T | undefined {
   return undefined
 }
 
+/**
+ * Re-issue the access token for a session the cookie is being re-sealed around.
+ *
+ * Switching accounts, or signing out of the active one, moves a different
+ * session into the cookie — and that session's token has to travel with it, or
+ * the app it lands in holds a session with no credential and every delegated
+ * call 401s. The session row is repointed at the new token so
+ * `/oauth/introspect` still matches, leaving one live token per session.
+ */
+async function rotateSessionToken(params: {
+  sessionId: string
+  userId: string
+  realm: string
+  orgId: string | null
+  expiresAt: number
+}): Promise<string> {
+  const token = await service.mintSessionToken({
+    sessionId: params.sessionId,
+    userId: params.userId,
+    realm: params.realm,
+    orgId: params.orgId,
+    issuedAt: Math.floor(Date.now() / 1000),
+    expiresAt: params.expiresAt,
+  })
+  await repository.rotateSessionToken(
+    params.sessionId,
+    service.hashSessionToken(token)
+  )
+  return token
+}
+
 export async function resolveEmail(req: Request, res: Response): Promise<void> {
   const body = validBody<EmailResolveBody>(req)
   const result = await service.resolveEmail(body.identifier)
@@ -641,17 +672,25 @@ export async function switchSession(
     })
   }
   const { sealSession } = await import('@/platform/session')
+  const targetRealm =
+    ((target as Record<string, unknown>)['realm'] as string) || 'consumer'
+  const targetOrgId =
+    ((target as Record<string, unknown>)['orgId'] as string | null) ?? null
   const sealed = sealSession({
     userData: target as never,
-    accessToken: null,
+    accessToken: await rotateSessionToken({
+      sessionId: body.sid,
+      userId: row.userId,
+      realm: targetRealm,
+      orgId: targetOrgId,
+      expiresAt: Number(row.expiresAt),
+    }),
     secret,
     ttlSeconds: service.SESSION_TTL_SECONDS,
     sessionId: body.sid,
     accounts: accounts as never,
-    realm:
-      ((target as Record<string, unknown>)['realm'] as string) || 'consumer',
-    orgId:
-      ((target as Record<string, unknown>)['orgId'] as string | null) ?? null,
+    realm: targetRealm,
+    orgId: targetOrgId,
     crossRealm: Boolean((target as Record<string, unknown>)['crossRealm']),
   })
   service.setSessionCookie(res as never, sealed)
@@ -716,10 +755,20 @@ export async function signoutSession(
   let sealed: string
   if (activeSid === sid) {
     const newActive = remaining[remaining.length - 1]!
+    const newActiveSid = newActive['sid'] as string
+    const newActiveRow = await repository.findSessionById(newActiveSid)
     const { sealSession } = await import('@/platform/session')
     sealed = sealSession({
       userData: newActive as never,
-      accessToken: null,
+      accessToken: newActiveRow
+        ? await rotateSessionToken({
+            sessionId: newActiveSid,
+            userId: newActiveRow.userId,
+            realm: (newActive['realm'] as string) || 'consumer',
+            orgId: (newActive['orgId'] as string | null) ?? null,
+            expiresAt: Number(newActiveRow.expiresAt),
+          })
+        : null,
       secret,
       ttlSeconds: service.SESSION_TTL_SECONDS,
       sessionId: newActive['sid'] as string,

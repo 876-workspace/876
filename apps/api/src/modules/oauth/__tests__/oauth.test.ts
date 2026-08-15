@@ -985,6 +985,7 @@ describe('POST /oauth/revoke and /oauth/introspect', () => {
       id: 'ses_1',
       appId: 'app_4qR8',
       expiresAt: BigInt(NOW + 600),
+      revokedAt: null,
       user: userRow(),
     })
 
@@ -1001,6 +1002,35 @@ describe('POST /oauth/revoke and /oauth/introspect', () => {
       sub: USER_ID,
       token_type: 'Bearer',
     })
+  })
+
+  it('reports inactive once the session has been revoked', async () => {
+    // Regression: a sign-in token lives as long as its session, so revoking the
+    // session is the only thing that can stop it — its own `exp` is far away.
+    const token = await signProviderJwt({
+      sub: USER_ID,
+      aud: CLIENT_ID,
+      exp: NOW + 600,
+      iat: NOW,
+      scope: 'openid',
+      token_use: 'access',
+    })
+    session.findUnique.mockResolvedValue({
+      id: 'ses_1',
+      appId: 'app_4qR8',
+      expiresAt: BigInt(NOW + 600),
+      revokedAt: BigInt(NOW - 60),
+      user: userRow(),
+    })
+
+    const response = await request(createApp())
+      .post('/oauth/introspect')
+      .set('Authorization', `Bearer ${API_KEY}`)
+      .type('form')
+      .send({ token })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toEqual({ active: false })
   })
 
   it('reports inactive for a token with no session, without leaking why', async () => {

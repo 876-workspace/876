@@ -28,6 +28,7 @@ function createApiKey(overrides: Partial<ApiKeyRecord> = {}): ApiKeyRecord {
 
 const findApiKeyByHash = vi.fn<AuthDependencies['findApiKeyByHash']>()
 const markApiKeyUsed = vi.fn<AuthDependencies['markApiKeyUsed']>()
+const findLiveSession = vi.fn<AuthDependencies['findLiveSession']>()
 
 /**
  * A minimal app carrying the real middleware chain, so a test exercises the
@@ -42,7 +43,10 @@ function createTestApp(
   app.use(express.json())
   app.use(envelope)
 
-  mount(app, createAuthGuards({ findApiKeyByHash, markApiKeyUsed }))
+  mount(
+    app,
+    createAuthGuards({ findApiKeyByHash, markApiKeyUsed, findLiveSession })
+  )
 
   app.use(errorHandler)
   return app
@@ -86,6 +90,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   findApiKeyByHash.mockResolvedValue(createApiKey())
   markApiKeyUsed.mockResolvedValue(undefined)
+  findLiveSession.mockResolvedValue(true)
 })
 
 describe('requireApiKey', () => {
@@ -356,6 +361,46 @@ describe('requireSession', () => {
 
     expect(response.status).toBe(200)
     expect(response.body.data.internal).toBe(true)
+  })
+
+  it('rejects a token whose session is no longer live', async () => {
+    // Regression: a sign-in token lives as long as its session, so the row —
+    // not the token's own `exp` — is what signing out has to act on.
+    findLiveSession.mockResolvedValue(false)
+    const token = await accessToken({ sid: 'session_2kL9mN4q' })
+
+    const response = await request(createGuardedApp())
+      .get('/session')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(response.status).toBe(401)
+    expect(response.body.error.code).toBe('auth/invalid-token')
+    expect(findLiveSession).toHaveBeenCalledTimes(1)
+    expect(findLiveSession).toHaveBeenCalledWith('session_2kL9mN4q')
+  })
+
+  it('accepts a token whose session is still live', async () => {
+    const token = await accessToken({ sid: 'session_2kL9mN4q' })
+
+    const response = await request(createGuardedApp())
+      .get('/session')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.userId).toBe('user_2kL9mN4q')
+    expect(findLiveSession).toHaveBeenCalledTimes(1)
+    expect(findLiveSession).toHaveBeenCalledWith('session_2kL9mN4q')
+  })
+
+  it('does not look up a session for a token that names none', async () => {
+    const token = await accessToken()
+
+    const response = await request(createGuardedApp())
+      .get('/session')
+      .set('Authorization', `Bearer ${token}`)
+
+    expect(response.status).toBe(200)
+    expect(findLiveSession).not.toHaveBeenCalled()
   })
 })
 
