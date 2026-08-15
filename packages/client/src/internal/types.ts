@@ -101,6 +101,15 @@ export interface BillingServerClientOptions extends BaseServerOptions {
   }
 }
 
+export interface InvoiceServerClientOptions extends BaseServerOptions {
+  app: 'invoice'
+  services: BaseServiceClientOptions & {
+    billing: {
+      tenant: BillingClientOptions
+    }
+  }
+}
+
 export interface PlatformServerClientOptions extends BaseServerOptions {
   app: '876' | 'enterprise'
   services?: BaseServiceClientOptions
@@ -110,6 +119,7 @@ export type ServerClientOptions =
   | ConsoleServerClientOptions
   | CouriersServerClientOptions
   | BillingServerClientOptions
+  | InvoiceServerClientOptions
   | PlatformServerClientOptions
 
 export interface ServiceClients {

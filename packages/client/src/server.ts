@@ -5,11 +5,13 @@ import {
   type Couriers876Client,
 } from './composers/couriers'
 import { createBillingClient, type Billing876Client } from './composers/billing'
+import { createInvoiceClient, type Invoice876Client } from './composers/invoice'
 import {
   createPlatformServerClient,
   type Platform876Client,
 } from './composers/platform'
 import type {
+  InvoiceServerClientOptions,
   BillingServerClientOptions,
   ConsoleServerClientOptions,
   CouriersServerClientOptions,
@@ -27,11 +29,14 @@ export function create876ServerClient(
   options: BillingServerClientOptions
 ): Billing876Client
 export function create876ServerClient(
+  options: InvoiceServerClientOptions
+): Invoice876Client
+export function create876ServerClient(
   options: PlatformServerClientOptions
 ): Platform876Client
 export function create876ServerClient(
   options: ServerClientOptions
-): Console876Client | Couriers876Client | Billing876Client | Platform876Client {
+): Console876Client | Couriers876Client | Billing876Client | Invoice876Client | Platform876Client {
   switch (options.app) {
     case 'console':
       return createConsoleClient(options)
@@ -39,6 +44,8 @@ export function create876ServerClient(
       return createCouriersClient(options)
     case 'billing':
       return createBillingClient(options)
+    case 'invoice':
+      return createInvoiceClient(options)
     case '876':
     case 'enterprise':
       return createPlatformServerClient(options)
@@ -64,8 +71,10 @@ export type ServerClient876 =
   | Console876Client
   | Couriers876Client
   | Billing876Client
+  | Invoice876Client
   | Platform876Client
 
+export type { Invoice876Client } from './composers/invoice'
 export type { Couriers876Client } from './composers/couriers'
 export type { Admin876ClientOptions } from '@876/admin'
 export type { IntegrationClientOptions as BillingIntegrationClientOptions } from '@876/billing/integration'
