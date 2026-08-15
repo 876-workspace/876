@@ -321,6 +321,22 @@ export async function publishDraft(
   })
   if (!draft) return null
 
+  // Archive the outgoing revision first. Only one revision per manifest may be
+  // `published` (uq_provisioning_manifest_revisions_published), so publishing
+  // without demoting the current one succeeds on an app's first manifest and
+  // then fails on every republish — which is exactly when an app's finance
+  // scopes change. `promoteDraft` in the provisioning module already does this.
+  const current = await prisma.provisioningManifestRevision.findFirst({
+    where: { manifestId: manifest.id, status: 'published' },
+    select: { id: true },
+  })
+  if (current) {
+    await prisma.provisioningManifestRevision.update({
+      where: { id: current.id },
+      data: { status: 'archived', updatedAt: now },
+    })
+  }
+
   await prisma.provisioningManifestRevision.update({
     where: { id: draft.id },
     data: { status: 'published', publishedAt: now, updatedAt: now },
