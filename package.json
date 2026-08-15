@@ -21,6 +21,8 @@
     "dev:billing:min": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/billing-api --filter=@876/billing-app",
     "dev:billing:core": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env billing && pnpm build:sdk && turbo run dev --filter=@876/billing-api --filter=@876/billing-app",
     "dev:billing:api": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api && pnpm widgets:env:check billing && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/billing-api",
+    "dev:invoice": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/billing-api --filter=@876/billing-app --filter=@876/invoice-app",
+    "dev:invoice:min": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/billing-api --filter=@876/invoice-app",
     "dev:storage": "pnpm dev:env && pnpm --filter @876/storage-api dev",
     "dev:widgets": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env widgets-api && pnpm widgets:env:check api && pnpm --filter @876/widgets-api dev",
     "dev:console:enterprise": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing console widgets-api && pnpm widgets:env:check console && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/widgets-api --filter=@876/billing-app --filter=@876/console --filter=@876/enterprise",
