@@ -5,6 +5,7 @@ export const PLATFORM_APP_SLUGS = {
   console: 'console',
   couriers: '876-couriers',
   billing: '876-billing',
+  invoice: '876-invoice',
 } as const
 
 export type PlatformAppName = keyof typeof PLATFORM_APP_SLUGS
@@ -16,6 +17,7 @@ const PLATFORM_FEATURE_PREFIXES: Record<PlatformAppSlug, string> = {
   [PLATFORM_APP_SLUGS.console]: 'console',
   [PLATFORM_APP_SLUGS.couriers]: 'couriers',
   [PLATFORM_APP_SLUGS.billing]: 'billing',
+  [PLATFORM_APP_SLUGS.invoice]: 'invoice',
 }
 
 /**
