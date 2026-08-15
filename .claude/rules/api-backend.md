@@ -65,11 +65,13 @@ Dependency-cruiser enforces these rules; every data-service change must run its
   must not expose HTTP status fields, raw database/provider errors, secrets, or
   tokens.
 - Every app-owned resource has a literal `object` discriminator. Lists use
-  `{ object: "list", data, has_more, url, total_count }`; timestamps are Unix
-  seconds and pagination uses item-ID cursors.
-- Existing versioned contracts are compatibility oracles. Do not change casing,
-  operation IDs, statuses, errors, or response shapes during a framework/ORM
-  migration unless the compatibility change is intentional and tested.
+  `{ object: "list", data, hasMore, url, totalCount }`; timestamps are Unix
+  seconds and pagination uses item-ID cursors (`startingAfter` / `endingBefore`).
+- Existing released contracts must not change accidentally. Intentional contract
+  migrations — including casing migrations — must update the API schemas,
+  serializers, SDK packages, OpenAPI output, contract manifests, tests, and all
+  first-party call sites in the same coordinated change. Do not maintain dual
+  casing unless an explicitly versioned external compatibility requirement demands it.
 
 Billing has four credential kinds (`internal`, `scheduler`, `app_api_key`, and
 `oauth`) and requires exactly one supplied credential. Its integration guard
