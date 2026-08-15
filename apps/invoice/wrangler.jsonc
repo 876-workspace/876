@@ -24,7 +24,11 @@
     },
   ],
   "secrets": {
-    "required": ["INVOICE_API_876_KEY", "SESSION_COOKIE_SECRET"],
+    "required": [
+      "API_INTERNAL_KEY",
+      "INVOICE_API_876_KEY",
+      "SESSION_COOKIE_SECRET",
+    ],
   },
   // Non-secret service URLs. Secrets are set with `wrangler secret put`.
   "vars": {

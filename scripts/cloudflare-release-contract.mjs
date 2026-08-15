@@ -70,7 +70,11 @@ export const CLOUDFLARE_WORKERS = {
     dependencies: ['876-api', '876-billing-api'],
     migrationOwner: 'none',
     readinessUrl: 'https://876-invoice.1876.workers.dev/api/health',
-    requiredSecrets: ['INVOICE_API_876_KEY', 'SESSION_COOKIE_SECRET'],
+    requiredSecrets: [
+      'API_INTERNAL_KEY',
+      'INVOICE_API_876_KEY',
+      'SESSION_COOKIE_SECRET',
+    ],
   },
   '876-console': {
     directory: 'apps/console',
