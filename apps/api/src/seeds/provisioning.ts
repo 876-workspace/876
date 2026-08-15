@@ -193,6 +193,11 @@ const PLATFORM_APPS_FOR_PROVISIONING: PlatformAppProvisioningDef[] = [
     ],
   },
   { slug: '876-billing', financeDependency: 'none', financeScopes: [] },
+  {
+    slug: '876-invoice',
+    financeDependency: 'embedded',
+    financeScopes: ['billing.invoices.read'],
+  },
 ]
 
 function revisionContent(revision: {
