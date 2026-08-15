@@ -5,7 +5,9 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
         <p className="text-sm font-medium">No invoices yet</p>
-        <p className="mt-1 text-sm text-muted-foreground">Invoices for this organization will appear here.</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Invoices for this organization will appear here.
+        </p>
       </div>
     )
   }
@@ -23,8 +25,12 @@ export function InvoicesTable({ invoices }: { invoices: Invoice[] }) {
         <tbody>
           {invoices.map((inv) => (
             <tr key={inv.id} className="border-t">
-              <td className="px-4 py-2">{String((inv as any).number ?? inv.id)}</td>
-              <td className="px-4 py-2">{String((inv as any).status ?? '—')}</td>
+              <td className="px-4 py-2">
+                {String((inv as any).number ?? inv.id)}
+              </td>
+              <td className="px-4 py-2">
+                {String((inv as any).status ?? '—')}
+              </td>
               <td className="px-4 py-2 font-mono text-xs">{inv.id}</td>
             </tr>
           ))}

@@ -36,7 +36,8 @@ export const getInvoiceContext = cache(
 
     const rawStatus = (subscription.data as any)?.status ?? null
     let accessStatus: InvoiceContext['accessStatus'] = 'none'
-    if (rawStatus === 'active' || rawStatus === 'trialing') accessStatus = rawStatus as InvoiceContext['accessStatus']
+    if (rawStatus === 'active' || rawStatus === 'trialing')
+      accessStatus = rawStatus as InvoiceContext['accessStatus']
     else if (rawStatus) accessStatus = 'blocked'
 
     return {

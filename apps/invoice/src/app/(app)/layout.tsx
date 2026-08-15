@@ -5,13 +5,20 @@ import { getInvoiceContext } from '@/lib/auth/context'
 import { requireValidSession } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   await requireValidSession('/')
 
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  if (context.accessStatus !== 'active' && context.accessStatus !== 'trialing') {
+  if (
+    context.accessStatus !== 'active' &&
+    context.accessStatus !== 'trialing'
+  ) {
     redirect('/no-access?reason=subscription')
   }
 

@@ -23,7 +23,10 @@ export function createInvoicesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: '/api/v1/invoices',
-          query: params as Record<string, string | number | boolean | undefined>,
+          query: params as Record<
+            string,
+            string | number | boolean | undefined
+          >,
           signal: options?.signal,
         },
         InvoiceListSchema

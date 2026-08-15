@@ -36,7 +36,12 @@ export function create876ServerClient(
 ): Platform876Client
 export function create876ServerClient(
   options: ServerClientOptions
-): Console876Client | Couriers876Client | Billing876Client | Invoice876Client | Platform876Client {
+):
+  | Console876Client
+  | Couriers876Client
+  | Billing876Client
+  | Invoice876Client
+  | Platform876Client {
   switch (options.app) {
     case 'console':
       return createConsoleClient(options)

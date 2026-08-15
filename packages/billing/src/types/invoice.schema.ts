@@ -54,7 +54,10 @@ export const LateFeeRunSchema = z.strictObject({
   skipped: z.number().int().nonnegative(),
   hasMore: z.boolean(),
 }) satisfies z.ZodType<LateFeeRun>
-export const InvoiceSchema = z.strictObject({ object: z.literal('invoice'), id: z.string().min(1) }).passthrough() satisfies z.ZodType<Invoice>
+export const InvoiceSchema = z
+  .strictObject({ object: z.literal('invoice'), id: z.string().min(1) })
+  .passthrough() satisfies z.ZodType<Invoice>
 
-export const InvoiceListSchema = listSchema(InvoiceSchema) satisfies z.ZodType<InvoiceList>
-
+export const InvoiceListSchema = listSchema(
+  InvoiceSchema
+) satisfies z.ZodType<InvoiceList>

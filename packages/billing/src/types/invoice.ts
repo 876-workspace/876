@@ -375,4 +375,3 @@ export type Invoice = {
  * Paginated list of invoices.
  */
 export type InvoiceList = import('./common').List<Invoice>
-
