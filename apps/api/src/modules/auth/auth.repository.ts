@@ -354,6 +354,21 @@ export async function findLiveSession(sessionId: string): Promise<boolean> {
   return Number(row.expiresAt) > nowUnixSeconds()
 }
 
+/**
+ * Point a session row at a freshly minted token.
+ *
+ * Switching the active account re-seals the cookie, and the token sealed into
+ * it has to be one `/oauth/introspect` can still match — so the session's
+ * credential is rotated rather than reissued alongside the old one. One live
+ * token per session is the invariant.
+ */
+export function rotateSessionToken(sessionId: string, tokenHash: string) {
+  return prisma.session.updateMany({
+    where: { id: sessionId },
+    data: { tokenHash, updatedAt: BigInt(nowUnixSeconds()) },
+  })
+}
+
 export function findAppById(appId: string) {
   return prisma.app.findUnique({
     where: { id: appId },
