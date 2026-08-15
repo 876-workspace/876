@@ -65,6 +65,12 @@ export type {
   InvoiceFinalizeParams,
   InvoiceVoidParams,
   InvoiceCreated,
+  QuoteListParams,
+  Quote,
+  QuoteList,
+  EstimateListParams,
+  Estimate,
+  EstimateList,
 } from './invoice'
 export {
   InvoiceSchema,
@@ -73,6 +79,10 @@ export {
   InvoicePreferenceSchema,
   InvoicePreferenceUpdatedSchema,
   LateFeeRunSchema,
+  QuoteSchema,
+  QuoteListSchema,
+  EstimateSchema,
+  EstimateListSchema,
 } from './invoice.schema'
 
 // Bank

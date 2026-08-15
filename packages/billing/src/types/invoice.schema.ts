@@ -1,8 +1,12 @@
 import { z } from 'zod'
 
 import type {
+  Estimate,
+  EstimateList,
   Invoice,
   InvoiceList,
+  Quote,
+  QuoteList,
   InvoiceCreated,
   InvoicePreference,
   InvoicePreferenceUpdated,
@@ -61,3 +65,23 @@ export const InvoiceSchema = z
 export const InvoiceListSchema = listSchema(
   InvoiceSchema
 ) satisfies z.ZodType<InvoiceList>
+
+/** The schema for one tenant quote. */
+export const QuoteSchema = z
+  .strictObject({ object: z.literal('quote'), id: z.string().min(1) })
+  .passthrough() satisfies z.ZodType<Quote>
+
+/** The schema for a paginated list of quotes. */
+export const QuoteListSchema = listSchema(
+  QuoteSchema
+) satisfies z.ZodType<QuoteList>
+
+/** The schema for one tenant estimate. */
+export const EstimateSchema = z
+  .strictObject({ object: z.literal('estimate'), id: z.string().min(1) })
+  .passthrough() satisfies z.ZodType<Estimate>
+
+/** The schema for a paginated list of estimates. */
+export const EstimateListSchema = listSchema(
+  EstimateSchema
+) satisfies z.ZodType<EstimateList>
