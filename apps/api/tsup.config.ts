@@ -20,6 +20,9 @@ export default defineConfig({
   // Prisma ships platform-specific engine binaries and a WASM query compiler
   // that must be resolved from node_modules at runtime, not inlined.
   external: ['@prisma/client', '.prisma/client'],
+  // `@876/server` publishes raw TypeScript through its `exports` map, so nothing
+  // resolves it at runtime; inlining it keeps the bundled service self-contained.
+  noExternal: ['@876/server'],
   // A bundled ESM file has no `require`; pg and its peers still reach for it.
   banner: {
     js: [

@@ -19,15 +19,17 @@ COPY apps/couriers-api/package.json apps/couriers-api/
 COPY packages/core/package.json packages/core/
 COPY packages/settings/package.json packages/settings/
 COPY packages/billing/package.json packages/billing/
+COPY packages/server/package.json packages/server/
 
 RUN pnpm install --frozen-lockfile --ignore-scripts --filter @876/couriers-api...
 
-# @876/core, @876/settings and @876/billing ship raw TypeScript, so their source has to be
-# present for the bundle step — a workspace link alone gives esbuild nothing
-# to resolve.
+# @876/core, @876/settings, @876/billing and @876/server ship raw TypeScript, so their
+# source has to be present for the bundle step — a workspace link alone gives
+# esbuild nothing to resolve.
 COPY packages/core/src packages/core/src
 COPY packages/settings/src packages/settings/src
 COPY packages/billing/src packages/billing/src
+COPY packages/server/src packages/server/src
 
 WORKDIR /repo/apps/couriers-api
 
