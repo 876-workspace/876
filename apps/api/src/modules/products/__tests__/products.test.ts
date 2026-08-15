@@ -70,7 +70,6 @@ function priceRow(overrides: Record<string, unknown> = {}) {
     archivedAt: null,
     ...overrides,
   }
-}
 
 function productRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -99,12 +98,11 @@ function productRow(overrides: Record<string, unknown> = {}) {
     planModules: [{ moduleId: 'mod_deliveries' }],
     ...overrides,
   }
-}
 
 const SERIALIZED_PRICE = {
   object: 'price',
   id: 'prc_4kW2',
-  product_id: 'prd_9tQ6',
+  productId: 'prd_9tQ6',
   billing_interval: 'month',
   interval_count: 1,
   status: 'active',
@@ -124,8 +122,8 @@ const SERIALIZED_PRICE = {
   trial_period_days: null,
   active: true,
   metadata: null,
-  created_at: NOW,
-  updated_at: NOW,
+  createdAt: NOW,
+  updatedAt: NOW,
   archived_at: null,
 }
 
@@ -135,11 +133,11 @@ const SERIALIZED_PRODUCT = {
   slug: '876-couriers-pro',
   name: 'Pro',
   description: 'The paid courier plan',
-  app_id: 'app_couriers',
-  app_slug: '876-couriers',
-  app_name: 'Couriers',
-  app_logo_url: null,
-  app_kind: 'product',
+  appId: 'app_couriers',
+  appSlug: '876-couriers',
+  appName: 'Couriers',
+  appLogoUrl: null,
+  appKind: 'product',
   status: 'active',
   active: true,
   statement_descriptor: null,
@@ -149,8 +147,8 @@ const SERIALIZED_PRODUCT = {
   metadata: null,
   prices: [SERIALIZED_PRICE],
   module_ids: ['mod_deliveries'],
-  created_at: NOW,
-  updated_at: NOW,
+  createdAt: NOW,
+  updatedAt: NOW,
   archived_at: null,
 }
 
@@ -218,11 +216,10 @@ describe('GET /products', () => {
         data: [SERIALIZED_PRODUCT],
         has_more: false,
         url: '/products',
-        total_count: null,
+        totalCount: null,
       },
       error: null,
     })
-  })
 
   it('reads with an app key alone, without the internal key', async () => {
     // A pricing page has to render before anyone signs in.
@@ -277,9 +274,8 @@ describe('GET /products', () => {
     expect(response.status).toBe(200)
     expect(response.body.data.data[0].metadata).toBeNull()
   })
-})
 
-describe('GET /products/:product_id', () => {
+describe('GET /products/:productId', () => {
   it('returns the product', async () => {
     const response = await request(createApp())
       .get('/products/prd_9tQ6')
@@ -299,7 +295,6 @@ describe('GET /products/:product_id', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('product/not-found')
   })
-})
 
 describe('POST /products', () => {
   const BODY = {
@@ -373,7 +368,7 @@ describe('POST /products', () => {
     const response = await request(createApp())
       .post('/products')
       .set(AUTH)
-      .send({ ...BODY, app_id: 'app_gone' })
+      .send({ ...BODY, appId: 'app_gone' })
 
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('app/not-found')
@@ -386,7 +381,7 @@ describe('POST /products', () => {
     const response = await request(createApp())
       .post('/products')
       .set(AUTH)
-      .send({ ...BODY, app_id: 'app_console' })
+      .send({ ...BODY, appId: 'app_console' })
 
     expect(response.status).toBe(422)
     expect(response.body.error.code).toBe('product/app-kind-invalid')
@@ -422,7 +417,7 @@ describe('POST /products', () => {
       .set(AUTH)
       .send({
         ...BODY,
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         module_ids: ['mod_deliveries'],
       })
 
@@ -442,7 +437,7 @@ describe('POST /products', () => {
       .set(AUTH)
       .send({
         ...BODY,
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         module_ids: ['mod_deliveries'],
       })
 
@@ -460,7 +455,7 @@ describe('POST /products', () => {
       .set(AUTH)
       .send({
         ...BODY,
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         module_ids: ['mod_deliveries'],
       })
 
@@ -474,7 +469,7 @@ describe('POST /products', () => {
       .set(AUTH)
       .send({
         ...BODY,
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         module_ids: ['mod_deliveries', 'mod_deliveries'],
       })
 
@@ -511,11 +506,10 @@ describe('POST /products', () => {
     expect(response.status).toBe(401)
     expect(product.create).not.toHaveBeenCalled()
   })
-})
 
-describe('PUT /products/:product_id/modules', () => {
+describe('PUT /products/:productId/modules', () => {
   it('writes only the difference in each direction', async () => {
-    // Re-inserting every row would churn `created_at` on modules the caller
+    // Re-inserting every row would churn `createdAt` on modules the caller
     // left alone.
     planModule.findMany.mockResolvedValue([
       { moduleId: 'mod_deliveries' },
@@ -538,7 +532,6 @@ describe('PUT /products/:product_id/modules', () => {
     expect(planModule.createMany).toHaveBeenCalledWith({
       data: [expect.objectContaining({ moduleId: 'mod_items' })],
     })
-  })
 
   it('clears every module when sent an empty set', async () => {
     planModule.findMany.mockResolvedValue([{ moduleId: 'mod_deliveries' }])
@@ -592,9 +585,8 @@ describe('PUT /products/:product_id/modules', () => {
       expect.objectContaining({ where: { id: 'prd_9tQ6' } })
     )
   })
-})
 
-describe('PATCH /products/:product_id', () => {
+describe('PATCH /products/:productId', () => {
   it('applies the fields that were sent', async () => {
     const response = await request(createApp())
       .patch('/products/prd_9tQ6')
@@ -771,9 +763,8 @@ describe('PATCH /products/:product_id', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
-describe('DELETE /products/:product_id', () => {
+describe('DELETE /products/:productId', () => {
   it('archives rather than deleting, and returns a tombstone', async () => {
     // A subscription item's price carries ON DELETE RESTRICT, so removing the
     // row would fail on any product still being paid for.
@@ -812,9 +803,8 @@ describe('DELETE /products/:product_id', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
-describe('POST /products/:product_id/prices', () => {
+describe('POST /products/:productId/prices', () => {
   it('adds a price to an existing product', async () => {
     const response = await request(createApp())
       .post('/products/prd_9tQ6/prices')
@@ -871,9 +861,8 @@ describe('POST /products/:product_id/prices', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
-describe('GET /products/:product_id/prices/:price_id', () => {
+describe('GET /products/:productId/prices/:priceId', () => {
   it('returns the price', async () => {
     const response = await request(createApp())
       .get('/products/prd_9tQ6/prices/prc_4kW2')
@@ -905,9 +894,8 @@ describe('GET /products/:product_id/prices/:price_id', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('price/not-found')
   })
-})
 
-describe('PATCH /products/:product_id/prices/:price_id', () => {
+describe('PATCH /products/:productId/prices/:priceId', () => {
   it('applies the fields that were sent', async () => {
     const response = await request(createApp())
       .patch('/products/prd_9tQ6/prices/prc_4kW2')
@@ -956,9 +944,8 @@ describe('PATCH /products/:product_id/prices/:price_id', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
-describe('DELETE /products/:product_id/prices/:price_id', () => {
+describe('DELETE /products/:productId/prices/:priceId', () => {
   it('archives the price, clearing both the flag and the status', async () => {
     const response = await request(createApp())
       .delete('/products/prd_9tQ6/prices/prc_4kW2')
@@ -992,4 +979,3 @@ describe('DELETE /products/:product_id/prices/:price_id', () => {
 
     expect(response.status).toBe(401)
   })
-})

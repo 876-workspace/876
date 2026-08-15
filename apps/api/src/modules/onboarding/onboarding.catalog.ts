@@ -165,7 +165,7 @@ const JM_ORGANIZATION_SECTIONS: readonly SectionSpec[] = [
         placeholder: 'JM',
       },
       {
-        key: 'incorporation_date',
+        key: 'incorporationDate',
         label: 'Date of incorporation or registration',
         fieldType: 'date',
       },
@@ -191,14 +191,14 @@ const JM_ORGANIZATION_SECTIONS: readonly SectionSpec[] = [
         pattern: TRN_PATTERN,
       },
       { key: 'income_tax_number', label: 'Income tax number', sensitive: true },
-      { key: 'nis_number', label: 'NIS employer number', sensitive: true },
+      { key: 'nisNumber', label: 'NIS employer number', sensitive: true },
       {
         key: 'gct_registered',
         label: 'Registered for GCT',
         fieldType: 'boolean',
       },
       {
-        key: 'gct_number',
+        key: 'gctNumber',
         label: 'GCT registration number',
         sensitive: true,
         requiredWhenKey: 'gct_registered',
@@ -247,18 +247,18 @@ const JM_ORGANIZATION_SECTIONS: readonly SectionSpec[] = [
       'Primary organization contact information used across 876 products.',
     fields: [
       {
-        key: 'primary_phone',
+        key: 'primaryPhone',
         label: 'Telephone number',
         fieldType: 'phone',
         required: true,
       },
       {
-        key: 'primary_email',
+        key: 'primaryEmail',
         label: 'Email address',
         fieldType: 'email',
         required: true,
       },
-      { key: 'website_url', label: 'Website', fieldType: 'url' },
+      { key: 'websiteUrl', label: 'Website', fieldType: 'url' },
       {
         key: 'primary_contact_name',
         label: 'Primary contact name',
@@ -318,8 +318,8 @@ const JM_ORGANIZATION_SECTIONS: readonly SectionSpec[] = [
         sensitive: true,
         minItems: 1,
         itemFields: [
-          { key: 'first_name', label: 'First name', required: true },
-          { key: 'last_name', label: 'Last name', required: true },
+          { key: 'firstName', label: 'First name', required: true },
+          { key: 'lastName', label: 'Last name', required: true },
           { key: 'title', label: 'Office or title', required: true },
           {
             key: 'individual_trn',
@@ -342,10 +342,10 @@ const JM_ORGANIZATION_SECTIONS: readonly SectionSpec[] = [
         sensitive: true,
         minItems: 1,
         itemFields: [
-          { key: 'first_name', label: 'First name', required: true },
-          { key: 'last_name', label: 'Last name', required: true },
+          { key: 'firstName', label: 'First name', required: true },
+          { key: 'lastName', label: 'Last name', required: true },
           {
-            key: 'date_of_birth',
+            key: 'dateOfBirth',
             label: 'Date of birth',
             fieldType: 'date',
             sensitive: true,
@@ -435,7 +435,7 @@ const JM_ORGANIZATION_SECTIONS: readonly SectionSpec[] = [
           { key: 'line2', label: 'Address line 2' },
           { key: 'city', label: 'Town or city', required: true },
           { key: 'parish', label: 'Parish', required: true },
-          { key: 'postal_code', label: 'Postal zone' },
+          { key: 'postalCode', label: 'Postal zone' },
           { key: 'phone', label: 'Telephone', fieldType: 'phone' },
           { key: 'email', label: 'Email', fieldType: 'email' },
         ],
@@ -484,7 +484,6 @@ export class UnknownCatalogError extends Error {
     super(message)
     this.name = 'UnknownCatalogError'
   }
-}
 
 function serializeField(field: FieldSpec): OnboardingFieldDefinition {
   return {
@@ -507,7 +506,6 @@ function serializeField(field: FieldSpec): OnboardingFieldDefinition {
     options: (field.options ?? []).map(([value, label]) => ({ value, label })),
     item_fields: (field.itemFields ?? []).map(serializeField),
   }
-}
 
 function buildCatalog(
   targetType: OnboardingTargetType,
@@ -520,7 +518,7 @@ function buildCatalog(
     object: 'onboarding_catalog',
     target_type: targetType,
     target_key: targetKey,
-    country_code: countryCode,
+    countryCode: countryCode,
     schema_version: 1,
     catalog_revision: revision,
     sections: sections.map((section, position) => ({
@@ -531,7 +529,6 @@ function buildCatalog(
       fields: section.fields.map(serializeField),
     })),
   }
-}
 
 /**
  * The full legal-identity catalog for an organization.
@@ -682,7 +679,6 @@ function validateField(
         'invalid_option',
         `${field.label} contains an unsupported option.`
       )
-    )
   }
 
   if (type === 'multiselect' && Array.isArray(value)) {
@@ -696,7 +692,6 @@ function validateField(
           'invalid_option',
           `${field.label} contains an unsupported option.`
         )
-      )
   }
 
   if (type === 'collection' && Array.isArray(value)) {
@@ -707,7 +702,6 @@ function validateField(
           'minimum_items',
           `${field.label} requires at least ${field.min_items} item(s).`
         )
-      )
     }
 
     value.forEach((item, index) => {
@@ -718,7 +712,6 @@ function validateField(
             'invalid_type',
             'Collection items must be objects.'
           )
-        )
         return
       }
 
@@ -730,7 +723,6 @@ function validateField(
             record[itemField.key],
             `${path}.${index}.${itemField.key}`
           )
-        )
       }
 
       const known = new Set(field.item_fields.map((f) => f.key))
@@ -742,7 +734,6 @@ function validateField(
               'unknown_field',
               `Unknown field '${unknown}'.`
             )
-          )
       }
     })
   }
@@ -753,7 +744,7 @@ function validateField(
 /**
  * Check a full answer set against a catalog.
  *
- * A conditionally required field (`gct_number` when `gct_registered` is true)
+ * A conditionally required field (`gctNumber` when `gct_registered` is true)
  * is promoted to required before it is checked, so the requirement is evaluated
  * against the answers actually given rather than the catalog's static flag.
  */
@@ -787,7 +778,6 @@ export function validateOnboardingAnswers(
           'unknown_field',
           `Unknown field '${unknown}'.`
         )
-      )
   }
 
   return issues

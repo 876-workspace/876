@@ -38,7 +38,6 @@ async function authHeaders(userId: string) {
     'X-876-API-Key': APP_KEY,
     Authorization: `Bearer ${token}`,
   }
-}
 
 // The /users list is admin-tier (internal key), which is how Console's admin
 // client reaches it. Session bearer alone gets 403 there.
@@ -69,7 +68,6 @@ function enrollmentRow(
     },
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -108,30 +106,29 @@ describe('GET /users/apps (batch apps by users)', () => {
       data: [
         {
           object: 'user_apps',
-          user_id: USER_A,
+          userId: USER_A,
           data: [
             {
               object: 'app',
               id: 'app_couriers',
               name: '876 Couriers',
               slug: '876-couriers',
-              logo_url: null,
-              logo_file_id: null,
-              homepage_url: null,
-              app_kind: 'internal',
+              logoUrl: null,
+              logoFileId: null,
+              homepageUrl: null,
+              appKind: 'internal',
               status: 'active',
-              enrolled_at: 1_785_000_000,
-              last_seen_at: 1_785_000_100,
+              enrolledAt: 1_785_000_000,
+              lastSeenAt: 1_785_000_100,
             },
           ],
         },
-        { object: 'user_apps', user_id: USER_B, data: [] },
+        { object: 'user_apps', userId: USER_B, data: [] },
       ],
       has_more: false,
       url: '/users/apps',
-      total_count: 2,
+      totalCount: 2,
     })
-  })
 
   it('returns 422 when user_ids is missing (schema validation)', async () => {
     const app = createApp()
@@ -168,7 +165,6 @@ describe('GET /users/apps (batch apps by users)', () => {
     expect(response.body.error.code).toBe('auth/no-session')
     expect(userAppEnrollment.findMany).not.toHaveBeenCalled()
   })
-})
 
 describe('GET /users?ids= (batch users by id)', () => {
   it('threads ids into the user query as an IN filter', async () => {
@@ -186,4 +182,3 @@ describe('GET /users?ids= (batch users by id)', () => {
     }
     expect(whereArg.id).toEqual({ in: [USER_A, USER_B] })
   })
-})

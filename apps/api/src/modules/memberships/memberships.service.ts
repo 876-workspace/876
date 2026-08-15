@@ -53,7 +53,7 @@ export async function retrieveMembership(
 export async function createMembership(
   body: CreateMembershipBody
 ): Promise<Membership> {
-  const org = await repository.findOrganizationById(body.organization_id)
+  const org = await repository.findOrganizationById(body.organizationId)
   if (!org) {
     throw new AppHttpError({
       code: 'membership/validation-failed',
@@ -61,7 +61,7 @@ export async function createMembership(
       httpStatus: 400,
     })
   }
-  const user = await repository.findUserById(body.user_id)
+  const user = await repository.findUserById(body.userId)
   if (!user) {
     throw new AppHttpError({
       code: 'membership/not-found',
@@ -70,8 +70,8 @@ export async function createMembership(
     })
   }
   const existing = await repository.findMembershipByOrgAndUser(
-    body.organization_id,
-    body.user_id
+    body.organizationId,
+    body.userId
   )
   if (existing) {
     throw new AppHttpError({
@@ -106,8 +106,8 @@ export async function createMembership(
 
   const membership = await repository.createMembership({
     id: generateId('membership'),
-    organizationId: body.organization_id,
-    userId: body.user_id,
+    organizationId: body.organizationId,
+    userId: body.userId,
     workosMembershipId,
     role,
     status,
@@ -126,17 +126,17 @@ export async function createMembership(
   )
   if (membership.status === 'active') {
     await assignMemberApps({
-      organizationId: body.organization_id,
-      userId: body.user_id,
+      organizationId: body.organizationId,
+      userId: body.userId,
       now,
     })
   }
 
   log.info(
     {
-      membership_id: membership.id,
-      organization_id: body.organization_id,
-      user_id: body.user_id,
+      membershipId: membership.id,
+      organizationId: body.organizationId,
+      userId: body.userId,
       role: membership.role,
     },
     'memberships.create'
@@ -208,9 +208,9 @@ export async function updateMembership(
 
   log.info(
     {
-      membership_id: membership.id,
-      organization_id: membership.organizationId,
-      user_id: membership.userId,
+      membershipId: membership.id,
+      organizationId: membership.organizationId,
+      userId: membership.userId,
       changed_fields: Object.keys(repoData).sort(),
       role: repoData.role,
     },
@@ -238,9 +238,9 @@ export async function deleteMembership(
 
   log.info(
     {
-      membership_id: membershipId,
-      organization_id: membership.organizationId,
-      user_id: membership.userId,
+      membershipId: membershipId,
+      organizationId: membership.organizationId,
+      userId: membership.userId,
     },
     'memberships.delete'
   )

@@ -52,7 +52,7 @@ export function createAddressesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.get({
-    path: '/:address_id',
+    path: '/:addressId',
     operationId: 'addresses-retrieve_address',
     summary: docs.RETRIEVE_ADDRESS_SUMMARY,
     description: docs.RETRIEVE_ADDRESS_DESCRIPTION,
@@ -65,7 +65,7 @@ export function createAddressesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/:address_id',
+    path: '/:addressId',
     operationId: 'addresses-update_address',
     summary: docs.UPDATE_ADDRESS_SUMMARY,
     description: docs.UPDATE_ADDRESS_DESCRIPTION,
@@ -81,7 +81,7 @@ export function createAddressesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/:address_id',
+    path: '/:addressId',
     operationId: 'addresses-delete_address',
     summary: docs.DELETE_ADDRESS_SUMMARY,
     description: docs.DELETE_ADDRESS_DESCRIPTION,

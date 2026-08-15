@@ -91,17 +91,16 @@ export function serializeOnboardingSession(
   return {
     object: 'onboarding_session',
     id: row.id,
-    organization_id: row.organizationId,
+    organizationId: row.organizationId,
     target_type: asTargetType(row.targetType),
     target_key: row.targetKey,
-    country_code: row.countryCode,
+    countryCode: row.countryCode,
     schema_version: 1,
     catalog_revision: row.catalogRevision,
     status: asStatus(row.status),
     answers: answersOf(row),
     submitted_at: nullableFromDbUnixSeconds(row.submittedAt),
     completed_at: nullableFromDbUnixSeconds(row.completedAt),
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}

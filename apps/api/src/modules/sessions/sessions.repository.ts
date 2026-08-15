@@ -66,7 +66,6 @@ function buildWhere(filters: SessionFilters): Prisma.SessionWhereInput {
     } else {
       where.OR = [{ expiresAt: { lte: now } }, { revokedAt: { not: null } }]
     }
-  }
 
   return where
 }
@@ -107,7 +106,7 @@ export function list(
  *
  * The row is kept so Console can still show where and on what device the
  * session was established after it has been cut off — deleting it would erase
- * exactly the evidence an investigation needs. `expires_at` is pulled back to
+ * exactly the evidence an investigation needs. `expiresAt` is pulled back to
  * now so every expiry check treats it as dead immediately.
  */
 export async function revoke(

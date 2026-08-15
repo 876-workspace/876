@@ -26,7 +26,7 @@ import {
 } from './apps.schemas'
 
 // Public router — outside protected router, tier public (no api key needed)
-// It exposes only GET /apps/public/{client_id}
+// It exposes only GET /apps/public/{clientId}
 export function createAppsPublicRouter(): ReturnType<
   typeof createApiRouter
 >['router'] {
@@ -37,7 +37,7 @@ export function createAppsPublicRouter(): ReturnType<
   })
 
   api.get({
-    path: '/public/:client_id',
+    path: '/public/:clientId',
     operationId: 'apps-get_app_public',
     summary: docs.GET_APP_PUBLIC_SUMMARY,
     description: docs.GET_APP_PUBLIC_DESCRIPTION,
@@ -94,7 +94,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
     handler: controller.createApp,
   })
 
-  // Sub-resource routes before /:app_id
+  // Sub-resource routes before /:appId
   api.get({
     path: '/current',
     operationId: 'apps-retrieve_current_app',
@@ -108,7 +108,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:app_id/features',
+    path: '/:appId/features',
     security: 'admin',
     operationId: 'apps-list_app_features',
     summary: docs.LIST_APP_FEATURES_SUMMARY,
@@ -125,7 +125,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:app_id/subscriptions',
+    path: '/:appId/subscriptions',
     security: 'admin',
     operationId: 'apps-list_app_subscriptions',
     summary: docs.LIST_APP_SUBSCRIPTIONS_SUMMARY,
@@ -142,7 +142,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:app_id/api-keys',
+    path: '/:appId/api-keys',
     security: 'admin',
     operationId: 'apps-create_api_key',
     summary: docs.CREATE_API_KEY_SUMMARY,
@@ -156,7 +156,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:app_id/api-keys',
+    path: '/:appId/api-keys',
     security: 'admin',
     operationId: 'apps-list_api_keys',
     summary: docs.LIST_API_KEYS_SUMMARY,
@@ -165,8 +165,8 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
       params: appIdParamsSchema,
       query: z.object({
         limit: z.coerce.number().int().min(1).max(100).default(20),
-        starting_after: z.string().optional(),
-        ending_before: z.string().optional(),
+        startingAfter: z.string().optional(),
+        endingBefore: z.string().optional(),
       }),
     },
     responses: {
@@ -180,7 +180,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.patch({
-    path: '/:app_id/api-keys/:key_id',
+    path: '/:appId/api-keys/:key_id',
     security: 'admin',
     operationId: 'apps-update_api_key',
     summary: docs.UPDATE_API_KEY_SUMMARY,
@@ -194,7 +194,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:app_id/api-keys/:key_id/revoke',
+    path: '/:appId/api-keys/:key_id/revoke',
     security: 'admin',
     operationId: 'apps-revoke_api_key',
     summary: docs.REVOKE_API_KEY_SUMMARY,
@@ -208,7 +208,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.delete({
-    path: '/:app_id/api-keys/:key_id',
+    path: '/:appId/api-keys/:key_id',
     security: 'admin',
     operationId: 'apps-delete_api_key',
     summary: docs.DELETE_API_KEY_SUMMARY,
@@ -222,7 +222,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:app_id',
+    path: '/:appId',
     operationId: 'apps-retrieve_app',
     summary: docs.RETRIEVE_APP_SUMMARY,
     description: docs.RETRIEVE_APP_DESCRIPTION,
@@ -235,7 +235,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.patch({
-    path: '/:app_id',
+    path: '/:appId',
     security: 'admin',
     operationId: 'apps-update_app',
     summary: docs.UPDATE_APP_SUMMARY,
@@ -250,7 +250,7 @@ export function createAppsRouter(resolveGuards: GuardResolver) {
   })
 
   api.delete({
-    path: '/:app_id',
+    path: '/:appId',
     security: 'admin',
     operationId: 'apps-delete_app',
     summary: docs.DELETE_APP_SUMMARY,

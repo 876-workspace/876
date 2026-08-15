@@ -42,24 +42,23 @@ function addressRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 const SERIALIZED = {
   object: 'address',
   id: 'adr_7fJ3',
-  user_id: 'user_2kL9',
-  organization_id: null,
+  userId: 'user_2kL9',
+  organizationId: null,
   type: 'home',
   label: 'Home',
   line1: '12 Hope Road',
   line2: null,
   city: 'Kingston',
-  region_id: 'reg_kingston',
-  country_code: 'JM',
-  postal_code: null,
-  is_default: true,
-  created_at: NOW,
-  updated_at: NOW,
+  regionId: 'reg_kingston',
+  countryCode: 'JM',
+  postalCode: null,
+  isDefault: true,
+  createdAt: NOW,
+  updatedAt: NOW,
 }
 
 beforeEach(() => {
@@ -91,7 +90,7 @@ describe('GET /addresses', () => {
         data: [SERIALIZED],
         has_more: false,
         url: '/addresses',
-        total_count: null,
+        totalCount: null,
       },
       error: null,
     })
@@ -143,7 +142,6 @@ describe('GET /addresses', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
 describe('POST /addresses', () => {
   it('creates an address for a user', async () => {
@@ -171,7 +169,7 @@ describe('POST /addresses', () => {
     await request(createApp())
       .post('/addresses')
       .set(AUTH)
-      .send({ user_id: 'user_2kL9', country_code: 'JM', is_default: true })
+      .send({ userId: 'user_2kL9', countryCode: 'JM', isDefault: true })
 
     expect(address.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -230,9 +228,8 @@ describe('POST /addresses', () => {
 
     expect(response.status).toBe(422)
   })
-})
 
-describe('GET /addresses/:address_id', () => {
+describe('GET /addresses/:addressId', () => {
   it('returns the address', async () => {
     const response = await request(createApp())
       .get('/addresses/adr_7fJ3')
@@ -254,7 +251,6 @@ describe('GET /addresses/:address_id', () => {
       data: null,
       error: { code: 'address/not-found', message: 'Address not found.' },
     })
-  })
 
   it('serializes an out-of-enum stored type as other', async () => {
     // The column is free-text with a default, so a stale row must not break the
@@ -267,9 +263,8 @@ describe('GET /addresses/:address_id', () => {
 
     expect(response.body.data.type).toBe('other')
   })
-})
 
-describe('PATCH /addresses/:address_id', () => {
+describe('PATCH /addresses/:addressId', () => {
   it('applies only the fields that were sent', async () => {
     await request(createApp())
       .patch('/addresses/adr_7fJ3')
@@ -319,9 +314,8 @@ describe('PATCH /addresses/:address_id', () => {
     expect(response.status).toBe(404)
     expect(address.update).not.toHaveBeenCalled()
   })
-})
 
-describe('DELETE /addresses/:address_id', () => {
+describe('DELETE /addresses/:addressId', () => {
   it('returns a tombstone', async () => {
     const response = await request(createApp())
       .delete('/addresses/adr_7fJ3')
@@ -332,7 +326,6 @@ describe('DELETE /addresses/:address_id', () => {
       data: { object: 'address', id: 'adr_7fJ3', deleted: true },
       error: null,
     })
-  })
 
   it('404s when nothing was deleted', async () => {
     address.deleteMany.mockResolvedValue({ count: 0 })
@@ -344,4 +337,3 @@ describe('DELETE /addresses/:address_id', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('address/not-found')
   })
-})

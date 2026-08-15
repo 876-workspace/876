@@ -36,8 +36,8 @@ describe('workos-webhooks dispatch', () => {
     const result = await dispatch(
       event('user.updated', {
         id: 'user_1',
-        first_name: 'Ada',
-        last_name: 'Lovelace',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
         email: 'ada@example.test',
       })
     )
@@ -50,7 +50,6 @@ describe('workos-webhooks dispatch', () => {
       lastName: 'Lovelace',
       email: 'ada@example.test',
     })
-  })
 
   it('applies organization.updated to the local org', async () => {
     organizations.syncOrganizationFromWorkos.mockResolvedValue(true)
@@ -75,8 +74,8 @@ describe('workos-webhooks dispatch', () => {
     const result = await dispatch(
       event('organization_membership.updated', {
         id: 'om_1',
-        organization_id: 'org_workos_1',
-        user_id: 'user_workos_1',
+        organizationId: 'org_workos_1',
+        userId: 'user_workos_1',
         role: { slug: 'admin' },
         status: 'active',
       })
@@ -96,7 +95,6 @@ describe('workos-webhooks dispatch', () => {
       role: 'admin',
       status: 'active',
     })
-  })
 
   it('reports not-applied when a membership cannot be resolved to create', async () => {
     organizations.findLocalOrgIdByWorkosId.mockResolvedValue(null)
@@ -106,8 +104,8 @@ describe('workos-webhooks dispatch', () => {
     const result = await dispatch(
       event('organization_membership.created', {
         id: 'om_2',
-        organization_id: 'org_workos_2',
-        user_id: 'user_workos_2',
+        organizationId: 'org_workos_2',
+        userId: 'user_workos_2',
         role: 'member',
         status: 'active',
       })
@@ -121,7 +119,6 @@ describe('workos-webhooks dispatch', () => {
       role: 'member',
       status: 'active',
     })
-  })
 
   it('defaults an unrecognized role shape to member', async () => {
     organizations.findLocalOrgIdByWorkosId.mockResolvedValue('local_org_1')
@@ -131,8 +128,8 @@ describe('workos-webhooks dispatch', () => {
     await dispatch(
       event('organization_membership.created', {
         id: 'om_3',
-        organization_id: 'org_workos_3',
-        user_id: 'user_workos_3',
+        organizationId: 'org_workos_3',
+        userId: 'user_workos_3',
         role: {},
         status: null,
       })
@@ -145,7 +142,6 @@ describe('workos-webhooks dispatch', () => {
       role: 'member',
       status: 'active',
     })
-  })
 
   it('soft-deletes a membership on organization_membership.deleted', async () => {
     memberships.removeMembershipByWorkosId.mockResolvedValue(true)
@@ -169,4 +165,3 @@ describe('workos-webhooks dispatch', () => {
     expect(memberships.upsertMembershipFromWorkos).not.toHaveBeenCalled()
     expect(memberships.removeMembershipByWorkosId).not.toHaveBeenCalled()
   })
-})

@@ -39,7 +39,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
     resolveGuards,
   })
 
-  // Static routes before /:user_id
+  // Static routes before /:userId
   api.get({
     path: '/me',
     security: 'session',
@@ -65,7 +65,6 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Search results.',
         schema: listObjectSchema(userSchema),
       },
-    },
     handler: controller.searchUsers,
   })
 
@@ -87,12 +86,12 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/by-workos-id/:workos_user_id',
+    path: '/by-workos-id/:workosUserId',
     security: 'admin',
     operationId: 'users-get_user_by_workos_id',
     summary: docs.GET_BY_WORKOS_ID_SUMMARY,
     description: docs.GET_BY_WORKOS_ID_DESCRIPTION,
-    request: { params: z.strictObject({ workos_user_id: z.string() }) },
+    request: { params: z.strictObject({ workosUserId: z.string() }) },
     responses: {
       200: { description: 'User returned.', schema: userSchema },
       404: docs.GET_BY_WORKOS_ID_RESPONSES[404],
@@ -118,7 +117,6 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
           reason: z.string(),
         }),
       },
-    },
     handler: controller.checkUsernameAvailability,
   })
 
@@ -137,11 +135,10 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
             object: z.literal('reserved_username'),
             username: z.string(),
             reason: z.string().nullable(),
-            created_at: z.number().int(),
+            createdAt: z.number().int(),
           })
         ),
       },
-    },
     handler: controller.listReservedUsernames,
   })
 
@@ -159,7 +156,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
           object: z.literal('reserved_username'),
           username: z.string(),
           reason: z.string().nullable(),
-          created_at: z.number().int(),
+          createdAt: z.number().int(),
         }),
       },
       409: docs.CREATE_RESERVED_USERNAME_RESPONSES[409],
@@ -216,7 +213,6 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
           ids: z.array(z.string()),
         }),
       },
-    },
     handler: controller.backfillUsernames,
   })
 
@@ -232,7 +228,6 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Users returned.',
         schema: listObjectSchema(userSchema),
       },
-    },
     handler: controller.listUsers,
   })
 
@@ -250,7 +245,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
     handler: controller.createUser,
   })
 
-  // Batch apps by users (session tier) before generic :user_id — static /apps MUST be before /:user_id
+  // Batch apps by users (session tier) before generic :userId — static /apps MUST be before /:userId
   api.get({
     path: '/apps',
     security: 'session',
@@ -263,13 +258,12 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Apps grouped by user.',
         schema: listObjectSchema(userAppsGroupSchema),
       },
-    },
     handler: controller.listUserAppsBatch,
   })
 
-  // OAuth grants / apps (session tier) before generic :user_id
+  // OAuth grants / apps (session tier) before generic :userId
   api.get({
-    path: '/:user_id/oauth-grants',
+    path: '/:userId/oauth-grants',
     security: 'session',
     operationId: 'users-get_user_oauth_grants',
     summary: docs.LIST_OAUTH_GRANTS_SUMMARY,
@@ -280,12 +274,11 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Grants returned.',
         schema: z.array(authorizedAppSchema),
       },
-    },
     handler: controller.getUserOauthGrants,
   })
 
   api.post({
-    path: '/:user_id/oauth-grants/:grant_id/revoke',
+    path: '/:userId/oauth-grants/:grantId/revoke',
     security: 'session',
     operationId: 'users-revoke_user_oauth_grant',
     summary: docs.REVOKE_OAUTH_GRANT_SUMMARY,
@@ -296,12 +289,11 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Revoked.',
         schema: z.object({ revoked: z.boolean() }),
       },
-    },
     handler: controller.revokeUserOauthGrant,
   })
 
   api.get({
-    path: '/:user_id/apps',
+    path: '/:userId/apps',
     security: 'admin',
     operationId: 'users-list_user_apps',
     summary: docs.LIST_USER_APPS_SUMMARY,
@@ -312,12 +304,11 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Apps returned.',
         schema: listObjectSchema(userAppSchema),
       },
-    },
     handler: controller.listUserApps,
   })
 
   api.get({
-    path: '/:user_id/accounts',
+    path: '/:userId/accounts',
     security: 'admin',
     operationId: 'users-list_user_accounts',
     summary: docs.LIST_USER_ACCOUNTS_SUMMARY,
@@ -328,12 +319,11 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Accounts returned.',
         schema: listObjectSchema(accountSchema),
       },
-    },
     handler: controller.listUserAccounts,
   })
 
   api.delete({
-    path: '/:user_id/accounts/:account_id',
+    path: '/:userId/accounts/:accountId',
     security: 'admin',
     operationId: 'users-unlink_user_account',
     summary: docs.UNLINK_USER_ACCOUNT_SUMMARY,
@@ -354,7 +344,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id/features',
+    path: '/:userId/features',
     security: 'admin',
     operationId: 'users-list_user_features',
     summary: docs.LIST_USER_FEATURES_SUMMARY,
@@ -366,23 +356,22 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         schema: listObjectSchema(
           z.object({
             id: z.string(),
-            user_id: z.string(),
-            feature_id: z.string(),
+            userId: z.string(),
+            featureId: z.string(),
             slug: z.string(),
             status: z.string(),
             note: z.string().nullable(),
-            synced_at: z.number().int(),
-            created_at: z.number().int(),
-            updated_at: z.number().int(),
+            syncedAt: z.number().int(),
+            createdAt: z.number().int(),
+            updatedAt: z.number().int(),
           })
         ),
       },
-    },
     handler: controller.listUserFeatures,
   })
 
   api.post({
-    path: '/:user_id/features',
+    path: '/:userId/features',
     security: 'admin',
     operationId: 'users-grant_user_feature',
     summary: docs.GRANT_USER_FEATURE_SUMMARY,
@@ -393,22 +382,21 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Granted.',
         schema: z.object({
           id: z.string(),
-          user_id: z.string(),
-          feature_id: z.string(),
+          userId: z.string(),
+          featureId: z.string(),
           slug: z.string(),
           status: z.string(),
           note: z.string().nullable(),
-          synced_at: z.number().int(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          syncedAt: z.number().int(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
-    },
     handler: controller.grantUserFeature,
   })
 
   api.delete({
-    path: '/:user_id/features/:feature_id',
+    path: '/:userId/features/:featureId',
     security: 'admin',
     operationId: 'users-disable_user_feature',
     summary: docs.DISABLE_USER_FEATURE_SUMMARY,
@@ -422,22 +410,21 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Disabled.',
         schema: z.object({
           id: z.string(),
-          user_id: z.string(),
-          feature_id: z.string(),
+          userId: z.string(),
+          featureId: z.string(),
           slug: z.string(),
           status: z.string(),
           note: z.string().nullable(),
-          synced_at: z.number().int(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          syncedAt: z.number().int(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
-    },
     handler: controller.disableUserFeature,
   })
 
   api.post({
-    path: '/:user_id/sessions/revoke',
+    path: '/:userId/sessions/revoke',
     security: 'admin',
     operationId: 'users-revoke_user_sessions',
     summary: docs.REVOKE_USER_SESSIONS_SUMMARY,
@@ -448,16 +435,15 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
         description: 'Revoked.',
         schema: z.object({
           object: z.literal('session_revoke'),
-          user_id: z.string(),
-          sessions_revoked: z.number().int(),
+          userId: z.string(),
+          sessionsRevoked: z.number().int(),
         }),
       },
-    },
     handler: controller.revokeUserSessions,
   })
 
   api.post({
-    path: '/:user_id/ban',
+    path: '/:userId/ban',
     security: 'admin',
     operationId: 'users-ban_user',
     summary: docs.BAN_USER_SUMMARY,
@@ -471,7 +457,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:user_id/unban',
+    path: '/:userId/unban',
     security: 'admin',
     operationId: 'users-unban_user',
     summary: docs.UNBAN_USER_SUMMARY,
@@ -486,7 +472,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
 
   // Purge before generic delete
   api.delete({
-    path: '/:user_id/purge',
+    path: '/:userId/purge',
     security: 'admin',
     operationId: 'users-purge_user',
     summary: 'Purge user',
@@ -507,7 +493,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:user_id/restore',
+    path: '/:userId/restore',
     security: 'admin',
     operationId: 'users-restore_user',
     summary: 'Restore user',
@@ -523,7 +509,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id',
+    path: '/:userId',
     security: 'admin',
     operationId: 'users-retrieve_user',
     summary: docs.RETRIEVE_USER_SUMMARY,
@@ -537,7 +523,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.patch({
-    path: '/:user_id',
+    path: '/:userId',
     security: 'admin',
     operationId: 'users-update_user',
     summary: docs.UPDATE_USER_SUMMARY,
@@ -551,7 +537,7 @@ export function registerUserCoreRoutes(resolveGuards: GuardResolver) {
   })
 
   api.delete({
-    path: '/:user_id',
+    path: '/:userId',
     security: 'admin',
     operationId: 'users-delete_user',
     summary: docs.DELETE_USER_SUMMARY,

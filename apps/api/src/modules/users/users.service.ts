@@ -56,7 +56,7 @@ const IDENTIFICATION_TYPES: Record<
     pattern: String.raw`^[A-Z0-9]{5,20}$`,
     disclosureAppSlugs: new Set(),
   },
-  tax_id: {
+  taxId: {
     label: 'Tax Identification Number',
     countryCode: null,
     pattern: String.raw`^[A-Z0-9]{5,20}$`,
@@ -128,7 +128,6 @@ export async function evaluateUsername(
       code: 'reserved',
       reason: 'This username is reserved and cannot be used.',
     }
-  }
   const existing = await repo.findUserByUsername(candidate, true)
   if (existing && existing.id !== excludeUserId) {
     return {
@@ -136,13 +135,11 @@ export async function evaluateUsername(
       code: 'taken',
       reason: 'This username is already taken.',
     }
-  }
   return {
     available: true,
     code: 'available',
     reason: 'Username is available.',
   }
-}
 
 export async function assertUsernameAvailable(
   username: string,
@@ -400,11 +397,11 @@ export async function discloseIdentification(params: {
     sessionId: null,
     distinctId: null,
     properties: {
-      organization_id: params.organizationId,
-      app_slug: params.appSlug,
+      organizationId: params.organizationId,
+      appSlug: params.appSlug,
       identification_type: params.type,
       reason: params.reason ?? null,
-      ip_address: params.requestContext.ip ?? null,
+      ipAddress: params.requestContext.ip ?? null,
       device_fingerprint: null,
     },
     createdAt: BigInt(now),
@@ -424,7 +421,6 @@ export async function discloseIdentification(params: {
     verified: identification.verified,
     disclosedAt: now,
   }
-}
 
 export async function createIdentification(params: {
   userId: string
@@ -603,7 +599,6 @@ export async function verifyUserPin(
       verified: false,
       lockedUntil: row.lockedUntil ? Number(row.lockedUntil) : null,
     }
-  }
   const ok = await verifyPin(pin, row.pinHash)
   if (!ok) {
     await repo.recordPinFailure(row)
@@ -617,7 +612,6 @@ export async function verifyUserPin(
           ? Number(row.lockedUntil)
           : null,
     }
-  }
   await repo.recordPinSuccess(row)
   return { verified: true, lockedUntil: null }
 }

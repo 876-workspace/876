@@ -7,7 +7,7 @@
 export const GET_APP_PUBLIC_SUMMARY = 'Get public app info'
 
 export const GET_APP_PUBLIC_DESCRIPTION =
-  'Returns public-safe branding information (name, logo) for a registered app identified by client_id. Used by the login page to display app context.'
+  'Returns public-safe branding information (name, logo) for a registered app identified by clientId. Used by the login page to display app context.'
 
 export const GET_APP_PUBLIC_RESPONSES = {
   200: { description: 'App public info returned.' },
@@ -33,13 +33,13 @@ establish that the caller may act for the organization it names.
 
 * For \`confidential\` clients: generates a \`clientSecret\` returned **once** in
   the response. Store it securely — it cannot be retrieved again.
-* Validates each \`redirect_uri\` for safety.
+* Validates each \`redirectUri\` for safety.
 * Defaults \`scopes_allowed\` to \`["openid", "profile", "email"]\` if omitted.
 * Set \`appKind\` to \`"internal"\` for first-party 876 applications. A first-party
   kind suppresses the OAuth consent screen, which is why it may only be chosen
   by an admin caller.
 
-The \`client_id\` is auto-generated.
+The \`clientId\` is auto-generated.
 `
 
 export const CREATE_APP_RESPONSES = {
@@ -109,7 +109,7 @@ export const RETRIEVE_CURRENT_APP_DESCRIPTION = `
 Returns the registered app associated with the API key used on the request.
 
 This is useful for first-party server flows that already hold their app API key
-and need the app's OAuth metadata, such as \`client_id\`, without copying another
+and need the app's OAuth metadata, such as \`clientId\`, without copying another
 environment variable.
 `
 

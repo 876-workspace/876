@@ -61,7 +61,6 @@ function providerUser(overrides: Record<string, unknown> = {}) {
     metadata: {},
     ...overrides,
   }
-}
 
 function userRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -87,7 +86,6 @@ function userRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -117,14 +115,14 @@ describe('POST /users', () => {
       .set(ADMIN_HEADERS)
       .send({
         email: 'Alejandra@Example.com ',
-        first_name: 'Console',
-        last_name: 'Input',
+        firstName: 'Console',
+        lastName: 'Input',
         username: 'alejandra',
       })
 
     expect(response.status).toBe(201)
     expect(response.body.error).toBeNull()
-    expect(response.body.data.workos_user_id).toBe('user_workos_1')
+    expect(response.body.data.workosUserId).toBe('user_workos_1')
     expect(authProvider.getUserByEmail).toHaveBeenCalledWith(
       'alejandra@example.com'
     )
@@ -141,7 +139,7 @@ describe('POST /users', () => {
     )
   })
 
-  it('honors an explicit email_verified over the provider identity', async () => {
+  it('honors an explicit emailVerified over the provider identity', async () => {
     authProvider.getUserByEmail.mockResolvedValue(
       providerUser({ emailVerified: false })
     )
@@ -151,10 +149,10 @@ describe('POST /users', () => {
       .set(ADMIN_HEADERS)
       .send({
         email: 'alejandra@example.com',
-        first_name: 'Console',
-        last_name: 'Input',
+        firstName: 'Console',
+        lastName: 'Input',
         username: 'alejandra',
-        email_verified: true,
+        emailVerified: true,
       })
 
     expect(response.status).toBe(201)
@@ -187,8 +185,8 @@ describe('POST /users', () => {
       .set(ADMIN_HEADERS)
       .send({
         email: 'alejandra@example.com',
-        first_name: 'Console',
-        last_name: 'Input',
+        firstName: 'Console',
+        lastName: 'Input',
         username: 'alejandra',
       })
 
@@ -212,8 +210,8 @@ describe('POST /users', () => {
       .set(ADMIN_HEADERS)
       .send({
         email: 'alejandra@example.com',
-        first_name: 'Console',
-        last_name: 'Input',
+        firstName: 'Console',
+        lastName: 'Input',
         username: 'alejandra',
       })
 
@@ -234,8 +232,8 @@ describe('POST /users', () => {
       .set(ADMIN_HEADERS)
       .send({
         email: 'alejandra@example.com',
-        first_name: 'Console',
-        last_name: 'Input',
+        firstName: 'Console',
+        lastName: 'Input',
         username: 'taken',
       })
 
@@ -253,8 +251,8 @@ describe('POST /users', () => {
       .set(ADMIN_HEADERS)
       .send({
         email: 'alejandra@example.com',
-        first_name: 'Console',
-        last_name: 'Input',
+        firstName: 'Console',
+        lastName: 'Input',
         username: 'alejandra',
       })
 
@@ -265,4 +263,3 @@ describe('POST /users', () => {
       { localUserId: expect.stringMatching(/^user_/) }
     )
   })
-})

@@ -114,14 +114,14 @@ export async function createModule(
 ): Promise<ApplicationModule> {
   // Only a product app has modules: an internal or third-party app has nothing
   // to sell an organization.
-  if (!(await repository.appIsProduct(body.app_id)))
+  if (!(await repository.appIsProduct(body.appId)))
     throw new AppHttpError({
       code: 'module/app-invalid',
       message: 'Modules can only belong to product applications.',
       httpStatus: 422,
     })
 
-  if (await repository.findByKey(body.app_id, body.key))
+  if (await repository.findByKey(body.appId, body.key))
     throw new AppHttpError({
       code: 'module/duplicate-key',
       message: 'A module with this key already exists for the application.',
@@ -129,15 +129,15 @@ export async function createModule(
     })
 
   const feature = await resolveFeature(
-    body.app_id,
-    body.feature_id ?? null,
+    body.appId,
+    body.featureId ?? null,
     null
   )
   const now = BigInt(nowUnixSeconds())
 
   const row = await repository.create({
     id: generateId('applicationModule'),
-    appId: body.app_id,
+    appId: body.appId,
     key: body.key,
     name: body.name.trim(),
     description: body.description ?? null,
@@ -149,7 +149,7 @@ export async function createModule(
   })
 
   log.info(
-    { module_id: row.id, app_id: row.appId, key: row.key },
+    { module_id: row.id, appId: row.appId, key: row.key },
     'modules.create'
   )
 
@@ -166,10 +166,10 @@ export async function updateModule(
 
   const data: Record<string, unknown> = { updatedAt: BigInt(nowUnixSeconds()) }
 
-  if (provided.has('feature_id')) {
+  if (provided.has('featureId')) {
     const feature = await resolveFeature(
       row.appId,
-      body.feature_id ?? null,
+      body.featureId ?? null,
       row.id
     )
     data.featureId = feature?.id ?? null

@@ -31,7 +31,6 @@ function featureRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 function userFeatureRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -46,7 +45,6 @@ function userFeatureRow(overrides: Record<string, unknown> = {}) {
     feature: { slug: 'platform_test' },
     ...overrides,
   }
-}
 
 function orgFeatureRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -61,7 +59,6 @@ function orgFeatureRow(overrides: Record<string, unknown> = {}) {
     feature: { slug: 'platform_test' },
     ...overrides,
   }
-}
 
 const SERIALIZED_FEATURE = {
   object: 'feature',
@@ -83,36 +80,36 @@ const SERIALIZED_FEATURE = {
   provider_metadata: null,
   consumer_default_enabled: false,
   scope: 'global',
-  app_id: null,
-  synced_at: NOW,
-  created_at: NOW - 100,
-  updated_at: NOW,
+  appId: null,
+  syncedAt: NOW,
+  createdAt: NOW - 100,
+  updatedAt: NOW,
 }
 
 const SERIALIZED_USER_FEATURE = {
   object: 'user_feature',
   id: 'uf_001',
-  user_id: 'user_2kL9',
-  feature_id: 'feat_7fJ3',
+  userId: 'user_2kL9',
+  featureId: 'feat_7fJ3',
   slug: 'platform_test',
   status: 'enabled',
   note: null,
-  synced_at: NOW,
-  created_at: NOW - 50,
-  updated_at: NOW,
+  syncedAt: NOW,
+  createdAt: NOW - 50,
+  updatedAt: NOW,
 }
 
 const SERIALIZED_ORG_FEATURE = {
   object: 'org_feature',
   id: 'of_001',
-  organization_id: 'org_4qR8',
-  feature_id: 'feat_7fJ3',
+  organizationId: 'org_4qR8',
+  featureId: 'feat_7fJ3',
   slug: 'platform_test',
   status: 'enabled',
   note: null,
-  synced_at: NOW,
-  created_at: NOW - 50,
-  updated_at: NOW,
+  syncedAt: NOW,
+  createdAt: NOW - 50,
+  updatedAt: NOW,
 }
 
 const {
@@ -270,11 +267,10 @@ describe('GET /features', () => {
         data: [SERIALIZED_FEATURE],
         has_more: false,
         url: '/features',
-        total_count: null,
+        totalCount: null,
       },
       error: null,
     })
-  })
 
   it('uses search path when search query is present', async () => {
     feature.findMany.mockResolvedValue([featureRow()] as never)
@@ -303,7 +299,6 @@ describe('GET /features', () => {
 
     expect(response.status).toBe(422)
   })
-})
 
 describe('POST /features', () => {
   it('creates a feature', async () => {
@@ -343,7 +338,6 @@ describe('POST /features', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
 describe('GET /features/evaluate', () => {
   it('evaluates features', async () => {
@@ -363,7 +357,6 @@ describe('GET /features/evaluate', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
 describe('GET /features/evaluate/details', () => {
   it('returns the inputs and effective result for each applicable feature', async () => {
@@ -389,7 +382,6 @@ describe('GET /features/evaluate/details', () => {
         },
       ],
     })
-  })
 
   it('is admin-only', async () => {
     const response = await request(createApp())
@@ -398,7 +390,6 @@ describe('GET /features/evaluate/details', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
 describe('GET /features/evaluate/me', () => {
   it('evaluates for current user with membership', async () => {
@@ -431,7 +422,7 @@ describe('GET /features/evaluate/me', () => {
     expect(response.status).toBe(403)
   })
 
-  it('is not shadowed by :feature_id route', async () => {
+  it('is not shadowed by :featureId route', async () => {
     const token = await accessToken()
     const response = await request(createApp())
       .get('/features/evaluate/me')
@@ -440,9 +431,8 @@ describe('GET /features/evaluate/me', () => {
 
     expect(response.status).toBe(200)
   })
-})
 
-describe('GET /features/:feature_id', () => {
+describe('GET /features/:featureId', () => {
   it('returns the feature', async () => {
     const response = await request(createApp())
       .get('/features/feat_7fJ3')
@@ -472,9 +462,8 @@ describe('GET /features/:feature_id', () => {
       expect.objectContaining({ where: { id: 'evaluate' } })
     )
   })
-})
 
-describe('GET /features/:feature_id/grants', () => {
+describe('GET /features/:featureId/grants', () => {
   it('returns org and user grant lists', async () => {
     // Mock enriched grants: orgFeature and userFeature with includes
     orgFeature.findMany.mockResolvedValue([
@@ -516,7 +505,7 @@ describe('GET /features/:feature_id/grants', () => {
 
     expect(response.status).toBe(200)
     expect(response.body.data.object).toBe('feature_grants')
-    expect(response.body.data.feature_id).toBe('feat_7fJ3')
+    expect(response.body.data.featureId).toBe('feat_7fJ3')
     expect(response.body.data.organizations.data[0].organization_slug).toBe(
       'org-one'
     )
@@ -531,9 +520,8 @@ describe('GET /features/:feature_id/grants', () => {
 
     expect(response.status).toBe(404)
   })
-})
 
-describe('PATCH /features/:feature_id', () => {
+describe('PATCH /features/:featureId', () => {
   it('updates a feature', async () => {
     const response = await request(createApp())
       .patch('/features/feat_7fJ3')
@@ -562,9 +550,8 @@ describe('PATCH /features/:feature_id', () => {
 
     expect(response.status).toBe(404)
   })
-})
 
-describe('DELETE /features/:feature_id', () => {
+describe('DELETE /features/:featureId', () => {
   it('deletes a feature', async () => {
     const response = await request(createApp())
       .delete('/features/feat_7fJ3')
@@ -576,7 +563,6 @@ describe('DELETE /features/:feature_id', () => {
       id: 'feat_7fJ3',
       deleted: true,
     })
-  })
 
   it('404s unknown feature', async () => {
     feature.findUnique.mockResolvedValue(null)
@@ -586,9 +572,8 @@ describe('DELETE /features/:feature_id', () => {
 
     expect(response.status).toBe(404)
   })
-})
 
-describe('GET /features/users/:user_id/features', () => {
+describe('GET /features/users/:userId/features', () => {
   it('lists user features', async () => {
     const response = await request(createApp())
       .get('/features/users/user_2kL9/features')
@@ -617,20 +602,19 @@ describe('GET /features/users/:user_id/features', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
-describe('POST /features/users/:user_id/features', () => {
+describe('POST /features/users/:userId/features', () => {
   it('grants a feature to user', async () => {
     const response = await request(createApp())
       .post('/features/users/user_2kL9/features')
       .set(AUTH)
-      .send({ feature_id: 'feat_7fJ3' })
+      .send({ featureId: 'feat_7fJ3' })
 
     expect(response.status).toBe(201)
     expect(response.body.data).toEqual(SERIALIZED_USER_FEATURE)
   })
 
-  it('rejects missing feature_id', async () => {
+  it('rejects missing featureId', async () => {
     const response = await request(createApp())
       .post('/features/users/user_2kL9/features')
       .set(AUTH)
@@ -646,14 +630,13 @@ describe('POST /features/users/:user_id/features', () => {
     const response = await request(createApp())
       .post('/features/users/user_2kL9/features')
       .set(AUTH)
-      .send({ feature_id: 'feat_7fJ3' })
+      .send({ featureId: 'feat_7fJ3' })
 
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe('feature/scope-mismatch')
   })
-})
 
-describe('PATCH /features/users/:user_id/features/:feature_id', () => {
+describe('PATCH /features/users/:userId/features/:featureId', () => {
   it('updates user feature grant', async () => {
     userFeature.findUnique.mockResolvedValue(userFeatureRow() as never)
     const response = await request(createApp())
@@ -676,9 +659,8 @@ describe('PATCH /features/users/:user_id/features/:feature_id', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('user-feature/not-found')
   })
-})
 
-describe('DELETE /features/users/:user_id/features/:feature_id', () => {
+describe('DELETE /features/users/:userId/features/:featureId', () => {
   it('revokes user feature', async () => {
     const response = await request(createApp())
       .delete('/features/users/user_2kL9/features/feat_7fJ3')
@@ -690,7 +672,6 @@ describe('DELETE /features/users/:user_id/features/:feature_id', () => {
       id: 'uf_001',
       deleted: true,
     })
-  })
 
   it('404s missing grant', async () => {
     userFeature.findUnique.mockResolvedValue(null)
@@ -700,9 +681,8 @@ describe('DELETE /features/users/:user_id/features/:feature_id', () => {
 
     expect(response.status).toBe(404)
   })
-})
 
-describe('GET /features/organizations/:organization_id/features', () => {
+describe('GET /features/organizations/:organizationId/features', () => {
   it('lists org features', async () => {
     const response = await request(createApp())
       .get('/features/organizations/org_4qR8/features')
@@ -722,14 +702,13 @@ describe('GET /features/organizations/:organization_id/features', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('feature/organization-not-found')
   })
-})
 
-describe('POST /features/organizations/:organization_id/features', () => {
+describe('POST /features/organizations/:organizationId/features', () => {
   it('grants feature to org', async () => {
     const response = await request(createApp())
       .post('/features/organizations/org_4qR8/features')
       .set(AUTH)
-      .send({ feature_id: 'feat_7fJ3' })
+      .send({ featureId: 'feat_7fJ3' })
 
     expect(response.status).toBe(201)
     expect(response.body.data).toEqual(SERIALIZED_ORG_FEATURE)
@@ -742,14 +721,13 @@ describe('POST /features/organizations/:organization_id/features', () => {
     const response = await request(createApp())
       .post('/features/organizations/org_4qR8/features')
       .set(AUTH)
-      .send({ feature_id: 'feat_7fJ3' })
+      .send({ featureId: 'feat_7fJ3' })
 
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe('feature/scope-mismatch')
   })
-})
 
-describe('PATCH /features/organizations/:organization_id/features/:feature_id', () => {
+describe('PATCH /features/organizations/:organizationId/features/:featureId', () => {
   it('updates org feature grant', async () => {
     orgFeature.findUnique.mockResolvedValue(orgFeatureRow() as never)
     const response = await request(createApp())
@@ -770,9 +748,8 @@ describe('PATCH /features/organizations/:organization_id/features/:feature_id', 
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('org-feature/not-found')
   })
-})
 
-describe('DELETE /features/organizations/:organization_id/features/:feature_id', () => {
+describe('DELETE /features/organizations/:organizationId/features/:featureId', () => {
   it('revokes org feature', async () => {
     const response = await request(createApp())
       .delete('/features/organizations/org_4qR8/features/feat_7fJ3')
@@ -784,7 +761,6 @@ describe('DELETE /features/organizations/:organization_id/features/:feature_id',
       id: 'of_001',
       deleted: true,
     })
-  })
 
   it('404s missing grant', async () => {
     orgFeature.findUnique.mockResolvedValue(null)
@@ -794,4 +770,3 @@ describe('DELETE /features/organizations/:organization_id/features/:feature_id',
 
     expect(response.status).toBe(404)
   })
-})

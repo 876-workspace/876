@@ -55,7 +55,6 @@ export function isRedirectUriSafe(uri: string): boolean {
   } catch {
     return false
   }
-}
 
 /**
  * The issuer this deployment advertises.
@@ -231,7 +230,7 @@ export async function issueTokenResponse(params: {
     scope: params.scope,
     token_use: 'access',
     realm,
-    ...(orgId ? { org_id: orgId } : {}),
+    ...(orgId ? { orgId: orgId } : {}),
   })
 
   let idToken: string | null = null
@@ -247,7 +246,7 @@ export async function issueTokenResponse(params: {
       nonce: params.nonce,
       auth_time: params.authTime,
       realm,
-      ...(orgId ? { org_id: orgId } : {}),
+      ...(orgId ? { orgId: orgId } : {}),
       ...resolveIdentityClaims(grantedScopes, params.user),
     })
 
@@ -278,15 +277,15 @@ export async function issueTokenResponse(params: {
 
   log.info(
     {
-      user_id: params.user.id,
-      app_id: params.app.id,
-      client_id: params.app.clientId,
-      session_id: sessionId,
+      userId: params.user.id,
+      appId: params.app.id,
+      clientId: params.app.clientId,
+      sessionId: sessionId,
       scope: params.scope,
       realm,
       has_refresh: refreshToken !== null,
       has_id_token: idToken !== null,
-      org_id: orgId,
+      orgId: orgId,
     },
     'oauth.token.issued'
   )
@@ -297,9 +296,8 @@ export async function issueTokenResponse(params: {
     expires_in: expiresIn,
     scope: params.scope,
     id_token: idToken,
-    refresh_token: refreshToken,
+    refreshToken: refreshToken,
   }
-}
 
 /* --------------------------------- grants --------------------------------- */
 
@@ -314,7 +312,7 @@ export async function handleAuthorizationCodeGrant(params: {
   if (!params.code || !params.redirectUri)
     return oauthError(
       'provider/invalid-request',
-      'Missing code or redirect_uri.',
+      'Missing code or redirectUri.',
       400
     )
 
@@ -362,8 +360,8 @@ export async function handleAuthorizationCodeGrant(params: {
     log.warn(
       {
         code_id: record.id,
-        app_id: record.appId,
-        client_id: params.clientId,
+        appId: record.appId,
+        clientId: params.clientId,
       },
       'oauth.token.pkce_failed'
     )
@@ -385,9 +383,9 @@ export async function handleAuthorizationCodeGrant(params: {
     log.warn(
       {
         code_id: record.id,
-        user_id: record.userId,
-        app_id: record.appId,
-        client_id: params.clientId,
+        userId: record.userId,
+        appId: record.appId,
+        clientId: params.clientId,
       },
       'oauth.authorization_code.reuse_detected'
     )
@@ -459,7 +457,7 @@ export async function handleClientCredentialsGrant(params: {
     .join(' ')
 
   log.info(
-    { client_id: app.clientId, app_id: app.id, scope: grantedScope },
+    { clientId: app.clientId, appId: app.id, scope: grantedScope },
     'oauth.token.client_credentials_issued'
   )
 
@@ -485,9 +483,8 @@ export async function handleClientCredentialsGrant(params: {
     expires_in: expiresIn,
     scope: grantedScope,
     id_token: null,
-    refresh_token: null,
+    refreshToken: null,
   }
-}
 
 export async function handleRefreshTokenGrant(params: {
   origin: string
@@ -541,11 +538,11 @@ export async function handleRefreshTokenGrant(params: {
   if (record.usedAt !== null) {
     log.warn(
       {
-        user_id: record.userId,
-        app_id: record.appId,
-        client_id: params.clientId,
-        refresh_token_id: record.id,
-        session_id: record.sessionId,
+        userId: record.userId,
+        appId: record.appId,
+        clientId: params.clientId,
+        refreshTokenId: record.id,
+        sessionId: record.sessionId,
       },
       'oauth.refresh.reuse_detected'
     )
@@ -620,14 +617,14 @@ export function buildConsentPath(params: {
   prompt?: string
 }): string {
   const query = new URLSearchParams({
-    response_type: params.responseType,
-    client_id: params.clientId,
-    redirect_uri: params.redirectUri,
+    responseType: params.responseType,
+    clientId: params.clientId,
+    redirectUri: params.redirectUri,
     scope: params.scope,
   })
-  if (params.codeChallenge) query.set('code_challenge', params.codeChallenge)
+  if (params.codeChallenge) query.set('codeChallenge', params.codeChallenge)
   if (params.codeChallengeMethod)
-    query.set('code_challenge_method', params.codeChallengeMethod)
+    query.set('codeChallengeMethod', params.codeChallengeMethod)
   if (params.state) query.set('state', params.state)
   if (params.nonce) query.set('nonce', params.nonce)
   if (params.prompt) query.set('prompt', params.prompt)

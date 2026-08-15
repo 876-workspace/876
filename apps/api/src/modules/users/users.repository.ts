@@ -74,8 +74,8 @@ export async function findUserByUsername(
 
 export async function listUsers(options: {
   limit: number
-  starting_after?: string
-  ending_before?: string
+  startingAfter?: string
+  endingBefore?: string
   includeDeleted: boolean
   status?: string | null
   search?: string | null
@@ -106,8 +106,8 @@ export async function listUsers(options: {
   const result = await paginateByCursor<UserRow>({
     query: {
       limit: options.limit,
-      starting_after: options.starting_after,
-      ending_before: options.ending_before,
+      startingAfter: options.startingAfter,
+      endingBefore: options.endingBefore,
     },
     loadAnchor: async (id) =>
       (await findUserById(id, true)) as unknown as UserRow | null,
@@ -225,7 +225,6 @@ export async function updateUser(
       return null
     throw error
   }
-}
 
 export async function softDeleteUser(
   id: string,
@@ -253,7 +252,6 @@ export async function softDeleteUser(
       return null
     throw error
   }
-}
 
 /** Clear a user's tombstone. Returns the restored row, or null if it does not exist. */
 export async function restoreUser(id: string): Promise<UserRow | null> {
@@ -278,7 +276,6 @@ export async function restoreUser(id: string): Promise<UserRow | null> {
       return null
     throw error
   }
-}
 
 export async function purgeUser(id: string): Promise<boolean> {
   try {
@@ -292,7 +289,6 @@ export async function purgeUser(id: string): Promise<boolean> {
       return false
     throw error
   }
-}
 
 export async function setBanned(
   id: string,
@@ -318,7 +314,6 @@ export async function setBanned(
       return null
     throw error
   }
-}
 
 export async function assertNotDeleted(options: {
   workosUserId?: string
@@ -339,7 +334,6 @@ export async function assertNotDeleted(options: {
     })
     if (row) throw new Error('deleted')
   }
-}
 
 // Membership helpers
 export async function companiesForUsers(
@@ -362,7 +356,6 @@ export async function companiesForUsers(
         m.organization.logoUrl ?? null,
       ])
     }
-  }
   return map
 }
 
@@ -418,7 +411,6 @@ export async function updateProfile(
       return null
     throw error
   }
-}
 
 export async function deleteProfileById(id: string): Promise<boolean> {
   try {
@@ -432,7 +424,6 @@ export async function deleteProfileById(id: string): Promise<boolean> {
       return false
     throw error
   }
-}
 
 // Reserved usernames
 export async function listReservedUsernames(): Promise<ReservedUsernameRow[]> {
@@ -476,7 +467,6 @@ export async function deleteReservedUsername(
       return false
     throw error
   }
-}
 
 // User identifications
 export async function listIdentificationsByUser(
@@ -557,7 +547,6 @@ export async function updateIdentificationValue(
       return null
     throw error
   }
-}
 
 export async function setIdentificationVerified(
   id: string,
@@ -579,7 +568,6 @@ export async function setIdentificationVerified(
       return null
     throw error
   }
-}
 
 export async function deleteIdentification(
   id: string,
@@ -606,7 +594,6 @@ export async function deleteIdentification(
       return false
     throw error
   }
-}
 
 // Pins
 export async function findPin(

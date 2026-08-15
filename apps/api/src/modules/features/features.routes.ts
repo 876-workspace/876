@@ -49,7 +49,6 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Features returned.',
         schema: listObjectSchema(featureSchema),
       },
-    },
     handler: controller.listFeatures,
   })
 
@@ -65,7 +64,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
     handler: controller.createFeature,
   })
 
-  // Sub-resources and literal prefixes before '/:feature_id' so Express cannot
+  // Sub-resources and literal prefixes before '/:featureId' so Express cannot
   // match 'evaluate', 'users', or 'organizations' as an id.
   api.get({
     path: '/evaluate/me',
@@ -80,7 +79,6 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Features returned.',
         schema: listObjectSchema(featureSchema),
       },
-    },
     handler: controller.evaluateMyFeatures,
   })
 
@@ -95,7 +93,6 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Feature evaluation decisions returned.',
         schema: listObjectSchema(featureEvaluationDecisionSchema),
       },
-    },
     handler: controller.evaluateFeatureDetails,
   })
 
@@ -110,12 +107,11 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Features evaluated.',
         schema: listObjectSchema(featureSchema),
       },
-    },
     handler: controller.evaluateFeatures,
   })
 
   api.get({
-    path: '/users/:user_id/features',
+    path: '/users/:userId/features',
     operationId: 'features-list_user_features',
     summary: 'List user feature grants',
     description: 'Returns all feature grants for a user. **Admin only**.',
@@ -125,12 +121,11 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'User features returned.',
         schema: listObjectSchema(userFeatureSchema),
       },
-    },
     handler: controller.listUserFeatures,
   })
 
   api.post({
-    path: '/users/:user_id/features',
+    path: '/users/:userId/features',
     operationId: 'features-grant_user_feature',
     summary: docs.GRANT_USER_FEATURE_SUMMARY,
     description: docs.GRANT_USER_FEATURE_DESCRIPTION,
@@ -142,7 +137,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/users/:user_id/features/:feature_id',
+    path: '/users/:userId/features/:featureId',
     operationId: 'features-update_user_feature',
     summary: docs.UPDATE_USER_FEATURE_SUMMARY,
     description: docs.UPDATE_USER_FEATURE_DESCRIPTION,
@@ -157,7 +152,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/users/:user_id/features/:feature_id',
+    path: '/users/:userId/features/:featureId',
     operationId: 'features-revoke_user_feature',
     summary: docs.REVOKE_USER_FEATURE_SUMMARY,
     description: docs.REVOKE_USER_FEATURE_DESCRIPTION,
@@ -167,12 +162,11 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Grant revoked.',
         schema: userFeatureDeletedSchema,
       },
-    },
     handler: controller.revokeUserFeature,
   })
 
   api.get({
-    path: '/organizations/:organization_id/features',
+    path: '/organizations/:organizationId/features',
     operationId: 'features-list_org_features',
     summary: docs.LIST_ORG_FEATURES_SUMMARY,
     description: docs.LIST_ORG_FEATURES_DESCRIPTION,
@@ -182,12 +176,11 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Organization features returned.',
         schema: listObjectSchema(orgFeatureSchema),
       },
-    },
     handler: controller.listOrgFeatures,
   })
 
   api.post({
-    path: '/organizations/:organization_id/features',
+    path: '/organizations/:organizationId/features',
     operationId: 'features-grant_org_feature',
     summary: docs.GRANT_ORG_FEATURE_SUMMARY,
     description: docs.GRANT_ORG_FEATURE_DESCRIPTION,
@@ -202,7 +195,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/organizations/:organization_id/features/:feature_id',
+    path: '/organizations/:organizationId/features/:featureId',
     operationId: 'features-update_org_feature',
     summary: docs.UPDATE_ORG_FEATURE_SUMMARY,
     description: docs.UPDATE_ORG_FEATURE_DESCRIPTION,
@@ -217,7 +210,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/organizations/:organization_id/features/:feature_id',
+    path: '/organizations/:organizationId/features/:featureId',
     operationId: 'features-revoke_org_feature',
     summary: docs.REVOKE_ORG_FEATURE_SUMMARY,
     description: docs.REVOKE_ORG_FEATURE_DESCRIPTION,
@@ -227,12 +220,11 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Grant revoked.',
         schema: orgFeatureDeletedSchema,
       },
-    },
     handler: controller.revokeOrgFeature,
   })
 
   api.get({
-    path: '/:feature_id/grants',
+    path: '/:featureId/grants',
     operationId: 'features-list_feature_grants',
     summary: docs.LIST_FEATURE_GRANTS_SUMMARY,
     description: docs.LIST_FEATURE_GRANTS_DESCRIPTION,
@@ -242,12 +234,11 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
         description: 'Feature grants returned.',
         schema: featureGrantsSchema,
       },
-    },
     handler: controller.listFeatureGrants,
   })
 
   api.get({
-    path: '/:feature_id',
+    path: '/:featureId',
     operationId: 'features-retrieve_feature',
     summary: 'Retrieve feature',
     description: docs.RETRIEVE_FEATURE_DESCRIPTION,
@@ -259,7 +250,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/:feature_id',
+    path: '/:featureId',
     operationId: 'features-update_feature',
     summary: 'Update feature metadata',
     description: docs.UPDATE_FEATURE_DESCRIPTION,
@@ -271,7 +262,7 @@ export function createFeaturesRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/:feature_id',
+    path: '/:featureId',
     operationId: 'features-delete_feature',
     summary: docs.DELETE_FEATURE_SUMMARY,
     description: docs.DELETE_FEATURE_DESCRIPTION,

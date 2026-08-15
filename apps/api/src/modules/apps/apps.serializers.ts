@@ -43,53 +43,50 @@ export function serializeApp(row: AppRow): App {
     name: row.name,
     slug: row.slug,
     feature_prefix: featurePrefixForAppSlug(row.slug),
-    organization_id: row.organizationId,
-    client_id: row.clientId,
+    organizationId: row.organizationId,
+    clientId: row.clientId,
     client_type: row.clientType,
-    app_kind: row.appKind as App['app_kind'],
+    appKind: row.appKind as App['appKind'],
     status: row.status as App['status'],
     allowed_redirect_uris: row.allowedRedirectUris ?? [],
     allowed_logout_uris: row.allowedLogoutUris ?? [],
-    logo_url: row.logoUrl,
-    logo_file_id: row.logoFileId ?? null,
-    homepage_url: row.homepageUrl,
+    logoUrl: row.logoUrl,
+    logoFileId: row.logoFileId ?? null,
+    homepageUrl: row.homepageUrl,
     type: row.type,
     scopes_allowed: row.scopesAllowed ?? [],
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeAppCreated(
   row: AppRow,
   clientSecret: string | null
-): App & { client_secret: string | null } {
+): App & { clientSecret: string | null } {
   const base = serializeApp(row)
-  return { ...base, client_secret: clientSecret }
+  return { ...base, clientSecret: clientSecret }
 }
 
 export function serializeAppPublic(row: AppRow): AppPublic {
   return {
     object: 'app',
     name: row.name,
-    logo_url: row.logoUrl,
-    logo_file_id: row.logoFileId ?? null,
-    app_kind: row.appKind as AppPublic['app_kind'],
+    logoUrl: row.logoUrl,
+    logoFileId: row.logoFileId ?? null,
+    appKind: row.appKind as AppPublic['appKind'],
   }
-}
 
 export function serializeApiKey(row: ApiKeyRow): ApiKey {
   return {
-    object: 'api_key',
+    object: 'apiKey',
     id: row.id,
-    app_id: row.appId,
+    appId: row.appId,
     name: row.name ?? null,
     revoked: row.revoked,
-    expires_at: nullableFromDbUnixSeconds(row.expiresAt),
+    expiresAt: nullableFromDbUnixSeconds(row.expiresAt),
     last_used_at: nullableFromDbUnixSeconds(row.lastUsedAt),
-    created_at: fromDbUnixSeconds(row.createdAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
   }
-}
 
 export function serializeApiKeyCreated(
   row: ApiKeyRow,

@@ -10,10 +10,10 @@ export const membershipSchema = z
     id: z
       .string()
       .meta({ description: 'Unique identifier for the membership.' }),
-    organization_id: z
+    organizationId: z
       .string()
       .meta({ description: 'Unique identifier for the organization.' }),
-    user_id: z
+    userId: z
       .string()
       .meta({ description: 'Unique identifier for the user.' }),
     workos_membership_id: z.string().nullable().meta({
@@ -22,15 +22,15 @@ export const membershipSchema = z
     role: z
       .string()
       .meta({ description: "The member's role name within the organization." }),
-    role_id: z.string().nullable().meta({
+    roleId: z.string().nullable().meta({
       description: 'ID of the organization role this membership is linked to.',
     }),
     status: z.string().meta({ description: 'The membership status.' }),
-    created_at: z.number().int().meta({
+    createdAt: z.number().int().meta({
       description:
         'Time at which the membership was created. Measured in seconds since the Unix epoch.',
     }),
-    updated_at: z.number().int().meta({
+    updatedAt: z.number().int().meta({
       description:
         'Time at which the membership was last updated. Measured in seconds since the Unix epoch.',
     }),
@@ -38,8 +38,8 @@ export const membershipSchema = z
   .meta({ id: 'Membership' })
 
 export const createMembershipBodySchema = z.strictObject({
-  user_id: z.string().meta({ description: 'Unique identifier for the user.' }),
-  organization_id: z
+  userId: z.string().meta({ description: 'Unique identifier for the user.' }),
+  organizationId: z
     .string()
     .meta({ description: 'Unique identifier for the organization.' }),
   role: z
@@ -76,12 +76,12 @@ export const updateMembershipBodySchema = z.strictObject({
 })
 
 export const membershipIdParamsSchema = z.strictObject({
-  membership_id: z.string(),
+  membershipId: z.string(),
 })
 
 export const listMembershipsQuerySchema = paginationQuerySchema.extend({
-  organization_id: z.string().optional(),
-  user_id: z.string().optional(),
+  organizationId: z.string().optional(),
+  userId: z.string().optional(),
 })
 
 export type Membership = z.infer<typeof membershipSchema>

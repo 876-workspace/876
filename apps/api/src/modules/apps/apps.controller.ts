@@ -25,8 +25,8 @@ export async function createApp(req: Request, res: Response): Promise<void> {
 }
 
 export async function getAppPublic(req: Request, res: Response): Promise<void> {
-  const { client_id } = validParams<{ client_id: string }>(req)
-  const result = await service.getAppPublic(client_id)
+  const { clientId } = validParams<{ clientId: string }>(req)
+  const result = await service.getAppPublic(clientId)
   res.status(200).json(result)
 }
 
@@ -40,35 +40,35 @@ export async function getCurrentApp(
 }
 
 export async function getApp(req: Request, res: Response): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
-  const result = await service.getApp(app_id)
+  const { appId } = validParams<{ appId: string }>(req)
+  const result = await service.getApp(appId)
   res.status(200).json(result)
 }
 
 export async function updateApp(req: Request, res: Response): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
+  const { appId } = validParams<{ appId: string }>(req)
   const body = validBody<Record<string, unknown>>(req)
 
   // Map wire snake fields to Prisma camel fields
   const updates: Record<string, unknown> = {}
   if ('name' in body) updates.name = body.name
-  if ('logo_url' in body) updates.logoUrl = body.logo_url
-  if ('logo_file_id' in body) updates.logoFileId = body.logo_file_id
-  if ('homepage_url' in body) updates.homepageUrl = body.homepage_url
-  if ('app_kind' in body) updates.appKind = body.app_kind
+  if ('logoUrl' in body) updates.logoUrl = body.logoUrl
+  if ('logoFileId' in body) updates.logoFileId = body.logoFileId
+  if ('homepageUrl' in body) updates.homepageUrl = body.homepageUrl
+  if ('appKind' in body) updates.appKind = body.appKind
   if ('status' in body) updates.status = body.status
-  if ('organization_id' in body) updates.organizationId = body.organization_id
+  if ('organizationId' in body) updates.organizationId = body.organizationId
 
   // Also handle case where Zod passed original keys with underscores? Actually updateAppBodySchema uses snake keys
   // but we map above.
 
-  const result = await service.updateApp(app_id, updates)
+  const result = await service.updateApp(appId, updates)
   res.status(200).json(result)
 }
 
 export async function deleteApp(req: Request, res: Response): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
-  const result = await service.deleteApp(app_id)
+  const { appId } = validParams<{ appId: string }>(req)
+  const result = await service.deleteApp(appId)
   res.status(200).json(result)
 }
 
@@ -76,19 +76,19 @@ export async function listAppFeatures(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
+  const { appId } = validParams<{ appId: string }>(req)
   const query = validQuery<{
     limit: number
-    starting_after?: string
-    ending_before?: string
+    startingAfter?: string
+    endingBefore?: string
     rootOnly?: boolean
     includeTag?: string
     excludeTag?: string
   }>(req)
-  const result = await service.listAppFeatures(app_id, {
+  const result = await service.listAppFeatures(appId, {
     limit: query.limit,
-    starting_after: query.starting_after,
-    ending_before: query.ending_before,
+    startingAfter: query.startingAfter,
+    endingBefore: query.endingBefore,
     rootOnly: query.rootOnly,
     includeTag: query.includeTag,
     excludeTag: query.excludeTag,
@@ -100,50 +100,50 @@ export async function listAppSubscriptions(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
-  const result = await service.listAppSubscriptions(app_id)
+  const { appId } = validParams<{ appId: string }>(req)
+  const result = await service.listAppSubscriptions(appId)
   res.status(200).json(result)
 }
 
 export async function createApiKey(req: Request, res: Response): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
+  const { appId } = validParams<{ appId: string }>(req)
   const body = validBody<CreateApiKeyBody>(req)
-  const result = await service.createApiKey(app_id, body)
+  const result = await service.createApiKey(appId, body)
   res.status(201).json(result)
 }
 
 export async function listApiKeys(req: Request, res: Response): Promise<void> {
-  const { app_id } = validParams<{ app_id: string }>(req)
+  const { appId } = validParams<{ appId: string }>(req)
   const query = validQuery<{
     limit: number
-    starting_after?: string
-    ending_before?: string
+    startingAfter?: string
+    endingBefore?: string
   }>(req)
-  const result = await service.listApiKeys(app_id, query)
+  const result = await service.listApiKeys(appId, query)
   res.status(200).json(result)
 }
 
 export async function updateApiKey(req: Request, res: Response): Promise<void> {
-  const { app_id, key_id } = validParams<{ app_id: string; key_id: string }>(
+  const { appId, key_id } = validParams<{ appId: string; key_id: string }>(
     req
   )
   const body = validBody<UpdateApiKeyBody>(req)
-  const result = await service.updateApiKey(app_id, key_id, body)
+  const result = await service.updateApiKey(appId, key_id, body)
   res.status(200).json(result)
 }
 
 export async function revokeApiKey(req: Request, res: Response): Promise<void> {
-  const { app_id, key_id } = validParams<{ app_id: string; key_id: string }>(
+  const { appId, key_id } = validParams<{ appId: string; key_id: string }>(
     req
   )
-  const result = await service.revokeApiKey(app_id, key_id)
+  const result = await service.revokeApiKey(appId, key_id)
   res.status(200).json(result)
 }
 
 export async function deleteApiKey(req: Request, res: Response): Promise<void> {
-  const { app_id, key_id } = validParams<{ app_id: string; key_id: string }>(
+  const { appId, key_id } = validParams<{ appId: string; key_id: string }>(
     req
   )
-  const result = await service.deleteApiKey(app_id, key_id)
+  const result = await service.deleteApiKey(appId, key_id)
   res.status(200).json(result)
 }

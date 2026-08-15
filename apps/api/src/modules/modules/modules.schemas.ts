@@ -21,16 +21,16 @@ export const moduleSchema = z
       .literal('application_module')
       .meta({ description: "Always 'application_module'." }),
     id: z.string(),
-    app_id: z.string(),
+    appId: z.string(),
     key: z.string(),
     name: z.string(),
     description: z.string().nullable(),
-    feature_id: z.string().nullable(),
+    featureId: z.string().nullable(),
     feature_slug: z.string().nullable(),
     status: z.enum(MODULE_STATUSES),
     position: z.number().int(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'ApplicationModule' })
 
@@ -43,7 +43,7 @@ export const moduleDeletedSchema = z
   .meta({ id: 'ApplicationModuleDeleted' })
 
 export const createModuleBodySchema = z.object({
-  app_id: z.string(),
+  appId: z.string(),
   key: z
     .string()
     .transform((value) => value.trim())
@@ -59,19 +59,19 @@ export const createModuleBodySchema = z.object({
     ),
   name: z.string().min(1).max(120),
   description: z.string().max(1000).nullish(),
-  feature_id: z.string().nullish(),
+  featureId: z.string().nullish(),
   position: z.number().int().min(0).default(0),
 })
 
 /**
- * `description` and `feature_id` are meaningfully clearable, so they are read
+ * `description` and `featureId` are meaningfully clearable, so they are read
  * through "was the key present" rather than "is the value non-null" — sending
  * `null` clears them, omitting them leaves them alone.
  */
 export const updateModuleBodySchema = z.object({
   name: z.string().min(1).max(120).optional(),
   description: z.string().max(1000).nullish(),
-  feature_id: z.string().nullish(),
+  featureId: z.string().nullish(),
   position: z.number().int().min(0).optional(),
   status: z.enum(MODULE_STATUSES).optional(),
 })

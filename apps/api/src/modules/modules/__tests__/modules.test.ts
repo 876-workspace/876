@@ -44,21 +44,20 @@ function moduleRow(overrides: Record<string, unknown> = {}) {
     feature: { slug: 'couriers_deliveries' },
     ...overrides,
   }
-}
 
 const SERIALIZED = {
   object: 'application_module',
   id: 'mod_7fJ3',
-  app_id: 'app_couriers',
+  appId: 'app_couriers',
   key: 'deliveries',
   name: 'Deliveries',
   description: 'Parcel delivery',
-  feature_id: 'ftr_1',
+  featureId: 'ftr_1',
   feature_slug: 'couriers_deliveries',
   status: 'active',
   position: 0,
-  created_at: NOW,
-  updated_at: NOW,
+  createdAt: NOW,
+  updatedAt: NOW,
 }
 
 beforeEach(() => {
@@ -83,7 +82,6 @@ beforeEach(() => {
     parentFeatureId: null,
     slug: 'couriers_deliveries',
   })
-})
 
 describe('GET /modules', () => {
   it('lists the active modules of an app', async () => {
@@ -98,7 +96,7 @@ describe('GET /modules', () => {
         data: [SERIALIZED],
         has_more: false,
         url: '/modules',
-        total_count: null,
+        totalCount: null,
       },
       error: null,
     })
@@ -154,7 +152,6 @@ describe('GET /modules', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
 describe('GET /modules/entitlements', () => {
   it('returns only modules granted by a live subscription', async () => {
@@ -188,14 +185,13 @@ describe('GET /modules/entitlements', () => {
 
     expect(response.status).toBe(422)
   })
-})
 
 describe('POST /modules', () => {
   it('creates a module', async () => {
     const response = await request(createApp())
       .post('/modules')
       .set(AUTH)
-      .send({ app_id: 'app_couriers', key: 'deliveries', name: 'Deliveries' })
+      .send({ appId: 'app_couriers', key: 'deliveries', name: 'Deliveries' })
 
     expect(response.status).toBe(201)
     expect(response.body).toEqual({ data: SERIALIZED, error: null })
@@ -208,7 +204,7 @@ describe('POST /modules', () => {
     const response = await request(createApp())
       .post('/modules')
       .set(AUTH)
-      .send({ app_id: 'app_console', key: 'widgets', name: 'Widgets' })
+      .send({ appId: 'app_console', key: 'widgets', name: 'Widgets' })
 
     expect(response.status).toBe(422)
     expect(response.body.error.code).toBe('module/app-invalid')
@@ -219,7 +215,7 @@ describe('POST /modules', () => {
     const response = await request(createApp())
       .post('/modules')
       .set(AUTH)
-      .send({ app_id: 'app_couriers', key: 'Deliveries!', name: 'Deliveries' })
+      .send({ appId: 'app_couriers', key: 'Deliveries!', name: 'Deliveries' })
 
     expect(response.status).toBe(422)
     expect(applicationModule.create).not.toHaveBeenCalled()
@@ -231,7 +227,7 @@ describe('POST /modules', () => {
     const response = await request(createApp())
       .post('/modules')
       .set(AUTH)
-      .send({ app_id: 'app_couriers', key: 'deliveries', name: 'Deliveries' })
+      .send({ appId: 'app_couriers', key: 'deliveries', name: 'Deliveries' })
 
     expect(response.status).toBe(409)
     expect(response.body.error.code).toBe('module/duplicate-key')
@@ -244,10 +240,10 @@ describe('POST /modules', () => {
       .post('/modules')
       .set(AUTH)
       .send({
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         key: 'deliveries',
         name: 'Deliveries',
-        feature_id: 'ftr_gone',
+        featureId: 'ftr_gone',
       })
 
     expect(response.status).toBe(422)
@@ -266,10 +262,10 @@ describe('POST /modules', () => {
       .post('/modules')
       .set(AUTH)
       .send({
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         key: 'deliveries',
         name: 'Deliveries',
-        feature_id: 'ftr_1',
+        featureId: 'ftr_1',
       })
 
     expect(response.status).toBe(422)
@@ -290,10 +286,10 @@ describe('POST /modules', () => {
       .post('/modules')
       .set(AUTH)
       .send({
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         key: 'deliveries',
         name: 'Deliveries',
-        feature_id: 'ftr_child',
+        featureId: 'ftr_child',
       })
 
     expect(response.status).toBe(422)
@@ -310,16 +306,15 @@ describe('POST /modules', () => {
       .post('/modules')
       .set(AUTH)
       .send({
-        app_id: 'app_couriers',
+        appId: 'app_couriers',
         key: 'deliveries',
         name: 'Deliveries',
-        feature_id: 'ftr_1',
+        featureId: 'ftr_1',
       })
 
     expect(response.status).toBe(409)
     expect(response.body.error.code).toBe('module/feature-in-use')
   })
-})
 
 describe('PATCH /modules/:module_id', () => {
   it('applies the fields that were sent', async () => {
@@ -335,11 +330,11 @@ describe('PATCH /modules/:module_id', () => {
     )
   })
 
-  it('clears the rollout flag when feature_id is sent as null', async () => {
+  it('clears the rollout flag when featureId is sent as null', async () => {
     await request(createApp())
       .patch('/modules/mod_7fJ3')
       .set(AUTH)
-      .send({ feature_id: null })
+      .send({ featureId: null })
 
     expect(applicationModule.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -372,7 +367,6 @@ describe('PATCH /modules/:module_id', () => {
     expect(planModule.deleteMany).toHaveBeenCalledWith({
       where: { moduleId: 'mod_7fJ3' },
     })
-  })
 
   it('does not touch plans when the status is unchanged', async () => {
     await request(createApp())
@@ -394,7 +388,6 @@ describe('PATCH /modules/:module_id', () => {
     expect(response.status).toBe(404)
     expect(applicationModule.update).not.toHaveBeenCalled()
   })
-})
 
 describe('DELETE /modules/:module_id', () => {
   it('archives rather than deleting, and detaches it from plans', async () => {
@@ -427,4 +420,3 @@ describe('DELETE /modules/:module_id', () => {
     expect(response.status).toBe(404)
     expect(planModule.deleteMany).not.toHaveBeenCalled()
   })
-})

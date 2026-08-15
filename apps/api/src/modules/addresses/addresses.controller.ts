@@ -31,26 +31,26 @@ export async function retrieveAddress(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { address_id } = validParams<{ address_id: string }>(req)
+  const { addressId } = validParams<{ addressId: string }>(req)
 
-  res.status(200).json(await service.retrieveAddress(address_id))
+  res.status(200).json(await service.retrieveAddress(addressId))
 }
 
 export async function updateAddress(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { address_id } = validParams<{ address_id: string }>(req)
+  const { addressId } = validParams<{ addressId: string }>(req)
   const body = validBody<UpdateAddressBody>(req)
 
-  res.status(200).json(await service.updateAddress(address_id, body))
+  res.status(200).json(await service.updateAddress(addressId, body))
 }
 
 export async function deleteAddress(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { address_id } = validParams<{ address_id: string }>(req)
+  const { addressId } = validParams<{ addressId: string }>(req)
 
-  res.status(200).json(await service.deleteAddress(address_id))
+  res.status(200).json(await service.deleteAddress(addressId))
 }

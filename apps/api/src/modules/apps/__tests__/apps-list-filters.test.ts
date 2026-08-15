@@ -39,7 +39,6 @@ function appRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -61,8 +60,8 @@ afterEach(() => {
 })
 
 describe('GET /apps query filters', () => {
-  // Regression: the repository read snake_case keys (`app_kind`, `client_type`,
-  // `organization_id`) off a query the schema validates as camelCase, so every
+  // Regression: the repository read snake_case keys (`appKind`, `client_type`,
+  // `organizationId`) off a query the schema validates as camelCase, so every
   // filter silently resolved to `undefined` and the endpoint returned every app.
   // Console's /apps page issues one call per app kind and merges the results,
   // so each app was rendered three times.
@@ -113,4 +112,3 @@ describe('GET /apps query filters', () => {
       expect.objectContaining({ where: { deletedAt: null } })
     )
   })
-})

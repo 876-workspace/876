@@ -94,7 +94,7 @@ export const SCOPE_REGISTRY: Record<string, ScopeDefinition> = {
   email: {
     name: 'email',
     description: 'Your email address and its verification status.',
-    claims: ['email', 'email_verified'],
+    claims: ['email', 'emailVerified'],
   },
   profile: {
     name: 'profile',
@@ -158,7 +158,7 @@ export function resolveIdentityClaims(
 
   const available: Record<string, unknown> = {
     email: user.email,
-    email_verified: user.emailVerified,
+    emailVerified: user.emailVerified,
     name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
     given_name: user.firstName,
     family_name: user.lastName,

@@ -21,12 +21,12 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id/addresses',
+    path: '/:userId/addresses',
     security: 'admin',
     operationId: 'users-list_user_addresses',
     summary: 'List user addresses',
     description: 'Returns addresses for a user. **Admin only**.',
-    request: { params: z.strictObject({ user_id: z.string() }) },
+    request: { params: z.strictObject({ userId: z.string() }) },
     responses: {
       200: {
         description: 'Addresses.',
@@ -34,47 +34,46 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
           z.object({
             object: z.literal('address'),
             id: z.string(),
-            user_id: z.string().nullable(),
-            organization_id: z.string().nullable(),
+            userId: z.string().nullable(),
+            organizationId: z.string().nullable(),
             type: z.string(),
             label: z.string().nullable(),
             line1: z.string().nullable(),
             line2: z.string().nullable(),
             city: z.string().nullable(),
-            region_id: z.string().nullable(),
-            country_code: z.string().nullable(),
-            postal_code: z.string().nullable(),
-            is_default: z.boolean(),
-            created_at: z.number().int(),
-            updated_at: z.number().int(),
+            regionId: z.string().nullable(),
+            countryCode: z.string().nullable(),
+            postalCode: z.string().nullable(),
+            isDefault: z.boolean(),
+            createdAt: z.number().int(),
+            updatedAt: z.number().int(),
           })
         ),
       },
-    },
     handler: async (req, res) => {
-      const { user_id } = req.params as { user_id: string }
-      await service.requireUser(user_id)
-      const rows = await repo.listAddressesByUser(user_id)
+      const { userId } = req.params as { userId: string }
+      await service.requireUser(userId)
+      const rows = await repo.listAddressesByUser(userId)
       res.json({
         object: 'list',
         data: rows.map((r: unknown) =>
           serializers.serializeAddress(r as never)
         ),
         has_more: false,
-        url: `/users/${user_id}/addresses`,
-        total_count: null,
+        url: `/users/${userId}/addresses`,
+        totalCount: null,
       })
     },
   })
 
   api.post({
-    path: '/:user_id/addresses',
+    path: '/:userId/addresses',
     security: 'admin',
     operationId: 'users-create_user_address',
     summary: 'Create user address',
     description: 'Creates an address for a user. **Admin only**.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       body: consumerAddressCreateBodySchema,
     },
     responses: {
@@ -83,30 +82,29 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
         schema: z.object({
           object: z.literal('address'),
           id: z.string(),
-          user_id: z.string().nullable(),
-          organization_id: z.string().nullable(),
+          userId: z.string().nullable(),
+          organizationId: z.string().nullable(),
           type: z.string(),
           label: z.string().nullable(),
           line1: z.string().nullable(),
           line2: z.string().nullable(),
           city: z.string().nullable(),
-          region_id: z.string().nullable(),
-          country_code: z.string().nullable(),
-          postal_code: z.string().nullable(),
-          is_default: z.boolean(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          regionId: z.string().nullable(),
+          countryCode: z.string().nullable(),
+          postalCode: z.string().nullable(),
+          isDefault: z.boolean(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
-    },
     handler: async (req, res) => {
-      const { user_id } = req.params as { user_id: string }
-      await service.requireUser(user_id)
+      const { userId } = req.params as { userId: string }
+      await service.requireUser(userId)
       const body = req.body as Record<string, unknown>
       const now = BigInt(nowUnixSeconds())
       const address = await repo.createAddress({
         id: generateId('address'),
-        userId: user_id,
+        userId: userId,
         organizationId: null,
         type: (body.type as string) ?? 'other',
         label: body.label ?? null,
@@ -125,13 +123,13 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id/addresses/:address_id',
+    path: '/:userId/addresses/:addressId',
     security: 'admin',
     operationId: 'users-retrieve_user_address',
     summary: 'Retrieve user address',
     description: 'Returns one address. **Admin only**.',
     request: {
-      params: z.strictObject({ user_id: z.string(), address_id: z.string() }),
+      params: z.strictObject({ userId: z.string(), addressId: z.string() }),
     },
     responses: {
       200: {
@@ -139,29 +137,29 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
         schema: z.object({
           object: z.literal('address'),
           id: z.string(),
-          user_id: z.string().nullable(),
-          organization_id: z.string().nullable(),
+          userId: z.string().nullable(),
+          organizationId: z.string().nullable(),
           type: z.string(),
           label: z.string().nullable(),
           line1: z.string().nullable(),
           line2: z.string().nullable(),
           city: z.string().nullable(),
-          region_id: z.string().nullable(),
-          country_code: z.string().nullable(),
-          postal_code: z.string().nullable(),
-          is_default: z.boolean(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          regionId: z.string().nullable(),
+          countryCode: z.string().nullable(),
+          postalCode: z.string().nullable(),
+          isDefault: z.boolean(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
       404: { description: 'Not found.' },
     },
     handler: async (req, res) => {
-      const { user_id, address_id } = req.params as {
-        user_id: string
-        address_id: string
+      const { userId, addressId } = req.params as {
+        userId: string
+        addressId: string
       }
-      const address = await repo.getAddressForUser(address_id, user_id)
+      const address = await repo.getAddressForUser(addressId, userId)
       if (!address)
         throw new AppHttpError({
           code: 'address/not-found',
@@ -173,13 +171,13 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
   })
 
   api.patch({
-    path: '/:user_id/addresses/:address_id',
+    path: '/:userId/addresses/:addressId',
     security: 'admin',
     operationId: 'users-update_user_address',
     summary: 'Update user address',
     description: 'Updates an address. **Admin only**.',
     request: {
-      params: z.strictObject({ user_id: z.string(), address_id: z.string() }),
+      params: z.strictObject({ userId: z.string(), addressId: z.string() }),
       body: consumerAddressUpdateBodySchema,
     },
     responses: {
@@ -188,27 +186,27 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
         schema: z.object({
           object: z.literal('address'),
           id: z.string(),
-          user_id: z.string().nullable(),
-          organization_id: z.string().nullable(),
+          userId: z.string().nullable(),
+          organizationId: z.string().nullable(),
           type: z.string(),
           label: z.string().nullable(),
           line1: z.string().nullable(),
           line2: z.string().nullable(),
           city: z.string().nullable(),
-          region_id: z.string().nullable(),
-          country_code: z.string().nullable(),
-          postal_code: z.string().nullable(),
-          is_default: z.boolean(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          regionId: z.string().nullable(),
+          countryCode: z.string().nullable(),
+          postalCode: z.string().nullable(),
+          isDefault: z.boolean(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
       404: { description: 'Not found.' },
     },
     handler: async (req, res) => {
-      const { user_id, address_id } = req.params as {
-        user_id: string
-        address_id: string
+      const { userId, addressId } = req.params as {
+        userId: string
+        addressId: string
       }
       const body = req.body as Record<string, unknown>
       if (Object.keys(body).length === 0)
@@ -217,7 +215,7 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
           message: 'No fields to update.',
           httpStatus: 400,
         })
-      const updated = await repo.updateAddressForUser(address_id, user_id, {
+      const updated = await repo.updateAddressForUser(addressId, userId, {
         ...body,
         updatedAt: BigInt(nowUnixSeconds()),
       } as never)
@@ -232,13 +230,13 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
   })
 
   api.delete({
-    path: '/:user_id/addresses/:address_id',
+    path: '/:userId/addresses/:addressId',
     security: 'admin',
     operationId: 'users-delete_user_address',
     summary: 'Delete user address',
     description: 'Deletes an address. **Admin only**.',
     request: {
-      params: z.strictObject({ user_id: z.string(), address_id: z.string() }),
+      params: z.strictObject({ userId: z.string(), addressId: z.string() }),
     },
     responses: {
       200: {
@@ -252,18 +250,18 @@ export function registerAddressRoutes(resolveGuards: GuardResolver) {
       404: { description: 'Not found.' },
     },
     handler: async (req, res) => {
-      const { user_id, address_id } = req.params as {
-        user_id: string
-        address_id: string
+      const { userId, addressId } = req.params as {
+        userId: string
+        addressId: string
       }
-      const deleted = await repo.deleteAddressForUser(address_id, user_id)
+      const deleted = await repo.deleteAddressForUser(addressId, userId)
       if (!deleted)
         throw new AppHttpError({
           code: 'address/not-found',
           message: 'Address not found.',
           httpStatus: 404,
         })
-      res.json({ object: 'address', id: address_id, deleted: true })
+      res.json({ object: 'address', id: addressId, deleted: true })
     },
   })
 

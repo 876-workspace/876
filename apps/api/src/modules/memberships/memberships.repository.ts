@@ -108,7 +108,6 @@ export async function updateMembership(
   } catch {
     return null
   }
-}
 
 export async function deleteMembership(membershipId: string): Promise<boolean> {
   // Respect soft-delete configuration: mimic should_soft_delete() via deletionValues helper.
@@ -131,14 +130,13 @@ export async function deleteMembership(membershipId: string): Promise<boolean> {
   } catch {
     return false
   }
-}
 
 export function listMemberships(
   query: ListMembershipsQuery
 ): Promise<{ data: MembershipRow[]; hasMore: boolean }> {
   const where: Record<string, unknown> = { deletedAt: null }
-  if (query.organization_id) where.organizationId = query.organization_id
-  if (query.user_id) where.userId = query.user_id
+  if (query.organizationId) where.organizationId = query.organizationId
+  if (query.userId) where.userId = query.userId
 
   return paginateByCursor<MembershipRow>({
     query: query as PaginationQuery,

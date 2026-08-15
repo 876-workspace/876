@@ -46,7 +46,7 @@ export const LIST_MEMBERSHIPS_SUMMARY = 'List memberships'
 export const LIST_MEMBERSHIPS_DESCRIPTION = `
 Returns a paginated list of memberships. **Admin only**.
 
-Supports optional \`organization_id\` and \`user_id\` filters.
+Supports optional \`organizationId\` and \`userId\` filters.
 `
 
 export const LIST_MEMBERSHIPS_RESPONSES = { ..._ADMIN } as const

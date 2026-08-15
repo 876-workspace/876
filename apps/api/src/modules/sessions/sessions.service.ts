@@ -15,8 +15,8 @@ export async function listSessions(
   query: ListSessionsQuery
 ): Promise<ListObject<Session>> {
   const { data, hasMore } = await repository.list(query, {
-    userId: query.user_id,
-    deviceId: query.device_id,
+    userId: query.userId,
+    deviceId: query.deviceId,
     active: query.active,
     status: query.status,
   })
@@ -73,7 +73,7 @@ export async function revokeUserSessions(
   revokedBy: string | null
 ): Promise<{
   object: 'session_list'
-  user_id: string
+  userId: string
   deleted: true
   revoked_count: number
 }> {
@@ -81,8 +81,7 @@ export async function revokeUserSessions(
 
   return {
     object: 'session_list',
-    user_id: userId,
+    userId: userId,
     deleted: true,
     revoked_count: count,
   }
-}

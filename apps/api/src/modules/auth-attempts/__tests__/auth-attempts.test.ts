@@ -63,7 +63,6 @@ function attemptRow(overrides: Record<string, unknown> = {}) {
     createdAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -93,13 +92,13 @@ describe('GET /auth-attempts', () => {
       outcome: 'failed',
       failure_code: 'auth/invalid-credentials',
       identifier: 'alejandra@example.com',
-      user_id: null,
-      app_id: 'app_4qR8',
-      session_id: null,
+      userId: null,
+      appId: 'app_4qR8',
+      sessionId: null,
       realm: 'consumer',
-      device_id: null,
+      deviceId: null,
       device_fingerprint: 'fp_9x',
-      ip_address: '203.0.113.7',
+      ipAddress: '203.0.113.7',
       ip_country_code: 'JM',
       ip_region_code: 'JM-01',
       ip_region: 'Kingston',
@@ -110,7 +109,7 @@ describe('GET /auth-attempts', () => {
       ip_longitude: '-76.79',
       ip_asn: 'AS1234',
       ip_as_organization: 'Flow',
-      user_agent: 'Mozilla/5.0',
+      userAgent: 'Mozilla/5.0',
       device_type: 'desktop',
       device_brand: null,
       device_model: null,
@@ -123,7 +122,7 @@ describe('GET /auth-attempts', () => {
       risk_score: 42,
       risk_reasons: ['new_country'],
       request_id: 'req_1',
-      created_at: NOW,
+      createdAt: NOW,
     })
     expect(response.body.error).toBeNull()
   })
@@ -205,7 +204,6 @@ describe('GET /auth-attempts', () => {
 
     expect(response.body.data.data[0].risk_reasons).toBeNull()
   })
-})
 
 describe('GET /auth-attempts/summary', () => {
   it('aggregates outcomes and top values for the window', async () => {
@@ -236,7 +234,6 @@ describe('GET /auth-attempts/summary', () => {
       top_failure_codes: [{ value: 'auth/invalid-credentials', count: 3 }],
       top_failure_ips: [{ value: '203.0.113.7', count: 3 }],
     })
-  })
 
   it('defaults to the 24h window', async () => {
     const response = await request(createApp())
@@ -276,7 +273,6 @@ describe('GET /auth-attempts/summary', () => {
         { ipCountryCode: 'JM', _count: { _all: 1 } },
       ])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([])
 
     const response = await request(createApp())
       .get('/auth-attempts/summary')
@@ -292,7 +288,6 @@ describe('GET /auth-attempts/summary', () => {
 
     expect(authAttempt.findUnique).not.toHaveBeenCalled()
   })
-})
 
 describe('GET /auth-attempts/:attempt_id', () => {
   it('returns the attempt', async () => {
@@ -316,10 +311,8 @@ describe('GET /auth-attempts/:attempt_id', () => {
       data: null,
       error: { code: 'auth-attempt/not-found', message: 'Not found.' },
     })
-  })
-})
 
-describe('GET /users/:user_id/auth-attempts', () => {
+describe('GET /users/:userId/auth-attempts', () => {
   it('scopes to the user and says so in the url', async () => {
     const response = await request(createApp())
       .get('/users/user_2kL9/auth-attempts')
@@ -335,7 +328,7 @@ describe('GET /users/:user_id/auth-attempts', () => {
   it('ignores query filters that would widen past that user', async () => {
     // The path scopes the resource; a query parameter must not escape it.
     await request(createApp())
-      .get('/users/user_2kL9/auth-attempts?user_id=user_other')
+      .get('/users/user_2kL9/auth-attempts?userId=user_other')
       .set(AUTH)
 
     expect(authAttempt.findMany).toHaveBeenCalledWith(
@@ -350,4 +343,3 @@ describe('GET /users/:user_id/auth-attempts', () => {
 
     expect(response.status).toBe(401)
   })
-})

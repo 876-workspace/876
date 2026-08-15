@@ -9,47 +9,47 @@ export const appSchema = z
     name: z.string(),
     slug: z.string(),
     feature_prefix: z.string(),
-    organization_id: z.string().nullable(),
-    client_id: z.string(),
+    organizationId: z.string().nullable(),
+    clientId: z.string(),
     client_type: z.string(),
-    app_kind: z.enum(['internal', 'platform', 'product', 'external']),
+    appKind: z.enum(['internal', 'platform', 'product', 'external']),
     status: z.enum(['active', 'inactive']),
     allowed_redirect_uris: z.array(z.string()),
     allowed_logout_uris: z.array(z.string()),
-    logo_url: z.string().nullable(),
-    logo_file_id: z.string().nullable(),
-    homepage_url: z.string().nullable(),
+    logoUrl: z.string().nullable(),
+    logoFileId: z.string().nullable(),
+    homepageUrl: z.string().nullable(),
     type: z.string(),
     scopes_allowed: z.array(z.string()),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'App' })
 
 export const appCreatedSchema = appSchema.extend({
-  client_secret: z.string().nullable(),
+  clientSecret: z.string().nullable(),
 })
 
 export const appPublicSchema = z
   .object({
     object: z.literal('app'),
     name: z.string(),
-    logo_url: z.string().nullable(),
-    logo_file_id: z.string().nullable(),
-    app_kind: z.enum(['internal', 'platform', 'product', 'external']),
+    logoUrl: z.string().nullable(),
+    logoFileId: z.string().nullable(),
+    appKind: z.enum(['internal', 'platform', 'product', 'external']),
   })
   .meta({ id: 'AppPublic' })
 
 export const apiKeySchema = z
   .object({
-    object: z.literal('api_key'),
+    object: z.literal('apiKey'),
     id: z.string(),
-    app_id: z.string(),
+    appId: z.string(),
     name: z.string().nullable(),
     revoked: z.boolean(),
-    expires_at: z.number().int().nullable(),
+    expiresAt: z.number().int().nullable(),
     last_used_at: z.number().int().nullable(),
-    created_at: z.number().int(),
+    createdAt: z.number().int(),
   })
   .meta({ id: 'ApiKey' })
 
@@ -64,7 +64,7 @@ export const appDeleteSchema = z.object({
 })
 
 export const apiKeyDeleteSchema = z.object({
-  object: z.literal('api_key'),
+  object: z.literal('apiKey'),
   id: z.string(),
   deleted: z.literal(true),
 })
@@ -86,15 +86,15 @@ export const createAppBodySchema = z.strictObject({
 export const updateAppBodySchema = z
   .object({
     name: z.string().min(1).optional(),
-    logo_url: z.string().nullable().optional(),
-    logo_file_id: z.string().nullable().optional(),
-    homepage_url: z.string().nullable().optional(),
-    app_kind: z
+    logoUrl: z.string().nullable().optional(),
+    logoFileId: z.string().nullable().optional(),
+    homepageUrl: z.string().nullable().optional(),
+    appKind: z
       .enum(['internal', 'platform', 'product', 'external'])
       .nullable()
       .optional(),
     status: z.enum(['active', 'inactive']).nullable().optional(),
-    organization_id: z.string().nullable().optional(),
+    organizationId: z.string().nullable().optional(),
   })
   .strict()
 
@@ -122,14 +122,14 @@ export const listAppFeaturesQuerySchema = paginationQuerySchema.extend({
   excludeTag: z.string().optional(),
 })
 
-export const appIdParamsSchema = z.strictObject({ app_id: z.string() })
+export const appIdParamsSchema = z.strictObject({ appId: z.string() })
 
 export const apiKeyParamsSchema = z.strictObject({
-  app_id: z.string(),
+  appId: z.string(),
   key_id: z.string(),
 })
 
-export const clientIdParamsSchema = z.strictObject({ client_id: z.string() })
+export const clientIdParamsSchema = z.strictObject({ clientId: z.string() })
 
 export type App = z.infer<typeof appSchema>
 export type AppCreated = z.infer<typeof appCreatedSchema>

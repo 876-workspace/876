@@ -19,39 +19,39 @@ export async function retrieveSession(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { session_id } = validParams<{ session_id: string }>(req)
+  const { sessionId } = validParams<{ sessionId: string }>(req)
 
-  res.status(200).json(await service.retrieveSession(session_id))
+  res.status(200).json(await service.retrieveSession(sessionId))
 }
 
 export async function revokeSession(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { session_id } = validParams<{ session_id: string }>(req)
+  const { sessionId } = validParams<{ sessionId: string }>(req)
 
   res
     .status(200)
-    .json(await service.revokeSession(session_id, getPrincipal(req).userId))
+    .json(await service.revokeSession(sessionId, getPrincipal(req).userId))
 }
 
 export async function listUserSessions(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = validParams<{ user_id: string }>(req)
+  const { userId } = validParams<{ userId: string }>(req)
   const query = validQuery<ListUserSessionsQuery>(req)
 
-  res.status(200).json(await service.listUserSessions(user_id, query))
+  res.status(200).json(await service.listUserSessions(userId, query))
 }
 
 export async function revokeUserSessions(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = validParams<{ user_id: string }>(req)
+  const { userId } = validParams<{ userId: string }>(req)
 
   res
     .status(200)
-    .json(await service.revokeUserSessions(user_id, getPrincipal(req).userId))
+    .json(await service.revokeUserSessions(userId, getPrincipal(req).userId))
 }

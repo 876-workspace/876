@@ -39,7 +39,6 @@ export function createAuthAttemptsRouter(resolveGuards: GuardResolver): Router {
         description: 'Summary returned.',
         schema: authAttemptSummarySchema,
       },
-    },
     handler: controller.retrieveSummary,
   })
 
@@ -54,7 +53,6 @@ export function createAuthAttemptsRouter(resolveGuards: GuardResolver): Router {
         description: 'Attempts returned.',
         schema: listObjectSchema(authAttemptSchema),
       },
-    },
     handler: controller.listAuthAttempts,
   })
 
@@ -79,7 +77,7 @@ export function createAuthAttemptsRouter(resolveGuards: GuardResolver): Router {
   })
 
   users.get({
-    path: '/:user_id/auth-attempts',
+    path: '/:userId/auth-attempts',
     operationId: 'users-list_user_auth_attempts',
     summary: 'List authentication attempts for a user',
     request: {
@@ -91,7 +89,6 @@ export function createAuthAttemptsRouter(resolveGuards: GuardResolver): Router {
         description: 'Attempts returned.',
         schema: listObjectSchema(authAttemptSchema),
       },
-    },
     handler: controller.listUserAuthAttempts,
   })
 

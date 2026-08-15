@@ -412,7 +412,7 @@ export const UPDATE_USER_IDENTIFICATION_SUMMARY = 'Update user identification'
 
 export const UPDATE_USER_IDENTIFICATION_DESCRIPTION = `
 Replaces the value of an existing identification and resets its verification
-state (\`verified\` back to \`false\`, \`verified_at\`/\`verified_by\` cleared).
+state (\`verified\` back to \`false\`, \`verifiedAt\`/\`verified_by\` cleared).
 **Admin only**.
 `
 
@@ -443,7 +443,7 @@ Returns the full, unmasked identification value. \`POST\` (not \`GET\`) because
 this has an audit side effect. Enforcement, in order:
 
 1. The identification exists.
-2. \`app_slug\` is declared as needing this identification type in the core
+2. \`appSlug\` is declared as needing this identification type in the core
    entitlement allowlist (\`core/identifications.py\`).
 3. The requesting organization holds an **active** subscription to that app.
 4. An audit event is written (organization id, app slug, identification

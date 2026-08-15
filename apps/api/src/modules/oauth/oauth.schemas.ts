@@ -19,7 +19,7 @@ export const tokenResponseSchema = z
       .string()
       .nullable()
       .meta({ description: 'OIDC ID token, if the openid scope was granted.' }),
-    refresh_token: z.string().nullable().meta({
+    refreshToken: z.string().nullable().meta({
       description: 'Refresh token, if the offline_access scope was granted.',
     }),
   })
@@ -29,7 +29,7 @@ export const userinfoResponseSchema = z
   .object({
     sub: z.string(),
     email: z.string().nullable().optional(),
-    email_verified: z.boolean().nullable().optional(),
+    emailVerified: z.boolean().nullable().optional(),
     name: z.string().nullable().optional(),
     given_name: z.string().nullable().optional(),
     family_name: z.string().nullable().optional(),
@@ -43,8 +43,8 @@ export const introspectResponseSchema = z
       .boolean()
       .meta({ description: 'Whether the token is currently active.' }),
     scope: z.string().nullable().optional(),
-    app_id: z.string().nullable().optional(),
-    client_id: z.string().nullable().optional(),
+    appId: z.string().nullable().optional(),
+    clientId: z.string().nullable().optional(),
     sub: z.string().nullable().optional(),
     token_type: z.string().nullable().optional(),
     exp: z.number().int().nullable().optional(),
@@ -93,51 +93,51 @@ export const revokeResponseSchema = z
  * validator. The handler decides.
  */
 export const authorizeQuerySchema = z.object({
-  response_type: z.string().default(''),
-  client_id: z.string().default(''),
-  redirect_uri: z.string().default(''),
+  responseType: z.string().default(''),
+  clientId: z.string().default(''),
+  redirectUri: z.string().default(''),
   scope: z.string().default('openid'),
   state: z.string().optional(),
   nonce: z.string().optional(),
   prompt: z.string().optional(),
-  code_challenge: z.string().optional(),
-  code_challenge_method: z.string().optional(),
-  user_id: z.string().optional(),
+  codeChallenge: z.string().optional(),
+  codeChallengeMethod: z.string().optional(),
+  userId: z.string().optional(),
 })
 
 export const tokenBodySchema = z.object({
-  grant_type: z.string(),
+  grantType: z.string(),
   code: z.string().optional(),
-  redirect_uri: z.string().optional(),
-  refresh_token: z.string().optional(),
-  client_id: z.string().optional(),
-  code_verifier: z.string().optional(),
-  client_secret: z.string().optional(),
+  redirectUri: z.string().optional(),
+  refreshToken: z.string().optional(),
+  clientId: z.string().optional(),
+  codeVerifier: z.string().optional(),
+  clientSecret: z.string().optional(),
   scope: z.string().optional(),
 })
 
 export const consentBodySchema = z.object({
-  response_type: z.string().default(''),
-  client_id: z.string().default(''),
-  redirect_uri: z.string().default(''),
+  responseType: z.string().default(''),
+  clientId: z.string().default(''),
+  redirectUri: z.string().default(''),
   scope: z.string().default('openid'),
   state: z.string().nullish(),
   nonce: z.string().nullish(),
   prompt: z.string().nullish(),
-  code_challenge: z.string().nullish(),
-  code_challenge_method: z.string().nullish(),
+  codeChallenge: z.string().nullish(),
+  codeChallengeMethod: z.string().nullish(),
 })
 
 export const endSessionQuerySchema = z.object({
   id_token_hint: z.string().optional(),
   post_logout_redirect_uri: z.string().optional(),
-  client_id: z.string().optional(),
+  clientId: z.string().optional(),
   state: z.string().optional(),
 })
 
 export const tokenActionBodySchema = z.object({ token: z.string() })
 
-export const consentQuerySchema = z.object({ user_id: z.string().optional() })
+export const consentQuerySchema = z.object({ userId: z.string().optional() })
 
 export type TokenResponse = z.infer<typeof tokenResponseSchema>
 export type IntrospectResponse = z.infer<typeof introspectResponseSchema>

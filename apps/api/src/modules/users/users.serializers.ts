@@ -129,7 +129,6 @@ export type OauthGrantRow = {
     logoUrl: string | null
     homepageUrl: string | null
   }
-}
 
 export type UserAppEnrollmentRow = {
   id: string
@@ -147,7 +146,6 @@ export type UserAppEnrollmentRow = {
     appKind: string
     status: string
   }
-}
 
 export type UserFeatureRow = {
   id: string
@@ -194,48 +192,46 @@ export function serializeUser(
     object: 'user' as const,
     id: row.id,
     company,
-    company_short_name: companyShortName,
-    company_logo: companyLogo,
-    workos_user_id: row.workosUserId,
-    stripe_customer_id: row.stripeCustomerId,
+    companyShortName: companyShortName,
+    companyLogo: companyLogo,
+    workosUserId: row.workosUserId,
+    stripeCustomerId: row.stripeCustomerId,
     email: row.email,
     username: row.username,
-    email_verified: row.emailVerified,
-    first_name: row.firstName,
-    last_name: row.lastName,
-    middle_name: row.middleName,
+    emailVerified: row.emailVerified,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    middleName: row.middleName,
     avatar: row.avatar,
-    avatar_file_id: row.avatarFileId,
-    platform_role: row.platformRole,
+    avatarFileId: row.avatarFileId,
+    platformRole: row.platformRole,
     status: row.status,
     banned: row.banned,
-    banned_reason: row.bannedReason,
-    deleted_at: nullableFromDbUnixSeconds(row.deletedAt),
-    deleted_by: row.deletedBy,
-    deletion_reason: row.deletionReason,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    bannedReason: row.bannedReason,
+    deletedAt: nullableFromDbUnixSeconds(row.deletedAt),
+    deletedBy: row.deletedBy,
+    deletionReason: row.deletionReason,
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeEnsuredUser(row: UserRow) {
   return {
     object: 'user' as const,
     id: row.id,
-    stripe_customer_id: row.stripeCustomerId,
+    stripeCustomerId: row.stripeCustomerId,
     email: row.email,
     username: row.username,
-    email_verified: row.emailVerified,
-    first_name: row.firstName,
-    last_name: row.lastName,
-    middle_name: row.middleName,
+    emailVerified: row.emailVerified,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    middleName: row.middleName,
     avatar: row.avatar,
-    avatar_file_id: row.avatarFileId,
+    avatarFileId: row.avatarFileId,
     status: row.status,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeCurrentUser(row: UserRow) {
   return {
@@ -243,18 +239,17 @@ export function serializeCurrentUser(row: UserRow) {
     id: row.id,
     email: row.email,
     username: row.username,
-    email_verified: row.emailVerified,
-    first_name: row.firstName,
-    last_name: row.lastName,
-    middle_name: row.middleName,
+    emailVerified: row.emailVerified,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    middleName: row.middleName,
     avatar: row.avatar,
-    avatar_file_id: row.avatarFileId,
+    avatarFileId: row.avatarFileId,
     status: row.status,
     banned: row.banned,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeConsumerProfile(
   user: UserRow,
@@ -263,88 +258,83 @@ export function serializeConsumerProfile(
   return {
     object: 'consumer_profile' as const,
     id: profile.id,
-    user_id: user.id,
+    userId: user.id,
     email: user.email,
     username: user.username,
-    first_name: user.firstName,
-    last_name: user.lastName,
-    middle_name: user.middleName,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    middleName: user.middleName,
     nickname: profile.nickname,
     avatar: user.avatar,
-    avatar_file_id: user.avatarFileId,
+    avatarFileId: user.avatarFileId,
     gender: profile.gender as 'male' | 'female' | 'other' | null,
-    phone_number: profile.phoneNumber,
-    date_of_birth: profile.dateOfBirth,
+    phoneNumber: profile.phoneNumber,
+    dateOfBirth: profile.dateOfBirth,
     language: profile.language,
     timezone: profile.timezone,
-    created_at: fromDbUnixSeconds(profile.createdAt),
-    updated_at: fromDbUnixSeconds(profile.updatedAt),
+    createdAt: fromDbUnixSeconds(profile.createdAt),
+    updatedAt: fromDbUnixSeconds(profile.updatedAt),
   }
-}
 
 export function serializeAddress(row: AddressRow) {
   return {
     object: 'address' as const,
     id: row.id,
-    user_id: row.userId,
-    organization_id: row.organizationId,
+    userId: row.userId,
+    organizationId: row.organizationId,
     type: row.type,
     label: row.label,
     line1: row.line1,
     line2: row.line2,
     city: row.city,
-    region_id: row.regionId,
-    country_code: row.countryCode,
-    postal_code: row.postalCode,
-    is_default: row.isDefault,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    regionId: row.regionId,
+    countryCode: row.countryCode,
+    postalCode: row.postalCode,
+    isDefault: row.isDefault,
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeContact(row: ContactRow) {
   return {
     object: 'user_contact' as const,
     id: row.id,
-    owner_user_id: row.ownerUserId,
-    contact_user_id: row.contactUserId,
-    contact_user: {
+    ownerUserId: row.ownerUserId,
+    contactUserId: row.contactUserId,
+    contactUser: {
       object: 'user' as const,
       id: row.contactUser.id,
       email: row.contactUser.email,
       username: row.contactUser.username,
-      first_name: row.contactUser.firstName,
-      last_name: row.contactUser.lastName,
-      middle_name: row.contactUser.middleName,
+      firstName: row.contactUser.firstName,
+      lastName: row.contactUser.lastName,
+      middleName: row.contactUser.middleName,
       avatar: row.contactUser.avatar,
-      avatar_file_id: row.contactUser.avatarFileId,
+      avatarFileId: row.contactUser.avatarFileId,
     },
     nickname: row.nickname,
     notes: row.notes,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeAccount(row: AccountRow) {
   return {
     object: 'account' as const,
     id: row.id,
-    provider_id: row.providerId,
-    provider_type: row.providerType,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    providerId: row.providerId,
+    providerType: row.providerType,
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeReservedUsername(row: ReservedUsernameRow) {
   return {
     object: 'reserved_username' as const,
     username: row.username,
     reason: row.reason,
-    created_at: fromDbUnixSeconds(row.createdAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
   }
-}
 
 const IDENTIFICATION_LABELS: Record<string, string> = {
   trn: 'Taxpayer Registration Number',
@@ -353,7 +343,7 @@ const IDENTIFICATION_LABELS: Record<string, string> = {
   national_id: 'National ID',
   voters_id: "Voter's ID",
   nis: 'National Insurance Scheme Number',
-  tax_id: 'Tax Identification Number',
+  taxId: 'Tax Identification Number',
   work_permit: 'Work Permit Number',
 }
 
@@ -362,11 +352,11 @@ export function serializeUserIdentification(row: UserIdentificationRow) {
   return {
     object: 'user_identification' as const,
     id: row.id,
-    user_id: row.userId,
+    userId: row.userId,
     type: row.type,
     label,
-    country_code: row.countryCode,
-    value_masked: maskedIdentificationValue({
+    countryCode: row.countryCode,
+    valueMasked: maskedIdentificationValue({
       userId: row.userId,
       type: row.type,
       valueCiphertext: row.valueCiphertext,
@@ -376,11 +366,10 @@ export function serializeUserIdentification(row: UserIdentificationRow) {
       valueLast4: row.valueLast4,
     }),
     verified: row.verified,
-    verified_at: nullableFromDbUnixSeconds(row.verifiedAt),
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    verifiedAt: nullableFromDbUnixSeconds(row.verifiedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeUserPin(
   userId: string,
@@ -390,26 +379,24 @@ export function serializeUserPin(
   if (!row) {
     return {
       object: 'pin' as const,
-      user_id: userId,
+      userId: userId,
       scope,
-      is_set: false as const,
-      set_at: null,
-      last_verified_at: null,
-      failed_attempts: 0,
-      locked_until: null,
+      isSet: false as const,
+      setAt: null,
+      lastVerifiedAt: null,
+      failedAttempts: 0,
+      lockedUntil: null,
     }
-  }
   return {
     object: 'pin' as const,
-    user_id: userId,
+    userId: userId,
     scope: row.scope,
-    is_set: true as const,
-    set_at: fromDbUnixSeconds(row.setAt),
-    last_verified_at: nullableFromDbUnixSeconds(row.lastVerifiedAt),
-    failed_attempts: row.failedAttempts,
-    locked_until: nullableFromDbUnixSeconds(row.lockedUntil),
+    isSet: true as const,
+    setAt: fromDbUnixSeconds(row.setAt),
+    lastVerifiedAt: nullableFromDbUnixSeconds(row.lastVerifiedAt),
+    failedAttempts: row.failedAttempts,
+    lockedUntil: nullableFromDbUnixSeconds(row.lockedUntil),
   }
-}
 
 export function serializeUserApp(e: UserAppEnrollmentRow) {
   return {
@@ -417,29 +404,27 @@ export function serializeUserApp(e: UserAppEnrollmentRow) {
     id: e.app.id,
     name: e.app.name,
     slug: e.app.slug,
-    logo_url: e.app.logoUrl,
-    logo_file_id: e.app.logoFileId,
-    homepage_url: e.app.homepageUrl,
-    app_kind: e.app.appKind,
+    logoUrl: e.app.logoUrl,
+    logoFileId: e.app.logoFileId,
+    homepageUrl: e.app.homepageUrl,
+    appKind: e.app.appKind,
     status: e.app.status,
-    enrolled_at: fromDbUnixSeconds(e.enrolledAt),
-    last_seen_at: fromDbUnixSeconds(e.lastSeenAt),
+    enrolledAt: fromDbUnixSeconds(e.enrolledAt),
+    lastSeenAt: fromDbUnixSeconds(e.lastSeenAt),
   }
-}
 
 export function serializeUserFeature(row: UserFeatureRow) {
   return {
     id: row.id,
-    user_id: row.userId,
-    feature_id: row.featureId,
+    userId: row.userId,
+    featureId: row.featureId,
     slug: row.feature.slug,
     status: row.status,
     note: row.note,
-    synced_at: fromDbUnixSeconds(row.syncedAt),
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    syncedAt: fromDbUnixSeconds(row.syncedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}
 
 export function serializeAuthorizedApp(row: OauthGrantRow) {
   return {
@@ -454,4 +439,3 @@ export function serializeAuthorizedApp(row: OauthGrantRow) {
     createdAt: fromDbUnixSeconds(row.createdAt),
     updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}

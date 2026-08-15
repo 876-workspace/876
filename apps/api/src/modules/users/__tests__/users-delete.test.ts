@@ -82,7 +82,6 @@ function userRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -111,7 +110,7 @@ afterEach(() => {
 describe('DELETE /users/:userId', () => {
   it('soft-deletes the user and sessions without deleting the provider user', async () => {
     const response = await request(createApp())
-      .delete('/users/user_2kL9?deleted_by=user_admin&reason=duplicate')
+      .delete('/users/user_2kL9?deletedBy=user_admin&reason=duplicate')
       .set(ADMIN_HEADERS)
 
     expect(response.status).toBe(200)
@@ -155,7 +154,6 @@ describe('DELETE /users/:userId', () => {
     expect(deleteProviderUser).not.toHaveBeenCalled()
     expect(user.delete).not.toHaveBeenCalled()
   })
-})
 
 describe('DELETE /users/:userId/purge', () => {
   it('archives and purges the user and sessions before deleting the provider user', async () => {
@@ -203,4 +201,3 @@ describe('DELETE /users/:userId/purge', () => {
     ).toBeLessThan(user.delete.mock.invocationCallOrder[0] as number)
     expect(user.update).not.toHaveBeenCalled()
   })
-})

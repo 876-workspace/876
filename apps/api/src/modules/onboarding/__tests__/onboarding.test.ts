@@ -71,7 +71,6 @@ function sessionRow(overrides: Record<string, unknown> = {}) {
     onboardingAnswers: [],
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -111,7 +110,7 @@ describe('GET /onboarding/catalog/:target_type/:target_key', () => {
       object: 'onboarding_catalog',
       target_type: 'organization',
       target_key: 'core',
-      country_code: 'JM',
+      countryCode: 'JM',
       schema_version: 1,
       catalog_revision: 1,
     })
@@ -174,7 +173,7 @@ describe('GET /onboarding/catalog/:target_type/:target_key', () => {
 
   it('answers 404 for a country with no catalog', async () => {
     const response = await request(createApp())
-      .get('/onboarding/catalog/organization/global?country_code=US')
+      .get('/onboarding/catalog/organization/global?countryCode=US')
       .set(ADMIN)
 
     expect(response.status).toBe(404)
@@ -196,14 +195,13 @@ describe('GET /onboarding/catalog/:target_type/:target_key', () => {
 
     expect(response.status).toBe(401)
   })
-})
 
 describe('POST /onboarding/catalog/:target_type/:target_key/validate', () => {
   it('reports valid for a complete core answer set', async () => {
     const response = await request(createApp())
       .post('/onboarding/catalog/organization/core/validate')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { business_category: 'retail' } })
+      .send({ countryCode: 'JM', answers: { business_category: 'retail' } })
 
     expect(response.status).toBe(200)
     expect(response.body.data).toEqual({
@@ -211,13 +209,12 @@ describe('POST /onboarding/catalog/:target_type/:target_key/validate', () => {
       valid: true,
       issues: [],
     })
-  })
 
   it('reports the required issue for an empty answer set', async () => {
     const response = await request(createApp())
       .post('/onboarding/catalog/organization/core/validate')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: {} })
+      .send({ countryCode: 'JM', answers: {} })
 
     expect(response.status).toBe(200)
     expect(response.body.data.valid).toBe(false)
@@ -235,7 +232,7 @@ describe('POST /onboarding/catalog/:target_type/:target_key/validate', () => {
       .post('/onboarding/catalog/organization/core/validate')
       .set(ADMIN)
       .send({
-        country_code: 'JM',
+        countryCode: 'JM',
         answers: { business_category: 'spaceflight' },
       })
 
@@ -244,14 +241,13 @@ describe('POST /onboarding/catalog/:target_type/:target_key/validate', () => {
       code: 'invalid_option',
       message: 'Business category contains an unsupported option.',
     })
-  })
 
   it('reports an unknown field', async () => {
     const response = await request(createApp())
       .post('/onboarding/catalog/organization/core/validate')
       .set(ADMIN)
       .send({
-        country_code: 'JM',
+        countryCode: 'JM',
         answers: { business_category: 'retail', surprise: 1 },
       })
 
@@ -260,40 +256,37 @@ describe('POST /onboarding/catalog/:target_type/:target_key/validate', () => {
       code: 'unknown_field',
       message: "Unknown field 'surprise'.",
     })
-  })
 
   it('requires a conditionally required field once its condition is met', async () => {
     const response = await request(createApp())
       .post('/onboarding/catalog/organization/global/validate')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { gct_registered: true } })
+      .send({ countryCode: 'JM', answers: { gct_registered: true } })
 
     expect(response.body.data.issues).toContainEqual({
-      path: 'answers.gct_number',
+      path: 'answers.gctNumber',
       code: 'required',
       message: 'GCT registration number is required.',
     })
-  })
 
   it('does not require it when the condition is not met', async () => {
     const response = await request(createApp())
       .post('/onboarding/catalog/organization/global/validate')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { gct_registered: false } })
+      .send({ countryCode: 'JM', answers: { gct_registered: false } })
 
     const paths = response.body.data.issues.map((i: { path: string }) => i.path)
-    expect(paths).not.toContain('answers.gct_number')
+    expect(paths).not.toContain('answers.gctNumber')
   })
 
   it('rejects a body with an unknown top-level field', async () => {
     const response = await request(createApp())
       .post('/onboarding/catalog/organization/core/validate')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: {}, extra: true })
+      .send({ countryCode: 'JM', answers: {}, extra: true })
 
     expect(response.status).toBe(422)
   })
-})
 
 describe('GET /onboarding/organizations/:id/:type/:key', () => {
   it('returns the session', async () => {
@@ -305,20 +298,19 @@ describe('GET /onboarding/organizations/:id/:type/:key', () => {
     expect(response.body.data).toEqual({
       object: 'onboarding_session',
       id: 'obs_1',
-      organization_id: 'org_5',
+      organizationId: 'org_5',
       target_type: 'organization',
       target_key: 'core',
-      country_code: 'JM',
+      countryCode: 'JM',
       schema_version: 1,
       catalog_revision: 1,
       status: 'draft',
       answers: {},
       submitted_at: null,
       completed_at: null,
-      created_at: NOW,
-      updated_at: NOW,
+      createdAt: NOW,
+      updatedAt: NOW,
     })
-  })
 
   it('creates a draft when none exists', async () => {
     onboardingSession.findFirst
@@ -355,7 +347,6 @@ describe('GET /onboarding/organizations/:id/:type/:key', () => {
       business_category: 'retail',
       employee_count_range: '2-10',
     })
-  })
 
   it('answers 404 when the organization is absent', async () => {
     organization.findUnique.mockResolvedValue(null)
@@ -369,7 +360,6 @@ describe('GET /onboarding/organizations/:id/:type/:key', () => {
       code: 'onboarding/organization-not-found',
       message: 'Organization not found.',
     })
-  })
 
   it('answers 404 for an organization target that is not global or core', async () => {
     const response = await request(createApp())
@@ -382,7 +372,6 @@ describe('GET /onboarding/organizations/:id/:type/:key', () => {
       message:
         "The organization onboarding targets are named 'global' and 'core'.",
     })
-  })
 
   it('answers 404 for an application target with no app row', async () => {
     appModel.findFirst.mockResolvedValue(null)
@@ -406,7 +395,6 @@ describe('GET /onboarding/organizations/:id/:type/:key', () => {
 
     expect(response.body.error.code).toBe('onboarding/organization-not-found')
   })
-})
 
 describe('PUT /onboarding/organizations/:id/:type/:key', () => {
   it('saves answers without validating them', async () => {
@@ -414,7 +402,7 @@ describe('PUT /onboarding/organizations/:id/:type/:key', () => {
     const response = await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { business_category: 'nonsense' } })
+      .send({ countryCode: 'JM', answers: { business_category: 'nonsense' } })
 
     expect(response.status).toBe(200)
     expect(onboardingAnswer.createMany).toHaveBeenCalledWith({
@@ -425,25 +413,23 @@ describe('PUT /onboarding/organizations/:id/:type/:key', () => {
         }),
       ],
     })
-  })
 
   it('replaces the previous answers rather than merging them', async () => {
     await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { business_category: 'retail' } })
+      .send({ countryCode: 'JM', answers: { business_category: 'retail' } })
 
     expect(onboardingAnswer.deleteMany).toHaveBeenCalledWith({
       where: { sessionId: 'obs_1' },
     })
-  })
 
   it('writes the delete and the inserts in one transaction', async () => {
     // Separating them would let a failure leave the session with no answers.
     await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { business_category: 'retail' } })
+      .send({ countryCode: 'JM', answers: { business_category: 'retail' } })
 
     expect(transaction).toHaveBeenCalledTimes(1)
   })
@@ -454,7 +440,7 @@ describe('PUT /onboarding/organizations/:id/:type/:key', () => {
     await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { business_category: 'retail' } })
+      .send({ countryCode: 'JM', answers: { business_category: 'retail' } })
 
     expect(onboardingSession.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -470,7 +456,7 @@ describe('PUT /onboarding/organizations/:id/:type/:key', () => {
     await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: { business_category: 'retail' } })
+      .send({ countryCode: 'JM', answers: { business_category: 'retail' } })
 
     expect(onboardingSession.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -483,7 +469,7 @@ describe('PUT /onboarding/organizations/:id/:type/:key', () => {
     await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JM', answers: {} })
+      .send({ countryCode: 'JM', answers: {} })
 
     expect(onboardingAnswer.deleteMany).toHaveBeenCalled()
     expect(onboardingAnswer.createMany).not.toHaveBeenCalled()
@@ -493,12 +479,11 @@ describe('PUT /onboarding/organizations/:id/:type/:key', () => {
     const response = await request(createApp())
       .put('/onboarding/organizations/org_5/organization/core')
       .set(ADMIN)
-      .send({ country_code: 'JAM', answers: {} })
+      .send({ countryCode: 'JAM', answers: {} })
 
     expect(response.status).toBe(422)
     expect(transaction).not.toHaveBeenCalled()
   })
-})
 
 describe('POST /onboarding/organizations/:id/:type/:key/submit', () => {
   it('submits when the saved answers are valid', async () => {
@@ -547,7 +532,6 @@ describe('POST /onboarding/organizations/:id/:type/:key/submit', () => {
       code: 'onboarding/session-not-found',
       message: 'Save onboarding answers before submitting them.',
     })
-  })
 
   it('reports an unknown target rather than "save your answers"', async () => {
     onboardingSession.findFirst.mockResolvedValue(null)
@@ -580,4 +564,3 @@ describe('POST /onboarding/organizations/:id/:type/:key/submit', () => {
       expect.objectContaining({ orderBy: { catalogRevision: 'desc' } })
     )
   })
-})

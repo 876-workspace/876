@@ -6,27 +6,27 @@ export const userSchema = z
     object: z.literal('user'),
     id: z.string(),
     company: z.string().nullable(),
-    company_short_name: z.string().nullable(),
-    company_logo: z.string().nullable(),
-    workos_user_id: z.string(),
-    stripe_customer_id: z.string().nullable(),
+    companyShortName: z.string().nullable(),
+    companyLogo: z.string().nullable(),
+    workosUserId: z.string(),
+    stripeCustomerId: z.string().nullable(),
     email: z.string(),
     username: z.string().nullable(),
-    email_verified: z.boolean(),
-    first_name: z.string(),
-    last_name: z.string(),
-    middle_name: z.string().nullable(),
+    emailVerified: z.boolean(),
+    firstName: z.string(),
+    lastName: z.string(),
+    middleName: z.string().nullable(),
     avatar: z.string().nullable(),
-    avatar_file_id: z.string().nullable(),
-    platform_role: z.string().nullable(),
+    avatarFileId: z.string().nullable(),
+    platformRole: z.string().nullable(),
     status: z.string(),
     banned: z.boolean(),
-    banned_reason: z.string().nullable(),
-    deleted_at: z.number().int().nullable(),
-    deleted_by: z.string().nullable(),
-    deletion_reason: z.string().nullable(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    bannedReason: z.string().nullable(),
+    deletedAt: z.number().int().nullable(),
+    deletedBy: z.string().nullable(),
+    deletionReason: z.string().nullable(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'User' })
 
@@ -36,18 +36,18 @@ export const ensuredUserSchema = z
   .object({
     object: z.literal('user'),
     id: z.string(),
-    stripe_customer_id: z.string().nullable(),
+    stripeCustomerId: z.string().nullable(),
     email: z.string(),
     username: z.string().nullable(),
-    email_verified: z.boolean(),
-    first_name: z.string(),
-    last_name: z.string(),
-    middle_name: z.string().nullable(),
+    emailVerified: z.boolean(),
+    firstName: z.string(),
+    lastName: z.string(),
+    middleName: z.string().nullable(),
     avatar: z.string().nullable(),
-    avatar_file_id: z.string().nullable(),
+    avatarFileId: z.string().nullable(),
     status: z.string(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'EnsuredUser' })
 
@@ -57,16 +57,16 @@ export const currentUserSchema = z
     id: z.string(),
     email: z.string(),
     username: z.string().nullable(),
-    email_verified: z.boolean(),
-    first_name: z.string(),
-    last_name: z.string(),
-    middle_name: z.string().nullable(),
+    emailVerified: z.boolean(),
+    firstName: z.string(),
+    lastName: z.string(),
+    middleName: z.string().nullable(),
     avatar: z.string().nullable(),
-    avatar_file_id: z.string().nullable(),
+    avatarFileId: z.string().nullable(),
     status: z.string(),
     banned: z.boolean(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'CurrentUser' })
 
@@ -81,13 +81,13 @@ export const userAppSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
-  logo_url: z.string().nullable(),
-  logo_file_id: z.string().nullable(),
-  homepage_url: z.string().nullable(),
-  app_kind: z.string(),
+  logoUrl: z.string().nullable(),
+  logoFileId: z.string().nullable(),
+  homepageUrl: z.string().nullable(),
+  appKind: z.string(),
   status: z.string(),
-  enrolled_at: z.number().int(),
-  last_seen_at: z.number().int(),
+  enrolledAt: z.number().int(),
+  lastSeenAt: z.number().int(),
 })
 
 export const userBackfillUsernamesSchema = z.object({
@@ -102,42 +102,42 @@ export const userOAuthGrantRevokeSchema = z.object({
 export const accountSchema = z.object({
   object: z.literal('account'),
   id: z.string(),
-  provider_id: z.string(),
-  provider_type: z.string(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  providerId: z.string(),
+  providerType: z.string(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const consumerProfileSchema = z.object({
   object: z.literal('consumer_profile'),
   id: z.string(),
-  user_id: z.string(),
+  userId: z.string(),
   email: z.string(),
   username: z.string().nullable(),
-  first_name: z.string(),
-  last_name: z.string(),
-  middle_name: z.string().nullable(),
+  firstName: z.string(),
+  lastName: z.string(),
+  middleName: z.string().nullable(),
   nickname: z.string().nullable(),
   avatar: z.string().nullable(),
-  avatar_file_id: z.string().nullable(),
+  avatarFileId: z.string().nullable(),
   gender: z.enum(['male', 'female', 'other']).nullable(),
-  phone_number: z.string().nullable(),
-  date_of_birth: z.string().nullable(),
+  phoneNumber: z.string().nullable(),
+  dateOfBirth: z.string().nullable(),
   language: z.string().nullable(),
   timezone: z.string().nullable(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const consumerProfileUpdateBodySchema = z.strictObject({
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  middle_name: z.string().optional().nullable(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  middleName: z.string().optional().nullable(),
   nickname: z.string().optional().nullable(),
   avatar: z.string().optional().nullable(),
   gender: z.enum(['male', 'female', 'other']).optional().nullable(),
-  phone_number: z.string().optional().nullable(),
-  date_of_birth: z.string().optional().nullable(),
+  phoneNumber: z.string().optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(),
   language: z.string().optional().nullable(),
   timezone: z.string().optional().nullable(),
 })
@@ -187,23 +187,23 @@ export const consumerContactUpdateBodySchema = z.strictObject({
 export const consumerContactSchema = z.object({
   object: z.literal('user_contact'),
   id: z.string(),
-  owner_user_id: z.string(),
-  contact_user_id: z.string(),
-  contact_user: z.object({
+  ownerUserId: z.string(),
+  contactUserId: z.string(),
+  contactUser: z.object({
     object: z.literal('user'),
     id: z.string(),
     email: z.string(),
     username: z.string().nullable(),
-    first_name: z.string(),
-    last_name: z.string(),
-    middle_name: z.string().nullable(),
+    firstName: z.string(),
+    lastName: z.string(),
+    middleName: z.string().nullable(),
     avatar: z.string().nullable(),
-    avatar_file_id: z.string().nullable(),
+    avatarFileId: z.string().nullable(),
   }),
   nickname: z.string().nullable(),
   notes: z.string().nullable(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const consumerContactDeleteSchema = z.object({
@@ -220,11 +220,11 @@ export const consumerProfileDeleteSchema = z.object({
 
 export const userCreateBodySchema = z.strictObject({
   email: z.string().min(1),
-  first_name: z.string().min(1),
-  last_name: z.string().min(1),
-  middle_name: z.string().optional().nullable(),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  middleName: z.string().optional().nullable(),
   username: z.string().optional().nullable(),
-  email_verified: z.boolean().optional().nullable(),
+  emailVerified: z.boolean().optional().nullable(),
   avatar: z.string().optional().nullable(),
   status: z.string().optional().nullable(),
 })
@@ -232,15 +232,15 @@ export const userCreateBodySchema = z.strictObject({
 export type UserCreateBody = z.infer<typeof userCreateBodySchema>
 
 export const userUpdateBodySchema = z.strictObject({
-  stripe_customer_id: z.string().optional().nullable(),
+  stripeCustomerId: z.string().optional().nullable(),
   email: z.string().optional(),
   username: z.string().optional().nullable(),
-  email_verified: z.boolean().optional().nullable(),
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
-  middle_name: z.string().optional().nullable(),
+  emailVerified: z.boolean().optional().nullable(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  middleName: z.string().optional().nullable(),
   avatar: z.string().optional().nullable(),
-  avatar_file_id: z.string().optional().nullable(),
+  avatarFileId: z.string().optional().nullable(),
   status: z.string().optional(),
 })
 
@@ -260,7 +260,7 @@ export const reservedUsernameSchema = z.object({
   object: z.literal('reserved_username'),
   username: z.string(),
   reason: z.string().nullable(),
-  created_at: z.number().int(),
+  createdAt: z.number().int(),
 })
 
 export const reservedUsernameDeleteSchema = z.object({
@@ -301,26 +301,26 @@ export const userBanBodySchema = z.strictObject({
 export const userIdentificationSchema = z.object({
   object: z.literal('user_identification'),
   id: z.string(),
-  user_id: z.string(),
+  userId: z.string(),
   type: z.string(),
   label: z.string(),
-  country_code: z.string().nullable(),
-  value_masked: z.string(),
+  countryCode: z.string().nullable(),
+  valueMasked: z.string(),
   verified: z.boolean(),
-  verified_at: z.number().int().nullable(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  verifiedAt: z.number().int().nullable(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export const userIdentificationCreateBodySchema = z.strictObject({
   type: z.string().min(1),
   value: z.string().min(1),
-  country_code: z.string().optional().nullable(),
+  countryCode: z.string().optional().nullable(),
 })
 
 export const userIdentificationUpdateBodySchema = z.strictObject({
   value: z.string().min(1),
-  country_code: z.string().optional().nullable(),
+  countryCode: z.string().optional().nullable(),
 })
 
 export const userIdentificationDeleteSchema = z.object({
@@ -330,8 +330,8 @@ export const userIdentificationDeleteSchema = z.object({
 })
 
 export const userIdentificationDiscloseBodySchema = z.strictObject({
-  organization_id: z.string().min(1),
-  app_slug: z.string().min(1),
+  organizationId: z.string().min(1),
+  appSlug: z.string().min(1),
   reason: z.string().optional().nullable(),
 })
 
@@ -339,9 +339,9 @@ export const userIdentificationDisclosureSchema = z.object({
   object: z.literal('user_identification_disclosure'),
   type: z.string(),
   value: z.string(),
-  country_code: z.string().nullable(),
+  countryCode: z.string().nullable(),
   verified: z.boolean(),
-  disclosed_at: z.number().int(),
+  disclosedAt: z.number().int(),
 })
 
 export const userIdentificationVerifyBodySchema = z.strictObject({
@@ -360,31 +360,31 @@ export const userPinVerifyBodySchema = z.strictObject({
 
 export const userPinSchema = z.object({
   object: z.literal('pin'),
-  user_id: z.string(),
+  userId: z.string(),
   scope: z.string(),
-  is_set: z.boolean(),
-  set_at: z.number().int().nullable(),
-  last_verified_at: z.number().int().nullable(),
-  failed_attempts: z.number().int(),
-  locked_until: z.number().int().nullable(),
+  isSet: z.boolean(),
+  setAt: z.number().int().nullable(),
+  lastVerifiedAt: z.number().int().nullable(),
+  failedAttempts: z.number().int(),
+  lockedUntil: z.number().int().nullable(),
 })
 
 export const userPinVerificationSchema = z.object({
   object: z.literal('pin_verification'),
   verified: z.boolean(),
-  locked_until: z.number().int().nullable(),
+  lockedUntil: z.number().int().nullable(),
 })
 
 export const userPinDeletedSchema = z.object({
   object: z.literal('pin'),
-  user_id: z.string(),
+  userId: z.string(),
   deleted: z.literal(true),
 })
 
 export const userSessionRevokeSchema = z.object({
   object: z.literal('session_revoke'),
-  user_id: z.string(),
-  sessions_revoked: z.number().int(),
+  userId: z.string(),
+  sessionsRevoked: z.number().int(),
 })
 
 export const userAccountUnlinkSchema = z.object({
@@ -395,7 +395,7 @@ export const userAccountUnlinkSchema = z.object({
 
 export const userAppsGroupSchema = z.object({
   object: z.literal('user_apps'),
-  user_id: z.string(),
+  userId: z.string(),
   data: z.array(userAppSchema),
 })
 
@@ -414,7 +414,7 @@ export type ListUserAppsBatchQuery = z.infer<
 
 export const listUsersQuerySchema = paginationQuerySchema.extend({
   search: z.string().optional(),
-  include_deleted: z.stringbool().optional().default(false),
+  includeDeleted: z.stringbool().optional().default(false),
   status: z.string().optional(),
   ids: z
     .string()
@@ -436,43 +436,43 @@ export const searchUsersQuerySchema = z.strictObject({
 })
 
 export const getByUsernameQuerySchema = z.strictObject({
-  include_deleted: z.stringbool().optional().default(false),
+  includeDeleted: z.stringbool().optional().default(false),
 })
 
 export const retrieveUserQuerySchema = z.strictObject({
-  include_deleted: z.stringbool().optional().default(false),
+  includeDeleted: z.stringbool().optional().default(false),
 })
 
-export const userIdParamsSchema = z.strictObject({ user_id: z.string() })
+export const userIdParamsSchema = z.strictObject({ userId: z.string() })
 export const userIdAndAddressIdParamsSchema = z.strictObject({
-  user_id: z.string(),
-  address_id: z.string(),
+  userId: z.string(),
+  addressId: z.string(),
 })
 export const userIdAndContactIdParamsSchema = z.strictObject({
-  user_id: z.string(),
-  contact_id: z.string(),
+  userId: z.string(),
+  contactId: z.string(),
 })
 export const userIdAndAccountIdParamsSchema = z.strictObject({
-  user_id: z.string(),
-  account_id: z.string(),
+  userId: z.string(),
+  accountId: z.string(),
 })
 export const userIdAndFeatureIdParamsSchema = z.strictObject({
-  user_id: z.string(),
-  feature_id: z.string(),
+  userId: z.string(),
+  featureId: z.string(),
 })
 export const userIdAndTypeParamsSchema = z.strictObject({
-  user_id: z.string(),
+  userId: z.string(),
   type: z.string(),
 })
 export const userIdAndGrantIdParamsSchema = z.strictObject({
-  user_id: z.string(),
-  grant_id: z.string(),
+  userId: z.string(),
+  grantId: z.string(),
 })
-export const addressIdParamsSchema = z.strictObject({ address_id: z.string() })
-export const contactIdParamsSchema = z.strictObject({ contact_id: z.string() })
+export const addressIdParamsSchema = z.strictObject({ addressId: z.string() })
+export const contactIdParamsSchema = z.strictObject({ contactId: z.string() })
 export const usernameParamsSchema = z.strictObject({ username: z.string() })
 export const workosUserIdParamsSchema = z.strictObject({
-  workos_user_id: z.string(),
+  workosUserId: z.string(),
 })
 
 export const listMyMembershipsQuerySchema = z.strictObject({
@@ -480,7 +480,7 @@ export const listMyMembershipsQuerySchema = z.strictObject({
 })
 
 export const grantFeatureBodySchema = z.strictObject({
-  feature_id: z.string().min(1),
+  featureId: z.string().min(1),
   note: z.string().optional().nullable(),
 })
 

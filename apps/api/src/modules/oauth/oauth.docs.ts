@@ -22,19 +22,19 @@ issue new keys; clients should re-fetch JWKS when encountering an unknown \`kid\
 `
 
 export const AUTHORIZE_DESCRIPTION = `
-OAuth 2.0 Authorization endpoint (\`response_type=code\`).
+OAuth 2.0 Authorization endpoint (\`responseType=code\`).
 
-* Validates the \`client_id\`, \`redirect_uri\`, and requested \`scope\`.
+* Validates the \`clientId\`, \`redirectUri\`, and requested \`scope\`.
 * If the user has already granted the requested scopes and \`prompt=consent\`
   is not set, issues an authorization code directly.
 * Otherwise redirects to the consent UI at \`/oauth/consent\`.
-* Supports PKCE (\`code_challenge\` + \`code_challenge_method=S256\`).
+* Supports PKCE (\`codeChallenge\` + \`codeChallengeMethod=S256\`).
 `
 
 export const AUTHORIZE_RESPONSES = {
   400: {
     description:
-      'Invalid request parameters (response_type, client_id, redirect_uri, or scope).',
+      'Invalid request parameters (responseType, clientId, redirectUri, or scope).',
   },
   401: {
     description:
@@ -49,10 +49,10 @@ export const AUTHORIZE_RESPONSES = {
 export const TOKEN_DESCRIPTION = `
 OAuth 2.0 Token endpoint — exchanges an authorization code for tokens.
 
-* \`grant_type\` must be \`authorization_code\`.
-* PKCE verification is enforced when \`code_challenge\` was set at authorization time.
+* \`grantType\` must be \`authorization_code\`.
+* PKCE verification is enforced when \`codeChallenge\` was set at authorization time.
 * Client authentication: \`Authorization: Basic <base64(clientId:secret)>\` or
-  form-encoded \`client_id\` + \`client_secret\`.
+  form-encoded \`clientId\` + \`clientSecret\`.
 * Returns an \`access_token\` (JWT, RS256) and optional \`id_token\` (OIDC).
 `
 
@@ -69,7 +69,7 @@ OIDC UserInfo endpoint. Returns claims about the authenticated user.
 Requires a valid \`Bearer\` access token issued by this server.
 Claims returned depend on the scopes granted at authorization time:
 - \`openid\` → \`sub\`
-- \`email\` → \`email\`, \`email_verified\`
+- \`email\` → \`email\`, \`emailVerified\`
 - \`profile\` → \`name\`, \`given_name\`, \`family_name\`, \`picture\`
 `
 
@@ -80,7 +80,7 @@ export const USERINFO_RESPONSES = {
 export const REVOKE_DESCRIPTION = `
 Revokes an access token, invalidating the associated session.
 
-Requires an API key in the \`Authorization: Bearer <api_key>\` header.
+Requires an API key in the \`Authorization: Bearer <apiKey>\` header.
 `
 
 export const REVOKE_RESPONSES = {
@@ -89,10 +89,10 @@ export const REVOKE_RESPONSES = {
 
 export const INTROSPECT_DESCRIPTION = `
 RFC 7662 Token Introspection. Returns whether an access token is active and, when
-active, its \`scope\`, \`client_id\`, \`sub\`, \`exp\`, and \`iat\`.
+active, its \`scope\`, \`clientId\`, \`sub\`, \`exp\`, and \`iat\`.
 
 Protected: the calling resource server authenticates with its 876 API key in the
-\`Authorization: Bearer <api_key>\` header.
+\`Authorization: Bearer <apiKey>\` header.
 `
 
 export const CONSENT_GET_DESCRIPTION = `
@@ -109,7 +109,7 @@ export const CONSENT_APPROVE_DESCRIPTION = `
 Records the user's consent decision and issues an authorization code.
 
 Merges the newly approved scopes with any previously granted scopes,
-then redirects the client to \`redirect_uri?code=<code>&state=<state>\`.
+then redirects the client to \`redirectUri?code=<code>&state=<state>\`.
 `
 
 export const CONSENT_APPROVE_RESPONSES = {

@@ -12,10 +12,10 @@ import { headers } from 'next/headers'
 
 type AuthRoutingUserRow = {
   id: string
-  workos_user_id: string
+  workosUserId: string
   email: string
-  first_name: string | null
-  last_name: string | null
+  firstName: string | null
+  lastName: string | null
   avatar: string | null
   role: string | null
   permissions: string[] | null
@@ -50,9 +50,9 @@ type AuthRoutingFeature = {
 type AuthRoutingList<T> = {
   object: 'list'
   data: T[]
-  has_more: boolean
+  hasMore: boolean
   url: string
-  total_count: number | null
+  totalCount: number | null
 }
 
 type AuthRoutingRuntime = {

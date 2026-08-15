@@ -33,7 +33,6 @@ export async function findApiKeyByHash(
     revoked: row.revoked,
     expiresAt: row.expiresAt === null ? null : fromDbUnixSeconds(row.expiresAt),
   }
-}
 
 /** Record that a key was presented. Telemetry — the caller must not await it. */
 export async function markApiKeyUsed(
@@ -153,7 +152,7 @@ export async function deleteApp(appId: string): Promise<boolean> {
   return true
 }
 
-// Pagination for apps: ordered by created_at DESC, matching Python.
+// Pagination for apps: ordered by createdAt DESC, matching Python.
 
 export function listAppsByOrg(
   query: ListAppsQuery
@@ -329,7 +328,6 @@ export type AppFeatureRow = Awaited<
       select: typeof APP_FEATURE_SELECT
     }>
   >
->
 
 function findFeatureById(id: string): Promise<AppFeatureRow | null> {
   return prisma.feature.findUnique({
@@ -342,8 +340,8 @@ export function listFeaturesForApp(
   appId: string,
   query: {
     limit: number
-    starting_after?: string
-    ending_before?: string
+    startingAfter?: string
+    endingBefore?: string
     rootOnly?: boolean
     includeTag?: string
     excludeTag?: string
@@ -357,8 +355,8 @@ export function listFeaturesForApp(
   return paginateByCursor<AppFeatureRow>({
     query: {
       limit: query.limit,
-      starting_after: query.starting_after,
-      ending_before: query.ending_before,
+      startingAfter: query.startingAfter,
+      endingBefore: query.endingBefore,
     },
     // The anchor is read with the same projection as the page: a narrower one
     // would not satisfy the row type, and casting it away is how a cursor read

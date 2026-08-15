@@ -67,7 +67,7 @@ describe('catalog shape', () => {
   })
 
   it('uppercases the country code', () => {
-    expect(onboardingCatalog('organization', 'core', 'jm').country_code).toBe(
+    expect(onboardingCatalog('organization', 'core', 'jm').countryCode).toBe(
       'JM'
     )
   })
@@ -83,8 +83,8 @@ describe('catalog shape', () => {
     expect(directors?.field_type).toBe('collection')
     expect(directors?.min_items).toBe(1)
     expect(directors?.item_fields.map((field) => field.key)).toEqual([
-      'first_name',
-      'last_name',
+      'firstName',
+      'lastName',
       'title',
       'individual_trn',
       'responsibility_start_date',
@@ -96,7 +96,7 @@ describe('catalog shape', () => {
       (section) => section.key === 'registrations'
     )
     const gctNumber = registrations?.fields.find(
-      (field) => field.key === 'gct_number'
+      (field) => field.key === 'gctNumber'
     )
 
     expect(gctNumber?.required).toBe(false)
@@ -104,7 +104,6 @@ describe('catalog shape', () => {
       field_key: 'gct_registered',
       equals: true,
     })
-  })
 
   it('nulls an absent optional attribute rather than omitting it', () => {
     const tradeName = GLOBAL.sections[0]?.fields.find(
@@ -117,7 +116,6 @@ describe('catalog shape', () => {
     expect(tradeName?.min_items).toBeNull()
     expect(tradeName?.required_when).toBeNull()
   })
-})
 
 describe('unknown catalogs', () => {
   it.each([
@@ -142,7 +140,6 @@ describe('unknown catalogs', () => {
   ])('rejects %s', (_label, call) => {
     expect(call).toThrow(UnknownCatalogError)
   })
-})
 
 describe('what counts as not answered', () => {
   it.each([
@@ -172,7 +169,6 @@ describe('what counts as not answered', () => {
       'answers.expected_monthly_transactions:required'
     )
   })
-})
 
 describe('type checks', () => {
   it('rejects a boolean where a whole number is expected', () => {
@@ -212,7 +208,6 @@ describe('type checks', () => {
       'answers.legal_name:invalid_type'
     )
   })
-})
 
 describe('patterns', () => {
   it.each([
@@ -234,7 +229,6 @@ describe('patterns', () => {
       'answers.trn:invalid_format'
     )
   })
-})
 
 describe('options', () => {
   it('rejects an unsupported select option', () => {
@@ -260,7 +254,6 @@ describe('options', () => {
       'answers.products_of_interest:invalid_option'
     )
   })
-})
 
 describe('collections', () => {
   it('reports too few items against the collection itself', () => {
@@ -276,9 +269,9 @@ describe('collections', () => {
   })
 
   it('validates each item field at its own path', () => {
-    expect(codesFor(GLOBAL, { directors: [{ first_name: 'Ada' }] })).toEqual(
+    expect(codesFor(GLOBAL, { directors: [{ firstName: 'Ada' }] })).toEqual(
       expect.arrayContaining([
-        'answers.directors.0.last_name:required',
+        'answers.directors.0.lastName:required',
         'answers.directors.0.title:required',
       ])
     )
@@ -288,7 +281,7 @@ describe('collections', () => {
     expect(
       codesFor(GLOBAL, {
         directors: [
-          { first_name: 'Ada', last_name: 'L', title: 'CTO', surprise: 1 },
+          { firstName: 'Ada', lastName: 'L', title: 'CTO', surprise: 1 },
         ],
       })
     ).toContain('answers.directors.0.surprise:unknown_field')
@@ -299,8 +292,8 @@ describe('collections', () => {
       codesFor(GLOBAL, {
         directors: [
           {
-            first_name: 'Ada',
-            last_name: 'L',
+            firstName: 'Ada',
+            lastName: 'L',
             title: 'CTO',
             individual_trn: 'nope',
           },
@@ -308,27 +301,25 @@ describe('collections', () => {
       })
     ).toContain('answers.directors.0.individual_trn:invalid_format')
   })
-})
 
 describe('conditional requirements', () => {
   it('requires the dependent field once the condition matches', () => {
     expect(codesFor(GLOBAL, { gct_registered: true })).toContain(
-      'answers.gct_number:required'
+      'answers.gctNumber:required'
     )
   })
 
   it('does not require it when the condition does not match', () => {
     expect(codesFor(GLOBAL, { gct_registered: false })).not.toContain(
-      'answers.gct_number:required'
+      'answers.gctNumber:required'
     )
   })
 
   it('is satisfied once the dependent field is answered', () => {
     expect(
-      codesFor(GLOBAL, { gct_registered: true, gct_number: 'GCT-1' })
-    ).not.toContain('answers.gct_number:required')
+      codesFor(GLOBAL, { gct_registered: true, gctNumber: 'GCT-1' })
+    ).not.toContain('answers.gctNumber:required')
   })
-})
 
 describe('unknown answers', () => {
   it('reports a key that is in no section', () => {
@@ -336,7 +327,6 @@ describe('unknown answers', () => {
       codesFor(CORE, { business_category: 'retail', surprise: 1 })
     ).toEqual(['answers.surprise:unknown_field'])
   })
-})
 
 describe('a complete core answer set', () => {
   it('produces no issues', () => {
@@ -347,4 +337,3 @@ describe('a complete core answer set', () => {
       })
     ).toEqual([])
   })
-})

@@ -13,15 +13,15 @@ import {
 const identificationSchema = z.object({
   object: z.literal('user_identification'),
   id: z.string(),
-  user_id: z.string(),
+  userId: z.string(),
   type: z.string(),
   label: z.string(),
-  country_code: z.string().nullable(),
-  value_masked: z.string(),
+  countryCode: z.string().nullable(),
+  valueMasked: z.string(),
   verified: z.boolean(),
-  verified_at: z.number().int().nullable(),
-  created_at: z.number().int(),
-  updated_at: z.number().int(),
+  verifiedAt: z.number().int().nullable(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
 })
 
 export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
@@ -33,12 +33,12 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id/identifications',
+    path: '/:userId/identifications',
     security: 'admin',
     operationId: 'users-list_user_identifications',
     summary: docs.LIST_USER_IDENTIFICATIONS_SUMMARY,
     description: docs.LIST_USER_IDENTIFICATIONS_DESCRIPTION,
-    request: { params: z.strictObject({ user_id: z.string() }) },
+    request: { params: z.strictObject({ userId: z.string() }) },
     responses: {
       200: {
         description: 'Identifications.',
@@ -50,13 +50,13 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:user_id/identifications',
+    path: '/:userId/identifications',
     security: 'admin',
     operationId: 'users-create_user_identification',
     summary: docs.CREATE_USER_IDENTIFICATION_SUMMARY,
     description: docs.CREATE_USER_IDENTIFICATION_DESCRIPTION,
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       body: userIdentificationCreateBodySchema,
     },
     responses: {
@@ -68,13 +68,13 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
   })
 
   api.patch({
-    path: '/:user_id/identifications/:type',
+    path: '/:userId/identifications/:type',
     security: 'admin',
     operationId: 'users-update_user_identification',
     summary: docs.UPDATE_USER_IDENTIFICATION_SUMMARY,
     description: docs.UPDATE_USER_IDENTIFICATION_DESCRIPTION,
     request: {
-      params: z.strictObject({ user_id: z.string(), type: z.string() }),
+      params: z.strictObject({ userId: z.string(), type: z.string() }),
       body: userIdentificationUpdateBodySchema,
     },
     responses: {
@@ -85,13 +85,13 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
   })
 
   api.delete({
-    path: '/:user_id/identifications/:type',
+    path: '/:userId/identifications/:type',
     security: 'admin',
     operationId: 'users-delete_user_identification',
     summary: docs.DELETE_USER_IDENTIFICATION_SUMMARY,
     description: docs.DELETE_USER_IDENTIFICATION_DESCRIPTION,
     request: {
-      params: z.strictObject({ user_id: z.string(), type: z.string() }),
+      params: z.strictObject({ userId: z.string(), type: z.string() }),
     },
     responses: {
       200: {
@@ -108,13 +108,13 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:user_id/identifications/:type/disclose',
+    path: '/:userId/identifications/:type/disclose',
     security: 'admin',
     operationId: 'users-disclose_user_identification',
     summary: docs.DISCLOSE_USER_IDENTIFICATION_SUMMARY,
     description: docs.DISCLOSE_USER_IDENTIFICATION_DESCRIPTION,
     request: {
-      params: z.strictObject({ user_id: z.string(), type: z.string() }),
+      params: z.strictObject({ userId: z.string(), type: z.string() }),
       body: userIdentificationDiscloseBodySchema,
     },
     responses: {
@@ -124,9 +124,9 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
           object: z.literal('user_identification_disclosure'),
           type: z.string(),
           value: z.string(),
-          country_code: z.string().nullable(),
+          countryCode: z.string().nullable(),
           verified: z.boolean(),
-          disclosed_at: z.number().int(),
+          disclosedAt: z.number().int(),
         }),
       },
       403: docs.DISCLOSE_USER_IDENTIFICATION_RESPONSES[403],
@@ -136,13 +136,13 @@ export function registerIdentificationRoutes(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:user_id/identifications/:type/verify',
+    path: '/:userId/identifications/:type/verify',
     security: 'admin',
     operationId: 'users-verify_user_identification',
     summary: docs.VERIFY_USER_IDENTIFICATION_SUMMARY,
     description: docs.VERIFY_USER_IDENTIFICATION_DESCRIPTION,
     request: {
-      params: z.strictObject({ user_id: z.string(), type: z.string() }),
+      params: z.strictObject({ userId: z.string(), type: z.string() }),
       body: userIdentificationVerifyBodySchema,
     },
     responses: {

@@ -12,22 +12,22 @@ export const sessionSchema = z
   .object({
     object: z.literal('session').meta({ description: "Always 'session'." }),
     id: z.string(),
-    user_id: z.string(),
-    app_id: z.string().nullable(),
-    expires_at: z.number().int(),
-    ip_address: z.string().nullable(),
-    user_agent: z.string().nullable(),
-    device_id: z.string().nullable(),
+    userId: z.string(),
+    appId: z.string().nullable(),
+    expiresAt: z.number().int(),
+    ipAddress: z.string().nullable(),
+    userAgent: z.string().nullable(),
+    deviceId: z.string().nullable(),
     ip_country_code: z.string().nullable(),
     ip_region: z.string().nullable(),
     ip_city: z.string().nullable(),
     ip_asn: z.string().nullable(),
     ip_as_organization: z.string().nullable(),
-    last_seen_at: z.number().int().nullable(),
+    lastSeenAt: z.number().int().nullable(),
     revoked_at: z.number().int().nullable(),
     revoked_by: z.string().nullable(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'Session' })
 
@@ -42,7 +42,7 @@ export const sessionDeletedSchema = z
 export const userSessionsDeletedSchema = z
   .object({
     object: z.literal('session_list'),
-    user_id: z.string(),
+    userId: z.string(),
     deleted: z.literal(true),
     revoked_count: z.number().int(),
   })
@@ -58,8 +58,8 @@ export const userSessionsDeletedSchema = z
  * wins when both are given.
  */
 export const listSessionsQuerySchema = paginationQuerySchema.extend({
-  user_id: z.string().optional(),
-  device_id: z.string().optional(),
+  userId: z.string().optional(),
+  deviceId: z.string().optional(),
   active: z.stringbool().optional(),
   status: z.enum(SESSION_STATUSES).optional(),
 })
@@ -70,11 +70,11 @@ export const listUserSessionsQuerySchema = paginationQuerySchema.extend({
 })
 
 export const sessionIdParamsSchema = z.strictObject({
-  session_id: z.string(),
+  sessionId: z.string(),
 })
 
 export const userIdParamsSchema = z.strictObject({
-  user_id: z.string(),
+  userId: z.string(),
 })
 
 export type Session = z.infer<typeof sessionSchema>

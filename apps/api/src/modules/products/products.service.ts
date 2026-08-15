@@ -126,7 +126,7 @@ export async function createProduct(body: CreateProductBody): Promise<Product> {
       httpStatus: 409,
     })
 
-  const appId = body.app_id ?? null
+  const appId = body.appId ?? null
   if (appId !== null) {
     const app = await repository.findApp(appId)
     if (!app)
@@ -196,7 +196,7 @@ export async function createProduct(body: CreateProductBody): Promise<Product> {
   // were written after the product row, and both are part of the resource.
   const row = await requireProduct(productId)
   log.info(
-    { product_id: row.id, slug: row.slug, app_id: row.appId },
+    { productId: row.id, slug: row.slug, appId: row.appId },
     'products.create'
   )
 
@@ -217,7 +217,7 @@ export async function replaceProductModules(
 
   const row = await requireProduct(productId)
   log.info(
-    { product_id: productId, module_count: validated.length },
+    { productId: productId, module_count: validated.length },
     'products.modules.replace'
   )
 
@@ -291,7 +291,7 @@ export async function updateProduct(
   if (!row) throw productNotFound()
 
   log.info(
-    { product_id: productId, fields: [...provided].sort() },
+    { productId: productId, fields: [...provided].sort() },
     'products.update'
   )
 
@@ -312,7 +312,7 @@ export async function archiveProduct(
     updatedAt: BigInt(nowUnixSeconds()),
   })
 
-  log.info({ product_id: productId }, 'products.archive')
+  log.info({ productId: productId }, 'products.archive')
 
   return { object: 'product', id: productId, deleted: true }
 }
@@ -339,7 +339,7 @@ export async function createPrice(
   })
 
   log.info(
-    { product_id: productId, price_id: row.id },
+    { productId: productId, priceId: row.id },
     'products.prices.create'
   )
 
@@ -378,7 +378,7 @@ export async function updatePrice(
 
   const row = await repository.updatePrice(priceId, data)
   log.info(
-    { product_id: productId, price_id: priceId, fields: [...provided].sort() },
+    { productId: productId, priceId: priceId, fields: [...provided].sort() },
     'products.prices.update'
   )
 
@@ -398,7 +398,7 @@ export async function archivePrice(
   })
 
   log.info(
-    { product_id: productId, price_id: priceId },
+    { productId: productId, priceId: priceId },
     'products.prices.archive'
   )
 

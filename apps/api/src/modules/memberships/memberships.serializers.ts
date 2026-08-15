@@ -18,13 +18,12 @@ export function serializeMembership(row: MembershipRow): Membership {
   return {
     object: 'membership',
     id: row.id,
-    organization_id: row.organizationId,
-    user_id: row.userId,
+    organizationId: row.organizationId,
+    userId: row.userId,
     workos_membership_id: row.workosMembershipId,
     role: row.role,
-    role_id: row.roleId,
+    roleId: row.roleId,
     status: row.status,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}

@@ -15,7 +15,7 @@ export const priceSchema = z
   .object({
     object: z.literal('price').meta({ description: "Always 'price'." }),
     id: z.string(),
-    product_id: z.string(),
+    productId: z.string(),
 
     billing_interval: z.string().nullable(),
     interval_count: z.number().int().nullable(),
@@ -38,8 +38,8 @@ export const priceSchema = z
     active: z.boolean(),
     metadata: metadataSchema,
 
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
     archived_at: z.number().int().nullable(),
   })
   .meta({ id: 'Price' })
@@ -51,11 +51,11 @@ export const productSchema = z
     slug: z.string(),
     name: z.string(),
     description: z.string().nullable(),
-    app_id: z.string().nullable(),
-    app_slug: z.string().nullable(),
-    app_name: z.string().nullable(),
-    app_logo_url: z.string().nullable(),
-    app_kind: z.string().nullable(),
+    appId: z.string().nullable(),
+    appSlug: z.string().nullable(),
+    appName: z.string().nullable(),
+    appLogoUrl: z.string().nullable(),
+    appKind: z.string().nullable(),
 
     status: z.string(),
     active: z.boolean(),
@@ -68,8 +68,8 @@ export const productSchema = z
     prices: z.array(priceSchema),
     module_ids: z.array(z.string()),
 
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
     archived_at: z.number().int().nullable(),
   })
   .meta({ id: 'Product' })
@@ -107,7 +107,7 @@ export const createProductBodySchema = z.strictObject({
   slug: z.string(),
   name: z.string(),
   description: z.string().nullable().optional(),
-  app_id: z.string().nullable().optional(),
+  appId: z.string().nullable().optional(),
   lookup_key: z.string().nullable().optional(),
   tax_code_id: z.string().nullable().optional(),
   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
@@ -141,11 +141,11 @@ export const listProductsQuerySchema = z.object({
   status: z.string().optional(),
 })
 
-export const productIdParamsSchema = z.strictObject({ product_id: z.string() })
+export const productIdParamsSchema = z.strictObject({ productId: z.string() })
 
 export const priceParamsSchema = z.strictObject({
-  product_id: z.string(),
-  price_id: z.string(),
+  productId: z.string(),
+  priceId: z.string(),
 })
 
 export type Price = z.infer<typeof priceSchema>

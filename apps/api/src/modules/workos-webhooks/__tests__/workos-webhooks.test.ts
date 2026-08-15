@@ -81,11 +81,11 @@ describe('POST /webhooks/workos/', () => {
       event: 'user.updated',
       data: {
         id: 'user_123',
-        first_name: 'Ada',
-        last_name: 'Lovelace',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
         email: 'ada@example.test',
       },
-      created_at: '2026-08-14T00:00:00Z',
+      createdAt: '2026-08-14T00:00:00Z',
     })
 
     expect(response.status).toBe(200)
@@ -104,7 +104,6 @@ describe('POST /webhooks/workos/', () => {
       lastName: 'Lovelace',
       email: 'ada@example.test',
     })
-  })
 
   it('acknowledges an unknown event without syncing a user', async () => {
     const response = await post({
@@ -155,8 +154,8 @@ describe('POST /webhooks/workos/', () => {
       event: 'user.updated',
       data: {
         id: 'user_unknown',
-        first_name: 'Unknown',
-        last_name: 'User',
+        firstName: 'Unknown',
+        lastName: 'User',
         email: 'unknown@example.test',
       },
     })
@@ -177,5 +176,3 @@ describe('POST /webhooks/workos/', () => {
       lastName: 'User',
       email: 'unknown@example.test',
     })
-  })
-})

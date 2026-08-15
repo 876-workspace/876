@@ -8,16 +8,16 @@ export async function listUserIdentifications(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  await service.requireUser(user_id)
-  const rows = await repo.listIdentificationsByUser(user_id)
+  const { userId } = req.params as { userId: string }
+  await service.requireUser(userId)
+  const rows = await repo.listIdentificationsByUser(userId)
   const data = rows.map((r) => serializeUserIdentification(r))
   res.json({
     object: 'list',
     data,
     has_more: false,
-    url: `/users/${user_id}/identifications`,
-    total_count: data.length,
+    url: `/users/${userId}/identifications`,
+    totalCount: data.length,
   })
 }
 
@@ -25,18 +25,18 @@ export async function createUserIdentification(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  await service.requireUser(user_id)
+  const { userId } = req.params as { userId: string }
+  await service.requireUser(userId)
   const body = req.body as {
     type: string
     value: string
-    country_code?: string | null
+    countryCode?: string | null
   }
   const row = await service.createIdentification({
-    userId: user_id,
+    userId: userId,
     type: body.type,
     rawValue: body.value,
-    countryCode: body.country_code ?? null,
+    countryCode: body.countryCode ?? null,
   })
   res.status(201).json(serializeUserIdentification(row))
 }
@@ -45,13 +45,13 @@ export async function updateUserIdentification(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, type } = req.params as { user_id: string; type: string }
-  const body = req.body as { value: string; country_code?: string | null }
+  const { userId, type } = req.params as { userId: string; type: string }
+  const body = req.body as { value: string; countryCode?: string | null }
   const row = await service.updateIdentification({
-    userId: user_id,
+    userId: userId,
     type,
     rawValue: body.value,
-    countryCode: body.country_code,
+    countryCode: body.countryCode,
   })
   res.json(serializeUserIdentification(row))
 }
@@ -60,8 +60,8 @@ export async function deleteUserIdentification(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, type } = req.params as { user_id: string; type: string }
-  const existing = await repo.findIdentificationByType(user_id, type)
+  const { userId, type } = req.params as { userId: string; type: string }
+  const existing = await repo.findIdentificationByType(userId, type)
   if (!existing)
     throw new AppHttpError({
       code: 'identification/not-found',
@@ -82,19 +82,19 @@ export async function discloseUserIdentification(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, type } = req.params as { user_id: string; type: string }
+  const { userId, type } = req.params as { userId: string; type: string }
   const body = req.body as {
-    organization_id: string
-    app_slug: string
+    organizationId: string
+    appSlug: string
     reason?: string | null
   }
   const ip =
     req.ip ?? (req.headers['x-forwarded-for'] as string | undefined) ?? null
   const result = await service.discloseIdentification({
-    userId: user_id,
+    userId: userId,
     type,
-    organizationId: body.organization_id,
-    appSlug: body.app_slug,
+    organizationId: body.organizationId,
+    appSlug: body.appSlug,
     reason: body.reason ?? null,
     requestContext: {
       ip,
@@ -105,9 +105,9 @@ export async function discloseUserIdentification(
     object: 'user_identification_disclosure',
     type,
     value: result.value,
-    country_code: result.countryCode,
+    countryCode: result.countryCode,
     verified: result.verified,
-    disclosed_at: result.disclosedAt,
+    disclosedAt: result.disclosedAt,
   })
 }
 
@@ -115,9 +115,9 @@ export async function verifyUserIdentification(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, type } = req.params as { user_id: string; type: string }
+  const { userId, type } = req.params as { userId: string; type: string }
   const body = req.body as { verified_by: string }
-  const existing = await repo.findIdentificationByType(user_id, type)
+  const existing = await repo.findIdentificationByType(userId, type)
   if (!existing)
     throw new AppHttpError({
       code: 'identification/not-found',

@@ -12,14 +12,14 @@ export function registerPinRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id/pin',
+    path: '/:userId/pin',
     security: 'admin',
     operationId: 'users-retrieve_user_pin',
     summary: 'Retrieve PIN status',
     description:
       'Returns whether a PIN is set and its lockout state. Never returns the PIN or its hash.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       query: z.strictObject({
         scope: z.string().optional().default('account'),
       }),
@@ -29,28 +29,27 @@ export function registerPinRoutes(resolveGuards: GuardResolver) {
         description: 'PIN status.',
         schema: z.object({
           object: z.literal('pin'),
-          user_id: z.string(),
+          userId: z.string(),
           scope: z.string(),
-          is_set: z.boolean(),
-          set_at: z.number().int().nullable(),
-          last_verified_at: z.number().int().nullable(),
-          failed_attempts: z.number().int(),
-          locked_until: z.number().int().nullable(),
+          isSet: z.boolean(),
+          setAt: z.number().int().nullable(),
+          lastVerifiedAt: z.number().int().nullable(),
+          failedAttempts: z.number().int(),
+          lockedUntil: z.number().int().nullable(),
         }),
       },
-    },
     handler: controller.retrieveUserPin,
   })
 
   api.post({
-    path: '/:user_id/pin',
+    path: '/:userId/pin',
     security: 'admin',
     operationId: 'users-set_user_pin',
     summary: 'Set or replace the account PIN',
     description:
       'Sets the account PIN, replacing any existing one and clearing its lockout.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       body: userPinSetBodySchema,
     },
     responses: {
@@ -58,28 +57,27 @@ export function registerPinRoutes(resolveGuards: GuardResolver) {
         description: 'PIN set.',
         schema: z.object({
           object: z.literal('pin'),
-          user_id: z.string(),
+          userId: z.string(),
           scope: z.string(),
-          is_set: z.boolean(),
-          set_at: z.number().int().nullable(),
-          last_verified_at: z.number().int().nullable(),
-          failed_attempts: z.number().int(),
-          locked_until: z.number().int().nullable(),
+          isSet: z.boolean(),
+          setAt: z.number().int().nullable(),
+          lastVerifiedAt: z.number().int().nullable(),
+          failedAttempts: z.number().int(),
+          lockedUntil: z.number().int().nullable(),
         }),
       },
-    },
     handler: controller.setUserPin,
   })
 
   api.post({
-    path: '/:user_id/pin/verify',
+    path: '/:userId/pin/verify',
     security: 'admin',
     operationId: 'users-verify_user_pin',
     summary: 'Verify the account PIN',
     description:
       'Checks a PIN. Five consecutive failures lock further checks for fifteen minutes.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       body: userPinVerifyBodySchema,
     },
     responses: {
@@ -88,21 +86,20 @@ export function registerPinRoutes(resolveGuards: GuardResolver) {
         schema: z.object({
           object: z.literal('pin_verification'),
           verified: z.boolean(),
-          locked_until: z.number().int().nullable(),
+          lockedUntil: z.number().int().nullable(),
         }),
       },
-    },
     handler: controller.verifyUserPin,
   })
 
   api.delete({
-    path: '/:user_id/pin',
+    path: '/:userId/pin',
     security: 'admin',
     operationId: 'users-delete_user_pin',
     summary: 'Clear the account PIN',
     description: 'Removes the account PIN.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       query: z.strictObject({
         scope: z.string().optional().default('account'),
       }),
@@ -112,11 +109,10 @@ export function registerPinRoutes(resolveGuards: GuardResolver) {
         description: 'Cleared.',
         schema: z.object({
           object: z.literal('pin'),
-          user_id: z.string(),
+          userId: z.string(),
           deleted: z.literal(true),
         }),
       },
-    },
     handler: controller.deleteUserPin,
   })
 

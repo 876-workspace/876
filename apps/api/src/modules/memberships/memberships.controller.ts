@@ -22,20 +22,20 @@ export async function createMembership(req: Request, res: Response) {
 }
 
 export async function retrieveMembership(req: Request, res: Response) {
-  const { membership_id } = validParams<{ membership_id: string }>(req)
-  const data = await service.retrieveMembership(membership_id)
+  const { membershipId } = validParams<{ membershipId: string }>(req)
+  const data = await service.retrieveMembership(membershipId)
   res.json(data)
 }
 
 export async function updateMembership(req: Request, res: Response) {
-  const { membership_id } = validParams<{ membership_id: string }>(req)
+  const { membershipId } = validParams<{ membershipId: string }>(req)
   const body = validBody<UpdateMembershipBody>(req)
-  const data = await service.updateMembership(membership_id, body)
+  const data = await service.updateMembership(membershipId, body)
   res.json(data)
 }
 
 export async function deleteMembership(req: Request, res: Response) {
-  const { membership_id } = validParams<{ membership_id: string }>(req)
-  const data = await service.deleteMembership(membership_id)
+  const { membershipId } = validParams<{ membershipId: string }>(req)
+  const data = await service.deleteMembership(membershipId)
   res.json(data)
 }

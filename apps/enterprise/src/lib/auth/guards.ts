@@ -90,8 +90,8 @@ export async function findAuthRoutingUser(
     id: row.id,
     status: row.status ?? 'active',
     banned: Boolean(row.banned),
-    firstName: row.first_name ?? null,
-    lastName: row.last_name ?? null,
+    firstName: row.firstName ?? null,
+    lastName: row.lastName ?? null,
     email: row.email,
     avatar: row.avatar ?? null,
   }

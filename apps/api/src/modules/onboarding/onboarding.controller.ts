@@ -16,31 +16,31 @@ type CatalogParams = {
   target_key: string
 }
 
-type SessionParams = CatalogParams & { organization_id: string }
+type SessionParams = CatalogParams & { organizationId: string }
 
 export function retrieveCatalog(req: Request, res: Response): void {
   const { target_type, target_key } = validParams<CatalogParams>(req)
-  const { country_code } = validQuery<CountryQuery>(req)
+  const { countryCode } = validQuery<CountryQuery>(req)
 
   res
     .status(200)
-    .json(service.retrieveCatalog(target_type, target_key, country_code))
+    .json(service.retrieveCatalog(target_type, target_key, countryCode))
 }
 
 export async function retrieveSession(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id, target_type, target_key } =
+  const { organizationId, target_type, target_key } =
     validParams<SessionParams>(req)
-  const { country_code } = validQuery<CountryQuery>(req)
+  const { countryCode } = validQuery<CountryQuery>(req)
 
   res.status(200).json(
     await service.retrieveSession({
-      organizationId: organization_id,
+      organizationId: organizationId,
       targetType: target_type,
       targetKey: target_key,
-      countryCode: country_code,
+      countryCode: countryCode,
     })
   )
 }
@@ -49,13 +49,13 @@ export async function replaceAnswers(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id, target_type, target_key } =
+  const { organizationId, target_type, target_key } =
     validParams<SessionParams>(req)
   const body = validBody<OnboardingAnswersReplace>(req)
 
   res.status(200).json(
     await service.replaceAnswers({
-      organizationId: organization_id,
+      organizationId: organizationId,
       targetType: target_type,
       targetKey: target_key,
       body,
@@ -74,16 +74,16 @@ export async function submitSession(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id, target_type, target_key } =
+  const { organizationId, target_type, target_key } =
     validParams<SessionParams>(req)
-  const { country_code } = validQuery<CountryQuery>(req)
+  const { countryCode } = validQuery<CountryQuery>(req)
 
   res.status(200).json(
     await service.submitSession({
-      organizationId: organization_id,
+      organizationId: organizationId,
       targetType: target_type,
       targetKey: target_key,
-      countryCode: country_code,
+      countryCode: countryCode,
     })
   )
 }

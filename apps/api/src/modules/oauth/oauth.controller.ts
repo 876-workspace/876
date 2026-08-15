@@ -80,8 +80,8 @@ async function requireCurrentUser(req: Request): Promise<UserRow> {
 
   if (!hasTrustedInternalKey(req)) throw loginRequired()
 
-  const query = req.valid?.query as { user_id?: string } | undefined
-  const userId = query?.user_id || req.get('X-User-Id')
+  const query = req.valid?.query as { userId?: string } | undefined
+  const userId = query?.userId || req.get('X-User-Id')
   if (!userId) throw loginRequired()
 
   const user = await repository.findUserById(userId)
@@ -93,7 +93,7 @@ async function requireCurrentUser(req: Request): Promise<UserRow> {
 /**
  * The client credentials, from HTTP Basic when present, otherwise the body.
  *
- * A `client_id` in both places that disagrees is rejected rather than resolved
+ * A `clientId` in both places that disagrees is rejected rather than resolved
  * in favour of one: the caller is either confused or probing, and neither
  * deserves a token.
  */
@@ -108,7 +108,6 @@ function clientCredentials(
       clientId: clientId ?? null,
       clientSecret: clientSecret ?? null,
     }
-  }
 
   try {
     const decoded = Buffer.from(
@@ -128,7 +127,6 @@ function clientCredentials(
   } catch {
     return null
   }
-}
 
 /** Authenticate a resource server by its 876 API key. */
 async function requireApiKey(req: Request): Promise<{ id: string }> {
@@ -172,7 +170,7 @@ export function openidConfiguration(req: Request, res: Response): void {
     response_types_supported: ['code'],
     grant_types_supported: [
       'authorization_code',
-      'refresh_token',
+      'refreshToken',
       'client_credentials',
     ],
     subject_types_supported: ['public'],
@@ -200,15 +198,15 @@ export async function authorize(req: Request, res: Response): Promise<void> {
   const query = validQuery<AuthorizeQuery>(req)
 
   const { app, scopes } = await service.validateClientRequest({
-    responseType: query.response_type,
-    clientId: query.client_id,
-    redirectUri: query.redirect_uri,
+    responseType: query.responseType,
+    clientId: query.clientId,
+    redirectUri: query.redirectUri,
     scope: query.scope,
     requireClientParameters: true,
-    responseTypeErrorCode: query.response_type
+    responseTypeErrorCode: query.responseType
       ? 'provider/unsupported-response-type'
       : 'provider/invalid-request',
-    responseTypeErrorMessage: query.response_type
+    responseTypeErrorMessage: query.responseType
       ? 'Unsupported response type.'
       : 'Invalid request parameters.',
   })
@@ -238,15 +236,15 @@ export async function authorize(req: Request, res: Response): Promise<void> {
     res.status(200).json({
       status: 'consent_required',
       consentPath: service.buildConsentPath({
-        responseType: query.response_type,
-        clientId: query.client_id,
-        redirectUri: query.redirect_uri,
+        responseType: query.responseType,
+        clientId: query.clientId,
+        redirectUri: query.redirectUri,
         scope: query.scope,
-        ...(query.code_challenge
-          ? { codeChallenge: query.code_challenge }
+        ...(query.codeChallenge
+          ? { codeChallenge: query.codeChallenge }
           : {}),
-        ...(query.code_challenge_method
-          ? { codeChallengeMethod: query.code_challenge_method }
+        ...(query.codeChallengeMethod
+          ? { codeChallengeMethod: query.codeChallengeMethod }
           : {}),
         ...(query.state ? { state: query.state } : {}),
         ...(query.nonce ? { nonce: query.nonce } : {}),
@@ -260,12 +258,12 @@ export async function authorize(req: Request, res: Response): Promise<void> {
     userId: user.id,
     appId: app.id,
     orgId: req.get('X-Org-Id') || null,
-    redirectUri: query.redirect_uri,
+    redirectUri: query.redirectUri,
     scope: query.scope,
     state: query.state ?? null,
     nonce: query.nonce ?? null,
-    codeChallenge: query.code_challenge ?? null,
-    codeChallengeMethod: query.code_challenge_method ?? null,
+    codeChallenge: query.codeChallenge ?? null,
+    codeChallengeMethod: query.codeChallengeMethod ?? null,
   })
 
   res.status(200).json({ status: 'authorized', redirectTo })
@@ -276,7 +274,7 @@ export async function authorize(req: Request, res: Response): Promise<void> {
 export async function token(req: Request, res: Response): Promise<void> {
   const body = validBody<TokenBody>(req)
 
-  const creds = clientCredentials(req, body.client_id, body.client_secret)
+  const creds = clientCredentials(req, body.clientId, body.clientSecret)
   if (!creds) {
     send(
       res,
@@ -294,20 +292,20 @@ export async function token(req: Request, res: Response): Promise<void> {
 
   const origin = requestOrigin(req)
 
-  if (body.grant_type === 'refresh_token') {
+  if (body.grantType === 'refreshToken') {
     send(
       res,
       await service.handleRefreshTokenGrant({
         origin,
         clientId: creds.clientId,
         clientSecret: creds.clientSecret,
-        refreshToken: body.refresh_token,
+        refreshToken: body.refreshToken,
       })
     )
     return
   }
 
-  if (body.grant_type === 'client_credentials') {
+  if (body.grantType === 'client_credentials') {
     send(
       res,
       await service.handleClientCredentialsGrant({
@@ -320,7 +318,7 @@ export async function token(req: Request, res: Response): Promise<void> {
     return
   }
 
-  if (body.grant_type !== 'authorization_code') {
+  if (body.grantType !== 'authorization_code') {
     send(
       res,
       oauthError(
@@ -328,7 +326,6 @@ export async function token(req: Request, res: Response): Promise<void> {
         'The OAuth grant type is not supported.',
         400
       )
-    )
     return
   }
 
@@ -337,10 +334,10 @@ export async function token(req: Request, res: Response): Promise<void> {
     await service.handleAuthorizationCodeGrant({
       origin,
       code: body.code,
-      redirectUri: body.redirect_uri,
+      redirectUri: body.redirectUri,
       clientId: creds.clientId,
       clientSecret: creds.clientSecret,
-      codeVerifier: body.code_verifier,
+      codeVerifier: body.codeVerifier,
     })
   )
 }
@@ -416,22 +413,21 @@ export async function endSession(req: Request, res: Response): Promise<void> {
       sessionId = typeof claims.sid === 'string' ? claims.sid : null
       const aud =
         (typeof claims.aud === 'string' ? claims.aud : null) ??
-        query.client_id ??
+        query.clientId ??
         null
       if (aud) app = await repository.findAppByClientId(aud)
     }
-  }
 
-  if (app === null && query.client_id)
-    app = await repository.findAppByClientId(query.client_id)
+  if (app === null && query.clientId)
+    app = await repository.findAppByClientId(query.clientId)
 
   if (sessionId && userId) {
     await repository.deleteSession(sessionId, userId)
     log.info(
       {
-        user_id: userId,
-        session_id: sessionId,
-        client_id: query.client_id ?? null,
+        userId: userId,
+        sessionId: sessionId,
+        clientId: query.clientId ?? null,
       },
       'oauth.session.ended'
     )
@@ -464,7 +460,7 @@ export async function revoke(req: Request, res: Response): Promise<void> {
   )
 
   log.info(
-    { api_key_id: apiKey.id, sessions_deleted: deleted },
+    { apiKeyId: apiKey.id, sessions_deleted: deleted },
     'oauth.token.revoked'
   )
 
@@ -494,8 +490,8 @@ export async function introspect(req: Request, res: Response): Promise<void> {
   res.status(200).json({
     active: true,
     scope: claims.scope ?? null,
-    app_id: session.appId,
-    client_id: claims.aud ?? null,
+    appId: session.appId,
+    clientId: claims.aud ?? null,
     sub: claims.sub ?? null,
     token_type: 'Bearer',
     exp: claims.exp ?? null,
@@ -509,9 +505,9 @@ export async function consent(req: Request, res: Response): Promise<void> {
   const query = validQuery<AuthorizeQuery>(req)
 
   const { app, scopes } = await service.validateClientRequest({
-    responseType: query.response_type,
-    clientId: query.client_id,
-    redirectUri: query.redirect_uri,
+    responseType: query.responseType,
+    clientId: query.clientId,
+    redirectUri: query.redirectUri,
     scope: query.scope,
   })
 
@@ -552,9 +548,9 @@ export async function consentApprove(
   const body = validBody<ConsentBody>(req)
 
   const { app, scopes } = await service.validateClientRequest({
-    responseType: body.response_type,
-    clientId: body.client_id,
-    redirectUri: body.redirect_uri,
+    responseType: body.responseType,
+    clientId: body.clientId,
+    redirectUri: body.redirectUri,
     scope: body.scope,
   })
 
@@ -579,9 +575,9 @@ export async function consentApprove(
 
   log.info(
     {
-      user_id: user.id,
-      app_id: app.id,
-      client_id: body.client_id,
+      userId: user.id,
+      appId: app.id,
+      clientId: body.clientId,
       scopes: storedScopes,
     },
     'oauth.consent.approved'
@@ -591,12 +587,12 @@ export async function consentApprove(
     userId: user.id,
     appId: app.id,
     orgId: req.get('X-Org-Id') || null,
-    redirectUri: body.redirect_uri,
+    redirectUri: body.redirectUri,
     scope: body.scope,
     state: body.state ?? null,
     nonce: body.nonce ?? null,
-    codeChallenge: body.code_challenge ?? null,
-    codeChallengeMethod: body.code_challenge_method ?? null,
+    codeChallenge: body.codeChallenge ?? null,
+    codeChallengeMethod: body.codeChallengeMethod ?? null,
   })
 
   res.status(200).json({ status: 'authorized', redirectTo })
@@ -608,9 +604,9 @@ export async function consentDeny(req: Request, res: Response): Promise<void> {
   // The redirect URI is still validated on denial: without it, a denial could
   // be pointed anywhere, which is an open redirect that needs no credential.
   await service.validateClientRequest({
-    responseType: body.response_type,
-    clientId: body.client_id,
-    redirectUri: body.redirect_uri,
+    responseType: body.responseType,
+    clientId: body.clientId,
+    redirectUri: body.redirectUri,
     scope: null,
     invalidClientCode: 'provider/invalid-redirect-uri',
     invalidClientMessage: 'The redirect URI is not registered for this app.',
@@ -618,7 +614,7 @@ export async function consentDeny(req: Request, res: Response): Promise<void> {
     validateScopes: false,
   })
 
-  const redirectTo = service.buildRedirect(body.redirect_uri, {
+  const redirectTo = service.buildRedirect(body.redirectUri, {
     error: 'access_denied',
     error_description: 'The account owner denied access.',
     ...(body.state ? { state: body.state } : {}),

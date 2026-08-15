@@ -70,36 +70,34 @@ function userRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW - 60),
     ...overrides,
   }
-}
 
 function serializedUser() {
   return {
     object: 'user',
     id: 'user_2kL9',
     company: null,
-    company_short_name: null,
-    company_logo: null,
-    workos_user_id: 'user_workos_1',
-    stripe_customer_id: null,
+    companyShortName: null,
+    companyLogo: null,
+    workosUserId: 'user_workos_1',
+    stripeCustomerId: null,
     email: 'alejandra@example.com',
     username: 'alejandra',
-    email_verified: true,
-    first_name: 'Alejandra',
-    last_name: 'Reyes',
-    middle_name: null,
+    emailVerified: true,
+    firstName: 'Alejandra',
+    lastName: 'Reyes',
+    middleName: null,
     avatar: null,
-    avatar_file_id: null,
-    platform_role: null,
+    avatarFileId: null,
+    platformRole: null,
     status: 'active',
     banned: false,
-    banned_reason: null,
-    deleted_at: null,
-    deleted_by: null,
-    deletion_reason: null,
-    created_at: NOW - 100,
-    updated_at: NOW,
+    bannedReason: null,
+    deletedAt: null,
+    deletedBy: null,
+    deletionReason: null,
+    createdAt: NOW - 100,
+    updatedAt: NOW,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -222,4 +220,3 @@ describe('POST /users/:userId/restore', () => {
     expect(enqueueCustomerEnsureForUser).not.toHaveBeenCalled()
     expect(session.deleteMany).not.toHaveBeenCalled()
   })
-})

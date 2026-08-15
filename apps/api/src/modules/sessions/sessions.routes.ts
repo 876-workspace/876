@@ -39,12 +39,11 @@ export function createSessionsRouter(resolveGuards: GuardResolver): Router {
         description: 'Sessions returned.',
         schema: listObjectSchema(sessionSchema),
       },
-    },
     handler: controller.listSessions,
   })
 
   api.get({
-    path: '/sessions/:session_id',
+    path: '/sessions/:sessionId',
     operationId: 'sessions-retrieve_session',
     summary: docs.RETRIEVE_SESSION_SUMMARY,
     description: docs.RETRIEVE_SESSION_DESCRIPTION,
@@ -57,7 +56,7 @@ export function createSessionsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/sessions/:session_id',
+    path: '/sessions/:sessionId',
     operationId: 'sessions-revoke_session',
     summary: docs.REVOKE_SESSION_SUMMARY,
     description: docs.REVOKE_SESSION_DESCRIPTION,
@@ -70,7 +69,7 @@ export function createSessionsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.get({
-    path: '/users/:user_id/sessions',
+    path: '/users/:userId/sessions',
     operationId: 'sessions-list_user_sessions',
     summary: 'List sessions for a user',
     request: {
@@ -82,12 +81,11 @@ export function createSessionsRouter(resolveGuards: GuardResolver): Router {
         description: 'Sessions returned.',
         schema: listObjectSchema(sessionSchema),
       },
-    },
     handler: controller.listUserSessions,
   })
 
   api.delete({
-    path: '/users/:user_id/sessions',
+    path: '/users/:userId/sessions',
     operationId: 'sessions-revoke_user_sessions',
     summary: docs.REVOKE_USER_SESSIONS_SUMMARY,
     description: docs.REVOKE_USER_SESSIONS_DESCRIPTION,
@@ -96,7 +94,6 @@ export function createSessionsRouter(resolveGuards: GuardResolver): Router {
         description: 'Sessions revoked.',
         schema: userSessionsDeletedSchema,
       },
-    },
     request: { params: userIdParamsSchema },
     handler: controller.revokeUserSessions,
   })

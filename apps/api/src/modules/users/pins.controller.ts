@@ -9,35 +9,35 @@ export async function retrieveUserPin(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const query = req.query as unknown as { scope?: string }
   const scope = query.scope ?? 'account'
-  await service.requireUser(user_id)
-  const row = await repo.findPin(user_id, scope)
-  res.json(serializeUserPin(user_id, row, scope))
+  await service.requireUser(userId)
+  const row = await repo.findPin(userId, scope)
+  res.json(serializeUserPin(userId, row, scope))
 }
 
 export async function setUserPin(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const body = req.body as { pin: string; scope?: string }
   const scope = body.scope ?? 'account'
-  const row = await service.setUserPin(user_id, body.pin, scope)
-  res.json(serializeUserPin(user_id, row, scope))
+  const row = await service.setUserPin(userId, body.pin, scope)
+  res.json(serializeUserPin(userId, row, scope))
 }
 
 export async function verifyUserPin(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const body = req.body as { pin: string; scope?: string }
   const scope = body.scope ?? 'account'
   // rate limit stub
-  const result = await service.verifyUserPin(user_id, body.pin, scope)
+  const result = await service.verifyUserPin(userId, body.pin, scope)
   res.json({
     object: 'pin_verification',
     verified: result.verified,
-    locked_until: result.lockedUntil,
+    lockedUntil: result.lockedUntil,
   })
 }
 
@@ -45,18 +45,18 @@ export async function deleteUserPin(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const query = req.query as unknown as { scope?: string }
   const scope = query.scope ?? 'account'
-  await service.requireUser(user_id)
-  const cleared = await repo.clearPin(user_id, scope)
+  await service.requireUser(userId)
+  const cleared = await repo.clearPin(userId, scope)
   if (!cleared)
     throw new AppHttpError({
       code: 'pin/not-set',
       message: 'No PIN is set for this account.',
       httpStatus: 404,
     })
-  await repo.recordPinClearedEvent(user_id, scope, BigInt(nowUnixSeconds()))
+  await repo.recordPinClearedEvent(userId, scope, BigInt(nowUnixSeconds()))
 
-  res.json({ object: 'pin', user_id, deleted: true })
+  res.json({ object: 'pin', userId, deleted: true })
 }

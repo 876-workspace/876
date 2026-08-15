@@ -21,19 +21,19 @@ export const addressSchema = z
   .object({
     object: z.literal('address').meta({ description: "Always 'address'." }),
     id: z.string(),
-    user_id: z.string().nullable(),
-    organization_id: z.string().nullable(),
+    userId: z.string().nullable(),
+    organizationId: z.string().nullable(),
     type: z.enum(ADDRESS_TYPES),
     label: z.string().nullable(),
     line1: z.string().nullable(),
     line2: z.string().nullable(),
     city: z.string().nullable(),
-    region_id: z.string().nullable(),
-    country_code: z.string().nullable(),
-    postal_code: z.string().nullable(),
-    is_default: z.boolean(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    regionId: z.string().nullable(),
+    countryCode: z.string().nullable(),
+    postalCode: z.string().nullable(),
+    isDefault: z.boolean(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({ id: 'Address' })
 
@@ -51,35 +51,29 @@ const either = <T extends z.ZodTypeAny>(schema: T) => schema.optional()
 export const createAddressBodySchema = z
   .object({
     userId: either(z.string()),
-    user_id: either(z.string()),
     organizationId: either(z.string()),
-    organization_id: either(z.string()),
     type: z.enum(ADDRESS_TYPES).default('other'),
     label: either(z.string()),
     line1: either(z.string()),
     line2: either(z.string()),
     city: either(z.string()),
     regionId: either(z.string()),
-    region_id: either(z.string()),
     countryCode: either(z.string()),
-    country_code: either(z.string()),
     postalCode: either(z.string()),
-    postal_code: either(z.string()),
     isDefault: either(z.boolean()),
-    is_default: either(z.boolean()),
   })
   .transform((body) => ({
-    userId: body.userId ?? body.user_id ?? null,
-    organizationId: body.organizationId ?? body.organization_id ?? null,
+    userId: body.userId ?? body.userId ?? null,
+    organizationId: body.organizationId ?? body.organizationId ?? null,
     type: body.type,
     label: body.label ?? null,
     line1: body.line1 ?? null,
     line2: body.line2 ?? null,
     city: body.city ?? null,
-    regionId: body.regionId ?? body.region_id ?? null,
-    countryCode: body.countryCode ?? body.country_code ?? null,
-    postalCode: body.postalCode ?? body.postal_code ?? null,
-    isDefault: body.isDefault ?? body.is_default ?? false,
+    regionId: body.regionId ?? body.regionId ?? null,
+    countryCode: body.countryCode ?? body.countryCode ?? null,
+    postalCode: body.postalCode ?? body.postalCode ?? null,
+    isDefault: body.isDefault ?? body.isDefault ?? false,
   }))
 
 /**
@@ -94,13 +88,9 @@ export const updateAddressBodySchema = z
     line2: z.string().nullish(),
     city: z.string().nullish(),
     regionId: z.string().nullish(),
-    region_id: z.string().nullish(),
     countryCode: z.string().nullish(),
-    country_code: z.string().nullish(),
     postalCode: z.string().nullish(),
-    postal_code: z.string().nullish(),
     isDefault: z.boolean().nullish(),
-    is_default: z.boolean().nullish(),
   })
   .transform((body) => ({
     type: body.type,
@@ -108,10 +98,10 @@ export const updateAddressBodySchema = z
     line1: body.line1 ?? undefined,
     line2: body.line2 ?? undefined,
     city: body.city ?? undefined,
-    regionId: body.regionId ?? body.region_id ?? undefined,
-    countryCode: body.countryCode ?? body.country_code ?? undefined,
-    postalCode: body.postalCode ?? body.postal_code ?? undefined,
-    isDefault: body.isDefault ?? body.is_default ?? undefined,
+    regionId: body.regionId ?? body.regionId ?? undefined,
+    countryCode: body.countryCode ?? body.countryCode ?? undefined,
+    postalCode: body.postalCode ?? body.postalCode ?? undefined,
+    isDefault: body.isDefault ?? body.isDefault ?? undefined,
   }))
 
 export const listAddressesQuerySchema = z.object({
@@ -119,7 +109,7 @@ export const listAddressesQuerySchema = z.object({
   organizationId: z.string().optional(),
 })
 
-export const addressIdParamsSchema = z.strictObject({ address_id: z.string() })
+export const addressIdParamsSchema = z.strictObject({ addressId: z.string() })
 
 export type Address = z.infer<typeof addressSchema>
 export type AddressType = (typeof ADDRESS_TYPES)[number]

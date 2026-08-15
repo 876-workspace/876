@@ -46,15 +46,15 @@ export async function retrieveCurrentUser(
 export async function listUsers(req: Request, res: Response): Promise<void> {
   const query = req.query as unknown as {
     limit?: string
-    starting_after?: string
-    ending_before?: string
+    startingAfter?: string
+    endingBefore?: string
     search?: string
-    include_deleted?: string | boolean
+    includeDeleted?: string | boolean
     status?: string
     ids?: string | string[]
   }
   const limit = query.limit ? Number(query.limit) : 20
-  const includeDeletedRaw = query.include_deleted
+  const includeDeletedRaw = query.includeDeleted
   const includeDeleted =
     includeDeletedRaw === true || includeDeletedRaw === 'true'
   const principal = getPrincipal(req)
@@ -81,7 +81,6 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
         )
         .filter(Boolean)
     }
-  }
   if (ids && ids.length > 100) {
     throw new AppHttpError({
       code: 'request/invalid',
@@ -103,20 +102,19 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
         r,
         ...(companies.get(r.id) ?? [null, null, null])
       )
-    )
     res.json({
       object: 'list',
       data,
       has_more: false,
       url: '/users',
-      total_count: null,
+      totalCount: null,
     })
     return
   }
   const { data: rows, hasMore } = await repo.listUsers({
     limit,
-    starting_after: query.starting_after,
-    ending_before: query.ending_before,
+    startingAfter: query.startingAfter,
+    endingBefore: query.endingBefore,
     includeDeleted: resolvedIncludeDeleted,
     status,
     ids: ids ?? undefined,
@@ -130,7 +128,7 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     data,
     has_more: hasMore,
     url: '/users',
-    total_count: null,
+    totalCount: null,
   })
 }
 
@@ -155,7 +153,7 @@ export async function searchUsers(req: Request, res: Response): Promise<void> {
     data,
     has_more: false,
     url: '/users/search',
-    total_count: null,
+    totalCount: null,
   })
 }
 
@@ -164,8 +162,8 @@ export async function getUserByUsername(
   res: Response
 ): Promise<void> {
   const { username } = req.params as { username: string }
-  const query = req.query as unknown as { include_deleted?: string | boolean }
-  const includeDeletedRaw = query.include_deleted
+  const query = req.query as unknown as { includeDeleted?: string | boolean }
+  const includeDeletedRaw = query.includeDeleted
   const includeDeleted =
     includeDeletedRaw === true || includeDeletedRaw === 'true'
   const principal = getPrincipal(req)
@@ -183,15 +181,14 @@ export async function getUserByUsername(
       user,
       ...(companies.get(user.id) ?? [null, null, null])
     )
-  )
 }
 
 export async function getUserByWorkosId(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { workos_user_id } = req.params as { workos_user_id: string }
-  const user = await repo.findUserByWorkosId(workos_user_id)
+  const { workosUserId } = req.params as { workosUserId: string }
+  const user = await repo.findUserByWorkosId(workosUserId)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -204,18 +201,17 @@ export async function getUserByWorkosId(
       user,
       ...(companies.get(user.id) ?? [null, null, null])
     )
-  )
 }
 
 export async function retrieveUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  const query = req.query as unknown as { include_deleted?: string | boolean }
-  const includeDeletedRaw = query.include_deleted
+  const { userId } = req.params as { userId: string }
+  const query = req.query as unknown as { includeDeleted?: string | boolean }
+  const includeDeletedRaw = query.includeDeleted
   const includeDeleted =
     includeDeletedRaw === true || includeDeletedRaw === 'true'
   const principal = getPrincipal(req)
   const resolved = principal.internal ? includeDeleted : false
-  const user = await repo.findUserById(user_id, resolved)
+  const user = await repo.findUserById(userId, resolved)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -228,7 +224,6 @@ export async function retrieveUser(req: Request, res: Response): Promise<void> {
       user,
       ...(companies.get(user.id) ?? [null, null, null])
     )
-  )
 }
 
 export async function createUser(req: Request, res: Response): Promise<void> {
@@ -267,8 +262,8 @@ export async function createUser(req: Request, res: Response): Promise<void> {
     } else {
       workosUser = await authProvider.register({
         email,
-        firstName: body.first_name,
-        lastName: body.last_name,
+        firstName: body.firstName,
+        lastName: body.lastName,
         emailVerified: false,
       })
       workosUserCreated = true
@@ -301,11 +296,10 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       await authProvider.sendRecovery(email, settings.workos.clientId)
     } catch (error) {
       log.warn(
-        { err: error, email, workos_user_id: workosUserId },
+        { err: error, email, workosUserId: workosUserId },
         'workos.password_reset_email failed'
       )
     }
-  }
 
   const now = BigInt(nowUnixSeconds())
   const isOwner = isPlatformOwnerEmail(email)
@@ -318,10 +312,10 @@ export async function createUser(req: Request, res: Response): Promise<void> {
       workosUserId,
       email,
       username,
-      emailVerified: body.email_verified ?? workosUser.emailVerified,
-      firstName: workosUser.firstName || body.first_name,
-      lastName: workosUser.lastName || body.last_name,
-      middleName: body.middle_name ?? null,
+      emailVerified: body.emailVerified ?? workosUser.emailVerified,
+      firstName: workosUser.firstName || body.firstName,
+      lastName: workosUser.lastName || body.lastName,
+      middleName: body.middleName ?? null,
       avatar: body.avatar ?? workosUser.avatar,
       role: isOwner ? 'owner' : 'user',
       platformRole: isOwner ? 'owner' : null,
@@ -340,7 +334,7 @@ export async function createUser(req: Request, res: Response): Promise<void> {
   await repo.createProfileForUser(userId, now)
 
   log.info(
-    { user_id: userId, email, workos_user_id: workosUserId },
+    { userId: userId, email, workosUserId: workosUserId },
     'users.create'
   )
 
@@ -348,9 +342,9 @@ export async function createUser(req: Request, res: Response): Promise<void> {
 }
 
 export async function updateUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const body = req.body as Record<string, unknown>
-  const user = await repo.findUserById(user_id)
+  const user = await repo.findUserById(userId)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -366,28 +360,28 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
     else if (typeof body.username === 'string')
       updateData.username = await service.assertUsernameAvailable(
         body.username as string,
-        user_id
+        userId
       )
   }
-  if (body.first_name !== undefined && body.first_name !== null)
-    updateData.firstName = body.first_name
-  if (body.last_name !== undefined && body.last_name !== null)
-    updateData.lastName = body.last_name
-  if (explicitlySet.has('middle_name')) updateData.middleName = body.middle_name
+  if (body.firstName !== undefined && body.firstName !== null)
+    updateData.firstName = body.firstName
+  if (body.lastName !== undefined && body.lastName !== null)
+    updateData.lastName = body.lastName
+  if (explicitlySet.has('middleName')) updateData.middleName = body.middleName
   if (explicitlySet.has('avatar')) updateData.avatar = body.avatar
-  if (explicitlySet.has('avatar_file_id'))
-    updateData.avatarFileId = body.avatar_file_id
+  if (explicitlySet.has('avatarFileId'))
+    updateData.avatarFileId = body.avatarFileId
   if (body.status !== undefined && body.status !== null)
     updateData.status = body.status
-  if (explicitlySet.has('stripe_customer_id'))
-    updateData.stripeCustomerId = body.stripe_customer_id
-  if (body.email_verified !== undefined && body.email_verified !== null)
-    updateData.emailVerified = body.email_verified
+  if (explicitlySet.has('stripeCustomerId'))
+    updateData.stripeCustomerId = body.stripeCustomerId
+  if (body.emailVerified !== undefined && body.emailVerified !== null)
+    updateData.emailVerified = body.emailVerified
   let updated = user
   let localSaveSucceeded = false
   if (Object.keys(updateData).length > 0) {
     const now = BigInt(nowUnixSeconds())
-    const saved = await repo.updateUser(user_id, {
+    const saved = await repo.updateUser(userId, {
       ...updateData,
       updatedAt: now,
     } as never)
@@ -395,7 +389,6 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
       updated = saved
       localSaveSucceeded = true
     }
-  }
 
   // Push profile edits back to WorkOS (source of record) so a later sync does not
   // revert them. Best-effort: a WorkOS hiccup must not fail an update the DB already
@@ -421,19 +414,18 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
       })
     } catch (error) {
       log.warn(
-        { err: error, user_id, workos_user_id: updated.workosUserId },
+        { err: error, userId, workosUserId: updated.workosUserId },
         'users.workos_profile_push_failed'
       )
     }
-  }
 
   res.json(serializers.serializeUser(updated))
 }
 
 export async function deleteUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  const query = req.query as unknown as { deleted_by?: string; reason?: string }
-  const user = await repo.findUserById(user_id, true)
+  const { userId } = req.params as { userId: string }
+  const query = req.query as unknown as { deletedBy?: string; reason?: string }
+  const user = await repo.findUserById(userId, true)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -441,8 +433,8 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
       httpStatus: 404,
     })
   await repo.softDeleteUser(
-    user_id,
-    query.deleted_by ?? null,
+    userId,
+    query.deletedBy ?? null,
     query.reason ?? null
   )
 
@@ -453,13 +445,13 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
   // removes the provider user. (`.claude/rules/deletions.md` + ADR-012 §D1.)
   // Revoke any live sessions immediately so an already-signed-in tab is cut off
   // rather than waiting for its next guarded navigation.
-  await repo.deleteAllSessionsForUser(user_id)
+  await repo.deleteAllSessionsForUser(userId)
 
   await archiveBillingCustomerForUser(user)
 
-  log.info({ user_id, email: user.email }, 'users.delete')
+  log.info({ userId, email: user.email }, 'users.delete')
 
-  res.json({ object: 'user', id: user_id, deleted: true })
+  res.json({ object: 'user', id: userId, deleted: true })
 }
 
 /**
@@ -492,11 +484,10 @@ async function archiveBillingCustomerForUser(user: {
     )
   } catch (error) {
     log.error(
-      { err: error, user_id: user.id },
+      { err: error, userId: user.id },
       'users.archive_billing_customer_failed'
     )
   }
-}
 
 async function ensureBillingCustomerForUser(user: {
   id: string
@@ -523,15 +514,14 @@ async function ensureBillingCustomerForUser(user: {
     )
   } catch (error) {
     log.error(
-      { err: error, user_id: user.id },
+      { err: error, userId: user.id },
       'users.ensure_billing_customer_failed'
     )
   }
-}
 
 export async function purgeUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  const user = await repo.findUserById(user_id, true)
+  const { userId } = req.params as { userId: string }
+  const user = await repo.findUserById(userId, true)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -540,22 +530,22 @@ export async function purgeUser(req: Request, res: Response): Promise<void> {
     })
   // Archive the Billing customer before the row is gone, then hard-delete.
   await archiveBillingCustomerForUser(user)
-  await repo.deleteAllSessionsForUser(user_id)
-  await repo.purgeUser(user_id)
+  await repo.deleteAllSessionsForUser(userId)
+  await repo.purgeUser(userId)
 
   // Purge is destructive: remove the WorkOS user too.
   await deleteProviderUser(getAuthProvider(getSettings()), user.workosUserId, {
     localUserId: user.id,
   })
 
-  log.info({ user_id, email: user.email }, 'users.purge')
+  log.info({ userId, email: user.email }, 'users.purge')
 
-  res.json({ object: 'user', id: user_id, deleted: true })
+  res.json({ object: 'user', id: userId, deleted: true })
 }
 
 export async function restoreUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  const user = await repo.findUserById(user_id, true)
+  const { userId } = req.params as { userId: string }
+  const user = await repo.findUserById(userId, true)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -569,7 +559,7 @@ export async function restoreUser(req: Request, res: Response): Promise<void> {
     return
   }
 
-  const restored = await repo.restoreUser(user_id)
+  const restored = await repo.restoreUser(userId)
   if (!restored)
     throw new AppHttpError({
       code: 'user/not-found',
@@ -579,49 +569,47 @@ export async function restoreUser(req: Request, res: Response): Promise<void> {
 
   await ensureBillingCustomerForUser(restored)
 
-  log.info({ user_id, email: restored.email }, 'users.restore')
+  log.info({ userId, email: restored.email }, 'users.restore')
 
   res.json(serializers.serializeUser(restored))
 }
 
 export async function banUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const body = req.body as { reason?: string | null } | undefined
-  const user = await repo.findUserById(user_id)
+  const user = await repo.findUserById(userId)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
       message: 'No user exists with the provided identifier.',
       httpStatus: 404,
     })
-  const updated = await repo.setBanned(user_id, true, body?.reason ?? null)
-  await repo.deleteAllSessionsForUser(user_id)
-  const companies = await repo.companiesForUsers([user_id])
+  const updated = await repo.setBanned(userId, true, body?.reason ?? null)
+  await repo.deleteAllSessionsForUser(userId)
+  const companies = await repo.companiesForUsers([userId])
   res.json(
     serializers.serializeUser(
       (updated ?? user) as never,
-      ...(companies.get(user_id) ?? [null, null, null])
+      ...(companies.get(userId) ?? [null, null, null])
     )
-  )
 }
 
 export async function unbanUser(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  const user = await repo.findUserById(user_id)
+  const { userId } = req.params as { userId: string }
+  const user = await repo.findUserById(userId)
   if (!user)
     throw new AppHttpError({
       code: 'user/not-found',
       message: 'No user exists with the provided identifier.',
       httpStatus: 404,
     })
-  const updated = await repo.setBanned(user_id, false)
-  const companies = await repo.companiesForUsers([user_id])
+  const updated = await repo.setBanned(userId, false)
+  const companies = await repo.companiesForUsers([userId])
   res.json(
     serializers.serializeUser(
       (updated ?? user) as never,
-      ...(companies.get(user_id) ?? [null, null, null])
+      ...(companies.get(userId) ?? [null, null, null])
     )
-  )
 }
 
 export async function backfillUsernames(
@@ -693,18 +681,18 @@ export async function ensureUser(req: Request, res: Response): Promise<void> {
 }
 
 export async function listUserApps(req: Request, res: Response): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  await service.requireUser(user_id)
+  const { userId } = req.params as { userId: string }
+  await service.requireUser(userId)
   const enrollments = (await repo.listUserApps(
-    user_id
+    userId
   )) as unknown as import('./users.serializers').UserAppEnrollmentRow[]
   const data = enrollments.map((e) => serializers.serializeUserApp(e))
   res.json({
     object: 'list',
     data,
     has_more: false,
-    url: `/users/${user_id}/apps`,
-    total_count: data.length,
+    url: `/users/${userId}/apps`,
+    totalCount: data.length,
   })
 }
 
@@ -717,7 +705,7 @@ export async function listUserAppsBatch(
   const groups = await service.listUserAppsBatch(userIds)
   const data = groups.map((g) => ({
     object: 'user_apps' as const,
-    user_id: g.userId,
+    userId: g.userId,
     data: (
       g.enrollments as unknown as import('./users.serializers').UserAppEnrollmentRow[]
     ).map((e) => serializers.serializeUserApp(e)),
@@ -727,7 +715,7 @@ export async function listUserAppsBatch(
     data,
     has_more: false,
     url: '/users/apps',
-    total_count: data.length,
+    totalCount: data.length,
   })
 }
 
@@ -735,18 +723,18 @@ export async function listUserFeatures(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  await service.requireUser(user_id)
+  const { userId } = req.params as { userId: string }
+  await service.requireUser(userId)
   const rows = (await repo.listUserFeatures(
-    user_id
+    userId
   )) as unknown as import('./users.serializers').UserFeatureRow[]
   const data = rows.map((r) => serializers.serializeUserFeature(r))
   res.json({
     object: 'list',
     data,
     has_more: false,
-    url: `/users/${user_id}/features`,
-    total_count: null,
+    url: `/users/${userId}/features`,
+    totalCount: null,
   })
 }
 
@@ -754,11 +742,11 @@ export async function grantUserFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  const body = req.body as { feature_id: string; note?: string | null }
+  const { userId } = req.params as { userId: string }
+  const body = req.body as { featureId: string; note?: string | null }
   const row = (await service.grantUserFeature(
-    user_id,
-    body.feature_id,
+    userId,
+    body.featureId,
     true,
     body.note ?? null
   )) as unknown as import('./users.serializers').UserFeatureRow
@@ -769,14 +757,14 @@ export async function disableUserFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, feature_id } = req.params as {
-    user_id: string
-    feature_id: string
+  const { userId, featureId } = req.params as {
+    userId: string
+    featureId: string
   }
   const query = req.query as unknown as { note?: string }
   const row = (await service.grantUserFeature(
-    user_id,
-    feature_id,
+    userId,
+    featureId,
     false,
     query.note ?? null
   )) as unknown as import('./users.serializers').UserFeatureRow
@@ -815,7 +803,7 @@ export async function listReservedUsernames(
     data,
     has_more: false,
     url: '/users/reserved-usernames',
-    total_count: data.length,
+    totalCount: data.length,
   })
 }
 
@@ -859,18 +847,18 @@ export async function listUserAccounts(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  await service.requireUser(user_id)
+  const { userId } = req.params as { userId: string }
+  await service.requireUser(userId)
   const rows = (await repo.listAccountsForUser(
-    user_id
+    userId
   )) as unknown as import('./users.serializers').AccountRow[]
   const data = rows.map((r) => serializers.serializeAccount(r as never))
   res.json({
     object: 'list',
     data,
     has_more: false,
-    url: `/users/${user_id}/accounts`,
-    total_count: data.length,
+    url: `/users/${userId}/accounts`,
+    totalCount: data.length,
   })
 }
 
@@ -878,52 +866,52 @@ export async function unlinkUserAccount(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, account_id } = req.params as {
-    user_id: string
-    account_id: string
+  const { userId, accountId } = req.params as {
+    userId: string
+    accountId: string
   }
-  await service.requireUser(user_id)
-  const account = await repo.findAccount(user_id, account_id)
+  await service.requireUser(userId)
+  const account = await repo.findAccount(userId, accountId)
   if (!account)
     throw new AppHttpError({
       code: 'account/not-found',
       message: 'No linked account found with this ID for the specified user.',
       httpStatus: 404,
     })
-  await repo.deleteAccount(user_id, account_id)
-  res.json({ object: 'account', id: account_id, deleted: true })
+  await repo.deleteAccount(userId, accountId)
+  res.json({ object: 'account', id: accountId, deleted: true })
 }
 
 export async function revokeUserSessions(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
-  await service.requireUser(user_id)
-  const revoked = await repo.deleteAllSessionsForUser(user_id)
-  res.json({ object: 'session_revoke', user_id, sessions_revoked: revoked })
+  const { userId } = req.params as { userId: string }
+  await service.requireUser(userId)
+  const revoked = await repo.deleteAllSessionsForUser(userId)
+  res.json({ object: 'session_revoke', userId, sessionsRevoked: revoked })
 }
 
 export async function getUserOauthGrants(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = req.params as { user_id: string }
+  const { userId } = req.params as { userId: string }
   const principal = getPrincipal(req)
-  if (!(principal.internal || principal.userId === user_id))
+  if (!(principal.internal || principal.userId === userId))
     throw new AppHttpError({
       code: 'auth/forbidden',
       message: 'Forbidden.',
       httpStatus: 403,
     })
-  if (!user_id)
+  if (!userId)
     throw new AppHttpError({
       code: 'provider/invalid-request',
       message: 'userId is required.',
       httpStatus: 400,
     })
   const rows = (await repo.listOauthGrants(
-    user_id
+    userId
   )) as unknown as import('./users.serializers').OauthGrantRow[]
   const data = rows.map((r) => serializers.serializeAuthorizedApp(r))
   res.json(data)
@@ -933,18 +921,18 @@ export async function revokeUserOauthGrant(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, grant_id } = req.params as {
-    user_id: string
-    grant_id: string
+  const { userId, grantId } = req.params as {
+    userId: string
+    grantId: string
   }
   const principal = getPrincipal(req)
-  if (!(principal.internal || principal.userId === user_id))
+  if (!(principal.internal || principal.userId === userId))
     throw new AppHttpError({
       code: 'auth/forbidden',
       message: 'Forbidden.',
       httpStatus: 403,
     })
-  const ok = await repo.revokeOauthGrant(grant_id, user_id)
+  const ok = await repo.revokeOauthGrant(grantId, userId)
   if (!ok)
     throw new AppHttpError({
       code: 'oauth-grant/not-found',
@@ -977,29 +965,29 @@ export async function updateMyProfile(
   const body = req.body as Record<string, unknown>
   const userUpdates: Record<string, unknown> = {}
   const profileUpdates: Record<string, unknown> = {}
-  for (const f of ['first_name', 'last_name', 'middle_name', 'avatar'])
+  for (const f of ['firstName', 'lastName', 'middleName', 'avatar'])
     if (f in body)
       (userUpdates as Record<string, unknown>)[
-        f === 'first_name'
+        f === 'firstName'
           ? 'firstName'
-          : f === 'last_name'
+          : f === 'lastName'
             ? 'lastName'
-            : f === 'middle_name'
+            : f === 'middleName'
               ? 'middleName'
               : 'avatar'
       ] = body[f]
   for (const f of [
     'nickname',
     'gender',
-    'phone_number',
-    'date_of_birth',
+    'phoneNumber',
+    'dateOfBirth',
     'language',
     'timezone',
   ])
     if (f in body) {
       const map: Record<string, string> = {
-        phone_number: 'phoneNumber',
-        date_of_birth: 'dateOfBirth',
+        phoneNumber: 'phoneNumber',
+        dateOfBirth: 'dateOfBirth',
       }
       ;(profileUpdates as Record<string, unknown>)[map[f] ?? f] = body[f]
     }
@@ -1031,7 +1019,7 @@ export async function listMyAddresses(
     data: rows.map((r: unknown) => serializers.serializeAddress(r as never)),
     has_more: false,
     url: '/users/me/addresses',
-    total_count: null,
+    totalCount: null,
   })
 }
 
@@ -1067,8 +1055,8 @@ export async function retrieveMyAddress(
   res: Response
 ): Promise<void> {
   const userId = await requireSessionUserId(req)
-  const { address_id } = req.params as { address_id: string }
-  const address = await repo.getAddressForUser(address_id, userId)
+  const { addressId } = req.params as { addressId: string }
+  const address = await repo.getAddressForUser(addressId, userId)
   if (!address)
     throw new AppHttpError({
       code: 'address/not-found',
@@ -1083,7 +1071,7 @@ export async function updateMyAddress(
   res: Response
 ): Promise<void> {
   const userId = await requireSessionUserId(req)
-  const { address_id } = req.params as { address_id: string }
+  const { addressId } = req.params as { addressId: string }
   const body = req.body as Record<string, unknown>
   if (Object.keys(body).length === 0)
     throw new AppHttpError({
@@ -1091,7 +1079,7 @@ export async function updateMyAddress(
       message: 'No fields to update.',
       httpStatus: 400,
     })
-  const updated = await repo.updateAddressForUser(address_id, userId, {
+  const updated = await repo.updateAddressForUser(addressId, userId, {
     ...body,
     updatedAt: BigInt(nowUnixSeconds()),
   } as never)
@@ -1109,15 +1097,15 @@ export async function deleteMyAddress(
   res: Response
 ): Promise<void> {
   const userId = await requireSessionUserId(req)
-  const { address_id } = req.params as { address_id: string }
-  const deleted = await repo.deleteAddressForUser(address_id, userId)
+  const { addressId } = req.params as { addressId: string }
+  const deleted = await repo.deleteAddressForUser(addressId, userId)
   if (!deleted)
     throw new AppHttpError({
       code: 'address/not-found',
       message: 'Address not found.',
       httpStatus: 404,
     })
-  res.json({ object: 'address', id: address_id, deleted: true })
+  res.json({ object: 'address', id: addressId, deleted: true })
 }
 
 export async function listMyContacts(
@@ -1131,7 +1119,7 @@ export async function listMyContacts(
     data: rows.map((r: unknown) => serializers.serializeContact(r as never)),
     has_more: false,
     url: '/users/me/contacts',
-    total_count: null,
+    totalCount: null,
   })
 }
 
@@ -1177,8 +1165,8 @@ export async function retrieveMyContact(
   res: Response
 ): Promise<void> {
   const userId = await requireSessionUserId(req)
-  const { contact_id } = req.params as { contact_id: string }
-  const contact = await repo.getContactForOwner(contact_id, userId)
+  const { contactId } = req.params as { contactId: string }
+  const contact = await repo.getContactForOwner(contactId, userId)
   if (!contact)
     throw new AppHttpError({
       code: 'contact/not-found',
@@ -1193,7 +1181,7 @@ export async function updateMyContact(
   res: Response
 ): Promise<void> {
   const userId = await requireSessionUserId(req)
-  const { contact_id } = req.params as { contact_id: string }
+  const { contactId } = req.params as { contactId: string }
   const body = req.body as Record<string, unknown>
   if (Object.keys(body).length === 0)
     throw new AppHttpError({
@@ -1201,7 +1189,7 @@ export async function updateMyContact(
       message: 'No fields to update.',
       httpStatus: 400,
     })
-  const updated = await repo.updateContactForOwner(contact_id, userId, {
+  const updated = await repo.updateContactForOwner(contactId, userId, {
     ...body,
     updatedAt: BigInt(nowUnixSeconds()),
   } as never)
@@ -1211,7 +1199,7 @@ export async function updateMyContact(
       message: 'Contact not found.',
       httpStatus: 404,
     })
-  const loaded = await repo.getContactForOwner(contact_id, userId)
+  const loaded = await repo.getContactForOwner(contactId, userId)
   if (!loaded)
     throw new AppHttpError({
       code: 'contact/not-found',
@@ -1226,15 +1214,15 @@ export async function deleteMyContact(
   res: Response
 ): Promise<void> {
   const userId = await requireSessionUserId(req)
-  const { contact_id } = req.params as { contact_id: string }
-  const deleted = await repo.deleteContactForOwner(contact_id, userId)
+  const { contactId } = req.params as { contactId: string }
+  const deleted = await repo.deleteContactForOwner(contactId, userId)
   if (!deleted)
     throw new AppHttpError({
       code: 'contact/not-found',
       message: 'Contact not found.',
       httpStatus: 404,
     })
-  res.json({ object: 'user_contact', id: contact_id, deleted: true })
+  res.json({ object: 'user_contact', id: contactId, deleted: true })
 }
 
 export async function listMyMemberships(
@@ -1261,7 +1249,7 @@ export async function listMyMemberships(
           name: membership.organization.name,
           slug: membership.organization.slug,
           status: membership.organization.status,
-          logo_url: membership.organization.logoUrl,
+          logoUrl: membership.organization.logoUrl,
         },
       }
     })
@@ -1271,6 +1259,6 @@ export async function listMyMemberships(
     data,
     has_more: false,
     url: '/users/me/memberships',
-    total_count: null,
+    totalCount: null,
   })
 }

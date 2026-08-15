@@ -241,7 +241,7 @@ export async function taxCodeExists(taxCodeId: string): Promise<boolean> {
 /**
  * Replace a plan's module set, retaining the associations that did not change.
  *
- * Deleting every row and re-inserting would churn `created_at` on modules the
+ * Deleting every row and re-inserting would churn `createdAt` on modules the
  * caller left alone, so only the difference in each direction is written.
  */
 export async function replaceModules(

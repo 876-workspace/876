@@ -44,27 +44,26 @@ function sessionRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW - 100),
     ...overrides,
   }
-}
 
 const SERIALIZED = {
   object: 'session',
   id: 'ses_7fJ3',
-  user_id: 'user_2kL9',
-  app_id: 'app_4qR8',
-  expires_at: NOW + 3600,
-  ip_address: '203.0.113.7',
-  user_agent: 'Mozilla/5.0',
-  device_id: 'dev_1a',
+  userId: 'user_2kL9',
+  appId: 'app_4qR8',
+  expiresAt: NOW + 3600,
+  ipAddress: '203.0.113.7',
+  userAgent: 'Mozilla/5.0',
+  deviceId: 'dev_1a',
   ip_country_code: 'JM',
   ip_region: 'Kingston',
   ip_city: 'Kingston',
   ip_asn: 'AS1234',
   ip_as_organization: 'Flow',
-  last_seen_at: NOW,
+  lastSeenAt: NOW,
   revoked_at: null,
   revoked_by: null,
-  created_at: NOW - 100,
-  updated_at: NOW - 100,
+  createdAt: NOW - 100,
+  updatedAt: NOW - 100,
 }
 
 function admin() {
@@ -101,11 +100,10 @@ describe('GET /sessions', () => {
         data: [SERIALIZED],
         has_more: false,
         url: '/sessions',
-        total_count: null,
+        totalCount: null,
       },
       error: null,
     })
-  })
 
   it('never exposes the session token or its hash', async () => {
     // The row holds a live credential; the API describes the session.
@@ -195,7 +193,7 @@ describe('GET /sessions', () => {
   })
 
   it('filters by user and device', async () => {
-    await admin().get('/sessions?user_id=user_1&device_id=dev_9').set(AUTH)
+    await admin().get('/sessions?userId=user_1&deviceId=dev_9').set(AUTH)
 
     expect(session.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -206,9 +204,8 @@ describe('GET /sessions', () => {
       })
     )
   })
-})
 
-describe('GET /sessions/:session_id', () => {
+describe('GET /sessions/:sessionId', () => {
   it('returns the session', async () => {
     const response = await admin().get('/sessions/ses_7fJ3').set(AUTH)
 
@@ -226,10 +223,8 @@ describe('GET /sessions/:session_id', () => {
       data: null,
       error: { code: 'session/not-found', message: 'Not found.' },
     })
-  })
-})
 
-describe('DELETE /sessions/:session_id', () => {
+describe('DELETE /sessions/:sessionId', () => {
   it('returns a tombstone', async () => {
     const response = await admin().delete('/sessions/ses_7fJ3').set(AUTH)
 
@@ -238,7 +233,6 @@ describe('DELETE /sessions/:session_id', () => {
       data: { object: 'session', id: 'ses_7fJ3', deleted: true },
       error: null,
     })
-  })
 
   it('revokes rather than deletes, keeping the forensic record', async () => {
     // Deleting the row would erase exactly the evidence an investigation needs.
@@ -255,7 +249,7 @@ describe('DELETE /sessions/:session_id', () => {
     )
   })
 
-  it('pulls expires_at back to now so every expiry check sees it dead', async () => {
+  it('pulls expiresAt back to now so every expiry check sees it dead', async () => {
     // A session that would otherwise have run for another hour.
     session.findUnique.mockResolvedValue({
       expiresAt: BigInt(Math.floor(Date.now() / 1000) + 3600),
@@ -290,9 +284,8 @@ describe('DELETE /sessions/:session_id', () => {
     expect(response.body.error.code).toBe('session/not-found')
     expect(session.update).not.toHaveBeenCalled()
   })
-})
 
-describe('DELETE /users/:user_id/sessions', () => {
+describe('DELETE /users/:userId/sessions', () => {
   it('reports how many sessions were cut off', async () => {
     const response = await admin().delete('/users/user_2kL9/sessions').set(AUTH)
 
@@ -300,13 +293,12 @@ describe('DELETE /users/:user_id/sessions', () => {
     expect(response.body).toEqual({
       data: {
         object: 'session_list',
-        user_id: 'user_2kL9',
+        userId: 'user_2kL9',
         deleted: true,
         revoked_count: 3,
       },
       error: null,
     })
-  })
 
   it('touches only the sessions that are still live', async () => {
     await admin().delete('/users/user_2kL9/sessions').set(AUTH)
@@ -325,9 +317,8 @@ describe('DELETE /users/:user_id/sessions', () => {
 
     expect(response.body.data.revoked_count).toBe(0)
   })
-})
 
-describe('GET /users/:user_id/sessions', () => {
+describe('GET /users/:userId/sessions', () => {
   it('scopes the list to that user and says so in the url', async () => {
     const response = await admin().get('/users/user_2kL9/sessions').set(AUTH)
 
@@ -347,4 +338,3 @@ describe('GET /users/:user_id/sessions', () => {
 
     expect(response.status).toBe(401)
   })
-})

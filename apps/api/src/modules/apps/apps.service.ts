@@ -36,7 +36,7 @@ import {
  *
  * Key *validity* — revoked, expired, unknown — is decided in the HTTP auth
  * guard rather than here, deliberately: every rejection reason is logged from
- * one place, so an operator reading `api_key.rejected` sees the whole picture
+ * one place, so an operator reading `apiKey.rejected` sees the whole picture
  * without correlating two layers. What this module owns is the record itself.
  */
 
@@ -85,7 +85,6 @@ export async function createApp(body: CreateAppBody): Promise<AppCreated> {
         httpStatus: 400,
       })
     }
-  }
 
   const redirectUris = body.redirectUris ?? []
   for (const uri of redirectUris) {
@@ -96,7 +95,6 @@ export async function createApp(body: CreateAppBody): Promise<AppCreated> {
         httpStatus: 400,
       })
     }
-  }
 
   const clientSecret =
     body.clientType === 'confidential' ? generateClientSecret() : null
@@ -125,7 +123,7 @@ export async function createApp(body: CreateAppBody): Promise<AppCreated> {
   })
 
   log.info(
-    { app_id: row.id, slug: row.slug, client_id: row.clientId },
+    { appId: row.id, slug: row.slug, clientId: row.clientId },
     'apps.create'
   )
 
@@ -204,7 +202,7 @@ export async function updateApp(
   }
 
   log.info(
-    { app_id: appId, changed_fields: Object.keys(updates).sort() },
+    { appId: appId, changed_fields: Object.keys(updates).sort() },
     'apps.update'
   )
   return serializeApp(row)
@@ -221,7 +219,7 @@ export async function deleteApp(
       httpStatus: 404,
     })
   }
-  log.info({ app_id: appId }, 'apps.delete')
+  log.info({ appId: appId }, 'apps.delete')
   return { object: 'app', id: appId, deleted: true as const }
 }
 
@@ -229,8 +227,8 @@ export async function listAppFeatures(
   appId: string,
   query: {
     limit: number
-    starting_after?: string
-    ending_before?: string
+    startingAfter?: string
+    endingBefore?: string
     rootOnly?: boolean
     includeTag?: string
     excludeTag?: string
@@ -291,10 +289,10 @@ export async function listAppFeatures(
       provider_metadata: r.providerMetadata ?? null,
       consumer_default_enabled: r.consumerDefaultEnabled,
       scope: r.scope,
-      app_id: r.appId,
-      synced_at: Number(r.syncedAt),
-      created_at: Number(r.createdAt),
-      updated_at: Number(r.updatedAt),
+      appId: r.appId,
+      syncedAt: Number(r.syncedAt),
+      createdAt: Number(r.createdAt),
+      updatedAt: Number(r.updatedAt),
     }
   })
   return listObject({
@@ -349,35 +347,35 @@ export async function listAppSubscriptions(
     return {
       object: 'subscription',
       id: r.id,
-      organization_id: r.organizationId,
-      app_id: r.appId,
+      organizationId: r.organizationId,
+      appId: r.appId,
       status: r.status,
-      provider_status: r.providerStatus,
-      status_reason: r.statusReason,
-      collection_method: r.collectionMethod,
-      billing_cycle_anchor:
+      providerStatus: r.providerStatus,
+      statusReason: r.statusReason,
+      collectionMethod: r.collectionMethod,
+      billingCycleAnchor:
         r.billingCycleAnchor === null ? null : Number(r.billingCycleAnchor),
-      current_period_start:
+      currentPeriodStart:
         r.currentPeriodStart === null ? null : Number(r.currentPeriodStart),
-      current_period_end:
+      currentPeriodEnd:
         r.currentPeriodEnd === null ? null : Number(r.currentPeriodEnd),
-      cancel_at: r.cancelAt === null ? null : Number(r.cancelAt),
-      cancel_at_period_end: r.cancelAtPeriodEnd,
-      canceled_at: r.canceledAt === null ? null : Number(r.canceledAt),
-      ended_at: r.endedAt === null ? null : Number(r.endedAt),
-      pause_collection: r.pauseCollection ?? null,
-      trial_start: r.trialStart === null ? null : Number(r.trialStart),
-      trial_end: r.trialEnd === null ? null : Number(r.trialEnd),
-      start_date: r.startDate === null ? null : Number(r.startDate),
-      default_payment_method_id: r.defaultPaymentMethodId,
-      latest_invoice_id: r.latestInvoiceId,
-      pending_update: r.pendingUpdate ?? null,
-      schedule_id: r.scheduleId,
+      cancelAt: r.cancelAt === null ? null : Number(r.cancelAt),
+      cancelAtPeriodEnd: r.cancelAtPeriodEnd,
+      canceledAt: r.canceledAt === null ? null : Number(r.canceledAt),
+      endedAt: r.endedAt === null ? null : Number(r.endedAt),
+      pauseCollection: r.pauseCollection ?? null,
+      trialStart: r.trialStart === null ? null : Number(r.trialStart),
+      trialEnd: r.trialEnd === null ? null : Number(r.trialEnd),
+      startDate: r.startDate === null ? null : Number(r.startDate),
+      defaultPaymentMethodId: r.defaultPaymentMethodId,
+      latestInvoiceId: r.latestInvoiceId,
+      pendingUpdate: r.pendingUpdate ?? null,
+      scheduleId: r.scheduleId,
       metadata: r.metadata ?? null,
-      created_at: Number(r.createdAt),
-      updated_at: Number(r.updatedAt),
+      createdAt: Number(r.createdAt),
+      updatedAt: Number(r.updatedAt),
       stripe_subscription_id: r.stripeSubscriptionId,
-      finance_lifecycle_version: r.financeLifecycleVersion,
+      financeLifecycleVersion: r.financeLifecycleVersion,
     }
   })
 }
@@ -407,13 +405,13 @@ export async function createApiKey(
         : BigInt(body.expiresAt),
     createdAt: BigInt(now),
   })
-  log.info({ app_id: appId, key_id: row.id }, 'apps.api_key.create')
+  log.info({ appId: appId, key_id: row.id }, 'apps.apiKey.create')
   return { ...serializeApiKey(row), key: plaintext }
 }
 
 export async function listApiKeys(
   appId: string,
-  query: { limit: number; starting_after?: string; ending_before?: string }
+  query: { limit: number; startingAfter?: string; endingBefore?: string }
 ): Promise<ListObject<ApiKey>> {
   const app = await repository.findAppById(appId)
   if (!app) {
@@ -471,7 +469,7 @@ export async function revokeApiKey(
       httpStatus: 404,
     })
   }
-  log.info({ app_id: appId, key_id: keyId }, 'apps.api_key.revoke')
+  log.info({ appId: appId, key_id: keyId }, 'apps.apiKey.revoke')
   return serializeApiKey(row)
 }
 
@@ -487,8 +485,8 @@ export async function deleteApiKey(
       httpStatus: 404,
     })
   }
-  log.info({ app_id: appId, key_id: keyId }, 'apps.api_key.delete')
-  return { object: 'api_key', id: keyId, deleted: true as const }
+  log.info({ appId: appId, key_id: keyId }, 'apps.apiKey.delete')
+  return { object: 'apiKey', id: keyId, deleted: true as const }
 }
 
 const log = getLogger('apps')
@@ -541,7 +539,6 @@ function isRedirectUriSafe(uri: string): boolean {
   } catch {
     return false
   }
-}
 
 async function requireApp(appId: string) {
   const row = await repository.findAppById(appId)

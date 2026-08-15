@@ -34,15 +34,14 @@ export function serializeModule(row: ModuleRow): ApplicationModule {
   return {
     object: 'application_module',
     id: row.id,
-    app_id: row.appId,
+    appId: row.appId,
     key: row.key,
     name: row.name,
     description: row.description,
-    feature_id: row.featureId,
+    featureId: row.featureId,
     feature_slug: row.feature?.slug ?? null,
     status: moduleStatus(row.status),
     position: row.position,
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
   }
-}

@@ -55,22 +55,22 @@ const SELECT = {
  * for a security console.
  */
 export function buildWhere(
-  query: Partial<ListAuthAttemptsQuery> & { device_id?: string }
+  query: Partial<ListAuthAttemptsQuery> & { deviceId?: string }
 ): Prisma.AuthAttemptWhereInput {
   const and: Prisma.AuthAttemptWhereInput[] = []
 
-  if (query.user_id !== undefined) and.push({ userId: query.user_id })
+  if (query.userId !== undefined) and.push({ userId: query.userId })
   if (query.identifier !== undefined)
     and.push({ identifier: query.identifier.toLowerCase() })
   if (query.event !== undefined) and.push({ event: query.event })
   if (query.outcome !== undefined) and.push({ outcome: query.outcome })
-  if (query.ip_address !== undefined) and.push({ ipAddress: query.ip_address })
+  if (query.ipAddress !== undefined) and.push({ ipAddress: query.ipAddress })
   if (query.ip_country_code !== undefined)
     and.push({ ipCountryCode: query.ip_country_code.toUpperCase() })
   if (query.device_fingerprint !== undefined)
     and.push({ deviceFingerprint: query.device_fingerprint })
-  if (query.device_id !== undefined) and.push({ deviceId: query.device_id })
-  if (query.app_id !== undefined) and.push({ appId: query.app_id })
+  if (query.deviceId !== undefined) and.push({ deviceId: query.deviceId })
+  if (query.appId !== undefined) and.push({ appId: query.appId })
   if (query.created_after !== undefined)
     and.push({ createdAt: { gte: BigInt(query.created_after) } })
   if (query.created_before !== undefined)
@@ -165,7 +165,6 @@ export async function summary(since: number): Promise<SummaryTotals> {
     topFailureCodes: failureCodes,
     topFailureIps: failureIps,
   }
-}
 
 /** The ten most frequent non-null values of one column in a window. */
 async function topValues(

@@ -39,8 +39,8 @@ export async function listUserAuthAttempts(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = validParams<{ user_id: string }>(req)
+  const { userId } = validParams<{ userId: string }>(req)
   const query = validQuery<ListAuthAttemptsQuery>(req)
 
-  res.status(200).json(await service.listUserAuthAttempts(user_id, query))
+  res.status(200).json(await service.listUserAuthAttempts(userId, query))
 }

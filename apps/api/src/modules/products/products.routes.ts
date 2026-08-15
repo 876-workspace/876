@@ -43,7 +43,6 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
         description: 'Products returned.',
         schema: listObjectSchema(productSchema),
       },
-    },
     handler: controller.listProducts,
   })
 
@@ -61,10 +60,10 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
     handler: controller.createProduct,
   })
 
-  // Sub-resources are declared before '/:product_id' so Express cannot match
+  // Sub-resources are declared before '/:productId' so Express cannot match
   // 'modules' or 'prices' as an id.
   api.put({
-    path: '/:product_id/modules',
+    path: '/:productId/modules',
     operationId: 'products-replace_product_modules',
     summary: docs.REPLACE_PRODUCT_MODULES_SUMMARY,
     description: docs.REPLACE_PRODUCT_MODULES_DESCRIPTION,
@@ -80,7 +79,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.post({
-    path: '/:product_id/prices',
+    path: '/:productId/prices',
     operationId: 'products-create_price',
     summary: docs.CREATE_PRICE_SUMMARY,
     description: docs.CREATE_PRICE_DESCRIPTION,
@@ -93,7 +92,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.get({
-    path: '/:product_id/prices/:price_id',
+    path: '/:productId/prices/:priceId',
     operationId: 'products-retrieve_price',
     summary: docs.RETRIEVE_PRICE_SUMMARY,
     description: docs.RETRIEVE_PRICE_DESCRIPTION,
@@ -106,7 +105,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/:product_id/prices/:price_id',
+    path: '/:productId/prices/:priceId',
     operationId: 'products-update_price',
     summary: docs.UPDATE_PRICE_SUMMARY,
     description: docs.UPDATE_PRICE_DESCRIPTION,
@@ -119,7 +118,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/:product_id/prices/:price_id',
+    path: '/:productId/prices/:priceId',
     operationId: 'products-archive_price',
     summary: docs.ARCHIVE_PRICE_SUMMARY,
     description: docs.ARCHIVE_PRICE_DESCRIPTION,
@@ -132,7 +131,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.get({
-    path: '/:product_id',
+    path: '/:productId',
     operationId: 'products-retrieve_product',
     security: 'apiKey',
     summary: 'Retrieve a product',
@@ -146,7 +145,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/:product_id',
+    path: '/:productId',
     operationId: 'products-update_product',
     summary: docs.UPDATE_PRODUCT_SUMMARY,
     description: docs.UPDATE_PRODUCT_DESCRIPTION,
@@ -160,7 +159,7 @@ export function createProductsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/:product_id',
+    path: '/:productId',
     operationId: 'products-archive_product',
     summary: docs.ARCHIVE_PRODUCT_SUMMARY,
     description: docs.ARCHIVE_PRODUCT_DESCRIPTION,

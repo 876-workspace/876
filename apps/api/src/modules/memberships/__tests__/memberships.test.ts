@@ -72,7 +72,6 @@ function membershipRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -107,23 +106,22 @@ describe('GET /memberships', () => {
           {
             object: 'membership',
             id: 'mem_01',
-            organization_id: 'org_01',
-            user_id: 'user_01',
+            organizationId: 'org_01',
+            userId: 'user_01',
             workos_membership_id: null,
             role: 'member',
-            role_id: null,
+            roleId: null,
             status: 'active',
-            created_at: NOW,
-            updated_at: NOW,
+            createdAt: NOW,
+            updatedAt: NOW,
           },
         ],
         has_more: false,
         url: '/memberships',
-        total_count: null,
+        totalCount: null,
       },
       error: null,
     })
-  })
 
   it('is admin-only', async () => {
     const res = await request(createApp())
@@ -131,7 +129,6 @@ describe('GET /memberships', () => {
       .set('X-876-API-Key', APP_KEY)
     expect(res.status).toBe(401)
   })
-})
 
 describe('POST /memberships', () => {
   it('creates a membership', async () => {
@@ -139,20 +136,19 @@ describe('POST /memberships', () => {
     const res = await request(createApp())
       .post('/memberships')
       .set(AUTH)
-      .send({ organization_id: 'org_01', user_id: 'user_01' })
+      .send({ organizationId: 'org_01', userId: 'user_01' })
     expect(res.status).toBe(201)
     expect(res.body.data).toMatchObject({
       object: 'membership',
-      organization_id: 'org_01',
-      user_id: 'user_01',
+      organizationId: 'org_01',
+      userId: 'user_01',
     })
-  })
 
   it('rejects unknown field', async () => {
     const res = await request(createApp())
       .post('/memberships')
       .set(AUTH)
-      .send({ organization_id: 'org_01', user_id: 'user_01', unknown: 'x' })
+      .send({ organizationId: 'org_01', userId: 'user_01', unknown: 'x' })
     expect(res.status).toBe(422)
   })
 
@@ -161,7 +157,7 @@ describe('POST /memberships', () => {
     const res = await request(createApp())
       .post('/memberships')
       .set(AUTH)
-      .send({ organization_id: 'org_01', user_id: 'user_01' })
+      .send({ organizationId: 'org_01', userId: 'user_01' })
     expect(res.status).toBe(409)
     expect(res.body.error.code).toBe('membership/duplicate')
   })
@@ -171,13 +167,12 @@ describe('POST /memberships', () => {
     const res = await request(createApp())
       .post('/memberships')
       .set(AUTH)
-      .send({ organization_id: 'org_missing', user_id: 'user_01' })
+      .send({ organizationId: 'org_missing', userId: 'user_01' })
     expect(res.status).toBe(400)
     expect(res.body.error.code).toBe('membership/validation-failed')
   })
-})
 
-describe('GET /memberships/:membership_id', () => {
+describe('GET /memberships/:membershipId', () => {
   it('returns the membership', async () => {
     membership.findFirst.mockResolvedValue(membershipRow())
     const res = await request(createApp()).get('/memberships/mem_01').set(AUTH)
@@ -194,9 +189,8 @@ describe('GET /memberships/:membership_id', () => {
     expect(res.status).toBe(404)
     expect(res.body.error.code).toBe('membership/not-found')
   })
-})
 
-describe('PATCH /memberships/:membership_id', () => {
+describe('PATCH /memberships/:membershipId', () => {
   it('updates role', async () => {
     membership.findFirst.mockResolvedValue(membershipRow())
     membership.update.mockResolvedValue(membershipRow({ role: 'admin' }))
@@ -219,9 +213,8 @@ describe('PATCH /memberships/:membership_id', () => {
     expect(res.status).toBe(400)
     expect(res.body.error.code).toBe('membership/validation-failed')
   })
-})
 
-describe('DELETE /memberships/:membership_id', () => {
+describe('DELETE /memberships/:membershipId', () => {
   it('deletes membership', async () => {
     membership.findFirst.mockResolvedValue(membershipRow())
     membership.findUnique.mockResolvedValue({ id: 'mem_01', deletedAt: null })
@@ -235,7 +228,6 @@ describe('DELETE /memberships/:membership_id', () => {
       id: 'mem_01',
       deleted: true,
     })
-  })
 
   it('404s unknown membership', async () => {
     membership.findFirst.mockResolvedValue(null)
@@ -245,4 +237,3 @@ describe('DELETE /memberships/:membership_id', () => {
       .set(AUTH)
     expect(res.status).toBe(404)
   })
-})

@@ -53,36 +53,34 @@ function userRow(overrides: Record<string, unknown> = {}) {
     updatedAt: BigInt(NOW),
     ...overrides,
   }
-}
 
 function serializedUser(row: ReturnType<typeof userRow>) {
   return {
     object: 'user',
     id: row.id,
     company: null,
-    company_short_name: null,
-    company_logo: null,
-    workos_user_id: row.workosUserId,
-    stripe_customer_id: row.stripeCustomerId,
+    companyShortName: null,
+    companyLogo: null,
+    workosUserId: row.workosUserId,
+    stripeCustomerId: row.stripeCustomerId,
     email: row.email,
     username: row.username,
-    email_verified: row.emailVerified,
-    first_name: row.firstName,
-    last_name: row.lastName,
-    middle_name: row.middleName,
+    emailVerified: row.emailVerified,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    middleName: row.middleName,
     avatar: row.avatar,
-    avatar_file_id: row.avatarFileId,
-    platform_role: row.platformRole,
+    avatarFileId: row.avatarFileId,
+    platformRole: row.platformRole,
     status: row.status,
     banned: row.banned,
-    banned_reason: row.bannedReason,
-    deleted_at: null,
-    deleted_by: null,
-    deletion_reason: null,
-    created_at: NOW - 100,
-    updated_at: NOW,
+    bannedReason: row.bannedReason,
+    deletedAt: null,
+    deletedBy: null,
+    deletionReason: null,
+    createdAt: NOW - 100,
+    updatedAt: NOW,
   }
-}
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -114,7 +112,7 @@ describe('PATCH /users/:userId', () => {
     const response = await request(createApp())
       .patch('/users/user_2kL9')
       .set(ADMIN_HEADERS)
-      .send({ first_name: 'Alex' })
+      .send({ firstName: 'Alex' })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
@@ -130,7 +128,6 @@ describe('PATCH /users/:userId', () => {
     expect(authProvider.updateUser).toHaveBeenCalledWith('user_workos_1', {
       firstName: 'Alex',
     })
-  })
 
   it('pushes only a changed last name to WorkOS', async () => {
     const updated = userRow({ lastName: 'Kim' })
@@ -139,7 +136,7 @@ describe('PATCH /users/:userId', () => {
     const response = await request(createApp())
       .patch('/users/user_2kL9')
       .set(ADMIN_HEADERS)
-      .send({ last_name: 'Kim' })
+      .send({ lastName: 'Kim' })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
@@ -155,7 +152,6 @@ describe('PATCH /users/:userId', () => {
     expect(authProvider.updateUser).toHaveBeenCalledWith('user_workos_1', {
       lastName: 'Kim',
     })
-  })
 
   it('pushes a changed email to WorkOS', async () => {
     const updated = userRow({ email: 'alex@example.com' })
@@ -175,7 +171,6 @@ describe('PATCH /users/:userId', () => {
     expect(authProvider.updateUser).toHaveBeenCalledWith('user_workos_1', {
       email: 'alex@example.com',
     })
-  })
 
   it('does not push WorkOS when no pushable profile field changed', async () => {
     const updated = userRow({ status: 'suspended' })
@@ -207,7 +202,7 @@ describe('PATCH /users/:userId', () => {
     const response = await request(createApp())
       .patch('/users/user_2kL9')
       .set(ADMIN_HEADERS)
-      .send({ first_name: 'Alex' })
+      .send({ firstName: 'Alex' })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
@@ -223,7 +218,6 @@ describe('PATCH /users/:userId', () => {
     expect(authProvider.updateUser).toHaveBeenCalledWith('user_workos_1', {
       firstName: 'Alex',
     })
-  })
 
   it('does not push WorkOS when the saved user has no WorkOS identity', async () => {
     const localUser = userRow({ workosUserId: null, firstName: 'Alex' })
@@ -233,7 +227,7 @@ describe('PATCH /users/:userId', () => {
     const response = await request(createApp())
       .patch('/users/user_2kL9')
       .set(ADMIN_HEADERS)
-      .send({ first_name: 'Alex' })
+      .send({ firstName: 'Alex' })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
@@ -255,7 +249,7 @@ describe('PATCH /users/:userId', () => {
     const response = await request(createApp())
       .patch('/users/user_2kL9')
       .set(ADMIN_HEADERS)
-      .send({ first_name: 'Alex' })
+      .send({ firstName: 'Alex' })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
@@ -269,4 +263,3 @@ describe('PATCH /users/:userId', () => {
     })
     expect(authProvider.updateUser).not.toHaveBeenCalled()
   })
-})

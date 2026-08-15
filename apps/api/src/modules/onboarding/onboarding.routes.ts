@@ -68,7 +68,7 @@ export function createOnboardingRouter(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/organizations/:organization_id/:target_type/:target_key',
+    path: '/organizations/:organizationId/:target_type/:target_key',
     operationId: 'onboarding-retrieve_session',
     summary: docs.RETRIEVE_SESSION_SUMMARY,
     description: docs.RETRIEVE_SESSION_DESCRIPTION,
@@ -84,7 +84,7 @@ export function createOnboardingRouter(resolveGuards: GuardResolver) {
   })
 
   api.put({
-    path: '/organizations/:organization_id/:target_type/:target_key',
+    path: '/organizations/:organizationId/:target_type/:target_key',
     operationId: 'onboarding-replace_answers',
     summary: docs.REPLACE_ANSWERS_SUMMARY,
     description: docs.REPLACE_ANSWERS_DESCRIPTION,
@@ -100,7 +100,7 @@ export function createOnboardingRouter(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/organizations/:organization_id/:target_type/:target_key/submit',
+    path: '/organizations/:organizationId/:target_type/:target_key/submit',
     operationId: 'onboarding-submit_session',
     summary: docs.SUBMIT_SESSION_SUMMARY,
     description: docs.SUBMIT_SESSION_DESCRIPTION,

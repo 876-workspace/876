@@ -86,7 +86,7 @@ export function serializePrice(row: PriceRow): Price {
   return {
     object: 'price',
     id: row.id,
-    product_id: row.productId,
+    productId: row.productId,
     billing_interval: row.billingInterval,
     interval_count: row.intervalCount,
     status: row.status,
@@ -106,11 +106,10 @@ export function serializePrice(row: PriceRow): Price {
     trial_period_days: row.trialPeriodDays,
     active: row.active,
     metadata: asObject(row.metadata),
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
     archived_at: nullableFromDbUnixSeconds(row.archivedAt),
   }
-}
 
 /**
  * The owning app's identity is denormalized onto the product so a catalog list
@@ -123,11 +122,11 @@ export function serializeProduct(row: ProductRow): Product {
     slug: row.slug,
     name: row.name,
     description: row.description,
-    app_id: row.appId,
-    app_slug: row.app?.slug ?? null,
-    app_name: row.app?.name ?? null,
-    app_logo_url: row.app?.logoUrl ?? null,
-    app_kind: row.app?.appKind ?? null,
+    appId: row.appId,
+    appSlug: row.app?.slug ?? null,
+    appName: row.app?.name ?? null,
+    appLogoUrl: row.app?.logoUrl ?? null,
+    appKind: row.app?.appKind ?? null,
     status: row.status,
     active: row.active,
     statement_descriptor: row.statementDescriptor,
@@ -137,8 +136,7 @@ export function serializeProduct(row: ProductRow): Product {
     metadata: asObject(row.metadata),
     prices: row.prices.map(serializePrice),
     module_ids: row.planModules.map((entitlement) => entitlement.moduleId),
-    created_at: fromDbUnixSeconds(row.createdAt),
-    updated_at: fromDbUnixSeconds(row.updatedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
     archived_at: nullableFromDbUnixSeconds(row.archivedAt),
   }
-}

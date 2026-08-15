@@ -5,7 +5,7 @@ export const workosWebhookEventSchema = z.object({
   id: z.string(),
   event: z.string(),
   data: z.record(z.string(), z.unknown()),
-  created_at: z.string().optional(),
+  createdAt: z.string().optional(),
 })
 
 export type WorkosWebhookEvent = z.infer<typeof workosWebhookEventSchema>

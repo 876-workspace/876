@@ -17,13 +17,13 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
   })
 
   api.post({
-    path: '/:user_id/profile',
+    path: '/:userId/profile',
     security: 'admin',
     operationId: 'users-create_user_profile',
     summary: 'Create user profile',
     description: 'Creates a consumer profile for a user. **Admin only**.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       body: consumerProfileUpdateBodySchema,
     },
     responses: {
@@ -32,30 +32,30 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
         schema: z.object({
           object: z.literal('consumer_profile'),
           id: z.string(),
-          user_id: z.string(),
+          userId: z.string(),
           email: z.string(),
           username: z.string().nullable(),
-          first_name: z.string(),
-          last_name: z.string(),
-          middle_name: z.string().nullable(),
+          firstName: z.string(),
+          lastName: z.string(),
+          middleName: z.string().nullable(),
           nickname: z.string().nullable(),
           avatar: z.string().nullable(),
-          avatar_file_id: z.string().nullable(),
+          avatarFileId: z.string().nullable(),
           gender: z.string().nullable(),
-          phone_number: z.string().nullable(),
-          date_of_birth: z.string().nullable(),
+          phoneNumber: z.string().nullable(),
+          dateOfBirth: z.string().nullable(),
           language: z.string().nullable(),
           timezone: z.string().nullable(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
       409: { description: 'Profile already exists.' },
     },
     handler: async (req, res) => {
-      const { user_id } = req.params as { user_id: string }
-      const user = await service.requireUser(user_id)
-      const existing = await repo.findProfileByUserId(user_id)
+      const { userId } = req.params as { userId: string }
+      const user = await service.requireUser(userId)
+      const existing = await repo.findProfileByUserId(userId)
       if (existing)
         throw new AppHttpError({
           code: 'profile/already-exists',
@@ -63,41 +63,41 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
           httpStatus: 409,
         })
       const now = BigInt(nowUnixSeconds())
-      const profile = await repo.createProfileForUser(user_id, now)
+      const profile = await repo.createProfileForUser(userId, now)
       // apply updates like controller does
       const body = req.body as Record<string, unknown>
       const userUpdates: Record<string, unknown> = {}
       const profileUpdates: Record<string, unknown> = {}
-      for (const f of ['first_name', 'last_name', 'middle_name', 'avatar'])
+      for (const f of ['firstName', 'lastName', 'middleName', 'avatar'])
         if (f in body)
           (userUpdates as Record<string, unknown>)[
-            f === 'first_name'
+            f === 'firstName'
               ? 'firstName'
-              : f === 'last_name'
+              : f === 'lastName'
                 ? 'lastName'
-                : f === 'middle_name'
+                : f === 'middleName'
                   ? 'middleName'
                   : 'avatar'
           ] = body[f]
       for (const f of [
         'nickname',
         'gender',
-        'phone_number',
-        'date_of_birth',
+        'phoneNumber',
+        'dateOfBirth',
         'language',
         'timezone',
       ])
         if (f in body) {
           const map: Record<string, string> = {
-            phone_number: 'phoneNumber',
-            date_of_birth: 'dateOfBirth',
+            phoneNumber: 'phoneNumber',
+            dateOfBirth: 'dateOfBirth',
           }
           ;(profileUpdates as Record<string, unknown>)[map[f] ?? f] = body[f]
         }
       let updatedUser = user
       let updatedProfile = profile
       if (Object.keys(userUpdates).length > 0) {
-        const u = await repo.updateUser(user_id, {
+        const u = await repo.updateUser(userId, {
           ...userUpdates,
           updatedAt: BigInt(nowUnixSeconds()),
         } as never)
@@ -117,42 +117,42 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
   })
 
   api.get({
-    path: '/:user_id/profile',
+    path: '/:userId/profile',
     security: 'admin',
     operationId: 'users-retrieve_user_profile',
     summary: 'Retrieve user profile',
     description: 'Returns a user profile. **Admin only**.',
-    request: { params: z.strictObject({ user_id: z.string() }) },
+    request: { params: z.strictObject({ userId: z.string() }) },
     responses: {
       200: {
         description: 'Profile.',
         schema: z.object({
           object: z.literal('consumer_profile'),
           id: z.string(),
-          user_id: z.string(),
+          userId: z.string(),
           email: z.string(),
           username: z.string().nullable(),
-          first_name: z.string(),
-          last_name: z.string(),
-          middle_name: z.string().nullable(),
+          firstName: z.string(),
+          lastName: z.string(),
+          middleName: z.string().nullable(),
           nickname: z.string().nullable(),
           avatar: z.string().nullable(),
-          avatar_file_id: z.string().nullable(),
+          avatarFileId: z.string().nullable(),
           gender: z.string().nullable(),
-          phone_number: z.string().nullable(),
-          date_of_birth: z.string().nullable(),
+          phoneNumber: z.string().nullable(),
+          dateOfBirth: z.string().nullable(),
           language: z.string().nullable(),
           timezone: z.string().nullable(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
       404: { description: 'Not found.' },
     },
     handler: async (req, res) => {
-      const { user_id } = req.params as { user_id: string }
-      const user = await service.requireUser(user_id)
-      const profile = await repo.findProfileByUserId(user_id)
+      const { userId } = req.params as { userId: string }
+      const user = await service.requireUser(userId)
+      const profile = await repo.findProfileByUserId(userId)
       if (!profile)
         throw new AppHttpError({
           code: 'profile/not-found',
@@ -164,13 +164,13 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
   })
 
   api.patch({
-    path: '/:user_id/profile',
+    path: '/:userId/profile',
     security: 'admin',
     operationId: 'users-update_user_profile',
     summary: 'Update user profile',
     description: 'Updates a user profile. **Admin only**.',
     request: {
-      params: z.strictObject({ user_id: z.string() }),
+      params: z.strictObject({ userId: z.string() }),
       body: consumerProfileUpdateBodySchema,
     },
     responses: {
@@ -179,63 +179,62 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
         schema: z.object({
           object: z.literal('consumer_profile'),
           id: z.string(),
-          user_id: z.string(),
+          userId: z.string(),
           email: z.string(),
           username: z.string().nullable(),
-          first_name: z.string(),
-          last_name: z.string(),
-          middle_name: z.string().nullable(),
+          firstName: z.string(),
+          lastName: z.string(),
+          middleName: z.string().nullable(),
           nickname: z.string().nullable(),
           avatar: z.string().nullable(),
-          avatar_file_id: z.string().nullable(),
+          avatarFileId: z.string().nullable(),
           gender: z.string().nullable(),
-          phone_number: z.string().nullable(),
-          date_of_birth: z.string().nullable(),
+          phoneNumber: z.string().nullable(),
+          dateOfBirth: z.string().nullable(),
           language: z.string().nullable(),
           timezone: z.string().nullable(),
-          created_at: z.number().int(),
-          updated_at: z.number().int(),
+          createdAt: z.number().int(),
+          updatedAt: z.number().int(),
         }),
       },
-    },
     handler: async (req, res) => {
-      const { user_id } = req.params as { user_id: string }
-      const user = await service.requireUser(user_id)
-      let profile = await repo.findProfileByUserId(user_id)
-      if (!profile) profile = await repo.ensureProfile(user_id)
+      const { userId } = req.params as { userId: string }
+      const user = await service.requireUser(userId)
+      let profile = await repo.findProfileByUserId(userId)
+      if (!profile) profile = await repo.ensureProfile(userId)
       const body = req.body as Record<string, unknown>
       const userUpdates: Record<string, unknown> = {}
       const profileUpdates: Record<string, unknown> = {}
-      for (const f of ['first_name', 'last_name', 'middle_name', 'avatar'])
+      for (const f of ['firstName', 'lastName', 'middleName', 'avatar'])
         if (f in body)
           (userUpdates as Record<string, unknown>)[
-            f === 'first_name'
+            f === 'firstName'
               ? 'firstName'
-              : f === 'last_name'
+              : f === 'lastName'
                 ? 'lastName'
-                : f === 'middle_name'
+                : f === 'middleName'
                   ? 'middleName'
                   : 'avatar'
           ] = body[f]
       for (const f of [
         'nickname',
         'gender',
-        'phone_number',
-        'date_of_birth',
+        'phoneNumber',
+        'dateOfBirth',
         'language',
         'timezone',
       ])
         if (f in body) {
           const map: Record<string, string> = {
-            phone_number: 'phoneNumber',
-            date_of_birth: 'dateOfBirth',
+            phoneNumber: 'phoneNumber',
+            dateOfBirth: 'dateOfBirth',
           }
           ;(profileUpdates as Record<string, unknown>)[map[f] ?? f] = body[f]
         }
       let updatedUser = user
       let updatedProfile = profile
       if (Object.keys(userUpdates).length > 0) {
-        const u = await repo.updateUser(user_id, {
+        const u = await repo.updateUser(userId, {
           ...userUpdates,
           updatedAt: BigInt(nowUnixSeconds()),
         } as never)
@@ -255,12 +254,12 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
   })
 
   api.delete({
-    path: '/:user_id/profile',
+    path: '/:userId/profile',
     security: 'admin',
     operationId: 'users-delete_user_profile',
     summary: 'Delete user profile',
     description: 'Deletes a user profile. **Admin only**.',
-    request: { params: z.strictObject({ user_id: z.string() }) },
+    request: { params: z.strictObject({ userId: z.string() }) },
     responses: {
       200: {
         description: 'Deleted.',
@@ -270,10 +269,9 @@ export function registerProfileRoutes(resolveGuards: GuardResolver) {
           deleted: z.literal(true),
         }),
       },
-    },
     handler: async (req, res) => {
-      const { user_id } = req.params as { user_id: string }
-      const profile = await repo.findProfileByUserId(user_id)
+      const { userId } = req.params as { userId: string }
+      const profile = await repo.findProfileByUserId(userId)
       if (!profile)
         throw new AppHttpError({
           code: 'profile/not-found',

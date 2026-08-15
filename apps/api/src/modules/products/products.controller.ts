@@ -28,9 +28,9 @@ export async function retrieveProduct(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { product_id } = validParams<{ product_id: string }>(req)
+  const { productId } = validParams<{ productId: string }>(req)
 
-  res.status(200).json(await service.retrieveProduct(product_id))
+  res.status(200).json(await service.retrieveProduct(productId))
 }
 
 export async function createProduct(
@@ -46,73 +46,73 @@ export async function replaceProductModules(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { product_id } = validParams<{ product_id: string }>(req)
+  const { productId } = validParams<{ productId: string }>(req)
   const body = validBody<ReplaceProductModulesBody>(req)
 
   res
     .status(200)
-    .json(await service.replaceProductModules(product_id, body.module_ids))
+    .json(await service.replaceProductModules(productId, body.module_ids))
 }
 
 export async function updateProduct(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { product_id } = validParams<{ product_id: string }>(req)
+  const { productId } = validParams<{ productId: string }>(req)
   const body = validBody<UpdateProductBody>(req)
 
   res
     .status(200)
-    .json(await service.updateProduct(product_id, body, providedKeys(req)))
+    .json(await service.updateProduct(productId, body, providedKeys(req)))
 }
 
 export async function archiveProduct(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { product_id } = validParams<{ product_id: string }>(req)
+  const { productId } = validParams<{ productId: string }>(req)
 
-  res.status(200).json(await service.archiveProduct(product_id))
+  res.status(200).json(await service.archiveProduct(productId))
 }
 
 export async function createPrice(req: Request, res: Response): Promise<void> {
-  const { product_id } = validParams<{ product_id: string }>(req)
+  const { productId } = validParams<{ productId: string }>(req)
   const body = validBody<PriceCreateBody>(req)
 
-  res.status(201).json(await service.createPrice(product_id, body))
+  res.status(201).json(await service.createPrice(productId, body))
 }
 
 export async function retrievePrice(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { product_id, price_id } = validParams<{
-    product_id: string
-    price_id: string
+  const { productId, priceId } = validParams<{
+    productId: string
+    priceId: string
   }>(req)
 
-  res.status(200).json(await service.retrievePrice(product_id, price_id))
+  res.status(200).json(await service.retrievePrice(productId, priceId))
 }
 
 export async function updatePrice(req: Request, res: Response): Promise<void> {
-  const { product_id, price_id } = validParams<{
-    product_id: string
-    price_id: string
+  const { productId, priceId } = validParams<{
+    productId: string
+    priceId: string
   }>(req)
   const body = validBody<UpdatePriceBody>(req)
 
   res
     .status(200)
     .json(
-      await service.updatePrice(product_id, price_id, body, providedKeys(req))
+      await service.updatePrice(productId, priceId, body, providedKeys(req))
     )
 }
 
 export async function archivePrice(req: Request, res: Response): Promise<void> {
-  const { product_id, price_id } = validParams<{
-    product_id: string
-    price_id: string
+  const { productId, priceId } = validParams<{
+    productId: string
+    priceId: string
   }>(req)
 
-  res.status(200).json(await service.archivePrice(product_id, price_id))
+  res.status(200).json(await service.archivePrice(productId, priceId))
 }

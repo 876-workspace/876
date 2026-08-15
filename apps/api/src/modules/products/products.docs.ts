@@ -10,8 +10,8 @@ export const LIST_PRODUCTS_DESCRIPTION = `
 Returns the catalog of subscribable products (with their prices), optionally
 filtered by app.
 
-Products scoped to a specific app (\`app_id\` set) are only relevant to that
-app; products with a null \`app_id\` are platform-wide and reusable across apps.
+Products scoped to a specific app (\`appId\` set) are only relevant to that
+app; products with a null \`appId\` are platform-wide and reusable across apps.
 `
 
 export const LIST_PRODUCTS_RESPONSES = {} as const

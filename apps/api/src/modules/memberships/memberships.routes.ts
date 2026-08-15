@@ -57,7 +57,7 @@ export function createMembershipsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.get({
-    path: '/:membership_id',
+    path: '/:membershipId',
     operationId: 'memberships-retrieve_membership',
     summary: docs.RETRIEVE_MEMBERSHIP_SUMMARY,
     description: docs.RETRIEVE_MEMBERSHIP_DESCRIPTION,
@@ -72,7 +72,7 @@ export function createMembershipsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.patch({
-    path: '/:membership_id',
+    path: '/:membershipId',
     operationId: 'memberships-update_membership',
     summary: docs.UPDATE_MEMBERSHIP_SUMMARY,
     description: docs.UPDATE_MEMBERSHIP_DESCRIPTION,
@@ -91,7 +91,7 @@ export function createMembershipsRouter(resolveGuards: GuardResolver): Router {
   })
 
   api.delete({
-    path: '/:membership_id',
+    path: '/:membershipId',
     operationId: 'memberships-delete_membership',
     summary: docs.DELETE_MEMBERSHIP_SUMMARY,
     description: docs.DELETE_MEMBERSHIP_DESCRIPTION,

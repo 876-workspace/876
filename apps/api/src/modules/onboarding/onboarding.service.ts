@@ -57,7 +57,6 @@ function catalogOrNotFound(
       throw notFound('onboarding/catalog-not-found', error.message)
     throw error
   }
-}
 
 /**
  * Confirm the organization and the target both exist before touching a session.
@@ -124,7 +123,7 @@ export async function retrieveSession(params: {
       organizationId: params.organizationId,
       targetType: params.targetType,
       targetKey: params.targetKey,
-      countryCode: catalog.country_code,
+      countryCode: catalog.countryCode,
       catalogRevision: catalog.catalog_revision,
     },
     nowUnixSeconds()
@@ -148,14 +147,14 @@ export async function replaceAnswers(params: {
   const catalog = catalogOrNotFound(
     params.targetType,
     params.targetKey,
-    params.body.country_code
+    params.body.countryCode
   )
 
   const key = {
     organizationId: params.organizationId,
     targetType: params.targetType,
     targetKey: params.targetKey,
-    countryCode: catalog.country_code,
+    countryCode: catalog.countryCode,
     catalogRevision: catalog.catalog_revision,
   }
 
@@ -164,7 +163,7 @@ export async function replaceAnswers(params: {
   // Answers are stored as given, valid or not. Validation gates submission, not
   // saving — a half-filled draft is the normal state of an onboarding form.
   await repository.replaceAnswers(session.id, params.body.answers, {
-    countryCode: catalog.country_code,
+    countryCode: catalog.countryCode,
     now: nowUnixSeconds(),
   })
 
@@ -183,7 +182,7 @@ export function validateAnswers(
   targetKey: string,
   body: OnboardingAnswersReplace
 ): OnboardingValidation {
-  const catalog = catalogOrNotFound(targetType, targetKey, body.country_code)
+  const catalog = catalogOrNotFound(targetType, targetKey, body.countryCode)
   const issues = validateOnboardingAnswers(
     catalog,
     body.answers as Record<string, JsonValue>

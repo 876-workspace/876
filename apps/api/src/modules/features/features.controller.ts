@@ -40,35 +40,35 @@ export async function retrieveFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { feature_id } = validParams<{ feature_id: string }>(req)
-  res.status(200).json(await service.retrieveFeature(feature_id))
+  const { featureId } = validParams<{ featureId: string }>(req)
+  res.status(200).json(await service.retrieveFeature(featureId))
 }
 
 export async function listFeatureGrants(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { feature_id } = validParams<{ feature_id: string }>(req)
-  res.status(200).json(await service.listFeatureGrants(feature_id))
+  const { featureId } = validParams<{ featureId: string }>(req)
+  res.status(200).json(await service.listFeatureGrants(featureId))
 }
 
 export async function updateFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { feature_id } = validParams<{ feature_id: string }>(req)
+  const { featureId } = validParams<{ featureId: string }>(req)
   const body = validBody<UpdateFeatureBody>(req)
   res
     .status(200)
-    .json(await service.updateFeature(feature_id, body, providedKeys(req)))
+    .json(await service.updateFeature(featureId, body, providedKeys(req)))
 }
 
 export async function deleteFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { feature_id } = validParams<{ feature_id: string }>(req)
-  res.status(200).json(await service.deleteFeature(feature_id))
+  const { featureId } = validParams<{ featureId: string }>(req)
+  res.status(200).json(await service.deleteFeature(featureId))
 }
 
 export async function evaluateFeatures(
@@ -92,7 +92,6 @@ export async function evaluateFeatureDetails(
       await service.evaluateFeatureDetails(
         validQuery<EvaluateFeaturesQuery>(req)
       )
-    )
 }
 
 export async function evaluateMyFeatures(
@@ -123,84 +122,84 @@ export async function listUserFeatures(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = validParams<{ user_id: string }>(req)
-  res.status(200).json(await service.listUserFeatures(user_id))
+  const { userId } = validParams<{ userId: string }>(req)
+  res.status(200).json(await service.listUserFeatures(userId))
 }
 
 export async function grantUserFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id } = validParams<{ user_id: string }>(req)
+  const { userId } = validParams<{ userId: string }>(req)
   const body = validBody<GrantUserFeatureBody>(req)
-  res.status(201).json(await service.grantUserFeature(user_id, body))
+  res.status(201).json(await service.grantUserFeature(userId, body))
 }
 
 export async function updateUserFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, feature_id } = validParams<{
-    user_id: string
-    feature_id: string
+  const { userId, featureId } = validParams<{
+    userId: string
+    featureId: string
   }>(req)
   const body = validBody<UpdateUserFeatureBody>(req)
   res
     .status(200)
-    .json(await service.updateUserFeature(user_id, feature_id, body))
+    .json(await service.updateUserFeature(userId, featureId, body))
 }
 
 export async function revokeUserFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { user_id, feature_id } = validParams<{
-    user_id: string
-    feature_id: string
+  const { userId, featureId } = validParams<{
+    userId: string
+    featureId: string
   }>(req)
-  res.status(200).json(await service.revokeUserFeature(user_id, feature_id))
+  res.status(200).json(await service.revokeUserFeature(userId, featureId))
 }
 
 export async function listOrgFeatures(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id } = validParams<{ organization_id: string }>(req)
-  res.status(200).json(await service.listOrgFeatures(organization_id))
+  const { organizationId } = validParams<{ organizationId: string }>(req)
+  res.status(200).json(await service.listOrgFeatures(organizationId))
 }
 
 export async function grantOrgFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id } = validParams<{ organization_id: string }>(req)
+  const { organizationId } = validParams<{ organizationId: string }>(req)
   const body = validBody<GrantOrgFeatureBody>(req)
-  res.status(201).json(await service.grantOrgFeature(organization_id, body))
+  res.status(201).json(await service.grantOrgFeature(organizationId, body))
 }
 
 export async function updateOrgFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id, feature_id } = validParams<{
-    organization_id: string
-    feature_id: string
+  const { organizationId, featureId } = validParams<{
+    organizationId: string
+    featureId: string
   }>(req)
   const body = validBody<UpdateOrgFeatureBody>(req)
   res
     .status(200)
-    .json(await service.updateOrgFeature(organization_id, feature_id, body))
+    .json(await service.updateOrgFeature(organizationId, featureId, body))
 }
 
 export async function revokeOrgFeature(
   req: Request,
   res: Response
 ): Promise<void> {
-  const { organization_id, feature_id } = validParams<{
-    organization_id: string
-    feature_id: string
+  const { organizationId, featureId } = validParams<{
+    organizationId: string
+    featureId: string
   }>(req)
   res
     .status(200)
-    .json(await service.revokeOrgFeature(organization_id, feature_id))
+    .json(await service.revokeOrgFeature(organizationId, featureId))
 }

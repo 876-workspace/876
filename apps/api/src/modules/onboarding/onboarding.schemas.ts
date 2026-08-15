@@ -122,7 +122,7 @@ export const onboardingCatalogSchema = z
     object: z.literal('onboarding_catalog'),
     target_type: onboardingTargetTypeSchema,
     target_key: z.string(),
-    country_code: z.string(),
+    countryCode: z.string(),
     schema_version: z.literal(1),
     catalog_revision: z.number().int(),
     sections: z.array(onboardingSectionDefinitionSchema),
@@ -161,18 +161,18 @@ export const onboardingSessionSchema = z
   .object({
     object: z.literal('onboarding_session'),
     id: z.string(),
-    organization_id: z.string(),
+    organizationId: z.string(),
     target_type: onboardingTargetTypeSchema,
     target_key: z.string(),
-    country_code: z.string(),
+    countryCode: z.string(),
     schema_version: z.literal(1),
     catalog_revision: z.number().int(),
     status: onboardingStatusSchema,
     answers: z.record(z.string(), jsonValueSchema),
     submitted_at: z.number().int().nullable(),
     completed_at: z.number().int().nullable(),
-    created_at: z.number().int(),
-    updated_at: z.number().int(),
+    createdAt: z.number().int(),
+    updatedAt: z.number().int(),
   })
   .meta({
     id: 'OnboardingSession',
@@ -182,7 +182,7 @@ export const onboardingSessionSchema = z
 export type OnboardingSession = z.infer<typeof onboardingSessionSchema>
 
 export const onboardingAnswersReplaceSchema = z.strictObject({
-  country_code: z.string().length(2),
+  countryCode: z.string().length(2),
   answers: z.record(z.string(), jsonValueSchema).default({}),
 })
 
@@ -196,13 +196,13 @@ export const catalogParamsSchema = z.strictObject({
 })
 
 export const sessionParamsSchema = z.strictObject({
-  organization_id: z.string(),
+  organizationId: z.string(),
   target_type: onboardingTargetTypeSchema,
   target_key: z.string(),
 })
 
 export const countryQuerySchema = z.object({
-  country_code: z.string().length(2).default('JM'),
+  countryCode: z.string().length(2).default('JM'),
 })
 
 export type CountryQuery = z.infer<typeof countryQuerySchema>

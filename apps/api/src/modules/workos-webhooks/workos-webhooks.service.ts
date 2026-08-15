@@ -33,8 +33,8 @@ async function applyUserUpdated(
 
   return users.syncUserFromWorkos({
     workosUserId,
-    firstName: stringOrNull(data.first_name),
-    lastName: stringOrNull(data.last_name),
+    firstName: stringOrNull(data.firstName),
+    lastName: stringOrNull(data.lastName),
     email: stringOrNull(data.email),
   })
 }
@@ -59,8 +59,8 @@ async function applyMembershipUpsert(
   const workosMembershipId = stringOrNull(data.id)
   if (!workosMembershipId) return false
 
-  const orgWorkosId = stringOrNull(data.organization_id)
-  const userWorkosId = stringOrNull(data.user_id)
+  const orgWorkosId = stringOrNull(data.organizationId)
+  const userWorkosId = stringOrNull(data.userId)
   const organizationId = orgWorkosId
     ? await organizations.findLocalOrgIdByWorkosId(orgWorkosId)
     : null
@@ -111,4 +111,3 @@ export async function dispatch(
       log.info({ event: event.event }, 'workos_webhooks.unhandled')
       return { applied: false }
   }
-}
