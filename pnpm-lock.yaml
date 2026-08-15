@@ -329,6 +329,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@876/server':
+        specifier: workspace:*
+        version: link:../../packages/server
       '@cloudflare/containers':
         specifier: 0.3.7
         version: 0.3.7
@@ -553,6 +556,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/server':
+        specifier: workspace:*
+        version: link:../../packages/server
       '@cloudflare/containers':
         specifier: 0.3.7
         version: 0.3.7
@@ -925,6 +931,9 @@ importers:
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@876/server':
+        specifier: workspace:*
+        version: link:../../packages/server
       '@876/settings':
         specifier: workspace:*
         version: link:../../packages/settings
@@ -1395,6 +1404,27 @@ importers:
       vitest:
         specifier: 4.1.5
         version: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.9)(yaml@2.9.0))
+
+  packages/server:
+    devDependencies:
+      '@types/express':
+        specifier: 5.0.6
+        version: 5.0.6
+      '@types/node':
+        specifier: 25.6.2
+        version: 25.6.2
+      express:
+        specifier: 5.2.1
+        version: 5.2.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 4.1.5
+        version: 4.1.5(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@25.6.2)(@vitest/browser-playwright@4.1.5)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.15.0(@types/node@25.6.2)(typescript@5.9.3))(vite@8.0.14(@types/node@25.6.2)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.2)(tsx@4.23.9)(yaml@2.9.0))
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   packages/settings:
     dependencies:

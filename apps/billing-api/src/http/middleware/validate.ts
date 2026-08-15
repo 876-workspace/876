@@ -1,36 +1,17 @@
-import type { NextFunction, Request, RequestHandler, Response } from 'express'
-import type { ZodType, z } from 'zod'
-
-export type ValidationSchemas = {
-  body?: ZodType
-  query?: z.ZodObject
-  params?: z.ZodObject
-}
-
-const validated = new WeakMap<
-  Request,
-  { body?: unknown; query?: unknown; params?: unknown }
->()
-
-export function validate(schemas: ValidationSchemas): RequestHandler {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    const value: { body?: unknown; query?: unknown; params?: unknown } = {}
-    if (schemas.params) value.params = schemas.params.parse(req.params)
-    if (schemas.body) value.body = schemas.body.parse(req.body)
-    if (schemas.query) value.query = schemas.query.parse(req.query)
-    validated.set(req, value)
-    next()
-  }
-}
-
-export function validBody<T>(req: Request): T {
-  return validated.get(req)?.body as T
-}
-
-export function validQuery<T>(req: Request): T {
-  return validated.get(req)?.query as T
-}
-
-export function validParams<T>(req: Request): T {
-  return validated.get(req)?.params as T
-}
+/**
+ * Request validation is a shared 876 server primitive (`@876/server/express`).
+ * This module re-exports it so existing `@/http/middleware/validate` imports
+ * keep working; new code may import from `@876/server/express` directly.
+ *
+ * Billing previously carried a `WeakMap` variant of this middleware that had
+ * drifted from the copies in api/couriers-api; consolidating on the shared
+ * primitive removes that divergence.
+ */
+export {
+  validate,
+  validBody,
+  validQuery,
+  validParams,
+  type ValidationSchemas,
+  type Validated,
+} from '@876/server/express'

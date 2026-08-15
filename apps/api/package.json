@@ -39,6 +39,7 @@
     "predev": "pnpm generate"
   },
   "dependencies": {
+    "@876/server": "workspace:*",
     "@cloudflare/containers": "0.3.7",
     "@prisma/client": "7.7.0",
     "@prisma/extension-accelerate": "3.0.1",
