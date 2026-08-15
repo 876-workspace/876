@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 
-import { getPrincipal } from '@/http/auth/principal'
+import { getAppId, getPrincipal } from '@/http/auth/principal'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
 import type {
@@ -46,6 +46,10 @@ export async function bootstrapOrganization(
       ownerUserId: body.owner_user_id,
       name: body.name,
       slug: body.slug,
+      // The signup app is the credential the request authenticated with — so the
+      // org is subscribed to the app it was created through (couriers, billing),
+      // never an app a client could name in the body.
+      sourceAppId: getAppId(req),
     })
   )
 }

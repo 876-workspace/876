@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 
-import { getApiKey, getPrincipal } from '@/http/auth'
+import { getAppId, getPrincipal } from '@/http/auth'
 import { AppHttpError } from '@/platform/errors'
 import { getLogger } from '@/platform/logger'
 import { enforceRateLimit } from '@/platform/rate-limit'
@@ -35,22 +35,6 @@ import {
 } from './auth.serializers'
 
 const log = getLogger('auth')
-
-function getAppId(req: Request): string | null {
-  const record = getApiKey(req)
-  if (record?.appId) return record.appId
-  const principal = getPrincipal(req)
-  if (principal.appId) return principal.appId
-  // Fallback to raw header state used in python tests
-  const state = (
-    req as unknown as { state?: { app_id?: string; appId?: string } }
-  ).state
-  if (state?.app_id) return state.app_id
-  if (state?.appId) return state.appId
-  const anyReq = req as unknown as Record<string, unknown>
-  if (typeof anyReq['appId'] === 'string') return anyReq['appId'] as string
-  return null
-}
 
 function pickFirst<T>(...values: (T | null | undefined)[]): T | undefined {
   for (const v of values)

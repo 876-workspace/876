@@ -320,6 +320,17 @@ export async function ensureCoreCustomer(body: CustomerEnsureBody) {
         : 'No Billing workspace matches the configured platform slug.',
       httpStatus: body.tenantId ? 404 : 503,
     })
+  // An organization is never a customer of the workspace it owns. On the
+  // platform (operator) tenant this is what keeps 876 itself out of its own
+  // customer list; on any org's own workspace it keeps that org from appearing
+  // as its own customer. Requires the tenant's organizationId to be set.
+  if (
+    body.customerType === 'CORE_ORGANIZATION' &&
+    tenant.organizationId != null &&
+    body.organizationId === tenant.organizationId
+  )
+    return { object: 'acknowledgement' as const, id: null, created: false }
+
   const existing = await findCoreCustomer(tenant.id, body)
   if (!existing && body.status === 'ARCHIVED')
     return { object: 'acknowledgement' as const, id: null, created: false }
