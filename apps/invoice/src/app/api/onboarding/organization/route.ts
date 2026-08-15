@@ -10,9 +10,17 @@ import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
 
 export const runtime = 'nodejs'
 
+/**
+ * `name` is only needed when there is no organization yet. An account that
+ * already has one is *activating* Invoice for it, and must not be able to
+ * rename it through this route.
+ */
 const organizationSchema = z.strictObject({
-  name: z.string().trim().min(1).max(120),
+  name: z.string().trim().min(1).max(120).optional(),
 })
+
+/** Roles allowed to add an app to an organization. */
+const PROVISIONING_ROLES = new Set(['owner', 'admin'])
 
 /** Slug/name collisions the caller can fix by choosing another name. */
 const CONFLICT_CODES = new Set([
@@ -24,10 +32,11 @@ const CONFLICT_CODES = new Set([
  * Creates the signed-in account's organization when it has none, then
  * activates the `876-invoice` subscription for it.
  *
- * Pure transport: the organization, its owner membership, and the Billing
- * finance workspace are all created by the platform — the workspace arrives on
- * its own through the provisioning manifest's `finance_connection.ensure`
- * event, so this route never touches Billing.
+ * An organization that already exists — including one already using 876
+ * Billing — takes the second half only: it keeps its records and simply gains
+ * Invoice. The Billing finance workspace is never touched here; the
+ * provisioning manifest's `finance_connection.ensure` event opens the existing
+ * workspace with Invoice's scopes attached.
  */
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()
@@ -45,13 +54,29 @@ export async function POST(request: NextRequest) {
   // organization created moments ago is seen on this request.
   const memberships = await platform.memberships.listRouting({
     userId: session.user.id,
+    status: 'active',
   })
   if (memberships.error)
     return apiJson({ error: 'Failed to verify workspace.' }, { status: 500 })
 
-  let organizationId = memberships.data.data[0]?.organization.id
+  const existing = memberships.data.data.find(
+    (membership) =>
+      membership.status === 'active' &&
+      membership.organization.status === 'active'
+  )
+
+  let organizationId = existing?.organization.id
+
+  if (existing && !PROVISIONING_ROLES.has(existing.role))
+    return apiJson(
+      { error: 'Only an owner or admin can add 876 Invoice.' },
+      { status: 403 }
+    )
 
   if (!organizationId) {
+    if (!parsed.data.name)
+      return apiJson({ error: 'Enter an organization name.' }, { status: 422 })
+
     const organization = await platform.organizations.create({
       ownerUserId: session.user.id,
       name: parsed.data.name,

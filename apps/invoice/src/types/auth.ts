@@ -34,3 +34,13 @@ export type InvoiceContext = {
   organizations: InvoiceOrganization[]
   accessStatus: AccessStatus
 }
+
+/**
+ * Why there is (or is not) an acting context. `unavailable` means the platform
+ * lookup itself failed — never treat it as "this account has no organization".
+ */
+export type InvoiceContextResult =
+  | { status: 'ok'; context: InvoiceContext }
+  | { status: 'no-organization' }
+  | { status: 'signed-out' }
+  | { status: 'unavailable' }

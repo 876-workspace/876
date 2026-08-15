@@ -10,8 +10,11 @@ export type OnboardingCompletion = {
 }
 
 export const onboarding = {
-  /** Creates the signed-in account's organization and activates 876 Invoice. */
-  createOrganization(params: { name: string }) {
+  /**
+   * Activates 876 Invoice for the signed-in account's organization, creating
+   * the organization first when there is none (`name` is required only then).
+   */
+  createOrganization(params: { name?: string } = {}) {
     return request<OnboardingCompletion>('/api/onboarding/organization', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

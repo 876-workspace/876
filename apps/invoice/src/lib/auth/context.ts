@@ -1,11 +1,16 @@
 import 'server-only'
 
 import type { PlatformRoutingMembership } from '@876/core/platform'
+import * as Sentry from '@sentry/nextjs'
 import { cache } from 'react'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
-import type { AccessStatus, InvoiceContext } from '@/types/auth'
+import type {
+  AccessStatus,
+  InvoiceContext,
+  InvoiceContextResult,
+} from '@/types/auth'
 
 import { getAuthSession, isSignedSession } from './session'
 
@@ -23,34 +28,50 @@ function isUsable(membership: PlatformRoutingMembership): boolean {
 
 /**
  * Resolves the acting organization and the org's `876-invoice` entitlement.
- * Access to Invoice is decided here and nowhere else — a Billing workspace
- * existing does not grant it, and a `876-billing` subscription is unrelated.
+ *
+ * Returns a discriminated result rather than `InvoiceContext | null`, because
+ * "this account has no organization" and "we could not reach the platform" are
+ * different answers that need different screens. Collapsing them shows an
+ * established organization the create-an-organization form.
  */
-export const getInvoiceContext = cache(
-  async function getInvoiceContext(): Promise<InvoiceContext | null> {
+export const getInvoiceContextResult = cache(
+  async function getInvoiceContextResult(): Promise<InvoiceContextResult> {
     const session = await getAuthSession()
-    if (!isSignedSession(session)) return null
+    if (!isSignedSession(session)) return { status: 'signed-out' }
 
     const platform = await getPlatformClient()
     const membershipsResult = await platform.memberships.listRouting({
       userId: session.user.id,
       status: 'active',
     })
-    if (membershipsResult.error) return null
+
+    if (membershipsResult.error) {
+      Sentry.captureMessage('Invoice context: routing memberships failed', {
+        level: 'error',
+        tags: { category: 'platform_client' },
+        extra: {
+          call: 'memberships.listRouting',
+          errorCode: membershipsResult.error.code ?? null,
+          consequence:
+            'The viewer cannot be routed; onboarding must not offer to create an organization.',
+        },
+      })
+      return { status: 'unavailable' }
+    }
 
     const memberships = membershipsResult.data.data.filter(isUsable)
     const selected =
       memberships.find(
         (membership) => membership.organization.id === session.user.orgId
       ) ?? memberships[0]
-    if (!selected) return null
+    if (!selected) return { status: 'no-organization' }
 
     const subscription = await platform.subscriptions.retrieve({
       organizationId: selected.organization.id,
       appSlug: INVOICE_APP_SLUG,
     })
 
-    return {
+    const context: InvoiceContext = {
       userId: session.user.id,
       orgId: selected.organization.id,
       orgName: selected.organization.name ?? 'Organization',
@@ -64,5 +85,13 @@ export const getInvoiceContext = cache(
       })),
       accessStatus: toAccessStatus(subscription.data?.status),
     }
+
+    return { status: 'ok', context }
   }
 )
+
+/** The acting context, or null when there is no usable one. */
+export async function getInvoiceContext(): Promise<InvoiceContext | null> {
+  const result = await getInvoiceContextResult()
+  return result.status === 'ok' ? result.context : null
+}

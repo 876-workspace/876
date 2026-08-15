@@ -34,14 +34,14 @@ function createRequest(body: unknown) {
   }) as unknown as Parameters<typeof POST>[0]
 }
 
-function membershipsFor(organizationId: string | null) {
+function membershipsFor(organizationId: string | null, role = 'owner') {
   return {
     data: {
       data: organizationId
         ? [
             {
               id: 'mem_2kL9',
-              role: 'owner',
+              role,
               status: 'active',
               permissions: [],
               organization: {
@@ -107,6 +107,21 @@ describe('POST /api/onboarding/organization', () => {
         ownerUserId: 'user_2kL9mN4q',
         name: 'Acme Trading Ltd',
       })
+    })
+
+    it('activates Invoice for an existing organization without a name', async () => {
+      mockPlatform.memberships.listRouting.mockResolvedValue(
+        membershipsFor('org_existing')
+      )
+
+      const response = await POST(createRequest({}))
+
+      expect(response.status).toBe(200)
+      expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
+      expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
+        'org_existing',
+        { appSlug: '876-invoice' }
+      )
     })
 
     it('reuses an existing organization instead of creating a second one', async () => {
@@ -175,6 +190,25 @@ describe('POST /api/onboarding/organization', () => {
   })
 
   describe('authorization', () => {
+    it('refuses to add Invoice when the viewer is only a member', async () => {
+      mockPlatform.memberships.listRouting.mockResolvedValue(
+        membershipsFor('org_existing', 'member')
+      )
+
+      const response = await POST(createRequest({}))
+
+      expect(response.status).toBe(403)
+      expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
+    })
+
+    it('requires a name when the account has no organization yet', async () => {
+      const response = await POST(createRequest({}))
+
+      expect(response.status).toBe(422)
+      expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
+      expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
+    })
+
     it('rejects an unauthenticated request without reading memberships', async () => {
       mockGetAuthSession.mockResolvedValue({ user: null })
 
