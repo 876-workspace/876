@@ -5,8 +5,20 @@ import {
   AUTH_RETURN_TO_COOKIE,
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
-import { AppLogo, AuthFlow, AuthPageShell, AuthProvider } from '@876/ui/auth'
+import {
+  AppLogo,
+  AuthFlow,
+  AuthPageShell,
+  AuthProvider,
+  type SocialProvider,
+} from '@876/ui/auth'
 import { useEffect } from 'react'
+
+/**
+ * Google, Outlook (Microsoft), and Apple — the three 876 offers. `microsoft`
+ * is the provider key WorkOS and `PROVIDER_ICONS` use for Outlook accounts.
+ */
+const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'microsoft', 'apple']
 
 const authClient = create876Client({ baseUrl: '/api' })
 
@@ -25,10 +37,7 @@ export function EmbeddedAuth({ returnTo }: { returnTo: string }) {
           client: authClient.auth,
           appName: '876 Invoice',
           appLogo: <AppLogo name="876 Invoice" />,
-          // Social sign-in needs a provider-registered callback per origin and
-          // is deferred platform-wide; email-first sign-up is what creates the
-          // account that /onboarding then gives an organization.
-          socialProviders: [],
+          socialProviders: SOCIAL_PROVIDERS,
           onSuccess: () => {
             // A full document load, not router.push: the API has just set the
             // session cookie on this origin, and only a fresh request carries
