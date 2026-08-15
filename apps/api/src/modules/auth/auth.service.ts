@@ -1,7 +1,8 @@
-import { createHash, randomBytes } from 'node:crypto'
+import { createHash } from 'node:crypto'
 
 import { getSettings } from '@/config'
 import { AppHttpError } from '@/platform/errors'
+import { signProviderJwt } from '@/platform/jwt'
 import { getLogger } from '@/platform/logger'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { generateId } from '@/platform/ids'
@@ -20,6 +21,16 @@ import { serializeAuthEvent, serializeSession } from './auth.serializers'
 
 const log = getLogger('auth')
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 400
+
+/**
+ * What a first-party session token may do.
+ *
+ * The first-party scopes only — the ones an 876 account consents to implicitly
+ * by signing in. Delegation scopes an app negotiates for itself
+ * (`billing.organizations.read` and friends) are deliberately absent: a session
+ * token is the user acting as themselves, not an app acting on their behalf.
+ */
+const SESSION_TOKEN_SCOPE = 'openid profile email'
 const BANNED_MESSAGE =
   'Your account has been suspended for violating our Terms of Service. If you believe this is a mistake, please contact support.'
 
@@ -110,6 +121,47 @@ export function clearSessionCookie(res: {
   })
 }
 
+/**
+ * Mint the access token a signed-in session carries.
+ *
+ * A session cookie is sealed by this service but read by every 876 app, which
+ * then forwards the token inside it as `Authorization: Bearer` to the services
+ * it calls. So the token has to be one this platform can verify: a 876-signed
+ * access JWT, minted with the same claims as an OAuth-issued one
+ * (`oauth.service.ts` → `issueTokenResponse`) and bound to the session row by
+ * the hash below.
+ *
+ * The token lives as long as the session, because nothing re-seals the cookie
+ * in between. That is safe only because the session row — not the token's
+ * expiry — is the revocation record: `requireSession` and `/oauth/introspect`
+ * both resolve `sid` back to it, so signing out or revoking a session kills the
+ * token immediately.
+ */
+export async function mintSessionToken(params: {
+  sessionId: string
+  userId: string
+  realm: string
+  orgId: string | null
+  issuedAt: number
+  expiresAt: number
+}): Promise<string> {
+  return signProviderJwt({
+    sub: params.userId,
+    sid: params.sessionId,
+    token_use: 'access',
+    scope: SESSION_TOKEN_SCOPE,
+    realm: params.realm,
+    ...(params.orgId ? { org_id: params.orgId } : {}),
+    iat: params.issuedAt,
+    exp: params.expiresAt,
+  })
+}
+
+/** The session row's `token_hash`, matching `oauth.service.ts`'s `sha256Hash`. */
+export function hashSessionToken(token: string): string {
+  return createHash('sha256').update(token, 'utf8').digest('hex')
+}
+
 function ensureNotBanned(user: { banned: boolean }) {
   if (user.banned) {
     throw new AppHttpError({
@@ -124,7 +176,6 @@ async function establishSession(params: {
   req: unknown
   res: { cookie: (n: string, v: string, o: Record<string, unknown>) => void }
   localUser: repository.UserRow
-  accessToken: string | null
   realm: string
   orgId: string | null
   event: string
@@ -134,8 +185,17 @@ async function establishSession(params: {
   const secret = requireCookieSecret()
   const now = nowUnixSeconds()
   const sessionId = generateId('session')
-  const rawToken = randomBytes(32).toString('base64url')
-  const tokenHash = createHash('sha256').update(rawToken, 'utf8').digest('hex')
+  const expiresAt = now + SESSION_TTL_SECONDS
+
+  const sessionToken = await mintSessionToken({
+    sessionId,
+    userId: params.localUser.id,
+    realm: params.realm,
+    orgId: params.orgId,
+    issuedAt: now,
+    expiresAt,
+  })
+  const tokenHash = hashSessionToken(sessionToken)
 
   // Telemetry — failure-isolated
   let attempt: {
@@ -174,7 +234,7 @@ async function establishSession(params: {
     userId: params.localUser.id,
     appId: params.appId,
     tokenHash,
-    expiresAt: BigInt(now + SESSION_TTL_SECONDS),
+    expiresAt: BigInt(expiresAt),
     ipAddress: ctx?.ip ?? null,
     userAgent: ctx?.userAgent ?? null,
     ipCountryCode: ctx?.countryCode ?? null,
@@ -218,7 +278,7 @@ async function establishSession(params: {
   )
   const sealed = sealSession({
     userData,
-    accessToken: params.accessToken,
+    accessToken: sessionToken,
     secret,
     ttlSeconds: SESSION_TTL_SECONDS,
     sessionId,
@@ -292,7 +352,6 @@ export async function completeAuth(params: {
     req: params.req,
     res: params.res,
     localUser,
-    accessToken: params.result.session.accessToken,
     realm: normalizedRealm,
     orgId,
     event: params.event ?? 'login',
@@ -329,7 +388,6 @@ export async function establishSessionForUser(params: {
     req: params.req,
     res: params.res,
     localUser: params.user,
-    accessToken: null,
     realm,
     orgId: null,
     event: params.event ?? 'callback',
