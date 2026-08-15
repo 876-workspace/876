@@ -67,11 +67,16 @@ describe('create876BillingServerClient', () => {
     )
   })
 
-  it('supports public readiness without adding credentials', async () => {
+  it('parses the bare (non-enveloped) readiness body the Billing API returns', async () => {
+    // The Billing API's /ready is intentionally outside the {data,error}
+    // envelope, with extra fields the platform readiness checker ignores.
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
-        data: { object: 'readiness', status: 'ready' },
-        error: null,
+        object: 'readiness',
+        status: 'ready',
+        service: '@876/billing-api',
+        migration: 'current',
+        writer: 'none',
       })
     )
     const client = create876BillingServerClient({
@@ -80,17 +85,33 @@ describe('create876BillingServerClient', () => {
       fetch: fetchMock,
     })
 
-    await client.request({ path: '/ready' })
+    const readiness = await client.readiness()
 
+    expect(readiness).toEqual({ object: 'readiness', status: 'ready' })
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/ready',
       expect.objectContaining({ method: 'GET' })
     )
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).not.toHaveProperty(
-      'authorization'
-    )
-    expect(fetchMock.mock.calls[0]?.[1]?.headers).not.toHaveProperty(
-      'x-internal-key'
+    expect(fetchMock.mock.calls[0]?.[1]?.headers).toBeUndefined()
+  })
+
+  it('throws when the readiness probe returns a non-2xx status', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        Response.json(
+          { object: 'readiness', status: 'not_ready' },
+          { status: 503 }
+        )
+      )
+    const client = create876BillingServerClient({
+      public: true,
+      baseUrl: 'https://billing.example.test',
+      fetch: fetchMock,
+    })
+
+    await expect(client.readiness()).rejects.toThrow(
+      'The Billing service returned an invalid response.'
     )
   })
 })

@@ -9,8 +9,9 @@ export async function GET(): Promise<Response> {
       baseUrl: process.env.BILLING_API_URL,
       public: true,
     })
-    const result = await billing.request({ path: '/ready' })
-    if (result.error) throw new Error(result.error.message)
+    const readiness = await billing.readiness()
+    if (readiness.status !== 'ready')
+      throw new Error(`Billing API not ready: ${readiness.status}`)
 
     return apiSuccess({
       object: 'readiness',
