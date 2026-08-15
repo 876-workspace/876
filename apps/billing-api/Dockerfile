@@ -21,6 +21,7 @@ COPY packages/core/src packages/core/src
 WORKDIR /repo/apps/billing-api
 COPY apps/billing-api/prisma ./prisma
 COPY apps/billing-api/prisma.config.ts apps/billing-api/tsconfig.json apps/billing-api/tsup.config.ts ./
+COPY apps/billing-api/scripts/prisma-generate.mjs ./scripts/prisma-generate.mjs
 COPY apps/billing-api/src ./src
 
 RUN BILLING_DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' \
