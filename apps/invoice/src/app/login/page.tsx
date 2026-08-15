@@ -8,7 +8,7 @@ export default function LoginPage() {
           You will be redirected to 876 to sign in.
         </p>
         <a
-          href={`${appUrl}/login?return_to=${encodeURIComponent('/')} `}
+          href={`${appUrl}/login?return_to=${encodeURIComponent('/')}`}
           className="bg-primary text-primary-foreground inline-flex rounded-md px-4 py-2 text-sm"
         >
           Continue to 876
