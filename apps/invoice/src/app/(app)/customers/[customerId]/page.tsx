@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 
 import { get876Client } from '@/lib/876'
 import { getInvoiceContext } from '@/lib/auth/context'
@@ -65,13 +66,18 @@ export default async function CustomerDetailPage({ params }: Props) {
 
       <PageHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <PageTitle>{customer.name}</PageTitle>
-            <Badge
-              variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
-            >
-              {customer.status === 'ACTIVE' ? 'Active' : 'Archived'}
-            </Badge>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <CustomerAvatar name={customer.name} size="lg" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <PageTitle>{customer.name}</PageTitle>
+                <Badge
+                  variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
+                >
+                  {customer.status === 'ACTIVE' ? 'Active' : 'Archived'}
+                </Badge>
+              </div>
+            </div>
           </div>
           <CustomerActions
             customerId={customer.id}
