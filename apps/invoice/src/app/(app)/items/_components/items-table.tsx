@@ -1,0 +1,103 @@
+'use client'
+
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { DataTable } from '@876/ui/data-table'
+import type { ColumnDef } from '@tanstack/react-table'
+
+import { formatMoney } from '@/lib/format'
+import { ResourceRowLink } from '@/components/patterns/resource-row-link'
+
+interface ItemRow {
+  id: string
+  name: string
+  type: string
+  sku: string | null
+  unit: string | null
+  defaultSellingAmount: bigint | string | null
+  defaultSellingCurrency: string | null
+  isTaxable: boolean
+  isActive: boolean
+  prices: unknown[]
+}
+
+interface Props {
+  emptyState?: React.ReactNode
+  items: ItemRow[]
+  defaultCurrency: string
+}
+
+export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
+  const router = useRouter()
+  const columns: ColumnDef<ItemRow, unknown>[] = [
+    {
+      id: 'item',
+      header: 'Item',
+      cell: ({ row }: any) => {
+        const item = row.original
+        return (
+          <>
+            <Link
+              href={`/items/${item.id}`}
+              className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {item.name}
+            </Link>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              {item.type.toLowerCase()} · {item.sku ?? item.unit ?? 'No SKU'}
+            </p>
+          </>
+        )
+      },
+    },
+    {
+      id: 'defaultPrice',
+      header: 'Default price',
+      cell: ({ row }: any) => {
+        const item = row.original
+        return formatMoney(item.defaultSellingAmount, item.defaultSellingCurrency ?? defaultCurrency)
+      },
+    },
+    {
+      id: 'tax',
+      header: 'Tax',
+      cell: ({ row }: any) => (
+        <span className="text-xs">{row.original.isTaxable ? 'Taxable' : 'Non-taxable'}</span>
+      ),
+    },
+    {
+      id: 'prices',
+      header: 'Prices',
+      cell: ({ row }: any) => row.original.prices.length,
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      cell: ({ row }: any) => (
+        <span className="text-xs">{row.original.isActive ? 'Active' : 'Archived'}</span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: () => <span className="sr-only">Actions</span>,
+      cell: ({ row }: any) => (
+        <div className="flex justify-end">
+          <ResourceRowLink href={`/items/${row.original.id}`} resourceName={row.original.name} />
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <div className="876-card overflow-hidden">
+      <DataTable
+        emptyState={emptyState}
+        columns={columns}
+        data={items}
+        className="text-[0.8125rem]"
+        onRowClick={(item) => router.push(`/items/${item.id}`)}
+      />
+    </div>
+  )
+}
