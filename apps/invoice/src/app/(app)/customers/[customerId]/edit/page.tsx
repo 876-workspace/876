@@ -1,12 +1,10 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { CreateForm } from '@/components/patterns/create-form'
 import { get876Client } from '@/lib/876'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { getPlatformClient } from '@/lib/876/platform-client'
+import { CustomerForm } from '../../_components/customer-form'
 
 export const metadata = { title: 'Edit Customer' }
 
@@ -38,68 +36,26 @@ export default async function EditCustomerPage({ params }: Props) {
   const currency =
     organization.data?.currency_code ?? customer.defaultCurrency ?? 'JMD'
 
-  const returnUrl = `/customers/${customer.id}`
-
   return (
     <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-sm">
-        <Link
-          href="/customers"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Customers
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <Link
-          href={returnUrl}
-          className="text-muted-foreground hover:text-foreground max-w-[220px] truncate transition-colors"
-        >
-          {customer.name}
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">Edit</span>
-      </nav>
-
-      <PageHeader>
+      <PageHeader className="mb-4">
         <PageTitle>Edit Customer</PageTitle>
       </PageHeader>
 
-      <CreateForm
-        title="Customer"
-        method="PATCH"
-        endpoint={`/api/v1/customers/${customer.id}`}
-        returnUrl={returnUrl}
-        submitLabel="Save changes"
-        fields={[
-          {
-            name: 'name',
-            label: 'Name',
-            type: 'text',
-            required: true,
-            initialValue: customer.name,
-          },
-          {
-            name: 'email',
-            label: 'Email address',
-            type: 'email',
-            placeholder: 'customer@example.com',
-            initialValue: customer.email ?? '',
-          },
-          {
-            name: 'phone',
-            label: 'Phone',
-            type: 'text',
-            initialValue: customer.phone ?? '',
-          },
-          {
-            name: 'currency',
-            label: 'Default currency',
-            type: 'select',
-            locked: true,
-            initialValue: currency,
-            options: [{ value: currency, label: currency }],
-          },
-        ]}
+      <CustomerForm
+        currency={currency}
+        customer={{
+          id: customer.id,
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+          companyName:
+            'companyName' in customer ? String(customer.companyName) : null,
+          status:
+            'status' in customer
+              ? (customer.status as 'ACTIVE' | 'ARCHIVED')
+              : undefined,
+        }}
       />
     </Page>
   )
