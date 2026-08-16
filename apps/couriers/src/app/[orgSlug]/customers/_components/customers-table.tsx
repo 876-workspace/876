@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import type { ColumnDef } from '@tanstack/react-table'
-import { Avatar, AvatarFallback } from '@876/ui/avatar'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { DataTable } from '@876/ui/data-table'
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { Badge } from '@876/ui/badge'
@@ -25,48 +25,13 @@ type Props = {
   emptyState?: ReactNode
 }
 
-function initialsOf(name: string): string {
-  return (
-    name
-      .split(' ')
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || '?'
-  )
-}
-
-const AVATAR_COLORS = [
-  'bg-blue-100 text-blue-700',
-  'bg-violet-100 text-violet-700',
-  'bg-emerald-100 text-emerald-700',
-  'bg-amber-100 text-amber-700',
-  'bg-rose-100 text-rose-700',
-  'bg-cyan-100 text-cyan-700',
-]
-
-function avatarColor(name: string): string {
-  let hash = 0
-  for (let index = 0; index < name.length; index++)
-    hash = (hash * 31 + name.charCodeAt(index)) | 0
-
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]!
-}
-
 export const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   {
     accessorKey: 'customerName',
     header: 'Name',
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
-        <Avatar className="size-6 shrink-0 rounded-md after:rounded-md">
-          <AvatarFallback
-            className={`rounded-md text-[0.5625rem] ${avatarColor(row.original.customerName)}`}
-          >
-            {initialsOf(row.original.customerName)}
-          </AvatarFallback>
-        </Avatar>
+        <CustomerAvatar name={row.original.customerName} />
         <Link
           href={`/${row.original.orgSlug}/customers/${row.original.id}`}
           className="font-medium text-sky-600 dark:text-sky-400"

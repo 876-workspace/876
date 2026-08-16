@@ -11,6 +11,7 @@ import {
 } from '@876/ui/icons'
 import { OrgAvatar } from '@876/ui/org-avatar'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 
 import { DetailLayout } from '@/components/patterns/detail/detail-layout'
 import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
@@ -62,13 +63,13 @@ export default async function CustomerDetailLayout({
       size="lg"
       className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
     />
-  ) : (
+  ) : party.contact?.avatar ? (
     <Avatar className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl">
-      {party.contact?.avatar ? (
-        <AvatarImage src={party.contact.avatar} alt="" />
-      ) : null}
+      <AvatarImage src={party.contact.avatar} alt="" />
       <AvatarFallback>{initialsOf(customer.name)}</AvatarFallback>
     </Avatar>
+  ) : (
+    <CustomerAvatar name={customer.name} size="lg" />
   )
 
   const meta = isOrg ? (

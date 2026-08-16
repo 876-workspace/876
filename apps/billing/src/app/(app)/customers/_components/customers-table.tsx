@@ -4,6 +4,7 @@ import * as React from 'react'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { DataTable } from '@876/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -22,13 +23,16 @@ export function CustomersTable({ customers, emptyState }: Props) {
       accessorKey: 'name',
       header: 'Customer',
       cell: ({ row }) => (
-        <Link
-          href={`/customers/${row.original.id}`}
-          className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
-          onClick={(event) => event.stopPropagation()}
-        >
-          {row.original.name}
-        </Link>
+        <div className="flex items-center gap-3">
+          <CustomerAvatar name={row.original.name} />
+          <Link
+            href={`/customers/${row.original.id}`}
+            className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {row.original.name}
+          </Link>
+        </div>
       ),
     },
     {

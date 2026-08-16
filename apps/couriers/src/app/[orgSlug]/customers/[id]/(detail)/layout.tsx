@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense, type ReactNode } from 'react'
 import { Badge } from '@876/ui/badge'
-import { Avatar, AvatarFallback } from '@876/ui/avatar'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Calendar, Mail, MapPin, Phone } from '@876/ui/icons'
 import { RouteTabs } from '@876/ui/route-tabs'
 import {
@@ -88,12 +88,7 @@ async function CustomerIdentity({
 
   return (
     <>
-      <Avatar
-        size="lg"
-        className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
-      >
-        <AvatarFallback>{initialsOf(name)}</AvatarFallback>
-      </Avatar>
+      <CustomerAvatar name={name} size="lg" />
 
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -154,9 +149,7 @@ async function CondensedTitle({
 
   return (
     <>
-      <Avatar size="sm" className="size-6 shrink-0 text-[0.625rem]">
-        <AvatarFallback>{initialsOf(name)}</AvatarFallback>
-      </Avatar>
+      <CustomerAvatar name={name} size="sm" />
       <span className="truncate text-[0.8125rem] font-semibold">{name}</span>
     </>
   )
@@ -202,18 +195,6 @@ function ActionsFallback() {
       <Skeleton className="h-8 w-[4.5rem] rounded-md" />
       <Skeleton className="h-8 w-8 rounded-md" />
     </div>
-  )
-}
-
-function initialsOf(name: string) {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase() || '?'
   )
 }
 
