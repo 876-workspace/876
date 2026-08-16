@@ -28,7 +28,8 @@ vi.mock('@/lib/service', () => ({
   },
 }))
 
-import CustomersPage, { CustomersTableData } from './page'
+import CustomersPage from './page'
+import { CustomersTableData } from '../_components/customers-table-data'
 
 describe('CustomersPage', () => {
   beforeEach(() => {

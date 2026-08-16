@@ -42,5 +42,19 @@ runs:
           echo "::warning title=Session cookie secret not synced::SESSION_COOKIE_SECRET is not configured as a repository secret, so this Worker keeps whatever value it already has. If sign-in bounces to /login, this is the first thing to check — see docs/app-configuration.md."
           exit 0
         fi
+        # `wrangler secret put` edits the live Worker, which Cloudflare refuses
+        # when the Worker's newest version is not the deployed one — the normal
+        # state whenever Workers Builds uploaded a version this pipeline did
+        # not deploy. That is not a reason to fail a deploy, but it is also not
+        # a reason to skip the sync: the value has to land somewhere. Fall back
+        # to Cloudflare's own remedy and stage it on a new version, which the
+        # next deployment carries.
+        if printf '%s' "$SESSION_COOKIE_SECRET" |
+          pnpm exec wrangler secret put SESSION_COOKIE_SECRET; then
+          exit 0
+        fi
+
+        echo "::warning title=Session cookie secret staged on a new version::The live Worker could not be edited because its newest version is not deployed. Staging the secret with 'wrangler versions secret put' instead; it takes effect on the next deployment."
         printf '%s' "$SESSION_COOKIE_SECRET" |
-          pnpm exec wrangler secret put SESSION_COOKIE_SECRET
+          pnpm exec wrangler versions secret put SESSION_COOKIE_SECRET \
+            --message "Sync the platform session cookie secret"
