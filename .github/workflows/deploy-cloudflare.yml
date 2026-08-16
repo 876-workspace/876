@@ -198,6 +198,11 @@ jobs:
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
           DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+      - name: Sync the shared session cookie secret
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/api
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-api
       # Containers build and push the Dockerfile image; the runner's Docker
@@ -340,6 +345,11 @@ jobs:
         run: pnpm --filter @876/console exec prisma migrate deploy
         env:
           CONSOLE_DIRECT_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
+      - name: Sync the shared session cookie secret
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/console
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-console
       - name: Deploy
@@ -362,6 +372,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Sync the shared session cookie secret
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/billing
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-billing
       - name: Deploy
@@ -427,6 +442,14 @@ jobs:
           pnpm --filter @876/invoice-app run cf:build
           cd apps/invoice
           pnpm exec wrangler deploy --secrets-file "$secrets_file"
+      # A Worker that does not exist yet cannot take `wrangler secret put`; the
+      # creation step above already carried the secret in that case.
+      - name: Sync the shared session cookie secret
+        if: steps.worker.outputs.state != 'missing'
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/invoice
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         if: steps.worker.outputs.state != 'missing'
         run: pnpm check:worker-secrets 876-invoice
@@ -448,6 +471,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Sync the shared session cookie secret
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/couriers
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-couriers
       - name: Deploy
@@ -472,6 +500,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Sync the shared session cookie secret
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/enterprise
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-enterprise
       - name: Deploy
@@ -493,6 +526,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Sync the shared session cookie secret
+        uses: ./.github/actions/sync-session-secret
+        with:
+          app-directory: apps/876
+          secret: ${{ secrets.SESSION_COOKIE_SECRET }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-app
       - name: Deploy

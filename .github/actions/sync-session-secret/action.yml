@@ -1,0 +1,46 @@
+name: Sync the shared session cookie secret
+description: >
+  Pushes the platform session cookie secret to one Worker, so the value is
+  owned by a single repository secret instead of whatever was typed into that
+  Worker by hand.
+
+# `apps/api` seals the `876-session` cookie with an HMAC over this secret, and
+# every app verifies that HMAC with the same value. When the two disagree the
+# failure is silent and total: the API authenticates the user, sets the cookie,
+# the browser stores it, and the app then reads it as "signed out" and bounces
+# to /login with nothing logged anywhere. It looks like the identity provider
+# is broken.
+#
+# That is exactly how 876 Invoice shipped on 2026-08-15: its Worker was created
+# by hand carrying the repo's shared *development* secret while the API sealed
+# with the production one, and nobody could sign in for a day. Syncing on every
+# deploy means a Worker cannot drift from the platform value, and a Worker
+# created by hand is corrected the next time it deploys.
+
+inputs:
+  app-directory:
+    description: Path to the app whose wrangler config names the target Worker.
+    required: true
+  secret:
+    description: The platform session cookie secret (repository secret).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.app-directory }}
+      env:
+        SESSION_COOKIE_SECRET: ${{ inputs.secret }}
+      run: |
+        # Skip rather than fail: a repository that has not configured the
+        # secret yet should still be able to deploy, and the warning says what
+        # is missing. Never `echo` the value — printf without a trailing
+        # newline is also what keeps the stored secret byte-identical to the
+        # one the API seals with.
+        if [ -z "$SESSION_COOKIE_SECRET" ]; then
+          echo "::warning title=Session cookie secret not synced::SESSION_COOKIE_SECRET is not configured as a repository secret, so this Worker keeps whatever value it already has. If sign-in bounces to /login, this is the first thing to check — see docs/app-configuration.md."
+          exit 0
+        fi
+        printf '%s' "$SESSION_COOKIE_SECRET" |
+          pnpm exec wrangler secret put SESSION_COOKIE_SECRET
