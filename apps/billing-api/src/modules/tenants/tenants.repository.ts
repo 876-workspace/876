@@ -22,11 +22,20 @@ export function listTenantRowsByOrganizationIds(organizationIds: string[]) {
   })
 }
 
+export async function activeCurrencyExists(code: string): Promise<boolean> {
+  const currency = await prisma.currency.findFirst({
+    where: { code, isActive: true },
+    select: { code: true },
+  })
+  return currency !== null
+}
+
 export async function provisionTenantRow(input: {
   organizationId: string
   userId: string
   name: string
   slug: string
+  defaultCurrency: string
   now: number
 }) {
   return prisma.$transaction(async (tx) => {
@@ -50,7 +59,7 @@ export async function provisionTenantRow(input: {
         name: input.name,
         countryCode: 'JM',
         status: 'ACTIVE',
-        defaultCurrency: 'JMD',
+        defaultCurrency: input.defaultCurrency,
         defaultLanguage: 'en',
         provisioningVersion: 3,
         provisionedAt: input.now,
@@ -61,7 +70,7 @@ export async function provisionTenantRow(input: {
     await tx.tenantCurrency.create({
       data: {
         tenantId,
-        currencyCode: 'JMD',
+        currencyCode: input.defaultCurrency,
         isDefault: true,
         isEnabled: true,
         createdAt: input.now,
