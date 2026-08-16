@@ -92,8 +92,10 @@ jobs:
         id: filter
         with:
           filters: |
+            # NOTE: 'packages/**' is deliberately NOT here. A shared-package
+            # edit used to redeploy every Worker at once; deploy the affected
+            # apps with the workflow_dispatch input instead.
             shared: &shared
-              - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - '.github/workflows/deploy-cloudflare.yml'
