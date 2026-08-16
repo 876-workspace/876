@@ -40,6 +40,20 @@ export const getInvoiceContextResult = cache(
     if (!isSignedSession(session)) return { status: 'signed-out' }
 
     const platform = await getPlatformClient()
+
+    // A sealed cookie keeps proving "someone signed in" long after that account
+    // was deleted or disabled, and its memberships then come back empty — which
+    // is indistinguishable from a brand-new account. Without this check a
+    // deleted account is offered the create-an-organization form instead of
+    // being sent back to sign in. Mirrors couriers' `requireValidSession`.
+    const account = await platform.users.retrieve({ id: session.user.id })
+    const accountGone = account.error?.code === 'user/not-found'
+    const accountDisabled =
+      account.data != null &&
+      ((account.data.status != null && account.data.status !== 'active') ||
+        account.data.banned === true)
+    if (accountGone || accountDisabled) return { status: 'signed-out' }
+
     const membershipsResult = await platform.memberships.listRouting({
       userId: session.user.id,
       status: 'active',

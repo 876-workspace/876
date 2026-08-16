@@ -1,3 +1,4 @@
+import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { redirect } from 'next/navigation'
 
 import { InvoiceShell } from '@/components/shell/shell'
@@ -13,6 +14,12 @@ export default async function AppLayout({
   await requireValidSession('/')
 
   const result = await getInvoiceContextResult()
+
+  // A dead session — the account was deleted or disabled while its sealed
+  // cookie was still valid — is a sign-in problem, not a setup problem. Sending
+  // it to /onboarding offers a deleted account the create-an-organization form.
+  if (result.status === 'signed-out')
+    redirect(`/login?${AUTH_RETURN_TO_PARAM}=${encodeURIComponent('/')}`)
 
   if (result.status === 'no-organization') redirect('/onboarding')
   if (result.status !== 'ok') redirect('/onboarding')
