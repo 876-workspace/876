@@ -117,6 +117,8 @@ apps/console/public/sw.js
 apps/console/public/sw.js.map
 apps/couriers/public/sw.js
 apps/couriers/public/sw.js.map
+apps/invoice/public/sw.js
+apps/invoice/public/sw.js.map
 apps/*/public/pwa/offline-recovery.js
 
 # Local Cloudflare CLI dump from agent sessions
