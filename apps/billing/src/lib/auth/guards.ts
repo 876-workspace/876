@@ -4,8 +4,7 @@ import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/876/platform-client'
-
+import { isAccountUsable } from './account-validity'
 import { getAuthSession, isSignedSession } from './session'
 
 /**
@@ -34,18 +33,8 @@ export const requireValidSession = cache(async function requireValidSession(
   const session = await getAuthSession()
   if (!isSignedSession(session)) redirect(createLoginRedirectUrl(returnTo))
 
-  const platform = await getPlatformClient()
-  const { data, error } = await platform.users.retrieve({
-    id: session.user.id,
-  })
-
-  const accountGone = error?.code === 'user/not-found'
-  const accountDisabled =
-    data !== null &&
-    data !== undefined &&
-    ((data.status !== null && data.status !== 'active') || data.banned === true)
-
-  if (accountGone || accountDisabled) redirect(createLoginRedirectUrl(returnTo))
+  if (!(await isAccountUsable(session.user.id)))
+    redirect(createLoginRedirectUrl(returnTo))
 
   return session.user
 })

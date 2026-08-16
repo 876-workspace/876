@@ -17,8 +17,17 @@ vi.mock('react', async () => {
   return { ...actual, cache: <T>(fn: T) => fn }
 })
 
-vi.mock('@/lib/876/platform-client', () => ({
-  getPlatformClient: async () => ({ users: { retrieve: mockUsersRetrieve } }),
+vi.mock('./account-validity', () => ({
+  isAccountUsable: async (userId: string) => {
+    const { data, error } = await mockUsersRetrieve({ id: userId })
+    const gone = error?.code === 'user/not-found'
+    const disabled =
+      data !== null &&
+      data !== undefined &&
+      ((data.status !== null && data.status !== 'active') ||
+        data.banned === true)
+    return !gone && !disabled
+  },
 }))
 
 vi.mock('./session', () => ({
