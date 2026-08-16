@@ -229,6 +229,15 @@ export type PlatformInviteToken = {
 }
 
 /** An enabled country row (`/geo/countries`). */
+/** A currency row from the platform reference data (`/geo/currencies`). */
+export type PlatformCurrency = {
+  object: 'currency'
+  code: string
+  name: string
+  symbol: string
+  decimal_places: number
+}
+
 export type PlatformCountry = {
   object: 'country'
   code: string

@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
+import { getPlatformClient } from '@/lib/876/platform-client'
 import { getContext } from '@/lib/auth/billing-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
@@ -51,6 +52,7 @@ export default async function GetStartedPage() {
   if (!isSignedSession(session))
     redirect(`/login?${AUTH_RETURN_TO_PARAM}=/get-started`)
 
+  const platform = await getPlatformClient()
   const context = await getContext()
 
   // Signed in but no organization yet — the brand-new-signup case. Create the
@@ -62,12 +64,26 @@ export default async function GetStartedPage() {
         .join(' ')
         .trim() || ''
 
+    const currencyList = await platform.currencies.list()
+    const currencies = (currencyList.data ?? []).map((currency) => ({
+      code: currency.code,
+      name: currency.name,
+    }))
+
     return (
       <GetStartedCard
         title="Create your organization"
         description="876 Billing runs on your organization. Name it to get started — you can rename it later in settings."
       >
-        <CreateOrganization suggestedName={suggestedName} />
+        <CreateOrganization
+          suggestedName={suggestedName}
+          currencies={
+            currencies.length > 0
+              ? currencies
+              : [{ code: 'JMD', name: 'Jamaican Dollar' }]
+          }
+          defaultCurrency="JMD"
+        />
       </GetStartedCard>
     )
   }
@@ -78,14 +94,22 @@ export default async function GetStartedPage() {
   const organizationName = context.orgName ?? 'Your organization'
   const slug = `${context.orgSlug ?? 'billing'}-billing`
 
+  // The workspace inherits the organization's single operating currency — it is
+  // never chosen again here.
+  const organization = await platform.organizations.retrieve({
+    id: context.orgId,
+  })
+  const currency = organization.data?.currency_code ?? 'JMD'
+
   return (
     <GetStartedCard
       title="Set up your workspace"
-      description={`Create the Billing workspace for ${organizationName}. We will provision Jamaican dollars, English, Tax Administration Jamaica, standard GCT, access roles, and payment modes. No invoices or payment collection are enabled automatically.`}
+      description={`Create the Billing workspace for ${organizationName}. We will provision ${currency}, Tax Administration Jamaica, standard GCT, access roles, and payment modes. No invoices or payment collection are enabled automatically.`}
     >
       <SetupButton
         name={organizationName}
         slug={slug}
+        defaultCurrency={currency}
         workspaceExists={Boolean(context.tenant)}
       />
     </GetStartedCard>

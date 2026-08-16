@@ -5,6 +5,12 @@ import { useState } from 'react'
 
 import { request } from '@/lib/client/request'
 
+const LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+] as const
+
 type CreatedOrganization = {
   object: 'onboarding_organization'
   organization_id: string
@@ -18,15 +24,21 @@ type CreatedOrganization = {
  */
 export function CreateOrganization({
   suggestedName,
+  currencies,
+  defaultCurrency,
 }: {
   suggestedName: string
+  currencies: { code: string; name: string }[]
+  defaultCurrency: string
 }) {
   const router = useRouter()
   const [name, setName] = useState(suggestedName)
+  const [currency, setCurrency] = useState(defaultCurrency)
+  const [language, setLanguage] = useState('en')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const disabled = busy || !name.trim()
+  const disabled = busy || !name.trim() || !currency
 
   async function createOrganization() {
     if (disabled) return
@@ -38,7 +50,11 @@ export function CreateOrganization({
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          currency_code: currency,
+          language,
+        }),
       }
     )
 
@@ -77,6 +93,50 @@ export function CreateOrganization({
         disabled={busy}
         className="border-border bg-background focus-visible:ring-ring h-10 w-full rounded-lg border px-3 text-sm outline-none focus-visible:ring-2 disabled:opacity-50"
       />
+      <label
+        htmlFor="organization-currency"
+        className="text-foreground block pt-2 text-sm font-medium"
+      >
+        Currency
+      </label>
+      <select
+        id="organization-currency"
+        value={currency}
+        onChange={(event) => setCurrency(event.currentTarget.value)}
+        disabled={busy}
+        className="border-border bg-background focus-visible:ring-ring h-10 w-full rounded-lg border px-3 text-sm outline-none focus-visible:ring-2 disabled:opacity-50"
+      >
+        {currencies.map((option) => (
+          <option key={option.code} value={option.code}>
+            {option.name} ({option.code})
+          </option>
+        ))}
+      </select>
+      <p className="text-muted-foreground text-xs">
+        Every invoice, quote, and customer uses this currency. It cannot be
+        changed once your workspace is set up.
+      </p>
+
+      <label
+        htmlFor="organization-language"
+        className="text-foreground block pt-2 text-sm font-medium"
+      >
+        Language
+      </label>
+      <select
+        id="organization-language"
+        value={language}
+        onChange={(event) => setLanguage(event.currentTarget.value)}
+        disabled={busy}
+        className="border-border bg-background focus-visible:ring-ring h-10 w-full rounded-lg border px-3 text-sm outline-none focus-visible:ring-2 disabled:opacity-50"
+      >
+        {LANGUAGES.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+
       <button
         type="button"
         onClick={() => void createOrganization()}

@@ -3,6 +3,7 @@ import { isUniqueConstraintError } from '@/platform/prisma-errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
+  activeCurrencyExists,
   findTenantAuthorizationByOrganizationId,
   findTenantRow,
   listTenantRowsByOrganizationIds,
@@ -26,12 +27,22 @@ export async function provisionTenant(
   userId: string,
   body: TenantCreateBody
 ) {
+  // The currency is the organization's, inherited by every workspace resource,
+  // so an unknown code must fail before any row is written.
+  if (!(await activeCurrencyExists(body.defaultCurrency)))
+    throw new AppHttpError({
+      code: 'billing_tenant/unknown-currency',
+      message: 'That currency is not supported.',
+      httpStatus: 422,
+    })
+
   try {
     const result = await provisionTenantRow({
       organizationId,
       userId,
       name: body.name,
       slug: body.slug,
+      defaultCurrency: body.defaultCurrency,
       now: nowUnixSeconds(),
     })
     return { object: 'billing_tenant' as const, ...result }

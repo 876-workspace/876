@@ -19,6 +19,10 @@ const ORGANIZATION_CONFLICT_CODES = new Set([
 
 const organizationSchema = z.strictObject({
   name: z.string().trim().min(1),
+  // The organization operates in exactly one currency and language. They are
+  // chosen here, at creation, and every product app inherits them.
+  currency_code: z.string().trim().length(3),
+  language: z.string().trim().min(2).max(8),
 })
 
 /**
@@ -62,6 +66,8 @@ export async function POST(request: NextRequest) {
   const organization = await platform.organizations.create({
     ownerUserId: session.user.id,
     name: parsed.data.name,
+    currencyCode: parsed.data.currency_code.toUpperCase(),
+    language: parsed.data.language,
   })
   if (organization.error) {
     if (organization.error.code === 'user/not-found') {

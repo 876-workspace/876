@@ -6,7 +6,13 @@ export const TenantCreateSchema = z.strictObject({
     .string()
     .trim()
     .regex(/^[a-z0-9-]{2,80}$/),
-  defaultCurrency: z.literal('JMD').default('JMD'),
+  // Inherited from the organization — the workspace never picks its own.
+  defaultCurrency: z
+    .string()
+    .trim()
+    .length(3)
+    .transform((code) => code.toUpperCase())
+    .default('JMD'),
 })
 
 export type TenantCreateParams = z.infer<typeof TenantCreateSchema>

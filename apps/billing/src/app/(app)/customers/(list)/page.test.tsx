@@ -95,7 +95,9 @@ describe('CustomersPage', () => {
     expect(screen.getByText('John Smith')).toBeTruthy()
     expect(screen.getByText('+18765551000')).toBeTruthy()
 
-    expect(screen.getAllByText('Jane Individual').length).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getAllByText('Jane Individual').length
+    ).toBeGreaterThanOrEqual(1)
   })
 
   it('renders empty state when no customers are returned', async () => {

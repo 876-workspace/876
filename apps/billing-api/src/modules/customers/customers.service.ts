@@ -14,6 +14,7 @@ import {
   findCustomerDetailRow,
   findCustomerRow,
   findIdempotentCustomerRow,
+  findTenantDefaults,
   listCustomerLedgerRows,
   listDocumentRecipientRows,
   listCustomerRows,
@@ -134,6 +135,9 @@ export async function createCustomer(
       return { customer: serializeCustomer(existing), replayed: true }
     }
   }
+  // The organization operates in a single currency, so a customer inherits the
+  // workspace default rather than choosing one.
+  const tenantDefaults = await findTenantDefaults(tenantId)
   const now = nowUnixSeconds()
   const data: Prisma.CustomerUncheckedCreateInput = {
     id: generateId('cust'),
@@ -155,8 +159,8 @@ export async function createCustomer(
     email: body.email ?? null,
     phone: body.phone ?? null,
     workPhone: body.workPhone ?? null,
-    defaultCurrency: body.currency ?? null,
-    language: body.language ?? null,
+    defaultCurrency: body.currency ?? tenantDefaults?.defaultCurrency ?? null,
+    language: body.language ?? tenantDefaults?.defaultLanguage ?? null,
     paymentTermId: body.paymentTermId ?? null,
     salespersonId: body.salespersonId ?? null,
     priceListId: body.priceListId ?? null,
