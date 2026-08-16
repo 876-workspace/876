@@ -373,7 +373,7 @@ runs `opennextjs-cloudflare build`. Prefer these dashboard values:
 | Build command     | `pnpm run build` (or `cf:build`)                                       |
 | Deploy command    | `npx opennextjs-cloudflare deploy`                                     |
 | Root directory    | `/apps/<app>` (see table below)                                        |
-| Build watch paths | `apps/<app>/*`, `packages/*`; add `scripts/*` for Console and Couriers |
+| Build watch paths | `apps/<app>/*`; add `scripts/*` for Console and Couriers               |
 
 `npx wrangler deploy` also works once `.open-next/` exists; prefer
 `opennextjs-cloudflare deploy` so incremental cache wiring stays intact.
