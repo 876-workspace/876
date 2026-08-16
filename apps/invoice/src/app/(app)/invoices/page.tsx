@@ -18,6 +18,7 @@ import { redirect } from 'next/navigation'
 
 import { get876Client } from '@/lib/876'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
 import { InvoicesTable } from './_components/invoices-table'
 
 export const metadata = {
@@ -91,6 +92,8 @@ async function InvoicesTableData({ searchParams }: Props) {
   const $876 = await get876Client(context.orgId)
   const result = await $876.invoices.list()
   if (result.error) {
+    redirectIfSignedOut(result.error.code, '/invoices')
+
     const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
