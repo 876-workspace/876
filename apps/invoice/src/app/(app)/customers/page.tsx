@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs'
 import { UsersIcon } from '@876/ui/icons'
 import { Suspense } from 'react'
 import {
@@ -101,6 +102,22 @@ async function CustomersTableData({ searchParams }: Props) {
   const result = await $876.customers.list({ status: apiStatus })
   if (result.error) {
     const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
+
+    // A permanent misconfiguration — a missing workspace membership or an
+    // unscoped finance connection — is not transient, and "try again shortly"
+    // sends someone into an endless reload. Report it, and show the operator
+    // the code so the cause is diagnosable from the screen.
+    if (!provisioning)
+      Sentry.captureMessage('Invoice customers list failed', {
+        level: 'error',
+        tags: { category: 'billing_client' },
+        extra: {
+          call: 'customers.list',
+          errorCode: result.error.code,
+          organizationId: context.orgId,
+        },
+      })
+
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
         <p className="text-sm font-medium">
@@ -109,8 +126,13 @@ async function CustomersTableData({ searchParams }: Props) {
             : 'Customers are unavailable right now'}
         </p>
         <p className="text-muted-foreground mt-1 text-sm">
-          Please try again shortly.
+          {provisioning ? 'Please try again shortly.' : result.error.message}
         </p>
+        {provisioning ? null : (
+          <p className="text-muted-foreground mt-2 font-mono text-xs">
+            {result.error.code}
+          </p>
+        )}
       </div>
     )
   }
