@@ -145,17 +145,17 @@ export default async function CustomerDetailPage({ params }: Props) {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <MetricCard
             label="Subscriptions"
-            value={customer._count.subscriptions}
+            value={customer.counts?.subscriptions ?? 0}
             detail="Commercial agreements"
           />
           <MetricCard
             label="Invoices"
-            value={customer._count.invoices}
+            value={customer.counts?.invoices ?? 0}
             detail="Billing documents"
           />
           <MetricCard
             label="Quotes"
-            value={customer._count.quotes}
+            value={customer.counts?.quotes ?? 0}
             detail="Prepared proposals"
           />
         </div>
