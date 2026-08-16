@@ -1,24 +1,71 @@
 import type { ReactNode } from 'react'
+import { cookies } from 'next/headers'
 
-import { AppSidebar } from './app-sidebar'
-import { AppHeader } from './app-header'
+import { NavProgress } from '@876/ui/nav-progress'
+import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
+import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
+import { SidebarTrigger } from '@876/ui/sidebar'
+import {
+  AppShell,
+  AppShellBody,
+  AppShellContent,
+  AppShellHeader,
+  AppShellMain,
+  AppShellSidebarArea,
+} from '@876/ui/app-shell'
 
-export function InvoiceShell({
+import { InvoiceSidebar } from './sidebar'
+import { OrgSwitcher } from './org-switcher'
+import { TopbarActions } from './topbar-actions'
+import { TopbarSearch } from './topbar-search'
+import { UserMenu } from './user-menu'
+
+export async function InvoiceShell({
   children,
   orgName,
-  userEmail,
+  user,
+  currentOrg,
+  orgs,
 }: {
   children: ReactNode
   orgName: string
-  userEmail?: string
+  user: SidebarUserMenuUser
+  currentOrg: OrgSwitcherOrg
+  orgs: OrgSwitcherOrg[]
 }) {
+  const cookieStore = await cookies()
+  const sidebarCookie = cookieStore.get('sidebar_state')
+  const defaultSidebarOpen = sidebarCookie
+    ? sidebarCookie.value === 'true'
+    : true
+
   return (
-    <div className="flex min-h-screen">
-      <AppSidebar />
-      <div className="flex min-h-screen flex-1 flex-col">
-        <AppHeader orgName={orgName} userEmail={userEmail} />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <AppShell defaultOpen={defaultSidebarOpen}>
+      <NavProgress />
+      <AppShellSidebarArea>
+        <InvoiceSidebar orgName={orgName} />
+      </AppShellSidebarArea>
+      <AppShellContent>
+        <AppShellHeader className="border-b-0">
+          <SidebarTrigger />
+
+          <div className="hidden min-w-0 flex-1 items-center md:flex">
+            <TopbarSearch />
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <div className="hidden items-center gap-1.5 md:flex">
+              <OrgSwitcher current={currentOrg} orgs={orgs} />
+              <TopbarActions />
+            </div>
+            <UserMenu user={user} />
+          </div>
+        </AppShellHeader>
+
+        <AppShellBody>
+          <AppShellMain>{children}</AppShellMain>
+        </AppShellBody>
+      </AppShellContent>
+    </AppShell>
   )
 }
