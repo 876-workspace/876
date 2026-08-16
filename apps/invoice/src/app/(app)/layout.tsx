@@ -25,15 +25,21 @@ export default async function AppLayout({
   const user = isSignedSession(session) ? session.user : null
   const email = user?.email ?? ''
   const displayName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || email || 'User'
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') ||
+    email ||
+    'User'
 
   const orgs = context.organizations.map((org) => ({
     id: org.id,
     name: org.name,
     slug: org.slug ?? org.id,
   }))
-  const currentOrg =
-    orgs.find((org) => org.id === context.orgId) ?? orgs[0] ?? { id: context.orgId, name: context.orgName, slug: context.orgSlug ?? context.orgId }
+  const currentOrg = orgs.find((org) => org.id === context.orgId) ??
+    orgs[0] ?? {
+      id: context.orgId,
+      name: context.orgName,
+      slug: context.orgSlug ?? context.orgId,
+    }
 
   return (
     <InvoiceShell
