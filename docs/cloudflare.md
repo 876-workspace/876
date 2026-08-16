@@ -256,6 +256,15 @@ screen with no session. Add every app origin, and register each app's
 
 ### Shared secrets (must match across services)
 
+These must be **byte-identical** on every service listed. A mismatched
+`SESSION_COOKIE_SECRET` is the worst of them: the API authenticates the user and
+sets the cookie, the app then fails the local HMAC check and treats every
+request as signed-out, and **nothing is logged anywhere** — sign-in simply
+bounces back to `/login`. It is synced from the `SESSION_COOKIE_SECRET`
+repository secret by `.github/actions/sync-session-secret` on every deploy;
+do not set it by hand. Diagnosis and rotation:
+[`docs/app-configuration.md`](./app-configuration.md) §5.
+
 | Key                                                | Services                                                                        |
 | -------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `API_INTERNAL_KEY`                                 | api, console, billing, couriers — **rotate** if still `dev-internal-secret-876` |

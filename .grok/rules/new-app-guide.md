@@ -1,197 +1,311 @@
 # New 876 App Guide
 
-This guide covers how to create a new 876-powered app. It is framework-agnostic — Next.js specifics are called out explicitly. Skim the sections that apply to your stack.
+Read this before creating a new 876-powered app, and before changing how an
+existing app authenticates or is configured for deployment.
 
-## 1. Platform Registration
+This is the **checklist**. The reference behind it —
+how the ecosystem fits together, every environment variable and secret, and the
+troubleshooting playbook — is `docs/app-configuration.md`. Read that one when
+something does not work, and especially when an app authenticates but bounces
+back to `/login`.
 
-Every 876 app must be registered in the identity API so it appears in enrollment tracking, Console's app list, and can issue API keys.
-
-Add an entry to `_seed_platform_apps` in `apps/api/main.py`:
-
-```python
-platform_apps = [
-    ...
-    ("My App", "876-myapp", "internal", "https://myapp.876.app"),
-]
-```
-
-- **Name**: display name shown in Console
-- **Slug**: must be globally unique; use `876-<appname>` for first-party apps
-- **app_kind**: always `"internal"` for 876-owned apps
-- **homepage_url**: canonical URL for the app
-
-The seed runs automatically on API startup (`checkfirst=True`). After deployment, the app row is created; create an API key for it through Console > Apps > [your app] > API Keys.
+> **The rule that costs the most when broken:** every app verifies the session
+> cookie **locally**, with an HMAC over a secret it must share byte-for-byte
+> with `apps/api`. When that secret is wrong the app does not error — it simply
+> treats every visitor as signed out and redirects to `/login`, forever,
+> silently. 876 Invoice shipped that way on 2026-08-15 and was unusable in
+> production for a day. See `docs/app-configuration.md` §2 and §5.3.
 
 ---
 
-## 2. Port Assignment
+## 1. Platform registration
 
-| App                 | Port |
-| ------------------- | ---- |
-| @876/app (consumer) | 3000 |
-| @876/enterprise     | 3001 |
-| @876/console        | 3002 |
-| @876/couriers       | 3003 |
-| _next app_          | 3004 |
+Every 876 app must exist as a platform app record so it appears in enrollment
+tracking and Console's app list, and so it can issue API keys.
 
-Increment by 1. Set the port in `package.json` scripts and `next.config.ts`'s `allowedOrigins`.
+Add the app to the platform app seeds in `apps/api` (the seed list that
+`pnpm --filter @876/api seed` applies) with:
+
+- **Name** — the display name shown in Console.
+- **Slug** — globally unique; `876-<appname>` for first-party apps. The slug is
+  a permanent identifier: renaming it orphans every enrollment and subscription
+  row that points at it.
+- **app_kind** — `internal` for 876-owned apps.
+- **homepage_url** — the app's canonical origin.
+
+Seeds are idempotent. After deploying, create the app's API key in
+Console → Apps → _your app_ → API Keys.
 
 ---
 
-## 3. Auth Integration
+## 2. Port assignment
 
-### 3a. The Auth Bridge Route (Next.js)
+| App                   | Workspace         | Port |
+| --------------------- | ----------------- | ---- |
+| `@876/app` (consumer) | `apps/876`        | 3000 |
+| `@876/enterprise`     | `apps/enterprise` | 3001 |
+| `@876/console`        | `apps/console`    | 3002 |
+| `@876/couriers-app`   | `apps/couriers`   | 3003 |
+| `@876/billing-app`    | `apps/billing`    | 3004 |
+| `@876/invoice-app`    | `apps/invoice`    | 3006 |
+| _next app_            |                   | 3007 |
 
-Every Next.js app hosts its own auth bridge that proxies auth requests to FastAPI:
+Set the port in the workspace's `package.json` scripts.
+
+---
+
+## 3. Auth integration
+
+### 3a. The auth bridge route
+
+Each app hosts its own email-first login UI and authenticates **directly**
+against the API core through its own thin bridge. There is no central auth app
+to redirect to.
 
 ```
 src/app/api/auth/[...path]/route.ts
 ```
 
-This route:
+The bridge is **pure transport**. It:
 
-1. Receives `POST /api/auth/login`, `POST /api/auth/logout`, etc. from the frontend
-2. Adds the app's API key and realm header
-3. Forwards to FastAPI at `NEXT_PUBLIC_API_URL` (or `API_URL` server-side)
-4. Returns the response (including the `Set-Cookie` header from FastAPI)
+1. receives `POST /api/auth/login`, `/logout`, `/social-login`, … from the browser;
+2. attaches this app's API key, its realm, and the request origin;
+3. forwards to the core API;
+4. returns the response, relaying the API's `Set-Cookie` verbatim so the session
+   lands on **this app's** origin.
 
-**Realm header** determines which user population is accepted:
+Copy it from the closest existing app, then change exactly two things:
 
-- `X-876-Realm: consumer` — consumer accounts (default, used by @876/app)
-- `X-876-Realm: enterprise` — org users (used by @876/enterprise and @876/couriers)
+- **The API key env name.** It is named per app — `API_876_KEY`,
+  `BILLING_API_876_KEY`, `INVOICE_API_876_KEY`. Copying a bridge without
+  renaming it leaves the constant `undefined`, no `X-876-API-Key` is sent, and
+  the API answers `api-key/missing`.
+- **`X-876-Realm`** — which user population may sign in:
+  - `consumer` — personal accounts (`@876/app`, storefront surfaces).
+  - `enterprise` — org members acting for their organization (`@876/enterprise`,
+    Couriers management, Invoice).
 
-Copy the bridge route from `apps/enterprise/src/app/api/auth/[...path]/route.ts` and set the correct realm.
+  The API defaults an **absent** realm header to `consumer`.
 
-### 3b. Edge Proxy (Next.js)
+### 3b. The social callback route
 
-`src/proxy.ts` (exported as `middleware`) runs on the Edge runtime for coarse routing. It reads the sealed session cookie to check whether a session exists (and optionally which realm). It does **not** have access to full user data — fine-grained checks happen in RSC layouts.
+```
+src/app/callback/route.ts
+```
 
-Copy from the nearest equivalent app (enterprise for org-facing apps, 876 for consumer apps). Update the redirect targets and realm checks.
+The provider returns the browser here with a `code`; this route exchanges it
+with the API server-side, relays the session cookie, and redirects into the app.
 
-### 3c. Session Cookie
+**The callback must send the same `X-876-Realm` as the bridge.** When they
+disagree, password sign-in works and social sign-in silently completes in the
+wrong realm and bounces to `/login` — an Invoice bug fixed on 2026-08-16.
 
-Session cookies are sealed with `iron-session` using `unsealSession876` from `@876/core`. Import the unsealer from `@876/core` — do not implement your own.
+Two pieces of configuration are required outside the code, or social sign-in
+lands on a _different app_:
 
-### 3d. Auth UI
+- Register `https://<app-origin>/callback` in the WorkOS dashboard.
+- Add `https://<app-origin>` to the API's `CORS_ALLOWED_ORIGINS`. The API only
+  honours the calling app's origin for the `redirect_uri` when it is
+  allow-listed; otherwise it falls back to the configured default.
 
-Embed login/register forms from `@876/ui/auth`. These are presentation components only — they call your app's `/api/auth/*` bridge route, never FastAPI directly.
+Verify with:
 
----
+```bash
+curl -s -X POST https://<app-origin>/api/auth/social-login \
+  -H 'content-type: application/json' -d '{"provider":"google"}'
+# redirect_uri MUST be this app's own /callback
+```
 
-## 4. SDK Initialization
+### 3c. No `proxy.ts`, no `middleware.ts`
 
-### Consumer/session-tier (most apps)
+**Do not add `src/proxy.ts` or `middleware.ts` to any app.** Next.js 16 runs
+`proxy.ts` on the Node.js runtime and `@opennextjs/cloudflare` cannot execute
+it — the Cloudflare build fails outright.
+
+All routing, session, and permission checks live in **RSC layouts and server
+components**, via the app's `src/lib/auth/guards.ts`. See `docs/cloudflare.md`
+→ "Runtime constraints" and `.grok/rules/navigation-performance.md`.
+
+### 3d. Session cookie
+
+Re-export the shared reader — never implement HMAC verification per app:
 
 ```ts
-// src/lib/876.ts
-import { create876Client } from '@876/sdk'
-
-export const $876 = create876Client({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL,
-})
+// src/lib/auth/session-cookie.ts
+export {
+  verifySession876,
+  resolveSessionCookieSecret,
+  type Session876Account,
+  type Session876Snapshot,
+} from '@876/core/auth/session-cookie'
 ```
 
-Use `$876.auth`, `$876.users`, `$876.apps`, etc. in server components.
+The presence of this file is how tooling discovers that the app verifies
+sessions, so `pnpm check:session-secret` picks the app up automatically.
 
-### Admin-tier (Console only)
+Prefer Couriers' `requireValidSession`, which additionally confirms the account
+still exists and is active against the identity API — a sealed cookie keeps
+proving "someone signed in" long after that account was deleted or disabled.
 
-```ts
-// src/lib/876.ts
-import 'server-only'
-import { create876AdminClient } from '@876/admin'
+### 3e. Auth UI
 
-export const $876 = create876AdminClient({
-  internalKey: process.env.API_INTERNAL_KEY,
-  apiKey: process.env.API_876_KEY,
-})
-```
-
-Admin-tier is server-only and uses the `x-internal-key` credential. Never expose `API_INTERNAL_KEY` to the browser or non-Console apps.
+Embed the login/register flow from `@876/ui/auth`. It is presentation and flow
+only — no session state — and it calls this app's `/api/auth/*` bridge, never
+the API directly.
 
 ---
 
-## 5. App-Local Data
+## 4. Data access
 
-If your app has its own domain data (e.g. Couriers has drivers, parcels, routes):
+Initialize one client per app and export it as `$876` from `src/lib/876.ts`,
+then call `$876.<resource>.<verb>()` directly. Never a raw `fetch` to the API,
+and never a bespoke flat wrapper.
 
-- Use a **separate database** — never share tables or add FKs to the 876 identity DB
-- Reference core 876 entities (users, orgs) by **opaque ID string only** — no cross-DB foreign keys
-- Keep DB access **server-only** (import only in server components or route handlers)
-- Use Prisma (see `apps/couriers/prisma/` as a reference once populated)
+| Tier                   | Package      | Credential                            | Runs             |
+| ---------------------- | ------------ | ------------------------------------- | ---------------- |
+| Consumer / first-party | `@876/sdk`   | app API key or session cookie         | server + browser |
+| Platform admin         | `@876/admin` | `API_INTERNAL_KEY` (`x-internal-key`) | **server only**  |
 
-**Rule of thumb**: if the table has a `user_id` or `org_id` column, it must be a plain string — never a FK pointing at the identity DB.
+An exposable key must never carry admin scope. Client-initiated mutations go
+through a thin route handler that authorizes and then calls `$876` — **no server
+actions**. See `.grok/rules/sdk-conventions.md` and
+`.grok/rules/api-access.md`.
 
----
-
-## 6. Workspace Setup
-
-### pnpm
-
-The workspace glob `apps/*` in `pnpm-workspace.yaml` picks up new apps automatically. Run `pnpm install` after adding a `package.json`.
-
-### Turbo
-
-Add a `dev:<appname>` script to the root `package.json`:
-
-```json
-"dev:couriers": "turbo run dev --filter=@876/api --filter=@876/couriers"
-```
-
-The Turborepo pipeline is already configured for `dev`, `build`, `typecheck`, and `test` tasks.
-
-### Required files
-
-For a Next.js app you need at minimum:
-
-```
-apps/<appname>/
-  package.json       # name: "@876/<appname>", port in scripts
-  next.config.ts     # security headers, transpilePackages, allowedOrigins
-  tsconfig.json      # copy from apps/enterprise/tsconfig.json, update paths
-  src/app/
-    layout.tsx
-    page.tsx
-```
+If the app owns a bounded context it may run its own datastore, referencing core
+876 entities by **opaque ID only** — no cross-database foreign keys. See
+`.grok/rules/platform-services.md`. An app with no bounded context of its own
+must not grow `db/` or `service/`.
 
 ---
 
-## 7. Environment Variables
+## 5. Workspace setup
 
-| Variable                | Where            | Purpose                                                          |
-| ----------------------- | ---------------- | ---------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`   | app `.env.local` | Public API base URL                                              |
-| `API_URL`               | app `.env.local` | Server-side API base URL (`http://127.0.0.1:4000`)               |
-| `API_876_KEY`           | app `.env.local` | App API key (`876_app_key_...`) — from Console > Apps > API Keys |
-| `SESSION_COOKIE_SECRET` | app `.env.local` | 32-char secret for `iron-session` cookie sealing                 |
+The `apps/*` glob in `pnpm-workspace.yaml` picks up new apps automatically; run
+`pnpm install` after adding a `package.json`.
 
-## 8. Console Integration
+Minimum files for a Next.js app:
 
-### Seeing users who signed up for your app
+```
+apps/<app>/
+  package.json          # name: "@876/<app>", port in scripts
+  next.config.ts        # security headers, reactCompiler: true
+  tsconfig.json
+  wrangler.jsonc        # Worker name, nodejs_compat, vars, secrets.required
+  open-next.config.ts
+  .dev.vars.example
+  src/app/layout.tsx
+  src/app/page.tsx
+```
 
-App enrollment is tracked automatically. When a user authenticates through your app (first session), `UserAppEnrollment` is created. Console > Users shows which apps each user has accessed via the Apps column and the Apps accordion on the user detail page.
-
-### Console managing your app's domain data
-
-If Console needs to view or act on your app's domain data (e.g. list Couriers shipments for an org):
-
-1. Expose a narrow internal admin HTTP surface in your app at `/api/admin/*`, protected by `x-internal-key`
-2. In Console, create a `$<appname>` singleton client (server-only) that calls your admin endpoints with the shared internal key
-3. Your app must **never** query the 876 identity DB directly — call `$876.<resource>` to resolve user/org details
-4. This keeps each bounded context's data inside its own service
-
-This is the same inter-service pattern Console uses for the 876 API itself.
+Add a `dev:<app>` script to the root `package.json`. Include
+`pnpm check:session-secret` in it, exactly as every other `dev:*` script does.
 
 ---
 
-## 9. Non-Next.js Apps (Vite / React / Vue / Native)
+## 6. Deployment configuration — do not skip
 
-The integration points are the same; the implementation differs:
+These four steps are what separate "the app builds" from "the app works".
 
-| Concern        | Next.js                               | Vite / SPA                                                  | Native                                             |
-| -------------- | ------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------- |
-| Auth bridge    | `/api/auth/[...path]/route.ts`        | Thin server (Express, Hono) with same logic                 | Platform SDK (iOS, Android) calls FastAPI directly |
-| Session cookie | iron-session + Next.js cookies        | iron-session on the thin server                             | Secure storage (Keychain, EncryptedSharedPrefs)    |
-| SDK client     | `create876Client` in server component | `create876Client` in browser (add `credentials: 'include'`) | `create876Client` configured for native HTTP       |
-| Routing guard  | `src/proxy.ts` middleware             | Server middleware on the thin server                        | Auth state check in nav guard                      |
+1. **`apps/<app>/wrangler.jsonc`** — Worker name, `nodejs_compat`, the non-secret
+   `vars` block (service URLs), and a `secrets.required` list.
 
-The key invariant: **all auth flows and identity API calls go through your server-side bridge**, never directly from the browser to FastAPI with your API key exposed.
+2. **`scripts/cloudflare-release-contract.mjs`** — add an entry. CI fails on an
+   app-level `wrangler.jsonc` with no contract entry, so a new app cannot skip
+   release preflights. List `SESSION_COOKIE_SECRET` in `requiredSecrets` if the
+   app verifies sessions.
+
+3. **`.github/workflows/deploy-cloudflare.yml`** — add a job by copying an
+   existing app's, **including the `Sync the shared session cookie secret`
+   step**. That step is what keeps the app's secret equal to the platform value
+   instead of whatever was typed in by hand.
+
+4. **Cloudflare Workers Builds** (one-time, per app):
+   - Create a **Workers** project (not Pages), Root Directory `/apps/<app>`.
+   - Build command `pnpm run cf:build` — **not** `pnpm run build`. `build` is
+     `next build`, which only produces `.next/`, while `wrangler.jsonc` points
+     `main` at `.open-next/worker.js`.
+   - Deploy command `npx opennextjs-cloudflare deploy`.
+   - Set the app's `NEXT_PUBLIC_*` **build** variables. They are inlined at
+     build time and Workers Builds does not inherit runtime secrets.
+
+---
+
+## 7. Environment variables
+
+| Variable                | Where           | Purpose                                                         |
+| ----------------------- | --------------- | --------------------------------------------------------------- |
+| `API_URL`               | `wrangler` vars | Server-side API base URL                                        |
+| `NEXT_PUBLIC_API_URL`   | build variable  | Public API base URL (inlined into the bundle)                   |
+| `NEXT_PUBLIC_APP_URL`   | `wrangler` vars | The consumer app origin, for "go to my 876 account" links       |
+| `<APP>_API_876_KEY`     | runtime secret  | This app's API key (`876_app_secret_…`)                         |
+| `API_INTERNAL_KEY`      | runtime secret  | Admin-tier calls. Server-only, never exposed                    |
+| `SESSION_COOKIE_SECRET` | runtime secret  | **Shared with `apps/api` and every app.** See the warning above |
+
+Locally, each app reads its own gitignored `apps/<app>/.env`; start from
+`.dev.vars.example` / `.env.example`.
+
+Full per-app inventory: `docs/app-configuration.md` §3 and
+`scripts/cloudflare-release-contract.mjs`.
+
+---
+
+## 8. Console integration
+
+App enrollment is tracked automatically: the first time a user authenticates
+through the app, an enrollment record is created, and Console shows it on the
+user's Apps accordion.
+
+If Console needs to act on the app's own domain data, expose a narrow internal
+admin surface at `/api/admin/*` guarded by `x-internal-key`, and give Console a
+server-only client for it. The app must never query the identity database
+directly — it resolves user/org details through `$876`.
+
+---
+
+## 9. Org-workspace apps
+
+If the app gates access on an organization, a signed-in account with **no**
+organization must reach onboarding, never `/no-access`, and an `owner`/`admin`
+whose org merely lacks the entitlement must be routed to setup rather than a
+wall. Sign-up and onboarding ship together, or neither ships. See
+`.grok/rules/product-org-signup.md`.
+
+---
+
+## 10. Before you call the app done
+
+A green deploy proves the app builds. It proves nothing about whether anyone can
+sign in.
+
+```bash
+pnpm check:session-secret                 # local secrets agree across apps
+pnpm check:worker-secrets 876-<app>       # production secrets are present
+pnpm check:worker-readiness 876-<app>     # the deployed Worker answers
+```
+
+Then, in production:
+
+- [ ] Sign in with a password. You land in the app, not back on `/login`.
+- [ ] Sign in with Google. Same result.
+- [ ] The social `redirect_uri` is this app's own `/callback` (§3b).
+- [ ] A brand-new account with no organization reaches onboarding (§9).
+
+If sign-in bounces, go straight to `docs/app-configuration.md` §5 — the probe
+there identifies a session-secret mismatch in about ten seconds, without needing
+anyone's credentials.
+
+---
+
+## 11. Non-Next.js apps
+
+The integration points are identical; only the implementation differs.
+
+| Concern        | Next.js                        | Vite / SPA                                   | Native                                          |
+| -------------- | ------------------------------ | -------------------------------------------- | ----------------------------------------------- |
+| Auth bridge    | `/api/auth/[...path]/route.ts` | Thin server (Hono/Express) with same logic   | Platform SDK against the API                    |
+| Session cookie | app origin, set by the API     | same, via the thin server                    | secure storage (Keychain, EncryptedSharedPrefs) |
+| Client         | `$876` in server components    | `create876Client` + `credentials: 'include'` | `create876Client` on native HTTP                |
+| Route guard    | RSC layout guards              | server middleware on the thin server         | auth-state nav guard                            |
+
+The invariant: **all auth flows and identity API calls go through a server-side
+bridge.** The browser never holds an API key.
