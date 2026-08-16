@@ -236,6 +236,8 @@ export async function registerBusiness(
     lastName,
     organizationName,
     organizationSlug,
+    currencyCode: pickFirst(body.currencyCode, body.currency_code) ?? null,
+    language: body.language ?? null,
     sourceAppId: getAppId(req),
   })
   if (result.status === 'pending') {
