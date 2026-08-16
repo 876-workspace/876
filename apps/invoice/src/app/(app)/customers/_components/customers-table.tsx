@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { DataTable } from '@876/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -13,7 +14,7 @@ export interface CustomerRow {
   companyName: string | null
   contactName: string | null
   phone: string | null
-  receivables: number
+  receivables: string
   currency: string
 }
 
@@ -28,20 +29,23 @@ export function CustomersTable({ customers, emptyState }: Props) {
     {
       accessorKey: 'name',
       header: 'Customer',
-      cell: ({ row }: any) => (
-        <Link
-          href={`/customers/${row.original.id}`}
-          className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
-          onClick={(event) => event.stopPropagation()}
-        >
-          {row.original.name}
-        </Link>
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <CustomerAvatar name={row.original.name} />
+          <Link
+            href={`/customers/${row.original.id}`}
+            className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {row.original.name}
+          </Link>
+        </div>
       ),
     },
     {
       accessorKey: 'companyName',
       header: 'Company',
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <span
           className={
             row.original.companyName
@@ -56,7 +60,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
     {
       accessorKey: 'contactName',
       header: 'Contact',
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <span className="text-muted-foreground">
           {row.original.contactName ?? '—'}
         </span>
@@ -65,7 +69,7 @@ export function CustomersTable({ customers, emptyState }: Props) {
     {
       accessorKey: 'phone',
       header: 'Phone',
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <span className="text-muted-foreground">
           {row.original.phone ?? '—'}
         </span>
@@ -74,9 +78,9 @@ export function CustomersTable({ customers, emptyState }: Props) {
     {
       accessorKey: 'receivables',
       header: () => <div className="text-right">Receivables</div>,
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <div className="text-right font-medium tabular-nums">
-          {formatMoney(String(row.original.receivables), row.original.currency)}
+          {formatMoney(row.original.receivables, row.original.currency)}
         </div>
       ),
     },

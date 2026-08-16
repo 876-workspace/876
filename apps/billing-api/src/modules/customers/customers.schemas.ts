@@ -238,6 +238,15 @@ export const customerSchema = z.object({
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   primaryContact: contactSchema.nullable(),
+  // Present on retrieve only. A list would pay three aggregates per row for
+  // something no list column renders.
+  counts: z
+    .object({
+      subscriptions: z.number().int(),
+      invoices: z.number().int(),
+      quotes: z.number().int(),
+    })
+    .optional(),
 })
 export const deletedCustomerSchema = z.strictObject({
   object: z.literal('customer'),

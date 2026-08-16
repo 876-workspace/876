@@ -12,6 +12,16 @@ const customerInclude = {
   contacts: { where: { isPrimary: true }, take: 1 },
 } as const
 
+/**
+ * Retrieve returns activity counts the list deliberately does not: a detail
+ * page shows them, and computing three aggregates per row would make the list
+ * pay for something no list column displays.
+ */
+const customerDetailInclude = {
+  ...customerInclude,
+  _count: { select: { subscriptions: true, invoices: true, quotes: true } },
+} as const
+
 export function listCustomerRows(
   tenantId: string,
   query: CustomerListQuery,
@@ -42,6 +52,18 @@ export function findCustomerRow(
   return prisma.customer.findFirst({
     where: { tenantId, id, ...(sourceAppId ? { sourceAppId } : {}) },
     include: customerInclude,
+  })
+}
+
+/** As {@link findCustomerRow}, plus the activity counts a detail view shows. */
+export function findCustomerDetailRow(
+  tenantId: string,
+  id: string,
+  sourceAppId?: string
+) {
+  return prisma.customer.findFirst({
+    where: { tenantId, id, ...(sourceAppId ? { sourceAppId } : {}) },
+    include: customerDetailInclude,
   })
 }
 

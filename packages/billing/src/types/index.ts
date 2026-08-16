@@ -48,8 +48,22 @@ export type {
   CustomerOpeningBalanceParams,
   CustomerLedgerEntry,
   CustomerAccount,
+  CustomerContact,
+  CustomerStatus,
+  Customer,
+  CustomerList,
+  CustomerListParams,
+  CustomerUpdateParams,
+  DeletedCustomer,
 } from './customer'
-export { CustomerCreatedSchema, CustomerAccountSchema } from './customer.schema'
+export {
+  CustomerCreatedSchema,
+  CustomerAccountSchema,
+  CustomerContactSchema,
+  CustomerSchema,
+  CustomerListSchema,
+  DeletedCustomerSchema,
+} from './customer.schema'
 
 // Invoice
 export type {

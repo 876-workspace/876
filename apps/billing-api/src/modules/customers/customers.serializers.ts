@@ -63,6 +63,27 @@ export function serializeCustomer(row: Customer & { contacts?: Contact[] }) {
   }
 }
 
+/**
+ * A customer plus the activity counts a detail view renders. Kept separate
+ * from {@link serializeCustomer} so a list never pays for three aggregates it
+ * does not display.
+ */
+export function serializeCustomerDetail(
+  row: Customer & {
+    contacts?: Contact[]
+    _count: { subscriptions: number; invoices: number; quotes: number }
+  }
+) {
+  return {
+    ...serializeCustomer(row),
+    counts: {
+      subscriptions: row._count.subscriptions,
+      invoices: row._count.invoices,
+      quotes: row._count.quotes,
+    },
+  }
+}
+
 export function serializeLedgerEntry(row: CustomerLedgerEntry) {
   return {
     object: 'customer_ledger_entry' as const,

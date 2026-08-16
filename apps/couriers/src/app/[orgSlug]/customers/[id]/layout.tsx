@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from 'react'
 import { notFound } from 'next/navigation'
-import { Avatar, AvatarFallback } from '@876/ui/avatar'
+import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { Badge } from '@876/ui/badge'
 import { Skeleton } from '@876/ui/skeleton'
 import { RouteTabs } from '@876/ui/route-tabs'
@@ -84,9 +84,7 @@ async function CondensedTitle({
   if (!customer) return null
   return (
     <>
-      <Avatar size="sm" className="size-6 shrink-0 text-[0.625rem]">
-        <AvatarFallback>{initialsOf(customer.displayName)}</AvatarFallback>
-      </Avatar>
+      <CustomerAvatar name={customer.displayName} size="sm" />
       <span className="truncate text-[0.8125rem] font-semibold">
         {customer.displayName}
       </span>
@@ -115,12 +113,7 @@ async function Identity({ orgSlug, id }: { orgSlug: string; id: string }) {
 
   return (
     <>
-      <Avatar
-        size="lg"
-        className="ring-876-surface size-14 shrink-0 text-lg shadow-sm ring-2 sm:size-16 sm:text-xl"
-      >
-        <AvatarFallback>{initialsOf(displayName)}</AvatarFallback>
-      </Avatar>
+      <CustomerAvatar name={displayName} size="lg" />
 
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -170,12 +163,4 @@ function ActionsFallback() {
       <Skeleton className="h-8 w-8 rounded-md" />
     </div>
   )
-}
-
-function initialsOf(name: string) {
-  const parts = name.trim().split(/\s+/)
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-  }
-  return name.slice(0, 2).toUpperCase() || 'CU'
 }

@@ -11,6 +11,7 @@ import {
   deleteCustomerRow,
   ensureCoreCustomerRows,
   findCoreCustomer,
+  findCustomerDetailRow,
   findCustomerRow,
   findIdempotentCustomerRow,
   findTenantDefaults,
@@ -34,6 +35,7 @@ import type {
 } from './customers.schemas'
 import {
   serializeCustomer,
+  serializeCustomerDetail,
   serializeLedgerEntry,
 } from './customers.serializers'
 
@@ -101,9 +103,9 @@ export async function retrieveCustomer(
   id: string,
   sourceAppId?: string
 ) {
-  const row = await findCustomerRow(tenantId, id, sourceAppId)
+  const row = await findCustomerDetailRow(tenantId, id, sourceAppId)
   if (!row) throw notFound()
-  return serializeCustomer(row)
+  return serializeCustomerDetail(row)
 }
 
 export async function createCustomer(

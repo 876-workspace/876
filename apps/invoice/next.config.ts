@@ -67,6 +67,14 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        destination: '/api/billing-gateway/:path*',
+      },
+    ]
+  },
   transpilePackages: ['@876/billing', '@876/sdk', '@876/core', '@876/ui'],
 
   experimental: {
