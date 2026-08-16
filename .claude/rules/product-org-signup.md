@@ -36,7 +36,7 @@ authenticated, correct, and permanently stuck. Enabling any sign-up affordance
 For a signed-in account with **no** membership, the app must let it:
 
 1. **Create its organization** — `platform.organizations.create({ ownerUserId,
-   name })` (the `/organizations/bootstrap` transport). This creates the org and
+name })` (the `/organizations/bootstrap` transport). This creates the org and
    the owner membership. Idempotent: an account that already has an org keeps it.
 2. **Provision the app** for that org (the app's own get-started/onboarding step
    — subscription + workspace/tenant), exactly as it already does for an account
@@ -63,6 +63,40 @@ do not invent a second onboarding pattern.
   (`app/api/...`) that authorize the session and call the platform client — no
   business logic in the app (`.claude/rules/api-access.md`).
 
+### A missing entitlement is a setup step, never a wall
+
+**An org-gated layout must never answer `/no-access` to an account that could
+fix the problem itself.** "Your organization does not have a subscription" is a
+setup prompt for an `owner` or `admin`, and only a wall for someone who genuinely
+cannot act.
+
+```
+accessStatus not active/trialing
+  ├─ owner | admin  → the app's get-started/onboarding route (activate it)
+  └─ member         → /no-access
+```
+
+Telling an organization's **owner** to "contact your admin" is incoherent —
+they are the admin. Route them to setup instead.
+
+Every organization already shares one customer/financial data plane, so
+activating a product app is an entitlement change, not a data migration: an org
+that starts on 876 Invoice and later activates 876 Billing directly sees the same
+customers, invoices, and quotes. Nothing is copied and nothing is lost, which is
+exactly why a missing entitlement must not be presented as a dead end.
+
+Keep the decision in **one** place — the get-started/onboarding route — and have
+the layout redirect there unconditionally. Duplicating the role check in the
+layout is how the two drift apart: Invoice's layout answered `/no-access` while
+its own onboarding page was already able to activate the subscription, so the
+recovery path existed but nothing ever reached it (fixed 2026-08-16).
+
+`blocked` is the deliberate exception: an entitlement 876 has restricted stays
+`/no-access` for every role, owners included.
+
+Reference implementations: `apps/couriers/src/app/[orgSlug]/layout.tsx` (the
+`canActivate` branch) and `apps/invoice/src/app/(app)/layout.tsx`.
+
 ## Configuration: `/no-access` must escape to a real 876 account URL
 
 The `/no-access` (and couriers `/access-denied`) "Go to my 876 account" link
@@ -77,6 +111,10 @@ to production, where the escape link sends real users to their own machine.
 - Do not enable any sign-up affordance (social or email) on a product app's login
   without the org-creation path for the account it creates.
 - Do not redirect a signed-in, org-less account to `/no-access`.
+- Do not answer `/no-access` to an `owner` or `admin` whose organization merely
+  lacks the entitlement — that is a setup step they are allowed to complete.
+- Do not duplicate the role/entitlement decision in both the layout and the
+  onboarding route; the layout redirects, onboarding decides.
 - Do not read the org from the sealed session cookie for onboarding — resolve
   memberships live so a freshly created org is seen immediately.
 - Do not put org-creation or provisioning business logic in the Next app — call
