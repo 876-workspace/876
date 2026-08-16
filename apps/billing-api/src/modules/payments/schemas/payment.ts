@@ -32,16 +32,16 @@ export const PaymentAllocationSchema = z.strictObject({
 })
 
 const paymentCreateShape = {
-    customerId: IdSchema,
-    paymentModeId: IdSchema,
-    depositAccountId: IdSchema,
-    amount: positiveMinorAmountSchema,
-    bankCharges: minorAmountSchema.optional(),
-    currency: currencyCodeSchema,
-    paymentDate: unixTimestampSchema,
-    referenceNumber: optionalShortTextSchema,
-    notes: optionalTextSchema,
-    allocations: z.array(PaymentAllocationSchema).max(100).default([]),
+  customerId: IdSchema,
+  paymentModeId: IdSchema,
+  depositAccountId: IdSchema,
+  amount: positiveMinorAmountSchema,
+  bankCharges: minorAmountSchema.optional(),
+  currency: currencyCodeSchema,
+  paymentDate: unixTimestampSchema,
+  referenceNumber: optionalShortTextSchema,
+  notes: optionalTextSchema,
+  allocations: z.array(PaymentAllocationSchema).max(100).default([]),
 }
 
 function paymentCreateSchema(integration: boolean) {
@@ -52,41 +52,41 @@ function paymentCreateSchema(integration: boolean) {
         ? { sourceExternalReference: IdSchema.nullable().optional() }
         : {}),
     })
-  .superRefine((value, context) => {
-    const bankCharges = value.bankCharges ?? 0n
-    if (bankCharges >= value.amount)
-      context.addIssue({
-        code: 'custom',
-        message: 'Bank charges must be less than the payment amount.',
-        path: ['bankCharges'],
-      })
-
-    const invoiceIds = new Set<string>()
-    for (const [index, allocation] of value.allocations.entries()) {
-      if (invoiceIds.has(allocation.invoiceId))
+    .superRefine((value, context) => {
+      const bankCharges = value.bankCharges ?? 0n
+      if (bankCharges >= value.amount)
         context.addIssue({
           code: 'custom',
-          message: 'Each invoice can be allocated only once.',
-          path: ['allocations', index, 'invoiceId'],
+          message: 'Bank charges must be less than the payment amount.',
+          path: ['bankCharges'],
         })
-      invoiceIds.add(allocation.invoiceId)
-    }
 
-    const allocated = value.allocations.reduce(
-      (total, allocation) => total + allocation.amount,
-      0n
-    )
-    if (allocated > value.amount)
-      context.addIssue({
-        code: 'custom',
-        message: 'Invoice allocations cannot exceed the payment amount.',
-        path: ['allocations'],
-      })
-  })
-  .transform((value) => ({
-    ...value,
-    bankCharges: value.bankCharges ?? 0n,
-  }))
+      const invoiceIds = new Set<string>()
+      for (const [index, allocation] of value.allocations.entries()) {
+        if (invoiceIds.has(allocation.invoiceId))
+          context.addIssue({
+            code: 'custom',
+            message: 'Each invoice can be allocated only once.',
+            path: ['allocations', index, 'invoiceId'],
+          })
+        invoiceIds.add(allocation.invoiceId)
+      }
+
+      const allocated = value.allocations.reduce(
+        (total, allocation) => total + allocation.amount,
+        0n
+      )
+      if (allocated > value.amount)
+        context.addIssue({
+          code: 'custom',
+          message: 'Invoice allocations cannot exceed the payment amount.',
+          path: ['allocations'],
+        })
+    })
+    .transform((value) => ({
+      ...value,
+      bankCharges: value.bankCharges ?? 0n,
+    }))
 }
 
 export const PaymentCreateSchema = paymentCreateSchema(false)

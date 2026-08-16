@@ -32,7 +32,9 @@ export const vendorsController = {
     res.json(await retrieveVendor(tenantId(req), vendorId))
   },
   async create(req: Request, res: Response) {
-    res.json(await createVendor(tenantId(req), validBody<VendorCreateBody>(req)))
+    res.json(
+      await createVendor(tenantId(req), validBody<VendorCreateBody>(req))
+    )
   },
   async update(req: Request, res: Response) {
     const { vendorId } = validParams<{ vendorId: string }>(req)

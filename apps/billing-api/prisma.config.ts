@@ -2,11 +2,7 @@ import { config } from 'dotenv'
 import { defineConfig, env } from 'prisma/config'
 
 config({
-  path: [
-    '.env.development.local',
-    '.env.development',
-    '.env',
-  ],
+  path: ['.env.development.local', '.env.development', '.env'],
 })
 
 const directCommands = new Set(['db', 'migrate', 'studio'])

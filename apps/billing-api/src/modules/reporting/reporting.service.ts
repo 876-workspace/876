@@ -20,10 +20,16 @@ export async function dashboardOverview(tenantId: string) {
     }
   }
 
-  const invoiceTotals = new Map<string, { issued: bigint; outstanding: bigint }>()
+  const invoiceTotals = new Map<
+    string,
+    { issued: bigint; outstanding: bigint }
+  >()
   for (const invoice of rows.invoices) {
     const currency = invoice.currency.toUpperCase()
-    const current = invoiceTotals.get(currency) ?? { issued: 0n, outstanding: 0n }
+    const current = invoiceTotals.get(currency) ?? {
+      issued: 0n,
+      outstanding: 0n,
+    }
     current.issued += invoice.totalAmount
     current.outstanding += invoice.amountDue
     invoiceTotals.set(currency, current)
@@ -31,15 +37,35 @@ export async function dashboardOverview(tenantId: string) {
 
   return {
     object: 'billing_dashboard',
-    activeSubscriptions: rows.subscriptions.filter((row) => row.status === 'ACTIVE').length,
-    trialingSubscriptions: rows.subscriptions.filter((row) => row.status === 'TRIALING').length,
-    pausedSubscriptions: rows.subscriptions.filter((row) => row.status === 'PAUSED').length,
-    cancelledSubscriptions: rows.subscriptions.filter((row) => row.status === 'CANCELED').length,
+    activeSubscriptions: rows.subscriptions.filter(
+      (row) => row.status === 'ACTIVE'
+    ).length,
+    trialingSubscriptions: rows.subscriptions.filter(
+      (row) => row.status === 'TRIALING'
+    ).length,
+    pausedSubscriptions: rows.subscriptions.filter(
+      (row) => row.status === 'PAUSED'
+    ).length,
+    cancelledSubscriptions: rows.subscriptions.filter(
+      (row) => row.status === 'CANCELED'
+    ).length,
     customerCount: rows.customerCount,
     productCount: rows.productCount,
-    recurringRevenue: [...recurring].sort(([left], [right]) => left.localeCompare(right)).map(([currency, arr]) => ({ currency, mrr: (arr / 12n).toString(), arr: arr.toString() })),
+    recurringRevenue: [...recurring]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([currency, arr]) => ({
+        currency,
+        mrr: (arr / 12n).toString(),
+        arr: arr.toString(),
+      })),
     draftQuoteCount: rows.draftQuoteCount,
-    issuedInvoiceTotals: [...invoiceTotals].sort(([left], [right]) => left.localeCompare(right)).map(([currency, total]) => ({ currency, totalIssued: total.issued.toString(), totalOutstanding: total.outstanding.toString() })),
+    issuedInvoiceTotals: [...invoiceTotals]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([currency, total]) => ({
+        currency,
+        totalIssued: total.issued.toString(),
+        totalOutstanding: total.outstanding.toString(),
+      })),
   }
 }
 

@@ -1,9 +1,4 @@
-import {
-  BarChart3,
-  ClipboardList,
-  Settings,
-  Users,
-} from '@876/ui/icons'
+import { BarChart3, ClipboardList, Settings, Users } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 
 export type NavChild = {

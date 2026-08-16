@@ -9,7 +9,10 @@ import {
   setDefaultCurrencyRow,
   updateCurrencyRow,
 } from './currencies.repository'
-import type { CurrencyEnableBody, CurrencyMutationBody } from './currencies.schemas'
+import type {
+  CurrencyEnableBody,
+  CurrencyMutationBody,
+} from './currencies.schemas'
 import { serializeCurrency } from './currencies.serializers'
 
 export async function hasEnabledCurrency(

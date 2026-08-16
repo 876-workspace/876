@@ -12,12 +12,14 @@ const resolveBody = tenantParams.extend({
   userId: z.string().min(1),
   organizationRole: z.enum(['owner', 'admin', 'member']),
 })
-const role = z.object({
-  id: z.string(),
-  slug: z.string(),
-  name: z.string(),
-  permissions: z.array(z.string()),
-}).passthrough()
+const role = z
+  .object({
+    id: z.string(),
+    slug: z.string(),
+    name: z.string(),
+    permissions: z.array(z.string()),
+  })
+  .passthrough()
 const memberAccess = z.object({
   userId: z.string(),
   status: z.enum(['ACTIVE', 'SUSPENDED']),
@@ -28,11 +30,7 @@ const memberAccess = z.object({
 async function resolve(req: Request, res: Response) {
   const body = validBody<z.infer<typeof resolveBody>>(req)
   res.json(
-    await resolveMemberAccess(
-      body.tenantId,
-      body.userId,
-      body.organizationRole
-    )
+    await resolveMemberAccess(body.tenantId, body.userId, body.organizationRole)
   )
 }
 
@@ -70,14 +68,16 @@ export function createInternalAccessRouter(resolveGuards: GuardResolver) {
         description: 'Billing member grants',
         schema: successEnvelopeSchema(
           z.array(
-            z.object({
-              object: z.literal('billing_member'),
-              id: z.string(),
-              userId: z.string(),
-              roleId: z.string(),
-              status: z.enum(['ACTIVE', 'SUSPENDED']),
-              role,
-            }).passthrough()
+            z
+              .object({
+                object: z.literal('billing_member'),
+                id: z.string(),
+                userId: z.string(),
+                roleId: z.string(),
+                status: z.enum(['ACTIVE', 'SUSPENDED']),
+                role,
+              })
+              .passthrough()
           )
         ),
       },

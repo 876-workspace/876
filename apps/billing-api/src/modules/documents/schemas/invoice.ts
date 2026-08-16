@@ -20,25 +20,25 @@ export type InvoiceStatus =
   | 'VOID'
 
 const invoiceCreateShape = {
-    quoteId: IdSchema.nullable().optional(),
-    estimateId: IdSchema.nullable().optional(),
-    customerId: IdSchema.nullable().optional(),
-    subscriptionId: IdSchema.nullable().optional(),
-    salespersonId: IdSchema.nullable().optional(),
-    priceListId: IdSchema.nullable().optional(),
-    currency: currencyCodeSchema.optional(),
-    issueAt: unixTimestampSchema.optional(),
-    dueAt: unixTimestampSchema.optional(),
-    orderNumber: z.string().trim().min(1).max(120).nullable().optional(),
-    referenceNumber: z.string().trim().min(1).max(120).nullable().optional(),
-    subject: z.string().trim().min(1).max(300).nullable().optional(),
-    taxBehavior: TaxBehaviorSchema.optional(),
-    discountAmount: minorAmountSchema.optional(),
-    shippingAmount: minorAmountSchema.optional(),
-    adjustmentAmount: signedMinorAmountSchema.optional(),
-    notes: optionalTextSchema,
-    terms: optionalTextSchema,
-    lines: z.array(DocumentLineCreateSchema).min(1).max(100).optional(),
+  quoteId: IdSchema.nullable().optional(),
+  estimateId: IdSchema.nullable().optional(),
+  customerId: IdSchema.nullable().optional(),
+  subscriptionId: IdSchema.nullable().optional(),
+  salespersonId: IdSchema.nullable().optional(),
+  priceListId: IdSchema.nullable().optional(),
+  currency: currencyCodeSchema.optional(),
+  issueAt: unixTimestampSchema.optional(),
+  dueAt: unixTimestampSchema.optional(),
+  orderNumber: z.string().trim().min(1).max(120).nullable().optional(),
+  referenceNumber: z.string().trim().min(1).max(120).nullable().optional(),
+  subject: z.string().trim().min(1).max(300).nullable().optional(),
+  taxBehavior: TaxBehaviorSchema.optional(),
+  discountAmount: minorAmountSchema.optional(),
+  shippingAmount: minorAmountSchema.optional(),
+  adjustmentAmount: signedMinorAmountSchema.optional(),
+  notes: optionalTextSchema,
+  terms: optionalTextSchema,
+  lines: z.array(DocumentLineCreateSchema).min(1).max(100).optional(),
 }
 
 function invoiceCreateSchema(integration: boolean) {
@@ -49,44 +49,44 @@ function invoiceCreateSchema(integration: boolean) {
         ? { sourceExternalReference: IdSchema.nullable().optional() }
         : {}),
     })
-  .superRefine((value, context) => {
-    if (value.quoteId || value.estimateId) {
-      if (
-        value.customerId ||
-        value.lines ||
-        value.currency ||
-        value.subscriptionId ||
-        value.priceListId ||
-        ('sourceExternalReference' in value &&
-          value.sourceExternalReference) ||
-        (value.quoteId && value.estimateId)
-      ) {
+    .superRefine((value, context) => {
+      if (value.quoteId || value.estimateId) {
+        if (
+          value.customerId ||
+          value.lines ||
+          value.currency ||
+          value.subscriptionId ||
+          value.priceListId ||
+          ('sourceExternalReference' in value &&
+            value.sourceExternalReference) ||
+          (value.quoteId && value.estimateId)
+        ) {
+          context.addIssue({
+            code: 'custom',
+            message:
+              'An invoice converted from a sales document cannot override its details.',
+            path: [value.quoteId ? 'quoteId' : 'estimateId'],
+          })
+        }
+        return
+      }
+
+      if (!value.customerId) {
         context.addIssue({
           code: 'custom',
-          message:
-            'An invoice converted from a sales document cannot override its details.',
-          path: [value.quoteId ? 'quoteId' : 'estimateId'],
+          message: 'A manual invoice requires a customer.',
+          path: ['customerId'],
         })
       }
-      return
-    }
 
-    if (!value.customerId) {
-      context.addIssue({
-        code: 'custom',
-        message: 'A manual invoice requires a customer.',
-        path: ['customerId'],
-      })
-    }
-
-    if (!value.lines) {
-      context.addIssue({
-        code: 'custom',
-        message: 'A manual invoice requires at least one line.',
-        path: ['lines'],
-      })
-    }
-  })
+      if (!value.lines) {
+        context.addIssue({
+          code: 'custom',
+          message: 'A manual invoice requires at least one line.',
+          path: ['lines'],
+        })
+      }
+    })
 }
 
 export const InvoiceCreateSchema = invoiceCreateSchema(false)

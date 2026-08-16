@@ -69,8 +69,7 @@ export async function resolveMemberAccess(
 ) {
   if (organizationRole !== 'owner') {
     const current = await findMemberRow(tenantId, userId)
-    if (current)
-      return memberAccess(userId, current.status, current.role)
+    if (current) return memberAccess(userId, current.status, current.role)
   }
   const slug =
     organizationRole === 'owner'
