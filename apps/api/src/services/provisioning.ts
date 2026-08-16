@@ -188,11 +188,45 @@ export async function provisionOrgApps(
     provisioned.push(appId)
   }
 
-  if (provisioned.length > 0)
+  if (provisioned.length > 0) {
     log.info(
       { org_id: organizationId, app_ids: provisioned },
       'provisioning.org_apps'
     )
+
+    // Every org is provisioned onto 876-billing at signup, and the source app
+    // may declare an embedded finance dependency of its own. Opening those
+    // finance workspaces is what this reconcile does — without it a brand-new
+    // org has subscriptions but no Billing tenant, so every list in a
+    // finance-dependent app answers `billing/tenant-not-found` indefinitely.
+    //
+    // Scoped to this organization so one signup never scans the whole table.
+    // A failure here must not fail the signup itself — the account and the org
+    // are already created, and the reconcile is idempotent, so it is logged for
+    // the sweep to retry rather than rolled back onto the user.
+    try {
+      // Imported lazily for the same reason `enqueueCustomerEnsure` is
+      // injected: the finance repository builds a Prisma client at module
+      // load, and a static import here would drag a live database client into
+      // every unit test that touches provisioning.
+      const [
+        { reconcileFinanceConnections },
+        { createFinanceProvisioningRepository },
+      ] = await Promise.all([
+        import('./finance-provisioning'),
+        import('./finance-provisioning.repository'),
+      ])
+      await reconcileFinanceConnections(
+        { repository: createFinanceProvisioningRepository() },
+        { organizationId, limit: null }
+      )
+    } catch (error) {
+      log.error(
+        { org_id: organizationId, err: error },
+        'provisioning.finance_reconcile_failed'
+      )
+    }
+  }
 
   return provisioned
 }

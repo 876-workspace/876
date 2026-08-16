@@ -1176,6 +1176,23 @@ async function provisionOrgSubscription(
     priceId,
     now: BigInt(nowUnixSeconds()),
   })
+
+  // Activating an app with an embedded finance dependency is exactly what
+  // opens its Billing workspace, so the reconcile runs here — the outbox event
+  // it enqueues is what creates the tenant. Without this an org that just
+  // subscribed to a finance-dependent app (876 Invoice) never gets a tenant,
+  // and every list in that app answers `billing/tenant-not-found` forever with
+  // nothing in the system that would ever fix it.
+  //
+  // Scoped to this organization and app so provisioning one app cannot be
+  // delayed by another org's backlog. Failure surfaces rather than being
+  // swallowed: a subscription whose workspace was never opened is not a
+  // successful provision, and reporting it as one is what hid this for so long.
+  await reconcileFinanceConnections(
+    { repository: createFinanceProvisioningRepository() },
+    { organizationId: orgId, appId: app.id, limit: null }
+  )
+
   return serializeSubscription(row)
 }
 

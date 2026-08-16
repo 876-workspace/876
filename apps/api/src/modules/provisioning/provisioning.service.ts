@@ -6,6 +6,8 @@ import {
   catalogDefinitions,
   validateDraft,
 } from '@/services/provisioning-catalog'
+import { reconcileFinanceConnections } from '@/services/finance-provisioning'
+import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
 
 import * as repository from './provisioning.repository'
 import {
@@ -319,14 +321,21 @@ export async function reconcileRuns(body: {
     }
     appId = app.id
   }
-  // Stubbed reconciliation: mimic finance provisioning without full logic
-  // For now, return empty reconcile result
-  // In real implementation this would call reconcileFinanceConnections
+  const result = await reconcileFinanceConnections(
+    { repository: createFinanceProvisioningRepository() },
+    {
+      appId: appId ?? null,
+      organizationId: body.organization_id ?? null,
+      limit: body.limit,
+      startingAfter: body.starting_after ?? null,
+    }
+  )
+
   return {
     object: 'provisioning_reconciliation' as const,
-    examined: 0,
-    enqueued: 0,
-    next_cursor: null,
+    examined: result.examined,
+    enqueued: result.changed,
+    next_cursor: result.nextCursor,
   }
 }
 

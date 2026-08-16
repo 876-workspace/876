@@ -30,6 +30,17 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
+const { reconcileFinanceConnections, createFinanceProvisioningRepository } =
+  vi.hoisted(() => ({
+    reconcileFinanceConnections: vi.fn(),
+    createFinanceProvisioningRepository: vi.fn(() => ({ marker: 'repo' })),
+  }))
+
+vi.mock('../finance-provisioning', () => ({ reconcileFinanceConnections }))
+vi.mock('../finance-provisioning.repository', () => ({
+  createFinanceProvisioningRepository,
+}))
+
 const {
   assignMemberApps,
   ensureDefaultContact,
@@ -61,6 +72,11 @@ beforeEach(() => {
       Promise.resolve({ id: `app_${where.slug}`, slug: where.slug })
   )
   prisma.subscription.findFirst.mockResolvedValue(null)
+  reconcileFinanceConnections.mockResolvedValue({
+    examined: 3,
+    changed: 3,
+    nextCursor: null,
+  })
   prisma.subscription.create.mockResolvedValue({})
   prisma.subscription.update.mockResolvedValue({})
   prisma.subscriptionItem.create.mockResolvedValue({})
@@ -118,6 +134,43 @@ describe('seedDefaultRoles', () => {
 
 describe('provisionOrgApps', () => {
   it('subscribes the org to Enterprise, Billing, and Invoice', async () => {
+    const provisioned = await provisionOrgApps(ORG)
+
+    expect(provisioned).toEqual([
+      'app_876-enterprise',
+      'app_876-billing',
+      'app_876-invoice',
+    ])
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
+  })
+
+  // Regression: provisioning wrote the subscriptions and stopped there, so a
+  // brand-new org never had its Billing tenant opened and every list in a
+  // finance-dependent app answered `billing/tenant-not-found` forever.
+  it('reconciles finance connections for the org it just provisioned', async () => {
+    await provisionOrgApps(ORG)
+
+    expect(reconcileFinanceConnections).toHaveBeenCalledTimes(1)
+    expect(reconcileFinanceConnections).toHaveBeenCalledWith(
+      { repository: { marker: 'repo' } },
+      { organizationId: ORG, limit: null }
+    )
+  })
+
+  it('does not reconcile when every app was already provisioned', async () => {
+    prisma.subscription.findFirst.mockResolvedValue({ id: 'sub_existing' })
+
+    const provisioned = await provisionOrgApps(ORG)
+
+    expect(provisioned).toEqual([])
+    expect(reconcileFinanceConnections).not.toHaveBeenCalled()
+  })
+
+  it('still returns the provisioned apps when the reconcile fails', async () => {
+    // The account and org already exist by this point, so a finance hiccup must
+    // not roll a successful signup back onto the user.
+    reconcileFinanceConnections.mockRejectedValue(new Error('billing down'))
+
     const provisioned = await provisionOrgApps(ORG)
 
     expect(provisioned).toEqual([
