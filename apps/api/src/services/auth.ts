@@ -384,22 +384,48 @@ export function isLocalOrigin(value: string): boolean {
 /**
  * The WorkOS callback URL for this request.
  *
- * A configured production URL is authoritative. A request-derived origin only
- * wins when nothing is configured or the configured value is local-only, which
- * is what lets a Codespace or a preview deployment complete a social callback
- * without a hardcoded host (`.claude/rules/api-access.md`).
+ * Every 876 app hosts its own embedded auth, so the callback has to land back
+ * on the app the user started from — a single configured URL sends every app's
+ * social sign-in to whichever app that URL names, and the others bounce back to
+ * their login screen with no session. The request-derived origin therefore wins
+ * whenever it is one of the platform's own origins.
+ *
+ * `allowedOrigins` is the gate, and it is not optional: the origin is derived
+ * from the caller's `Host`/`x-876-origin` header, so accepting it unchecked
+ * would let a forged header redirect an authorization code offsite. An origin
+ * that is not allow-listed falls back to the configured URL exactly as before.
+ *
+ * A configured value that is missing or local-only still yields to the request
+ * origin, which is what lets a Codespace or a preview deployment complete a
+ * social callback without a hardcoded host (`.claude/rules/api-access.md`).
  */
 export function resolveWorkosRedirectUri(
   configuredValue: string | null | undefined,
-  requestOrigin: string | null | undefined
+  requestOrigin: string | null | undefined,
+  allowedOrigins: readonly string[] = []
 ): string | null {
   const configured = normalizeUrl(configuredValue)
   const requestCallback = callbackUriFromOrigin(requestOrigin)
+  if (!requestCallback) return configured
 
-  if (requestCallback && (!configured || isLocalOrigin(configured)))
-    return requestCallback
+  if (!configured || isLocalOrigin(configured)) return requestCallback
 
-  return configured
+  return isAllowedOrigin(requestOrigin, allowedOrigins)
+    ? requestCallback
+    : configured
+}
+
+/** Whether `origin` matches one of the platform's configured public origins. */
+function isAllowedOrigin(
+  origin: string | null | undefined,
+  allowedOrigins: readonly string[]
+): boolean {
+  const normalized = normalizeOrigin(origin)
+  if (!normalized) return false
+
+  return allowedOrigins.some(
+    (allowed) => normalizeOrigin(allowed) === normalized
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -1158,9 +1184,11 @@ export class AuthService {
     loginHint?: string | null
     redirectOrigin?: string | null
   }): string {
+    const settings = getSettings()
     const redirectUri = resolveWorkosRedirectUri(
-      getSettings().workos.redirectUri,
-      params.redirectOrigin
+      settings.workos.redirectUri,
+      params.redirectOrigin,
+      settings.corsOrigins
     )
     if (!redirectUri) {
       throw new AppHttpError({
