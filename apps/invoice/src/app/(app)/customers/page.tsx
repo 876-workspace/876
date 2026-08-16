@@ -14,6 +14,11 @@ import {
   StatusFilterHeading,
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
+import { redirect } from 'next/navigation'
+
+import { get876Client } from '@/lib/876'
+import { getInvoiceContext } from '@/lib/auth/context'
+import type { CustomerStatus } from '@876/billing'
 import { CustomersTable } from './_components/customers-table'
 
 export const metadata = {
@@ -26,6 +31,11 @@ const CUSTOMER_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'active', label: 'Active', headingLabel: 'Active Customers' },
   { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
 ]
+
+const PROVISIONING_ERROR_CODES = new Set([
+  'billing/tenant-not-found',
+  'billing/unreachable',
+])
 
 type Props = { searchParams: Promise<{ status?: string }> }
 
@@ -73,10 +83,60 @@ export default async function CustomersPage({ searchParams }: Props) {
 }
 
 async function CustomersTableData({ searchParams }: Props) {
-  void searchParams
+  const { status } = await searchParams
+  const selectedStatus =
+    status === 'active' || status === 'archived' ? status : 'all'
+
+  // Map UI status (lowercase) to API status (UPPERCASE), or undefined for 'all'
+  const apiStatus: CustomerStatus | undefined =
+    selectedStatus === 'active'
+      ? 'ACTIVE'
+      : selectedStatus === 'archived'
+        ? 'ARCHIVED'
+        : undefined
+
+  const context = await getInvoiceContext()
+  if (!context) redirect('/no-access')
+  const $876 = await get876Client(context.orgId)
+  const result = await $876.customers.list({ status: apiStatus })
+  if (result.error) {
+    const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
+    return (
+      <div className="rounded-lg border border-dashed p-10 text-center">
+        <p className="text-sm font-medium">
+          {provisioning
+            ? 'Setting up your Invoice workspace'
+            : 'Customers are unavailable right now'}
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Please try again shortly.
+        </p>
+      </div>
+    )
+  }
+
+  const customers = result.data.data.map((customer) => {
+    const primary = customer.primaryContact
+    const contactName = primary
+      ? [primary.firstName, primary.lastName]
+          .filter(Boolean)
+          .join(' ')
+          .trim() || null
+      : null
+    return {
+      id: customer.id,
+      name: customer.name,
+      companyName: customer.companyName ?? null,
+      contactName,
+      phone: customer.phone ?? customer.workPhone ?? null,
+      receivables: customer.outstandingReceivable,
+      currency: customer.defaultCurrency ?? 'JMD',
+    }
+  })
+
   return (
     <CustomersTable
-      customers={[]}
+      customers={customers}
       emptyState={
         <Empty className="py-14">
           <EmptyHeader>
