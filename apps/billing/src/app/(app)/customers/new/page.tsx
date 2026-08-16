@@ -11,10 +11,13 @@ export const metadata = { title: 'New Customer' }
 export default async function NewCustomerPage() {
   const context = await requirePagePermission('customers:write')
 
-  const [currencies, priceLists] = await Promise.all([
-    service.currencies.list(context.tenant.id),
-    service.priceLists.list(context.tenant.id, true),
-  ])
+  // The organization operates in a single currency, so the customer's currency
+  // is fixed to the workspace default rather than chosen per customer.
+  const currencies = await service.currencies.list(context.tenant.id)
+  const defaultCurrency = context.tenant.defaultCurrency
+  const defaultCurrencyName =
+    currencies.find(({ currency }) => currency.code === defaultCurrency)
+      ?.currency.name ?? defaultCurrency
 
   return (
     <Page>
@@ -51,23 +54,16 @@ export default async function NewCustomerPage() {
           { name: 'phone', label: 'Phone', type: 'text' },
           {
             name: 'currency',
-            label: 'Default currency',
+            label: 'Currency',
             type: 'select',
-            options: currencies.map(({ currency }) => ({
-              value: currency.code,
-              label: `${currency.name} (${currency.code})`,
-            })),
-          },
-          {
-            name: 'priceListId',
-            label: 'Price list',
-            type: 'select',
-            description:
-              'Used as the default pricing policy for future transactions.',
-            options: priceLists.map((priceList) => ({
-              value: priceList.id,
-              label: priceList.name,
-            })),
+            locked: true,
+            initialValue: defaultCurrency,
+            options: [
+              {
+                value: defaultCurrency,
+                label: `${defaultCurrencyName} (${defaultCurrency})`,
+              },
+            ],
           },
         ]}
       />

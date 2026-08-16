@@ -69,8 +69,22 @@ describe('Billing onboarding organization route', () => {
   it.each([
     ['malformed JSON', '{invalid'],
     ['a missing name', {}],
-    ['a blank name', { name: '   ' }],
-    ['unknown fields', { name: 'Kingston Traders', extra: true }],
+    ['a blank name', { name: '   ', currency_code: 'JMD', language: 'en' }],
+    [
+      'unknown fields',
+      {
+        name: 'Kingston Traders',
+        currency_code: 'JMD',
+        language: 'en',
+        extra: true,
+      },
+    ],
+    ['a missing currency', { name: 'Kingston Traders', language: 'en' }],
+    [
+      'a malformed currency',
+      { name: 'Kingston Traders', currency_code: 'JM', language: 'en' },
+    ],
+    ['a missing language', { name: 'Kingston Traders', currency_code: 'JMD' }],
   ])('rejects %s without platform calls', async (_case, payload) => {
     const response = await POST(request(payload))
     const body = await response.json()
@@ -81,7 +95,13 @@ describe('Billing onboarding organization route', () => {
   })
 
   it('creates the organization for an account with no membership', async () => {
-    const response = await POST(request({ name: '  Kingston Traders  ' }))
+    const response = await POST(
+      request({
+        name: '  Kingston Traders  ',
+        currency_code: 'usd',
+        language: 'en',
+      })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(200)
@@ -96,6 +116,8 @@ describe('Billing onboarding organization route', () => {
     expect(mocks.createOrganization).toHaveBeenCalledWith({
       ownerUserId: 'user_123',
       name: 'Kingston Traders',
+      currencyCode: 'USD',
+      language: 'en',
     })
   })
 
@@ -105,7 +127,13 @@ describe('Billing onboarding organization route', () => {
       error: null,
     })
 
-    const response = await POST(request({ name: 'Kingston Traders' }))
+    const response = await POST(
+      request({
+        name: 'Kingston Traders',
+        currency_code: 'JMD',
+        language: 'en',
+      })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(200)
@@ -119,7 +147,13 @@ describe('Billing onboarding organization route', () => {
       error: { code: 'error/unknown', message: 'boom' },
     })
 
-    const response = await POST(request({ name: 'Kingston Traders' }))
+    const response = await POST(
+      request({
+        name: 'Kingston Traders',
+        currency_code: 'JMD',
+        language: 'en',
+      })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(500)
@@ -133,7 +167,13 @@ describe('Billing onboarding organization route', () => {
       error: { code: 'user/not-found', message: 'gone' },
     })
 
-    const response = await POST(request({ name: 'Kingston Traders' }))
+    const response = await POST(
+      request({
+        name: 'Kingston Traders',
+        currency_code: 'JMD',
+        language: 'en',
+      })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(401)
@@ -150,7 +190,13 @@ describe('Billing onboarding organization route', () => {
       },
     })
 
-    const response = await POST(request({ name: 'Kingston Traders' }))
+    const response = await POST(
+      request({
+        name: 'Kingston Traders',
+        currency_code: 'JMD',
+        language: 'en',
+      })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(409)
@@ -167,7 +213,13 @@ describe('Billing onboarding organization route', () => {
       error: { code: 'provider/error', message: 'upstream down' },
     })
 
-    const response = await POST(request({ name: 'Kingston Traders' }))
+    const response = await POST(
+      request({
+        name: 'Kingston Traders',
+        currency_code: 'JMD',
+        language: 'en',
+      })
+    )
     const body = await response.json()
 
     expect(response.status).toBe(502)

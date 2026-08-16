@@ -6,7 +6,14 @@ export const tenantCreateBodySchema = z.strictObject({
     .string()
     .trim()
     .regex(/^[a-z0-9-]{2,80}$/),
-  defaultCurrency: z.literal('JMD').default('JMD'),
+  // The workspace inherits the organization's single operating currency; it is
+  // validated against the active currency catalog before the tenant is written.
+  defaultCurrency: z
+    .string()
+    .trim()
+    .length(3)
+    .transform((code) => code.toUpperCase())
+    .default('JMD'),
 })
 
 export const tenantProvisionedSchema = z.object({

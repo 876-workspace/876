@@ -57,6 +57,11 @@ export const registerBusinessBodySchema = z.strictObject({
   organization_name: z.string().optional(),
   organizationSlug: z.string().optional().nullable(),
   organization_slug: z.string().optional().nullable(),
+  // The organization's single operating currency and language, chosen at
+  // sign-up. Every product app inherits them.
+  currencyCode: z.string().length(3).optional().nullable(),
+  currency_code: z.string().length(3).optional().nullable(),
+  language: z.string().min(2).max(8).optional().nullable(),
 })
 
 export type RegisterBusinessBody = z.infer<typeof registerBusinessBodySchema>

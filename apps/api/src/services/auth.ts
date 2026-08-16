@@ -206,6 +206,8 @@ export type AuthRepositoryPort = {
     name: string
     slug: string
     status: string
+    currencyCode: string
+    language: string
     metadata: unknown
     createdAt: bigint
     updatedAt: bigint
@@ -737,6 +739,8 @@ export class AuthService {
     lastName: string
     organizationName: string
     organizationSlug?: string | null
+    currencyCode?: string | null
+    language?: string | null
     sourceAppId?: string | null
   }): Promise<ServiceAuthResult> {
     checkRequired(
@@ -829,6 +833,10 @@ export class AuthService {
         name: organizationName,
         slug,
         status: 'active',
+        // Single operating currency for the organization — every product app
+        // inherits it rather than choosing its own.
+        currencyCode: params.currencyCode?.trim().toUpperCase() || 'JMD',
+        language: params.language?.trim() || 'en',
         metadata: workosOrg.metadata ?? null,
         createdAt: nowBigint,
         updatedAt: nowBigint,

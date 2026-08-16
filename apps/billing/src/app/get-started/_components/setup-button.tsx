@@ -8,10 +8,13 @@ import type { TenantCreateInput, TenantProvisioned } from '@/types/tenant'
 export function SetupButton({
   name,
   slug,
+  defaultCurrency,
   workspaceExists,
 }: {
   name: string
   slug: string
+  /** Inherited from the organization — the workspace never picks its own. */
+  defaultCurrency: string
   workspaceExists: boolean
 }) {
   const [busy, setBusy] = useState(false)
@@ -40,7 +43,7 @@ export function SetupButton({
     const tenantParams: TenantCreateInput = {
       name,
       slug,
-      defaultCurrency: 'JMD',
+      defaultCurrency,
     }
     const tenantResult = await request<TenantProvisioned>('/api/v1/tenants', {
       method: 'POST',

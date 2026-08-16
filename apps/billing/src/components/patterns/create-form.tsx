@@ -142,6 +142,7 @@ function FormField({
           value={typeof value === 'string' ? value : ''}
           onChange={(event) => onChange(event.target.value)}
           required={field.required}
+          disabled={field.locked}
           className="w-full"
         >
           <NativeSelectOption value="">Select…</NativeSelectOption>
@@ -169,6 +170,7 @@ function FormField({
           onChange={(event) => onChange(event.target.value)}
           placeholder={field.placeholder}
           required={field.required}
+          readOnly={field.locked}
         />
       )}
       {field.description ? (

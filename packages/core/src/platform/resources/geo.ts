@@ -1,12 +1,23 @@
 import { platformRequest } from '../request'
 import type { PlatformRuntime } from '../runtime'
-import type { PlatformCountry, PlatformRegion } from '../types'
+import type {
+  PlatformCountry,
+  PlatformCurrency,
+  PlatformRegion,
+} from '../types'
 
 /**
  * Geo transport composed as `$876.countries.list()` and `$876.regions.list()`.
  */
 export function createPlatformGeoResource(runtime: PlatformRuntime) {
   return {
+    /** Lists the currencies an organization may operate in. */
+    listCurrencies() {
+      return platformRequest<PlatformCurrency[]>(runtime, {
+        method: 'GET',
+        path: '/geo/currencies',
+      })
+    },
     /** Lists the countries addresses may be created in. Enabled countries only. */
     listCountries() {
       return platformRequest<PlatformCountry[]>(runtime, {

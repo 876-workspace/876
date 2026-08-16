@@ -151,6 +151,8 @@ export async function createOrganization(data: {
   name: string
   slug: string
   status: string
+  currencyCode: string
+  language: string
   metadata: unknown
   createdAt: bigint
   updatedAt: bigint

@@ -62,6 +62,14 @@ export function findIdempotentCustomerRow(
   })
 }
 
+/** The tenant's operating currency/language — customers inherit both. */
+export async function findTenantDefaults(tenantId: string) {
+  return prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { defaultCurrency: true, defaultLanguage: true },
+  })
+}
+
 export function createCustomerRow(data: Prisma.CustomerUncheckedCreateInput) {
   return prisma.customer.create({ data, include: customerInclude })
 }

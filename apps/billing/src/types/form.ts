@@ -20,6 +20,11 @@ export interface FormField {
   options?: FormOption[]
   placeholder?: string
   required?: boolean
+  /**
+   * Render the field non-editable while still submitting its value — used for
+   * values the organization fixes elsewhere, such as its operating currency.
+   */
+  locked?: boolean
   /** Submit an empty field as null so optional relationships can be cleared. */
   emptyAsNull?: boolean
   /**
