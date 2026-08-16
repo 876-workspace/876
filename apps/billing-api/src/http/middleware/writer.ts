@@ -16,7 +16,7 @@ export function writerLease(
   const isV1 = req.path === '/api/v1' || req.path.startsWith('/api/v1/')
   if (isV1 && unsafeMethods.has(req.method) && writer !== 'express') {
     recordWriterRejection()
-    next(errors.writerInactive())
+    next(errors.writerInactive(writer))
     return
   }
   next()

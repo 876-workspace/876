@@ -34,10 +34,10 @@ export const errors = {
       message,
       httpStatus: 404,
     }),
-  writerInactive: () =>
+  writerInactive: (writer: string) =>
     new AppHttpError({
       code: 'billing/writer-inactive',
-      message: 'The Billing API is not the active writer.',
+      message: `The Billing API is not the active writer (BILLING_WRITER=${writer}, expected express).`,
       httpStatus: 503,
     }),
 } as const
