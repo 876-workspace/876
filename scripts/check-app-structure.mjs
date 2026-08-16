@@ -154,6 +154,52 @@ for (const app of APPS) {
     fail(app, 'route-test-in-private-folder', file)
   }
 
+  // ---- 1c. extra exports from a route file --------------------------------
+  // Next.js allows a page/layout to export only its own contract. Anything
+  // else fails `next build` with an opaque route-type constraint error against
+  // a generated `.next/types/**` file — and nothing else catches it: tsc is
+  // clean, lint is clean, the tests pass. Billing shipped
+  // `export async function CustomersTableData` from a page so its test could
+  // import it, and every Billing deploy on main failed until it was moved.
+  const ROUTE_CONTRACT_EXPORTS = new Set([
+    'metadata',
+    'generateMetadata',
+    'viewport',
+    'generateViewport',
+    'generateStaticParams',
+    'dynamic',
+    'dynamicParams',
+    'revalidate',
+    'fetchCache',
+    'runtime',
+    'preferredRegion',
+    'maxDuration',
+    'experimental_ppr',
+    'config',
+    'alt',
+    'size',
+    'contentType',
+  ])
+
+  for (const file of walk(appDir)) {
+    const name = file.split(sep).at(-1)
+    if (name !== 'page.tsx' && name !== 'layout.tsx') continue
+
+    const source = readFileSync(file, 'utf8')
+    for (const match of source.matchAll(
+      /^export\s+(?:async\s+)?(?:function|const|let|class)\s+([A-Za-z0-9_$]+)/gm
+    )) {
+      const exported = match[1]
+      if (ROUTE_CONTRACT_EXPORTS.has(exported)) continue
+
+      fail(
+        app,
+        'extra-export-from-route-file',
+        `${file} exports ${exported}; move it to _components/ and import it`
+      )
+    }
+  }
+
   // ---- 2. barrels ---------------------------------------------------------
   for (const dir of [componentsDir, featuresDir]) {
     for (const file of walk(dir)) {
