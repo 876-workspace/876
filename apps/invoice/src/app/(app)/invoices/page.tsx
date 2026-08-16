@@ -1,56 +1,146 @@
+import { CreditCardIcon } from '@876/ui/icons'
+import { Suspense } from 'react'
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { Page } from '@876/ui/page'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import {
+  StatusFilterHeading,
+  type StatusFilterOption,
+} from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
 
 import { get876Client } from '@/lib/876'
 import { getInvoiceContext } from '@/lib/auth/context'
-
 import { InvoicesTable } from './_components/invoices-table'
-import { toInvoiceRow } from './_lib/invoice-row'
 
-/**
- * The Billing workspace is provisioned asynchronously after the `876-invoice`
- * entitlement lands, so a missing workspace means "still provisioning" — never
- * "not subscribed", which the layout has already ruled out.
- */
+export const metadata = {
+  title: 'Invoices',
+  description: 'Commercial invoice drafts.',
+}
+
+const INVOICE_STATUS_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: 'All', headingLabel: 'All Invoices' },
+  { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
+  { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },
+  { value: 'overdue', label: 'Overdue', headingLabel: 'Overdue Invoices' },
+  { value: 'paid', label: 'Paid', headingLabel: 'Paid Invoices' },
+  { value: 'void', label: 'Void', headingLabel: 'Void Invoices' },
+]
+
 const PROVISIONING_ERROR_CODES = new Set([
   'billing/tenant-not-found',
   'billing/unreachable',
 ])
 
-export default async function InvoicesPage() {
+type Props = { searchParams: Promise<{ status?: string }> }
+
+export default async function InvoicesPage({ searchParams }: Props) {
+  const { status } = await searchParams
+  const selectedStatus = ['draft', 'sent', 'overdue', 'paid', 'void'].includes(
+    status ?? ''
+  )
+    ? status!
+    : 'all'
+  return (
+    <Page>
+      <ResourceToolbar
+        title="Invoices"
+        titleFilter={
+          <StatusFilterHeading
+            label="Invoices"
+            value={selectedStatus}
+            options={INVOICE_STATUS_OPTIONS}
+          />
+        }
+        primaryLabel="New"
+        primaryHref="/invoices/new"
+        primaryVariant="info"
+        refresh
+      />
+      <Suspense
+        fallback={
+          <DataTableSkeleton
+            columns={[
+              { label: 'Invoice', cell: 'avatar' as const },
+              { label: 'Customer' },
+              { label: 'Amount' },
+              { label: 'Status', cell: 'badge' as const },
+            ]}
+            rows={5}
+          />
+        }
+      >
+        <InvoicesTableData searchParams={searchParams} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function InvoicesTableData({ searchParams }: Props) {
+  const { status } = await searchParams
+  void status
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-
   const $876 = await get876Client(context.orgId)
   const result = await $876.invoices.list()
-
   if (result.error) {
     const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
-    console.error('invoice.invoices.list_failed', {
-      code: result.error.code,
-      orgId: context.orgId,
-    })
-
     return (
-      <div className="space-y-4">
-        <h1 className="876-page-title">Invoices</h1>
-        <div className="rounded-lg border border-dashed p-10 text-center">
-          <p className="text-sm font-medium">
-            {provisioning
-              ? 'Setting up your Invoice workspace'
-              : 'Invoices are unavailable right now'}
-          </p>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Please try again shortly.
-          </p>
-        </div>
+      <div className="rounded-lg border border-dashed p-10 text-center">
+        <p className="text-sm font-medium">
+          {provisioning
+            ? 'Setting up your Invoice workspace'
+            : 'Invoices are unavailable right now'}
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Please try again shortly.
+        </p>
       </div>
     )
   }
-
+  const invoices = result.data.data.map((invoice) => {
+    const inv = invoice as unknown as Record<string, unknown>
+    return {
+      id: String(inv.id),
+      number: String(inv.number ?? inv.id),
+      totalAmount: (inv.totalAmount as string) ?? '0',
+      amountDue:
+        (inv.amountDue as string) ?? (inv.totalAmount as string) ?? '0',
+      currency: String(inv.currency ?? 'JMD'),
+      status: String(inv.status ?? 'DRAFT'),
+      customer: {
+        name: String(
+          (inv.customer as Record<string, unknown>)?.name ??
+            inv.customerName ??
+            '—'
+        ),
+      },
+    }
+  })
   return (
-    <div className="space-y-4">
-      <h1 className="876-page-title">Invoices</h1>
-      <InvoicesTable invoices={result.data.data.map(toInvoiceRow)} />
-    </div>
+    <InvoicesTable
+      invoices={invoices}
+      emptyState={
+        <Empty className="py-14">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CreditCardIcon />
+            </EmptyMedia>
+            <EmptyTitle>No invoices yet</EmptyTitle>
+            <EmptyDescription>
+              Create a draft invoice from a customer and item. It will not send
+              or collect payment automatically.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      }
+    />
   )
 }
