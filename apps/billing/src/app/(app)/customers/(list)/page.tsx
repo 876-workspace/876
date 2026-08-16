@@ -46,7 +46,7 @@ export default async function CustomersPage({ searchParams }: Props) {
   )
 }
 
-async function CustomersTableData({ searchParams }: Props) {
+export async function CustomersTableData({ searchParams }: Props) {
   const { status } = await searchParams
   const selectedStatus =
     status === 'active' || status === 'archived' ? status : 'all'
@@ -63,18 +63,30 @@ async function CustomersTableData({ searchParams }: Props) {
     filterStatus
   )
   const rows = customers.map((customer) => {
-    const contact = customer.contacts[0]
+    const contact = customer.primaryContact ?? customer.contacts?.[0]
+    const contactName =
+      [contact?.firstName, contact?.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim() ||
+      [customer.firstName, customer.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim() ||
+      null
+
     return {
       id: customer.id,
       name: customer.name,
       companyName: customer.companyName,
-      contactName:
-        [contact?.firstName, contact?.lastName]
-          .filter(Boolean)
-          .join(' ')
-          .trim() || null,
-      phone: customer.phone ?? customer.workPhone,
-      receivables: Number(customer.outstandingReceivable),
+      contactName,
+      phone:
+        customer.phone ??
+        customer.workPhone ??
+        contact?.mobilePhone ??
+        contact?.workPhone ??
+        null,
+      receivables: Number(customer.outstandingReceivable ?? 0),
       currency: customer.defaultCurrency ?? context.tenant.defaultCurrency,
       status: customer.status,
     }
