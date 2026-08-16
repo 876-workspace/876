@@ -4,7 +4,9 @@ import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
 
+import { PwaProvider } from '@/components/providers/pwa-provider'
 import { ThemeProvider } from '@/components/providers/providers'
+import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 
 import './globals.css'
 
@@ -23,6 +25,16 @@ export const metadata: Metadata = {
   title: { default: '876 Invoice', template: `%s | 876 Invoice` },
   description: 'Invoicing for 876 — powered by shared Billing finance.',
   robots: { index: false, follow: false },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: '876 Invoice',
+  },
+  formatDetection: { telephone: false },
+  icons: {
+    apple: '/pwa/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -39,7 +51,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <PwaProvider>
+            <ServiceWorkerRegistration />
+            {children}
+          </PwaProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>

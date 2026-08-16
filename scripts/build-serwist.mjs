@@ -5,7 +5,7 @@
 // from an app workspace keeps compilation on the build machine and lets
 // OpenNext ship the result as a static asset.
 
-import { mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -33,9 +33,14 @@ const precacheEntries = [
 
 mkdirSync(join(appDir, 'public'), { recursive: true })
 
+const customWorkerPath = join(appDir, 'src/app/sw.ts')
+const entryPoint = existsSync(customWorkerPath)
+  ? customWorkerPath
+  : join(scriptDir, 'serwist-shell-worker.ts')
+
 await build({
   absWorkingDir: appDir,
-  entryPoints: [join(scriptDir, 'serwist-shell-worker.ts')],
+  entryPoints: [entryPoint],
   outfile: 'public/sw.js',
   bundle: true,
   minify: true,
