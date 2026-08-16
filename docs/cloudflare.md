@@ -18,6 +18,7 @@ Prisma Postgres databases.
 | `876-console`      | `@876/console`      | `apps/console`      | OpenNext Worker                                |
 | `876-billing`      | `@876/billing-app`  | `apps/billing`      | OpenNext Worker                                |
 | `876-couriers`     | `@876/couriers-app` | `apps/couriers`     | OpenNext Worker                                |
+| `876-invoice`      | `@876/invoice-app`  | `apps/invoice`      | OpenNext Worker                                |
 | `876-widgets-api`  | `@876/widgets-api`  | `apps/widgets-api`  | OpenNext Worker                                |
 
 **Hostname strategy:** `*.workers.dev` script names above, with custom domains
@@ -290,6 +291,12 @@ Couriers, affected users are routed to onboarding and see
 `BILLING_INTERNAL_KEY`, `SESSION_*`, `NEXT_PUBLIC_*`, `WIDGETS_*`. This Worker
 has no Billing database binding.
 
+**876-invoice:** `API_INTERNAL_KEY`, `API_URL`, `BILLING_API_URL`,
+`INVOICE_API_876_KEY`, `SESSION_COOKIE_SECRET`, `NEXT_PUBLIC_*`. Invoice owns
+no database — its records live in the Billing data plane — so it has no
+database binding. `API_INTERNAL_KEY` is required: the platform bootstrap
+endpoints it reads (routing memberships, app subscriptions) are admin-tier.
+
 **876-billing-api:** `API_URL`, `BILLING_API_876_KEY`,
 `BILLING_API_PRIMARY_INSTANCE`, `BILLING_DATABASE_URL`,
 `BILLING_INTERNAL_KEY`, `BILLING_SCHEDULER_KEY`, `BILLING_SWEEP_ENABLED`,
@@ -364,6 +371,7 @@ OpenNext does not re-enter `pnpm build` (which would recurse forever).
 | `876-console`     | `/apps/console`     |
 | `876-billing`     | `/apps/billing`     |
 | `876-couriers`    | `/apps/couriers`    |
+| `876-invoice`     | `/apps/invoice`     |
 | `876-widgets-api` | `/apps/widgets-api` |
 
 Install needs no configuration: the build image detects `pnpm@11.3.0` from
