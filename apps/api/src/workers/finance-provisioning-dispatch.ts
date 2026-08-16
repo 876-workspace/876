@@ -66,6 +66,17 @@ export async function dispatchFinanceProvisioningOnce(): Promise<FinanceDispatch
   const internalKey = settings.billing.internalKey.trim()
 
   if (!billingUrl || !internalKey) {
+    // This returned a success-shaped summary and said nothing, so a missing
+    // BILLING_API_URL looked exactly like an empty queue. Every
+    // `finance_connection.ensure` event sat pending indefinitely and no
+    // organization ever got a Billing workspace. Say so, loudly, every time.
+    logger.error(
+      {
+        has_billing_url: Boolean(billingUrl),
+        has_internal_key: Boolean(internalKey),
+      },
+      'finance_provisioning.not_configured'
+    )
     return { claimed: 0, delivered: 0, failed: 0, configured: false }
   }
 

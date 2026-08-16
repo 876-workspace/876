@@ -41,6 +41,13 @@ vi.mock('../finance-provisioning.repository', () => ({
   createFinanceProvisioningRepository,
 }))
 
+const { dispatchFinanceProvisioningOnce } = vi.hoisted(() => ({
+  dispatchFinanceProvisioningOnce: vi.fn(),
+}))
+vi.mock('@/workers/finance-provisioning-dispatch', () => ({
+  dispatchFinanceProvisioningOnce,
+}))
+
 const {
   assignMemberApps,
   ensureDefaultContact,
@@ -76,6 +83,12 @@ beforeEach(() => {
     examined: 3,
     changed: 3,
     nextCursor: null,
+  })
+  dispatchFinanceProvisioningOnce.mockResolvedValue({
+    claimed: 1,
+    delivered: 1,
+    failed: 0,
+    configured: true,
   })
   prisma.subscription.create.mockResolvedValue({})
   prisma.subscription.update.mockResolvedValue({})
@@ -155,6 +168,14 @@ describe('provisionOrgApps', () => {
       { repository: { marker: 'repo' } },
       { organizationId: ORG, limit: null }
     )
+  })
+
+  // The signup request ends in a redirect into the app, so the workspace has to
+  // exist by the time the user lands rather than whenever a poller next runs.
+  it('delivers the finance event inline instead of waiting for the poller', async () => {
+    await provisionOrgApps(ORG)
+
+    expect(dispatchFinanceProvisioningOnce).toHaveBeenCalledTimes(1)
   })
 
   it('does not reconcile when every app was already provisioned', async () => {
