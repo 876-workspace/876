@@ -143,5 +143,15 @@ describe('AppLayout entitlement routing', () => {
       expect(target).toBe('/onboarding')
       expect(mockRedirect).toHaveBeenCalledTimes(1)
     })
+
+    // "Not signed in" is not an onboarding step. This previously fell into the
+    // catch-all below and sent a viewer whose session had stopped being valid
+    // into the create-an-organization flow, with no route back to login.
+    it('routes a signed-out viewer to login, not onboarding', async () => {
+      const target = await redirectTargetOf({ status: 'signed-out' })
+
+      expect(target).toBe('/login?returnTo=%2F')
+      expect(mockRedirect).toHaveBeenCalledTimes(1)
+    })
   })
 })
