@@ -58,6 +58,11 @@ export const organizationBootstrapBodySchema = z.strictObject({
   owner_user_id: z.string().min(1),
   name: z.string().min(1),
   slug: z.string().optional().nullable(),
+  // The organization's single operating currency and language, chosen during
+  // sign-up. Every downstream app inherits these, so they are set once here
+  // rather than defaulted per app.
+  currency_code: z.string().length(3).optional().nullable(),
+  language: z.string().min(2).max(8).optional().nullable(),
 })
 
 export type OrganizationBootstrapBody = z.infer<

@@ -40,12 +40,16 @@ export async function bootstrapOrganization(
     owner_user_id: string
     name: string
     slug?: string | null
+    currency_code?: string | null
+    language?: string | null
   }>(req)
   res.status(201).json(
     await service.bootstrapOrganization({
       ownerUserId: body.owner_user_id,
       name: body.name,
       slug: body.slug,
+      currencyCode: body.currency_code,
+      language: body.language,
       // The signup app is the credential the request authenticated with — so the
       // org is subscribed to the app it was created through (couriers, billing),
       // never an app a client could name in the body.

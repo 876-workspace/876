@@ -64,6 +64,8 @@ export async function createOrganization(data: {
   name: string
   slug: string
   status: string
+  currencyCode: string
+  language: string
   metadata: unknown
   createdAt: bigint
   updatedAt: bigint
@@ -75,6 +77,8 @@ export async function createOrganization(data: {
       name: data.name,
       slug: data.slug,
       status: data.status,
+      currencyCode: data.currencyCode,
+      language: data.language,
       metadata: data.metadata as never,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,

@@ -305,6 +305,8 @@ export async function bootstrapOrganization(body: {
   ownerUserId: string
   name: string
   slug?: string | null
+  currencyCode?: string | null
+  language?: string | null
   sourceAppId?: string | null
 }): Promise<Organization> {
   const deps = createOrganizationBootstrapDeps()
@@ -312,6 +314,8 @@ export async function bootstrapOrganization(body: {
     ownerUserId: body.ownerUserId,
     name: body.name,
     slug: body.slug ?? null,
+    currencyCode: body.currencyCode ?? null,
+    language: body.language ?? null,
     sourceAppId: body.sourceAppId ?? null,
   })
   return serializeOrganization(org as unknown as never)
