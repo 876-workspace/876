@@ -49,6 +49,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# wrangler --secrets-file payloads: real production credentials in plain text
+.prod-secrets
+*.secrets-file
+
 # ...but commit the non-secret local-dev defaults (localhost URLs + ports)
 !.env.example
 !.env.development

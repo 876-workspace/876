@@ -43,9 +43,13 @@ export const ENTERPRISE_APP_SLUG = '876-enterprise'
 export const BILLING_APP_SLUG = '876-billing'
 
 /** Provisioned for every new organization, wherever it signed up. */
+/** 876 Invoice — the entry-level invoicing product every organization gets. */
+export const INVOICE_APP_SLUG = '876-invoice'
+
 export const DEFAULT_ORG_APP_SLUGS = [
   ENTERPRISE_APP_SLUG,
   BILLING_APP_SLUG,
+  INVOICE_APP_SLUG,
 ] as const
 
 /**

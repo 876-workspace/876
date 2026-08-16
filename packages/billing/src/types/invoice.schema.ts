@@ -1,12 +1,18 @@
 import { z } from 'zod'
 
 import type {
+  Estimate,
+  EstimateList,
+  Invoice,
+  InvoiceList,
+  Quote,
+  QuoteList,
   InvoiceCreated,
   InvoicePreference,
   InvoicePreferenceUpdated,
   LateFeeRun,
 } from './invoice'
-import { createdResourceSchema } from './common.schema'
+import { createdResourceSchema, listSchema } from './common.schema'
 
 /**
  * The schema for a created invoice response.
@@ -52,3 +58,30 @@ export const LateFeeRunSchema = z.strictObject({
   skipped: z.number().int().nonnegative(),
   hasMore: z.boolean(),
 }) satisfies z.ZodType<LateFeeRun>
+export const InvoiceSchema = z
+  .strictObject({ object: z.literal('invoice'), id: z.string().min(1) })
+  .passthrough() satisfies z.ZodType<Invoice>
+
+export const InvoiceListSchema = listSchema(
+  InvoiceSchema
+) satisfies z.ZodType<InvoiceList>
+
+/** The schema for one tenant quote. */
+export const QuoteSchema = z
+  .strictObject({ object: z.literal('quote'), id: z.string().min(1) })
+  .passthrough() satisfies z.ZodType<Quote>
+
+/** The schema for a paginated list of quotes. */
+export const QuoteListSchema = listSchema(
+  QuoteSchema
+) satisfies z.ZodType<QuoteList>
+
+/** The schema for one tenant estimate. */
+export const EstimateSchema = z
+  .strictObject({ object: z.literal('estimate'), id: z.string().min(1) })
+  .passthrough() satisfies z.ZodType<Estimate>
+
+/** The schema for a paginated list of estimates. */
+export const EstimateListSchema = listSchema(
+  EstimateSchema
+) satisfies z.ZodType<EstimateList>

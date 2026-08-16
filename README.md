@@ -6,18 +6,19 @@
 
 ## Apps
 
-| Workspace           | Path                | Port | Description                                                                                                 |
-| ------------------- | ------------------- | ---- | ----------------------------------------------------------------------------------------------------------- |
-| `@876/app`          | `apps/876`          | 3000 | Consumer app — embedded auth, account/org management, OAuth provider UI, PWA.                               |
-| `@876/enterprise`   | `apps/enterprise`   | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding), org dashboards, billing.          |
-| `@876/console`      | `apps/console`      | 3002 | Internal Console — platform admin console (users, orgs, roles/permissions, app subscriptions, settings).    |
-| `@876/couriers-app` | `apps/couriers`     | 3003 | Couriers SaaS app — multitenant courier management platform.                                                |
-| `@876/couriers-api` | `apps/couriers-api` | 4001 | Couriers API service — Express + Prisma Accelerate; owns the couriers datastore and its migrations.         |
-| `@876/billing-app`  | `apps/billing`      | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.            |
-| `@876/widgets-api`  | `apps/widgets-api`  | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                    |
-| `@876/api`          | `apps/api`          | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation.    |
-| `@876/billing-api`  | `apps/billing-api`  | 4004 | Express Billing financial data plane; owns its PostgreSQL schema and Prisma migrations. |
-| `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                    |
+| Workspace           | Path                | Port | Description                                                                                              |
+| ------------------- | ------------------- | ---- | -------------------------------------------------------------------------------------------------------- |
+| `@876/app`          | `apps/876`          | 3000 | Consumer app — embedded auth, account/org management, OAuth provider UI, PWA.                            |
+| `@876/enterprise`   | `apps/enterprise`   | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding), org dashboards, billing.       |
+| `@876/console`      | `apps/console`      | 3002 | Internal Console — platform admin console (users, orgs, roles/permissions, app subscriptions, settings). |
+| `@876/couriers-app` | `apps/couriers`     | 3003 | Couriers SaaS app — multitenant courier management platform.                                             |
+| `@876/couriers-api` | `apps/couriers-api` | 4001 | Couriers API service — Express + Prisma Accelerate; owns the couriers datastore and its migrations.      |
+| `@876/billing-app`  | `apps/billing`      | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.         |
+| `@876/widgets-api`  | `apps/widgets-api`  | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                 |
+| `@876/invoice-app`  | `apps/invoice`      | 3006 | 876 Invoice SaaS app — a thin product surface over the shared Billing data plane; owns no datastore.     |
+| `@876/api`          | `apps/api`          | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation. |
+| `@876/billing-api`  | `apps/billing-api`  | 4004 | Express Billing financial data plane; owns its PostgreSQL schema and Prisma migrations.                  |
+| `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                 |
 
 ## Packages
 
@@ -32,6 +33,8 @@
 | `@876/analytics` | `packages/analytics` | PostHog analytics provider and shared tracking utilities.                                                                                                               |
 
 Console and the Couriers API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
+
+876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it.
 
 ---
 
@@ -60,6 +63,7 @@ pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 | Couriers           | http://localhost:3003              |
 | Billing            | http://localhost:3004              |
 | Widgets API        | http://localhost:3005              |
+| Invoice            | http://localhost:3006              |
 | API core (spec)    | http://localhost:4000/openapi.json |
 | Billing API (docs) | http://localhost:4004/docs         |
 | Storage API (docs) | http://localhost:4005/docs         |
@@ -83,6 +87,8 @@ pnpm dev:couriers:core               # Couriers app + couriers API + core API on
 pnpm dev:billing                     # Billing + API + Widgets API
 pnpm dev:billing:min                 # Billing app + API + Billing API (no Widgets API)
 pnpm dev:billing:core                # Billing app + Billing API only (no core API/Widgets)
+pnpm dev:invoice                     # Invoice app + Billing app + Billing API + core API
+pnpm dev:invoice:min                 # Invoice app + Billing API + core API (no Billing app)
 pnpm dev:widgets                     # Widgets API only
 
 # Quality

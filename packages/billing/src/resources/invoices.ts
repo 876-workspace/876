@@ -1,17 +1,37 @@
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
-import { InvoiceCreatedSchema } from '../schemas'
+import { InvoiceCreatedSchema, InvoiceListSchema } from '../schemas'
 import type {
+  Invoice,
   InvoiceCreated,
   InvoiceCreateParams,
   InvoiceFinalizeParams,
+  InvoiceList,
+  InvoiceListParams,
   InvoiceVoidParams,
+  List,
   RequestOptions,
 } from '../types'
 
 /** `$876.billing.invoices.*` — tenant-scoped invoice operations. */
 export function createInvoicesResource(runtime: Runtime) {
   return {
+    /** Lists invoices in the active Billing workspace. */
+    list(params: InvoiceListParams = {}, options?: RequestOptions) {
+      return Request<InvoiceList>(
+        runtime,
+        {
+          method: 'GET',
+          path: '/api/v1/invoices',
+          query: params as Record<
+            string,
+            string | number | boolean | undefined
+          >,
+          signal: options?.signal,
+        },
+        InvoiceListSchema
+      )
+    },
     /** Creates a draft invoice in the active Billing workspace. */
     create(params: InvoiceCreateParams, options?: RequestOptions) {
       return Request<InvoiceCreated>(

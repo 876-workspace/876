@@ -53,6 +53,9 @@ export { CustomerCreatedSchema, CustomerAccountSchema } from './customer.schema'
 
 // Invoice
 export type {
+  InvoiceListParams,
+  Invoice,
+  InvoiceList,
   DocumentLineCreateParams,
   InvoiceCreateParams,
   InvoicePreferenceUpdateParams,
@@ -62,12 +65,24 @@ export type {
   InvoiceFinalizeParams,
   InvoiceVoidParams,
   InvoiceCreated,
+  QuoteListParams,
+  Quote,
+  QuoteList,
+  EstimateListParams,
+  Estimate,
+  EstimateList,
 } from './invoice'
 export {
+  InvoiceSchema,
+  InvoiceListSchema,
   InvoiceCreatedSchema,
   InvoicePreferenceSchema,
   InvoicePreferenceUpdatedSchema,
   LateFeeRunSchema,
+  QuoteSchema,
+  QuoteListSchema,
+  EstimateSchema,
+  EstimateListSchema,
 } from './invoice.schema'
 
 // Bank

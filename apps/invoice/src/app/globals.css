@@ -1,0 +1,32 @@
+@import '@876/ui/styles.css';
+@import '@876/ui/876.css';
+
+@source '../';
+/* Shared widgets package — sticky colors, Editor.js host UI, dock. */
+@source '../../../../packages/widgets/src/**/*.{ts,tsx}';
+
+:root {
+  /* Soften Tailwind's blue-700/800 to the 876 brand blue throughout MC — makes
+     the "info" variant button less vivid without touching the shared primitive. */
+  --color-blue-700: var(--876-blue);
+  --color-blue-800: color-mix(in oklab, var(--876-blue) 82%, black);
+  --876-nav-active-bg: color-mix(in oklab, var(--876-blue) 11%, transparent);
+  --876-nav-active-bg-hover: color-mix(
+    in oklab,
+    var(--876-blue) 15%,
+    transparent
+  );
+  --876-nav-active-fg: oklch(0.38 0.18 255);
+}
+
+.dark {
+  --primary: oklch(0.84 0.015 152);
+  --primary-foreground: oklch(0.16 0.025 152);
+  --876-nav-active-bg: color-mix(in oklab, var(--876-blue) 20%, transparent);
+  --876-nav-active-bg-hover: color-mix(
+    in oklab,
+    var(--876-blue) 26%,
+    transparent
+  );
+  --876-nav-active-fg: oklch(0.82 0.12 255);
+}

@@ -355,3 +355,65 @@ export interface InvoiceCreated {
    */
   id: string
 }
+/**
+ * Parameters for listing invoices.
+ */
+export interface InvoiceListParams {
+  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+}
+
+/**
+ * A tenant invoice resource returned by the list endpoint.
+ * The API guarantees object/id and uses a passthrough shape for forward compat.
+ */
+export type Invoice = {
+  object: 'invoice'
+  id: string
+} & Record<string, unknown>
+
+/**
+ * Paginated list of invoices.
+ */
+export type InvoiceList = import('./common').List<Invoice>
+
+/**
+ * Parameters for listing quotes.
+ */
+export interface QuoteListParams {
+  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+}
+
+/**
+ * A tenant quote resource returned by the list endpoint.
+ * The API guarantees object/id and uses a passthrough shape for forward compat.
+ */
+export type Quote = {
+  object: 'quote'
+  id: string
+} & Record<string, unknown>
+
+/**
+ * Paginated list of quotes.
+ */
+export type QuoteList = import('./common').List<Quote>
+
+/**
+ * Parameters for listing estimates.
+ */
+export interface EstimateListParams {
+  status?: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
+}
+
+/**
+ * A tenant estimate resource returned by the list endpoint.
+ * The API guarantees object/id and uses a passthrough shape for forward compat.
+ */
+export type Estimate = {
+  object: 'estimate'
+  id: string
+} & Record<string, unknown>
+
+/**
+ * Paginated list of estimates.
+ */
+export type EstimateList = import('./common').List<Estimate>

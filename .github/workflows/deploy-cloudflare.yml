@@ -53,6 +53,7 @@ on:
           - storage-api
           - console
           - billing
+          - invoice
           - couriers
           - enterprise
           - app
@@ -79,6 +80,7 @@ jobs:
       storage-api: ${{ steps.filter.outputs.storage-api }}
       console: ${{ steps.filter.outputs.console }}
       billing: ${{ steps.filter.outputs.billing }}
+      invoice: ${{ steps.filter.outputs.invoice }}
       couriers: ${{ steps.filter.outputs.couriers }}
       enterprise: ${{ steps.filter.outputs.enterprise }}
       app: ${{ steps.filter.outputs.app }}
@@ -123,6 +125,9 @@ jobs:
               - *shared
             billing:
               - 'apps/billing/**'
+              - *shared
+            invoice:
+              - 'apps/invoice/**'
               - *shared
             couriers:
               - 'apps/couriers/**'
@@ -354,6 +359,30 @@ jobs:
       - name: Verify production readiness
         if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         run: pnpm check:worker-readiness 876-billing
+
+  # Invoice has no datastore of its own — its records live in the Billing data
+  # plane — so on push there is nothing for this workflow to do unless it owns
+  # push deployments.
+  invoice:
+    needs: [changes, api, billing-api]
+    if: always() && !failure() && !cancelled()
+      && ((github.event_name == 'workflow_dispatch' && (inputs.app == 'all' || inputs.app == 'invoice'))
+      || (github.event_name == 'push' && vars.DEPLOY_FROM_ACTIONS == 'true' && needs.changes.outputs.invoice == 'true'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Verify runtime secrets
+        run: pnpm check:worker-secrets 876-invoice
+      - name: Deploy
+        run: pnpm --filter @876/invoice-app run deploy
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+      - name: Verify production readiness
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        run: pnpm check:worker-readiness 876-invoice
 
   couriers:
     needs: [changes, widgets-api, api]

@@ -57,6 +57,12 @@ export const PLATFORM_APPS: readonly PlatformAppDefinition[] = [
     appKind: 'product',
     homepageUrl: 'https://billing.876.app',
   },
+  {
+    name: '876 Invoice',
+    slug: '876-invoice',
+    appKind: 'product',
+    homepageUrl: 'https://invoice.876.app',
+  },
 ] as const
 
 export const EFESTO_ORG_SLUG = 'efesto'

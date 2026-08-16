@@ -193,6 +193,23 @@ const PLATFORM_APPS_FOR_PROVISIONING: PlatformAppProvisioningDef[] = [
     ],
   },
   { slug: '876-billing', financeDependency: 'none', financeScopes: [] },
+  {
+    slug: '876-invoice',
+    financeDependency: 'embedded',
+    // The entry-level invoicing set: the customer registry plus items,
+    // invoices, and payments. Catalogue, subscriptions, and ledger scopes stay
+    // with 876 Billing, which is what an organization upgrades to.
+    financeScopes: [
+      'billing.customers.read',
+      'billing.customers.write',
+      'billing.items.read',
+      'billing.items.write',
+      'billing.invoices.read',
+      'billing.invoices.write',
+      'billing.payments.read',
+      'billing.payments.write',
+    ],
+  },
 ]
 
 function revisionContent(revision: {

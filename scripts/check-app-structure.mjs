@@ -25,7 +25,7 @@ import { join, relative, dirname, sep } from 'node:path'
 
 const APPS = process.argv.slice(2).length
   ? process.argv.slice(2)
-  : ['console', 'billing', 'couriers', '876', 'enterprise']
+  : ['console', 'billing', 'couriers', '876', 'enterprise', 'invoice']
 
 /** Next.js special files that legitimately live in a route directory. */
 const ROUTE_FILES = new Set([
@@ -67,6 +67,7 @@ const APP_PREFIX = {
   billing: { name: 'billing', symbols: false },
   couriers: { name: 'couriers', symbols: true },
   enterprise: { name: 'enterprise', symbols: true },
+  invoice: { name: 'invoice', symbols: false },
   876: null, // numeric; no meaningful prefix form
 }
 

@@ -37,6 +37,7 @@ const PORTS = {
   console: 3002,
   couriers: 3003,
   billing: 3004,
+  invoice: 3006,
   api: 4000,
 }
 
@@ -93,6 +94,11 @@ function envPlanFor(origins) {
       NEXT_PUBLIC_BILLING_URL: origins.billing,
       NEXT_PUBLIC_API_URL: origins.api,
     },
+    invoice: {
+      NEXT_PUBLIC_INVOICE_URL: origins.invoice,
+      NEXT_PUBLIC_APP_URL: origins.app,
+      NEXT_PUBLIC_API_URL: origins.api,
+    },
     // The API needs the forwarded origins on its CORS allow-list, and the
     // template so `scripts/seed_internal.py` can register matching OAuth
     // redirect/logout URIs for each app.
@@ -103,11 +109,13 @@ function envPlanFor(origins) {
         'http://localhost:3002',
         'http://localhost:3003',
         'http://localhost:3004',
+        'http://localhost:3006',
         origins.app,
         origins.enterprise,
         origins.console,
         origins.couriers,
         origins.billing,
+        origins.invoice,
       ].join(','),
     },
   }
