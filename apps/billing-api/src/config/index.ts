@@ -23,10 +23,14 @@ const envSchema = z.object({
   BILLING_DATABASE_URL: optionalString(),
   BILLING_DIRECT_DATABASE_URL: optionalString(),
   BILLING_LEGACY_DATABASE_URL: optionalString(),
+  // Express owns the writer lease (the FastAPI cutover is complete), so the
+  // default is `express`. `none` stays available as a deliberate freeze switch
+  // but is no longer the default: an unset variable used to leave every new
+  // dev environment, CI job, and sibling app silently unable to write.
   BILLING_WRITER: z
     .enum(['legacy', 'fastapi', 'express', 'none'])
     .optional()
-    .default('none'),
+    .default('express'),
   API_URL: optionalString('http://127.0.0.1:4000'),
   BILLING_API_876_KEY: optionalString(),
   BILLING_API_KEY: optionalString(),

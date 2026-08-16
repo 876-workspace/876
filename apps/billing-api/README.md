@@ -70,9 +70,11 @@ retry idempotency.
 BILLING_WRITER=express pnpm --filter @876/billing-api billing:run -- --limit 100
 ```
 
-`BILLING_WRITER` is the single-writer lease. Use `none` while validating a
-deployment and switch to `express` only during the controlled cutover. The API
-rejects mutating traffic while it is not the selected writer.
+`BILLING_WRITER` is the single-writer lease and defaults to `express`, which
+owns writes now that the FastAPI cutover is complete. Set it to `none` to
+deliberately freeze mutations (a validation window or an incident); the API then
+rejects mutating `/api/v1` traffic with `billing/writer-inactive` and reports the
+active value in the `x-billing-writer` response header.
 
 See [the cutover runbook](../../docs/billing-api-cutover.md) and
 [Cloudflare operations](../../docs/cloudflare.md).
