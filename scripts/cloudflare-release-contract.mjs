@@ -26,7 +26,7 @@ export const CLOUDFLARE_WORKERS = {
       'SENTRY_DSN',
       'WORKOS_API_KEY',
       'WORKOS_CLIENT_ID',
-      'WORKOS_COOKIE_PASSWORD',
+      'SESSION_COOKIE_SECRET',
     ],
   },
   '876-app': {
@@ -34,7 +34,7 @@ export const CLOUDFLARE_WORKERS = {
     dependencies: ['876-api'],
     migrationOwner: 'none',
     readinessUrl: 'https://876-app.1876.workers.dev/api/health',
-    requiredSecrets: [],
+    requiredSecrets: ['SESSION_COOKIE_SECRET'],
   },
   '876-billing': {
     directory: 'apps/billing',
@@ -95,7 +95,7 @@ export const CLOUDFLARE_WORKERS = {
       'BILLING_INTERNAL_KEY',
       'CONSOLE_DATABASE_URL',
       'WIDGETS_SERVICE_KEY',
-      'WORKOS_COOKIE_PASSWORD',
+      'SESSION_COOKIE_SECRET',
     ],
   },
   '876-couriers': {
@@ -115,7 +115,7 @@ export const CLOUDFLARE_WORKERS = {
       'DATABASE_URL',
       'STORAGE_INTERNAL_KEY',
       'WIDGETS_SERVICE_KEY',
-      'WORKOS_COOKIE_PASSWORD',
+      'SESSION_COOKIE_SECRET',
     ],
   },
   '876-couriers-api': {
