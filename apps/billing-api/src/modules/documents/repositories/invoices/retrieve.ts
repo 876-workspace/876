@@ -1,7 +1,11 @@
 import { prisma } from '@/db/client'
 
 /** Retrieves an invoice with its customer and lines. */
-export async function retrieve(tenantId: string, invoiceId: string, sourceAppId?: string) {
+export async function retrieve(
+  tenantId: string,
+  invoiceId: string,
+  sourceAppId?: string
+) {
   return prisma.invoice.findFirst({
     where: { id: invoiceId, tenantId, ...(sourceAppId ? { sourceAppId } : {}) },
     include: {

@@ -39,9 +39,11 @@ if (drift.status !== 0)
   throw new Error('Refusing to repair a database with Prisma schema drift.')
 
 const migrationDirectory = new URL('../prisma/migrations/', import.meta.url)
-const localMigrations = (await readdir(migrationDirectory, {
-  withFileTypes: true,
-}))
+const localMigrations = (
+  await readdir(migrationDirectory, {
+    withFileTypes: true,
+  })
+)
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
   .sort()

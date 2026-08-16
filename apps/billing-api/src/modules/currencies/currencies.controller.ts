@@ -3,9 +3,7 @@ import type { Request, Response } from 'express'
 import { getPrincipal } from '@/http/auth'
 import { validBody, validParams } from '@/http/middleware/validate'
 
-import type {
-  CurrencyUpdateBody,
-} from './currencies.schemas'
+import type { CurrencyUpdateBody } from './currencies.schemas'
 import {
   createCurrency,
   listCurrencies,

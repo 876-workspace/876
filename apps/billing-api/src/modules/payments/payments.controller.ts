@@ -112,13 +112,15 @@ export const paymentsController = {
     )
   },
   async apply(req: Request, res: Response) {
-    res.status(201).json(
-      await service.applyPayment(
-        tenant(req),
-        param(req, 'paymentId'),
-        validBody<PaymentApplyParams>(req)
+    res
+      .status(201)
+      .json(
+        await service.applyPayment(
+          tenant(req),
+          param(req, 'paymentId'),
+          validBody<PaymentApplyParams>(req)
+        )
       )
-    )
   },
   async del(req: Request, res: Response) {
     res.json(await service.deletePayment(tenant(req), param(req, 'paymentId')))

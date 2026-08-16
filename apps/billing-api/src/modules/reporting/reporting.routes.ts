@@ -27,7 +27,9 @@ export function createInternalReportingRouter(resolveGuards: GuardResolver) {
     responses: {
       200: {
         description: 'Dashboard projection',
-        schema: successEnvelopeSchema(z.object({ object: z.literal('billing_dashboard') }).passthrough()),
+        schema: successEnvelopeSchema(
+          z.object({ object: z.literal('billing_dashboard') }).passthrough()
+        ),
       },
     },
     handler: dashboard,

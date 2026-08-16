@@ -23,3 +23,8 @@ apps/*/src/db/generated
 # ~11k-line diff that the next `pnpm install` undoes, and that can drop
 # platform-specific resolutions on the way through.
 pnpm-lock.yaml
+
+# Generated API contract snapshots — produced by the contract generator and
+# compared byte-for-byte by `api:contract:check`. Formatting them rewrites
+# ~3.9k lines that the generator does not produce.
+apps/*/contracts

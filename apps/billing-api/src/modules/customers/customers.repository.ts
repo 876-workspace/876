@@ -136,7 +136,10 @@ export function listDocumentRecipientRows(tenantId: string) {
       workPhone: true,
       priceListId: true,
       contacts: {
-        orderBy: [{ isPrimary: 'desc' as const }, { createdAt: 'asc' as const }],
+        orderBy: [
+          { isPrimary: 'desc' as const },
+          { createdAt: 'asc' as const },
+        ],
         take: 1,
         select: {
           salutation: true,
@@ -149,7 +152,10 @@ export function listDocumentRecipientRows(tenantId: string) {
       },
       addresses: {
         where: { type: 'billing' },
-        orderBy: [{ isDefault: 'desc' as const }, { createdAt: 'asc' as const }],
+        orderBy: [
+          { isDefault: 'desc' as const },
+          { createdAt: 'asc' as const },
+        ],
         take: 1,
         select: {
           label: true,

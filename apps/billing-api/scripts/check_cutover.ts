@@ -17,8 +17,11 @@ function operations(document: { paths?: Record<string, object> }) {
   return result
 }
 
-const baseUrl = (argument('--base-url') ?? process.env.BILLING_API_URL ?? '')
-  .replace(/\/+$/, '')
+const baseUrl = (
+  argument('--base-url') ??
+  process.env.BILLING_API_URL ??
+  ''
+).replace(/\/+$/, '')
 const expectedWriter = argument('--expected-writer') ?? 'express'
 const failures: string[] = []
 let writer: string | null = null
@@ -44,7 +47,10 @@ else {
       failures.push('readiness_check_failed')
     if (writer !== expectedWriter) failures.push('writer_lease_mismatch')
     if (!openapi.ok) failures.push('openapi_unavailable')
-    else actual = operations((await openapi.json()) as { paths?: Record<string, object> })
+    else
+      actual = operations(
+        (await openapi.json()) as { paths?: Record<string, object> }
+      )
 
     const contract = JSON.parse(
       await readFile(
@@ -68,8 +74,9 @@ console.log(
     object: 'billing_cutover_check',
     valid: failures.length === 0,
     writer,
-    routes: new Set([...actual].map((item) => item.slice(item.indexOf(' ') + 1)))
-      .size,
+    routes: new Set(
+      [...actual].map((item) => item.slice(item.indexOf(' ') + 1))
+    ).size,
     operations: actual.size,
     failures,
   })

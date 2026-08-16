@@ -45,7 +45,9 @@ export function decideLedgerRepair(options: {
   publicTableCount: number
 }): LedgerDecision {
   const present = new Set(options.presentSampleTables)
-  const missingTables = billingTableSample.filter((table) => !present.has(table))
+  const missingTables = billingTableSample.filter(
+    (table) => !present.has(table)
+  )
   if (missingTables.length || options.publicTableCount < 70) {
     return {
       action: 'refuse',
@@ -67,9 +69,7 @@ export function decideLedgerRepair(options: {
       reason: `unexpected database migrations: ${unexpected.map((row) => row.migrationName).join(', ')}`,
     }
   }
-  const inProgress = foreign.filter(
-    (row) => !row.finished && !row.rolledBack
-  )
+  const inProgress = foreign.filter((row) => !row.finished && !row.rolledBack)
   if (inProgress.length) {
     return {
       action: 'refuse',
@@ -82,7 +82,9 @@ export function decideLedgerRepair(options: {
       .filter((row) => row.finished && !row.rolledBack)
       .map((row) => row.migrationName)
   )
-  const missingLocal = options.localMigrations.filter((name) => !applied.has(name))
+  const missingLocal = options.localMigrations.filter(
+    (name) => !applied.has(name)
+  )
   const resolvable = new Set(['20260722000200_adopt_vendor_table'])
   const unresolvable = missingLocal.filter((name) => !resolvable.has(name))
   if (unresolvable.length) {

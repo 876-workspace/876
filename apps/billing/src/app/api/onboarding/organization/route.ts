@@ -68,10 +68,13 @@ export async function POST(request: NextRequest) {
       const cookieStore = await cookies()
       cookieStore.delete(SESSION_COOKIE_NAME)
 
-      return apiError('Your session is no longer valid. Please sign in again.', {
-        status: 401,
-        code: 'auth/session-invalid',
-      })
+      return apiError(
+        'Your session is no longer valid. Please sign in again.',
+        {
+          status: 401,
+          code: 'auth/session-invalid',
+        }
+      )
     }
 
     const status = ORGANIZATION_CONFLICT_CODES.has(organization.error.code)

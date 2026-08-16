@@ -14,6 +14,7 @@ Design is already decided below — implement it exactly, do not re-derive. Foll
 `.agents/rules/git.md` (no AI attribution). DO NOT COMMIT — the orchestrator commits.
 
 File scope (only these):
+
 - apps/api/src/modules/organizations/organizations.repository.ts
 - apps/api/src/modules/organizations/organizations.service.ts
 - apps/api/src/modules/organizations/organizations.controller.ts
@@ -21,8 +22,8 @@ File scope (only these):
 - apps/api/src/modules/users/users.repository.ts
 - apps/api/src/modules/users/users.controller.ts
 - apps/api/src/modules/users/users.routes.ts
-- apps/api/src/modules/organizations/__tests__/  (add a restore test file)
-- apps/api/src/modules/users/__tests__/          (add a restore test file)
+- apps/api/src/modules/organizations/**tests**/ (add a restore test file)
+- apps/api/src/modules/users/**tests**/ (add a restore test file)
 - packages/admin/src/resources/orgs.ts
 - packages/admin/src/resources/users.ts
 
@@ -94,7 +95,12 @@ export async function restoreOrganization(
     const now = BigInt(Math.floor(Date.now() / 1000))
     const row = await prisma.organization.update({
       where: { id },
-      data: { deletedAt: null, deletedBy: null, deletionReason: null, updatedAt: now },
+      data: {
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+        updatedAt: now,
+      },
       select: ORGANIZATION_SELECT,
     })
     return row as unknown as OrganizationRow
@@ -118,7 +124,10 @@ and pass it to both repository calls so membership `deletedAt` == org `deletedAt
 
 ```ts
 const now = BigInt(nowUnixSeconds())
-const closedMemberships = await repository.softDeleteMembershipsForOrg(organizationId, now)
+const closedMemberships = await repository.softDeleteMembershipsForOrg(
+  organizationId,
+  now
+)
 await repository.deleteOrganization(organizationId, deletedBy, reason, now)
 ```
 
@@ -284,7 +293,12 @@ export async function restoreUser(id: string): Promise<UserRow | null> {
     const now = BigInt(Math.floor(Date.now() / 1000))
     const row = await prisma.user.update({
       where: { id },
-      data: { deletedAt: null, deletedBy: null, deletionReason: null, updatedAt: now },
+      data: {
+        deletedAt: null,
+        deletedBy: null,
+        deletionReason: null,
+        updatedAt: now,
+      },
       select: USER_SELECT,
     })
     return row as unknown as UserRow
@@ -447,6 +461,7 @@ the existing delete/purge tests first (org module `__tests__/`, users module
 `users-create.test.ts` neighbourhood) and copy their harness.
 
 Org restore test — assert:
+
 - restoring a deleted org clears the tombstone (repository.restoreOrganization called),
   calls restoreMembershipsForOrg with the org's `deletedAt`, enqueues a customer.ensure,
   and returns the serialized org.
@@ -455,6 +470,7 @@ Org restore test — assert:
 - restoring a missing org → notFound (`organization/not-found`).
 
 User restore test — assert:
+
 - restoring a deleted user clears the tombstone, enqueues customer.ensure, returns
   serialized user; does NOT touch sessions.
 - restoring a live user is idempotent (no restoreUser, no ensure).
