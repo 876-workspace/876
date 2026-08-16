@@ -231,13 +231,56 @@ describe('URL helpers', () => {
   })
 
   describe('resolveWorkosRedirectUri', () => {
-    it('prefers a configured non-local URL over the request origin', () => {
+    it('prefers a configured non-local URL over an unlisted request origin', () => {
       expect(
         resolveWorkosRedirectUri(
           'https://api.876.com/callback',
           'https://preview.876.dev'
         )
       ).toBe('https://api.876.com/callback')
+    })
+
+    it('prefers an allow-listed request origin over the configured URL', () => {
+      expect(
+        resolveWorkosRedirectUri(
+          'https://876-app.1876.workers.dev/callback',
+          'https://876-invoice.1876.workers.dev',
+          [
+            'https://876-app.1876.workers.dev',
+            'https://876-invoice.1876.workers.dev',
+          ]
+        )
+      ).toBe('https://876-invoice.1876.workers.dev/callback')
+    })
+
+    it('ignores a trailing slash when matching the allow-list', () => {
+      expect(
+        resolveWorkosRedirectUri(
+          'https://876-app.1876.workers.dev/callback',
+          'https://876-invoice.1876.workers.dev',
+          ['https://876-invoice.1876.workers.dev/']
+        )
+      ).toBe('https://876-invoice.1876.workers.dev/callback')
+    })
+
+    it('keeps the configured URL when a forged origin is not allow-listed', () => {
+      expect(
+        resolveWorkosRedirectUri(
+          'https://876-app.1876.workers.dev/callback',
+          'https://evil.example.com',
+          ['https://876-invoice.1876.workers.dev']
+        )
+      ).toBe('https://876-app.1876.workers.dev/callback')
+    })
+
+    it('does not match an allow-listed origin by suffix', () => {
+      expect(
+        resolveWorkosRedirectUri(
+          'https://876-app.1876.workers.dev/callback',
+          'https://evil-876-invoice.1876.workers.dev',
+          ['https://876-invoice.1876.workers.dev']
+        )
+      ).toBe('https://876-app.1876.workers.dev/callback')
     })
 
     it('uses the request origin when the configured URL is local-only', () => {
