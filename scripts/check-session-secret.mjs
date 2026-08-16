@@ -16,15 +16,47 @@
  *
  * Run via `pnpm check:session-secret`; the `pnpm dev*` scripts run it first.
  */
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { parse } from 'dotenv'
 
 const repoRoot = resolve(import.meta.dirname, '..')
 
-// Every workspace that seals or verifies the session cookie.
-const APPS = ['api', '876', 'enterprise', 'console', 'couriers', 'billing']
+// `apps/api` seals the cookie; every app that re-exports the shared reader
+// verifies it.
+const SEALER = 'api'
+const VERIFIER_MARKER = 'src/lib/auth/session-cookie.ts'
+
+/**
+ * Every workspace that seals or verifies the session cookie, discovered from
+ * the tree rather than listed by hand.
+ *
+ * A hard-coded list is how `invoice` was missed: the app shipped on
+ * 2026-08-15, was never added here, and its production Worker went live
+ * carrying the shared dev secret while `apps/api` sealed with the real one. No
+ * check compared them, so every sign-in bounced to `/login` for a day. Any new
+ * app that verifies the cookie is now covered the moment it exists.
+ *
+ * @returns Workspace directory names under `apps/`, sealer first.
+ */
+function discoverApps() {
+  const verifiers = readdirSync(resolve(repoRoot, 'apps'), {
+    withFileTypes: true,
+  })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        entry.name !== SEALER &&
+        existsSync(resolve(repoRoot, 'apps', entry.name, VERIFIER_MARKER))
+    )
+    .map((entry) => entry.name)
+    .sort()
+
+  return [SEALER, ...verifiers]
+}
+
+const APPS = discoverApps()
 
 // Highest precedence last, matching how Next.js and pydantic-settings load them.
 const ENV_FILES = ['.env.development', '.env', '.env.development.local']
