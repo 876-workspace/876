@@ -104,6 +104,13 @@ export const CustomerSchema = z.object({
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   primaryContact: CustomerContactSchema.nullable(),
+  counts: z
+    .object({
+      subscriptions: z.number().int(),
+      invoices: z.number().int(),
+      quotes: z.number().int(),
+    })
+    .optional(),
 }) satisfies z.ZodType<Customer>
 
 /**
