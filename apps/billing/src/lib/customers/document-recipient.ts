@@ -12,7 +12,15 @@ interface DocumentRecipient {
   phone: string | null
   workPhone: string | null
   priceListId: string | null
-  contacts: Array<{
+  primaryContact?: {
+    salutation?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    email?: string | null
+    workPhone?: string | null
+    mobilePhone?: string | null
+  } | null
+  contacts?: Array<{
     salutation: string | null
     firstName: string | null
     lastName: string | null
@@ -20,13 +28,13 @@ interface DocumentRecipient {
     workPhone: string | null
     mobilePhone: string | null
   }>
-  addresses: DocumentCustomerOption['address'][]
+  addresses?: DocumentCustomerOption['address'][]
 }
 
 export function toDocumentCustomerOption(
   customer: DocumentRecipient
 ): DocumentCustomerOption {
-  const contact = customer.contacts[0]
+  const contact = customer.primaryContact ?? customer.contacts?.[0]
   const organizationName =
     customer.companyName ??
     (customer.customerKind === 'BUSINESS' ? customer.name : null)
@@ -47,16 +55,16 @@ export function toDocumentCustomerOption(
       contact?.workPhone ??
       customer.phone ??
       customer.workPhone,
-    address: customer.addresses[0] ?? null,
+    address: customer.addresses?.[0] ?? null,
   }
 }
 
 function formatName(
   person:
     | {
-        salutation: string | null
-        firstName: string | null
-        lastName: string | null
+        salutation?: string | null
+        firstName?: string | null
+        lastName?: string | null
       }
     | null
     | undefined
