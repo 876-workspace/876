@@ -1,4 +1,13 @@
-export function documentStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' | 'info' | 'success' | 'warning' {
+export function documentStatusVariant(
+  status: string
+):
+  | 'default'
+  | 'secondary'
+  | 'destructive'
+  | 'outline'
+  | 'info'
+  | 'success'
+  | 'warning' {
   switch (status.toUpperCase()) {
     case 'PAID':
     case 'ACCEPTED':

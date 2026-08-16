@@ -42,7 +42,13 @@ export function CustomersTable({ customers, emptyState }: Props) {
       accessorKey: 'companyName',
       header: 'Company',
       cell: ({ row }: any) => (
-        <span className={row.original.companyName ? 'text-foreground' : 'text-muted-foreground'}>
+        <span
+          className={
+            row.original.companyName
+              ? 'text-foreground'
+              : 'text-muted-foreground'
+          }
+        >
           {row.original.companyName ?? '—'}
         </span>
       ),
@@ -51,14 +57,18 @@ export function CustomersTable({ customers, emptyState }: Props) {
       accessorKey: 'contactName',
       header: 'Contact',
       cell: ({ row }: any) => (
-        <span className="text-muted-foreground">{row.original.contactName ?? '—'}</span>
+        <span className="text-muted-foreground">
+          {row.original.contactName ?? '—'}
+        </span>
       ),
     },
     {
       accessorKey: 'phone',
       header: 'Phone',
       cell: ({ row }: any) => (
-        <span className="text-muted-foreground">{row.original.phone ?? '—'}</span>
+        <span className="text-muted-foreground">
+          {row.original.phone ?? '—'}
+        </span>
       ),
     },
     {

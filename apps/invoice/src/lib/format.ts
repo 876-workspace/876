@@ -1,6 +1,6 @@
 export function formatMoney(
   amount: bigint | string | number | null | undefined,
-  currency: string,
+  currency: string
 ): string {
   if (amount === null || amount === undefined) return '—'
   const numericAmount = Number(amount)
@@ -12,7 +12,8 @@ export function formatMoney(
       style: 'currency',
       currency,
     })
-    const fractionDigits = currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2
+    const fractionDigits =
+      currencyFormatter.resolvedOptions().maximumFractionDigits ?? 2
     return currencyFormatter.format(numericAmount / 10 ** fractionDigits)
   } catch {
     return `${currency} ${Number(amount) / 100}`
@@ -20,7 +21,8 @@ export function formatMoney(
 }
 
 export function formatDate(value: number | null | undefined): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) return '—'
+  if (value === null || value === undefined || !Number.isFinite(value))
+    return '—'
   return new Date(value * 1000).toLocaleDateString('en-JM', {
     year: 'numeric',
     month: 'short',

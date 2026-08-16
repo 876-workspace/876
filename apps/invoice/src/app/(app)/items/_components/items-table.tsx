@@ -56,14 +56,19 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
       header: 'Default price',
       cell: ({ row }: any) => {
         const item = row.original
-        return formatMoney(item.defaultSellingAmount, item.defaultSellingCurrency ?? defaultCurrency)
+        return formatMoney(
+          item.defaultSellingAmount,
+          item.defaultSellingCurrency ?? defaultCurrency
+        )
       },
     },
     {
       id: 'tax',
       header: 'Tax',
       cell: ({ row }: any) => (
-        <span className="text-xs">{row.original.isTaxable ? 'Taxable' : 'Non-taxable'}</span>
+        <span className="text-xs">
+          {row.original.isTaxable ? 'Taxable' : 'Non-taxable'}
+        </span>
       ),
     },
     {
@@ -75,7 +80,9 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
       id: 'status',
       header: 'Status',
       cell: ({ row }: any) => (
-        <span className="text-xs">{row.original.isActive ? 'Active' : 'Archived'}</span>
+        <span className="text-xs">
+          {row.original.isActive ? 'Active' : 'Archived'}
+        </span>
       ),
     },
     {
@@ -83,7 +90,10 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }: any) => (
         <div className="flex justify-end">
-          <ResourceRowLink href={`/items/${row.original.id}`} resourceName={row.original.name} />
+          <ResourceRowLink
+            href={`/items/${row.original.id}`}
+            resourceName={row.original.name}
+          />
         </div>
       ),
     },
