@@ -86,7 +86,21 @@ const {
   deleteProviderOrganization,
   enqueueCustomerArchiveForOrganization,
   billingCustomerSyncRepository,
+  purgeCascade,
 } = vi.hoisted(() => ({
+  // purgeOrganization clears the tables that reference the org without a
+  // cascade — and the ones with no foreign key at all — before deleting the org
+  // row, all inside one transaction.
+  purgeCascade: {
+    app: { deleteMany: vi.fn() },
+    authorizationCode: { deleteMany: vi.fn() },
+    ssoConnection: { deleteMany: vi.fn() },
+    provisioningRun: { deleteMany: vi.fn() },
+    financeProvisioningOutbox: { deleteMany: vi.fn() },
+    communicationCall: { deleteMany: vi.fn() },
+    communicationMessage: { deleteMany: vi.fn() },
+    billingCustomerOutbox: { deleteMany: vi.fn() },
+  },
   organization: {
     findFirst: vi.fn(),
     findUnique: vi.fn(),
@@ -149,9 +163,15 @@ vi.mock('@/db/client', () => ({
     orgInvite,
     appAssignment,
     apiKey,
+    ...purgeCascade,
     $transaction: vi.fn(async (arg: unknown) =>
       typeof arg === 'function'
-        ? (arg as (tx: unknown) => unknown)({})
+        ? (arg as (tx: unknown) => unknown)({
+            ...purgeCascade,
+            organization,
+            membership,
+            organizationRole,
+          })
         : Promise.all(arg as unknown[])
     ),
   },
