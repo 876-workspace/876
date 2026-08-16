@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-
 const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
   queryRaw: vi.fn(),
@@ -90,7 +89,9 @@ describe('provider execution repository', () => {
     const queryParts = mocks.queryRaw.mock.calls[0]![0] as readonly string[]
     expect(queryParts.join(' ')).toContain('FOR UPDATE SKIP LOCKED')
     expect(mocks.eventUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: 'PROCESSING', updatedAt: 1_700_000_000 } })
+      expect.objectContaining({
+        data: { status: 'PROCESSING', updatedAt: 1_700_000_000 },
+      })
     )
   })
 

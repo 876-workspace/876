@@ -4,6 +4,7 @@
 
 The core API (@876/api) and @876/admin are gaining a **restore** endpoint for
 soft-deleted orgs and users:
+
 - `POST /organizations/:id/restore` → returns the live organization
 - `POST /users/:id/restore` → returns the live user
 - admin client: `$876.organizations.admin.restore(orgId)` and
@@ -18,14 +19,15 @@ Follow `.agents/rules/git.md` (no AI attribution) and `.claude/rules/app-layout.
 (bare verb labels, dialogs only for confirmations — which this is). DO NOT COMMIT.
 
 File scope (only these — do NOT touch @876/api or packages/admin):
+
 - apps/console/src/lib/client/orgs.ts
 - apps/console/src/lib/client/users.ts
-- apps/console/src/app/api/organizations/[id]/restore/route.ts   (NEW)
-- apps/console/src/app/api/users/[id]/restore/route.ts           (NEW)
-- apps/console/src/app/(app)/orgs/[slug]/_components/restore-org-dialog.tsx    (NEW)
-- apps/console/src/app/(app)/orgs/[slug]/_components/org-actions.tsx
-- apps/console/src/app/(app)/users/[username]/_components/restore-user-dialog.tsx (NEW)
-- apps/console/src/app/(app)/users/[username]/_components/user-actions.tsx
+- apps/console/src/app/api/organizations/[id]/restore/route.ts (NEW)
+- apps/console/src/app/api/users/[id]/restore/route.ts (NEW)
+- apps/console/src/app/(app)/orgs/[slug]/\_components/restore-org-dialog.tsx (NEW)
+- apps/console/src/app/(app)/orgs/[slug]/\_components/org-actions.tsx
+- apps/console/src/app/(app)/users/[username]/\_components/restore-user-dialog.tsx (NEW)
+- apps/console/src/app/(app)/users/[username]/\_components/user-actions.tsx
 
 ---
 

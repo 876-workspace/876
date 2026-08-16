@@ -53,12 +53,7 @@ export interface CompletePaymentAttemptInput {
 type LockedProviderEvent = Pick<PaymentProviderEvent, 'id' | 'status'>
 type LockedPaymentAttempt = Pick<
   PaymentAttempt,
-  | 'id'
-  | 'status'
-  | 'customerId'
-  | 'invoiceId'
-  | 'amount'
-  | 'currency'
+  'id' | 'status' | 'customerId' | 'invoiceId' | 'amount' | 'currency'
 >
 
 function invalid(message: string): AppHttpError {

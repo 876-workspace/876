@@ -5,8 +5,10 @@ import { resetSettingsForTest } from '@/config'
 import { registeredOperations } from '@/http/openapi/registry'
 
 function fixturePath(path: string): string {
-  return `/api/v1${path.replaceAll(/\{([^}]+)\}/g, (_match, name: string) => `/fixture_${name}`)}`
-    .replaceAll('//', '/')
+  return `/api/v1${path.replaceAll(/\{([^}]+)\}/g, (_match, name: string) => `/fixture_${name}`)}`.replaceAll(
+    '//',
+    '/'
+  )
 }
 
 describe('frozen v1 route authentication matrix', () => {

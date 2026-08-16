@@ -84,24 +84,26 @@ the closing `</PageHeader>`. Keep everything else (the `getWorkspaceContext` red
 `<main>`, `<Page>`, title, description) EXACTLY as-is.
 
 Add this import with the other imports:
+
 ```tsx
 import { NoAccessActions } from './_components/no-access-actions'
 ```
 
 The returned JSX becomes:
+
 ```tsx
-    <main>
-      <Page className="mx-auto max-w-2xl py-16">
-        <PageHeader>
-          <PageTitle>Billing access is restricted</PageTitle>
-          <PageDescription>
-            Ask a Billing owner to grant the required workspace role, or review
-            the organization&apos;s Billing subscription.
-          </PageDescription>
-        </PageHeader>
-        <NoAccessActions />
-      </Page>
-    </main>
+<main>
+  <Page className="mx-auto max-w-2xl py-16">
+    <PageHeader>
+      <PageTitle>Billing access is restricted</PageTitle>
+      <PageDescription>
+        Ask a Billing owner to grant the required workspace role, or review the
+        organization&apos;s Billing subscription.
+      </PageDescription>
+    </PageHeader>
+    <NoAccessActions />
+  </Page>
+</main>
 ```
 
 ## Step 3 — extend the test
@@ -113,19 +115,17 @@ using `next/link` and the request helper, mock the request helper so the render 
 fail:
 
 Add this mock near the top with the other `vi.mock` calls:
+
 ```ts
 vi.mock('@/lib/client/request', () => ({ request: vi.fn() }))
 ```
 
 Then, in the "renders the restriction message" test (after the existing heading
 assertion), add:
+
 ```ts
-    expect(
-      screen.getByRole('button', { name: /sign out/i })
-    ).toBeTruthy()
-    expect(
-      screen.getByRole('link', { name: /go to my 876 account/i })
-    ).toBeTruthy()
+expect(screen.getByRole('button', { name: /sign out/i })).toBeTruthy()
+expect(screen.getByRole('link', { name: /go to my 876 account/i })).toBeTruthy()
 ```
 
 Do not weaken or remove the existing assertions.

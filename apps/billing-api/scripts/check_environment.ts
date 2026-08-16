@@ -19,9 +19,7 @@ if (settings.isProduction) {
   if (/localhost|127\.0\.0\.1/.test(settings.identityApiUrl))
     missing.push('API_URL')
   if (
-    settings.corsOrigins.some((origin) =>
-      /localhost|127\.0\.0\.1/.test(origin)
-    )
+    settings.corsOrigins.some((origin) => /localhost|127\.0\.0\.1/.test(origin))
   )
     missing.push('CORS_ALLOWED_ORIGINS')
 }

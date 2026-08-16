@@ -77,7 +77,9 @@ export function listMemberRows(tenantId: string) {
 }
 
 export function findRoleBySlug(tenantId: string, slug: string) {
-  return prisma.role.findUnique({ where: { tenantId_slug: { tenantId, slug } } })
+  return prisma.role.findUnique({
+    where: { tenantId_slug: { tenantId, slug } },
+  })
 }
 
 export function countActiveOwners(tenantId: string) {

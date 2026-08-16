@@ -45,9 +45,8 @@ export const integrationCustomerCreateBodySchema = z.strictObject({
   invoiceTerms: nullableText(5000),
 })
 
-export const customerCreateBodySchema = integrationCustomerCreateBodySchema.omit(
-  { sourceExternalReference: true }
-)
+export const customerCreateBodySchema =
+  integrationCustomerCreateBodySchema.omit({ sourceExternalReference: true })
 
 export const customerUpdateBodySchema = customerCreateBodySchema
   .omit({
@@ -172,7 +171,10 @@ const customerImportRowSchema = z.strictObject({
       typeof value === 'string'
         ? value.trim().toUpperCase() || undefined
         : value,
-    z.string().regex(/^[A-Z]{3}$/).optional()
+    z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .optional()
   ),
   language: importText(12),
   externalReference: importText(160),

@@ -5,10 +5,7 @@ import {
 } from '../migration-ledger'
 
 describe('Billing Prisma migration-ledger adoption', () => {
-  const local = [
-    '20260709000000_init',
-    '20260722000200_adopt_vendor_table',
-  ]
+  const local = ['20260709000000_init', '20260722000200_adopt_vendor_table']
 
   it('repairs only the known foreign rows and adopted vendor migration', () => {
     const decision = decideLedgerRepair({
