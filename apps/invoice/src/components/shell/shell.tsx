@@ -63,7 +63,7 @@ export async function InvoiceShell({
         </AppShellHeader>
 
         <AppShellBody>
-          <AppShellMain>{children}</AppShellMain>
+          <AppShellMain className="p-6">{children}</AppShellMain>
         </AppShellBody>
       </AppShellContent>
     </AppShell>
