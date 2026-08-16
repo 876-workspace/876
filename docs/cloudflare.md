@@ -240,11 +240,19 @@ Health: `GET /health` on the Worker URL (proxied into the container).
 
 ### URL values
 
-| Variable               | Value                                         |
-| ---------------------- | --------------------------------------------- |
-| `CORS_ALLOWED_ORIGINS` | List of all Cloudflare public origins         |
-| `BILLING_OAUTH_ISSUER` | Public `876-api` workers.dev (or custom) URL  |
-| `NEXT_PUBLIC_*_URL`    | Matching public Cloudflare application origin |
+| Variable               | Value                                 |
+| ---------------------- | ------------------------------------- |
+| `CORS_ALLOWED_ORIGINS` | List of all Cloudflare public origins |
+
+`CORS_ALLOWED_ORIGINS` on `876-api` is also the **social sign-in redirect
+allow-list**: `resolveWorkosRedirectUri` sends the WorkOS callback back to the
+app the user started from only when that app's origin appears here. An app
+missing from the list falls back to `NEXT_PUBLIC_WORKOS_REDIRECT_URI`, so its
+Google sign-in lands on a different app and bounces the user back to the login
+screen with no session. Add every app origin, and register each app's
+`/callback` URL in WorkOS.
+| `BILLING_OAUTH_ISSUER` | Public `876-api` workers.dev (or custom) URL |
+| `NEXT_PUBLIC_*_URL` | Matching public Cloudflare application origin |
 
 ### Shared secrets (must match across services)
 
