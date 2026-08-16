@@ -198,7 +198,14 @@ jobs:
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
           DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+      # Gated on the same condition as the deploy below, and never run without
+      # it. The API runs in a Container that copies the Worker's secrets into
+      # its environment when the instance *starts*, so a secret written here
+      # without the redeploy that follows would leave the API sealing cookies
+      # with the old value while every app had already moved to the new one —
+      # signing everybody out until the container happened to recycle.
       - name: Sync the shared session cookie secret
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
         uses: ./.github/actions/sync-session-secret
         with:
           app-directory: apps/api
