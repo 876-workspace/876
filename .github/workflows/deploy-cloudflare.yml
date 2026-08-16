@@ -228,8 +228,23 @@ jobs:
       # here with the prisma retirement; the app job no longer owns them.
       # `DIRECT_DATABASE_URL` is what apps/couriers-api/prisma.config.ts dials
       # for migrate, and `COURIERS_DATABASE_URL` is that database's own secret.
+      # Prisma Postgres' pooled endpoint intermittently refuses the first
+      # connection (P1001), which failed this job three times on 2026-08-15
+      # while the surrounding runs passed unchanged. Retry before treating an
+      # unreachable database as a broken migration.
       - name: Apply migrations
-        run: pnpm --filter @876/couriers-api exec prisma migrate deploy
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm --filter @876/couriers-api exec prisma migrate deploy; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "::warning title=Migration attempt $attempt failed::Retrying in $((attempt * 15))s."
+              sleep $((attempt * 15))
+            fi
+          done
+          echo "::error title=Migrations failed::prisma migrate deploy did not succeed after 3 attempts."
+          exit 1
         env:
           DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
       - name: Verify runtime secrets
@@ -372,9 +387,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      # A Worker nobody has deployed yet cannot take `wrangler secret put`, and
+      # wrangler refuses a first deploy while a required secret is unset — so
+      # the first deploy has to carry the secrets with it. Which of those two
+      # paths applies is decided here rather than by the secret preflight,
+      # which would otherwise report a never-deployed Worker as a failure.
+      - name: Resolve Worker state
+        id: worker
+        run: |
+          set +e
+          node scripts/worker-exists.mjs 876-invoice
+          case "$?" in
+            0) echo "state=exists" >> "$GITHUB_OUTPUT" ;;
+            1) echo "state=missing" >> "$GITHUB_OUTPUT" ;;
+            *) echo "state=unknown" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - name: Create the Worker with its secrets
+        if: steps.worker.outputs.state == 'missing'
+        env:
+          API_INTERNAL_KEY: ${{ secrets.API_INTERNAL_KEY }}
+          INVOICE_API_876_KEY: ${{ secrets.INVOICE_API_876_KEY }}
+          SESSION_COOKIE_SECRET: ${{ secrets.SESSION_COOKIE_SECRET }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
+        run: |
+          if [ -z "$API_INTERNAL_KEY" ] || [ -z "$INVOICE_API_876_KEY" ] || [ -z "$SESSION_COOKIE_SECRET" ]; then
+            echo "::notice title=876-invoice not created::The Worker does not exist and one of API_INTERNAL_KEY, INVOICE_API_876_KEY, SESSION_COOKIE_SECRET is not configured as a repository secret. Add them, or run the first deploy manually with wrangler deploy --secrets-file. Skipping."
+            exit 0
+          fi
+          umask 077
+          secrets_file="$RUNNER_TEMP/876-invoice.secrets"
+          trap 'rm -f "$secrets_file"' EXIT
+          {
+            printf 'API_INTERNAL_KEY=%s\n' "$API_INTERNAL_KEY"
+            printf 'INVOICE_API_876_KEY=%s\n' "$INVOICE_API_876_KEY"
+            printf 'SESSION_COOKIE_SECRET=%s\n' "$SESSION_COOKIE_SECRET"
+          } > "$secrets_file"
+          pnpm --filter @876/invoice-app run cf:build
+          cd apps/invoice
+          pnpm exec wrangler deploy --secrets-file "$secrets_file"
       - name: Verify runtime secrets
+        if: steps.worker.outputs.state != 'missing'
         run: pnpm check:worker-secrets 876-invoice
       - name: Deploy
+        if: steps.worker.outputs.state != 'missing'
         run: pnpm --filter @876/invoice-app run deploy
         env:
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
