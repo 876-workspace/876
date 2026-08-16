@@ -20,7 +20,7 @@ export default async function PaymentModesPage() {
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <ResourceToolbar
         title="Payment modes"
-        primaryLabel={canManage ? 'Add' : undefined}
+        primaryLabel={canManage ? 'New' : undefined}
         primaryHref={canManage ? '/settings/payment-modes/new' : undefined}
         primaryVariant="info"
         refresh

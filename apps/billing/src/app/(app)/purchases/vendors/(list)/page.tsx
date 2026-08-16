@@ -46,7 +46,7 @@ export default async function VendorsPage({ searchParams }: Props) {
       status={selectedStatus}
       options={VENDOR_STATUS_OPTIONS}
       primary={{
-        label: 'New Vendor',
+        label: 'New',
         href: '/purchases/vendors/new',
         permission: 'purchases:write',
       }}

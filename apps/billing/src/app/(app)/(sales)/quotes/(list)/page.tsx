@@ -57,7 +57,7 @@ export default async function QuotesPage({ searchParams }: Props) {
         status={selectedStatus}
         options={QUOTE_STATUS_OPTIONS}
         primary={{
-          label: 'New Quote',
+          label: 'New',
           href: '/quotes/new',
           permission: 'sales:write',
         }}

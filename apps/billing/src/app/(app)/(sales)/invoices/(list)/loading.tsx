@@ -15,7 +15,7 @@ export default function Loading() {
       title="Invoices"
       options={OPTIONS}
       primary={{
-        label: 'New Invoice',
+        label: 'New',
         href: '/invoices/new',
         permission: 'sales:write',
       }}

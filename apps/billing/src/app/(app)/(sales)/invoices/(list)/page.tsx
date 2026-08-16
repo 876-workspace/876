@@ -51,7 +51,7 @@ export default async function InvoicesPage({ searchParams }: Props) {
         status={selectedStatus}
         options={INVOICE_STATUS_OPTIONS}
         primary={{
-          label: 'New Invoice',
+          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}

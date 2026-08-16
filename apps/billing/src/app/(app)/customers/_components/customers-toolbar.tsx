@@ -24,7 +24,7 @@ export function CustomersToolbar({ status }: { status: string }) {
           options={CUSTOMER_STATUS_OPTIONS}
         />
       }
-      primaryLabel={canWrite ? 'New Customer' : undefined}
+      primaryLabel={canWrite ? 'New' : undefined}
       primaryHref={canWrite ? '/customers/new' : undefined}
       primaryVariant="info"
       refresh

@@ -39,7 +39,7 @@ describe('SalesListLoading', () => {
         title="Invoices"
         options={OPTIONS}
         primary={{
-          label: 'New Invoice',
+          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}
@@ -47,7 +47,7 @@ describe('SalesListLoading', () => {
       />
     )
     expect(screen.getByText('All Invoices')).toBeTruthy()
-    expect(screen.getByRole('link', { name: /New Invoice/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^New$/ })).toHaveAttribute(
       'href',
       '/invoices/new'
     )
@@ -59,7 +59,7 @@ describe('SalesListLoading', () => {
         title="Quotes"
         options={OPTIONS}
         primary={{
-          label: 'New Quote',
+          label: 'New',
           href: '/quotes/new',
           permission: 'sales:write',
         }}
@@ -79,7 +79,7 @@ describe('SalesListLoading', () => {
       <SalesListLoading
         title="Payments"
         options={OPTIONS}
-        primary={{ label: 'Add', href: '/x', permission: 'sales:write' }}
+        primary={{ label: 'New', href: '/x', permission: 'sales:write' }}
         columns={COLUMNS}
       />
     )
@@ -105,14 +105,14 @@ describe('SalesListLoading', () => {
         title="Invoices"
         options={OPTIONS}
         primary={{
-          label: 'New Invoice',
+          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}
         columns={COLUMNS}
       />
     )
-    expect(screen.queryByRole('link', { name: /New Invoice/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /^New$/ })).toBeNull()
   })
 
   it('renders table container aria-hidden', () => {
@@ -139,7 +139,7 @@ describe('SalesListLoading', () => {
         title="Quotes"
         options={OPTIONS}
         primary={{
-          label: 'New Quote',
+          label: 'New',
           href: '/quotes/new',
           permission: 'sales:write',
         }}

@@ -61,6 +61,7 @@ import {
   RectangleGroupIcon,
   RectangleStackIcon,
   ReceiptPercentIcon,
+  ClockIcon,
   ShieldCheckIcon,
   ShareIcon,
   SignalIcon,
@@ -250,6 +251,8 @@ export const XCircle = XCircleIcon
 export const XIcon = XMarkIcon
 export const AlertCircle = ExclamationCircleIcon
 export const ReceiptText = DocumentTextIcon
+export const ReceiptPercent = ReceiptPercentIcon
+export const Clock = ClockIcon
 
 // Sidebar panel icon — matches the Lucide `SidebarIcon` used in fumadocs
 export const SidebarPanelIcon = (

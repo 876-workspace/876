@@ -13,7 +13,7 @@ export default function Loading() {
       status="all"
       options={OPTIONS}
       primary={{
-        label: 'New Vendor',
+        label: 'New',
         href: '/purchases/vendors/new',
         permission: 'purchases:write',
       }}

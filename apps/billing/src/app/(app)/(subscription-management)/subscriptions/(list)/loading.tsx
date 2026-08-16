@@ -20,7 +20,7 @@ export default function Loading() {
           { value: 'ended', label: 'Ended' },
         ]}
         primary={{
-          label: 'Add',
+          label: 'New',
           href: '/subscriptions/new',
           permission: 'subscriptions:write',
         }}

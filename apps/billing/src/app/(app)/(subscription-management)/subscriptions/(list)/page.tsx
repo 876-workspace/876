@@ -70,7 +70,7 @@ export default async function SubscriptionsPage({ searchParams }: Props) {
         status={selectedStatus}
         options={SUBSCRIPTION_STATUS_OPTIONS}
         primary={{
-          label: 'Add',
+          label: 'New',
           href: '/subscriptions/new',
           permission: 'subscriptions:write',
         }}

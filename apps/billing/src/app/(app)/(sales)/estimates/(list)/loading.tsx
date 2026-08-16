@@ -16,7 +16,7 @@ export default function Loading() {
       title="Estimates"
       options={OPTIONS}
       primary={{
-        label: 'New Estimate',
+        label: 'New',
         href: '/estimates/new',
         permission: 'sales:write',
       }}
