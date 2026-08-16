@@ -6,17 +6,26 @@ reads during rollout, but only one runtime may mutate financial data.
 
 ## Controls
 
-| Variable | Purpose |
-| --- | --- |
-| `BILLING_WRITER` | `fastapi`, `express`, or `none`; `legacy` remains accepted only for a pre-migration UI rollback |
-| `BILLING_DATABASE_URL` | Runtime Billing PostgreSQL connection |
-| `BILLING_DIRECT_DATABASE_URL` | Direct PostgreSQL connection for Prisma migrations |
-| `BILLING_LEGACY_DATABASE_URL` | Optional read-only source for one-off reconciliation |
-| `BILLING_SWEEP_ENABLED` | Cloudflare scheduler switch; keep `false` until Express owns writes |
-| `BILLING_SCHEDULER_KEY` | Dedicated credential for `/internal/billing-sweep` |
+| Variable                      | Purpose                                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| `BILLING_WRITER`              | `fastapi`, `express`, or `none`; `legacy` remains accepted only for a pre-migration UI rollback |
+| `BILLING_DATABASE_URL`        | Runtime Billing PostgreSQL connection                                                           |
+| `BILLING_DIRECT_DATABASE_URL` | Direct PostgreSQL connection for Prisma migrations                                              |
+| `BILLING_LEGACY_DATABASE_URL` | Optional read-only source for one-off reconciliation                                            |
+| `BILLING_SWEEP_ENABLED`       | Cloudflare scheduler switch; keep `false` until Express owns writes                             |
+| `BILLING_SCHEDULER_KEY`       | Dedicated credential for `/internal/billing-sweep`                                              |
 
 All mutating `/api/v1` requests fail with `billing/writer-inactive` unless the
-runtime owns the lease. `none` is the fail-closed handoff state.
+runtime owns the lease, and the rejection names the active value so the cause is
+readable without inspecting response headers. `none` is the fail-closed handoff
+state.
+
+The cutover is complete: Express owns the lease and `BILLING_WRITER` now
+**defaults to `express`**. The steps below describe the one-time handoff and are
+kept for reference and for any future writer migration. `none` remains a
+deliberate freeze switch, but it is no longer what an unset variable means — a
+`none` default left every fresh dev environment, CI job, and sibling app unable
+to write, failing with an error that named no cause.
 
 ## Preflight
 
