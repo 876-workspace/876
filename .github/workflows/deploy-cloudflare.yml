@@ -86,58 +86,29 @@ jobs:
       app: ${{ steps.filter.outputs.app }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The filter diffs against the previous head, so the full history
+          # has to be present.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
       - name: Validate Cloudflare release contract
         run: node scripts/check-cloudflare-release-contract.mjs
-      - uses: dorny/paths-filter@v3
+      # An app deploys when its own directory changes OR when any workspace
+      # package in its transitive dependency graph does. A blanket
+      # `packages/**` filter cannot express that: it either redeploys all
+      # eleven Workers for one shared edit, or — if dropped — lets a fix in
+      # `@876/ui` merge green while every app keeps serving the old bundle.
+      - name: Resolve affected deploy targets
         id: filter
-        with:
-          filters: |
-            shared: &shared
-              - 'packages/**'
-              - 'pnpm-lock.yaml'
-              - 'pnpm-workspace.yaml'
-              - '.github/workflows/deploy-cloudflare.yml'
-            widgets-api:
-              - 'apps/widgets-api/**'
-              - *shared
-            api:
-              - 'apps/api/**'
-              # The image builds from the repository root and installs from the
-              # root lockfile, so a dependency bump changes the image without
-              # touching apps/api. Without this the deploy silently goes stale.
-              - *shared
-              - '.dockerignore'
-            couriers-api:
-              - 'apps/couriers-api/**'
-              # The image builds from the repository root and installs from the
-              # root lockfile, so a dependency bump changes the image without
-              # touching apps/couriers-api.
-              - *shared
-              - '.dockerignore'
-            billing-api:
-              - 'apps/billing-api/**'
-              - *shared
-              - '.dockerignore'
-            storage-api:
-              - 'apps/storage-api/**'
-            console:
-              - 'apps/console/**'
-              - *shared
-            billing:
-              - 'apps/billing/**'
-              - *shared
-            invoice:
-              - 'apps/invoice/**'
-              - *shared
-            couriers:
-              - 'apps/couriers/**'
-              - *shared
-            enterprise:
-              - 'apps/enterprise/**'
-              - *shared
-            app:
-              - 'apps/876/**'
-              - *shared
+        run: node scripts/changed-deploy-targets.mjs "$BASE" "$HEAD"
+        env:
+          BASE: ${{ github.event.before || github.event.repository.default_branch }}
+          HEAD: ${{ github.sha }}
 
   # ── Data plane ───────────────────────────────────────────────────────────
   # widgets-api deploys first: the UIs call it.
