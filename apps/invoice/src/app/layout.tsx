@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 
-import { Toaster } from 'sonner'
+import { Toaster } from '@876/ui/sonner'
+
+import { ThemeProvider } from '@/components/providers/providers'
 
 import './globals.css'
 
@@ -37,7 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="antialiased" suppressHydrationWarning>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <Toaster />
       </body>
     </html>
