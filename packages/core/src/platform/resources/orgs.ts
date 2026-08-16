@@ -16,7 +16,14 @@ import type {
 export function createPlatformOrgsResource(runtime: PlatformRuntime) {
   return {
     /** Creates an organization owned by an existing user (org bootstrap). */
-    create(params: { ownerUserId: string; name: string; slug?: string }) {
+    create(params: {
+      ownerUserId: string
+      name: string
+      slug?: string
+      /** The org's single operating currency — every product app inherits it. */
+      currencyCode?: string
+      language?: string
+    }) {
       return platformRequest<PlatformOrganization>(runtime, {
         method: 'POST',
         path: '/organizations/bootstrap',
@@ -24,6 +31,8 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
           owner_user_id: params.ownerUserId,
           name: params.name,
           slug: params.slug,
+          currency_code: params.currencyCode,
+          language: params.language,
         },
       })
     },
