@@ -24,6 +24,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // Must match the realm `/api/auth/*` signs in with. The API defaults an
+        // absent `X-876-Realm` to `consumer`, so omitting it here completed the
+        // social callback in the wrong realm and bounced the user back to the
+        // login screen — while password sign-in, which goes through the bridge,
+        // worked. Invoice is an org workspace: its people are org members.
+        'X-876-Realm': 'enterprise',
         ...(API_KEY ? { 'X-876-API-Key': API_KEY } : {}),
       },
       body: JSON.stringify({
