@@ -23,7 +23,7 @@ export default function PaymentsPage() {
       status="all"
       options={PAYMENT_STATUS_OPTIONS}
       primary={{
-        label: 'Add',
+        label: 'New',
         href: '/payments/new',
         permission: 'payments:write',
       }}

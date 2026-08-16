@@ -15,7 +15,7 @@ export default function Loading() {
           { value: 'archived', label: 'Archived' },
         ]}
         primary={{
-          label: 'Add',
+          label: 'New',
           href: '/banking/new',
           permission: 'banking:write',
         }}

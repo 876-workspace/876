@@ -51,13 +51,13 @@ describe('StreamingResourceToolbar', () => {
         status="all"
         options={OPTIONS}
         primary={{
-          label: 'New Invoice',
+          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}
       />
     )
-    expect(screen.getByRole('link', { name: /New Invoice/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /New/ })).toHaveAttribute(
       'href',
       '/invoices/new'
     )
@@ -71,13 +71,13 @@ describe('StreamingResourceToolbar', () => {
         status="all"
         options={OPTIONS}
         primary={{
-          label: 'New Invoice',
+          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}
       />
     )
-    expect(screen.queryByRole('link', { name: /New Invoice/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /New/ })).toBeNull()
   })
 
   it('always renders refresh affordance', () => {

@@ -53,7 +53,7 @@ export default async function CreditNotesPage({ searchParams }: Props) {
       status={selectedStatus}
       options={CREDIT_NOTE_STATUS_OPTIONS}
       primary={{
-        label: 'Add',
+        label: 'New',
         href: '/credit-notes/new',
         permission: 'sales:write',
       }}

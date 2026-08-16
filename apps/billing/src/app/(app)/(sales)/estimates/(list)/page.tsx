@@ -57,7 +57,7 @@ export default async function EstimatesPage({ searchParams }: Props) {
         status={selectedStatus}
         options={ESTIMATE_STATUS_OPTIONS}
         primary={{
-          label: 'New Estimate',
+          label: 'New',
           href: '/estimates/new',
           permission: 'sales:write',
         }}

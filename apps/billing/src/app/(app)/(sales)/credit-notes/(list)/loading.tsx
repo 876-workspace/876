@@ -12,7 +12,7 @@ export default function Loading() {
         { value: 'void', label: 'Void' },
       ]}
       primary={{
-        label: 'Add',
+        label: 'New',
         href: '/credit-notes/new',
         permission: 'sales:write',
       }}

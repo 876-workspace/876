@@ -34,7 +34,7 @@ export default async function ExpensesPage() {
             options={EXPENSE_STATUS_OPTIONS}
           />
         }
-        primaryLabel="New Expense"
+        primaryLabel="New"
         primaryVariant="info"
       />
 

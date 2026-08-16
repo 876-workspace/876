@@ -16,7 +16,7 @@ export default function Loading() {
       title="Quotes"
       options={OPTIONS}
       primary={{
-        label: 'New Quote',
+        label: 'New',
         href: '/quotes/new',
         permission: 'sales:write',
       }}

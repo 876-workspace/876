@@ -6,7 +6,7 @@ export default function Loading() {
       title="Payments Received"
       options={[{ value: 'all', label: 'All', headingLabel: 'All Payments' }]}
       primary={{
-        label: 'Add',
+        label: 'New',
         href: '/payments/new',
         permission: 'payments:write',
       }}

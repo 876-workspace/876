@@ -44,7 +44,7 @@ export default async function BankingPage({ searchParams }: Props) {
         status={selectedStatus}
         options={BANKING_STATUS_OPTIONS}
         primary={{
-          label: 'Add',
+          label: 'New',
           href: '/banking/new',
           permission: 'banking:write',
         }}
