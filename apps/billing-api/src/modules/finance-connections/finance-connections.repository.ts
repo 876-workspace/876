@@ -5,6 +5,23 @@ import type { FinanceProvisioningEvent } from './finance-connections.schemas'
 
 export class FinanceConnectionLifecycleConflict extends Error {}
 
+/**
+ * Builds the internal Billing slug used for a tenant created by a product
+ * finance event. The generated tenant ID is part of the slug so deleting and
+ * recreating a Core organization with the same human slug cannot collide with
+ * a stale Billing tenant from the previous organization.
+ */
+export function financeTenantSlug(baseSlug: string, tenantId: string): string {
+  const suffix = tenantId
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  const maxBaseLength = Math.max(1, 80 - suffix.length - 1)
+  const base = baseSlug.slice(0, maxBaseLength).replace(/-+$/g, '') || 'billing'
+
+  return `${base}-${suffix}`.slice(0, 80)
+}
+
 export async function findActiveConnectionAuthorization(
   tenantId: string,
   appId: string
@@ -40,12 +57,13 @@ export function applyFinanceProvisioningEvent(
       where: { organizationId: event.organization.id },
     })
     if (!tenant) {
+      const tenantId = generateId('Tenant')
       tenant = await tx.tenant.create({
         data: {
-          id: generateId('Tenant'),
+          id: tenantId,
           organizationId: event.organization.id,
           name: event.organization.name,
-          slug: event.organization.slug,
+          slug: financeTenantSlug(event.organization.slug, tenantId),
           countryCode: event.organization.countryCode ?? 'JM',
           defaultCurrency: event.organization.currencyCode,
           defaultLanguage: 'en',
