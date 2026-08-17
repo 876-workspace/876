@@ -5,7 +5,15 @@ import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import { successEnvelopeSchema } from '@/http/envelope'
 import { validBody } from '@/http/middleware/validate'
 
-import { listTenantsByOrganizationIds } from './tenants.service'
+import {
+  tenantLifecycleBodySchema,
+  tenantLifecycleSchema,
+  type TenantLifecycleBody,
+} from './tenants.schemas'
+import {
+  applyTenantLifecycle,
+  listTenantsByOrganizationIds,
+} from './tenants.service'
 
 const requestSchema = z.strictObject({
   organizationIds: z.array(z.string().min(1)).max(100),
@@ -29,6 +37,11 @@ async function list(req: Request, res: Response) {
   res.json(await listTenantsByOrganizationIds(body.organizationIds))
 }
 
+async function lifecycle(req: Request, res: Response) {
+  const body = validBody<TenantLifecycleBody>(req)
+  res.json(await applyTenantLifecycle(body.organizationId, body))
+}
+
 export function createInternalTenantsRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter({
     tag: 'Billing projections',
@@ -47,6 +60,21 @@ export function createInternalTenantsRouter(resolveGuards: GuardResolver) {
       },
     },
     handler: list,
+  })
+  api.post({
+    path: '/tenants/lifecycle',
+    summary: 'Archive or restore a Billing workspace with its organization',
+    description:
+      'Called by the identity API when an organization is deleted, purged, or restored. The workspace and its financial history are retained; archiving suspends it and records a tombstone.',
+    security: { kind: 'admin' },
+    request: { body: tenantLifecycleBodySchema },
+    responses: {
+      200: {
+        description: 'The workspace lifecycle outcome',
+        schema: tenantLifecycleSchema,
+      },
+    },
+    handler: lifecycle,
   })
   return api.router
 }

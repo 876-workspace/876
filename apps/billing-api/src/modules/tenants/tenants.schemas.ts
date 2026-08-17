@@ -43,4 +43,22 @@ export const integrationOrganizationSchema = z.object({
   updatedAt: z.number().int(),
 })
 
+export const tenantLifecycleBodySchema = z.strictObject({
+  organizationId: z.string().min(1).max(191),
+  action: z.enum(['archive', 'restore']),
+  deletedBy: z.string().min(1).max(191).nullable().optional(),
+  reason: z.string().trim().max(500).nullable().optional(),
+})
+
+export const tenantLifecycleSchema = z.object({
+  object: z.literal('billing_tenant_lifecycle'),
+  organizationId: z.string(),
+  action: z.enum(['archive', 'restore']),
+  /** Null when the organization never had a Billing workspace. */
+  tenantId: z.string().nullable(),
+  status: z.string().nullable(),
+  deletedAt: z.number().int().nullable(),
+})
+
 export type TenantCreateBody = z.infer<typeof tenantCreateBodySchema>
+export type TenantLifecycleBody = z.infer<typeof tenantLifecycleBodySchema>

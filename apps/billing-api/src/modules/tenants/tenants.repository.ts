@@ -34,6 +34,42 @@ const OWNER_PERMISSIONS = [
   'payments:write',
 ]
 
+/**
+ * The system roles every workspace is seeded with.
+ *
+ * `resolveMemberAccess` maps an 876 organization role onto one of these slugs
+ * for an account with no member row, so an organization's admins and members
+ * have no Billing access at all unless `admin` and `viewer` exist. Only `owner`
+ * used to be created, which is why every non-owner was locked out.
+ */
+const SYSTEM_ROLES = [
+  {
+    slug: 'owner',
+    name: 'Owner',
+    description:
+      'Unrestricted workspace access, including roles and member grants.',
+    permissions: OWNER_PERMISSIONS,
+  },
+  {
+    slug: 'admin',
+    name: 'Admin',
+    description:
+      'Full workspace access except editing roles, which stays with the owner.',
+    permissions: OWNER_PERMISSIONS.filter(
+      (permission) => permission !== 'roles:write'
+    ),
+  },
+  {
+    slug: 'viewer',
+    name: 'Viewer',
+    description: 'Read-only access to the workspace.',
+    permissions: OWNER_PERMISSIONS.filter(
+      (permission) =>
+        permission === 'billing:access' || permission.endsWith(':read')
+    ),
+  },
+] as const
+
 /** The workspace shape every provisioning path produces. */
 const WORKSPACE_PROVISIONING_VERSION = 3
 
@@ -118,7 +154,6 @@ export async function provisionTenantWorkspace(
     }
 
   const tenantId = generateId('Tenant')
-  const ownerRoleId = generateId('Role')
   const tenant = await tx.tenant.create({
     data: {
       id: tenantId,
@@ -145,21 +180,26 @@ export async function provisionTenantWorkspace(
       updatedAt: input.now,
     },
   })
-  await tx.role.create({
-    data: {
-      id: ownerRoleId,
-      tenantId,
-      slug: 'owner',
-      name: 'Owner',
-      description:
-        'Unrestricted workspace access, including roles and member grants.',
-      permissions: OWNER_PERMISSIONS,
-      isSystem: true,
-      isDefault: false,
-      createdAt: input.now,
-      updatedAt: input.now,
-    },
-  })
+  let ownerRoleId = ''
+  for (const role of SYSTEM_ROLES) {
+    const id = generateId('Role')
+    if (role.slug === 'owner') ownerRoleId = id
+    await tx.role.create({
+      data: {
+        id,
+        tenantId,
+        slug: role.slug,
+        name: role.name,
+        description: role.description,
+        permissions: [...role.permissions],
+        isSystem: true,
+        isDefault: false,
+        createdAt: input.now,
+        updatedAt: input.now,
+      },
+    })
+  }
+
   if (input.ownerUserId)
     await tx.member.create({
       data: {
@@ -207,6 +247,72 @@ export async function activeCurrencyExists(code: string): Promise<boolean> {
     select: { code: true },
   })
   return currency !== null
+}
+
+/**
+ * Suspends an organization's workspace and records why.
+ *
+ * The workspace is never dropped: it holds invoices, payments, and ledger
+ * entries that must be retained. Suspending it is what actually revokes access,
+ * because every tenant-scoped guard requires `ACTIVE`.
+ */
+export async function archiveTenantRowForOrganization(input: {
+  organizationId: string
+  deletedBy: string | null
+  reason: string | null
+  now: number
+}) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { organizationId: input.organizationId },
+    select: { id: true, deletedAt: true },
+  })
+  if (!tenant) return null
+
+  // Keep the first tombstone: a purge following a delete must not overwrite
+  // when the workspace actually lost its organization.
+  return prisma.tenant.update({
+    where: { id: tenant.id },
+    data: {
+      status: 'SUSPENDED',
+      deletedAt: tenant.deletedAt ?? input.now,
+      deletedBy: tenant.deletedAt ? undefined : input.deletedBy,
+      deletionReason: tenant.deletedAt ? undefined : input.reason,
+      updatedAt: input.now,
+    },
+    select: { id: true, status: true, deletedAt: true },
+  })
+}
+
+/** Reverses {@link archiveTenantRowForOrganization} when an organization is restored. */
+export async function restoreTenantRowForOrganization(input: {
+  organizationId: string
+  now: number
+}) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { organizationId: input.organizationId },
+    select: { id: true, deletedAt: true },
+  })
+  if (!tenant) return null
+
+  // Only a workspace this path suspended is reopened. One suspended for a
+  // billing or compliance reason carries no tombstone and must stay shut.
+  if (tenant.deletedAt === null)
+    return prisma.tenant.findUniqueOrThrow({
+      where: { id: tenant.id },
+      select: { id: true, status: true, deletedAt: true },
+    })
+
+  return prisma.tenant.update({
+    where: { id: tenant.id },
+    data: {
+      status: 'ACTIVE',
+      deletedAt: null,
+      deletedBy: null,
+      deletionReason: null,
+      updatedAt: input.now,
+    },
+    select: { id: true, status: true, deletedAt: true },
+  })
 }
 
 export async function provisionTenantRow(input: {
