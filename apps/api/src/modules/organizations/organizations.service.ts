@@ -9,7 +9,7 @@ import { generateId, normalizeSlug } from '@/platform/ids'
 import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
-import { ensureFinanceWorkspaceReady } from '@/services/finance-provisioning-readiness'
+import { ensureAppReady } from '@/services/finance-provisioning-readiness'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
 import {
   assignMemberApps,
@@ -1178,22 +1178,28 @@ async function provisionOrgSubscription(
     now: BigInt(nowUnixSeconds()),
   })
 
-  // Activating an app with an embedded finance dependency is exactly what
-  // opens its Billing workspace, so the readiness helper runs here — the outbox event
-  // it enqueues is what creates the tenant. Without this an org that just
-  // subscribed to a finance-dependent app (876 Invoice) never gets a tenant,
-  // and every list in that app answers `billing/tenant-not-found` forever with
-  // nothing in the system that would ever fix it.
+  // The one readiness contract runs here regardless of whether the
+  // subscription was just created or already existed, so activation is
+  // idempotent and self-healing: an org whose entitlement is already active but
+  // whose Billing workspace was never opened (the `billing/tenant-not-found`
+  // state) is repaired by simply activating again.
   //
-  // Scoped to this organization and app so provisioning one app cannot be
-  // delayed by another org's backlog. Failure surfaces rather than being
-  // swallowed: a subscription whose workspace was never opened is not a
-  // successful provision, and reporting it as one is what hid this for so long.
-  await ensureFinanceWorkspaceReady(
+  // Whether a Billing workspace is required is derived from the app's published
+  // profile — a finance-dependent app (876 Invoice) gets a delivered finance
+  // connection before this returns, while a finance-less app (876-enterprise,
+  // 876-billing, console) returns immediately and is never regressed into a
+  // finance requirement it does not have.
+  //
+  // `require_finance` lets a caller that knows an app *must* have finance assert
+  // it, so a misconfigured profile fails closed instead of quietly skipping
+  // Billing. Scoped to this org and app so one app cannot be delayed by another
+  // org's backlog; failure surfaces rather than being swallowed.
+  await ensureAppReady(
     { repository: createFinanceProvisioningRepository() },
     {
       organizationId: orgId,
       appId: app.id,
+      expectedFinanceDependency: body.require_finance ?? undefined,
     }
   )
 
