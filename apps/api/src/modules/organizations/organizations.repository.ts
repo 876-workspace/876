@@ -356,9 +356,55 @@ export async function restoreOrganization(
   }
 }
 
+/**
+ * Hard-delete an organization and everything that belongs to it.
+ *
+ * Most org-owned tables carry `onDelete: Cascade`, so the database removes them
+ * with the parent row. Three groups do not, and each is deliberate:
+ *
+ * - **No cascade on the FK** (`apps`, `authorization_codes`, `sso_connections`).
+ *   The constraint is `NO ACTION`, so leaving these in place does not orphan
+ *   them — it makes the purge fail outright with a foreign-key violation. They
+ *   are deleted here, ahead of the parent.
+ * - **No FK at all** (`provisioning_runs`, `finance_provisioning_outbox`,
+ *   `communication_*`, `billing_customer_outbox`). These reference the org by
+ *   opaque ID across a bounded-context boundary, so the database cannot know
+ *   they are related. Nothing fails if they are left behind — they simply
+ *   survive the purge as rows pointing at an organization that no longer
+ *   exists, which is how a purged org kept reappearing downstream.
+ * - **A reference held by someone else** (`organizations.primary_contact_user_id`).
+ *   Not applicable to an org purge; see `purgeUser`.
+ *
+ * Everything runs in one transaction: a purge that removed an org's apps and
+ * then failed on the org row would leave the workspace half-destroyed and still
+ * reachable.
+ */
 export async function purgeOrganization(id: string): Promise<boolean> {
   try {
-    await prisma.organization.delete({ where: { id } })
+    await prisma.$transaction(async (tx) => {
+      // Referenced without a cascade — these block the parent delete.
+      await tx.app.deleteMany({ where: { organizationId: id } })
+      await tx.authorizationCode.deleteMany({ where: { orgId: id } })
+      await tx.ssoConnection.deleteMany({ where: { organizationId: id } })
+
+      // Referenced by opaque ID with no FK — these outlive the parent silently.
+      await tx.provisioningRun.deleteMany({ where: { organizationId: id } })
+      await tx.financeProvisioningOutbox.deleteMany({
+        where: { organizationId: id },
+      })
+      await tx.communicationCall.deleteMany({ where: { organizationId: id } })
+      await tx.communicationMessage.deleteMany({
+        where: { organizationId: id },
+      })
+      await tx.billingCustomerOutbox.deleteMany({
+        where: { subjectType: 'organization', subjectId: id },
+      })
+
+      // Cascades the remaining org-owned tables: memberships, roles, locations,
+      // contacts, departments, subscriptions, features, invites, addresses,
+      // billing accounts, employee profiles, onboarding sessions.
+      await tx.organization.delete({ where: { id } })
+    })
     return true
   } catch (error) {
     if (
