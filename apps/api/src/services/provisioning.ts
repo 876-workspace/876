@@ -216,16 +216,15 @@ export async function provisionOrgApps(
         import('./finance-provisioning'),
         import('./finance-provisioning.repository'),
       ])
-      await reconcileFinanceConnections(
+      const result = await reconcileFinanceConnections(
         { repository: createFinanceProvisioningRepository() },
         { organizationId, limit: null }
       )
-      // Delivered inline so the workspace exists before signup redirects into
-      // the app. The outbox remains the retry mechanism for anything that
-      // fails here.
-      const { dispatchFinanceProvisioningOnce } =
-        await import('@/workers/finance-provisioning-dispatch')
-      await dispatchFinanceProvisioningOnce()
+      if (result.eventIds.length > 0) {
+        const { dispatchFinanceProvisioningForEventIds } =
+          await import('@/workers/finance-provisioning-dispatch')
+        await dispatchFinanceProvisioningForEventIds(result.eventIds)
+      }
     } catch (error) {
       log.error(
         { org_id: organizationId, err: error },

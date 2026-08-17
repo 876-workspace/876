@@ -41,11 +41,13 @@ vi.mock('../finance-provisioning.repository', () => ({
   createFinanceProvisioningRepository,
 }))
 
-const { dispatchFinanceProvisioningOnce } = vi.hoisted(() => ({
+const { dispatchFinanceProvisioningOnce, dispatchFinanceProvisioningForEventIds } = vi.hoisted(() => ({
   dispatchFinanceProvisioningOnce: vi.fn(),
+  dispatchFinanceProvisioningForEventIds: vi.fn(),
 }))
 vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   dispatchFinanceProvisioningOnce,
+  dispatchFinanceProvisioningForEventIds,
 }))
 
 const {
@@ -83,8 +85,9 @@ beforeEach(() => {
     examined: 3,
     changed: 3,
     nextCursor: null,
+    eventIds: ['fpe_new_1'],
   })
-  dispatchFinanceProvisioningOnce.mockResolvedValue({
+  dispatchFinanceProvisioningForEventIds.mockResolvedValue({
     claimed: 1,
     delivered: 1,
     failed: 0,
@@ -170,12 +173,35 @@ describe('provisionOrgApps', () => {
     )
   })
 
-  // The signup request ends in a redirect into the app, so the workspace has to
-  // exist by the time the user lands rather than whenever a poller next runs.
   it('delivers the finance event inline instead of waiting for the poller', async () => {
     await provisionOrgApps(ORG)
 
-    expect(dispatchFinanceProvisioningOnce).toHaveBeenCalledTimes(1)
+    expect(dispatchFinanceProvisioningForEventIds).toHaveBeenCalledTimes(1)
+    expect(dispatchFinanceProvisioningForEventIds).toHaveBeenCalledWith(['fpe_new_1'])
+  })
+
+  it('delivers the new organization even when a large backlog exists', async () => {
+    reconcileFinanceConnections.mockResolvedValue({
+      examined: 1,
+      changed: 1,
+      nextCursor: null,
+      eventIds: ['fpe_new_org'],
+    })
+    await provisionOrgApps(ORG)
+    expect(dispatchFinanceProvisioningForEventIds).toHaveBeenCalledWith(['fpe_new_org'])
+    expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch when no finance events were created', async () => {
+    reconcileFinanceConnections.mockResolvedValue({
+      examined: 3,
+      changed: 0,
+      nextCursor: null,
+      eventIds: [],
+    })
+    await provisionOrgApps(ORG)
+    expect(dispatchFinanceProvisioningForEventIds).not.toHaveBeenCalled()
+    expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
   })
 
   it('does not reconcile when every app was already provisioned', async () => {

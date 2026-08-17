@@ -494,7 +494,7 @@ export async function reconcileFinanceConnections(
     desiredStatus?: FinanceConnectionStatus | null
     trigger?: ProvisioningRunTrigger
   } = {}
-): Promise<{ examined: number; changed: number; nextCursor: string | null }> {
+): Promise<{ examined: number; changed: number; nextCursor: string | null; eventIds: string[] }> {
   const limit = options.limit === undefined ? 1000 : options.limit
   const trigger = options.trigger ?? 'app_activation'
 
@@ -508,6 +508,7 @@ export async function reconcileFinanceConnections(
   )
 
   let changed = 0
+  const eventIds: string[] = []
   for (const subscription of rows) {
     const before = subscription.financeLifecycleVersion
     const result = await enqueueFinanceConnectionEvent(deps, subscription, {
@@ -521,6 +522,15 @@ export async function reconcileFinanceConnections(
       'id' in result &&
       !('aggregateId' in result)
 
+    const isFinanceEvent =
+      result !== null &&
+      typeof result === 'object' &&
+      'aggregateId' in result
+
+    if (isFinanceEvent) {
+      eventIds.push((result as FinanceProvisioningOutboxRow).id)
+    }
+
     if (subscription.financeLifecycleVersion !== before || isProvisioningRun) {
       changed += 1
     }
@@ -528,7 +538,7 @@ export async function reconcileFinanceConnections(
 
   const nextCursor =
     hasMore && rows.length > 0 ? rows[rows.length - 1]!.id : null
-  return { examined: rows.length, changed, nextCursor }
+  return { examined: rows.length, changed, nextCursor, eventIds }
 }
 
 export function financeEventPayload(

@@ -2,6 +2,7 @@ import { createApp } from '@/app'
 import { getSettings } from '@/config'
 import { disconnectDb } from '@/db/client'
 import { configureLogging, getLogger } from '@/platform/logger'
+import { startFinanceProvisioningWorker } from '@/workers/finance-provisioning-dispatch'
 
 const settings = getSettings()
 configureLogging({
@@ -12,11 +13,18 @@ configureLogging({
 const log = getLogger('server')
 
 const app = createApp()
+let financeWorkerStop: (() => void) | null = null
+
 const server = app.listen(settings.port, '0.0.0.0', () => {
   log.info(
     { port: settings.port, environment: settings.environment },
     'server_started'
   )
+  if (process.env.FINANCE_PROVISIONING_DISABLE !== '1') {
+    const worker = startFinanceProvisioningWorker()
+    financeWorkerStop = worker.stop
+    log.info('finance_worker.started')
+  }
 })
 
 /**
@@ -32,6 +40,13 @@ async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return
   shuttingDown = true
   log.info({ signal }, 'server_shutdown_started')
+  if (financeWorkerStop) {
+    try {
+      financeWorkerStop()
+    } catch (e) {
+      log.error({ err: e }, 'finance_worker.stop_failed')
+    }
+  }
 
   // Force exit if a hung connection keeps the process alive past the window
   // the platform allows.

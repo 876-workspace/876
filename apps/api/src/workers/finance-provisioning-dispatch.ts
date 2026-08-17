@@ -5,6 +5,7 @@ import { financeEventPayload } from '@/services/finance-provisioning'
 
 import {
   claimFinanceProvisioningEvents,
+  claimFinanceProvisioningEventsByIds,
   expireStaleApplicationRuns,
   markFinanceProvisioningDelivered,
   markFinanceProvisioningFailed,
@@ -52,6 +53,55 @@ async function postWithTimeout(
   }
 }
 
+async function deliverClaimedRows(
+  rows: Array<{ id: string; attemptCount: number; payload: Record<string, unknown> }>,
+  billingUrl: string,
+  internalKey: string
+): Promise<{ delivered: number; failed: number }> {
+  let delivered = 0
+  let failed = 0
+  const endpoint = `${billingUrl}/api/v1/admin/finance-connections/ensure`
+  for (const item of rows) {
+    try {
+      const response = await postWithTimeout(
+        endpoint,
+        {
+          'x-internal-key': internalKey,
+          'content-type': 'application/json',
+          'x-request-id': item.id,
+        },
+        item.payload,
+        15_000
+      )
+      if (!response.ok) {
+        const text = await response.text()
+        const snippet = text.slice(0, 500).trim()
+        throw new Error(`Billing returned HTTP ${response.status}: ${snippet}`)
+      }
+      delivered += 1
+      await markFinanceProvisioningDelivered(item.id, nowUnixSeconds())
+      logger.info(
+        { event_id: item.id, attempt_count: item.attemptCount },
+        'finance_provisioning.delivered'
+      )
+    } catch (error) {
+      failed += 1
+      const message = deliveryError(error)
+      await markFinanceProvisioningFailed(
+        item.id,
+        item.attemptCount,
+        message,
+        nowUnixSeconds()
+      )
+      logger.warn(
+        { event_id: item.id, attempt_count: item.attemptCount, error: message },
+        'finance_provisioning.delivery_failed'
+      )
+    }
+  }
+  return { delivered, failed }
+}
+
 export async function dispatchFinanceProvisioningOnce(): Promise<FinanceDispatchSummary> {
   // Expire stale application provisioning runs before claiming — matches Python
   // `dispatch_finance_provisioning_once` which runs this in its own transaction.
@@ -95,49 +145,38 @@ export async function dispatchFinanceProvisioningOnce(): Promise<FinanceDispatch
     payload: financeEventPayload(row as never),
   }))
 
-  let delivered = 0
-  let failed = 0
-  const endpoint = `${billingUrl}/api/v1/admin/finance-connections/ensure`
+  const { delivered, failed } = await deliverClaimedRows(snapshots, billingUrl, internalKey)
 
-  for (const item of snapshots) {
-    try {
-      const response = await postWithTimeout(
-        endpoint,
-        {
-          'x-internal-key': internalKey,
-          'content-type': 'application/json',
-          'x-request-id': item.id,
-        },
-        item.payload,
-        15_000
-      )
-      if (!response.ok) {
-        const text = await response.text()
-        const snippet = text.slice(0, 500).trim()
-        throw new Error(`Billing returned HTTP ${response.status}: ${snippet}`)
-      }
-      delivered += 1
-      await markFinanceProvisioningDelivered(item.id, nowUnixSeconds())
-      logger.info(
-        { event_id: item.id, attempt_count: item.attemptCount },
-        'finance_provisioning.delivered'
-      )
-    } catch (error) {
-      failed += 1
-      const message = deliveryError(error)
-      await markFinanceProvisioningFailed(
-        item.id,
-        item.attemptCount,
-        message,
-        nowUnixSeconds()
-      )
-      logger.warn(
-        { event_id: item.id, attempt_count: item.attemptCount, error: message },
-        'finance_provisioning.delivery_failed'
-      )
-    }
+  return { claimed: snapshots.length, delivered, failed, configured: true }
+}
+
+export async function dispatchFinanceProvisioningForEventIds(
+  eventIds: string[]
+): Promise<FinanceDispatchSummary> {
+  if (eventIds.length === 0) {
+    return { claimed: 0, delivered: 0, failed: 0, configured: true }
   }
-
+  const settings = getSettings()
+  const billingUrl = settings.billing.url.trim().replace(/\/+$/, '')
+  const internalKey = settings.billing.internalKey.trim()
+  if (!billingUrl || !internalKey) {
+    logger.error(
+      { has_billing_url: Boolean(billingUrl), has_internal_key: Boolean(internalKey) },
+      'finance_provisioning.not_configured'
+    )
+    return { claimed: 0, delivered: 0, failed: 0, configured: false }
+  }
+  const now = nowUnixSeconds()
+  const claimedRows = await claimFinanceProvisioningEventsByIds(now, eventIds)
+  if (claimedRows.length === 0) {
+    return { claimed: 0, delivered: 0, failed: 0, configured: true }
+  }
+  const snapshots = claimedRows.map((row) => ({
+    id: row.id,
+    attemptCount: row.attemptCount,
+    payload: financeEventPayload(row as never),
+  }))
+  const { delivered, failed } = await deliverClaimedRows(snapshots, billingUrl, internalKey)
   return { claimed: snapshots.length, delivered, failed, configured: true }
 }
 
