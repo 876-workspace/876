@@ -26,9 +26,14 @@ export interface ItemResource extends ItemCreateParams {
   isActive: boolean
 }
 
+interface ItemMutationResult {
+  object: 'item'
+  id: string
+}
+
 export const items = {
   create(params: ItemCreateParams) {
-    return request<ItemResource>('/api/v1/items', {
+    return request<ItemMutationResult>('/api/v1/items', {
       method: 'POST',
       headers: { 'Idempotency-Key': crypto.randomUUID() },
       body: JSON.stringify(params),
@@ -40,10 +45,13 @@ export const items = {
   },
 
   update(itemId: string, params: ItemUpdateParams) {
-    return request<ItemResource>(`/api/v1/items/${encodeURIComponent(itemId)}`, {
-      method: 'PATCH',
-      body: JSON.stringify(params),
-    })
+    return request<ItemMutationResult>(
+      `/api/v1/items/${encodeURIComponent(itemId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(params),
+      }
+    )
   },
 
   delete(itemId: string) {
