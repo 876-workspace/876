@@ -19,11 +19,11 @@ function integrationPath(
   path: readonly string[],
   organizationId: string
 ): string[] {
-  // Invoice customer CRUD is product-app access to the shared financial data
-  // plane. Route it through Billing's integration boundary so authorization is
-  // based on the Invoice finance connection/scopes rather than a Billing
-  // workspace Member row.
-  if (path[0] === 'customers')
+  // Invoice customer and item CRUD are product-app access to the shared
+  // financial data plane. Route them through Billing's integration boundary so
+  // authorization is based on the Invoice finance connection/scopes rather
+  // than a Billing workspace Member row.
+  if (path[0] === 'customers' || path[0] === 'items')
     return ['integrations', 'organizations', organizationId, ...path]
 
   return [...path]
