@@ -58,10 +58,19 @@ export const getInvoiceContextResult = cache(
     if (membershipsResult.error) {
       Sentry.captureMessage('Invoice context: routing memberships failed', {
         level: 'error',
-        tags: { category: 'platform_client' },
+        tags: {
+          category: 'platform_client',
+          phase: 'invoice_context',
+          dependency: '876_api',
+        },
         extra: {
           call: 'memberships.listRouting',
           errorCode: membershipsResult.error.code ?? null,
+          errorStatus:
+            (membershipsResult.error as unknown as { status?: number })
+              ?.status ?? null,
+          platformUrl: process.env.API_876_URL || process.env.API_URL || null,
+          userId: session.user.id,
           consequence:
             'The viewer cannot be routed; onboarding must not offer to create an organization.',
         },

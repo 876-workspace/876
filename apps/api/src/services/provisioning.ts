@@ -140,16 +140,21 @@ export async function seedDefaultRoles(
 /**
  * Subscribe an org to its default apps plus the app it signed up through.
  *
- * Idempotent, and it never fails provisioning: a missing app row means a
- * partially seeded environment, which is worth shouting about but is not a
- * reason to fail somebody's signup.
+ * This is the **durable** half of app provisioning: it only creates/reuses
+ * subscription rows and never touches Billing, so it cannot be interrupted by
+ * an unavailable finance service. Idempotent, and it never fails provisioning:
+ * a missing app row means a partially seeded environment, which is worth
+ * shouting about but is not a reason to fail somebody's signup.
  *
- * Returns the app ids actually subscribed.
+ * Returns both the full set of resolved app ids the org is entitled to (`appIds`
+ * — the set the finance-readiness pass runs over, so an app whose Billing tenant
+ * was never opened is repaired even when its subscription already existed) and
+ * the subset that was newly created on this call (`provisioned`).
  */
-export async function provisionOrgApps(
+export async function ensureOrgAppSubscriptions(
   organizationId: string,
   options: { sourceAppId?: string | null } = {}
-): Promise<string[]> {
+): Promise<{ appIds: string[]; provisioned: string[] }> {
   const appIds: string[] = []
 
   for (const slug of DEFAULT_ORG_APP_SLUGS) {
@@ -195,35 +200,64 @@ export async function provisionOrgApps(
     )
   }
 
-  const [
-    { reconcileFinanceConnections },
-    { createFinanceProvisioningRepository },
-  ] = await Promise.all([
-    import('./finance-provisioning'),
-    import('./finance-provisioning.repository'),
-  ])
-  const result = await reconcileFinanceConnections(
-    { repository: createFinanceProvisioningRepository() },
-    {
-      organizationId,
-      strictSourceAppId: options.sourceAppId ?? null,
-      limit: null,
-    }
-  )
-  if (result.eventIds.length > 0) {
-    const { ensureFinanceProvisioningDelivered } =
-      await import('@/workers/finance-provisioning-dispatch')
-    try {
-      await ensureFinanceProvisioningDelivered(result.eventIds)
-    } catch (error) {
-      log.error(
-        { org_id: organizationId, err: error, event_ids: result.eventIds },
-        'provisioning.finance_ensure_failed'
-      )
-      throw error
-    }
-  }
+  return { appIds, provisioned }
+}
 
+/**
+ * Make every app an org is subscribed to fully usable, going through the same
+ * readiness contract as explicit app activation.
+ *
+ * `ensureAppReady` derives *whether* an app needs a Billing workspace from its
+ * published profile, so a finance-dependent app (876 Invoice) is guaranteed a
+ * delivered finance connection while a finance-less app (876-enterprise,
+ * 876-billing) returns immediately. This replaces the old org-wide reconcile
+ * whose `eventIds.length > 0` conditional silently skipped delivery whenever a
+ * matching event already existed — the exact gap that let a bootstrapped
+ * Invoice org open with no Billing tenant.
+ *
+ * `appIds` may be supplied by the caller that just created the subscriptions;
+ * otherwise the org's subscribed apps are re-derived, so a retry after a
+ * Billing outage repairs the same org without the caller re-computing the set.
+ */
+export async function ensureOrgAppsFinanceReady(
+  organizationId: string,
+  options: { appIds?: string[] } = {}
+): Promise<void> {
+  const [{ ensureAppReady }, { createFinanceProvisioningRepository }] =
+    await Promise.all([
+      import('./finance-provisioning-readiness'),
+      import('./finance-provisioning.repository'),
+    ])
+
+  const appIds =
+    options.appIds ?? (await repository.listSubscribedAppIds(organizationId))
+  const deps = { repository: createFinanceProvisioningRepository() }
+
+  for (const appId of appIds) {
+    await ensureAppReady(deps, { organizationId, appId })
+  }
+}
+
+/**
+ * Subscribe an org to its default apps and make each one usable.
+ *
+ * Kept as the combined form for callers that do not need the durable/finance
+ * split — it runs subscriptions first, then finance readiness. Callers that
+ * must establish durable identity (the owner membership) before the finance
+ * barrier use {@link ensureOrgAppSubscriptions} and
+ * {@link ensureOrgAppsFinanceReady} directly.
+ *
+ * Returns the app ids newly subscribed on this call.
+ */
+export async function provisionOrgApps(
+  organizationId: string,
+  options: { sourceAppId?: string | null } = {}
+): Promise<string[]> {
+  const { appIds, provisioned } = await ensureOrgAppSubscriptions(
+    organizationId,
+    options
+  )
+  await ensureOrgAppsFinanceReady(organizationId, { appIds })
   return provisioned
 }
 
@@ -239,11 +273,19 @@ export async function provisionOrganization(
   options: {
     sourceAppId?: string | null
     enqueueCustomerEnsure?: EnqueueCustomerEnsure
+    /**
+     * Skip the finance-workspace readiness pass, leaving only the durable
+     * subscription rows in place. The caller must run
+     * {@link ensureOrgAppsFinanceReady} itself once the durable organization
+     * identity (its owner membership) has been recorded, so a finance outage
+     * cannot strand a usable org without a membership its owner can route to.
+     */
+    deferFinanceReadiness?: boolean
   } = {}
 ): Promise<Record<string, OrgRoleRow>> {
   const roles = await seedDefaultRoles(organizationId, now)
 
-  await provisionOrgApps(organizationId, {
+  const { appIds } = await ensureOrgAppSubscriptions(organizationId, {
     sourceAppId: options.sourceAppId ?? null,
   })
 
@@ -253,6 +295,9 @@ export async function provisionOrganization(
       organizationId,
       now
     )
+
+  if (!options.deferFinanceReadiness)
+    await ensureOrgAppsFinanceReady(organizationId, { appIds })
 
   return roles
 }

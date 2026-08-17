@@ -1,6 +1,14 @@
 import type { Mocked } from '@/test/mocked'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const { mockEnsureFinanceProvisioningDelivered } = vi.hoisted(() => ({
+  mockEnsureFinanceProvisioningDelivered: vi.fn(),
+}))
+
+vi.mock('@/workers/finance-provisioning-dispatch', () => ({
+  ensureFinanceProvisioningDelivered: mockEnsureFinanceProvisioningDelivered,
+}))
+
 import {
   FINANCE_EVENT_CONTRACT_VERSION,
   FINANCE_EVENT_TYPE,
@@ -11,6 +19,10 @@ import {
   financeWorkspaceSlug,
   reconcileFinanceConnections,
 } from '../finance-provisioning'
+import {
+  ensureAppReady,
+  ensureFinanceWorkspaceReady,
+} from '../finance-provisioning-readiness'
 import type {
   FinanceProvisioningDeps,
   FinanceProvisioningRepository,
@@ -760,6 +772,369 @@ describe('reconcileFinanceConnections', () => {
       organizationId: 'org_1',
       limit: 10,
       startingAfter: 'sub_0',
+    })
+  })
+})
+
+describe('strict profile checks in enqueueFinanceConnectionEvent', () => {
+  it('strict target throws provisioning/application-profile-missing when profile is missing', async () => {
+    const sub = subscription({ appId: 'rap_couriers' })
+    const repo = makeRepository()
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockResolvedValue(null)
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+
+    await expect(
+      enqueueFinanceConnectionEvent({ repository: repo }, sub as never, {
+        strictSourceAppId: 'rap_couriers',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/application-profile-missing',
+      httpStatus: 500,
+    })
+  })
+
+  it('strict target throws provisioning/finance-dependency-missing when profile declares financeDependency: none', async () => {
+    const sub = subscription({ appId: 'rap_couriers' })
+    const repo = makeRepository()
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockResolvedValue(
+      profile({ financeDependency: 'none', financeScopes: [] }) as never
+    )
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+
+    await expect(
+      enqueueFinanceConnectionEvent({ repository: repo }, sub as never, {
+        strictSourceAppId: 'rap_couriers',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-dependency-missing',
+      httpStatus: 500,
+    })
+  })
+
+  it('strict target throws provisioning/finance-scopes-missing when profile declares embedded finance with empty scopes', async () => {
+    const sub = subscription({ appId: 'rap_couriers' })
+    const repo = makeRepository()
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockResolvedValue(
+      profile({ financeDependency: 'embedded', financeScopes: [] }) as never
+    )
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+
+    await expect(
+      enqueueFinanceConnectionEvent({ repository: repo }, sub as never, {
+        strictSourceAppId: 'rap_couriers',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-scopes-missing',
+      httpStatus: 500,
+    })
+  })
+})
+
+describe('ensureFinanceWorkspaceReady', () => {
+  beforeEach(() => {
+    mockEnsureFinanceProvisioningDelivered.mockReset()
+  })
+
+  it('reconciles with strict mode and delivers finance connection event', async () => {
+    const sub = subscription({ appId: 'rap_couriers' })
+    const repo = makeRepository()
+    repo.listSubscriptionsForReconcile.mockResolvedValue({
+      rows: [sub as never],
+      hasMore: false,
+    })
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockImplementation(async (targetType) => {
+      if (targetType === 'application') return profile() as never
+      return null
+    })
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(
+      async (data) => ({ id: 'fpe_new', ...data }) as never
+    )
+    repo.updateSubscriptionsLifecycleVersion.mockResolvedValue(undefined)
+    repo.createRunForEvent.mockResolvedValue({ id: 'prn_1' } as never)
+    repo.updateOutboxEventRunId.mockResolvedValue(undefined)
+    mockEnsureFinanceProvisioningDelivered.mockResolvedValue({
+      success: true,
+      deliveredEventIds: ['fpe_new'],
+    })
+
+    const result = await ensureFinanceWorkspaceReady(
+      { repository: repo },
+      { organizationId: 'org_1', appId: 'rap_couriers' }
+    )
+
+    expect(result).toMatchObject({
+      organizationId: 'org_1',
+      appId: 'rap_couriers',
+      ready: true,
+    })
+    expect(result.eventIds).toHaveLength(1)
+    expect(result.eventIds[0]?.startsWith('fpe_')).toBe(true)
+    expect(mockEnsureFinanceProvisioningDelivered).toHaveBeenCalledWith(
+      result.eventIds
+    )
+  })
+
+  it('rethrows when ensureFinanceProvisioningDelivered fails', async () => {
+    const sub = subscription({ appId: 'rap_couriers' })
+    const repo = makeRepository()
+    repo.listSubscriptionsForReconcile.mockResolvedValue({
+      rows: [sub as never],
+      hasMore: false,
+    })
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockImplementation(async (targetType) => {
+      if (targetType === 'application') return profile() as never
+      return null
+    })
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(
+      async (data) => ({ id: 'fpe_new', ...data }) as never
+    )
+    repo.updateSubscriptionsLifecycleVersion.mockResolvedValue(undefined)
+    repo.createRunForEvent.mockResolvedValue({ id: 'prn_1' } as never)
+    repo.updateOutboxEventRunId.mockResolvedValue(undefined)
+    mockEnsureFinanceProvisioningDelivered.mockRejectedValue(
+      new Error('Finance unavailable')
+    )
+
+    await expect(
+      ensureFinanceWorkspaceReady(
+        { repository: repo },
+        { organizationId: 'org_1', appId: 'rap_couriers' }
+      )
+    ).rejects.toThrow('Finance unavailable')
+  })
+
+  it('throws 503 provisioning/finance-workspace-unavailable when no event is returned', async () => {
+    const repo = makeRepository()
+    repo.listSubscriptionsForReconcile.mockResolvedValue({
+      rows: [],
+      hasMore: false,
+    })
+
+    await expect(
+      ensureFinanceWorkspaceReady(
+        { repository: repo },
+        { organizationId: 'org_1', appId: 'rap_couriers' }
+      )
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-workspace-unavailable',
+      httpStatus: 503,
+    })
+  })
+})
+
+describe('ensureAppReady', () => {
+  beforeEach(() => {
+    mockEnsureFinanceProvisioningDelivered.mockReset()
+  })
+
+  it('returns ready without finance for a non-finance app', async () => {
+    const repo = makeRepository()
+    repo.findPublishedRevision.mockResolvedValue(
+      profile({ financeDependency: 'none', financeScopes: [] }) as never
+    )
+
+    const result = await ensureAppReady(
+      { repository: repo },
+      { organizationId: 'org_1', appId: 'rap_enterprise' }
+    )
+
+    expect(result).toEqual({
+      organizationId: 'org_1',
+      appId: 'rap_enterprise',
+      ready: true,
+      financeRequired: false,
+      eventIds: [],
+    })
+    // A finance-less app must never reach the finance delivery barrier.
+    expect(mockEnsureFinanceProvisioningDelivered).not.toHaveBeenCalled()
+    expect(repo.listSubscriptionsForReconcile).not.toHaveBeenCalled()
+  })
+
+  it('returns ready without finance when the profile is missing and none is expected', async () => {
+    const repo = makeRepository()
+    repo.findPublishedRevision.mockResolvedValue(null)
+
+    const result = await ensureAppReady(
+      { repository: repo },
+      { organizationId: 'org_1', appId: 'rap_unseeded' }
+    )
+
+    expect(result.financeRequired).toBe(false)
+    expect(result.eventIds).toEqual([])
+    expect(mockEnsureFinanceProvisioningDelivered).not.toHaveBeenCalled()
+  })
+
+  it('delivers the finance connection for an embedded-finance app', async () => {
+    const sub = subscription({ appId: 'rap_couriers' })
+    const repo = makeRepository()
+    repo.listSubscriptionsForReconcile.mockResolvedValue({
+      rows: [sub as never],
+      hasMore: false,
+    })
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockImplementation(async (targetType) =>
+      targetType === 'application' ? (profile() as never) : null
+    )
+    repo.findLatestOutboxEvent.mockResolvedValue(null)
+    repo.createOutboxEvent.mockImplementation(
+      async (data) => ({ id: 'fpe_new', ...data }) as never
+    )
+    repo.updateSubscriptionsLifecycleVersion.mockResolvedValue(undefined)
+    repo.createRunForEvent.mockResolvedValue({ id: 'prn_1' } as never)
+    repo.updateOutboxEventRunId.mockResolvedValue(undefined)
+    mockEnsureFinanceProvisioningDelivered.mockResolvedValue({
+      delivered: 1,
+    })
+
+    const result = await ensureAppReady(
+      { repository: repo },
+      { organizationId: 'org_1', appId: 'rap_couriers' }
+    )
+
+    expect(result.financeRequired).toBe(true)
+    expect(result.eventIds).toHaveLength(1)
+    expect(mockEnsureFinanceProvisioningDelivered).toHaveBeenCalledWith(
+      result.eventIds
+    )
+  })
+
+  it('re-delivers the existing event when nothing changed (self-heal)', async () => {
+    // An org already carrying an active embedded subscription plus a matching,
+    // already-run outbox event — the shape of an org stuck in
+    // `billing/tenant-not-found`. Activating again must still deliver the
+    // existing event rather than treating "no change" as "already ready".
+    const sub = subscription({
+      appId: 'rap_couriers',
+      financeLifecycleVersion: 3,
+    })
+    const prof = profile()
+    const repo = makeRepository()
+    repo.listSubscriptionsForReconcile.mockResolvedValue({
+      rows: [sub as never],
+      hasMore: false,
+    })
+    repo.findSubscriptionById.mockResolvedValue(sub as never)
+    repo.findOrganizationById.mockResolvedValue(org())
+    repo.findAppById.mockResolvedValue(app({ id: 'rap_couriers' }))
+    repo.listSubscriptionsByOrgAndApp.mockResolvedValue([sub as never])
+    repo.findPublishedRevision.mockImplementation(async (targetType) =>
+      targetType === 'application' ? (prof as never) : null
+    )
+    repo.findLatestOutboxEvent.mockResolvedValue({
+      id: 'fpe_existing',
+      desiredStatus: 'ACTIVE',
+      scopes: [...prof.financeScopes].sort(),
+      provisioningVersion: prof.revision,
+      sourceAppId: 'rap_couriers',
+      entitlementReference: sub.id,
+      lifecycleVersion: 3,
+      runId: 'prn_existing',
+      aggregateId: 'org_1:rap_couriers',
+    } as never)
+    mockEnsureFinanceProvisioningDelivered.mockResolvedValue({ delivered: 1 })
+
+    const result = await ensureAppReady(
+      { repository: repo },
+      { organizationId: 'org_1', appId: 'rap_couriers' }
+    )
+
+    expect(result.financeRequired).toBe(true)
+    expect(result.eventIds).toEqual(['fpe_existing'])
+    expect(mockEnsureFinanceProvisioningDelivered).toHaveBeenCalledWith([
+      'fpe_existing',
+    ])
+    // Nothing new was enqueued — the existing event is what gets delivered.
+    expect(repo.createOutboxEvent).not.toHaveBeenCalled()
+  })
+
+  describe('expectedFinanceDependency: embedded (fails closed)', () => {
+    it('throws application-profile-missing when the profile is absent', async () => {
+      const repo = makeRepository()
+      repo.findPublishedRevision.mockResolvedValue(null)
+
+      await expect(
+        ensureAppReady(
+          { repository: repo },
+          {
+            organizationId: 'org_1',
+            appId: 'rap_invoice',
+            expectedFinanceDependency: 'embedded',
+          }
+        )
+      ).rejects.toMatchObject({
+        code: 'provisioning/application-profile-missing',
+        httpStatus: 503,
+      })
+      expect(mockEnsureFinanceProvisioningDelivered).not.toHaveBeenCalled()
+    })
+
+    it('throws finance-dependency-missing when the profile declares none', async () => {
+      const repo = makeRepository()
+      repo.findPublishedRevision.mockResolvedValue(
+        profile({ financeDependency: 'none', financeScopes: [] }) as never
+      )
+
+      await expect(
+        ensureAppReady(
+          { repository: repo },
+          {
+            organizationId: 'org_1',
+            appId: 'rap_invoice',
+            expectedFinanceDependency: 'embedded',
+          }
+        )
+      ).rejects.toMatchObject({
+        code: 'provisioning/finance-dependency-missing',
+        httpStatus: 503,
+      })
+      expect(mockEnsureFinanceProvisioningDelivered).not.toHaveBeenCalled()
+    })
+
+    it('throws finance-scopes-missing when embedded finance declares no scopes', async () => {
+      const repo = makeRepository()
+      repo.findPublishedRevision.mockResolvedValue(
+        profile({ financeDependency: 'embedded', financeScopes: [] }) as never
+      )
+
+      await expect(
+        ensureAppReady(
+          { repository: repo },
+          {
+            organizationId: 'org_1',
+            appId: 'rap_invoice',
+            expectedFinanceDependency: 'embedded',
+          }
+        )
+      ).rejects.toMatchObject({
+        code: 'provisioning/finance-scopes-missing',
+        httpStatus: 503,
+      })
+      expect(mockEnsureFinanceProvisioningDelivered).not.toHaveBeenCalled()
     })
   })
 })

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 
+import { PlatformUnavailable } from '@/components/platform-unavailable'
 import { getInvoiceContextResult } from '@/lib/auth/context'
 
 import { OnboardingForm } from './_components/onboarding-form'
@@ -10,17 +11,8 @@ export default async function OnboardingPage() {
   if (result.status === 'signed-out') redirect('/login?returnTo=%2Fonboarding')
 
   // The platform lookup failed. Offering to create an organization here would
-  // ask an established account to make a second one, so say what is true.
-  if (result.status === 'unavailable')
-    return (
-      <div className="space-y-2">
-        <h1 className="876-page-title">Setup is unavailable</h1>
-        <p className="text-muted-foreground text-sm">
-          We could not reach 876 to check your organization. Please try again
-          shortly.
-        </p>
-      </div>
-    )
+  // ask an established account to make a second one.
+  if (result.status === 'unavailable') return <PlatformUnavailable />
 
   if (result.status === 'ok') {
     const { accessStatus, orgName, role } = result.context

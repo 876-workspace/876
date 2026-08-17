@@ -292,6 +292,13 @@ export const subscriptionProvisionBodySchema = z.strictObject({
   app_id: z.string().optional().nullable(),
   app_slug: z.string().optional().nullable(),
   price_id: z.string().optional().nullable(),
+  /**
+   * Assert the app's required finance dependency. When `'embedded'`, activation
+   * fails closed unless the app's published profile declares embedded finance
+   * with scopes — a caller that knows an app must have a Billing workspace (876
+   * Invoice) sets this so a misconfigured profile cannot silently downgrade it.
+   */
+  require_finance: z.enum(['embedded']).optional().nullable(),
 })
 
 export type SubscriptionProvisionBody = z.infer<
