@@ -280,9 +280,63 @@ export async function restoreUser(id: string): Promise<UserRow | null> {
   }
 }
 
+/**
+ * Hard-delete a user and every record that is *about* that user.
+ *
+ * A user purge removes the person, not the organizations they belonged to.
+ * Their memberships go — the org does not. That asymmetry is the whole reason
+ * this cannot be a bare `user.delete()`:
+ *
+ * - **No cascade on the FK** (`auth_attempts`, `audit_events`). These are
+ *   records of the user's own actions and belong to them; the constraint is
+ *   `NO ACTION`, so they would fail the purge rather than survive it.
+ * - **No FK at all** (`communication_*`, `billing_customer_outbox`). Referenced
+ *   by opaque ID across a bounded-context boundary, so nothing fails — they
+ *   simply outlive the account.
+ * - **A reference held by someone else** (`org_contacts.user_id`,
+ *   `organizations.primary_contact_user_id`). These rows belong to an
+ *   *organization*, which is not being purged. They are **detached, not
+ *   deleted**: deleting an org's contact list or its organization row because a
+ *   member's account was removed would destroy data belonging to a party that
+ *   did nothing.
+ *
+ * One transaction throughout, so a partial purge cannot leave an account that
+ * is unreachable but still referenced.
+ */
 export async function purgeUser(id: string): Promise<boolean> {
   try {
-    await prisma.user.delete({ where: { id } })
+    await prisma.$transaction(async (tx) => {
+      // Records of this user's own actions — referenced without a cascade.
+      await tx.authAttempt.deleteMany({ where: { userId: id } })
+      await tx.auditEvent.deleteMany({ where: { userId: id } })
+
+      // Referenced by opaque ID with no FK — these outlive the account.
+      await tx.communicationCall.deleteMany({ where: { userId: id } })
+      await tx.communicationMessage.deleteMany({ where: { userId: id } })
+      await tx.billingCustomerOutbox.deleteMany({
+        where: { subjectType: 'user', subjectId: id },
+      })
+      await tx.billingCustomerOutbox.updateMany({
+        where: { contactUserId: id },
+        data: { contactUserId: null },
+      })
+
+      // Owned by an organization that is NOT being purged — detach, never delete.
+      await tx.orgContact.updateMany({
+        where: { userId: id },
+        data: { userId: null },
+      })
+      await tx.organization.updateMany({
+        where: { primaryContactUserId: id },
+        data: { primaryContactUserId: null },
+      })
+
+      // Cascades the remaining user-owned tables: memberships, sessions,
+      // profile, emails, mobile numbers, PINs, devices, identifications, social
+      // profiles, features, enrollments, app assignments, OAuth grants and
+      // refresh tokens, SSO identities, addresses, contacts, accounts.
+      await tx.user.delete({ where: { id } })
+    })
     return true
   } catch (error) {
     if (

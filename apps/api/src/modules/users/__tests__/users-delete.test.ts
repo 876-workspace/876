@@ -11,6 +11,7 @@ const {
   enqueueCustomerArchiveForUser,
   billingCustomerSyncRepository,
   authProvider,
+  purgeCascade,
 } = vi.hoisted(() => ({
   user: {
     findUnique: vi.fn(),
@@ -18,6 +19,18 @@ const {
     delete: vi.fn(),
   },
   session: { deleteMany: vi.fn() },
+  // purgeUser clears the records that reference the account without a cascade
+  // (and detaches the ones an organization owns) before deleting the user, all
+  // inside one transaction.
+  purgeCascade: {
+    authAttempt: { deleteMany: vi.fn() },
+    auditEvent: { deleteMany: vi.fn() },
+    communicationCall: { deleteMany: vi.fn() },
+    communicationMessage: { deleteMany: vi.fn() },
+    billingCustomerOutbox: { deleteMany: vi.fn(), updateMany: vi.fn() },
+    orgContact: { updateMany: vi.fn() },
+    organization: { updateMany: vi.fn() },
+  },
   apiKey: { findUnique: vi.fn(), update: vi.fn() },
   deleteProviderUser: vi.fn(),
   enqueueCustomerArchiveForUser: vi.fn(),
@@ -26,7 +39,14 @@ const {
 }))
 
 vi.mock('@/db/client', () => ({
-  prisma: { user, session, apiKey },
+  prisma: {
+    user,
+    session,
+    apiKey,
+    ...purgeCascade,
+    $transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
+      await fn({ ...purgeCascade, user }),
+  },
   disconnectDb: vi.fn(),
   pingDb: vi.fn(),
 }))
