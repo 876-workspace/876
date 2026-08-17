@@ -1,7 +1,12 @@
 import { getSettings } from '@/config'
 import { getLogger } from '@/platform/logger'
 
-import type { IdentityApp, IdentityGateway, TokenIntrospection } from './types'
+import type {
+  IdentityApp,
+  IdentityGateway,
+  OrganizationMembership,
+  TokenIntrospection,
+} from './types'
 
 const log = getLogger('identity')
 
@@ -50,12 +55,12 @@ export class HttpIdentityGateway implements IdentityGateway {
     }
   }
 
-  async userBelongsToOrganization(
+  async organizationMembership(
     token: string,
     organizationId: string
-  ): Promise<boolean> {
+  ): Promise<OrganizationMembership | null> {
     const settings = getSettings()
-    if (!settings.identityApiKey) return false
+    if (!settings.identityApiKey) return null
     const payload = await this.request('/users/me/memberships?status=active', {
       method: 'GET',
       headers: {
@@ -64,16 +69,24 @@ export class HttpIdentityGateway implements IdentityGateway {
       },
     })
     const rows = Array.isArray(payload?.data) ? payload.data : []
-    return rows.some((value) => {
-      if (typeof value !== 'object' || value === null) return false
-      const organization = (value as Record<string, unknown>).organization
-      return (
-        typeof organization === 'object' &&
-        organization !== null &&
-        (organization as Record<string, unknown>).id === organizationId &&
-        (organization as Record<string, unknown>).status === 'active'
+    for (const value of rows) {
+      if (typeof value !== 'object' || value === null) continue
+      const membership = value as Record<string, unknown>
+      const organization = membership.organization
+      if (
+        typeof organization !== 'object' ||
+        organization === null ||
+        (organization as Record<string, unknown>).id !== organizationId ||
+        (organization as Record<string, unknown>).status !== 'active'
       )
-    })
+        continue
+
+      const role = membership.role
+      return {
+        role: role === 'owner' || role === 'admin' ? role : 'member',
+      }
+    }
+    return null
   }
 
   private async request(

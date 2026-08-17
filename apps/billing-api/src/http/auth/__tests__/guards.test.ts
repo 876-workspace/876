@@ -12,13 +12,13 @@ import { getPrincipal } from '../principal'
 
 const repository: AuthRepository = {
   tenantByOrganizationId: vi.fn(),
-  activeMember: vi.fn(),
+  effectiveMember: vi.fn(),
   activeConnection: vi.fn(),
 }
 const identity: IdentityGateway = {
   appForApiKey: vi.fn(),
   introspect: vi.fn(),
-  userBelongsToOrganization: vi.fn(),
+  organizationMembership: vi.fn(),
 }
 
 function addRoute(app: Express, path: string, security: BillingSecurity): void {
@@ -61,7 +61,7 @@ describe('Billing authentication guards', () => {
       id: 'btenant_123',
       active: true,
     })
-    vi.mocked(repository.activeMember).mockResolvedValue({
+    vi.mocked(repository.effectiveMember).mockResolvedValue({
       permissions: new Set(['vendors:read']),
     })
     vi.mocked(repository.activeConnection).mockResolvedValue({
@@ -73,7 +73,7 @@ describe('Billing authentication guards', () => {
       appId: 'app_123',
       scopes: new Set(['billing.customers.write']),
     })
-    vi.mocked(identity.userBelongsToOrganization).mockResolvedValue(true)
+    vi.mocked(identity.organizationMembership).mockResolvedValue({ role: 'owner' })
     vi.mocked(identity.appForApiKey).mockResolvedValue({ id: 'app_123' })
   })
 
@@ -103,7 +103,7 @@ describe('Billing authentication guards', () => {
     expect(response.body.error.code).toBe('auth/ambiguous-credential')
   })
 
-  it('authorizes tenant OAuth only after organization membership and permission checks', async () => {
+  it('authorizes tenant OAuth from organization role and effective Billing permissions', async () => {
     const response = await request(createAuthApp())
       .get('/tenant')
       .set('x-billing-organization-id', 'org_123')
@@ -120,10 +120,58 @@ describe('Billing authentication guards', () => {
       },
       error: null,
     })
-    expect(identity.userBelongsToOrganization).toHaveBeenCalledWith(
+    expect(identity.organizationMembership).toHaveBeenCalledWith(
       'access-token',
       'org_123'
     )
+    expect(repository.effectiveMember).toHaveBeenCalledWith(
+      'btenant_123',
+      'user_123',
+      'owner'
+    )
+  })
+
+  it('rejects a user who no longer has an active organization membership', async () => {
+    vi.mocked(identity.organizationMembership).mockResolvedValue(null)
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(403)
+    expect(response.body.error.code).toBe('auth/organization-forbidden')
+    expect(repository.effectiveMember).not.toHaveBeenCalled()
+  })
+
+  it('passes the organization role into effective Billing access resolution', async () => {
+    vi.mocked(identity.organizationMembership).mockResolvedValue({ role: 'admin' })
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(200)
+    expect(repository.effectiveMember).toHaveBeenCalledWith(
+      'btenant_123',
+      'user_123',
+      'admin'
+    )
+  })
+
+  it('rejects tenant OAuth when effective Billing access lacks the required permission', async () => {
+    vi.mocked(repository.effectiveMember).mockResolvedValue({
+      permissions: new Set(),
+    })
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(403)
+    expect(response.body.error.code).toBe('auth/forbidden')
   })
 
   it('requires the configured internal secret for admin routes', async () => {

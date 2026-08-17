@@ -1,2 +1,8 @@
 export { HttpIdentityGateway } from './client'
-export type { IdentityApp, IdentityGateway, TokenIntrospection } from './types'
+export type {
+  IdentityApp,
+  IdentityGateway,
+  OrganizationMembership,
+  OrganizationRole,
+  TokenIntrospection,
+} from './types'
