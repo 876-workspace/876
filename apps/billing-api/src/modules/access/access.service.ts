@@ -35,6 +35,17 @@ export async function activeMemberAuthorization(
     : null
 }
 
+export async function effectiveMemberAuthorization(
+  tenantId: string,
+  userId: string,
+  organizationRole: 'owner' | 'admin' | 'member'
+) {
+  const member = await resolveMemberAccess(tenantId, userId, organizationRole)
+  return member?.status === 'ACTIVE'
+    ? { permissions: new Set(member.permissions) }
+    : null
+}
+
 function memberAccess(
   userId: string,
   status: 'ACTIVE' | 'SUSPENDED',

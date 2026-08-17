@@ -7,11 +7,17 @@ export type TokenIntrospection = {
   scopes: ReadonlySet<string>
 }
 
+export type OrganizationRole = 'owner' | 'admin' | 'member'
+
+export type OrganizationMembership = {
+  role: OrganizationRole
+}
+
 export type IdentityGateway = {
   appForApiKey(apiKey: string): Promise<IdentityApp | null>
   introspect(token: string): Promise<TokenIntrospection>
-  userBelongsToOrganization(
+  organizationMembership(
     token: string,
     organizationId: string
-  ): Promise<boolean>
+  ): Promise<OrganizationMembership | null>
 }

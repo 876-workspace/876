@@ -2,9 +2,9 @@ import { Router } from 'express'
 
 import { createGuardResolver, type AuthRepository } from '@/http/auth'
 import {
-  activeMemberAuthorization,
   createAccessRouter,
   createInternalAccessRouter,
+  effectiveMemberAuthorization,
 } from '@/modules/access'
 import { createBankingRouter } from '@/modules/banking'
 import {
@@ -47,7 +47,7 @@ export function buildRoutes(): Router {
   const root = Router()
   const repository: AuthRepository = {
     tenantByOrganizationId: tenantAuthorizationByOrganizationId,
-    activeMember: activeMemberAuthorization,
+    effectiveMember: effectiveMemberAuthorization,
     activeConnection: activeConnectionAuthorization,
   }
   const resolveGuards = createGuardResolver({

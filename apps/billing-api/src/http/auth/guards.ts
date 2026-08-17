@@ -4,7 +4,7 @@ import { getSettings } from '@/config'
 import type { BillingSecurity, GuardResolver } from '@/http/api-router'
 import { AppHttpError, errors } from '@/http/errors'
 import { bindActor, getLogger } from '@/platform/logger'
-import type { IdentityGateway } from '@/providers/identity'
+import type { IdentityGateway, OrganizationRole } from '@/providers/identity'
 
 import {
   credentialFingerprint,
@@ -33,9 +33,10 @@ export type AuthRepository = {
   tenantByOrganizationId(
     organizationId: string
   ): Promise<TenantAuthorization | null>
-  activeMember(
+  effectiveMember(
     tenantId: string,
-    userId: string
+    userId: string,
+    organizationRole: OrganizationRole
   ): Promise<MemberAuthorization | null>
   activeConnection(
     tenantId: string,
@@ -130,6 +131,7 @@ async function oauthIdentity(
   subject: string
   appId: string | null
   scopes: ReadonlySet<string>
+  organizationRole: OrganizationRole
 }> {
   const identity = await gateway.introspect(token)
   if (!identity.active || !identity.subject) {
@@ -139,14 +141,20 @@ async function oauthIdentity(
       httpStatus: 401,
     })
   }
-  if (!(await gateway.userBelongsToOrganization(token, organizationId))) {
+  const membership = await gateway.organizationMembership(token, organizationId)
+  if (!membership) {
     throw new AppHttpError({
       code: 'auth/organization-forbidden',
       message: 'The authenticated user cannot access this organization.',
       httpStatus: 403,
     })
   }
-  return { ...identity, active: true, subject: identity.subject }
+  return {
+    ...identity,
+    active: true,
+    subject: identity.subject,
+    organizationRole: membership.role,
+  }
 }
 
 export function createGuardResolver(options: {
@@ -313,12 +321,24 @@ export function createGuardResolver(options: {
           }
         }
 
-        const member = await options.repository.activeMember(
+        const member = await options.repository.effectiveMember(
           tenant.id,
-          identity.subject
+          identity.subject,
+          identity.organizationRole
         )
-        if (!member?.permissions.has(security.permission))
+        if (!member?.permissions.has(security.permission)) {
+          log.warn(
+            {
+              organization_id: organizationId,
+              tenant_id: tenant.id,
+              user_id: identity.subject,
+              organization_role: identity.organizationRole,
+              required_permission: security.permission,
+            },
+            'auth.tenant.permission_denied'
+          )
           throw errors.forbidden()
+        }
         return {
           kind: 'oauth',
           tenantId: tenant.id,
