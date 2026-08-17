@@ -22,22 +22,6 @@ if (!databaseUrl) throw new Error('A Billing database URL is required.')
 process.env.BILLING_DIRECT_DATABASE_URL ??= databaseUrl
 
 const cli = createRequire(import.meta.url).resolve('prisma/build/index.js')
-const drift = spawnSync(
-  process.execPath,
-  [
-    cli,
-    'migrate',
-    'diff',
-    '--from-schema',
-    'prisma/schema',
-    '--to-config-datasource',
-    '--exit-code',
-  ],
-  { stdio: 'inherit', env: process.env }
-)
-if (drift.status !== 0)
-  throw new Error('Refusing to repair a database with Prisma schema drift.')
-
 const migrationDirectory = new URL('../prisma/migrations/', import.meta.url)
 const localMigrations = (
   await readdir(migrationDirectory, {
@@ -84,6 +68,28 @@ try {
     presentSampleTables: tables.rows.map((row) => row.table_name),
     publicTableCount: Number(tableCount.rows[0]?.count ?? 0),
   })
+
+  // Drift is only a blocker when this script is actually about to rewrite the
+  // legacy migration ledger. Once adoption is complete, differences between the
+  // current database and Prisma schema are normally just pending migrations for
+  // the following `prisma migrate deploy` step to apply.
+  if (decision.action === 'repair') {
+    const drift = spawnSync(
+      process.execPath,
+      [
+        cli,
+        'migrate',
+        'diff',
+        '--from-schema',
+        'prisma/schema',
+        '--to-config-datasource',
+        '--exit-code',
+      ],
+      { stdio: 'inherit', env: process.env }
+    )
+    if (drift.status !== 0)
+      throw new Error('Refusing to repair a database with Prisma schema drift.')
+  }
 
   console.log(
     JSON.stringify({
