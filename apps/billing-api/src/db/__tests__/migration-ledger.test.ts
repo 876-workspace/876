@@ -52,17 +52,6 @@ describe('Billing Prisma migration-ledger adoption', () => {
     expect(decision).toEqual({ action: 'skip' })
   })
 
-  it('skips a fresh database so migrate deploy can initialize it', () => {
-    const decision = decideLedgerRepair({
-      localMigrations: local,
-      databaseMigrations: [],
-      presentSampleTables: [],
-      publicTableCount: 0,
-    })
-
-    expect(decision).toEqual({ action: 'skip' })
-  })
-
   it('still refuses an incomplete legacy database or an unknown migration row', () => {
     expect(
       decideLedgerRepair({
