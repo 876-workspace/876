@@ -41,6 +41,7 @@ export default async function ItemsPage({ searchParams }: Props) {
   const selectedStatus = ['active', 'inactive'].includes(status ?? '')
     ? status!
     : 'all'
+
   return (
     <Page>
       <ResourceToolbar
@@ -64,7 +65,6 @@ export default async function ItemsPage({ searchParams }: Props) {
               { label: 'Item', cell: 'avatar' as const },
               { label: 'Default price' },
               { label: 'Tax' },
-              { label: 'Prices' },
               { label: 'Status', cell: 'badge' as const },
             ]}
             rows={5}
@@ -84,93 +84,62 @@ async function ItemsTableData({ searchParams }: Props) {
     : 'all'
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
+
   const $876 = await get876Client(context.orgId)
-  const result = (await $876.items
-    .list()
-    .catch(
-      () => ({ data: null, error: { code: 'unreachable' } }) as const
-    )) as unknown as { data: { data: unknown[] } | null; error: unknown | null }
-  if (result.error || !result.data) {
+  const result = await $876.items.list(
+    selectedStatus === 'all'
+      ? {}
+      : { active: selectedStatus === 'active' }
+  )
+
+  if (result.error) {
     return (
       <ItemsTable
         items={[]}
         defaultCurrency="JMD"
-        emptyState={
-          <Empty className="py-14">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <CircleStackIcon />
-              </EmptyMedia>
-              <EmptyTitle>No items yet</EmptyTitle>
-              <EmptyDescription>
-                Add the goods or services you expect to quote and invoice.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent>
-              <Link
-                href="/items/new"
-                className={buttonVariants({ variant: 'info' })}
-              >
-                New
-              </Link>
-            </EmptyContent>
-          </Empty>
-        }
+        emptyState={<ItemsEmptyState />}
       />
     )
   }
-  const items = (result.data.data as Record<string, unknown>[]).map((item) => ({
-    id: String(item.id),
-    name: String(item.name ?? 'Unnamed item'),
-    type: String(item.type ?? 'GOODS'),
-    sku: (item.sku as string) ?? null,
-    unit: (item.unit as string) ?? null,
-    defaultSellingAmount:
-      (item.defaultSellingAmount as bigint) ??
-      (item.sellingPrice as string) ??
-      null,
-    defaultSellingCurrency:
-      (item.defaultSellingCurrency as string) ??
-      (item.currency as string) ??
-      null,
-    isTaxable: Boolean(item.isTaxable ?? item.taxable ?? true),
-    isActive:
-      item.isActive !== undefined
-        ? Boolean(item.isActive)
-        : String(item.status ?? 'ACTIVE').toUpperCase() === 'ACTIVE',
-    prices: (item.prices as unknown[]) ?? [],
+
+  const items = result.data.data.map((item) => ({
+    id: item.id,
+    name: item.name,
+    type: item.type,
+    sku: item.sku,
+    unit: item.unit,
+    defaultSellingAmount: item.defaultSellingAmount,
+    defaultSellingCurrency: item.defaultSellingCurrency,
+    isTaxable: item.isTaxable,
+    isActive: item.isActive,
   }))
-  const filtered =
-    selectedStatus === 'all'
-      ? items
-      : items.filter((i) =>
-          selectedStatus === 'active' ? i.isActive : !i.isActive
-        )
+
   return (
     <ItemsTable
-      items={filtered}
-      defaultCurrency={context.orgName ? 'JMD' : 'JMD'}
-      emptyState={
-        <Empty className="py-14">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <CircleStackIcon />
-            </EmptyMedia>
-            <EmptyTitle>No items yet</EmptyTitle>
-            <EmptyDescription>
-              Add the goods or services you expect to quote and invoice.
-            </EmptyDescription>
-          </EmptyHeader>
-          <EmptyContent>
-            <Link
-              href="/items/new"
-              className={buttonVariants({ variant: 'info' })}
-            >
-              New
-            </Link>
-          </EmptyContent>
-        </Empty>
-      }
+      items={items}
+      defaultCurrency="JMD"
+      emptyState={<ItemsEmptyState />}
     />
+  )
+}
+
+function ItemsEmptyState() {
+  return (
+    <Empty className="py-14">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <CircleStackIcon />
+        </EmptyMedia>
+        <EmptyTitle>No items yet</EmptyTitle>
+        <EmptyDescription>
+          Add the goods or services you expect to quote and invoice.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Link href="/items/new" className={buttonVariants({ variant: 'info' })}>
+          New
+        </Link>
+      </EmptyContent>
+    </Empty>
   )
 }
