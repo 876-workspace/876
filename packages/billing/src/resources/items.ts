@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import {
@@ -14,6 +16,16 @@ import type {
   DeletedBillingItem,
 } from '../integration/types'
 import type { RequestOptions } from '../types'
+
+interface ItemMutationResult {
+  object: 'item'
+  id: string
+}
+
+const ItemMutationSchema = z.strictObject({
+  object: z.literal('item'),
+  id: z.string().min(1),
+}) satisfies z.ZodType<ItemMutationResult>
 
 /** `$876.billing.items.*` — tenant-scoped invoice item operations. */
 export function createItemsResource(runtime: Runtime) {
@@ -44,7 +56,7 @@ export function createItemsResource(runtime: Runtime) {
     },
 
     create(params: BillingItemCreateParams, options?: RequestOptions) {
-      return Request<BillingItem>(
+      return Request<ItemMutationResult>(
         runtime,
         {
           method: 'POST',
@@ -52,7 +64,7 @@ export function createItemsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BillingItemSchema
+        ItemMutationSchema
       )
     },
 
@@ -61,7 +73,7 @@ export function createItemsResource(runtime: Runtime) {
       params: BillingItemUpdateParams,
       options?: RequestOptions
     ) {
-      return Request<BillingItem>(
+      return Request<ItemMutationResult>(
         runtime,
         {
           method: 'PATCH',
@@ -69,7 +81,7 @@ export function createItemsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BillingItemSchema
+        ItemMutationSchema
       )
     },
 
