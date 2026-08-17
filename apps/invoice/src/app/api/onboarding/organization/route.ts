@@ -35,8 +35,12 @@ function mapSubscriptionError(error: { code: string; message?: string }) {
     return {
       status: 503,
       code: error.code,
+      // Deliberately does not promise that retrying works. This failure can be
+      // permanent — the Billing delivery is retried on a fixed payload, so a
+      // rejection that is not transient repeats forever — and telling someone
+      // to keep retrying a wall is worse than telling them to get help.
       message:
-        'Your organization was created, but Invoice could not finish connecting to Billing. Try again.',
+        'Your organization was created, but 876 could not finish setting up its Billing workspace. Try again in a moment; if it keeps failing, contact support.',
     }
   }
 

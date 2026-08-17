@@ -343,7 +343,7 @@ describe('POST /api/onboarding/organization', () => {
         error: {
           code: 'provisioning/finance-workspace-unavailable',
           message:
-            'Your organization was created, but Invoice could not finish connecting to Billing. Try again.',
+            'Your organization was created, but 876 could not finish setting up its Billing workspace. Try again in a moment; if it keeps failing, contact support.',
         },
       })
     })
