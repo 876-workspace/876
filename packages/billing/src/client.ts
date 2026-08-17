@@ -8,6 +8,7 @@ import {
   createSalespeopleResource,
 } from './resources/commercial'
 import { createDiscountsResource } from './resources/discounts'
+import { createItemsResource } from './resources/items'
 import { createInvoicesResource } from './resources/invoices'
 import { createInvoicePreferencesResource } from './resources/invoice-preferences'
 import { createPaymentModesResource } from './resources/payment-modes'
@@ -36,6 +37,7 @@ export function create876Client(options: ClientOptions = {}) {
     estimates: createEstimatesResource(runtime),
     invoices: createInvoicesResource(runtime),
     invoicePreferences: createInvoicePreferencesResource(runtime),
+    items: createItemsResource(runtime),
     paymentModes: createPaymentModesResource(runtime),
     paymentProviders: createPaymentProvidersResource(runtime),
     paymentTerms: createPaymentTermsResource(runtime),
