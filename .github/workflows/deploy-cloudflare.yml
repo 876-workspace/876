@@ -181,6 +181,17 @@ jobs:
         with:
           app-directory: apps/api
           secret: ${{ secrets.SESSION_COOKIE_SECRET }}
+      # apps/api's finance dispatcher calls 876-billing-api with this key; the
+      # two Workers must hold the same value or every finance-connection ensure
+      # is rejected 401 and 876 Invoice onboarding fails. Synced here, before
+      # the container redeploy that copies it into the running instance's env.
+      - name: Sync the shared billing internal key
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        uses: ./.github/actions/sync-worker-secret
+        with:
+          app-directory: apps/api
+          secret-name: BILLING_INTERNAL_KEY
+          secret: ${{ secrets.BILLING_INTERNAL_KEY }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-api
       # Containers build and push the Dockerfile image; the runner's Docker
@@ -264,6 +275,16 @@ jobs:
             pnpm exec wrangler secret put BILLING_DATABASE_URL
         env:
           BILLING_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+      # The validator side of the same shared key. Must equal what apps/api,
+      # apps/billing and apps/console send, or it rejects them all 401. Synced
+      # before the container redeploy that copies it into the running instance.
+      - name: Sync the shared billing internal key
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        uses: ./.github/actions/sync-worker-secret
+        with:
+          app-directory: apps/billing-api
+          secret-name: BILLING_INTERNAL_KEY
+          secret: ${{ secrets.BILLING_INTERNAL_KEY }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-billing-api
       - name: Deploy container Worker
@@ -328,6 +349,14 @@ jobs:
         with:
           app-directory: apps/console
           secret: ${{ secrets.SESSION_COOKIE_SECRET }}
+      # Console calls 876-billing-api admin with this shared key.
+      - name: Sync the shared billing internal key
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        uses: ./.github/actions/sync-worker-secret
+        with:
+          app-directory: apps/console
+          secret-name: BILLING_INTERNAL_KEY
+          secret: ${{ secrets.BILLING_INTERNAL_KEY }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-console
       - name: Deploy
@@ -355,6 +384,14 @@ jobs:
         with:
           app-directory: apps/billing
           secret: ${{ secrets.SESSION_COOKIE_SECRET }}
+      # The Billing app calls 876-billing-api admin with this shared key.
+      - name: Sync the shared billing internal key
+        if: (github.event_name == 'workflow_dispatch' || vars.DEPLOY_FROM_ACTIONS == 'true')
+        uses: ./.github/actions/sync-worker-secret
+        with:
+          app-directory: apps/billing
+          secret-name: BILLING_INTERNAL_KEY
+          secret: ${{ secrets.BILLING_INTERNAL_KEY }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-billing
       - name: Deploy
