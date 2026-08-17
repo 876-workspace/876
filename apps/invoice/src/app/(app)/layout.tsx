@@ -22,7 +22,9 @@ export default async function AppLayout({
   if (result.status === 'signed-out')
     redirect(`/login?${AUTH_RETURN_TO_PARAM}=%2F`)
 
-  if (result.status !== 'ok') redirect('/onboarding')
+  if (result.status === 'no-organization') redirect('/onboarding')
+
+  if (result.status === 'unavailable') redirect('/unavailable')
 
   const context = result.context
   // An organization without an active Invoice entitlement is not necessarily

@@ -9,8 +9,8 @@ import { generateId, normalizeSlug } from '@/platform/ids'
 import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
+import { ensureFinanceWorkspaceReady } from '@/services/finance-provisioning-readiness'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
-import { ensureFinanceProvisioningDelivered } from '@/workers/finance-provisioning-dispatch'
 import {
   assignMemberApps,
   linkMembershipRole,
@@ -1179,7 +1179,7 @@ async function provisionOrgSubscription(
   })
 
   // Activating an app with an embedded finance dependency is exactly what
-  // opens its Billing workspace, so the reconcile runs here — the outbox event
+  // opens its Billing workspace, so the readiness helper runs here — the outbox event
   // it enqueues is what creates the tenant. Without this an org that just
   // subscribed to a finance-dependent app (876 Invoice) never gets a tenant,
   // and every list in that app answers `billing/tenant-not-found` forever with
@@ -1189,32 +1189,13 @@ async function provisionOrgSubscription(
   // delayed by another org's backlog. Failure surfaces rather than being
   // swallowed: a subscription whose workspace was never opened is not a
   // successful provision, and reporting it as one is what hid this for so long.
-  const financeResult = await reconcileFinanceConnections(
+  await ensureFinanceWorkspaceReady(
     { repository: createFinanceProvisioningRepository() },
     {
       organizationId: orgId,
       appId: app.id,
-      strictSourceAppId: app.id,
-      limit: null,
     }
   )
-
-  if (financeResult.eventIds.length > 0) {
-    try {
-      await ensureFinanceProvisioningDelivered(financeResult.eventIds)
-    } catch (error) {
-      log.error(
-        {
-          org_id: orgId,
-          app_id: app.id,
-          err: error,
-          event_ids: financeResult.eventIds,
-        },
-        'organizations.finance_ensure_failed'
-      )
-      throw error
-    }
-  }
 
   return serializeSubscription(row)
 }

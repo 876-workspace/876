@@ -299,15 +299,34 @@ export async function enqueueFinanceConnectionEvent(
     connectionAggregateId
   )
 
+  const isStrictTarget =
+    options.strict ||
+    (Boolean(options.strictSourceAppId) &&
+      options.strictSourceAppId === locked.appId)
+
   if (!profile) {
-    const isStrictTarget =
-      options.strict ||
-      (Boolean(options.strictSourceAppId) &&
-        options.strictSourceAppId === locked.appId)
     if (isStrictTarget) {
       throw new AppHttpError({
         code: 'provisioning/application-profile-missing',
         message: `Published provisioning profile is missing for application ${locked.appId}.`,
+        httpStatus: 500,
+      })
+    }
+  } else if (isStrictTarget) {
+    if (profile.financeDependency === 'none') {
+      throw new AppHttpError({
+        code: 'provisioning/finance-dependency-missing',
+        message: `Application ${locked.appId} requires foreground finance provisioning but its published profile declares no finance dependency.`,
+        httpStatus: 500,
+      })
+    }
+    if (
+      profile.financeDependency === 'embedded' &&
+      profile.financeScopes.length === 0
+    ) {
+      throw new AppHttpError({
+        code: 'provisioning/finance-scopes-missing',
+        message: `Application ${locked.appId} declares embedded finance without scopes.`,
         httpStatus: 500,
       })
     }

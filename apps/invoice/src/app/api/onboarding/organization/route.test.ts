@@ -5,7 +5,7 @@ const { mockGetAuthSession, mockGetPlatformClient, mockPlatform } = vi.hoisted(
     const platform = {
       memberships: { listRouting: vi.fn() },
       organizations: { create: vi.fn() },
-      subscriptions: { create: vi.fn() },
+      subscriptions: { create: vi.fn(), retrieve: vi.fn() },
     }
     return {
       mockPlatform: platform,
@@ -69,6 +69,10 @@ beforeEach(() => {
     data: { id: 'org_7pQ2', name: 'Acme Trading Ltd' },
     error: null,
   })
+  mockPlatform.subscriptions.retrieve.mockResolvedValue({
+    data: null,
+    error: null,
+  })
   mockPlatform.subscriptions.create.mockResolvedValue({
     data: { id: 'sub_9xZ1', status: 'active' },
     error: null,
@@ -77,7 +81,7 @@ beforeEach(() => {
 
 describe('POST /api/onboarding/organization', () => {
   describe('happy path', () => {
-    it('creates the organization and activates the Invoice subscription', async () => {
+    it('creates the organization and activates the Invoice subscription when not already provisioned', async () => {
       const response = await POST(createRequest({ name: 'Acme Trading Ltd' }))
 
       expect(response.status).toBe(200)
@@ -93,11 +97,43 @@ describe('POST /api/onboarding/organization', () => {
         ownerUserId: 'user_2kL9mN4q',
         name: 'Acme Trading Ltd',
       })
+      expect(mockPlatform.subscriptions.retrieve).toHaveBeenCalledWith({
+        organizationId: 'org_7pQ2',
+        appSlug: '876-invoice',
+      })
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
         'org_7pQ2',
         { appSlug: '876-invoice' }
       )
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('creates the organization and reuses default bootstrap subscription without duplicate creation', async () => {
+      mockPlatform.subscriptions.retrieve.mockResolvedValue({
+        data: { id: 'sub_default', status: 'active' },
+        error: null,
+      })
+
+      const response = await POST(createRequest({ name: 'Acme Trading Ltd' }))
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toEqual({
+        data: {
+          object: 'onboarding_completion',
+          organization_id: 'org_7pQ2',
+          access_status: 'active',
+        },
+        error: null,
+      })
+      expect(mockPlatform.organizations.create).toHaveBeenCalledWith({
+        ownerUserId: 'user_2kL9mN4q',
+        name: 'Acme Trading Ltd',
+      })
+      expect(mockPlatform.subscriptions.retrieve).toHaveBeenCalledWith({
+        organizationId: 'org_7pQ2',
+        appSlug: '876-invoice',
+      })
+      expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
     })
 
     it('trims the submitted organization name', async () => {
@@ -118,10 +154,30 @@ describe('POST /api/onboarding/organization', () => {
 
       expect(response.status).toBe(200)
       expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
+      expect(mockPlatform.subscriptions.retrieve).toHaveBeenCalledWith({
+        organizationId: 'org_existing',
+        appSlug: '876-invoice',
+      })
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
         'org_existing',
         { appSlug: '876-invoice' }
       )
+    })
+
+    it('completes immediately if existing organization already has active Invoice subscription', async () => {
+      mockPlatform.memberships.listRouting.mockResolvedValue(
+        membershipsFor('org_existing')
+      )
+      mockPlatform.subscriptions.retrieve.mockResolvedValue({
+        data: { id: 'sub_already_active', status: 'active' },
+        error: null,
+      })
+
+      const response = await POST(createRequest({}))
+
+      expect(response.status).toBe(200)
+      expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
+      expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
     })
 
     it('reuses an existing organization instead of creating a second one', async () => {
@@ -235,7 +291,7 @@ describe('POST /api/onboarding/organization', () => {
   })
 
   describe('error handling', () => {
-    it('returns 500 when memberships cannot be resolved', async () => {
+    it('returns 503 when memberships cannot be resolved', async () => {
       mockPlatform.memberships.listRouting.mockResolvedValue({
         data: null,
         error: { code: 'platform/unreachable', message: 'Unreachable.' },
@@ -243,7 +299,7 @@ describe('POST /api/onboarding/organization', () => {
 
       const response = await POST(createRequest({ name: 'Acme Trading Ltd' }))
 
-      expect(response.status).toBe(500)
+      expect(response.status).toBe(503)
       expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
     })
 
@@ -274,7 +330,51 @@ describe('POST /api/onboarding/organization', () => {
       expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
     })
 
-    it('returns 502 when the subscription cannot be activated', async () => {
+    it('returns 503 with informative message when finance workspace is unavailable', async () => {
+      mockPlatform.subscriptions.create.mockResolvedValue({
+        data: null,
+        error: {
+          code: 'provisioning/finance-workspace-unavailable',
+          message: 'Billing unavailable.',
+        },
+      })
+
+      const response = await POST(createRequest({ name: 'Acme Trading Ltd' }))
+
+      expect(response.status).toBe(503)
+      await expect(response.json()).resolves.toEqual({
+        data: null,
+        error: {
+          code: 'provisioning/finance-workspace-unavailable',
+          message:
+            'Your organization was created, but Invoice could not finish connecting to Billing. Try again.',
+        },
+      })
+    })
+
+    it('returns 503 when provisioning configuration is missing', async () => {
+      mockPlatform.subscriptions.create.mockResolvedValue({
+        data: null,
+        error: {
+          code: 'provisioning/finance-dependency-missing',
+          message: 'Profile declares no finance dependency.',
+        },
+      })
+
+      const response = await POST(createRequest({ name: 'Acme Trading Ltd' }))
+
+      expect(response.status).toBe(503)
+      await expect(response.json()).resolves.toEqual({
+        data: null,
+        error: {
+          code: 'provisioning/finance-dependency-missing',
+          message:
+            '876 Invoice is temporarily unavailable because its provisioning configuration is incomplete.',
+        },
+      })
+    })
+
+    it('returns 502 when the subscription fails with other errors', async () => {
       mockPlatform.subscriptions.create.mockResolvedValue({
         data: null,
         error: { code: 'subscription/failed', message: 'Failed.' },

@@ -137,10 +137,10 @@ describe('AppLayout entitlement routing', () => {
       expect(mockRedirect).toHaveBeenCalledTimes(1)
     })
 
-    it('routes an unavailable platform lookup to onboarding', async () => {
+    it('routes an unavailable platform lookup to unavailable page', async () => {
       const target = await redirectTargetOf({ status: 'unavailable' })
 
-      expect(target).toBe('/onboarding')
+      expect(target).toBe('/unavailable')
       expect(mockRedirect).toHaveBeenCalledTimes(1)
     })
 

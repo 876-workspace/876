@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
+import * as Sentry from '@sentry/nextjs'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
@@ -26,17 +27,47 @@ const PROVISIONING_ROLES = new Set(['owner', 'admin'])
 const CONFLICT_CODES = new Set([
   'organization/slug-taken',
   'organization/already-exists',
+  'organization/duplicate-slug',
 ])
+
+function mapSubscriptionError(error: { code: string; message?: string }) {
+  if (error.code === 'provisioning/finance-workspace-unavailable') {
+    return {
+      status: 503,
+      code: error.code,
+      message:
+        'Your organization was created, but Invoice could not finish connecting to Billing. Try again.',
+    }
+  }
+
+  if (
+    error.code === 'provisioning/application-profile-missing' ||
+    error.code === 'provisioning/finance-dependency-missing' ||
+    error.code === 'provisioning/finance-scopes-missing'
+  ) {
+    return {
+      status: 503,
+      code: error.code,
+      message:
+        '876 Invoice is temporarily unavailable because its provisioning configuration is incomplete.',
+    }
+  }
+
+  return {
+    status: 502,
+    code: error.code,
+    message: error.message || 'Failed to activate 876 Invoice.',
+  }
+}
 
 /**
  * Creates the signed-in account's organization when it has none, then
- * activates the `876-invoice` subscription for it.
+ * ensures the `876-invoice` subscription and its finance workspace are active.
  *
  * An organization that already exists — including one already using 876
- * Billing — takes the second half only: it keeps its records and simply gains
- * Invoice. The Billing finance workspace is never touched here; the
- * provisioning manifest's `finance_connection.ensure` event opens the existing
- * workspace with Invoice's scopes attached.
+ * Billing — takes the activation path only: it keeps its records and gains
+ * Invoice. The Billing finance workspace is prepared with Invoice's scopes
+ * attached.
  */
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()
@@ -56,8 +87,25 @@ export async function POST(request: NextRequest) {
     userId: session.user.id,
     status: 'active',
   })
-  if (memberships.error)
-    return apiJson({ error: 'Failed to verify workspace.' }, { status: 500 })
+  if (memberships.error) {
+    Sentry.captureMessage('Invoice onboarding: routing memberships failed', {
+      level: 'error',
+      tags: {
+        category: 'platform_client',
+        phase: 'invoice_onboarding',
+        dependency: '876_api',
+      },
+      extra: {
+        call: 'memberships.listRouting',
+        errorCode: memberships.error.code ?? null,
+        userId: session.user.id,
+      },
+    })
+    return apiJson(
+      { error: 'We could not reach 876 to verify your account.' },
+      { status: 503 }
+    )
+  }
 
   const existing = memberships.data.data.find(
     (membership) =>
@@ -92,14 +140,47 @@ export async function POST(request: NextRequest) {
     organizationId = organization.data.id
   }
 
-  const subscription = await platform.subscriptions.create(organizationId, {
+  // Check if Invoice is already active/provisioned (either from default org
+  // bootstrap or a previous activation attempt).
+  const existingSub = await platform.subscriptions.retrieve({
+    organizationId,
     appSlug: INVOICE_APP_SLUG,
   })
-  if (subscription.error)
-    return apiJson(
-      { error: 'Failed to activate 876 Invoice.' },
-      { status: 502, code: subscription.error.code }
-    )
+
+  const isSubActive =
+    !existingSub.error &&
+    existingSub.data &&
+    (existingSub.data.status === 'active' ||
+      existingSub.data.status === 'trialing')
+
+  if (!isSubActive) {
+    const subscription = await platform.subscriptions.create(organizationId, {
+      appSlug: INVOICE_APP_SLUG,
+    })
+    if (subscription.error) {
+      const mapped = mapSubscriptionError(subscription.error)
+      Sentry.captureMessage(
+        'Invoice onboarding: subscription activation failed',
+        {
+          level: 'error',
+          tags: {
+            category: 'platform_client',
+            phase: 'invoice_onboarding',
+            app: '876-invoice',
+          },
+          extra: {
+            errorCode: subscription.error.code,
+            organizationId,
+            userId: session.user.id,
+          },
+        }
+      )
+      return apiJson(
+        { error: mapped.message },
+        { status: mapped.status, code: mapped.code }
+      )
+    }
+  }
 
   return apiJson({
     data: {
