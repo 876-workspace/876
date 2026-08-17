@@ -1,6 +1,6 @@
 // Pure transport layer — no business logic.
-// Authorizes the session, attaches the caller's OAuth access token and acting
-// organization, then forwards the request to the Billing data plane.
+// Authorizes the Invoice user session, then authenticates the server-to-server
+// Billing hop as the 876 Invoice product app.
 // See .claude/rules/api-access.md.
 import { proxy876BillingRequest } from '@876/billing/proxy'
 import { headers } from 'next/headers'
@@ -31,7 +31,7 @@ function integrationPath(
 
 async function proxy(request: Request, context: Context): Promise<Response> {
   const session = await getAuthSession()
-  if (!isSignedSession(session) || !session.accessToken)
+  if (!isSignedSession(session))
     return apiError('Billing authentication is required.', { status: 401 })
 
   const organizationId =
@@ -41,6 +41,12 @@ async function proxy(request: Request, context: Context): Promise<Response> {
       status: 400,
     })
 
+  const apiKey = process.env.INVOICE_API_876_KEY?.trim()
+  if (!apiKey)
+    return apiError('Invoice Billing integration is not configured.', {
+      status: 503,
+    })
+
   const requestId = (await headers()).get('x-request-id') ?? undefined
   const { path } = await context.params
   return proxy876BillingRequest(
@@ -48,7 +54,7 @@ async function proxy(request: Request, context: Context): Promise<Response> {
     integrationPath(path, organizationId),
     {
       baseUrl: process.env.BILLING_API_URL,
-      accessToken: session.accessToken,
+      apiKey,
       organizationId,
       requestId,
     }
