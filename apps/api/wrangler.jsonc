@@ -39,6 +39,11 @@
     "IS_PRODUCTION": "true",
     "LOG_LEVEL": "info",
     "PORT": "4000",
+    // The Billing data plane. Without this the finance-provisioning dispatcher
+    // resolves an empty URL and silently reports `configured: false`, leaving
+    // every `finance_connection.ensure` event pending forever — which is what
+    // left organizations with subscriptions but no Billing workspace.
+    "BILLING_API_URL": "https://876-billing-api.1876.workers.dev",
     // Twilio ships inert. Every channel is enabled one at a time, in production,
     // by editing this block — so each activation is a reviewed diff rather than a
     // console click nobody can find later. Credentials are secrets, never vars:

@@ -10,6 +10,7 @@ import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
+import { dispatchFinanceProvisioningOnce } from '@/workers/finance-provisioning-dispatch'
 import {
   assignMemberApps,
   linkMembershipRole,
@@ -1176,6 +1177,31 @@ async function provisionOrgSubscription(
     priceId,
     now: BigInt(nowUnixSeconds()),
   })
+
+  // Activating an app with an embedded finance dependency is exactly what
+  // opens its Billing workspace, so the reconcile runs here — the outbox event
+  // it enqueues is what creates the tenant. Without this an org that just
+  // subscribed to a finance-dependent app (876 Invoice) never gets a tenant,
+  // and every list in that app answers `billing/tenant-not-found` forever with
+  // nothing in the system that would ever fix it.
+  //
+  // Scoped to this organization and app so provisioning one app cannot be
+  // delayed by another org's backlog. Failure surfaces rather than being
+  // swallowed: a subscription whose workspace was never opened is not a
+  // successful provision, and reporting it as one is what hid this for so long.
+  await reconcileFinanceConnections(
+    { repository: createFinanceProvisioningRepository() },
+    { organizationId: orgId, appId: app.id, limit: null }
+  )
+
+  // Deliver the event now rather than waiting for the poll. Activation is a
+  // foreground request that ends in a redirect into the app, so the workspace
+  // must exist by the time the user lands — otherwise the first screen they see
+  // reports `billing/tenant-not-found`. The outbox is still the durability
+  // mechanism: this is an immediate first attempt, and anything that fails here
+  // stays pending for the worker to retry.
+  await dispatchFinanceProvisioningOnce()
+
   return serializeSubscription(row)
 }
 
