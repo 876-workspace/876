@@ -120,11 +120,75 @@ export type TenantProvisioningInput = {
   defaultLanguage?: string
   /**
    * The 876 account to seat as the workspace owner. Omitted by the finance
-   * provisioning path, which is delivered by a machine and knows no user; an
-   * organization owner still resolves owner access from the `owner` role.
+   * provisioning path, which is delivered by a machine and knows no user.
    */
   ownerUserId?: string | null
   now: number
+}
+
+/**
+ * Seats the explicit Billing owner when an existing workspace is upgraded from
+ * shared-finance-only usage to the full 876 Billing product.
+ *
+ * Finance provisioning knows the organization but not the acting user, so it
+ * intentionally creates no Member row. A later Billing setup supplies that
+ * user and must not return early merely because the shared tenant already
+ * exists. The system-role migration/backfill normally guarantees `owner`, but
+ * creating it here as well keeps this path self-healing for legacy bare tenants.
+ */
+async function ensureOwnerMembership(
+  tx: TenantProvisioningClient,
+  tenantId: string,
+  userId: string,
+  now: number
+) {
+  let ownerRole = await tx.role.findFirst({
+    where: { tenantId, slug: 'owner' },
+    select: { id: true },
+  })
+  if (!ownerRole) {
+    ownerRole = await tx.role.create({
+      data: {
+        id: generateId('Role'),
+        tenantId,
+        slug: 'owner',
+        name: 'Owner',
+        description:
+          'Unrestricted workspace access, including roles and member grants.',
+        permissions: OWNER_PERMISSIONS,
+        isSystem: true,
+        isDefault: false,
+        createdAt: now,
+        updatedAt: now,
+      },
+      select: { id: true },
+    })
+  }
+
+  const member = await tx.member.findFirst({
+    where: { tenantId, userId },
+    select: { id: true, roleId: true, status: true },
+  })
+  if (!member) {
+    await tx.member.create({
+      data: {
+        id: generateId('Member'),
+        tenantId,
+        userId,
+        roleId: ownerRole.id,
+        status: 'ACTIVE',
+        createdAt: now,
+        updatedAt: now,
+      },
+    })
+    return
+  }
+
+  if (member.roleId !== ownerRole.id || member.status !== 'ACTIVE')
+    await tx.member.update({
+      where: { id: member.id },
+      data: { roleId: ownerRole.id, status: 'ACTIVE', updatedAt: now },
+    })
 }
 
 /**
@@ -137,7 +201,9 @@ export type TenantProvisioningInput = {
  * finance path wrote a bare tenant with no roles, leaving a workspace nobody
  * could administer.
  *
- * Idempotent on `organizationId`: an existing workspace is returned untouched.
+ * Idempotent on `organizationId`. If Billing setup supplies an owner for an
+ * existing finance-created workspace, the owner grant is repaired before the
+ * existing workspace is returned.
  */
 export async function provisionTenantWorkspace(
   tx: TenantProvisioningClient,
@@ -146,12 +212,15 @@ export async function provisionTenantWorkspace(
   const existing = await tx.tenant.findUnique({
     where: { organizationId: input.organizationId },
   })
-  if (existing)
+  if (existing) {
+    if (input.ownerUserId)
+      await ensureOwnerMembership(tx, existing.id, input.ownerUserId, input.now)
     return {
       id: existing.id,
       created: false,
       provisioningVersion: existing.provisioningVersion,
     }
+  }
 
   const tenantId = generateId('Tenant')
   const tenant = await tx.tenant.create({
