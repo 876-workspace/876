@@ -46,7 +46,8 @@ export const RESOURCE_MANIFEST = {
   },
   sessions: {
     owner: 'core',
-    meaning: 'authenticated sessions; self-scoped at root and platform-wide under admin',
+    meaning:
+      'authenticated sessions; self-scoped under me and platform-wide under admin',
   },
   oauth: { owner: 'core', meaning: 'OAuth authorization-server flows' },
   oauthGrants: {
