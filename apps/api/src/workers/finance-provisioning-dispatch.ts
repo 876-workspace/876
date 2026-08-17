@@ -59,8 +59,14 @@ async function postWithTimeout(
   }
 }
 
+export type FinanceDeliveryRow = {
+  id: string
+  attemptCount: number
+  payload: Record<string, unknown>
+}
+
 async function deliverClaimedRows(
-  rows: Array<{ id: string; attemptCount: number; payload: Record<string, unknown> }>,
+  rows: FinanceDeliveryRow[],
   billingUrl: string,
   internalKey: string
 ): Promise<{ delivered: number; failed: number }> {
@@ -145,44 +151,18 @@ export async function dispatchFinanceProvisioningOnce(): Promise<FinanceDispatch
     return { claimed: 0, delivered: 0, failed: 0, configured: true }
   }
 
-  const snapshots = claimedRows.map((row) => ({
+  const snapshots: FinanceDeliveryRow[] = claimedRows.map((row) => ({
     id: row.id,
     attemptCount: row.attemptCount,
     payload: financeEventPayload(row as never),
   }))
 
-  const { delivered, failed } = await deliverClaimedRows(snapshots, billingUrl, internalKey)
+  const { delivered, failed } = await deliverClaimedRows(
+    snapshots,
+    billingUrl,
+    internalKey
+  )
 
-  return { claimed: snapshots.length, delivered, failed, configured: true }
-}
-
-export async function dispatchFinanceProvisioningForEventIds(
-  eventIds: string[]
-): Promise<FinanceDispatchSummary> {
-  if (eventIds.length === 0) {
-    return { claimed: 0, delivered: 0, failed: 0, configured: true }
-  }
-  const settings = getSettings()
-  const billingUrl = settings.billing.url.trim().replace(/\/+$/, '')
-  const internalKey = settings.billing.internalKey.trim()
-  if (!billingUrl || !internalKey) {
-    logger.error(
-      { has_billing_url: Boolean(billingUrl), has_internal_key: Boolean(internalKey) },
-      'finance_provisioning.not_configured'
-    )
-    return { claimed: 0, delivered: 0, failed: 0, configured: false }
-  }
-  const now = nowUnixSeconds()
-  const claimedRows = await claimFinanceProvisioningEventsByIds(now, eventIds)
-  if (claimedRows.length === 0) {
-    return { claimed: 0, delivered: 0, failed: 0, configured: true }
-  }
-  const snapshots = claimedRows.map((row) => ({
-    id: row.id,
-    attemptCount: row.attemptCount,
-    payload: financeEventPayload(row as never),
-  }))
-  const { delivered, failed } = await deliverClaimedRows(snapshots, billingUrl, internalKey)
   return { claimed: snapshots.length, delivered, failed, configured: true }
 }
 
@@ -198,31 +178,32 @@ export async function ensureFinanceProvisioningDelivered(
   const internalKey = settings.billing.internalKey.trim()
   if (!billingUrl || !internalKey) {
     logger.error(
-      { has_billing_url: Boolean(billingUrl), has_internal_key: Boolean(internalKey), event_ids: uniqueIds },
+      {
+        has_billing_url: Boolean(billingUrl),
+        has_internal_key: Boolean(internalKey),
+        event_ids: uniqueIds,
+      },
       'finance_provisioning.targeted_not_ready'
     )
     throw new AppHttpError({
       code: 'provisioning/finance-workspace-unavailable',
-      message: 'The finance workspace could not be prepared. Billing is not configured.',
+      message:
+        'The finance workspace could not be prepared. Billing is not configured.',
       httpStatus: 503,
     })
   }
   logger.info({ event_ids: uniqueIds }, 'finance_provisioning.targeted_started')
   const now = nowUnixSeconds()
   const claimedRows = await claimFinanceProvisioningEventsByIds(now, uniqueIds)
-  const claimedIds = new Set(claimedRows.map((r) => r.id))
-  const snapshots = claimedRows.map((row) => ({
+  const snapshots: FinanceDeliveryRow[] = claimedRows.map((row) => ({
     id: row.id,
     attemptCount: row.attemptCount,
     payload: financeEventPayload(row as never),
-    organizationId: (row as unknown as { organizationId: string }).organizationId,
-    sourceAppId: (row as unknown as { sourceAppId: string }).sourceAppId,
-    runId: (row as unknown as { runId: string | null }).runId,
   }))
   let delivered = 0
   let failed = 0
   if (snapshots.length > 0) {
-    const result = await deliverClaimedRows(snapshots as never, billingUrl, internalKey)
+    const result = await deliverClaimedRows(snapshots, billingUrl, internalKey)
     delivered = result.delivered
     failed = result.failed
   }
@@ -230,10 +211,14 @@ export async function ensureFinanceProvisioningDelivered(
   if (states.length !== uniqueIds.length) {
     const found = new Set(states.map((s) => s.id))
     const missing = uniqueIds.filter((id) => !found.has(id))
-    logger.error({ missing_ids: missing, event_ids: uniqueIds }, 'finance_provisioning.targeted_not_ready')
+    logger.error(
+      { missing_ids: missing, event_ids: uniqueIds },
+      'finance_provisioning.targeted_not_ready'
+    )
     throw new AppHttpError({
       code: 'provisioning/finance-workspace-unavailable',
-      message: 'The finance workspace could not be prepared. Missing provisioning event.',
+      message:
+        'The finance workspace could not be prepared. Missing provisioning event.',
       httpStatus: 503,
     })
   }
@@ -273,7 +258,13 @@ export async function ensureFinanceProvisioningDelivered(
       'finance_provisioning.targeted_delivered'
     )
   }
-  return { claimed: claimedRows.length, delivered, failed, configured: true, ensured: states.length }
+  return {
+    claimed: claimedRows.length,
+    delivered,
+    failed,
+    configured: true,
+    ensured: states.length,
+  }
 }
 
 function sleepWithAbort(ms: number, signal?: AbortSignal): Promise<void> {
@@ -315,7 +306,7 @@ export async function runFinanceProvisioningWorker(options?: {
 
 export function startFinanceProvisioningWorker(options?: {
   signal?: AbortSignal
-}): { stop: () => Promise<void>; done: Promise<void> } {
+}): { stop: () => Promise<void> } {
   const controller = new AbortController()
   const externalSignal = options?.signal
   if (externalSignal) {
@@ -327,7 +318,9 @@ export function startFinanceProvisioningWorker(options?: {
   }
 
   const done = runFinanceProvisioningWorker({ signal: controller.signal })
-  void done.catch((err) => logger.error({ err }, 'finance_provisioning.worker_failed'))
+  void done.catch((err) =>
+    logger.error({ err }, 'finance_provisioning.worker_failed')
+  )
 
   return {
     stop: async () => {
@@ -336,6 +329,5 @@ export function startFinanceProvisioningWorker(options?: {
         await done
       } catch {}
     },
-    done,
   }
 }

@@ -41,14 +41,13 @@ vi.mock('../finance-provisioning.repository', () => ({
   createFinanceProvisioningRepository,
 }))
 
-const { dispatchFinanceProvisioningOnce, dispatchFinanceProvisioningForEventIds, ensureFinanceProvisioningDelivered } = vi.hoisted(() => ({
-  dispatchFinanceProvisioningOnce: vi.fn(),
-  dispatchFinanceProvisioningForEventIds: vi.fn(),
-  ensureFinanceProvisioningDelivered: vi.fn(),
-}))
+const { dispatchFinanceProvisioningOnce, ensureFinanceProvisioningDelivered } =
+  vi.hoisted(() => ({
+    dispatchFinanceProvisioningOnce: vi.fn(),
+    ensureFinanceProvisioningDelivered: vi.fn(),
+  }))
 vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   dispatchFinanceProvisioningOnce,
-  dispatchFinanceProvisioningForEventIds,
   ensureFinanceProvisioningDelivered,
 }))
 
@@ -172,7 +171,7 @@ describe('provisionOrgApps', () => {
     expect(reconcileFinanceConnections).toHaveBeenCalledTimes(1)
     expect(reconcileFinanceConnections).toHaveBeenCalledWith(
       { repository: { marker: 'repo' } },
-      { organizationId: ORG, limit: null }
+      { organizationId: ORG, strictSourceAppId: null, limit: null }
     )
   })
 
@@ -180,7 +179,9 @@ describe('provisionOrgApps', () => {
     await provisionOrgApps(ORG)
 
     expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledTimes(1)
-    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith(['fpe_new_1'])
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith([
+      'fpe_new_1',
+    ])
   })
 
   it('delivers the new organization even when a large backlog exists', async () => {
@@ -191,7 +192,9 @@ describe('provisionOrgApps', () => {
       eventIds: ['fpe_new_org'],
     })
     await provisionOrgApps(ORG)
-    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith(['fpe_new_org'])
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith([
+      'fpe_new_org',
+    ])
     expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
   })
 
@@ -215,7 +218,7 @@ describe('provisionOrgApps', () => {
     expect(provisioned).toEqual([])
     expect(reconcileFinanceConnections).toHaveBeenCalledWith(
       { repository: { marker: 'repo' } },
-      { organizationId: ORG, limit: null }
+      { organizationId: ORG, strictSourceAppId: null, limit: null }
     )
   })
 

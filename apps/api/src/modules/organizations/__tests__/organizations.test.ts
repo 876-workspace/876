@@ -209,15 +209,28 @@ vi.mock('@/services/billing-customer-sync.repository', () => ({
 }))
 
 vi.mock('@/services/finance-provisioning', () => ({
-  reconcileFinanceConnections: vi
-    .fn()
-    .mockResolvedValue({ examined: 0, changed: 0, nextCursor: null, eventIds: [] }),
+  reconcileFinanceConnections: vi.fn().mockResolvedValue({
+    examined: 0,
+    changed: 0,
+    nextCursor: null,
+    eventIds: [],
+  }),
 }))
 
 vi.mock('@/workers/finance-provisioning-dispatch', () => ({
-  dispatchFinanceProvisioningForEventIds: vi.fn().mockResolvedValue({ claimed: 0, delivered: 0, failed: 0, configured: true }),
-  ensureFinanceProvisioningDelivered: vi.fn().mockResolvedValue({ claimed: 0, delivered: 0, failed: 0, configured: true, ensured: 0 }),
-  dispatchFinanceProvisioningOnce: vi.fn().mockResolvedValue({ claimed: 0, delivered: 0, failed: 0, configured: true }),
+  ensureFinanceProvisioningDelivered: vi.fn().mockResolvedValue({
+    claimed: 0,
+    delivered: 0,
+    failed: 0,
+    configured: true,
+    ensured: 0,
+  }),
+  dispatchFinanceProvisioningOnce: vi.fn().mockResolvedValue({
+    claimed: 0,
+    delivered: 0,
+    failed: 0,
+    configured: true,
+  }),
 }))
 
 vi.mock('@/providers/workos/adapter', () => ({

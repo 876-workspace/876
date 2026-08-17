@@ -117,6 +117,16 @@ export async function upsertUserFeature(data: {
   })
 }
 
+export type AuthMembershipRow = {
+  id: string
+  organizationId: string
+  userId: string
+  workosMembershipId: string | null
+  role: string
+  roleId: string | null
+  status: string
+}
+
 /** Whether the user belongs to any organization. */
 export async function hasAnyMembership(userId: string): Promise<boolean> {
   const membership = await prisma.membership.findFirst({
@@ -124,6 +134,41 @@ export async function hasAnyMembership(userId: string): Promise<boolean> {
     select: { id: true },
   })
   return membership !== null
+}
+
+export function findFirstMembership(
+  userId: string
+): Promise<AuthMembershipRow | null> {
+  return prisma.membership.findFirst({
+    where: { userId, deletedAt: null },
+    select: {
+      id: true,
+      organizationId: true,
+      userId: true,
+      workosMembershipId: true,
+      role: true,
+      roleId: true,
+      status: true,
+    },
+  })
+}
+
+export function findMembership(
+  organizationId: string,
+  userId: string
+): Promise<AuthMembershipRow | null> {
+  return prisma.membership.findFirst({
+    where: { organizationId, userId, deletedAt: null },
+    select: {
+      id: true,
+      organizationId: true,
+      userId: true,
+      workosMembershipId: true,
+      role: true,
+      roleId: true,
+      status: true,
+    },
+  })
 }
 
 export async function createMembership(data: {
@@ -140,9 +185,46 @@ export async function createMembership(data: {
   await prisma.membership.create({ data })
 }
 
+export async function updateMembership(
+  id: string,
+  data: {
+    status?: string
+    roleId?: string | null
+    updatedAt: bigint
+  }
+): Promise<void> {
+  await prisma.membership.update({
+    where: { id },
+    data,
+  })
+}
+
 export type OrganizationRow = {
   id: string
   slug: string
+}
+
+export type AuthOrganizationRow = {
+  id: string
+  workosOrganizationId: string | null
+  name: string | null
+  slug: string
+  status: string
+}
+
+export function findOrganizationById(
+  id: string
+): Promise<AuthOrganizationRow | null> {
+  return prisma.organization.findFirst({
+    where: { id, deletedAt: null },
+    select: {
+      id: true,
+      workosOrganizationId: true,
+      name: true,
+      slug: true,
+      status: true,
+    },
+  })
 }
 
 export async function createOrganization(data: {

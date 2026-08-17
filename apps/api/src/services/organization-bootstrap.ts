@@ -280,7 +280,8 @@ export async function bootstrapExistingUser(
   } catch (error) {
     const isFinanceUnavailable =
       error instanceof AppHttpError &&
-      (error as AppHttpError).code === 'provisioning/finance-workspace-unavailable'
+      (error as AppHttpError).code ===
+        'provisioning/finance-workspace-unavailable'
     if (isFinanceUnavailable) {
       throw error
     }

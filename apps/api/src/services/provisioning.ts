@@ -204,7 +204,11 @@ export async function provisionOrgApps(
   ])
   const result = await reconcileFinanceConnections(
     { repository: createFinanceProvisioningRepository() },
-    { organizationId, limit: null }
+    {
+      organizationId,
+      strictSourceAppId: options.sourceAppId ?? null,
+      limit: null,
+    }
   )
   if (result.eventIds.length > 0) {
     const { ensureFinanceProvisioningDelivered } =

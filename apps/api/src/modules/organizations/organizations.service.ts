@@ -1191,7 +1191,12 @@ async function provisionOrgSubscription(
   // successful provision, and reporting it as one is what hid this for so long.
   const financeResult = await reconcileFinanceConnections(
     { repository: createFinanceProvisioningRepository() },
-    { organizationId: orgId, appId: app.id, limit: null }
+    {
+      organizationId: orgId,
+      appId: app.id,
+      strictSourceAppId: app.id,
+      limit: null,
+    }
   )
 
   if (financeResult.eventIds.length > 0) {
@@ -1199,7 +1204,12 @@ async function provisionOrgSubscription(
       await ensureFinanceProvisioningDelivered(financeResult.eventIds)
     } catch (error) {
       log.error(
-        { org_id: orgId, app_id: app.id, err: error, event_ids: financeResult.eventIds },
+        {
+          org_id: orgId,
+          app_id: app.id,
+          err: error,
+          event_ids: financeResult.eventIds,
+        },
         'organizations.finance_ensure_failed'
       )
       throw error

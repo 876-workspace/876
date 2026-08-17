@@ -262,18 +262,33 @@ export async function claimFinanceProvisioningEventsByIds(
     const rows = await tx.financeProvisioningOutbox.findMany({
       where: { id: { in: claimedIds } },
     })
-    const byId = new Map(rows.map((row) => [row.id, row as FinanceProvisioningOutboxRow]))
-    const ordered = claimedIds.map((id) => byId.get(id)).filter((r): r is FinanceProvisioningOutboxRow => r !== undefined)
-    const runIds = ordered.map((r) => r.runId).filter((v): v is string => v !== null)
+    const byId = new Map(
+      rows.map((row) => [row.id, row as FinanceProvisioningOutboxRow])
+    )
+    const ordered = claimedIds
+      .map((id) => byId.get(id))
+      .filter((r): r is FinanceProvisioningOutboxRow => r !== undefined)
+    const runIds = ordered
+      .map((r) => r.runId)
+      .filter((v): v is string => v !== null)
     if (runIds.length > 0) {
       for (const runId of runIds) {
-        const existing = await tx.provisioningRun.findUnique({ where: { id: runId }, select: { id: true } })
+        const existing = await tx.provisioningRun.findUnique({
+          where: { id: runId },
+          select: { id: true },
+        })
         if (existing) await markProcessing(tx, runId, now)
       }
     }
-    const refreshed = await tx.financeProvisioningOutbox.findMany({ where: { id: { in: claimedIds } } })
-    const refreshedById = new Map(refreshed.map((row) => [row.id, row as FinanceProvisioningOutboxRow]))
-    return claimedIds.map((id) => refreshedById.get(id)).filter((r): r is FinanceProvisioningOutboxRow => r !== undefined)
+    const refreshed = await tx.financeProvisioningOutbox.findMany({
+      where: { id: { in: claimedIds } },
+    })
+    const refreshedById = new Map(
+      refreshed.map((row) => [row.id, row as FinanceProvisioningOutboxRow])
+    )
+    return claimedIds
+      .map((id) => refreshedById.get(id))
+      .filter((r): r is FinanceProvisioningOutboxRow => r !== undefined)
   })
 }
 
