@@ -12,12 +12,12 @@ type TenantRow = { id: string; slug: string; provisioningVersion: number }
  */
 function createTx(existingSlugs: string[] = []) {
   const slugs = new Set(existingSlugs)
-  const created: Record<string, unknown[]> = {
-    tenant: [],
-    tenantCurrency: [],
-    role: [],
-    member: [],
-  }
+  const created: {
+    tenant: unknown[]
+    tenantCurrency: unknown[]
+    role: unknown[]
+    member: unknown[]
+  } = { tenant: [], tenantCurrency: [], role: [], member: [] }
   let byOrganization: TenantRow | null = null
 
   const tx = {
@@ -124,7 +124,30 @@ describe('provisionTenantWorkspace', () => {
             'roles:write',
           ]),
         }),
+        expect.objectContaining({ slug: 'admin', isSystem: true }),
+        expect.objectContaining({ slug: 'viewer', isSystem: true }),
       ])
+    })
+
+    it('withholds role editing from admin and every write from viewer', async () => {
+      const harness = createTx()
+
+      await provisionTenantWorkspace(harness.tx as never, input)
+
+      const roles = harness.created.role as {
+        slug: string
+        permissions: string[]
+      }[]
+      const admin = roles.find((role) => role.slug === 'admin')!
+      const viewer = roles.find((role) => role.slug === 'viewer')!
+
+      expect(admin.permissions).toContain('members:write')
+      expect(admin.permissions).not.toContain('roles:write')
+      expect(viewer.permissions).toContain('billing:access')
+      expect(viewer.permissions).toContain('customers:read')
+      expect(
+        viewer.permissions.filter((permission) => permission.endsWith(':write'))
+      ).toEqual([])
     })
 
     it('seats the owner as a member when an owner account is supplied', async () => {
@@ -135,7 +158,9 @@ describe('provisionTenantWorkspace', () => {
         ownerUserId: 'user_4f2a',
       })
 
-      const role = harness.created.role[0] as { id: string }
+      const role = harness.created.role.find(
+        (candidate) => (candidate as { slug: string }).slug === 'owner'
+      ) as { id: string }
       expect(harness.created.member).toEqual([
         expect.objectContaining({
           userId: 'user_4f2a',
@@ -154,10 +179,139 @@ describe('provisionTenantWorkspace', () => {
         defaultLanguage: 'es',
       })
 
-      expect(harness.created.tenant[0]).toMatchObject({
+      expect(harness.created.tenant[0]!).toMatchObject({
         countryCode: 'US',
         defaultLanguage: 'es',
       })
+    })
+
+    it('defaults countryCode to JM when not provided', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, countryCode: undefined })
+      expect(harness.created.tenant[0]!).toMatchObject({ countryCode: 'JM' })
+    })
+
+    it('defaults countryCode to JM when null', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, countryCode: null })
+      expect(harness.created.tenant[0]!).toMatchObject({ countryCode: 'JM' })
+    })
+
+    it('defaults defaultLanguage to en when not provided', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.tenant[0]!).toMatchObject({ defaultLanguage: 'en' })
+    })
+
+    it('uses provided defaultLanguage', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, defaultLanguage: 'fr' })
+      expect(harness.created.tenant[0]!).toMatchObject({ defaultLanguage: 'fr' })
+    })
+
+    it('creates exactly three system roles', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.role).toHaveLength(3)
+    })
+
+    it('marks all roles as system and non-default', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      for (const role of harness.created.role as Array<{ isSystem: boolean; isDefault: boolean }>) {
+        expect(role.isSystem).toBe(true)
+        expect(role.isDefault).toBe(false)
+      }
+    })
+
+    it('gives owner the most permissions', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      const roles = harness.created.role as Array<{ slug: string; permissions: string[] }>
+      const owner = roles.find((r) => r.slug === 'owner')!
+      const admin = roles.find((r) => r.slug === 'admin')!
+      const viewer = roles.find((r) => r.slug === 'viewer')!
+      expect(owner.permissions.length).toBeGreaterThan(admin.permissions.length)
+      expect(admin.permissions.length).toBeGreaterThan(viewer.permissions.length)
+    })
+
+    it('admin permissions are owner minus roles:write', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      const roles = harness.created.role as Array<{ slug: string; permissions: string[] }>
+      const owner = roles.find((r) => r.slug === 'owner')!
+      const admin = roles.find((r) => r.slug === 'admin')!
+      expect(admin.permissions).not.toContain('roles:write')
+      expect(owner.permissions).toContain('roles:write')
+      expect(admin.permissions.every((p) => owner.permissions.includes(p))).toBe(true)
+    })
+
+    it('viewer has only read permissions plus billing:access', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      const viewer = (harness.created.role as Array<{ slug: string; permissions: string[] }>).find((r) => r.slug === 'viewer')!
+      for (const perm of viewer.permissions) {
+        expect(perm === 'billing:access' || perm.endsWith(':read')).toBe(true)
+      }
+    })
+
+    it('viewer retains billing:access even though it is not a read perm', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      const viewer = (harness.created.role as Array<{ slug: string; permissions: string[] }>).find((r) => r.slug === 'viewer')!
+      expect(viewer.permissions).toContain('billing:access')
+    })
+
+    it('creates tenantCurrency with tenantId matching tenant', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      const tenant = harness.created.tenant[0] as { id: string }
+      const currency = harness.created.tenantCurrency[0] as { tenantId: string }
+      expect(currency.tenantId).toBe(tenant.id)
+    })
+
+    it('creates roles with same tenantId', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      const tenant = harness.created.tenant[0] as { id: string }
+      for (const role of harness.created.role as Array<{ tenantId: string }>) {
+        expect(role.tenantId).toBe(tenant.id)
+      }
+    })
+
+    it('uses provided name verbatim', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, name: 'My Custom Workspace' })
+      expect(harness.created.tenant[0]!).toMatchObject({ name: 'My Custom Workspace' })
+    })
+
+    it('returns provisioningVersion 3 for new workspace', async () => {
+      const harness = createTx()
+      const result = await provisionTenantWorkspace(harness.tx as never, input)
+      expect(result.provisioningVersion).toBe(3)
+    })
+
+    it('creates tenant with now timestamps', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.tenant[0]!).toMatchObject({
+        provisionedAt: input.now,
+        createdAt: input.now,
+        updatedAt: input.now,
+      })
+    })
+
+    it('creates member with ACTIVE status', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, ownerUserId: 'user_owner' })
+      expect(harness.created.member[0]!).toMatchObject({ status: 'ACTIVE' })
+    })
+
+    it('member roleId matches owner role id', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, ownerUserId: 'user_x' })
+      const ownerRole = (harness.created.role as Array<{ slug: string; id: string }>).find((r) => r.slug === 'owner')!
+      expect(harness.created.member[0]!).toMatchObject({ roleId: ownerRole.id })
     })
   })
 
@@ -171,13 +325,32 @@ describe('provisionTenantWorkspace', () => {
       expect(harness.created.member).toEqual([])
     })
 
-    it('still creates the owner role so the organization owner has access', async () => {
+    it('creates no member when ownerUserId is null', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, ownerUserId: null })
+      expect(harness.created.member).toEqual([])
+    })
+
+    it('creates no member when ownerUserId is undefined', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, ownerUserId: undefined })
+      expect(harness.created.member).toEqual([])
+    })
+
+    it('still creates the system roles so the organization has access', async () => {
       const harness = createTx()
 
       await provisionTenantWorkspace(harness.tx as never, input)
 
-      expect(harness.created.role).toHaveLength(1)
-      expect(harness.created.role[0]).toMatchObject({ slug: 'owner' })
+      expect(
+        (harness.created.role as { slug: string }[]).map((role) => role.slug)
+      ).toEqual(['owner', 'admin', 'viewer'])
+    })
+
+    it('does not create member when ownerUserId is empty string', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, ownerUserId: '' })
+      expect(harness.created.member).toEqual([])
     })
   })
 
@@ -188,7 +361,7 @@ describe('provisionTenantWorkspace', () => {
       const result = await provisionTenantWorkspace(harness.tx as never, input)
 
       expect(result.created).toBe(true)
-      expect(harness.created.tenant[0]).toMatchObject({
+      expect(harness.created.tenant[0]!).toMatchObject({
         slug: 'test-org-a605af',
       })
     })
@@ -198,7 +371,7 @@ describe('provisionTenantWorkspace', () => {
 
       await provisionTenantWorkspace(harness.tx as never, input)
 
-      expect(harness.created.tenant[0]).toMatchObject({ slug: 'test-org-2' })
+      expect(harness.created.tenant[0]!).toMatchObject({ slug: 'test-org-2' })
     })
 
     it('never fails provisioning because a deleted organization left its slug behind', async () => {
@@ -211,7 +384,7 @@ describe('provisionTenantWorkspace', () => {
       const result = await provisionTenantWorkspace(harness.tx as never, input)
 
       expect(result.created).toBe(true)
-      expect(harness.created.tenant[0]).toMatchObject({
+      expect(harness.created.tenant[0]!).toMatchObject({
         slug: expect.stringMatching(/^test-org-[0-9a-f]{12}$/),
       })
     })
@@ -225,9 +398,55 @@ describe('provisionTenantWorkspace', () => {
         slug: longSlug,
       })
 
-      expect(harness.created.tenant[0]).toMatchObject({
+      expect(harness.created.tenant[0]!).toMatchObject({
         slug: `${'a'.repeat(60)}-a605af`,
       })
+    })
+
+    it('uses numeric suffix 2 when base plus org suffix taken', async () => {
+      const harness = createTx(['my-org', 'my-org-b605af'])
+      await provisionTenantWorkspace(harness.tx as never, { ...input, slug: 'my-org', organizationId: 'org_xxb605af' })
+      expect(harness.created.tenant[0]!).toMatchObject({ slug: 'my-org-2' })
+    })
+
+    it('uses numeric suffix 26 as last deterministic candidate', async () => {
+      const slugs = ['test-org', 'test-org-a605af', ...Array.from({ length: 24 }, (_, i) => `test-org-${i + 2}`)]
+      const harness = createTx(slugs)
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.tenant[0]!).toMatchObject({ slug: 'test-org-26' })
+    })
+
+    it('falls back to generated id after exhausting deterministic candidates', async () => {
+      const slugs = ['test-org', 'test-org-a605af', ...Array.from({ length: 25 }, (_, i) => `test-org-${i + 2}`)]
+      const harness = createTx(slugs)
+      const result = await provisionTenantWorkspace(harness.tx as never, input)
+      expect((harness.created.tenant[0] as { slug: string }).slug).toMatch(/^test-org-[0-9a-f-]{12,}$/)
+      expect(result.created).toBe(true)
+    })
+
+    it('handles slug with exactly 60 chars without truncation', async () => {
+      const slug60 = 'a'.repeat(60)
+      const harness = createTx([slug60])
+      await provisionTenantWorkspace(harness.tx as never, { ...input, slug: slug60 })
+      expect((harness.created.tenant[0] as { slug: string }).slug).toBe(`${'a'.repeat(60)}-a605af`)
+    })
+
+    it('uses organizationId tail correctly (last 6 chars)', async () => {
+      const harness = createTx(['collision'])
+      await provisionTenantWorkspace(harness.tx as never, { ...input, slug: 'collision', organizationId: 'org_abc123456789' })
+      expect(harness.created.tenant[0]!).toMatchObject({ slug: 'collision-456789' })
+    })
+
+    it('tries numeric suffixes in order 2..26', async () => {
+      const harness = createTx(['test-org', 'test-org-a605af', 'test-org-2', 'test-org-3'])
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.tenant[0]!).toMatchObject({ slug: 'test-org-4' })
+    })
+
+    it('does not collide when requested slug is free', async () => {
+      const harness = createTx(['other-slug'])
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.tenant[0]!).toMatchObject({ slug: 'test-org' })
     })
   })
 
@@ -251,6 +470,61 @@ describe('provisionTenantWorkspace', () => {
       expect(harness.tx.tenantCurrency.create).not.toHaveBeenCalled()
       expect(harness.tx.role.create).not.toHaveBeenCalled()
       expect(harness.tx.member.create).not.toHaveBeenCalled()
+    })
+
+    it('preserves existing provisioningVersion', async () => {
+      const harness = createTx()
+      harness.setExistingForOrganization({ id: 'ten_99', slug: 'test-org', provisioningVersion: 5 })
+      const result = await provisionTenantWorkspace(harness.tx as never, input)
+      expect(result.provisioningVersion).toBe(5)
+      expect(result.id).toBe('ten_99')
+      expect(result.created).toBe(false)
+    })
+
+    it('returns existing id when organization already has workspace', async () => {
+      const harness = createTx()
+      harness.setExistingForOrganization({ id: 'ten_already', slug: 'other-slug', provisioningVersion: 3 })
+      const result = await provisionTenantWorkspace(harness.tx as never, { ...input, slug: 'different-slug' })
+      expect(result.id).toBe('ten_already')
+      expect(result.created).toBe(false)
+    })
+
+    it('does not check slug collisions when returning existing', async () => {
+      const harness = createTx(['test-org'])
+      harness.setExistingForOrganization({ id: 'ten_existing', slug: 'test-org', provisioningVersion: 3 })
+      await provisionTenantWorkspace(harness.tx as never, input)
+      // findUnique for slug should not be called when org exists — only organizationId lookup
+      expect(harness.tx.tenant.findUnique).toHaveBeenCalledTimes(1)
+      expect(harness.tx.tenant.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { organizationId: input.organizationId } }))
+    })
+
+    it('is idempotent even with different slug input', async () => {
+      const harness = createTx()
+      harness.setExistingForOrganization({ id: 'ten_same', slug: 'original-slug', provisioningVersion: 3 })
+      const result = await provisionTenantWorkspace(harness.tx as never, { ...input, slug: 'new-slug', name: 'New Name' })
+      expect(result.created).toBe(false)
+      expect(harness.created.tenant).toEqual([])
+    })
+  })
+
+  describe('currency and defaults', () => {
+    it('creates tenantCurrency with correct currencyCode', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, defaultCurrency: 'USD' })
+      expect(harness.created.tenantCurrency[0]!).toMatchObject({ currencyCode: 'USD' })
+    })
+
+    it('tenant and tenantCurrency share same currency', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, { ...input, defaultCurrency: 'EUR' })
+      expect(harness.created.tenant[0]!).toMatchObject({ defaultCurrency: 'EUR' })
+      expect(harness.created.tenantCurrency[0]!).toMatchObject({ currencyCode: 'EUR' })
+    })
+
+    it('handles JMD as default currency', async () => {
+      const harness = createTx()
+      await provisionTenantWorkspace(harness.tx as never, input)
+      expect(harness.created.tenant[0]!).toMatchObject({ defaultCurrency: 'JMD' })
     })
   })
 })
