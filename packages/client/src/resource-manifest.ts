@@ -40,7 +40,14 @@ export interface ResourceOwnership {
  */
 export const RESOURCE_MANIFEST = {
   // Core identity / platform (owned by @876/sdk + @876/admin)
-  auth: { owner: 'core', meaning: 'login, register, session' },
+  auth: {
+    owner: 'core',
+    meaning: 'authentication flows: login, registration, recovery, OTP and OAuth',
+  },
+  sessions: {
+    owner: 'core',
+    meaning: 'authenticated sessions; self-scoped at root and platform-wide under admin',
+  },
   oauth: { owner: 'core', meaning: 'OAuth authorization-server flows' },
   oauthGrants: {
     owner: 'core',
