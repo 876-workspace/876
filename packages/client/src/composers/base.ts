@@ -2,18 +2,55 @@ import type { Admin876Client } from '@876/admin'
 import type { SDK876Client } from '@876/sdk'
 import { withAdmin, type WithAdmin } from '../internal/with-admin'
 
+type SessionSurface = {
+  retrieve: SDK876Client['auth']['getSession']
+  list: SDK876Client['auth']['me']['listSessions']
+  revoke: SDK876Client['auth']['me']['revokeSession']
+}
+
+type AdminSessionSurface = WithAdmin<SessionSurface, Admin876Client['sessions']>
+
+function createSessionSurface(platform: SDK876Client): SessionSurface {
+  return {
+    retrieve: platform.auth.getSession,
+    list: platform.auth.me.listSessions,
+    revoke: platform.auth.me.revokeSession,
+  }
+}
+
+function createProvisioningSurface(
+  provisioning: Admin876Client['provisioning']
+) {
+  return {
+    ...provisioning,
+    published: {
+      retrieve: provisioning.retrievePublished,
+    },
+    catalog: {
+      retrieve: provisioning.retrieveCatalog,
+    },
+    draft: {
+      update: provisioning.replaceDraft,
+    },
+    runs: {
+      ...provisioning.runs,
+      claim: provisioning.runs.claimApplication,
+      complete: provisioning.runs.completeApplication,
+    },
+  }
+}
+
 interface AdminNamespaces {
   auditEvents: Admin876Client['auditEvents']
   apiKeys: Admin876Client['apiKeys']
   modules: Admin876Client['modules']
-  provisioning: Admin876Client['provisioning']
+  provisioning: ReturnType<typeof createProvisioningSurface>
   onboarding: Admin876Client['onboarding']
   addresses: Admin876Client['addresses']
   reservedUsernames: Admin876Client['reservedUsernames']
   billingAccounts: Admin876Client['billingAccounts']
   authAttempts: Admin876Client['authAttempts']
   devices: Admin876Client['devices']
-  sessions: Admin876Client['sessions']
   appFeatures: Admin876Client['appFeatures']
   appSubscriptions: Admin876Client['appSubscriptions']
   organizationFeatures: Admin876Client['organizationFeatures']
@@ -26,6 +63,7 @@ interface AdminNamespaces {
 /** The platform-only core surface, without admin projections. */
 export type CoreSurfaceBase = {
   auth: SDK876Client['auth']
+  sessions: SessionSurface
   oauth: SDK876Client['oauth']
   oauthGrants: SDK876Client['oauthGrants']
   auditEvents: SDK876Client['auditEvents']
@@ -81,6 +119,7 @@ export type CoreSurfaceAdmin = Omit<
     Admin876Client['subscriptions']
   >
   roles: WithAdmin<SDK876Client['roles'], Admin876Client['roles']>
+  sessions: AdminSessionSurface
 } & AdminNamespaces
 
 export function createCoreSurface(args: {
@@ -103,6 +142,7 @@ export function createCoreSurface(args: {
 function createCoreSurfaceBase(platform: SDK876Client): CoreSurfaceBase {
   return {
     auth: platform.auth,
+    sessions: createSessionSurface(platform),
     oauth: platform.oauth,
     oauthGrants: platform.oauthGrants,
     auditEvents: platform.auditEvents,
@@ -140,17 +180,17 @@ function createCoreSurfaceAdmin(
     features: withAdmin(platform.features, admin.features),
     entitlements: withAdmin(platform.subscriptions, admin.subscriptions),
     roles: withAdmin(platform.roles, admin.roles),
+    sessions: withAdmin(createSessionSurface(platform), admin.sessions),
     auditEvents: admin.auditEvents,
     apiKeys: admin.apiKeys,
     modules: admin.modules,
-    provisioning: admin.provisioning,
+    provisioning: createProvisioningSurface(admin.provisioning),
     onboarding: admin.onboarding,
     addresses: admin.addresses,
     reservedUsernames: admin.reservedUsernames,
     billingAccounts: admin.billingAccounts,
     authAttempts: admin.authAttempts,
     devices: admin.devices,
-    sessions: admin.sessions,
     appFeatures: admin.appFeatures,
     appSubscriptions: admin.appSubscriptions,
     organizationFeatures: admin.organizationFeatures,
