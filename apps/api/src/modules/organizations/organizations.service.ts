@@ -21,6 +21,7 @@ import {
   enqueueCustomerEnsureForOrganization,
 } from '@/services/billing-customer-sync'
 import { createBillingCustomerSyncRepository } from '@/services/billing-customer-sync.repository'
+import { applyBillingWorkspaceLifecycle } from '@/services/billing-workspace-lifecycle'
 import {
   deleteProviderOrganization,
   ensureProviderMembership,
@@ -581,6 +582,17 @@ export async function deleteOrganization(
   // than rolling back the delete.
   await archiveBillingCustomerForOrg(org)
 
+  // Suspend the organization's Billing workspace too. The customer archive
+  // above removes the org from the *platform* workspace's customer list; it
+  // says nothing about the workspace the org owns, which would otherwise stay
+  // ACTIVE and keep serving an organization that no longer exists.
+  await applyBillingWorkspaceLifecycle({
+    organizationId,
+    action: 'archive',
+    deletedBy,
+    reason,
+  })
+
   log.info(
     {
       organization_id: organizationId,
@@ -681,6 +693,12 @@ export async function purgeOrganization(
   // still exists for the snapshot to resolve. Purge is destructive, so there is
   // no reconcile pass to fall back on for this row afterwards.
   await archiveBillingCustomerForOrg(org)
+  await applyBillingWorkspaceLifecycle({
+    organizationId,
+    action: 'archive',
+    deletedBy,
+    reason: 'organization purged',
+  })
 
   await repository.purgeOrganization(organizationId)
   // Purge is the destructive action: drop the WorkOS organization too, so the
@@ -738,6 +756,13 @@ export async function restoreOrganization(
   // Re-emit customer.ensure with the cleared tombstone → ACTIVE, un-archiving the
   // Billing customer. Best-effort; the reconcile sweep self-heals a hiccup.
   await ensureBillingCustomerForOrg(restored)
+
+  // Reopen the workspace the Delete suspended. Only a workspace this path
+  // tombstoned is reopened — one suspended for another reason stays shut.
+  await applyBillingWorkspaceLifecycle({
+    organizationId,
+    action: 'restore',
+  })
 
   log.info(
     {
