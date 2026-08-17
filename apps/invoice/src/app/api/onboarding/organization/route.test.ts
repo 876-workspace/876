@@ -69,10 +69,6 @@ beforeEach(() => {
     data: { id: 'org_7pQ2', name: 'Acme Trading Ltd' },
     error: null,
   })
-  mockPlatform.subscriptions.retrieve.mockResolvedValue({
-    data: null,
-    error: null,
-  })
   mockPlatform.subscriptions.create.mockResolvedValue({
     data: { id: 'sub_9xZ1', status: 'active' },
     error: null,
@@ -81,7 +77,7 @@ beforeEach(() => {
 
 describe('POST /api/onboarding/organization', () => {
   describe('happy path', () => {
-    it('creates the organization and activates the Invoice subscription when not already provisioned', async () => {
+    it('creates the organization and activates the Invoice subscription', async () => {
       const response = await POST(createRequest({ name: 'Acme Trading Ltd' }))
 
       expect(response.status).toBe(200)
@@ -97,19 +93,21 @@ describe('POST /api/onboarding/organization', () => {
         ownerUserId: 'user_2kL9mN4q',
         name: 'Acme Trading Ltd',
       })
-      expect(mockPlatform.subscriptions.retrieve).toHaveBeenCalledWith({
-        organizationId: 'org_7pQ2',
-        appSlug: '876-invoice',
-      })
+      // Activation is asserted to require embedded finance so a misconfigured
+      // Invoice profile fails closed instead of shipping without a workspace.
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
         'org_7pQ2',
-        { appSlug: '876-invoice' }
+        { appSlug: '876-invoice', requireFinance: 'embedded' }
       )
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledTimes(1)
     })
 
-    it('creates the organization and reuses default bootstrap subscription without duplicate creation', async () => {
-      mockPlatform.subscriptions.retrieve.mockResolvedValue({
+    it('re-runs activation even when a default bootstrap subscription is already active (self-heal)', async () => {
+      // Regression: an active subscription used to short-circuit activation, so
+      // an org whose Billing tenant was never opened stayed stuck in
+      // `billing/tenant-not-found`. Activation must run every time — the API is
+      // idempotent and re-runs finance readiness, repairing the missing tenant.
+      mockPlatform.subscriptions.create.mockResolvedValue({
         data: { id: 'sub_default', status: 'active' },
         error: null,
       })
@@ -125,15 +123,12 @@ describe('POST /api/onboarding/organization', () => {
         },
         error: null,
       })
-      expect(mockPlatform.organizations.create).toHaveBeenCalledWith({
-        ownerUserId: 'user_2kL9mN4q',
-        name: 'Acme Trading Ltd',
-      })
-      expect(mockPlatform.subscriptions.retrieve).toHaveBeenCalledWith({
-        organizationId: 'org_7pQ2',
-        appSlug: '876-invoice',
-      })
-      expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
+      expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
+        'org_7pQ2',
+        { appSlug: '876-invoice', requireFinance: 'embedded' }
+      )
+      // The bypass is gone: the retrieve-then-skip path must not exist.
+      expect(mockPlatform.subscriptions.retrieve).not.toHaveBeenCalled()
     })
 
     it('trims the submitted organization name', async () => {
@@ -154,21 +149,17 @@ describe('POST /api/onboarding/organization', () => {
 
       expect(response.status).toBe(200)
       expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
-      expect(mockPlatform.subscriptions.retrieve).toHaveBeenCalledWith({
-        organizationId: 'org_existing',
-        appSlug: '876-invoice',
-      })
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
         'org_existing',
-        { appSlug: '876-invoice' }
+        { appSlug: '876-invoice', requireFinance: 'embedded' }
       )
     })
 
-    it('completes immediately if existing organization already has active Invoice subscription', async () => {
+    it('re-runs activation for an existing org whose Invoice subscription is already active (no bypass)', async () => {
       mockPlatform.memberships.listRouting.mockResolvedValue(
         membershipsFor('org_existing')
       )
-      mockPlatform.subscriptions.retrieve.mockResolvedValue({
+      mockPlatform.subscriptions.create.mockResolvedValue({
         data: { id: 'sub_already_active', status: 'active' },
         error: null,
       })
@@ -177,7 +168,12 @@ describe('POST /api/onboarding/organization', () => {
 
       expect(response.status).toBe(200)
       expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
-      expect(mockPlatform.subscriptions.create).not.toHaveBeenCalled()
+      // An already-active subscription must NOT short-circuit readiness.
+      expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
+        'org_existing',
+        { appSlug: '876-invoice', requireFinance: 'embedded' }
+      )
+      expect(mockPlatform.subscriptions.retrieve).not.toHaveBeenCalled()
     })
 
     it('reuses an existing organization instead of creating a second one', async () => {
@@ -191,7 +187,7 @@ describe('POST /api/onboarding/organization', () => {
       expect(mockPlatform.organizations.create).not.toHaveBeenCalled()
       expect(mockPlatform.subscriptions.create).toHaveBeenCalledWith(
         'org_existing',
-        { appSlug: '876-invoice' }
+        { appSlug: '876-invoice', requireFinance: 'embedded' }
       )
     })
   })

@@ -140,46 +140,44 @@ export async function POST(request: NextRequest) {
     organizationId = organization.data.id
   }
 
-  // Check if Invoice is already active/provisioned (either from default org
-  // bootstrap or a previous activation attempt).
-  const existingSub = await platform.subscriptions.retrieve({
-    organizationId,
+  // Activation always runs, even when the Invoice subscription is already
+  // active (default-org bootstrap, or a prior attempt). An active entitlement
+  // is *not* proof the Billing workspace exists — an org can carry an active
+  // `876-invoice` subscription with no Billing tenant, which is exactly the
+  // `billing/tenant-not-found` state Invoice was stuck in. The API activation
+  // is idempotent: it reuses the existing subscription and re-runs finance
+  // readiness, so provisioning one more time repairs the missing workspace
+  // rather than being skipped as "already done".
+  //
+  // `requireFinance: 'embedded'` fails closed if Invoice's published profile is
+  // ever misconfigured to declare no finance dependency, so a broken profile
+  // cannot silently ship Invoice without a Billing workspace.
+  const subscription = await platform.subscriptions.create(organizationId, {
     appSlug: INVOICE_APP_SLUG,
+    requireFinance: 'embedded',
   })
-
-  const isSubActive =
-    !existingSub.error &&
-    existingSub.data &&
-    (existingSub.data.status === 'active' ||
-      existingSub.data.status === 'trialing')
-
-  if (!isSubActive) {
-    const subscription = await platform.subscriptions.create(organizationId, {
-      appSlug: INVOICE_APP_SLUG,
-    })
-    if (subscription.error) {
-      const mapped = mapSubscriptionError(subscription.error)
-      Sentry.captureMessage(
-        'Invoice onboarding: subscription activation failed',
-        {
-          level: 'error',
-          tags: {
-            category: 'platform_client',
-            phase: 'invoice_onboarding',
-            app: '876-invoice',
-          },
-          extra: {
-            errorCode: subscription.error.code,
-            organizationId,
-            userId: session.user.id,
-          },
-        }
-      )
-      return apiJson(
-        { error: mapped.message },
-        { status: mapped.status, code: mapped.code }
-      )
-    }
+  if (subscription.error) {
+    const mapped = mapSubscriptionError(subscription.error)
+    Sentry.captureMessage(
+      'Invoice onboarding: subscription activation failed',
+      {
+        level: 'error',
+        tags: {
+          category: 'platform_client',
+          phase: 'invoice_onboarding',
+          app: '876-invoice',
+        },
+        extra: {
+          errorCode: subscription.error.code,
+          organizationId,
+          userId: session.user.id,
+        },
+      }
+    )
+    return apiJson(
+      { error: mapped.message },
+      { status: mapped.status, code: mapped.code }
+    )
   }
 
   return apiJson({
