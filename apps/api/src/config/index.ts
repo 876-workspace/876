@@ -147,6 +147,7 @@ const envSchema = z.object({
   BILLING_RUN_INTERVAL_SECONDS: int(3600),
   FINANCE_PROVISIONING_POLL_SECONDS: int(30, 5, 300),
   FINANCE_PROVISIONING_BATCH_SIZE: int(25, 1, 100),
+  FINANCE_PROVISIONING_DISABLE: booleanish(false),
 
   TWILIO_MODE: z
     .enum(['disabled', 'fake', 'live'])
@@ -278,6 +279,7 @@ function build(env: NodeJS.ProcessEnv) {
       runIntervalSeconds: e.BILLING_RUN_INTERVAL_SECONDS,
       financeProvisioningPollSeconds: e.FINANCE_PROVISIONING_POLL_SECONDS,
       financeProvisioningBatchSize: e.FINANCE_PROVISIONING_BATCH_SIZE,
+      financeProvisioningDisabled: e.FINANCE_PROVISIONING_DISABLE,
     },
 
     twilio: {

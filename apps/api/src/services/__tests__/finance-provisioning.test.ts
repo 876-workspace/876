@@ -333,7 +333,7 @@ describe('enqueueFinanceConnectionEvent', () => {
       { repository: repo },
       sub as never
     )
-    expect(result).toEqual(run)
+    expect((result as { id: string }).id).toBe('fpe_existing')
     expect(repo.createRunForEvent).toHaveBeenCalledOnce()
     expect(repo.updateOutboxEventRunId).toHaveBeenCalledWith(
       'fpe_existing',

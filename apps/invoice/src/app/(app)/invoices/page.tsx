@@ -110,6 +110,11 @@ async function InvoicesTableData({ searchParams }: Props) {
       )
     }
     if (isUnreachable) {
+      Sentry.captureMessage('Invoice invoices list: billing unreachable', {
+        level: 'warning',
+        tags: { category: 'billing_client' },
+        extra: { call: 'invoices.list', errorCode: result.error.code, organizationId: context.orgId },
+      })
       return (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <p className="text-sm font-medium">Billing is unreachable</p>

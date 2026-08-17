@@ -216,6 +216,7 @@ vi.mock('@/services/finance-provisioning', () => ({
 
 vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   dispatchFinanceProvisioningForEventIds: vi.fn().mockResolvedValue({ claimed: 0, delivered: 0, failed: 0, configured: true }),
+  ensureFinanceProvisioningDelivered: vi.fn().mockResolvedValue({ claimed: 0, delivered: 0, failed: 0, configured: true, ensured: 0 }),
   dispatchFinanceProvisioningOnce: vi.fn().mockResolvedValue({ claimed: 0, delivered: 0, failed: 0, configured: true }),
 }))
 

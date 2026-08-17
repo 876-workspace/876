@@ -41,13 +41,15 @@ vi.mock('../finance-provisioning.repository', () => ({
   createFinanceProvisioningRepository,
 }))
 
-const { dispatchFinanceProvisioningOnce, dispatchFinanceProvisioningForEventIds } = vi.hoisted(() => ({
+const { dispatchFinanceProvisioningOnce, dispatchFinanceProvisioningForEventIds, ensureFinanceProvisioningDelivered } = vi.hoisted(() => ({
   dispatchFinanceProvisioningOnce: vi.fn(),
   dispatchFinanceProvisioningForEventIds: vi.fn(),
+  ensureFinanceProvisioningDelivered: vi.fn(),
 }))
 vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   dispatchFinanceProvisioningOnce,
   dispatchFinanceProvisioningForEventIds,
+  ensureFinanceProvisioningDelivered,
 }))
 
 const {
@@ -87,11 +89,12 @@ beforeEach(() => {
     nextCursor: null,
     eventIds: ['fpe_new_1'],
   })
-  dispatchFinanceProvisioningForEventIds.mockResolvedValue({
+  ensureFinanceProvisioningDelivered.mockResolvedValue({
     claimed: 1,
     delivered: 1,
     failed: 0,
     configured: true,
+    ensured: 1,
   })
   prisma.subscription.create.mockResolvedValue({})
   prisma.subscription.update.mockResolvedValue({})
@@ -176,8 +179,8 @@ describe('provisionOrgApps', () => {
   it('delivers the finance event inline instead of waiting for the poller', async () => {
     await provisionOrgApps(ORG)
 
-    expect(dispatchFinanceProvisioningForEventIds).toHaveBeenCalledTimes(1)
-    expect(dispatchFinanceProvisioningForEventIds).toHaveBeenCalledWith(['fpe_new_1'])
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledTimes(1)
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith(['fpe_new_1'])
   })
 
   it('delivers the new organization even when a large backlog exists', async () => {
@@ -188,7 +191,7 @@ describe('provisionOrgApps', () => {
       eventIds: ['fpe_new_org'],
     })
     await provisionOrgApps(ORG)
-    expect(dispatchFinanceProvisioningForEventIds).toHaveBeenCalledWith(['fpe_new_org'])
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith(['fpe_new_org'])
     expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
   })
 
@@ -200,31 +203,36 @@ describe('provisionOrgApps', () => {
       eventIds: [],
     })
     await provisionOrgApps(ORG)
-    expect(dispatchFinanceProvisioningForEventIds).not.toHaveBeenCalled()
+    expect(ensureFinanceProvisioningDelivered).not.toHaveBeenCalled()
     expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
   })
 
-  it('does not reconcile when every app was already provisioned', async () => {
+  it('re-runs finance reconcile even when every app was already provisioned', async () => {
     prisma.subscription.findFirst.mockResolvedValue({ id: 'sub_existing' })
 
     const provisioned = await provisionOrgApps(ORG)
 
     expect(provisioned).toEqual([])
-    expect(reconcileFinanceConnections).not.toHaveBeenCalled()
+    expect(reconcileFinanceConnections).toHaveBeenCalledWith(
+      { repository: { marker: 'repo' } },
+      { organizationId: ORG, limit: null }
+    )
   })
 
-  it('still returns the provisioned apps when the reconcile fails', async () => {
-    // The account and org already exist by this point, so a finance hiccup must
-    // not roll a successful signup back onto the user.
+  it('fails provisioning when the finance workspace cannot be delivered', async () => {
     reconcileFinanceConnections.mockRejectedValue(new Error('billing down'))
 
-    const provisioned = await provisionOrgApps(ORG)
+    await expect(provisionOrgApps(ORG)).rejects.toThrow('billing down')
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
+  })
 
-    expect(provisioned).toEqual([
-      'app_876-enterprise',
-      'app_876-billing',
-      'app_876-invoice',
-    ])
+  it('fails provisioning when finance ensure fails even though subscriptions were created', async () => {
+    ensureFinanceProvisioningDelivered.mockRejectedValue(
+      new Error('provisioning/finance-workspace-unavailable')
+    )
+    await expect(provisionOrgApps(ORG)).rejects.toThrow(
+      'provisioning/finance-workspace-unavailable'
+    )
     expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
   })
 

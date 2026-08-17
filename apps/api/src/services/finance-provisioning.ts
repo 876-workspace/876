@@ -424,7 +424,7 @@ export async function enqueueFinanceConnectionEvent(
     })
   ) {
     if (latest.runId == null) {
-      return attachRun(deps.repository, latest, {
+      await attachRun(deps.repository, latest, {
         subscriptionId: entitlementReference,
         applicationRevision: profile,
         trigger,

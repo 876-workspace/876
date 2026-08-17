@@ -13,16 +13,21 @@ configureLogging({
 const log = getLogger('server')
 
 const app = createApp()
-let financeWorkerStop: (() => void) | null = null
+let financeWorkerStop: (() => Promise<void>) | null = null
+let financeWorkerDone: Promise<void> | null = null
 
 const server = app.listen(settings.port, '0.0.0.0', () => {
   log.info(
     { port: settings.port, environment: settings.environment },
     'server_started'
   )
-  if (process.env.FINANCE_PROVISIONING_DISABLE !== '1') {
+  const disabled =
+    settings.billing.financeProvisioningDisabled ||
+    process.env.FINANCE_PROVISIONING_DISABLE === '1'
+  if (!disabled) {
     const worker = startFinanceProvisioningWorker()
     financeWorkerStop = worker.stop
+    financeWorkerDone = worker.done
     log.info('finance_worker.started')
   }
 })
@@ -42,10 +47,15 @@ async function shutdown(signal: string): Promise<void> {
   log.info({ signal }, 'server_shutdown_started')
   if (financeWorkerStop) {
     try {
-      financeWorkerStop()
+      await financeWorkerStop()
     } catch (e) {
       log.error({ err: e }, 'finance_worker.stop_failed')
     }
+  }
+  if (financeWorkerDone) {
+    try {
+      await financeWorkerDone
+    } catch {}
   }
 
   // Force exit if a hung connection keeps the process alive past the window

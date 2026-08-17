@@ -277,6 +277,17 @@ export async function claimFinanceProvisioningEventsByIds(
   })
 }
 
+export async function getFinanceProvisioningEventsByIds(
+  eventIds: string[]
+): Promise<FinanceProvisioningOutboxRow[]> {
+  if (eventIds.length === 0) return []
+  const ids = [...new Set(eventIds)]
+  const rows = await prisma.financeProvisioningOutbox.findMany({
+    where: { id: { in: ids } },
+  })
+  return rows as FinanceProvisioningOutboxRow[]
+}
+
 export async function markFinanceProvisioningDelivered(
   eventId: string,
   now: number

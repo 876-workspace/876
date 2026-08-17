@@ -278,6 +278,12 @@ export async function bootstrapExistingUser(
 
     return organization
   } catch (error) {
+    const isFinanceUnavailable =
+      error instanceof AppHttpError &&
+      (error as AppHttpError).code === 'provisioning/finance-workspace-unavailable'
+    if (isFinanceUnavailable) {
+      throw error
+    }
     if (workosOrganizationId !== null) {
       try {
         await deps.provider.deleteOrganization(workosOrganizationId)

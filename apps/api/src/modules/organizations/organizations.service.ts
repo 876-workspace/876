@@ -10,7 +10,7 @@ import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
-import { dispatchFinanceProvisioningForEventIds } from '@/workers/finance-provisioning-dispatch'
+import { ensureFinanceProvisioningDelivered } from '@/workers/finance-provisioning-dispatch'
 import {
   assignMemberApps,
   linkMembershipRole,
@@ -1195,7 +1195,15 @@ async function provisionOrgSubscription(
   )
 
   if (financeResult.eventIds.length > 0) {
-    await dispatchFinanceProvisioningForEventIds(financeResult.eventIds)
+    try {
+      await ensureFinanceProvisioningDelivered(financeResult.eventIds)
+    } catch (error) {
+      log.error(
+        { org_id: orgId, app_id: app.id, err: error, event_ids: financeResult.eventIds },
+        'organizations.finance_ensure_failed'
+      )
+      throw error
+    }
   }
 
   return serializeSubscription(row)
