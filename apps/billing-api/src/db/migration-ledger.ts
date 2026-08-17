@@ -44,17 +44,6 @@ export function decideLedgerRepair(options: {
   presentSampleTables: readonly string[]
   publicTableCount: number
 }): LedgerDecision {
-  const present = new Set(options.presentSampleTables)
-  const missingTables = billingTableSample.filter(
-    (table) => !present.has(table)
-  )
-  if (missingTables.length || options.publicTableCount < 70) {
-    return {
-      action: 'refuse',
-      reason: `database is not the complete Billing schema (missing: ${missingTables.join(', ') || 'table-count invariant'})`,
-    }
-  }
-
   const local = new Set(options.localMigrations)
   const allowedForeign = new Set<string>(foreignMigrationRows)
   const foreign = options.databaseMigrations.filter(
@@ -74,6 +63,23 @@ export function decideLedgerRepair(options: {
     return {
       action: 'refuse',
       reason: `foreign migrations still in progress: ${inProgress.map((row) => row.migrationName).join(', ')}`,
+    }
+  }
+
+  // No legacy/foreign ledger rows means adoption has already completed (or the
+  // database is new). Ordinary pending Billing migrations are intentionally not
+  // a repair condition: the deployment's following `prisma migrate deploy`
+  // step owns applying their DDL.
+  if (foreign.length === 0) return { action: 'skip' }
+
+  const present = new Set(options.presentSampleTables)
+  const missingTables = billingTableSample.filter(
+    (table) => !present.has(table)
+  )
+  if (missingTables.length || options.publicTableCount < 70) {
+    return {
+      action: 'refuse',
+      reason: `database is not the complete Billing schema (missing: ${missingTables.join(', ') || 'table-count invariant'})`,
     }
   }
 
