@@ -29,9 +29,11 @@ export function create876Client({
   return {
     auth: platform.auth,
     sessions: {
-      retrieve: platform.auth.getSession,
-      list: platform.auth.me.listSessions,
-      revoke: platform.auth.me.revokeSession,
+      me: {
+        retrieve: platform.auth.getSession,
+        list: platform.auth.me.listSessions,
+        revoke: platform.auth.me.revokeSession,
+      },
     },
     oauth: platform.oauth,
     auditEvents: platform.auditEvents,
