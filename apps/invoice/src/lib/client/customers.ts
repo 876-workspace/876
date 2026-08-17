@@ -18,6 +18,7 @@ export const customers = {
   create(params: CreateCustomerParams) {
     return request<{ id: string }>('/api/v1/customers', {
       method: 'POST',
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
       body: JSON.stringify(params),
     })
   },
