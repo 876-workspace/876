@@ -2,7 +2,8 @@ import 'server-only'
 
 export interface BillingProxyOptions {
   baseUrl?: string
-  accessToken: string
+  accessToken?: string
+  apiKey?: string
   organizationId: string
   requestId?: string
   fetch?: typeof fetch
@@ -34,6 +35,24 @@ export async function proxy876BillingRequest(
     )
   }
 
+  const credentials: Record<string, string>[] = []
+  if (options.accessToken)
+    credentials.push({ Authorization: `Bearer ${options.accessToken}` })
+  if (options.apiKey) credentials.push({ 'x-876-api-key': options.apiKey })
+  const credential = credentials.length === 1 ? credentials[0] : null
+  if (!credential) {
+    return Response.json(
+      {
+        data: null,
+        error: {
+          code: 'billing/proxy-not-configured',
+          message: 'Configure exactly one Billing proxy credential.',
+        },
+      },
+      { status: 500 }
+    )
+  }
+
   const baseUrl = (options.baseUrl?.trim() || 'http://localhost:4004').replace(
     /\/$/,
     ''
@@ -44,7 +63,7 @@ export async function proxy876BillingRequest(
     baseUrl
   )
   const headers = new Headers({
-    Authorization: `Bearer ${options.accessToken}`,
+    ...credential,
     'x-billing-organization-id': options.organizationId,
   })
   for (const name of FORWARDED_REQUEST_HEADERS) {

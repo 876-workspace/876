@@ -17,10 +17,10 @@ import {
 } from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
 
-import { get876Client } from '@/lib/876'
+import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
-import type { CustomerStatus } from '@876/billing'
+import type { BillingCustomerStatus } from '@876/billing/integration'
 import { CustomersTable } from './_components/customers-table'
 
 export const metadata = {
@@ -87,8 +87,7 @@ async function CustomersTableData({ searchParams }: Props) {
   const selectedStatus =
     status === 'active' || status === 'archived' ? status : 'all'
 
-  // Map UI status (lowercase) to API status (UPPERCASE), or undefined for 'all'
-  const apiStatus: CustomerStatus | undefined =
+  const apiStatus: BillingCustomerStatus | undefined =
     selectedStatus === 'active'
       ? 'ACTIVE'
       : selectedStatus === 'archived'
@@ -97,8 +96,11 @@ async function CustomersTableData({ searchParams }: Props) {
 
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
-  const $876 = await get876Client(context.orgId)
-  const result = await $876.customers.list({ status: apiStatus })
+
+  const billing = await getInvoiceBillingIntegration()
+  const result = await billing.customers.list(context.orgId, {
+    status: apiStatus,
+  })
   if (result.error) {
     redirectIfSignedOut(result.error.code, '/customers')
 
@@ -108,7 +110,7 @@ async function CustomersTableData({ searchParams }: Props) {
     if (isTenantNotFound) {
       Sentry.captureMessage('Invoice customers list: tenant not found invariant', {
         level: 'error',
-        tags: { category: 'billing_client' },
+        tags: { category: 'billing_integration' },
         extra: {
           call: 'customers.list',
           errorCode: result.error.code,
@@ -118,41 +120,57 @@ async function CustomersTableData({ searchParams }: Props) {
       return (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <p className="text-sm font-medium">Billing workspace missing</p>
-          <p className="text-muted-foreground mt-1 text-sm">{result.error.message}</p>
-          <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {result.error.message}
+          </p>
+          <p className="text-muted-foreground mt-2 font-mono text-xs">
+            {result.error.code}
+          </p>
         </div>
       )
     }
     if (isUnreachable) {
       Sentry.captureMessage('Invoice customers list: billing unreachable', {
         level: 'warning',
-        tags: { category: 'billing_client' },
-        extra: { call: 'customers.list', errorCode: result.error.code, organizationId: context.orgId },
-      })
-      return (
-        <div className="rounded-lg border border-dashed p-10 text-center">
-          <p className="text-sm font-medium">Billing is unreachable</p>
-          <p className="text-muted-foreground mt-1 text-sm">Please retry shortly. If this persists, contact support.</p>
-          <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
-        </div>
-      )
-    }
-
-      Sentry.captureMessage('Invoice customers list failed', {
-        level: 'error',
-        tags: { category: 'billing_client' },
+        tags: { category: 'billing_integration' },
         extra: {
           call: 'customers.list',
           errorCode: result.error.code,
           organizationId: context.orgId,
         },
       })
+      return (
+        <div className="rounded-lg border border-dashed p-10 text-center">
+          <p className="text-sm font-medium">Billing is unreachable</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Please retry shortly. If this persists, contact support.
+          </p>
+          <p className="text-muted-foreground mt-2 font-mono text-xs">
+            {result.error.code}
+          </p>
+        </div>
+      )
+    }
+
+    Sentry.captureMessage('Invoice customers list failed', {
+      level: 'error',
+      tags: { category: 'billing_integration' },
+      extra: {
+        call: 'customers.list',
+        errorCode: result.error.code,
+        organizationId: context.orgId,
+      },
+    })
 
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
         <p className="text-sm font-medium">Customers are unavailable right now</p>
-        <p className="text-muted-foreground mt-1 text-sm">{result.error.message}</p>
-        <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {result.error.message}
+        </p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">
+          {result.error.code}
+        </p>
       </div>
     )
   }

@@ -6,7 +6,7 @@ import { Badge } from '@876/ui/badge'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 
-import { get876Client } from '@/lib/876'
+import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/format'
 import { CustomerActions } from './_components/customer-actions'
@@ -25,8 +25,8 @@ export default async function CustomerDetailPage({ params }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const $876 = await get876Client(context.orgId)
-  const result = await $876.customers.retrieve(customerId)
+  const billing = await getInvoiceBillingIntegration()
+  const result = await billing.customers.retrieve(context.orgId, customerId)
 
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
@@ -88,7 +88,6 @@ export default async function CustomerDetailPage({ params }: Props) {
       </PageHeader>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        {/* Contact details */}
         <div className="876-card divide-y">
           <div className="px-5 py-3">
             <span className="876-eyebrow">Contact</span>
@@ -102,7 +101,6 @@ export default async function CustomerDetailPage({ params }: Props) {
         </div>
 
         <div className="space-y-6">
-          {/* Primary contact */}
           {primary ? (
             <div className="876-card divide-y">
               <div className="px-5 py-3">
@@ -119,7 +117,6 @@ export default async function CustomerDetailPage({ params }: Props) {
             </div>
           ) : null}
 
-          {/* Financials */}
           <div className="876-card divide-y">
             <div className="px-5 py-3">
               <span className="876-eyebrow">Financials</span>

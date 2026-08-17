@@ -4,12 +4,14 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
   activeCurrencyExists,
+  archiveTenantRowForOrganization,
+  restoreTenantRowForOrganization,
   findTenantAuthorizationByOrganizationId,
   findTenantRow,
   listTenantRowsByOrganizationIds,
   provisionTenantRow,
 } from './tenants.repository'
-import type { TenantCreateBody } from './tenants.schemas'
+import type { TenantCreateBody, TenantLifecycleBody } from './tenants.schemas'
 
 export async function tenantAuthorizationByOrganizationId(
   organizationId: string
@@ -54,6 +56,39 @@ export async function provisionTenant(
         httpStatus: 409,
       })
     throw error
+  }
+}
+
+/**
+ * Applies an organization's deletion or restoration to its Billing workspace.
+ *
+ * Called by the identity API when an organization is deleted, purged, or
+ * restored, so a workspace cannot outlive the organization it belongs to.
+ * Idempotent, and an organization that never had a workspace is a no-op rather
+ * than an error — the caller must not have to know whether one exists.
+ */
+export async function applyTenantLifecycle(
+  organizationId: string,
+  body: TenantLifecycleBody
+) {
+  const now = nowUnixSeconds()
+  const tenant =
+    body.action === 'archive'
+      ? await archiveTenantRowForOrganization({
+          organizationId,
+          deletedBy: body.deletedBy ?? null,
+          reason: body.reason ?? null,
+          now,
+        })
+      : await restoreTenantRowForOrganization({ organizationId, now })
+
+  return {
+    object: 'billing_tenant_lifecycle' as const,
+    organizationId,
+    action: body.action,
+    tenantId: tenant?.id ?? null,
+    status: tenant?.status ?? null,
+    deletedAt: tenant?.deletedAt ?? null,
   }
 }
 
