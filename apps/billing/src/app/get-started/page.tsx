@@ -7,7 +7,7 @@ import { PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getContext } from '@/lib/auth/billing-context'
-import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { requireValidSession } from '@/lib/auth/guards'
 
 import { CreateOrganization } from './_components/create-organization'
 import { SetupButton } from './_components/setup-button'
@@ -48,9 +48,10 @@ function GetStartedCard({
 }
 
 export default async function GetStartedPage() {
-  const session = await getAuthSession()
-  if (!isSignedSession(session))
-    redirect(`/login?${AUTH_RETURN_TO_PARAM}=/get-started`)
+  // A valid cookie is not a valid session. Get-started sits outside the guarded
+  // app shell, so checking only the signature parked a deleted or disabled
+  // account on the create-an-organization form it could never submit.
+  const sessionUser = await requireValidSession('/get-started')
 
   const platform = await getPlatformClient()
   const context = await getContext()
@@ -59,7 +60,7 @@ export default async function GetStartedPage() {
   // owner's organization first; the reload then lands on the workspace step.
   if (!context) {
     const suggestedName =
-      [session.user.firstName, session.user.lastName]
+      [sessionUser.firstName, sessionUser.lastName]
         .filter(Boolean)
         .join(' ')
         .trim() || ''

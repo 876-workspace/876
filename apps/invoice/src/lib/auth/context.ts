@@ -12,6 +12,7 @@ import type {
   InvoiceContextResult,
 } from '@/types/auth'
 
+import { isAccountUsable } from './account-validity'
 import { getAuthSession, isSignedSession } from './session'
 
 function toAccessStatus(status: string | null | undefined): AccessStatus {
@@ -38,6 +39,15 @@ export const getInvoiceContextResult = cache(
   async function getInvoiceContextResult(): Promise<InvoiceContextResult> {
     const session = await getAuthSession()
     if (!isSignedSession(session)) return { status: 'signed-out' }
+
+    // A valid cookie is not a valid session. `/onboarding` resolves its context
+    // here and sits *outside* the `(app)` route group, so the shell's guard
+    // never runs for it — a deleted account with a still-sealed cookie resolved
+    // no memberships, was read as "no organization yet", and was parked on the
+    // create-an-organization form forever. Reporting it as signed-out here is
+    // what makes every route agree, shell or not.
+    if (!(await isAccountUsable(session.user.id)))
+      return { status: 'signed-out' }
 
     const platform = await getPlatformClient()
     const membershipsResult = await platform.memberships.listRouting({

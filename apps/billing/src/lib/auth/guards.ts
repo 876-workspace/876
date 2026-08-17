@@ -11,9 +11,21 @@ import { getAuthSession, isSignedSession } from './session'
  * Sends a viewer without a *usable* session to this app's own login, keeping
  * its place.
  *
- * Checking the cookie signature is not enough — see `isAccountUsable`, which
- * owns that rule and is shared with the context resolver so the two cannot
- * disagree about whether a session is still valid.
+ * A sealed session cookie only proves that someone signed in at some point —
+ * it keeps verifying long after the account behind it was deleted, banned, or
+ * suspended, because nothing in the cookie changes when the account does. So
+ * the signature check alone is not an authorization answer: the account is
+ * confirmed to still exist and still be active against the identity API on
+ * every request.
+ *
+ * Without this, a purged account still reached the app, resolved no
+ * memberships, and was routed to /get-started — asked to create an
+ * organization it could never create, with no route back to login.
+ *
+ * Deliberately fails **open** on any other error: an identity-API outage must
+ * not sign out every signed-in operator. Only the two answers that positively
+ * establish the session is no longer valid — the account is gone, or it is
+ * disabled — redirect.
  */
 export const requireValidSession = cache(async function requireValidSession(
   returnTo = '/'
