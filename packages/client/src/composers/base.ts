@@ -8,13 +8,35 @@ type SessionSurface = {
   revoke: SDK876Client['auth']['me']['revokeSession']
 }
 
-type AdminSessionSurface = WithAdmin<SessionSurface, Admin876Client['sessions']>
+type SessionNamespace = {
+  me: SessionSurface
+}
+
+type AdminSessionSurface = Admin876Client['sessions'] & {
+  me: SessionSurface
+  admin: Admin876Client['sessions']
+}
 
 function createSessionSurface(platform: SDK876Client): SessionSurface {
   return {
     retrieve: platform.auth.getSession,
     list: platform.auth.me.listSessions,
     revoke: platform.auth.me.revokeSession,
+  }
+}
+
+function createSessionNamespace(platform: SDK876Client): SessionNamespace {
+  return { me: createSessionSurface(platform) }
+}
+
+function createAdminSessionSurface(
+  platform: SDK876Client,
+  sessions: Admin876Client['sessions']
+): AdminSessionSurface {
+  return {
+    ...sessions,
+    me: createSessionSurface(platform),
+    admin: sessions,
   }
 }
 
@@ -63,7 +85,7 @@ interface AdminNamespaces {
 /** The platform-only core surface, without admin projections. */
 export type CoreSurfaceBase = {
   auth: SDK876Client['auth']
-  sessions: SessionSurface
+  sessions: SessionNamespace
   oauth: SDK876Client['oauth']
   oauthGrants: SDK876Client['oauthGrants']
   auditEvents: SDK876Client['auditEvents']
@@ -102,6 +124,7 @@ export type CoreSurfaceAdmin = Omit<
   | 'features'
   | 'entitlements'
   | 'roles'
+  | 'sessions'
 > & {
   users: WithAdmin<{ me: SDK876Client['users'] }, Admin876Client['users']>
   organizations: WithAdmin<
@@ -142,7 +165,7 @@ export function createCoreSurface(args: {
 function createCoreSurfaceBase(platform: SDK876Client): CoreSurfaceBase {
   return {
     auth: platform.auth,
-    sessions: createSessionSurface(platform),
+    sessions: createSessionNamespace(platform),
     oauth: platform.oauth,
     oauthGrants: platform.oauthGrants,
     auditEvents: platform.auditEvents,
@@ -180,7 +203,7 @@ function createCoreSurfaceAdmin(
     features: withAdmin(platform.features, admin.features),
     entitlements: withAdmin(platform.subscriptions, admin.subscriptions),
     roles: withAdmin(platform.roles, admin.roles),
-    sessions: withAdmin(createSessionSurface(platform), admin.sessions),
+    sessions: createAdminSessionSurface(platform, admin.sessions),
     auditEvents: admin.auditEvents,
     apiKeys: admin.apiKeys,
     modules: admin.modules,
