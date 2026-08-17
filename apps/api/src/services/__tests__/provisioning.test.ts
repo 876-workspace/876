@@ -51,6 +51,13 @@ vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   ensureFinanceProvisioningDelivered,
 }))
 
+// provisionOrgApps now drives one unified readiness contract per subscribed
+// app rather than a single org-wide reconcile, so the finance behavior is
+// asserted through `ensureAppReady` (which owns the reconcile + delivery + the
+// finance-vs-none decision internally).
+const { ensureAppReady } = vi.hoisted(() => ({ ensureAppReady: vi.fn() }))
+vi.mock('../finance-provisioning-readiness', () => ({ ensureAppReady }))
+
 const {
   assignMemberApps,
   ensureDefaultContact,
@@ -94,6 +101,11 @@ beforeEach(() => {
     failed: 0,
     configured: true,
     ensured: 1,
+  })
+  ensureAppReady.mockResolvedValue({
+    ready: true,
+    financeRequired: true,
+    eventIds: ['fpe_new_1'],
   })
   prisma.subscription.create.mockResolvedValue({})
   prisma.subscription.update.mockResolvedValue({})
@@ -164,78 +176,49 @@ describe('provisionOrgApps', () => {
 
   // Regression: provisioning wrote the subscriptions and stopped there, so a
   // brand-new org never had its Billing tenant opened and every list in a
-  // finance-dependent app answered `billing/tenant-not-found` forever.
-  it('reconciles finance connections for the org it just provisioned', async () => {
+  // finance-dependent app answered `billing/tenant-not-found` forever. Each
+  // provisioned app now goes through the one readiness contract, which decides
+  // per-app whether a Billing workspace is required.
+  it('runs the app-readiness contract for every provisioned app', async () => {
     await provisionOrgApps(ORG)
 
-    expect(reconcileFinanceConnections).toHaveBeenCalledTimes(1)
-    expect(reconcileFinanceConnections).toHaveBeenCalledWith(
-      { repository: { marker: 'repo' } },
-      { organizationId: ORG, strictSourceAppId: null, limit: null }
-    )
+    expect(ensureAppReady).toHaveBeenCalledTimes(3)
+    for (const appId of [
+      'app_876-enterprise',
+      'app_876-billing',
+      'app_876-invoice',
+    ]) {
+      expect(ensureAppReady).toHaveBeenCalledWith(
+        { repository: { marker: 'repo' } },
+        { organizationId: ORG, appId }
+      )
+    }
   })
 
-  it('delivers the finance event inline instead of waiting for the poller', async () => {
-    await provisionOrgApps(ORG)
-
-    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledTimes(1)
-    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith([
-      'fpe_new_1',
-    ])
-  })
-
-  it('delivers the new organization even when a large backlog exists', async () => {
-    reconcileFinanceConnections.mockResolvedValue({
-      examined: 1,
-      changed: 1,
-      nextCursor: null,
-      eventIds: ['fpe_new_org'],
-    })
-    await provisionOrgApps(ORG)
-    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith([
-      'fpe_new_org',
-    ])
-    expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
-  })
-
-  it('does not dispatch when no finance events were created', async () => {
-    reconcileFinanceConnections.mockResolvedValue({
-      examined: 3,
-      changed: 0,
-      nextCursor: null,
-      eventIds: [],
-    })
-    await provisionOrgApps(ORG)
-    expect(ensureFinanceProvisioningDelivered).not.toHaveBeenCalled()
-    expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
-  })
-
-  it('re-runs finance reconcile even when every app was already provisioned', async () => {
+  it('runs app readiness even when every app was already provisioned', async () => {
     prisma.subscription.findFirst.mockResolvedValue({ id: 'sub_existing' })
 
     const provisioned = await provisionOrgApps(ORG)
 
+    // Nothing new was subscribed, but readiness still runs over the entitled
+    // apps so an org whose Billing tenant never opened is repaired.
     expect(provisioned).toEqual([])
-    expect(reconcileFinanceConnections).toHaveBeenCalledWith(
+    expect(ensureAppReady).toHaveBeenCalledTimes(3)
+    expect(ensureAppReady).toHaveBeenCalledWith(
       { repository: { marker: 'repo' } },
-      { organizationId: ORG, strictSourceAppId: null, limit: null }
+      { organizationId: ORG, appId: 'app_876-invoice' }
     )
   })
 
-  it('fails provisioning when the finance workspace cannot be delivered', async () => {
-    reconcileFinanceConnections.mockRejectedValue(new Error('billing down'))
-
-    await expect(provisionOrgApps(ORG)).rejects.toThrow('billing down')
-    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
-  })
-
-  it('fails provisioning when finance ensure fails even though subscriptions were created', async () => {
-    ensureFinanceProvisioningDelivered.mockRejectedValue(
+  it('fails provisioning when an app readiness pass cannot be completed', async () => {
+    ensureAppReady.mockRejectedValue(
       new Error('provisioning/finance-workspace-unavailable')
     )
+
     await expect(provisionOrgApps(ORG)).rejects.toThrow(
       'provisioning/finance-workspace-unavailable'
     )
+    // The subscription rows were still written (durable) before the barrier.
     expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
   })
 

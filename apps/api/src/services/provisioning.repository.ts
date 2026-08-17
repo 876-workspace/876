@@ -84,6 +84,24 @@ export function findSubscription(
 }
 
 /**
+ * The distinct app ids an organization is subscribed to.
+ *
+ * Used to drive the finance-readiness pass over exactly the apps that were
+ * actually provisioned, so a durable-then-finance ordering can re-derive that
+ * set on a retry without threading it through the caller.
+ */
+export async function listSubscribedAppIds(
+  organizationId: string
+): Promise<string[]> {
+  const rows = await prisma.subscription.findMany({
+    where: { organizationId },
+    select: { appId: true },
+    distinct: ['appId'],
+  })
+  return rows.map((row) => row.appId)
+}
+
+/**
  * The price a new organization subscribes to when none is named — the oldest
  * active price on the oldest active product scoped to the app.
  */
