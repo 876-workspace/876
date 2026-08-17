@@ -1,3 +1,4 @@
+import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 import { redirect } from 'next/navigation'
 
 import { InvoiceShell } from '@/components/shell/shell'
@@ -14,7 +15,13 @@ export default async function AppLayout({
 
   const result = await getInvoiceContextResult()
 
-  if (result.status === 'no-organization') redirect('/onboarding')
+  // "Not signed in" is not an onboarding step. Routing it to /onboarding sent a
+  // viewer whose session had stopped being valid — a deleted account still
+  // holding a sealed cookie, say — into the create-an-organization flow instead
+  // of to login, which is both the wrong screen and a dead end.
+  if (result.status === 'signed-out')
+    redirect(`/login?${AUTH_RETURN_TO_PARAM}=%2F`)
+
   if (result.status !== 'ok') redirect('/onboarding')
 
   const context = result.context

@@ -19,6 +19,7 @@ import { redirect } from 'next/navigation'
 
 import { get876Client } from '@/lib/876'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
 import type { CustomerStatus } from '@876/billing'
 import { CustomersTable } from './_components/customers-table'
 
@@ -101,6 +102,8 @@ async function CustomersTableData({ searchParams }: Props) {
   const $876 = await get876Client(context.orgId)
   const result = await $876.customers.list({ status: apiStatus })
   if (result.error) {
+    redirectIfSignedOut(result.error.code, '/customers')
+
     const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
 
     // A permanent misconfiguration — a missing workspace membership or an

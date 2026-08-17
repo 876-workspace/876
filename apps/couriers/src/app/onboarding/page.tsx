@@ -5,7 +5,7 @@ import type { ComponentProps, ReactNode } from 'react'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { requireValidSession } from '@/lib/auth/guards'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 
@@ -69,8 +69,10 @@ function SetupUnavailable() {
 }
 
 export default async function OnboardingPage() {
-  const session = await getAuthSession()
-  if (!isSignedSession(session)) redirect('/login')
+  // A valid cookie is not a valid session. Onboarding sits outside the guarded
+  // org shell, so checking only the signature parked a deleted or disabled
+  // account on the create-an-organization form it could never submit.
+  const sessionUser = await requireValidSession('/onboarding')
 
   const ctx = await getManageContext()
   if (ctx && ctx.tenant && ctx.accessStatus === 'active')
@@ -128,7 +130,7 @@ export default async function OnboardingPage() {
     }
   } else {
     const memberships = await platform.memberships.listRouting({
-      userId: session.user.id,
+      userId: sessionUser.id,
     })
 
     if (memberships.error)
