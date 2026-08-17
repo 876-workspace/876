@@ -30,6 +30,7 @@ export const items = {
   create(params: ItemCreateParams) {
     return request<ItemResource>('/api/v1/items', {
       method: 'POST',
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
       body: JSON.stringify(params),
     })
   },
