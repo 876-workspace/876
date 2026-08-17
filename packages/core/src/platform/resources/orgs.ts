@@ -172,7 +172,19 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
 
       create(
         orgId: string,
-        params: { appId?: string; appSlug?: string; priceId?: string }
+        params: {
+          appId?: string
+          appSlug?: string
+          priceId?: string
+          /**
+           * Assert the app's required finance dependency. When `'embedded'`,
+           * activation fails closed unless the app's published profile declares
+           * embedded finance with scopes — a caller that knows an app must have
+           * a Billing workspace (876 Invoice) sets this so a misconfigured
+           * profile cannot silently downgrade it.
+           */
+          requireFinance?: 'embedded'
+        }
       ) {
         return platformRequest<PlatformSubscription>(runtime, {
           method: 'POST',
@@ -181,6 +193,7 @@ export function createPlatformOrgsResource(runtime: PlatformRuntime) {
             app_id: params.appId,
             app_slug: params.appSlug,
             price_id: params.priceId,
+            require_finance: params.requireFinance,
           },
         })
       },
