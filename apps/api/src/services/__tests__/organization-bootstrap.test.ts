@@ -58,13 +58,22 @@ function makeDeps(
   provider: ReturnType<typeof makeProvider>
   repository: ReturnType<typeof makeRepository>
   provisionOrganization: ReturnType<typeof vi.fn>
+  ensureOrgFinanceReady: ReturnType<typeof vi.fn>
 } {
   const repository = makeRepository(overrides.repository as never)
   const provider = makeProvider(overrides.provider as never)
   const provisionOrganization =
     (overrides.provisionOrganization as unknown as ReturnType<typeof vi.fn>) ??
     vi.fn().mockResolvedValue({ owner: { id: 'rol_owner' } })
-  return { provider, repository, provisionOrganization } as never
+  const ensureOrgFinanceReady =
+    (overrides.ensureOrgFinanceReady as unknown as ReturnType<typeof vi.fn>) ??
+    vi.fn().mockResolvedValue(undefined)
+  return {
+    provider,
+    repository,
+    provisionOrganization,
+    ensureOrgFinanceReady,
+  } as never
 }
 
 beforeEach(() => {
@@ -337,7 +346,7 @@ describe('bootstrapExistingUser', () => {
     expect(deps.provisionOrganization).toHaveBeenCalledWith(
       expect.any(String),
       NOW,
-      { sourceAppId: null }
+      { sourceAppId: null, deferFinanceReadiness: true }
     )
     expect(deps.repository.createMembership).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -346,6 +355,13 @@ describe('bootstrapExistingUser', () => {
         workosMembershipId: 'wos_mem_1',
       })
     )
+    // The finance barrier runs only after the durable owner membership exists,
+    // so a finance outage cannot strand an org without a routable membership.
+    expect(deps.ensureOrgFinanceReady).toHaveBeenCalledWith(expect.any(String))
+    const membershipOrder =
+      deps.repository.createMembership.mock.invocationCallOrder[0]!
+    const financeOrder = deps.ensureOrgFinanceReady.mock.invocationCallOrder[0]!
+    expect(membershipOrder).toBeLessThan(financeOrder)
   })
 
   it('provisions the org onto the signup app when a source app is given', async () => {
@@ -382,7 +398,7 @@ describe('bootstrapExistingUser', () => {
     expect(deps.provisionOrganization).toHaveBeenCalledWith(
       expect.stringMatching(/^org_/),
       NOW,
-      { sourceAppId: 'app_couriers' }
+      { sourceAppId: 'app_couriers', deferFinanceReadiness: true }
     )
   })
 
@@ -635,6 +651,57 @@ describe('bootstrapExistingUser', () => {
     ).rejects.toThrow('membership failed')
 
     expect(deps.provider.deleteOrganization).toHaveBeenCalledWith('wos_org_1')
+  })
+
+  it('preserves the org and its membership when the finance barrier is unavailable', async () => {
+    const deps = makeDeps()
+    deps.repository.findUserById.mockResolvedValue({
+      id: 'user_1',
+      workosUserId: 'wos_1',
+    } as never)
+    deps.repository.findOrganizationBySlug.mockResolvedValue(null)
+    deps.provider.createOrganization.mockResolvedValue({ id: 'wos_org_1' })
+    deps.provider.createOrganizationMembership.mockResolvedValue({
+      id: 'wos_mem_1',
+    })
+    deps.repository.createOrganization.mockImplementation(async (data) => ({
+      id: data.id,
+      workosOrganizationId: data.workosOrganizationId,
+      name: data.name,
+      slug: data.slug,
+      status: data.status,
+      metadata: data.metadata,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    }))
+    deps.repository.createMembership.mockResolvedValue({} as never)
+    // The finance barrier fails the way a Billing outage does — after the
+    // durable org and owner membership already exist.
+    deps.ensureOrgFinanceReady.mockRejectedValue(
+      new AppHttpError({
+        code: 'provisioning/finance-workspace-unavailable',
+        message: 'Billing is unavailable.',
+        httpStatus: 503,
+      })
+    )
+
+    await expect(
+      bootstrapExistingUser(deps, {
+        ownerUserId: 'user_1',
+        name: 'Acme',
+        slug: null,
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-workspace-unavailable',
+    })
+
+    // The owner membership was recorded, so a retry finds this org through
+    // routing memberships and does not create a second one...
+    expect(deps.repository.createMembership).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'owner' })
+    )
+    // ...and the WorkOS org is NOT torn down for a finance outage.
+    expect(deps.provider.deleteOrganization).not.toHaveBeenCalled()
   })
 
   it('uses explicit slug when provided', async () => {

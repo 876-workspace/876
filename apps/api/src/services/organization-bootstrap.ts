@@ -13,7 +13,10 @@ import type {
   OrganizationRow,
   UserRow,
 } from './organization-bootstrap.repository'
-import { provisionOrganization } from './provisioning'
+import {
+  ensureOrgAppsFinanceReady,
+  provisionOrganization,
+} from './provisioning'
 
 const log = getLogger('organization-bootstrap')
 
@@ -73,13 +76,21 @@ export type OrganizationBootstrapRepository = {
 export type ProvisionOrganizationFn = (
   organizationId: string,
   now: number,
-  options?: { sourceAppId?: string | null }
+  options?: { sourceAppId?: string | null; deferFinanceReadiness?: boolean }
 ) => Promise<Record<string, { id: string }>>
+
+/**
+ * Run the finance-workspace readiness pass for an org's provisioned apps. Split
+ * out from {@link ProvisionOrganizationFn} so bootstrap can establish the
+ * durable owner membership *before* crossing this barrier.
+ */
+export type EnsureOrgFinanceReadyFn = (organizationId: string) => Promise<void>
 
 export type OrganizationBootstrapDeps = {
   provider: OrganizationBootstrapProvider
   repository: OrganizationBootstrapRepository
   provisionOrganization: ProvisionOrganizationFn
+  ensureOrgFinanceReady: EnsureOrgFinanceReadyFn
 }
 
 // ---------------------------------------------------------------------------
@@ -257,8 +268,14 @@ export async function bootstrapExistingUser(
       updatedAt: nowBigint,
     })
 
+    // Provision the durable identity first — roles and subscription rows — but
+    // defer the finance-workspace barrier. A finance outage must not be able to
+    // interrupt bootstrap before the owner membership exists, or the org
+    // survives (PR #308 stopped compensating it) while `memberships.listRouting`
+    // cannot find it, and the next onboarding attempt creates a *second* org.
     const orgRoles = await deps.provisionOrganization(organization.id, now, {
       sourceAppId: params.sourceAppId ?? null,
+      deferFinanceReadiness: true,
     })
     const ownerRole = (orgRoles as Record<string, { id: string } | undefined>)[
       OWNER_ROLE_NAME
@@ -275,6 +292,12 @@ export async function bootstrapExistingUser(
       createdAt: nowBigint,
       updatedAt: nowBigint,
     })
+
+    // The owner membership now exists, so the org is discoverable on retry even
+    // if this barrier throws. A `finance-workspace-unavailable` failure is
+    // preserved (not compensated) by the catch below, and the next activation
+    // reuses this same org and re-runs readiness to completion.
+    await deps.ensureOrgFinanceReady(organization.id)
 
     return organization
   } catch (error) {
@@ -384,5 +407,7 @@ export function createOrganizationBootstrapDeps(): OrganizationBootstrapDeps {
     repository,
     provisionOrganization: (organizationId, now, options) =>
       provisionOrganization(organizationId, now, options),
+    ensureOrgFinanceReady: (organizationId) =>
+      ensureOrgAppsFinanceReady(organizationId),
   }
 }
