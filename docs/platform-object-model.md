@@ -22,7 +22,8 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 
 | Resource          | Canonical public namespace | Owning service                                      | Notes                                                                                                |
 | ----------------- | -------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, session                                                                             |
+| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, recovery, OTP, OAuth session-establishment flows                                                  |
+| Sessions          | `$876.sessions`            | Core (`@876/sdk` / `@876/admin`)                    | `retrieve`/`list`/`revoke`; `.admin` for platform-wide session management (`list`/`retrieve`/`revoke`/`revokeForUser`) |
 | Users             | `$876.users`               | Core (`@876/sdk` / `@876/admin`)                    | `me` = self, `admin` = platform-wide                                                                 |
 | Organizations     | `$876.organizations`       | Core                                                | `admin` for platform-wide                                                                            |
 | Memberships       | `$876.memberships`         | Core                                                | org membership / team                                                                                |
@@ -161,12 +162,27 @@ and `packages/client/src/resource-manifest.ts`.
 - Owner: Billing
 - Verbs: `list`, `create`, `retrieve`, `update`, `delete`, `apply`
 
+### sessions
+
+- Public: `$876.sessions`
+- Owner: Core
+- Verbs: `retrieve` (current session → `GET /auth/session`), `list` (own sessions → `GET /auth/me/sessions`), `revoke(sessionId)` (own revocation → `DELETE /auth/me/sessions/{id}`)
+- Admin: `$876.sessions.admin.list()` → `GET /sessions`, `retrieve(sessionId)` → `GET /sessions/{id}`, `revoke(sessionId)` → `DELETE /sessions/{id}`, `revokeForUser(userId)` → `DELETE /users/{id}/sessions`
+- Compatibility: `$876.auth.getSession()` / `$876.auth.me.listSessions()` / `$876.auth.me.revokeSession()` remain in `@876/sdk` as owning-package methods; `$876.sessions.*` delegates to them with no duplicate transport.
+
 ### subscriptions
 
 - Public: `$876.subscriptions`
 - Owner: Billing (commercial)
 - Verbs: `create`, `pause`, `resume`, `cancel`, `reactivate`, `extend`, `bill`, `upcomingInvoice`, `previewProration`, `charges.create`, `discounts.create` etc — preserve real business actions, do not flatten to CRUD
 - Collisions: not to be confused with `entitlements`.
+
+### provisioning
+
+- Public: `$876.provisioning`
+- Owner: Core (`@876/admin` control plane)
+- Verbs: `retrieve(targetType, targetKey)` → `GET /provisioning/manifests/{target}`, `validate` → `POST /.../validate`, `publish` → `POST /.../publish`, `published.retrieve` → `GET /.../published` (alias of `retrievePublished`), `catalog.retrieve` → `GET /provisioning/catalog/{target}` (alias of `retrieveCatalog`), `draft.update` → `PUT /.../draft` (alias of `replaceDraft`), `runs.list`/`retrieve`/`retry`/`reconcile`, `runs.claim` → `POST /provisioning/runs/application/claim` (alias of `claimApplication`), `runs.complete` → `POST /provisioning/runs/{id}/complete` (alias of `completeApplication`), `notes.list`/`create`/`delete`
+- Compatibility: existing long-form names (`retrievePublished`, `retrieveCatalog`, `replaceDraft`, `runs.claimApplication`, `runs.completeApplication`) remain as compatibility aliases; new nested forms delegate with no duplicate transport.
 
 ### taxRates / taxAuthorities / bankAccounts / bankTransactions / discounts / paymentModes / paymentProviders
 
