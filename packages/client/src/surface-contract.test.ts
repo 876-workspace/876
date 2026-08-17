@@ -119,11 +119,42 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     ]
     for (const $876 of surfaces) {
       expect($876.auth).toBeDefined()
+      expect($876.sessions).toBeDefined()
+      expect($876.sessions.retrieve).toBeTypeOf('function')
+      expect($876.sessions.list).toBeTypeOf('function')
+      expect($876.sessions.revoke).toBeTypeOf('function')
       expect($876.users.me).toBeDefined()
       expect($876.organizations).toBeDefined()
       expect($876.apps).toBeDefined()
       expect($876.entitlements).toBeDefined()
     }
+  })
+
+  it('exposes canonical sessions with admin tier on console', () => {
+    const $876 = create876ServerClient(consoleOptions())
+    expect($876.sessions.retrieve).toBeTypeOf('function')
+    expect($876.sessions.list).toBeTypeOf('function')
+    expect($876.sessions.revoke).toBeTypeOf('function')
+    expect($876.sessions.admin.list).toBeTypeOf('function')
+    expect($876.sessions.admin.retrieve).toBeTypeOf('function')
+    expect($876.sessions.admin.revoke).toBeTypeOf('function')
+    expect($876.sessions.admin.revokeForUser).toBeTypeOf('function')
+  })
+
+  it('exposes provisioning nested aliases on console', () => {
+    const $876 = create876ServerClient(consoleOptions())
+    expect($876.provisioning.retrieve).toBeTypeOf('function')
+    expect($876.provisioning.published.retrieve).toBeTypeOf('function')
+    expect($876.provisioning.catalog.retrieve).toBeTypeOf('function')
+    expect($876.provisioning.draft.update).toBeTypeOf('function')
+    expect($876.provisioning.runs.claim).toBeTypeOf('function')
+    expect($876.provisioning.runs.complete).toBeTypeOf('function')
+    // compatibility aliases remain
+    expect($876.provisioning.retrievePublished).toBeTypeOf('function')
+    expect($876.provisioning.retrieveCatalog).toBeTypeOf('function')
+    expect($876.provisioning.replaceDraft).toBeTypeOf('function')
+    expect($876.provisioning.runs.claimApplication).toBeTypeOf('function')
+    expect($876.provisioning.runs.completeApplication).toBeTypeOf('function')
   })
 })
 
@@ -178,4 +209,178 @@ describe('browser surface never leaks server-only resources', () => {
     expect(browser.auth).toBeDefined()
     expect(has(browser, 'app')).toBe(false)
   })
+
+  it('exposes sessions on browser without admin', () => {
+    const browser = create876Client()
+    expect(browser.sessions.retrieve).toBeTypeOf('function')
+    expect(browser.sessions.list).toBeTypeOf('function')
+    expect(browser.sessions.revoke).toBeTypeOf('function')
+    expect('admin' in browser.sessions).toBe(false)
+  })
 })
+describe('facade delegation parity', () => {
+  it('sessions delegates to underlying SDK auth methods', async () => {
+    const getSession = vi.fn().mockResolvedValue({ data: { object: 'session' }, error: null })
+    const listSessions = vi.fn().mockResolvedValue({ data: [], error: null })
+    const revokeSession = vi.fn().mockResolvedValue({ data: { object: 'session' }, error: null })
+
+    // Use base composer directly with stubbed clients
+    const { createCoreSurface } = await import('./composers/base.ts')
+    const platform: any = {
+      auth: {
+        getSession,
+        me: { listSessions, revokeSession },
+        login: vi.fn(),
+        logout: vi.fn(),
+      },
+      oauth: {},
+      oauthGrants: {},
+      auditEvents: {},
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      locations: {},
+      contacts: {},
+      departments: {},
+      employees: {},
+      roles: {},
+      permissions: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      mobileNumbers: {},
+      mobileNumberVerifications: {},
+      products: {},
+    }
+    const core = createCoreSurface({ platform }) as any
+    await core.sessions.retrieve()
+    expect(getSession).toHaveBeenCalledTimes(1)
+    await core.sessions.list()
+    expect(listSessions).toHaveBeenCalledTimes(1)
+    await core.sessions.revoke('session_123')
+    expect(revokeSession).toHaveBeenCalledTimes(1)
+    expect(revokeSession).toHaveBeenCalledWith('session_123')
+  })
+
+  it('provisioning nested aliases delegate to existing admin methods', async () => {
+    const retrieve = vi.fn()
+    const retrievePublished = vi.fn()
+    const retrieveCatalog = vi.fn()
+    const replaceDraft = vi.fn()
+    const validate = vi.fn()
+    const publish = vi.fn()
+    const runsList = vi.fn()
+    const runsRetrieve = vi.fn()
+    const runsRetry = vi.fn()
+    const claimApplication = vi.fn()
+    const completeApplication = vi.fn()
+    const reconcile = vi.fn()
+    const notesList = vi.fn()
+    const notesCreate = vi.fn()
+    const notesDelete = vi.fn()
+    const provisioning: any = {
+      retrieve,
+      retrievePublished,
+      retrieveCatalog,
+      replaceDraft,
+      validate,
+      publish,
+      runs: {
+        list: runsList,
+        retrieve: runsRetrieve,
+        retry: runsRetry,
+        claimApplication,
+        completeApplication,
+        reconcile,
+      },
+      notes: {
+        list: notesList,
+        create: notesCreate,
+        delete: notesDelete,
+      },
+    }
+    const { createCoreSurface } = await import('./composers/base.ts')
+    const platform: any = {
+      auth: { getSession: vi.fn(), me: { listSessions: vi.fn(), revokeSession: vi.fn() } },
+      oauth: {},
+      oauthGrants: {},
+      auditEvents: {},
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      locations: {},
+      contacts: {},
+      departments: {},
+      employees: {},
+      roles: {},
+      permissions: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      mobileNumbers: {},
+      mobileNumberVerifications: {},
+      products: {},
+    }
+    const admin: any = {
+      auditEvents: {},
+      apiKeys: {},
+      modules: {},
+      provisioning,
+      onboarding: {},
+      addresses: {},
+      reservedUsernames: {},
+      billingAccounts: {},
+      authAttempts: {},
+      devices: {},
+      sessions: { list: vi.fn(), retrieve: vi.fn(), revoke: vi.fn(), revokeForUser: vi.fn() },
+      appFeatures: {},
+      appSubscriptions: {},
+      organizationFeatures: {},
+      identifications: {},
+      messages: {},
+      calls: {},
+      phoneLookups: {},
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      roles: {},
+    }
+    const core = createCoreSurface({ platform, admin }) as any
+    await core.provisioning.published.retrieve('application', 'app_123')
+    expect(retrievePublished).toHaveBeenCalledTimes(1)
+    expect(retrievePublished).toHaveBeenCalledWith('application', 'app_123')
+
+    await core.provisioning.catalog.retrieve('application', 'app_123')
+    expect(retrieveCatalog).toHaveBeenCalledTimes(1)
+    expect(retrieveCatalog).toHaveBeenCalledWith('application', 'app_123')
+
+    await core.provisioning.draft.update('application', 'app_123', { foo: 'bar' } as any)
+    expect(replaceDraft).toHaveBeenCalledTimes(1)
+    expect(replaceDraft).toHaveBeenCalledWith('application', 'app_123', { foo: 'bar' })
+
+    await core.provisioning.runs.claim({ organizationId: 'org_1', appId: 'app_1' } as any)
+    expect(claimApplication).toHaveBeenCalledTimes(1)
+    expect(claimApplication).toHaveBeenCalledWith({ organizationId: 'org_1', appId: 'app_1' })
+
+    await core.provisioning.runs.complete('run_123', { status: 'succeeded' } as any)
+    expect(completeApplication).toHaveBeenCalledTimes(1)
+    expect(completeApplication).toHaveBeenCalledWith('run_123', { status: 'succeeded' })
+
+    // compatibility aliases still delegate
+    expect(core.provisioning.retrievePublished).toBe(retrievePublished)
+    expect(core.provisioning.retrieveCatalog).toBe(retrieveCatalog)
+    expect(core.provisioning.replaceDraft).toBe(replaceDraft)
+    expect(core.provisioning.runs.claimApplication).toBe(claimApplication)
+    expect(core.provisioning.runs.completeApplication).toBe(completeApplication)
+  })
+})
+
