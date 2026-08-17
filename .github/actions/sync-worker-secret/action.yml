@@ -1,0 +1,61 @@
+name: Sync a shared Worker secret
+description: >
+  Pushes a repository secret to one Worker, so the value is owned by a single
+  repository secret instead of whatever was typed into that Worker by hand.
+
+# Companion to sync-session-secret, generalized to any secret name. The failure
+# it prevents is the same class: two services that must share a secret drift
+# because each Worker's value was set independently and no deploy realigns them.
+#
+# BILLING_INTERNAL_KEY is the concrete case this was added for. `apps/api`'s
+# finance-provisioning dispatcher calls `876-billing-api` with this key as
+# `x-internal-key`; when the two Workers hold different values the call is
+# rejected 401, the finance workspace is never created, and 876 Invoice
+# onboarding fails with "the finance workspace could not be prepared" — while
+# the user and org exist and look fine. That shipped to production on
+# 2026-08-17 because the key was set by hand on each Worker and drifted. Syncing
+# on every deploy means a Worker cannot drift from the platform value.
+
+inputs:
+  app-directory:
+    description: Path to the app whose wrangler config names the target Worker.
+    required: true
+  secret-name:
+    description: The name of the secret to sync (e.g. BILLING_INTERNAL_KEY).
+    required: true
+  secret:
+    description: The secret value (a repository secret).
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.app-directory }}
+      env:
+        SECRET_NAME: ${{ inputs.secret-name }}
+        SECRET_VALUE: ${{ inputs.secret }}
+      run: |
+        # Skip rather than fail: a repository that has not configured the secret
+        # yet should still be able to deploy, and the warning says what is
+        # missing. Never `echo` the value — printf without a trailing newline is
+        # also what keeps the stored secret byte-identical to the value the
+        # peer service compares against.
+        if [ -z "$SECRET_VALUE" ]; then
+          echo "::warning title=$SECRET_NAME not synced::$SECRET_NAME is not configured as a repository secret, so this Worker keeps whatever value it already has."
+          exit 0
+        fi
+        # `wrangler secret put` edits the live Worker, which Cloudflare refuses
+        # when the Worker's newest version is not the deployed one — the normal
+        # state whenever Workers Builds uploaded a version this pipeline did not
+        # deploy. Fall back to staging it on a new version, which the next
+        # deployment carries.
+        if printf '%s' "$SECRET_VALUE" |
+          pnpm exec wrangler secret put "$SECRET_NAME"; then
+          exit 0
+        fi
+
+        echo "::warning title=$SECRET_NAME staged on a new version::The live Worker could not be edited because its newest version is not deployed. Staging the secret with 'wrangler versions secret put' instead; it takes effect on the next deployment."
+        printf '%s' "$SECRET_VALUE" |
+          pnpm exec wrangler versions secret put "$SECRET_NAME" \
+            --message "Sync the shared $SECRET_NAME"
