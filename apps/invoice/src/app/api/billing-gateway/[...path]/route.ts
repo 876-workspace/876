@@ -15,16 +15,25 @@ export const dynamic = 'force-dynamic'
 
 type Context = { params: Promise<{ path: string[] }> }
 
+function integrationPath(
+  path: readonly string[],
+  organizationId: string
+): string[] {
+  // Invoice customer CRUD is product-app access to the shared financial data
+  // plane. Route it through Billing's integration boundary so authorization is
+  // based on the Invoice finance connection/scopes rather than a Billing
+  // workspace Member row.
+  if (path[0] === 'customers')
+    return ['integrations', 'organizations', organizationId, ...path]
+
+  return [...path]
+}
+
 async function proxy(request: Request, context: Context): Promise<Response> {
   const session = await getAuthSession()
   if (!isSignedSession(session) || !session.accessToken)
     return apiError('Billing authentication is required.', { status: 401 })
 
-  // The sealed session already names the acting organization, so the common
-  // path costs no platform round trip. Resolving the full context is the
-  // fallback for a session sealed before an organization existed. Either way
-  // the Billing API authorizes the org against the caller's own token — this
-  // route never widens access on its own.
   const organizationId =
     session.user.orgId ?? (await getInvoiceContext())?.orgId
   if (!organizationId)
@@ -34,12 +43,16 @@ async function proxy(request: Request, context: Context): Promise<Response> {
 
   const requestId = (await headers()).get('x-request-id') ?? undefined
   const { path } = await context.params
-  return proxy876BillingRequest(request, path, {
-    baseUrl: process.env.BILLING_API_URL,
-    accessToken: session.accessToken,
-    organizationId,
-    requestId,
-  })
+  return proxy876BillingRequest(
+    request,
+    integrationPath(path, organizationId),
+    {
+      baseUrl: process.env.BILLING_API_URL,
+      accessToken: session.accessToken,
+      organizationId,
+      requestId,
+    }
+  )
 }
 
 export const GET = proxy
