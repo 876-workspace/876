@@ -10,7 +10,7 @@ import { fromDbUnixSeconds, nowUnixSeconds } from '@/platform/timestamps'
 import { defaultPermissionsForRoleName } from '@/platform/permissions'
 import { reconcileFinanceConnections } from '@/services/finance-provisioning'
 import { createFinanceProvisioningRepository } from '@/services/finance-provisioning.repository'
-import { dispatchFinanceProvisioningOnce } from '@/workers/finance-provisioning-dispatch'
+import { ensureFinanceProvisioningDelivered } from '@/workers/finance-provisioning-dispatch'
 import {
   assignMemberApps,
   linkMembershipRole,
@@ -1189,18 +1189,32 @@ async function provisionOrgSubscription(
   // delayed by another org's backlog. Failure surfaces rather than being
   // swallowed: a subscription whose workspace was never opened is not a
   // successful provision, and reporting it as one is what hid this for so long.
-  await reconcileFinanceConnections(
+  const financeResult = await reconcileFinanceConnections(
     { repository: createFinanceProvisioningRepository() },
-    { organizationId: orgId, appId: app.id, limit: null }
+    {
+      organizationId: orgId,
+      appId: app.id,
+      strictSourceAppId: app.id,
+      limit: null,
+    }
   )
 
-  // Deliver the event now rather than waiting for the poll. Activation is a
-  // foreground request that ends in a redirect into the app, so the workspace
-  // must exist by the time the user lands — otherwise the first screen they see
-  // reports `billing/tenant-not-found`. The outbox is still the durability
-  // mechanism: this is an immediate first attempt, and anything that fails here
-  // stays pending for the worker to retry.
-  await dispatchFinanceProvisioningOnce()
+  if (financeResult.eventIds.length > 0) {
+    try {
+      await ensureFinanceProvisioningDelivered(financeResult.eventIds)
+    } catch (error) {
+      log.error(
+        {
+          org_id: orgId,
+          app_id: app.id,
+          err: error,
+          event_ids: financeResult.eventIds,
+        },
+        'organizations.finance_ensure_failed'
+      )
+      throw error
+    }
+  }
 
   return serializeSubscription(row)
 }

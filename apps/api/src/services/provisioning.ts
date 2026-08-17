@@ -193,44 +193,34 @@ export async function provisionOrgApps(
       { org_id: organizationId, app_ids: provisioned },
       'provisioning.org_apps'
     )
+  }
 
-    // Every org is provisioned onto 876-billing at signup, and the source app
-    // may declare an embedded finance dependency of its own. Opening those
-    // finance workspaces is what this reconcile does — without it a brand-new
-    // org has subscriptions but no Billing tenant, so every list in a
-    // finance-dependent app answers `billing/tenant-not-found` indefinitely.
-    //
-    // Scoped to this organization so one signup never scans the whole table.
-    // A failure here must not fail the signup itself — the account and the org
-    // are already created, and the reconcile is idempotent, so it is logged for
-    // the sweep to retry rather than rolled back onto the user.
+  const [
+    { reconcileFinanceConnections },
+    { createFinanceProvisioningRepository },
+  ] = await Promise.all([
+    import('./finance-provisioning'),
+    import('./finance-provisioning.repository'),
+  ])
+  const result = await reconcileFinanceConnections(
+    { repository: createFinanceProvisioningRepository() },
+    {
+      organizationId,
+      strictSourceAppId: options.sourceAppId ?? null,
+      limit: null,
+    }
+  )
+  if (result.eventIds.length > 0) {
+    const { ensureFinanceProvisioningDelivered } =
+      await import('@/workers/finance-provisioning-dispatch')
     try {
-      // Imported lazily for the same reason `enqueueCustomerEnsure` is
-      // injected: the finance repository builds a Prisma client at module
-      // load, and a static import here would drag a live database client into
-      // every unit test that touches provisioning.
-      const [
-        { reconcileFinanceConnections },
-        { createFinanceProvisioningRepository },
-      ] = await Promise.all([
-        import('./finance-provisioning'),
-        import('./finance-provisioning.repository'),
-      ])
-      await reconcileFinanceConnections(
-        { repository: createFinanceProvisioningRepository() },
-        { organizationId, limit: null }
-      )
-      // Delivered inline so the workspace exists before signup redirects into
-      // the app. The outbox remains the retry mechanism for anything that
-      // fails here.
-      const { dispatchFinanceProvisioningOnce } =
-        await import('@/workers/finance-provisioning-dispatch')
-      await dispatchFinanceProvisioningOnce()
+      await ensureFinanceProvisioningDelivered(result.eventIds)
     } catch (error) {
       log.error(
-        { org_id: organizationId, err: error },
-        'provisioning.finance_reconcile_failed'
+        { org_id: organizationId, err: error, event_ids: result.eventIds },
+        'provisioning.finance_ensure_failed'
       )
+      throw error
     }
   }
 

@@ -1,3 +1,4 @@
+import { AppHttpError } from '@/http/errors'
 import { generateId, normalizeSlug } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
@@ -258,6 +259,8 @@ export async function enqueueFinanceConnectionEvent(
   options: {
     desiredStatus?: FinanceConnectionStatus | null
     trigger?: ProvisioningRunTrigger
+    strictSourceAppId?: string | null
+    strict?: boolean
   } = {}
 ): Promise<FinanceProvisioningOutboxRow | ProvisioningRunRow | null> {
   const trigger = options.trigger ?? 'app_activation'
@@ -295,6 +298,20 @@ export async function enqueueFinanceConnectionEvent(
   const latest = await deps.repository.findLatestOutboxEvent(
     connectionAggregateId
   )
+
+  if (!profile) {
+    const isStrictTarget =
+      options.strict ||
+      (Boolean(options.strictSourceAppId) &&
+        options.strictSourceAppId === locked.appId)
+    if (isStrictTarget) {
+      throw new AppHttpError({
+        code: 'provisioning/application-profile-missing',
+        message: `Published provisioning profile is missing for application ${locked.appId}.`,
+        httpStatus: 500,
+      })
+    }
+  }
 
   if (!profile || profile.financeDependency === 'none') {
     if (!latest) {
@@ -424,7 +441,7 @@ export async function enqueueFinanceConnectionEvent(
     })
   ) {
     if (latest.runId == null) {
-      return attachRun(deps.repository, latest, {
+      await attachRun(deps.repository, latest, {
         subscriptionId: entitlementReference,
         applicationRevision: profile,
         trigger,
@@ -493,8 +510,15 @@ export async function reconcileFinanceConnections(
     startingAfter?: string | null
     desiredStatus?: FinanceConnectionStatus | null
     trigger?: ProvisioningRunTrigger
+    strictSourceAppId?: string | null
+    strict?: boolean
   } = {}
-): Promise<{ examined: number; changed: number; nextCursor: string | null }> {
+): Promise<{
+  examined: number
+  changed: number
+  nextCursor: string | null
+  eventIds: string[]
+}> {
   const limit = options.limit === undefined ? 1000 : options.limit
   const trigger = options.trigger ?? 'app_activation'
 
@@ -508,11 +532,14 @@ export async function reconcileFinanceConnections(
   )
 
   let changed = 0
+  const eventIds: string[] = []
   for (const subscription of rows) {
     const before = subscription.financeLifecycleVersion
     const result = await enqueueFinanceConnectionEvent(deps, subscription, {
       desiredStatus: options.desiredStatus ?? null,
       trigger,
+      strictSourceAppId: options.strictSourceAppId ?? null,
+      strict: options.strict,
     })
 
     const isProvisioningRun =
@@ -521,6 +548,13 @@ export async function reconcileFinanceConnections(
       'id' in result &&
       !('aggregateId' in result)
 
+    const isFinanceEvent =
+      result !== null && typeof result === 'object' && 'aggregateId' in result
+
+    if (isFinanceEvent) {
+      eventIds.push((result as FinanceProvisioningOutboxRow).id)
+    }
+
     if (subscription.financeLifecycleVersion !== before || isProvisioningRun) {
       changed += 1
     }
@@ -528,7 +562,7 @@ export async function reconcileFinanceConnections(
 
   const nextCursor =
     hasMore && rows.length > 0 ? rows[rows.length - 1]!.id : null
-  return { examined: rows.length, changed, nextCursor }
+  return { examined: rows.length, changed, nextCursor, eventIds }
 }
 
 export function financeEventPayload(

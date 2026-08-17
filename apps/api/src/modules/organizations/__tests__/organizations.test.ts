@@ -92,7 +92,6 @@ const {
   // cascade — and the ones with no foreign key at all — before deleting the org
   // row, all inside one transaction.
   purgeCascade: {
-    app: { deleteMany: vi.fn() },
     authorizationCode: { deleteMany: vi.fn() },
     ssoConnection: { deleteMany: vi.fn() },
     provisioningRun: { deleteMany: vi.fn() },
@@ -126,7 +125,7 @@ const {
     delete: vi.fn(),
   },
   user: { findUnique: vi.fn(), findFirst: vi.fn() },
-  app: { findUnique: vi.fn(), findFirst: vi.fn() },
+  app: { findUnique: vi.fn(), findFirst: vi.fn(), deleteMany: vi.fn() },
   subscription: {
     findFirst: vi.fn(),
     findMany: vi.fn(),
@@ -167,6 +166,7 @@ vi.mock('@/db/client', () => ({
     $transaction: vi.fn(async (arg: unknown) =>
       typeof arg === 'function'
         ? (arg as (tx: unknown) => unknown)({
+            app,
             ...purgeCascade,
             organization,
             membership,
@@ -209,9 +209,28 @@ vi.mock('@/services/billing-customer-sync.repository', () => ({
 }))
 
 vi.mock('@/services/finance-provisioning', () => ({
-  reconcileFinanceConnections: vi
-    .fn()
-    .mockResolvedValue({ examined: 0, changed: 0, nextCursor: null }),
+  reconcileFinanceConnections: vi.fn().mockResolvedValue({
+    examined: 0,
+    changed: 0,
+    nextCursor: null,
+    eventIds: [],
+  }),
+}))
+
+vi.mock('@/workers/finance-provisioning-dispatch', () => ({
+  ensureFinanceProvisioningDelivered: vi.fn().mockResolvedValue({
+    claimed: 0,
+    delivered: 0,
+    failed: 0,
+    configured: true,
+    ensured: 0,
+  }),
+  dispatchFinanceProvisioningOnce: vi.fn().mockResolvedValue({
+    claimed: 0,
+    delivered: 0,
+    failed: 0,
+    configured: true,
+  }),
 }))
 
 vi.mock('@/providers/workos/adapter', () => ({

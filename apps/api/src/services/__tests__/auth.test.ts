@@ -17,6 +17,12 @@ import {
 import type { AuthDeps, AuthProviderPort, AuthRepositoryPort } from '../auth'
 import type { AuthUserRow } from '../auth.repository'
 
+vi.mock('@/db/client', () => ({
+  prisma: {},
+  disconnectDb: vi.fn(),
+  pingDb: vi.fn(),
+}))
+
 const NOW = 1_700_000_000
 const CLIENT_ID = 'client_test'
 const PASSWORD = 'sm2uTmv6InrQH6Az'
@@ -102,8 +108,12 @@ function makeRepository(): Mocked<AuthRepositoryPort> {
     updateUser: vi.fn(),
     listConsumerDefaultFeatures: vi.fn(),
     upsertUserFeature: vi.fn(),
-    hasAnyMembership: vi.fn(),
+    hasAnyMembership: vi.fn().mockResolvedValue(false),
+    findFirstMembership: vi.fn().mockResolvedValue(null),
+    findMembership: vi.fn().mockResolvedValue(null),
     createMembership: vi.fn(),
+    updateMembership: vi.fn(),
+    findOrganizationById: vi.fn().mockResolvedValue(null),
     createOrganization: vi.fn(),
     findEmailOtpChallenge: vi.fn(),
     upsertEmailOtpChallenge: vi.fn(),
@@ -757,7 +767,7 @@ describe('AuthService.registerBusiness', () => {
         userId: 'user_local_1',
         workosMembershipId: 'om_1',
         role: 'owner',
-        roleId: 'role_owner',
+        roleId: null,
         status: 'active',
       })
     )
@@ -770,11 +780,85 @@ describe('AuthService.registerBusiness', () => {
     })
   })
 
-  it('still attaches the owner as invited when verification is pending', async () => {
+  it('Test A: finance 503 does not compensate provider org and preserves durable state', async () => {
     const harness = makeHarness()
     arrange(harness)
-    const event = authEvent()
-    harness.provider.login.mockResolvedValue(event)
+    const finance503 = new AppHttpError({
+      code: 'provisioning/finance-workspace-unavailable',
+      message: 'The finance workspace could not be prepared.',
+      httpStatus: 503,
+    })
+    harness.deps.provisionOrganization.mockRejectedValue(finance503)
+
+    await expect(
+      harness.service.registerBusiness({
+        email: 'alejandra@example.com',
+        password: PASSWORD,
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+        organizationName: 'Reyes Logistics',
+        sourceAppId: '876-invoice',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-workspace-unavailable',
+      httpStatus: 503,
+    })
+
+    // Assert that the WorkOS org and local bootstrap were NOT deleted/compensated
+    expect(harness.provider.deleteOrganization).not.toHaveBeenCalled()
+    expect(harness.provider.createOrganization).toHaveBeenCalledTimes(1)
+    expect(harness.repository.createOrganization).toHaveBeenCalledTimes(1)
+    expect(harness.repository.createMembership).toHaveBeenCalledTimes(1)
+  })
+
+  it('Test B: identical retry resumes same organization without duplicate orgs or slug drift', async () => {
+    const harness = makeHarness()
+    arrange(harness)
+    const finance503 = new AppHttpError({
+      code: 'provisioning/finance-workspace-unavailable',
+      message: 'The finance workspace could not be prepared.',
+      httpStatus: 503,
+    })
+
+    // First attempt fails during finance ensure
+    harness.deps.provisionOrganization.mockRejectedValueOnce(finance503)
+
+    await expect(
+      harness.service.registerBusiness({
+        email: 'alejandra@example.com',
+        password: PASSWORD,
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+        organizationName: 'Reyes Logistics',
+        sourceAppId: '876-invoice',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-workspace-unavailable',
+    })
+
+    // Second attempt: user already exists locally and has the created membership
+    harness.provider.register.mockRejectedValue(
+      new AppHttpError({
+        code: 'auth/email-already-exists',
+        message: 'exists',
+        httpStatus: 409,
+      })
+    )
+    harness.provider.login.mockResolvedValue(authSession())
+    harness.repository.findUserByWorkosId.mockResolvedValue(userRow())
+    harness.repository.findFirstMembership.mockResolvedValue({
+      id: 'mem_1',
+      organizationId: 'organization_1',
+      userId: 'user_local_1',
+      workosMembershipId: 'om_1',
+      role: 'owner',
+      roleId: 'role_owner',
+      status: 'active',
+    })
+    // Finance workspace is now ready
+    harness.deps.provisionOrganization.mockResolvedValue({
+      owner: { id: 'role_owner' },
+    })
 
     const result = await harness.service.registerBusiness({
       email: 'alejandra@example.com',
@@ -782,20 +866,24 @@ describe('AuthService.registerBusiness', () => {
       firstName: 'Alejandra',
       lastName: 'Reyes',
       organizationName: 'Reyes Logistics',
+      sourceAppId: '876-invoice',
     })
 
-    expect(result).toEqual({ status: 'pending', event })
-    expect(harness.repository.createMembership).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'invited' })
+    expect(result.status).toBe('ok')
+    // No second WorkOS or local org created
+    expect(harness.provider.createOrganization).toHaveBeenCalledTimes(1)
+    expect(harness.repository.createOrganization).toHaveBeenCalledTimes(1)
+    expect(harness.deps.resolveRegistrationSlug).toHaveBeenCalledTimes(1)
+    // Provision organization was re-executed for finance readiness
+    expect(harness.deps.provisionOrganization).toHaveBeenCalledTimes(2)
+    expect(harness.deps.provisionOrganization).toHaveBeenLastCalledWith(
+      'organization_1',
+      NOW,
+      { sourceAppId: '876-invoice' }
     )
-    expect(harness.deps.ensureDefaultContact).toHaveBeenCalledTimes(1)
-    // An unverified owner has no session, so no app assignment and no
-    // activation — both wait for the verified sign-in.
-    expect(harness.deps.assignMemberApps).not.toHaveBeenCalled()
-    expect(harness.repository.updateUser).not.toHaveBeenCalled()
   })
 
-  it('signs an adopted user with an existing membership in without creating an org', async () => {
+  it('Test C: existing membership cannot bypass finance check', async () => {
     const harness = makeHarness()
     arrange(harness)
     harness.provider.register.mockRejectedValue(
@@ -807,7 +895,41 @@ describe('AuthService.registerBusiness', () => {
     )
     harness.provider.login.mockResolvedValue(authSession())
     harness.repository.findUserByWorkosId.mockResolvedValue(userRow())
-    harness.repository.hasAnyMembership.mockResolvedValue(true)
+    harness.repository.findFirstMembership.mockResolvedValue({
+      id: 'mem_1',
+      organizationId: 'organization_1',
+      userId: 'user_local_1',
+      workosMembershipId: 'om_1',
+      role: 'owner',
+      roleId: 'role_owner',
+      status: 'active',
+    })
+
+    // Finance is unavailable on first retry
+    const finance503 = new AppHttpError({
+      code: 'provisioning/finance-workspace-unavailable',
+      message: 'Finance unavailable',
+      httpStatus: 503,
+    })
+    harness.deps.provisionOrganization.mockRejectedValueOnce(finance503)
+
+    await expect(
+      harness.service.registerBusiness({
+        email: 'alejandra@example.com',
+        password: PASSWORD,
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+        organizationName: 'Reyes Logistics',
+        sourceAppId: '876-invoice',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/finance-workspace-unavailable',
+    })
+
+    // Finance becomes available on subsequent call
+    harness.deps.provisionOrganization.mockResolvedValueOnce({
+      owner: { id: 'role_owner' },
+    })
 
     const result = await harness.service.registerBusiness({
       email: 'alejandra@example.com',
@@ -815,15 +937,74 @@ describe('AuthService.registerBusiness', () => {
       firstName: 'Alejandra',
       lastName: 'Reyes',
       organizationName: 'Reyes Logistics',
+      sourceAppId: '876-invoice',
     })
 
     expect(result.status).toBe('ok')
-    expect(harness.provider.createOrganization).not.toHaveBeenCalled()
-    expect(harness.repository.createOrganization).not.toHaveBeenCalled()
-    expect(harness.repository.createMembership).not.toHaveBeenCalled()
   })
 
-  it('deletes the provider organization when a later step fails', async () => {
+  it('Test D: authentication challenge does not defer organization/product provisioning', async () => {
+    const harness = makeHarness()
+    arrange(harness)
+    const event = authEvent({ kind: 'email_verification_required' })
+    harness.provider.login.mockResolvedValue(event)
+
+    const result = await harness.service.registerBusiness({
+      email: 'alejandra@example.com',
+      password: PASSWORD,
+      firstName: 'Alejandra',
+      lastName: 'Reyes',
+      organizationName: 'Reyes Logistics',
+      sourceAppId: '876-invoice',
+    })
+
+    expect(result).toEqual({ status: 'pending', event })
+    // Product provisioning is complete immediately, never deferred
+    expect(harness.deps.provisionOrganization).toHaveBeenCalledWith(
+      'organization_1',
+      NOW,
+      { sourceAppId: '876-invoice' }
+    )
+    expect(harness.deps.assignMemberApps).toHaveBeenCalledTimes(1)
+    expect(harness.deps.ensureDefaultContact).toHaveBeenCalledTimes(1)
+    expect(harness.repository.createMembership).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'organization_1',
+        userId: 'user_local_1',
+        status: 'active',
+      })
+    )
+    // User session remains unverified pending verification challenge
+    expect(harness.repository.updateUser).not.toHaveBeenCalled()
+  })
+
+  it('Test E: source provisioning profile missing fails closed', async () => {
+    const harness = makeHarness()
+    arrange(harness)
+    const missingProfileError = new AppHttpError({
+      code: 'provisioning/application-profile-missing',
+      message:
+        'Published provisioning profile is missing for application 876-invoice.',
+      httpStatus: 500,
+    })
+    harness.deps.provisionOrganization.mockRejectedValue(missingProfileError)
+
+    await expect(
+      harness.service.registerBusiness({
+        email: 'alejandra@example.com',
+        password: PASSWORD,
+        firstName: 'Alejandra',
+        lastName: 'Reyes',
+        organizationName: 'Reyes Logistics',
+        sourceAppId: '876-invoice',
+      })
+    ).rejects.toMatchObject({
+      code: 'provisioning/application-profile-missing',
+      httpStatus: 500,
+    })
+  })
+
+  it('deletes the provider organization when a genuine database failure occurs during bootstrap', async () => {
     const harness = makeHarness()
     arrange(harness)
     const failure = new Error('database unavailable')

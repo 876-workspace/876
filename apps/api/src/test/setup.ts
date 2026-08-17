@@ -5,4 +5,10 @@
  * here: modules call `getLogger()` and read settings at import time, which
  * happens before any hook in this file runs.
  */
-export {}
+import { vi } from 'vitest'
+
+vi.mock('@/db/client', () => ({
+  prisma: {},
+  disconnectDb: vi.fn(),
+  pingDb: vi.fn(),
+}))

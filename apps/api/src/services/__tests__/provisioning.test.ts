@@ -41,11 +41,14 @@ vi.mock('../finance-provisioning.repository', () => ({
   createFinanceProvisioningRepository,
 }))
 
-const { dispatchFinanceProvisioningOnce } = vi.hoisted(() => ({
-  dispatchFinanceProvisioningOnce: vi.fn(),
-}))
+const { dispatchFinanceProvisioningOnce, ensureFinanceProvisioningDelivered } =
+  vi.hoisted(() => ({
+    dispatchFinanceProvisioningOnce: vi.fn(),
+    ensureFinanceProvisioningDelivered: vi.fn(),
+  }))
 vi.mock('@/workers/finance-provisioning-dispatch', () => ({
   dispatchFinanceProvisioningOnce,
+  ensureFinanceProvisioningDelivered,
 }))
 
 const {
@@ -83,12 +86,14 @@ beforeEach(() => {
     examined: 3,
     changed: 3,
     nextCursor: null,
+    eventIds: ['fpe_new_1'],
   })
-  dispatchFinanceProvisioningOnce.mockResolvedValue({
+  ensureFinanceProvisioningDelivered.mockResolvedValue({
     claimed: 1,
     delivered: 1,
     failed: 0,
     configured: true,
+    ensured: 1,
   })
   prisma.subscription.create.mockResolvedValue({})
   prisma.subscription.update.mockResolvedValue({})
@@ -166,39 +171,71 @@ describe('provisionOrgApps', () => {
     expect(reconcileFinanceConnections).toHaveBeenCalledTimes(1)
     expect(reconcileFinanceConnections).toHaveBeenCalledWith(
       { repository: { marker: 'repo' } },
-      { organizationId: ORG, limit: null }
+      { organizationId: ORG, strictSourceAppId: null, limit: null }
     )
   })
 
-  // The signup request ends in a redirect into the app, so the workspace has to
-  // exist by the time the user lands rather than whenever a poller next runs.
   it('delivers the finance event inline instead of waiting for the poller', async () => {
     await provisionOrgApps(ORG)
 
-    expect(dispatchFinanceProvisioningOnce).toHaveBeenCalledTimes(1)
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledTimes(1)
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith([
+      'fpe_new_1',
+    ])
   })
 
-  it('does not reconcile when every app was already provisioned', async () => {
+  it('delivers the new organization even when a large backlog exists', async () => {
+    reconcileFinanceConnections.mockResolvedValue({
+      examined: 1,
+      changed: 1,
+      nextCursor: null,
+      eventIds: ['fpe_new_org'],
+    })
+    await provisionOrgApps(ORG)
+    expect(ensureFinanceProvisioningDelivered).toHaveBeenCalledWith([
+      'fpe_new_org',
+    ])
+    expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
+  })
+
+  it('does not dispatch when no finance events were created', async () => {
+    reconcileFinanceConnections.mockResolvedValue({
+      examined: 3,
+      changed: 0,
+      nextCursor: null,
+      eventIds: [],
+    })
+    await provisionOrgApps(ORG)
+    expect(ensureFinanceProvisioningDelivered).not.toHaveBeenCalled()
+    expect(dispatchFinanceProvisioningOnce).not.toHaveBeenCalled()
+  })
+
+  it('re-runs finance reconcile even when every app was already provisioned', async () => {
     prisma.subscription.findFirst.mockResolvedValue({ id: 'sub_existing' })
 
     const provisioned = await provisionOrgApps(ORG)
 
     expect(provisioned).toEqual([])
-    expect(reconcileFinanceConnections).not.toHaveBeenCalled()
+    expect(reconcileFinanceConnections).toHaveBeenCalledWith(
+      { repository: { marker: 'repo' } },
+      { organizationId: ORG, strictSourceAppId: null, limit: null }
+    )
   })
 
-  it('still returns the provisioned apps when the reconcile fails', async () => {
-    // The account and org already exist by this point, so a finance hiccup must
-    // not roll a successful signup back onto the user.
+  it('fails provisioning when the finance workspace cannot be delivered', async () => {
     reconcileFinanceConnections.mockRejectedValue(new Error('billing down'))
 
-    const provisioned = await provisionOrgApps(ORG)
+    await expect(provisionOrgApps(ORG)).rejects.toThrow('billing down')
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
+  })
 
-    expect(provisioned).toEqual([
-      'app_876-enterprise',
-      'app_876-billing',
-      'app_876-invoice',
-    ])
+  it('fails provisioning when finance ensure fails even though subscriptions were created', async () => {
+    ensureFinanceProvisioningDelivered.mockRejectedValue(
+      new Error('provisioning/finance-workspace-unavailable')
+    )
+    await expect(provisionOrgApps(ORG)).rejects.toThrow(
+      'provisioning/finance-workspace-unavailable'
+    )
     expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
   })
 

@@ -148,6 +148,24 @@ export type AuthProviderPort = {
   }): string
 }
 
+export type AuthMembershipRow = {
+  id: string
+  organizationId: string
+  userId: string
+  workosMembershipId: string | null
+  role: string
+  roleId: string | null
+  status: string
+}
+
+export type AuthOrganizationRow = {
+  id: string
+  workosOrganizationId: string | null
+  name: string | null
+  slug: string
+  status: string
+}
+
 export type AuthRepositoryPort = {
   findUserByUsername(username: string): Promise<AuthUserRow | null>
   findUserByWorkosId(workosUserId: string): Promise<AuthUserRow | null>
@@ -189,6 +207,11 @@ export type AuthRepositoryPort = {
     updatedAt: bigint
   }): Promise<void>
   hasAnyMembership(userId: string): Promise<boolean>
+  findFirstMembership(userId: string): Promise<AuthMembershipRow | null>
+  findMembership(
+    organizationId: string,
+    userId: string
+  ): Promise<AuthMembershipRow | null>
   createMembership(data: {
     id: string
     organizationId: string
@@ -200,6 +223,15 @@ export type AuthRepositoryPort = {
     createdAt: bigint
     updatedAt: bigint
   }): Promise<void>
+  updateMembership(
+    id: string,
+    data: {
+      status?: string
+      roleId?: string | null
+      updatedAt: bigint
+    }
+  ): Promise<void>
+  findOrganizationById(id: string): Promise<AuthOrganizationRow | null>
   createOrganization(data: {
     id: string
     workosOrganizationId: string | null
@@ -245,6 +277,7 @@ export type AuthDeps = {
     organizationId: string
     userId: string
     now: number
+    sourceAppId?: string | null
   }): Promise<void>
   /** `services/provisioning.ts` — seeds the org's primary contact. */
   ensureDefaultContact(
@@ -265,6 +298,13 @@ export type AuthDeps = {
     code: string
   }): Promise<boolean>
   settings?: { workosClientId: string; otpDeliveryUrl: string }
+}
+
+export function isFinanceWorkspaceUnavailable(error: unknown): boolean {
+  return (
+    error instanceof AppHttpError &&
+    error.code === 'provisioning/finance-workspace-unavailable'
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -766,12 +806,7 @@ export class AuthService {
     const password = validatePassword(params.password)
     const email = validateEmail(params.email)
 
-    const slug = await this.deps.resolveRegistrationSlug(
-      organizationName,
-      params.organizationSlug ?? null
-    )
-
-    const { user: workosUser, createdNow } =
+    const { user: workosUser } =
       await this.registerOrAdoptWorkosUser({
         email,
         password,
@@ -780,38 +815,70 @@ export class AuthService {
         metadata: {},
       })
 
-    let workosOrganizationId: string | null = null
-    try {
-      const now = nowUnixSeconds()
-      const nowBigint = BigInt(now)
-      const { user: localUser } = await this.ensureLocalUser({
-        workosUser,
-        fallbackFirstName: firstName,
-        fallbackLastName: lastName,
-        now,
+    const now = nowUnixSeconds()
+    const nowBigint = BigInt(now)
+    const { user: localUser } = await this.ensureLocalUser({
+      workosUser,
+      fallbackFirstName: firstName,
+      fallbackLastName: lastName,
+      now,
+    })
+
+    // Check if the user already has an existing organization bootstrap to resume.
+    const existingMembership = await this.deps.repository.findFirstMembership(
+      localUser.id
+    )
+
+    if (existingMembership) {
+      const organizationId = existingMembership.organizationId
+
+      // Re-run strict product provisioning to ensure all required app resources
+      // and finance connections are ready before reporting success.
+      await this.deps.provisionOrganization(organizationId, now, {
+        sourceAppId: params.sourceAppId ?? null,
       })
 
-      // An adopted account that already belongs to an organization is signing
-      // in, not signing up — issue the session and create nothing.
-      if (
-        !createdNow &&
-        (await this.deps.repository.hasAnyMembership(localUser.id))
-      ) {
-        const loginResult = await this.deps.provider.login({
-          email,
-          password,
-          clientId: this.clientId,
-        })
-        if (isAuthEvent(loginResult)) return pending(loginResult)
+      await this.deps.assignMemberApps({
+        organizationId,
+        userId: localUser.id,
+        now,
+        sourceAppId: params.sourceAppId ?? null,
+      })
 
-        await this.deps.repository.updateUser(localUser.id, {
-          emailVerified: loginResult.user.emailVerified,
-          status: 'active',
-          updatedAt: nowBigint,
-        })
-        return ok(loginResult)
-      }
+      await this.deps.ensureDefaultContact(
+        organizationId,
+        {
+          id: localUser.id,
+          firstName: localUser.firstName,
+          lastName: localUser.lastName,
+          email: localUser.email,
+          phone: localUser.phone,
+        },
+        now
+      )
 
+      const loginResult = await this.deps.provider.login({
+        email,
+        password,
+        clientId: this.clientId,
+      })
+      if (isAuthEvent(loginResult)) return pending(loginResult)
+
+      await this.deps.repository.updateUser(localUser.id, {
+        emailVerified: loginResult.user.emailVerified,
+        status: 'active',
+        updatedAt: nowBigint,
+      })
+      return ok(loginResult)
+    }
+
+    const slug = await this.deps.resolveRegistrationSlug(
+      organizationName,
+      params.organizationSlug ?? null
+    )
+
+    let workosOrganizationId: string | null = null
+    try {
       const organizationId = generateId('organization')
       const workosOrg = await this.deps.provider.createOrganization({
         name: organizationName,
@@ -842,53 +909,20 @@ export class AuthService {
         updatedAt: nowBigint,
       })
 
-      const orgRoles = await this.deps.provisionOrganization(localOrg.id, now, {
-        sourceAppId: params.sourceAppId ?? null,
-      })
-      const ownerRole = orgRoles[OWNER_ROLE_NAME]
-
-      const loginResult = await this.deps.provider.login({
-        email,
-        password,
-        clientId: this.clientId,
-      })
-
-      // A pending event still gets the membership — the org exists and the
-      // owner must be attached to it, or verifying the email later lands them
-      // in an organization they do not belong to.
-      const membershipStatus = isAuthEvent(loginResult) ? 'invited' : 'active'
+      // Phase A: Create owner membership, app assignments, and default contact
+      // as part of durable organization bootstrap.
       await this.deps.repository.createMembership({
         id: generateId('membership'),
         organizationId: localOrg.id,
         userId: localUser.id,
         workosMembershipId: workosMembership.id,
         role: OWNER_ROLE_NAME,
-        roleId: ownerRole?.id ?? null,
-        status: membershipStatus,
+        roleId: null,
+        status: 'active',
         createdAt: nowBigint,
         updatedAt: nowBigint,
       })
 
-      if (isAuthEvent(loginResult)) {
-        await this.deps.ensureDefaultContact(
-          localOrg.id,
-          {
-            id: localUser.id,
-            firstName: localUser.firstName,
-            lastName: localUser.lastName,
-            email: localUser.email,
-            phone: localUser.phone,
-          },
-          now
-        )
-        return pending(loginResult)
-      }
-
-      await this.deps.assignMemberApps({
-        organizationId: localOrg.id,
-        userId: localUser.id,
-        now,
-      })
       await this.deps.ensureDefaultContact(
         localOrg.id,
         {
@@ -901,6 +935,42 @@ export class AuthService {
         now
       )
 
+      await this.deps.assignMemberApps({
+        organizationId: localOrg.id,
+        userId: localUser.id,
+        now,
+        sourceAppId: params.sourceAppId ?? null,
+      })
+
+      // Phase A/B: Provision default roles, subscriptions, and synchronous finance readiness
+      const orgRoles = await this.deps.provisionOrganization(localOrg.id, now, {
+        sourceAppId: params.sourceAppId ?? null,
+      })
+      const ownerRole = orgRoles[OWNER_ROLE_NAME]
+      if (ownerRole?.id) {
+        const membership = await this.deps.repository.findMembership(
+          localOrg.id,
+          localUser.id
+        )
+        if (membership) {
+          await this.deps.repository.updateMembership(membership.id, {
+            roleId: ownerRole.id,
+            updatedAt: nowBigint,
+          })
+        }
+      }
+
+      // Phase C: Provider login & session finalization
+      const loginResult = await this.deps.provider.login({
+        email,
+        password,
+        clientId: this.clientId,
+      })
+
+      if (isAuthEvent(loginResult)) {
+        return pending(loginResult)
+      }
+
       await this.deps.repository.updateUser(localUser.id, {
         emailVerified: loginResult.user.emailVerified,
         status: 'active',
@@ -908,6 +978,9 @@ export class AuthService {
       })
       return ok(loginResult)
     } catch (error) {
+      if (isFinanceWorkspaceUnavailable(error)) {
+        throw error
+      }
       if (workosOrganizationId !== null) {
         try {
           await this.deps.provider.deleteOrganization(workosOrganizationId)

@@ -34,10 +34,8 @@ const CUSTOMER_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
 ]
 
-const PROVISIONING_ERROR_CODES = new Set([
-  'billing/tenant-not-found',
-  'billing/unreachable',
-])
+const TENANT_NOT_FOUND = 'billing/tenant-not-found'
+const BILLING_UNREACHABLE = 'billing/unreachable'
 
 type Props = { searchParams: Promise<{ status?: string }> }
 
@@ -104,13 +102,42 @@ async function CustomersTableData({ searchParams }: Props) {
   if (result.error) {
     redirectIfSignedOut(result.error.code, '/customers')
 
-    const provisioning = PROVISIONING_ERROR_CODES.has(result.error.code)
+    const isTenantNotFound = result.error.code === TENANT_NOT_FOUND
+    const isUnreachable = result.error.code === BILLING_UNREACHABLE
 
-    // A permanent misconfiguration — a missing workspace membership or an
-    // unscoped finance connection — is not transient, and "try again shortly"
-    // sends someone into an endless reload. Report it, and show the operator
-    // the code so the cause is diagnosable from the screen.
-    if (!provisioning)
+    if (isTenantNotFound) {
+      Sentry.captureMessage('Invoice customers list: tenant not found invariant', {
+        level: 'error',
+        tags: { category: 'billing_client' },
+        extra: {
+          call: 'customers.list',
+          errorCode: result.error.code,
+          organizationId: context.orgId,
+        },
+      })
+      return (
+        <div className="rounded-lg border border-dashed p-10 text-center">
+          <p className="text-sm font-medium">Billing workspace missing</p>
+          <p className="text-muted-foreground mt-1 text-sm">{result.error.message}</p>
+          <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+        </div>
+      )
+    }
+    if (isUnreachable) {
+      Sentry.captureMessage('Invoice customers list: billing unreachable', {
+        level: 'warning',
+        tags: { category: 'billing_client' },
+        extra: { call: 'customers.list', errorCode: result.error.code, organizationId: context.orgId },
+      })
+      return (
+        <div className="rounded-lg border border-dashed p-10 text-center">
+          <p className="text-sm font-medium">Billing is unreachable</p>
+          <p className="text-muted-foreground mt-1 text-sm">Please retry shortly. If this persists, contact support.</p>
+          <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+        </div>
+      )
+    }
+
       Sentry.captureMessage('Invoice customers list failed', {
         level: 'error',
         tags: { category: 'billing_client' },
@@ -123,19 +150,9 @@ async function CustomersTableData({ searchParams }: Props) {
 
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
-        <p className="text-sm font-medium">
-          {provisioning
-            ? 'Setting up your Invoice workspace'
-            : 'Customers are unavailable right now'}
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {provisioning ? 'Please try again shortly.' : result.error.message}
-        </p>
-        {provisioning ? null : (
-          <p className="text-muted-foreground mt-2 font-mono text-xs">
-            {result.error.code}
-          </p>
-        )}
+        <p className="text-sm font-medium">Customers are unavailable right now</p>
+        <p className="text-muted-foreground mt-1 text-sm">{result.error.message}</p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
       </div>
     )
   }

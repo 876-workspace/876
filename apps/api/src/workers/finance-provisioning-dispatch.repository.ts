@@ -1,4 +1,5 @@
 import { prisma } from '@/db/client'
+import { Prisma } from '@/db/generated/prisma/client'
 
 const LOCK_TIMEOUT_SECONDS = 5 * 60
 
@@ -224,6 +225,82 @@ export async function claimFinanceProvisioningEvents(
       .map((id) => refreshedById.get(id))
       .filter((row): row is FinanceProvisioningOutboxRow => row !== undefined)
   })
+}
+
+export async function claimFinanceProvisioningEventsByIds(
+  now: number,
+  eventIds: string[]
+): Promise<FinanceProvisioningOutboxRow[]> {
+  if (eventIds.length === 0) return []
+  return prisma.$transaction(async (tx) => {
+    const ids = [...new Set(eventIds)]
+    const idRows = await tx.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id FROM finance_provisioning_outbox
+         WHERE id IN (${Prisma.join(ids)})
+           AND (
+             status IN ('pending','failed')
+             OR (status = 'processing' AND locked_at <= ${BigInt(now - LOCK_TIMEOUT_SECONDS)})
+           )
+           AND available_at <= ${BigInt(now)}
+         FOR UPDATE SKIP LOCKED`
+    )
+    if (idRows.length === 0) return []
+    const claimedIds = idRows.map((row) => row.id)
+
+    await tx.financeProvisioningOutbox.updateMany({
+      where: { id: { in: claimedIds } },
+      data: {
+        status: 'processing',
+        attemptCount: { increment: 1 },
+        lockedAt: BigInt(now),
+        lastError: null,
+        updatedAt: BigInt(now),
+      },
+    })
+
+    const rows = await tx.financeProvisioningOutbox.findMany({
+      where: { id: { in: claimedIds } },
+    })
+    const byId = new Map(
+      rows.map((row) => [row.id, row as FinanceProvisioningOutboxRow])
+    )
+    const ordered = claimedIds
+      .map((id) => byId.get(id))
+      .filter((r): r is FinanceProvisioningOutboxRow => r !== undefined)
+    const runIds = ordered
+      .map((r) => r.runId)
+      .filter((v): v is string => v !== null)
+    if (runIds.length > 0) {
+      for (const runId of runIds) {
+        const existing = await tx.provisioningRun.findUnique({
+          where: { id: runId },
+          select: { id: true },
+        })
+        if (existing) await markProcessing(tx, runId, now)
+      }
+    }
+    const refreshed = await tx.financeProvisioningOutbox.findMany({
+      where: { id: { in: claimedIds } },
+    })
+    const refreshedById = new Map(
+      refreshed.map((row) => [row.id, row as FinanceProvisioningOutboxRow])
+    )
+    return claimedIds
+      .map((id) => refreshedById.get(id))
+      .filter((r): r is FinanceProvisioningOutboxRow => r !== undefined)
+  })
+}
+
+export async function getFinanceProvisioningEventsByIds(
+  eventIds: string[]
+): Promise<FinanceProvisioningOutboxRow[]> {
+  if (eventIds.length === 0) return []
+  const ids = [...new Set(eventIds)]
+  const rows = await prisma.financeProvisioningOutbox.findMany({
+    where: { id: { in: ids } },
+  })
+  return rows as FinanceProvisioningOutboxRow[]
 }
 
 export async function markFinanceProvisioningDelivered(
