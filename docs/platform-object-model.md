@@ -22,7 +22,8 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 
 | Resource          | Canonical public namespace | Owning service                                      | Notes                                                                                                |
 | ----------------- | -------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, session                                                                             |
+| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, recovery, OTP, OAuth session-establishment flows                                    |
+| Sessions          | `$876.sessions`            | Core (`@876/sdk` / `@876/admin`)                    | `me` for self-scoped session operations; `.admin` for platform-wide; pre-#314 root admin methods remain compatibility aliases on admin-enabled surfaces |
 | Users             | `$876.users`               | Core (`@876/sdk` / `@876/admin`)                    | `me` = self, `admin` = platform-wide                                                                 |
 | Organizations     | `$876.organizations`       | Core                                                | `admin` for platform-wide                                                                            |
 | Memberships       | `$876.memberships`         | Core                                                | org membership / team                                                                                |
@@ -161,12 +162,28 @@ and `packages/client/src/resource-manifest.ts`.
 - Owner: Billing
 - Verbs: `list`, `create`, `retrieve`, `update`, `delete`, `apply`
 
+### sessions
+
+- Public: `$876.sessions`
+- Owner: Core
+- Self: `$876.sessions.me.retrieve()` → `GET /auth/session`; `$876.sessions.me.list()` → `GET /auth/me/sessions`; `$876.sessions.me.revoke(sessionId)` → `DELETE /auth/me/sessions/{id}`.
+- Admin: `$876.sessions.admin.list()` → `GET /sessions`; `retrieve(sessionId)` → `GET /sessions/{id}`; `revoke(sessionId)` → `DELETE /sessions/{id}`; `revokeForUser(userId)` → `DELETE /users/{id}/sessions`.
+- Compatibility on admin-enabled surfaces: pre-existing `$876.sessions.list/retrieve/revoke/revokeForUser` remain direct aliases of the same `@876/admin` resource and MUST NOT be repurposed.
+- Owning SDK compatibility: `$876.auth.getSession()` / `$876.auth.me.listSessions()` / `$876.auth.me.revokeSession()` remain unchanged.
+
 ### subscriptions
 
 - Public: `$876.subscriptions`
 - Owner: Billing (commercial)
 - Verbs: `create`, `pause`, `resume`, `cancel`, `reactivate`, `extend`, `bill`, `upcomingInvoice`, `previewProration`, `charges.create`, `discounts.create` etc — preserve real business actions, do not flatten to CRUD
 - Collisions: not to be confused with `entitlements`.
+
+### provisioning
+
+- Public: `$876.provisioning`
+- Owner: Core (`@876/admin` control plane)
+- Verbs: `retrieve(targetType, targetKey)` → `GET /provisioning/manifests/{target}`, `validate` → `POST /.../validate`, `publish` → `POST /.../publish`, `published.retrieve` → `GET /.../published` (alias of `retrievePublished`), `catalog.retrieve` → `GET /provisioning/catalog/{target}` (alias of `retrieveCatalog`), `draft.update` → `PUT /.../draft` (alias of `replaceDraft`), `runs.list`/`retrieve`/`retry`/`reconcile`, `runs.claim` → `POST /provisioning/runs/application/claim` (alias of `claimApplication`), `runs.complete` → `POST /provisioning/runs/{id}/complete` (alias of `completeApplication`), `notes.list`/`create`/`delete`
+- Compatibility: existing long-form names (`retrievePublished`, `retrieveCatalog`, `replaceDraft`, `runs.claimApplication`, `runs.completeApplication`) remain as compatibility aliases; new nested forms delegate with no duplicate transport.
 
 ### taxRates / taxAuthorities / bankAccounts / bankTransactions / discounts / paymentModes / paymentProviders
 

@@ -93,19 +93,12 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
   it('exposes the resources whose omission broke Cloudflare builds', () => {
     const $876 = create876ServerClient({ app: '876', apiKey: API_KEY })
 
-    // #256 casualty
     expect($876.oauthGrants.list).toBeTypeOf('function')
     expect($876.oauthGrants.revoke).toBeTypeOf('function')
-    // #255 casualties
     expect($876.auditEvents.create).toBeTypeOf('function')
-    // Core entitlement-plan catalog is `entitlementPlans`, never `products`
-    // (products is Billing-only) — the resolved collision guard
     expect($876.entitlementPlans.list).toBeTypeOf('function')
     expect(has($876, 'products')).toBe(false)
-    // entitlements is the core noun, must never revert to `subscriptions`
     expect($876.entitlements.list).toBeTypeOf('function')
-    // self-scoped user resources that were present in the SDK but missing from
-    // the composed surface (same omission class as #255/#256)
     expect($876.mobileNumbers.list).toBeTypeOf('function')
     expect($876.mobileNumberVerifications.create).toBeTypeOf('function')
   })
@@ -119,11 +112,48 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
     ]
     for (const $876 of surfaces) {
       expect($876.auth).toBeDefined()
+      expect($876.sessions).toBeDefined()
+      expect($876.sessions.me.retrieve).toBeTypeOf('function')
+      expect($876.sessions.me.list).toBeTypeOf('function')
+      expect($876.sessions.me.revoke).toBeTypeOf('function')
       expect($876.users.me).toBeDefined()
       expect($876.organizations).toBeDefined()
       expect($876.apps).toBeDefined()
       expect($876.entitlements).toBeDefined()
     }
+  })
+
+  it('preserves admin sessions at root while exposing me and admin namespaces on console', () => {
+    const $876 = create876ServerClient(consoleOptions())
+
+    expect($876.sessions.me.retrieve).toBeTypeOf('function')
+    expect($876.sessions.me.list).toBeTypeOf('function')
+    expect($876.sessions.me.revoke).toBeTypeOf('function')
+
+    expect($876.sessions.admin.list).toBeTypeOf('function')
+    expect($876.sessions.admin.retrieve).toBeTypeOf('function')
+    expect($876.sessions.admin.revoke).toBeTypeOf('function')
+    expect($876.sessions.admin.revokeForUser).toBeTypeOf('function')
+
+    expect($876.sessions.list).toBeTypeOf('function')
+    expect($876.sessions.retrieve).toBeTypeOf('function')
+    expect($876.sessions.revoke).toBeTypeOf('function')
+    expect($876.sessions.revokeForUser).toBeTypeOf('function')
+  })
+
+  it('exposes provisioning nested aliases on console', () => {
+    const $876 = create876ServerClient(consoleOptions())
+    expect($876.provisioning.retrieve).toBeTypeOf('function')
+    expect($876.provisioning.published.retrieve).toBeTypeOf('function')
+    expect($876.provisioning.catalog.retrieve).toBeTypeOf('function')
+    expect($876.provisioning.draft.update).toBeTypeOf('function')
+    expect($876.provisioning.runs.claim).toBeTypeOf('function')
+    expect($876.provisioning.runs.complete).toBeTypeOf('function')
+    expect($876.provisioning.retrievePublished).toBeTypeOf('function')
+    expect($876.provisioning.retrieveCatalog).toBeTypeOf('function')
+    expect($876.provisioning.replaceDraft).toBeTypeOf('function')
+    expect($876.provisioning.runs.claimApplication).toBeTypeOf('function')
+    expect($876.provisioning.runs.completeApplication).toBeTypeOf('function')
   })
 })
 
@@ -134,7 +164,6 @@ describe('per-app resource boundaries (no cross-app leakage)', () => {
     expect($876.payments).toBeDefined()
     expect($876.customers).toBeDefined()
     expect($876.subscriptions).toBeDefined()
-    // `products` on the Billing surface is the commercial catalog (Billing-owned)
     expect($876.products.list).toBeTypeOf('function')
     expect(has($876, 'packages')).toBe(false)
     expect(has($876, 'branches')).toBe(false)
@@ -171,11 +200,208 @@ describe('browser surface never leaks server-only resources', () => {
   })
 
   it('accepts an app id without forwarding it to the strict SDK options schema', () => {
-    // Regression: the SDK parses options with z.strictObject, so forwarding an
-    // unknown `app` key made create876Client({ app }) throw at runtime.
     expect(() => create876Client({ app: 'console' })).not.toThrow()
     const browser = create876Client({ app: 'enterprise' })
     expect(browser.auth).toBeDefined()
     expect(has(browser, 'app')).toBe(false)
+  })
+
+  it('exposes self sessions on browser without admin or legacy admin roots', () => {
+    const browser = create876Client()
+    expect(browser.sessions.me.retrieve).toBeTypeOf('function')
+    expect(browser.sessions.me.list).toBeTypeOf('function')
+    expect(browser.sessions.me.revoke).toBeTypeOf('function')
+    expect('admin' in browser.sessions).toBe(false)
+    expect('list' in browser.sessions).toBe(false)
+    expect('retrieve' in browser.sessions).toBe(false)
+    expect('revoke' in browser.sessions).toBe(false)
+  })
+})
+
+describe('facade delegation parity', () => {
+  it('sessions.me delegates to underlying SDK auth methods', async () => {
+    const getSession = vi.fn().mockResolvedValue({ data: { object: 'session' }, error: null })
+    const listSessions = vi.fn().mockResolvedValue({ data: [], error: null })
+    const revokeSession = vi.fn().mockResolvedValue({ data: { object: 'session' }, error: null })
+
+    const { createCoreSurface } = await import('./composers/base.ts')
+    const platform: any = {
+      auth: {
+        getSession,
+        me: { listSessions, revokeSession },
+        login: vi.fn(),
+        logout: vi.fn(),
+      },
+      oauth: {},
+      oauthGrants: {},
+      auditEvents: {},
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      locations: {},
+      contacts: {},
+      departments: {},
+      employees: {},
+      roles: {},
+      permissions: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      mobileNumbers: {},
+      mobileNumberVerifications: {},
+      products: {},
+    }
+    const core = createCoreSurface({ platform }) as any
+    await core.sessions.me.retrieve()
+    expect(getSession).toHaveBeenCalledTimes(1)
+    await core.sessions.me.list()
+    expect(listSessions).toHaveBeenCalledTimes(1)
+    await core.sessions.me.revoke('session_123')
+    expect(revokeSession).toHaveBeenCalledTimes(1)
+    expect(revokeSession).toHaveBeenCalledWith('session_123')
+  })
+
+  it('provisioning aliases delegate and admin session compatibility preserves references', async () => {
+    const retrieve = vi.fn()
+    const retrievePublished = vi.fn()
+    const retrieveCatalog = vi.fn()
+    const replaceDraft = vi.fn()
+    const validate = vi.fn()
+    const publish = vi.fn()
+    const runsList = vi.fn()
+    const runsRetrieve = vi.fn()
+    const runsRetry = vi.fn()
+    const claimApplication = vi.fn()
+    const completeApplication = vi.fn()
+    const reconcile = vi.fn()
+    const notesList = vi.fn()
+    const notesCreate = vi.fn()
+    const notesDelete = vi.fn()
+    const provisioning: any = {
+      retrieve,
+      retrievePublished,
+      retrieveCatalog,
+      replaceDraft,
+      validate,
+      publish,
+      runs: {
+        list: runsList,
+        retrieve: runsRetrieve,
+        retry: runsRetry,
+        claimApplication,
+        completeApplication,
+        reconcile,
+      },
+      notes: {
+        list: notesList,
+        create: notesCreate,
+        delete: notesDelete,
+      },
+    }
+    const getSession = vi.fn()
+    const listSessions = vi.fn()
+    const revokeSession = vi.fn()
+    const { createCoreSurface } = await import('./composers/base.ts')
+    const platform: any = {
+      auth: { getSession, me: { listSessions, revokeSession } },
+      oauth: {},
+      oauthGrants: {},
+      auditEvents: {},
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      locations: {},
+      contacts: {},
+      departments: {},
+      employees: {},
+      roles: {},
+      permissions: {},
+      organizationMembers: {},
+      appAssignments: {},
+      invites: {},
+      mobileNumbers: {},
+      mobileNumberVerifications: {},
+      products: {},
+    }
+    const adminSessions = {
+      list: vi.fn(),
+      retrieve: vi.fn(),
+      revoke: vi.fn(),
+      revokeForUser: vi.fn(),
+    }
+    const admin: any = {
+      auditEvents: {},
+      apiKeys: {},
+      modules: {},
+      provisioning,
+      onboarding: {},
+      addresses: {},
+      reservedUsernames: {},
+      billingAccounts: {},
+      authAttempts: {},
+      devices: {},
+      sessions: adminSessions,
+      appFeatures: {},
+      appSubscriptions: {},
+      organizationFeatures: {},
+      identifications: {},
+      messages: {},
+      calls: {},
+      phoneLookups: {},
+      users: {},
+      organizations: {},
+      apps: {},
+      memberships: {},
+      features: {},
+      subscriptions: {},
+      roles: {},
+    }
+    const core = createCoreSurface({ platform, admin }) as any
+
+    expect(core.sessions.list).toBe(adminSessions.list)
+    expect(core.sessions.retrieve).toBe(adminSessions.retrieve)
+    expect(core.sessions.revoke).toBe(adminSessions.revoke)
+    expect(core.sessions.revokeForUser).toBe(adminSessions.revokeForUser)
+
+    expect(core.sessions.admin.list).toBe(adminSessions.list)
+    expect(core.sessions.admin.retrieve).toBe(adminSessions.retrieve)
+    expect(core.sessions.admin.revoke).toBe(adminSessions.revoke)
+    expect(core.sessions.admin.revokeForUser).toBe(adminSessions.revokeForUser)
+
+    expect(core.sessions.me.retrieve).toBe(getSession)
+    expect(core.sessions.me.list).toBe(listSessions)
+    expect(core.sessions.me.revoke).toBe(revokeSession)
+
+    await core.provisioning.published.retrieve('application', 'app_123')
+    expect(retrievePublished).toHaveBeenCalledTimes(1)
+    expect(retrievePublished).toHaveBeenCalledWith('application', 'app_123')
+
+    await core.provisioning.catalog.retrieve('application', 'app_123')
+    expect(retrieveCatalog).toHaveBeenCalledTimes(1)
+    expect(retrieveCatalog).toHaveBeenCalledWith('application', 'app_123')
+
+    await core.provisioning.draft.update('application', 'app_123', { foo: 'bar' } as any)
+    expect(replaceDraft).toHaveBeenCalledTimes(1)
+    expect(replaceDraft).toHaveBeenCalledWith('application', 'app_123', { foo: 'bar' })
+
+    await core.provisioning.runs.claim({ organizationId: 'org_1', appId: 'app_1' } as any)
+    expect(claimApplication).toHaveBeenCalledTimes(1)
+    expect(claimApplication).toHaveBeenCalledWith({ organizationId: 'org_1', appId: 'app_1' })
+
+    await core.provisioning.runs.complete('run_123', { status: 'succeeded' } as any)
+    expect(completeApplication).toHaveBeenCalledTimes(1)
+    expect(completeApplication).toHaveBeenCalledWith('run_123', { status: 'succeeded' })
+
+    expect(core.provisioning.retrievePublished).toBe(retrievePublished)
+    expect(core.provisioning.retrieveCatalog).toBe(retrieveCatalog)
+    expect(core.provisioning.replaceDraft).toBe(replaceDraft)
+    expect(core.provisioning.runs.claimApplication).toBe(claimApplication)
+    expect(core.provisioning.runs.completeApplication).toBe(completeApplication)
   })
 })
