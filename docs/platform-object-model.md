@@ -22,8 +22,8 @@ Resources are **plural** (`$876.users`, not `$876.user`). Each resource exposes 
 
 | Resource          | Canonical public namespace | Owning service                                      | Notes                                                                                                |
 | ----------------- | -------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, recovery, OTP, OAuth session-establishment flows                                                  |
-| Sessions          | `$876.sessions`            | Core (`@876/sdk` / `@876/admin`)                    | `retrieve`/`list`/`revoke`; `.admin` for platform-wide session management (`list`/`retrieve`/`revoke`/`revokeForUser`) |
+| Authentication    | `$876.auth`                | Core (`@876/sdk`)                                   | login, register, recovery, OTP, OAuth session-establishment flows                                    |
+| Sessions          | `$876.sessions`            | Core (`@876/sdk` / `@876/admin`)                    | `me` for self-scoped session operations; `.admin` for platform-wide; pre-#314 root admin methods remain compatibility aliases on admin-enabled surfaces |
 | Users             | `$876.users`               | Core (`@876/sdk` / `@876/admin`)                    | `me` = self, `admin` = platform-wide                                                                 |
 | Organizations     | `$876.organizations`       | Core                                                | `admin` for platform-wide                                                                            |
 | Memberships       | `$876.memberships`         | Core                                                | org membership / team                                                                                |
@@ -166,9 +166,10 @@ and `packages/client/src/resource-manifest.ts`.
 
 - Public: `$876.sessions`
 - Owner: Core
-- Verbs: `retrieve` (current session → `GET /auth/session`), `list` (own sessions → `GET /auth/me/sessions`), `revoke(sessionId)` (own revocation → `DELETE /auth/me/sessions/{id}`)
-- Admin: `$876.sessions.admin.list()` → `GET /sessions`, `retrieve(sessionId)` → `GET /sessions/{id}`, `revoke(sessionId)` → `DELETE /sessions/{id}`, `revokeForUser(userId)` → `DELETE /users/{id}/sessions`
-- Compatibility: `$876.auth.getSession()` / `$876.auth.me.listSessions()` / `$876.auth.me.revokeSession()` remain in `@876/sdk` as owning-package methods; `$876.sessions.*` delegates to them with no duplicate transport.
+- Self: `$876.sessions.me.retrieve()` → `GET /auth/session`; `$876.sessions.me.list()` → `GET /auth/me/sessions`; `$876.sessions.me.revoke(sessionId)` → `DELETE /auth/me/sessions/{id}`.
+- Admin: `$876.sessions.admin.list()` → `GET /sessions`; `retrieve(sessionId)` → `GET /sessions/{id}`; `revoke(sessionId)` → `DELETE /sessions/{id}`; `revokeForUser(userId)` → `DELETE /users/{id}/sessions`.
+- Compatibility on admin-enabled surfaces: pre-existing `$876.sessions.list/retrieve/revoke/revokeForUser` remain direct aliases of the same `@876/admin` resource and MUST NOT be repurposed.
+- Owning SDK compatibility: `$876.auth.getSession()` / `$876.auth.me.listSessions()` / `$876.auth.me.revokeSession()` remain unchanged.
 
 ### subscriptions
 
