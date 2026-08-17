@@ -1,4 +1,5 @@
 import { prisma } from '@/db/client'
+import { provisionTenantWorkspace } from '@/modules/tenants'
 import { generateId } from '@/platform/ids'
 
 import type { FinanceProvisioningEvent } from './finance-connections.schemas'
@@ -36,37 +37,17 @@ export function applyFinanceProvisioningEvent(
       return { receipt, connection, duplicate: true }
     }
 
-    let tenant = await tx.tenant.findUnique({
-      where: { organizationId: event.organization.id },
+    // The same bootstrap 876 Billing's own set-up runs, so an organization that
+    // arrives through a finance-dependent app (876 Invoice) gets a complete,
+    // administrable workspace rather than a bare tenant row.
+    const tenant = await provisionTenantWorkspace(tx, {
+      organizationId: event.organization.id,
+      name: event.organization.name,
+      slug: event.organization.slug,
+      countryCode: event.organization.countryCode,
+      defaultCurrency: event.organization.currencyCode,
+      now,
     })
-    if (!tenant) {
-      tenant = await tx.tenant.create({
-        data: {
-          id: generateId('Tenant'),
-          organizationId: event.organization.id,
-          name: event.organization.name,
-          slug: event.organization.slug,
-          countryCode: event.organization.countryCode ?? 'JM',
-          defaultCurrency: event.organization.currencyCode,
-          defaultLanguage: 'en',
-          provisioningVersion: event.provisioningRevision,
-          provisionedAt: now,
-          status: 'ACTIVE',
-          createdAt: now,
-          updatedAt: now,
-        },
-      })
-      await tx.tenantCurrency.create({
-        data: {
-          tenantId: tenant.id,
-          currencyCode: event.organization.currencyCode,
-          isDefault: true,
-          isEnabled: true,
-          createdAt: now,
-          updatedAt: now,
-        },
-      })
-    }
 
     const current = await tx.appFinanceConnection.findUnique({
       where: {
