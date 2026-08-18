@@ -7,49 +7,56 @@ import { Button } from '@876/ui/button'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 
+import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
 import { buildPriceOptions } from '@/app/(app)/orgs/[slug]/billing/_components/billing-shared'
 
-type Props = {
+export type SubscriptionCreateSetup = {
   orgId: string
-  orgSlug: string
   accounts: AdminBillingAccount[]
   products: AdminProduct[]
 }
 
-export function SubscriptionCreate({
-  orgId,
-  orgSlug,
-  accounts,
-  products,
-}: Props) {
+type Props = {
+  orgSlug: string
+  setup: SubscriptionCreateSetup | Promise<SubscriptionCreateSetup>
+}
+
+export function SubscriptionCreate({ orgSlug, setup }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [selectedAccountId, setSelectedAccountId] = useState('')
   const [selectedPriceId, setSelectedPriceId] = useState('')
+  const setupState = useAsyncValue(setup)
 
   const prices = useMemo(
     () =>
       buildPriceOptions(
-        products.filter(
+        (setupState.value?.products ?? []).filter(
           (product) =>
             product.active && product.app_id && product.app_kind === 'product'
         )
       ),
-    [products]
+    [setupState.value?.products]
   )
   const selectedPrice = prices.find((item) => item.price.id === selectedPriceId)
+  const accounts = setupState.value?.accounts ?? []
+  const optionsReady = Boolean(setupState.value)
 
   function createSubscription() {
     const appId = selectedPrice?.product.app_id
-    if (!selectedPriceId || !appId) {
-      setError('Select a product price before creating the subscription.')
+    if (!setupState.value || !selectedPriceId || !appId) {
+      setError(
+        setupState.error?.message ??
+          'Select a product price before creating the subscription.'
+      )
       return
     }
 
     setError(null)
+    const { orgId } = setupState.value
     startTransition(async () => {
       const { error: resultError } = await client.billing.createSubscription({
         organization_id: orgId,
@@ -78,8 +85,15 @@ export function SubscriptionCreate({
             id="billing-price"
             value={selectedPriceId}
             onChange={(event) => setSelectedPriceId(event.target.value)}
+            disabled={!optionsReady || isPending}
           >
-            <NativeSelectOption value="">Select a price</NativeSelectOption>
+            <NativeSelectOption value="">
+              {setupState.pending
+                ? 'Loading prices…'
+                : setupState.error
+                  ? 'Prices unavailable'
+                  : 'Select a price'}
+            </NativeSelectOption>
             {prices.map(({ price, label }) => (
               <NativeSelectOption key={price.id} value={price.id}>
                 {label}
@@ -93,8 +107,15 @@ export function SubscriptionCreate({
             id="billing-account"
             value={selectedAccountId}
             onChange={(event) => setSelectedAccountId(event.target.value)}
+            disabled={!optionsReady || isPending}
           >
-            <NativeSelectOption value="">No account</NativeSelectOption>
+            <NativeSelectOption value="">
+              {setupState.pending
+                ? 'Loading accounts…'
+                : setupState.error
+                  ? 'Accounts unavailable'
+                  : 'No account'}
+            </NativeSelectOption>
             {accounts.map((account) => (
               <NativeSelectOption key={account.id} value={account.id}>
                 {account.name || account.email || account.id}
@@ -104,6 +125,11 @@ export function SubscriptionCreate({
         </div>
       </div>
 
+      {setupState.error && !error ? (
+        <p className="text-destructive text-[0.8125rem]">
+          {setupState.error.message}
+        </p>
+      ) : null}
       {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
       <div className="flex gap-2">
@@ -117,7 +143,7 @@ export function SubscriptionCreate({
         <Button
           variant="info"
           onClick={createSubscription}
-          disabled={isPending || !selectedPriceId}
+          disabled={isPending || !optionsReady || !selectedPriceId}
         >
           Add subscription
         </Button>
