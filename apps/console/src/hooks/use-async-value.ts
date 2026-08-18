@@ -33,6 +33,7 @@ function isPromiseLike<T>(value: T | Promise<T>): value is Promise<T> {
  */
 export function useAsyncValue<T>(source: T | Promise<T>): AsyncValueState<T> {
   const promise = isPromiseLike(source) ? source : null
+  const directValue = promise ? undefined : (source as T)
   const [resolution, setResolution] = useState<PromiseResolution<T> | null>(null)
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export function useAsyncValue<T>(source: T | Promise<T>): AsyncValueState<T> {
     }
   }, [promise])
 
-  if (!promise) return { value: source, error: null, pending: false }
+  if (!promise) return { value: directValue, error: null, pending: false }
   if (!resolution || resolution.source !== promise)
     return { value: undefined, error: null, pending: true }
 
