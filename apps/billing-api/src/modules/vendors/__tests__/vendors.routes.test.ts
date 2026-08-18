@@ -4,9 +4,9 @@ import { createApp } from '@/app'
 
 const mocks = vi.hoisted(() => ({
   tenantByOrganizationId: vi.fn(),
-  activeMember: vi.fn(),
+  effectiveMember: vi.fn(),
   introspect: vi.fn(),
-  userBelongsToOrganization: vi.fn(),
+  organizationMembership: vi.fn(),
   listVendorRows: vi.fn(),
   createVendorRow: vi.fn(),
   enabledCurrencyExists: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock('@/modules/tenants', async (importOriginal) => ({
 }))
 vi.mock('@/modules/access', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/modules/access')>()),
-  activeMemberAuthorization: mocks.activeMember,
+  effectiveMemberAuthorization: mocks.effectiveMember,
 }))
 vi.mock('@/modules/vendors/vendors.repository', async (importOriginal) => ({
   ...(await importOriginal<object>()),
@@ -28,10 +28,11 @@ vi.mock('@/modules/vendors/vendors.repository', async (importOriginal) => ({
 vi.mock('@/modules/currencies/currencies.repository', () => ({
   enabledCurrencyExists: mocks.enabledCurrencyExists,
 }))
-vi.mock('@/providers/identity', () => ({
+vi.mock('@/providers/identity', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/providers/identity')>()),
   HttpIdentityGateway: class {
     introspect = mocks.introspect
-    userBelongsToOrganization = mocks.userBelongsToOrganization
+    organizationMembership = mocks.organizationMembership
   },
 }))
 
@@ -64,7 +65,7 @@ describe('Vendors routes', () => {
       id: 'btenant_123',
       active: true,
     })
-    mocks.activeMember.mockResolvedValue({
+    mocks.effectiveMember.mockResolvedValue({
       permissions: new Set(['vendors:read', 'vendors:write']),
     })
     mocks.introspect.mockResolvedValue({
@@ -73,7 +74,7 @@ describe('Vendors routes', () => {
       appId: null,
       scopes: new Set(),
     })
-    mocks.userBelongsToOrganization.mockResolvedValue(true)
+    mocks.organizationMembership.mockResolvedValue({ role: 'owner' })
     mocks.enabledCurrencyExists.mockResolvedValue(true)
   })
 
@@ -113,6 +114,15 @@ describe('Vendors routes', () => {
       error: null,
     })
     expect(mocks.listVendorRows).toHaveBeenCalledWith('btenant_123', undefined)
+    expect(mocks.organizationMembership).toHaveBeenCalledWith(
+      'access-token',
+      'org_123'
+    )
+    expect(mocks.effectiveMember).toHaveBeenCalledWith(
+      'btenant_123',
+      'user_123',
+      'owner'
+    )
   })
 
   it('creates a vendor with server-owned tenant and identifier fields', async () => {

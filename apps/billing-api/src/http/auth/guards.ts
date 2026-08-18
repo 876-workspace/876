@@ -4,7 +4,11 @@ import { getSettings } from '@/config'
 import type { BillingSecurity, GuardResolver } from '@/http/api-router'
 import { AppHttpError, errors } from '@/http/errors'
 import { bindActor, getLogger } from '@/platform/logger'
-import type { IdentityGateway, OrganizationRole } from '@/providers/identity'
+import {
+  isIdentityUnavailableError,
+  type IdentityGateway,
+  type OrganizationRole,
+} from '@/providers/identity'
 
 import {
   credentialFingerprint,
@@ -66,6 +70,29 @@ function singleCredential(req: Request): Credential {
   if (credentials.length === 0) throw errors.missingCredential()
   if (credentials.length > 1) throw errors.ambiguousCredential()
   return credentials[0]!
+}
+
+async function identityCall<T>(
+  operation: string,
+  task: () => Promise<T>
+): Promise<T> {
+  try {
+    return await task()
+  } catch (error) {
+    if (!isIdentityUnavailableError(error)) throw error
+
+    log.warn(
+      {
+        attempts: error.attempts,
+        operation,
+        path: error.path,
+        reason: error.reason,
+        upstream_status: error.status,
+      },
+      'auth.identity.unavailable'
+    )
+    throw errors.identityUnavailable()
+  }
 }
 
 function internalPrincipal(req: Request): BillingPrincipal {
@@ -133,7 +160,9 @@ async function oauthIdentity(
   scopes: ReadonlySet<string>
   organizationRole: OrganizationRole
 }> {
-  const identity = await gateway.introspect(token)
+  const identity = await identityCall('token_introspection', () =>
+    gateway.introspect(token)
+  )
   if (!identity.active || !identity.subject) {
     throw new AppHttpError({
       code: 'auth/invalid-token',
@@ -141,7 +170,9 @@ async function oauthIdentity(
       httpStatus: 401,
     })
   }
-  const membership = await gateway.organizationMembership(token, organizationId)
+  const membership = await identityCall('organization_membership', () =>
+    gateway.organizationMembership(token, organizationId)
+  )
   if (!membership) {
     throw new AppHttpError({
       code: 'auth/organization-forbidden',
@@ -231,7 +262,9 @@ export function createGuardResolver(options: {
           security.kind === 'integration' &&
           credential.kind === 'app_api_key'
         ) {
-          const app = await options.identity.appForApiKey(credential.value)
+          const app = await identityCall('app_api_key', () =>
+            options.identity.appForApiKey(credential.value)
+          )
           if (!app) {
             throw new AppHttpError({
               code: 'auth/invalid-api-key',

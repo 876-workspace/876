@@ -1,0 +1,55 @@
+name: Billing API quality
+
+on:
+  pull_request:
+    paths:
+      - 'apps/billing-api/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/billing-api-quality.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/billing-api/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/billing-api-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: billing-api-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Billing Prisma client
+        run: pnpm --filter @876/billing-api generate
+      - name: Typecheck Billing API
+        run: pnpm --filter @876/billing-api typecheck
+      - name: Test Billing API
+        run: pnpm --filter @876/billing-api exec vitest run --pool=forks --maxWorkers=2
+      - name: Lint Billing API
+        run: pnpm --filter @876/billing-api lint
+      - name: Check Billing boundaries
+        run: pnpm --filter @876/billing-api boundaries
+      - name: Check Billing API contract
+        run: pnpm --filter @876/billing-api api:contract:check

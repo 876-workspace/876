@@ -15,6 +15,12 @@ export const errors = {
       message: 'Use exactly one authentication credential.',
       httpStatus: 400,
     }),
+  identityUnavailable: () =>
+    new AppHttpError({
+      code: 'auth/identity-unavailable',
+      message: 'The identity service could not verify access. Please retry.',
+      httpStatus: 503,
+    }),
   forbidden: (
     message = 'The authenticated user lacks the required Billing permission.'
   ) => new AppHttpError({ code: 'auth/forbidden', message, httpStatus: 403 }),
