@@ -34,10 +34,12 @@ const itemFormRowClassName = 'sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-3'
 
 function currencyDigits(currency: string): number {
   try {
-    return new Intl.NumberFormat('en-JM', {
+    return (
+      new Intl.NumberFormat('en-JM', {
       style: 'currency',
       currency,
-    }).resolvedOptions().maximumFractionDigits
+      }).resolvedOptions().maximumFractionDigits ?? 2
+    )
   } catch {
     return 2
   }
