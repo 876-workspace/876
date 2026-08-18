@@ -5,8 +5,7 @@ import { ChevronRightIcon } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
-import { getInvoiceContext } from '@/lib/auth/context'
+import { getInvoice } from '@/lib/invoice'
 import { formatMoney } from '@/lib/format'
 import { ItemActions } from './_components/item-actions'
 
@@ -21,11 +20,10 @@ export const metadata: Metadata = {
 
 export default async function ItemDetailPage({ params }: Props) {
   const { itemId } = await params
-  const context = await getInvoiceContext()
-  if (!context) redirect('/no-access')
+  const invoice = await getInvoice()
+  if (!invoice) redirect('/no-access')
 
-  const billing = await getInvoiceBillingIntegration()
-  const result = await billing.items.retrieve(context.orgId, itemId)
+  const result = await invoice.items.retrieve(itemId)
 
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
@@ -43,7 +41,7 @@ export default async function ItemDetailPage({ params }: Props) {
 
   const item = result.data
   const currency = item.defaultSellingCurrency ?? 'JMD'
-  const canManage = context.role !== 'member'
+  const canManage = invoice.role !== 'member'
 
   return (
     <Page>

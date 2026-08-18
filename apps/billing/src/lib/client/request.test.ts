@@ -19,7 +19,7 @@ describe('Billing browser request', () => {
     vi.unstubAllGlobals()
   })
 
-  it('returns response data and sends the default JSON content type', async () => {
+  it('returns response data and hides the standalone API path', async () => {
     vi.mocked(fetch).mockResolvedValue(
       jsonResponse({ data: { id: 'item_123' }, error: null })
     )
@@ -29,7 +29,7 @@ describe('Billing browser request', () => {
     expect(result).toEqual({ data: { id: 'item_123' }, error: null })
     expect(fetch).toHaveBeenCalledTimes(1)
     const [url, init] = vi.mocked(fetch).mock.calls[0]
-    expect(url).toBe('/api/v1/items')
+    expect(url).toBe('/api/items')
     expect(Object.fromEntries(new Headers(init?.headers))).toEqual({
       'content-type': 'application/json',
     })
@@ -47,7 +47,8 @@ describe('Billing browser request', () => {
     })
 
     expect(result).toEqual({ data: { saved: true }, error: null })
-    const [, init] = vi.mocked(fetch).mock.calls[0]
+    const [url, init] = vi.mocked(fetch).mock.calls[0]
+    expect(url).toBe('/api/items')
     expect(init?.method).toBe('POST')
     expect(init?.body).toBe('{"name":"Implementation"}')
     expect(Object.fromEntries(new Headers(init?.headers))).toEqual({
@@ -66,8 +67,20 @@ describe('Billing browser request', () => {
     })
 
     expect(result).toEqual({ data: null, error: null })
-    const [, init] = vi.mocked(fetch).mock.calls[0]
+    const [url, init] = vi.mocked(fetch).mock.calls[0]
+    expect(url).toBe('/api/import')
     expect(new Headers(init?.headers).get('content-type')).toBe('text/csv')
+  })
+
+  it('leaves product-local API routes unchanged', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ data: { object: 'list', data: [] }, error: null })
+    )
+
+    await request('/api/team/invites')
+
+    const [url] = vi.mocked(fetch).mock.calls[0]
+    expect(url).toBe('/api/team/invites')
   })
 
   it('rejects a success response missing canonical envelope keys', async () => {

@@ -33,7 +33,7 @@ interface ItemMutationResult {
 
 export const items = {
   create(params: ItemCreateParams) {
-    return request<ItemMutationResult>('/api/v1/items', {
+    return request<ItemMutationResult>('/api/items', {
       method: 'POST',
       headers: { 'Idempotency-Key': crypto.randomUUID() },
       body: JSON.stringify(params),
@@ -41,12 +41,12 @@ export const items = {
   },
 
   retrieve(itemId: string) {
-    return request<ItemResource>(`/api/v1/items/${encodeURIComponent(itemId)}`)
+    return request<ItemResource>(`/api/items/${encodeURIComponent(itemId)}`)
   },
 
   update(itemId: string, params: ItemUpdateParams) {
     return request<ItemMutationResult>(
-      `/api/v1/items/${encodeURIComponent(itemId)}`,
+      `/api/items/${encodeURIComponent(itemId)}`,
       {
         method: 'PATCH',
         body: JSON.stringify(params),
@@ -56,7 +56,7 @@ export const items = {
 
   delete(itemId: string) {
     return request<{ object: 'item'; id: string; deleted: true }>(
-      `/api/v1/items/${encodeURIComponent(itemId)}`,
+      `/api/items/${encodeURIComponent(itemId)}`,
       { method: 'DELETE' }
     )
   },

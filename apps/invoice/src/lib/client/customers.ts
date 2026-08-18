@@ -16,7 +16,7 @@ interface UpdateCustomerParams extends Partial<CreateCustomerParams> {
 
 export const customers = {
   create(params: CreateCustomerParams) {
-    return request<{ id: string }>('/api/v1/customers', {
+    return request<{ id: string }>('/api/customers', {
       method: 'POST',
       headers: { 'Idempotency-Key': crypto.randomUUID() },
       body: JSON.stringify(params),
@@ -25,7 +25,7 @@ export const customers = {
 
   update(customerId: string, params: UpdateCustomerParams) {
     return request<{ id: string }>(
-      `/api/v1/customers/${encodeURIComponent(customerId)}`,
+      `/api/customers/${encodeURIComponent(customerId)}`,
       {
         method: 'PATCH',
         body: JSON.stringify(params),
@@ -36,7 +36,7 @@ export const customers = {
   /** Deletes a customer by ID. */
   delete(customerId: string) {
     return request<{ id: string; deleted: true }>(
-      `/api/v1/customers/${encodeURIComponent(customerId)}`,
+      `/api/customers/${encodeURIComponent(customerId)}`,
       { method: 'DELETE' }
     )
   },
