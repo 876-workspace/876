@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { $876, billingAdmin } from '@/lib/876'
-import { resolveApp } from '../../../_data'
+import { listCompleteAppSubscriptions, resolveApp } from '../../../_data'
 import { SubscribersTable } from './_components/subscribers-table'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }
@@ -57,7 +57,7 @@ export default async function PlanSubscribersPage({ params }: Props) {
   if (!product) notFound()
 
   const [coreSubscriptionsResult, billingStats] = await Promise.all([
-    $876.appSubscriptions.list(app.id),
+    listCompleteAppSubscriptions(app.id),
     retrieveBillingStats(app.id),
   ])
 
@@ -70,9 +70,8 @@ export default async function PlanSubscribersPage({ params }: Props) {
   // missing Billing mirror must not make an active Core subscriber disappear
   // from Console.
   if (!coreSubscriptionsResult.error) {
-    const coreSubscriptions = (coreSubscriptionsResult.data ?? []).filter(
-      (subscription) =>
-        subscription.items.some((item) => item.product_id === product.id)
+    const coreSubscriptions = coreSubscriptionsResult.data.filter((subscription) =>
+      subscription.items.some((item) => item.product_id === product.id)
     )
 
     const orgIds = [
