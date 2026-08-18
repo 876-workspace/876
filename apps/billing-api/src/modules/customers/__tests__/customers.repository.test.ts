@@ -16,6 +16,17 @@ vi.mock('@/db/client', () => ({
 
 import { ensureCoreCustomerRows } from '../customers.repository'
 
+type TransactionMock = {
+  customer: {
+    create: typeof mocks.customerCreate
+    update: typeof mocks.customerUpdate
+  }
+  contact: {
+    deleteMany: typeof mocks.contactDeleteMany
+    create: typeof mocks.contactCreate
+  }
+}
+
 describe('ensureCoreCustomerRows', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -23,17 +34,18 @@ describe('ensureCoreCustomerRows', () => {
     mocks.customerUpdate.mockResolvedValue({ id: 'cust_123' })
     mocks.contactDeleteMany.mockResolvedValue({ count: 0 })
     mocks.contactCreate.mockResolvedValue({ id: 'contact_123' })
-    mocks.transaction.mockImplementation(async (run) =>
-      run({
-        customer: {
-          create: mocks.customerCreate,
-          update: mocks.customerUpdate,
-        },
-        contact: {
-          deleteMany: mocks.contactDeleteMany,
-          create: mocks.contactCreate,
-        },
-      })
+    mocks.transaction.mockImplementation(
+      async (run: (tx: TransactionMock) => unknown) =>
+        run({
+          customer: {
+            create: mocks.customerCreate,
+            update: mocks.customerUpdate,
+          },
+          contact: {
+            deleteMany: mocks.contactDeleteMany,
+            create: mocks.contactCreate,
+          },
+        })
     )
   })
 
