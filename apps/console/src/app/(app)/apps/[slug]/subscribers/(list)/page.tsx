@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import type { AdminApp, AdminOrganization } from '@876/admin'
 
 import { $876 } from '@/lib/876'
-import { resolveApp } from '../../_data'
+import { listCompleteAppSubscriptions, resolveApp } from '../../_data'
 import { SubscribersTable } from '../_components/subscribers-table'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
@@ -44,10 +44,10 @@ async function AppSubscribersShell({ slug }: { slug: string }) {
 
 async function SubscribersTableData({ app }: { app: AdminApp }) {
   const [subscriptionsResult, productsResult] = await Promise.all([
-    $876.appSubscriptions.list(app.id),
+    listCompleteAppSubscriptions(app.id),
     $876.entitlementPlans.admin.list({ appId: app.id, status: 'active' }),
   ])
-  const subscriptions = subscriptionsResult.data ?? []
+  const subscriptions = subscriptionsResult.data
   const prices = (productsResult.data?.data ?? []).flatMap((product) =>
     product.prices
       .filter((price) => price.status === 'active')

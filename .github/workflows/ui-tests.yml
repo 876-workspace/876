@@ -29,6 +29,8 @@ jobs:
           node-version: 22.13
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Typecheck Console
+        run: pnpm --filter @876/console typecheck
       - run: pnpm --filter @876/console exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/billing-app exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/couriers-app exec vitest run --pool=forks --maxWorkers=2
