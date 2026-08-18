@@ -14,9 +14,9 @@ describe('organization members loading strategy', () => {
     )
   })
 
-  it('uses the cached canonical organization member directory', () => {
+  it('uses the cached canonical admin organization member directory', () => {
     expect(dataSource).toContain('export const resolveOrgMembers = cache')
-    expect(dataSource).toContain('$876.organizationMembers.list(orgId')
+    expect(dataSource).toContain('$876.organizationMembers.admin.list(orgId')
     expect(dataSource).not.toContain('$876.memberships.admin.list')
   })
 
@@ -34,7 +34,8 @@ describe('organization members loading strategy', () => {
     expect(invitesStart).toBeGreaterThan(membersStart)
 
     const memberLoader = pageSource.slice(membersStart, invitesStart)
-    expect(memberLoader).not.toContain('$876.invites.list')
+    expect(memberLoader).not.toContain('$876.invites.admin.list')
+    expect(pageSource).toContain('$876.invites.admin.list(org.id)')
     expect(pageSource).toContain('<PendingInvitesData params={params} />')
   })
 })
