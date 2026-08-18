@@ -1,0 +1,92 @@
+name: Billing integration quality
+
+on:
+  pull_request:
+    paths:
+      - 'packages/server/**'
+      - 'apps/api/src/config/**'
+      - 'apps/api/src/server.ts'
+      - 'apps/api/src/services/finance-provisioning*'
+      - 'apps/api/src/services/__tests__/finance-provisioning*'
+      - 'apps/api/src/workers/finance-provisioning*'
+      - 'apps/api/src/workers/__tests__/finance-provisioning*'
+      - 'apps/api/wrangler.jsonc'
+      - 'apps/billing-api/src/modules/finance-connections/**'
+      - 'apps/billing/wrangler.jsonc'
+      - 'apps/invoice/src/lib/876/**'
+      - 'apps/invoice/wrangler.jsonc'
+      - 'apps/couriers/wrangler.jsonc'
+      - 'apps/console/wrangler.jsonc'
+      - 'scripts/check-billing-api-targets.mjs'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/billing-integration-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: billing-integration-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Verify production Billing targets agree
+        run: node scripts/check-billing-api-targets.mjs
+
+      - name: Typecheck shared server contracts
+        run: pnpm --filter @876/server typecheck
+
+      - name: Test shared server contracts
+        run: pnpm --filter @876/server test
+
+      - name: Generate API Prisma client
+        run: pnpm --filter @876/api generate
+
+      - name: Typecheck 876 API
+        run: pnpm --filter @876/api typecheck
+
+      - name: Test API to Billing reliability boundary
+        run: >-
+          pnpm --filter @876/api exec vitest run
+          src/workers/__tests__/finance-provisioning-wire.integration.test.ts
+          src/workers/__tests__/finance-provisioning-dispatch.test.ts
+          src/services/__tests__/finance-provisioning-configuration.test.ts
+          src/__tests__/server-lifecycle.test.ts
+          --pool=forks --maxWorkers=2
+
+      - name: Generate Billing Prisma client
+        run: pnpm --filter @876/billing-api generate
+
+      - name: Typecheck Billing API
+        run: pnpm --filter @876/billing-api typecheck
+
+      - name: Test Billing finance ingress contract
+        run: >-
+          pnpm --filter @876/billing-api exec vitest run
+          src/modules/finance-connections/__tests__/finance-connections.routes.test.ts
+          --pool=forks --maxWorkers=2
+
+      - name: Typecheck Invoice
+        run: pnpm --filter @876/invoice-app typecheck
+
+      - name: Test Invoice Billing configuration
+        run: >-
+          pnpm --filter @876/invoice-app exec vitest run
+          src/lib/876/billing-config.test.ts
+          --pool=forks --maxWorkers=2
