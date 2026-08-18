@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { getInvoiceBillingConfig } from './billing-config'
+import {
+  getInvoiceBillingConfig,
+  type InvoiceBillingEnvironment,
+} from './billing-config'
 
-function env(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
+function env(
+  overrides: InvoiceBillingEnvironment = {}
+): InvoiceBillingEnvironment {
   return {
     BILLING_API_URL: 'https://876-billing-api.example.test',
     INVOICE_API_876_KEY: '876_app_secret_invoice',
