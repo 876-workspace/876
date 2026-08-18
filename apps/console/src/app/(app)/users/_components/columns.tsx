@@ -8,6 +8,7 @@ import type { AdminUser, AdminUserApp } from '@876/admin'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
+import { appColor } from '@/lib/app-color'
 import { formatDate } from '@/lib/format'
 
 function initialsOf(user: {
@@ -23,22 +24,6 @@ function initialsOf(user: {
     user.email[0]?.toUpperCase() ||
     '?'
   )
-}
-
-const APP_COLORS = [
-  'bg-blue-500',
-  'bg-violet-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-cyan-500',
-]
-
-function appColor(slug: string): string {
-  let hash = 0
-  for (let i = 0; i < slug.length; i++)
-    hash = (hash * 31 + slug.charCodeAt(i)) | 0
-  return APP_COLORS[Math.abs(hash) % APP_COLORS.length]!
 }
 
 function AppLogoChip({ app }: { app: AdminUserApp }) {
