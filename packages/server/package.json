@@ -7,6 +7,10 @@
     "./express": {
       "types": "./src/express/index.ts",
       "default": "./src/express/index.ts"
+    },
+    "./finance-provisioning": {
+      "types": "./src/finance-provisioning/index.ts",
+      "default": "./src/finance-provisioning/index.ts"
     }
   },
   "scripts": {
