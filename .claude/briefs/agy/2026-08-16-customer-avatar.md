@@ -105,7 +105,7 @@ The rendered result in light mode must be identical to before.
   beside the title. Read the file and place it so the existing layout still
   reads correctly; do not restructure the header.
 
-  **Careful:** this file already renders a *different* avatar around line 82 —
+  **Careful:** this file already renders a _different_ avatar around line 82 —
   an `Avatar`/`AvatarImage`/`AvatarFallback` for the primary **contact**, which
   can carry a real photo (`contact.avatar`). That one is not yours to replace:
   `CustomerAvatar` has no image support and this is a different subject. Leave

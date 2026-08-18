@@ -18,7 +18,8 @@ function createExistingWorkspaceTx(options?: {
   ownerRole?: { id: string } | null
 }) {
   const member = options?.member ?? null
-  const ownerRole = options?.ownerRole === undefined ? { id: 'role_owner' } : options.ownerRole
+  const ownerRole =
+    options?.ownerRole === undefined ? { id: 'role_owner' } : options.ownerRole
 
   return {
     tenant: {
@@ -29,7 +30,9 @@ function createExistingWorkspaceTx(options?: {
     },
     role: {
       findFirst: vi.fn().mockResolvedValue(ownerRole),
-      create: vi.fn(async ({ data }: { data: { id: string } }) => ({ id: data.id })),
+      create: vi.fn(async ({ data }: { data: { id: string } }) => ({
+        id: data.id,
+      })),
     },
     member: {
       findFirst: vi.fn().mockResolvedValue(member),
