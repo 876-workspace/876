@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
+import { Skeleton } from '@876/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -21,7 +23,24 @@ export const revalidate = 0
 
 type Props = { params: Promise<{ runId: string }> }
 
-export default async function ProvisioningRunPage({ params }: Props) {
+export default function ProvisioningRunPage({ params }: Props) {
+  return (
+    <Page className="space-y-6">
+      <PageBreadcrumb
+        href="/orgs/provisioning/runs"
+        label="Runs"
+        className="mb-4"
+      />
+      <ProvisioningNav current="runs" />
+
+      <Suspense fallback={<ProvisioningRunFallback />}>
+        <ProvisioningRunData params={params} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function ProvisioningRunData({ params }: Props) {
   const { runId } = await params
   const result = await $876.provisioning.runs.retrieve(runId)
   if (result.error?.code === 'provisioning/run-not-found') notFound()
@@ -36,12 +55,7 @@ export default async function ProvisioningRunPage({ params }: Props) {
   const organization = organizationResult.data
 
   return (
-    <Page className="space-y-6">
-      <PageBreadcrumb
-        href="/orgs/provisioning/runs"
-        label="Runs"
-        className="mb-4"
-      />
+    <>
       <div>
         <p className="876-eyebrow">Provisioning run</p>
         <div className="mt-1 flex flex-wrap items-center gap-3">
@@ -53,7 +67,6 @@ export default async function ProvisioningRunPage({ params }: Props) {
           {app?.name ?? run.app_id}
         </p>
       </div>
-      <ProvisioningNav current="runs" />
 
       <section className="876-card grid gap-5 p-5 sm:grid-cols-2 lg:grid-cols-4">
         <Fact label="Trigger" value={run.trigger.replaceAll('_', ' ')} />
@@ -73,9 +86,7 @@ export default async function ProvisioningRunPage({ params }: Props) {
         <Fact label="Created" value={formatDateTime(run.created_at)} />
         <Fact
           label="Started"
-          value={
-            run.started_at ? formatDateTime(run.started_at) : 'Not started'
-          }
+          value={run.started_at ? formatDateTime(run.started_at) : 'Not started'}
         />
         <Fact
           label="Completed"
@@ -147,7 +158,28 @@ export default async function ProvisioningRunPage({ params }: Props) {
           </TableBody>
         </Table>
       </section>
-    </Page>
+    </>
+  )
+}
+
+function ProvisioningRunFallback() {
+  return (
+    <>
+      <div className="space-y-2">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-8 w-56" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <section className="876-card grid gap-5 p-5 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 8 }, (_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+        ))}
+      </section>
+      <Skeleton className="h-72 w-full rounded-lg" />
+    </>
   )
 }
 
