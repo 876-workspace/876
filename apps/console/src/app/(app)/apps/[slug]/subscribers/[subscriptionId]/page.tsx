@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
@@ -40,7 +42,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `Subscription details • ${app.name}` }
 }
 
-export default async function SubscriptionDetailPage({ params }: Props) {
+export default function SubscriptionDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<SubscriptionDetailFallback />}>
+      <SubscriptionDetailData params={params} />
+    </Suspense>
+  )
+}
+
+async function SubscriptionDetailData({ params }: Props) {
   const { slug, subscriptionId } = await params
   const app = await resolveApp(slug)
 
@@ -155,6 +165,18 @@ export default async function SubscriptionDetailPage({ params }: Props) {
           </div>
         </DetailAccordionSection>
       </DetailAccordionGroup>
+    </div>
+  )
+}
+
+function SubscriptionDetailFallback() {
+  return (
+    <div className="mx-auto max-w-3xl space-y-8">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-7 w-52" />
+        <Skeleton className="h-4 w-20" />
+      </div>
+      <Skeleton className="h-80 w-full rounded-lg" />
     </div>
   )
 }
