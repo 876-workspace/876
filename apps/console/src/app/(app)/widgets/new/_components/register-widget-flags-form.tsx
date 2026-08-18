@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { CheckCircle } from '@876/ui/icons'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { Skeleton } from '@876/ui/skeleton'
 
+import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
 export type PendingFlag = {
@@ -30,19 +32,26 @@ export type PendingWidget = {
 export function RegisterWidgetFlagsForm({
   widgets,
 }: {
-  widgets: PendingWidget[]
+  widgets: PendingWidget[] | Promise<PendingWidget[]>
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [widgetId, setWidgetId] = useState(widgets[0]?.id ?? '')
+  const [widgetId, setWidgetId] = useState('')
+  const widgetsState = useAsyncValue(widgets)
+  const resolvedWidgets = widgetsState.value ?? []
 
-  const selected = widgets.find((widget) => widget.id === widgetId)
+  useEffect(() => {
+    if (!widgetId && resolvedWidgets.length > 0)
+      setWidgetId(resolvedWidgets[0]!.id)
+  }, [resolvedWidgets, widgetId])
+
+  const selected = resolvedWidgets.find((widget) => widget.id === widgetId)
   const missing = selected?.flags.filter((flag) => !flag.existingId) ?? []
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (missing.length === 0) return
+    if (!selected || missing.length === 0) return
 
     setError(null)
     startTransition(async () => {
@@ -55,7 +64,7 @@ export function RegisterWidgetFlagsForm({
       // Seeded with the masters that already exist, so a child whose parent was
       // registered in an earlier pass still gets linked to it.
       const idBySlug = new Map<string, string>(
-        (selected?.flags ?? [])
+        selected.flags
           .filter((flag) => flag.existingId !== null)
           .map((flag) => [flag.slug, flag.existingId as string])
       )
@@ -93,16 +102,6 @@ export function RegisterWidgetFlagsForm({
     })
   }
 
-  if (widgets.length === 0) {
-    return (
-      <div className="876-card p-5">
-        <p className="text-muted-foreground text-[0.8125rem]">
-          No widgets are declared in the catalog.
-        </p>
-      </div>
-    )
-  }
-
   return (
     <form className="876-card max-w-2xl" onSubmit={handleSubmit}>
       <div className="space-y-5 p-5">
@@ -113,12 +112,21 @@ export function RegisterWidgetFlagsForm({
             value={widgetId}
             onChange={(event) => setWidgetId(event.target.value)}
             className="w-full"
+            disabled={widgetsState.pending || Boolean(widgetsState.error)}
           >
-            {widgets.map((widget) => (
-              <NativeSelectOption key={widget.id} value={widget.id}>
-                {widget.name}
-              </NativeSelectOption>
-            ))}
+            {widgetsState.pending ? (
+              <NativeSelectOption value="">Loading widgets…</NativeSelectOption>
+            ) : widgetsState.error ? (
+              <NativeSelectOption value="">Widgets unavailable</NativeSelectOption>
+            ) : resolvedWidgets.length === 0 ? (
+              <NativeSelectOption value="">No widgets declared</NativeSelectOption>
+            ) : (
+              resolvedWidgets.map((widget) => (
+                <NativeSelectOption key={widget.id} value={widget.id}>
+                  {widget.name}
+                </NativeSelectOption>
+              ))
+            )}
           </NativeSelect>
           <p className="text-muted-foreground text-xs">
             Widgets are declared in the <code>@876/widgets</code> catalog. This
@@ -128,26 +136,46 @@ export function RegisterWidgetFlagsForm({
 
         <div className="space-y-2">
           <Label>Flags</Label>
-          <ul className="border-876-surface-border divide-876-surface-border divide-y rounded-md border">
-            {selected?.flags.map((flag) => (
-              <li
-                key={flag.slug}
-                className="flex items-center justify-between gap-4 px-3 py-2.5"
-              >
-                <span className="truncate font-mono text-xs">{flag.slug}</span>
-                {flag.existingId ? (
-                  <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1.5 text-xs">
-                    <CheckCircle className="size-3.5" />
-                    Registered
-                  </span>
-                ) : (
-                  <span className="shrink-0 text-xs font-medium text-amber-600 dark:text-amber-400">
-                    Will be created
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+          {widgetsState.pending ? (
+            <div className="border-876-surface-border divide-876-surface-border divide-y rounded-md border">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between gap-4 px-3 py-2.5"
+                >
+                  <Skeleton className="h-3 w-44" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : selected ? (
+            <ul className="border-876-surface-border divide-876-surface-border divide-y rounded-md border">
+              {selected.flags.map((flag) => (
+                <li
+                  key={flag.slug}
+                  className="flex items-center justify-between gap-4 px-3 py-2.5"
+                >
+                  <span className="truncate font-mono text-xs">{flag.slug}</span>
+                  {flag.existingId ? (
+                    <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1.5 text-xs">
+                      <CheckCircle className="size-3.5" />
+                      Registered
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-xs font-medium text-amber-600 dark:text-amber-400">
+                      Will be created
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="border-876-surface-border text-muted-foreground rounded-md border px-3 py-3 text-xs">
+              {widgetsState.error
+                ? widgetsState.error.message
+                : 'No widget flags to register.'}
+            </div>
+          )}
           <p className="text-muted-foreground text-xs">
             New flags are created disabled. Turn them on from the widgets list.
           </p>
@@ -168,13 +196,20 @@ export function RegisterWidgetFlagsForm({
         <Button
           type="submit"
           variant="info"
-          disabled={isPending || missing.length === 0}
+          disabled={
+            isPending ||
+            widgetsState.pending ||
+            Boolean(widgetsState.error) ||
+            missing.length === 0
+          }
         >
           {isPending
             ? 'Registering...'
-            : missing.length === 0
-              ? 'All registered'
-              : `Register ${missing.length} flag${missing.length === 1 ? '' : 's'}`}
+            : widgetsState.pending
+              ? 'Loading…'
+              : missing.length === 0
+                ? 'All registered'
+                : `Register ${missing.length} flag${missing.length === 1 ? '' : 's'}`}
         </Button>
       </div>
     </form>
