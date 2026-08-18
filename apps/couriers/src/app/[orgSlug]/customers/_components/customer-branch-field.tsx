@@ -32,23 +32,22 @@ type PromiseState = {
 
 /** Streams the branch selector without delaying the rest of the customer form. */
 export function CustomerBranchField({ branches, ...props }: Props) {
+  const promise = Array.isArray(branches) ? null : branches
   const [promiseState, setPromiseState] = useState<PromiseState | null>(null)
 
   useEffect(() => {
-    if (Array.isArray(branches)) return
+    if (!promise) return
 
     let cancelled = false
-    setPromiseState({ source: branches, branches: null, error: null })
-
-    void branches.then(
+    void promise.then(
       (nextBranches) => {
         if (!cancelled)
-          setPromiseState({ source: branches, branches: nextBranches, error: null })
+          setPromiseState({ source: promise, branches: nextBranches, error: null })
       },
       (reason: unknown) => {
         if (!cancelled)
           setPromiseState({
-            source: branches,
+            source: promise,
             branches: null,
             error:
               reason instanceof Error
@@ -61,7 +60,7 @@ export function CustomerBranchField({ branches, ...props }: Props) {
     return () => {
       cancelled = true
     }
-  }, [branches])
+  }, [promise])
 
   const resolvedBranches = Array.isArray(branches)
     ? branches
