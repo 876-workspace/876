@@ -6,6 +6,7 @@ import {
   financeProvisioningReceiptEnvelopeSchema,
   parseFinanceProvisioningEvent,
   parseFinanceProvisioningReceipt,
+  type FinanceProvisioningContractIssue,
   type FinanceProvisioningEvent,
 } from './index'
 
@@ -49,6 +50,20 @@ function response(overrides: Record<string, unknown> = {}) {
     },
     error: null,
   }
+}
+
+function expectContractIssue(
+  callback: () => unknown,
+  issue: FinanceProvisioningContractIssue
+): void {
+  try {
+    callback()
+  } catch (error) {
+    expect(error).toBeInstanceOf(FinanceProvisioningContractError)
+    expect((error as FinanceProvisioningContractError).issue).toBe(issue)
+    return
+  }
+  throw new Error(`Expected finance provisioning contract issue ${issue}.`)
 }
 
 describe('finance provisioning shared contract', () => {
@@ -95,29 +110,35 @@ describe('finance provisioning shared contract', () => {
   })
 
   it('rejects a 2xx-shaped body that is not the 876 success envelope', () => {
-    expect(financeProvisioningReceiptEnvelopeSchema.safeParse({ ok: true }).success).toBe(
-      false
-    )
-    expect(() =>
-      parseFinanceProvisioningReceipt(event(), { ok: true })
-    ).toThrowError(
-      expect.objectContaining({ issue: 'invalid-response' })
+    expect(
+      financeProvisioningReceiptEnvelopeSchema.safeParse({ ok: true }).success
+    ).toBe(false)
+    expectContractIssue(
+      () => parseFinanceProvisioningReceipt(event(), { ok: true }),
+      'invalid-response'
     )
   })
 
   it('rejects a receipt behind the event lifecycle', () => {
-    expect(() =>
-      parseFinanceProvisioningReceipt(
-        event(),
-        response({ lifecycleVersion: 2 })
-      )
-    ).toThrowError(expect.objectContaining({ issue: 'stale-response' }))
+    expectContractIssue(
+      () =>
+        parseFinanceProvisioningReceipt(
+          event(),
+          response({ lifecycleVersion: 2 })
+        ),
+      'stale-response'
+    )
   })
 
   it('rejects a different state at the same lifecycle', () => {
-    expect(() =>
-      parseFinanceProvisioningReceipt(event(), response({ status: 'SUSPENDED' }))
-    ).toThrowError(expect.objectContaining({ issue: 'state-mismatch' }))
+    expectContractIssue(
+      () =>
+        parseFinanceProvisioningReceipt(
+          event(),
+          response({ status: 'SUSPENDED' })
+        ),
+      'state-mismatch'
+    )
   })
 
   it('allows background replay to observe a newer lifecycle', () => {
@@ -130,12 +151,14 @@ describe('finance provisioning shared contract', () => {
   })
 
   it('does not let foreground readiness pass on a superseding lifecycle', () => {
-    expect(() =>
-      parseFinanceProvisioningReceipt(
-        event(),
-        response({ lifecycleVersion: 4, status: 'SUSPENDED' }),
-        { exactState: true }
-      )
-    ).toThrowError(expect.objectContaining({ issue: 'superseded-response' }))
+    expectContractIssue(
+      () =>
+        parseFinanceProvisioningReceipt(
+          event(),
+          response({ lifecycleVersion: 4, status: 'SUSPENDED' }),
+          { exactState: true }
+        ),
+      'superseded-response'
+    )
   })
 })
