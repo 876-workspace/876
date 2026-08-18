@@ -1,13 +1,13 @@
-import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
-import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 
 import { resolveOrg, resolveOrgBillingAccounts } from '../../../_data'
-import { SubscriptionCreate } from './_components/subscription-create'
+import {
+  SubscriptionCreate,
+  type SubscriptionCreateSetup,
+} from './_components/subscription-create'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewBillingSubscriptionPage({ params }: Props) {
   const { slug } = await params
+  const setup = loadSubscriptionSetup(slug)
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -34,41 +35,26 @@ export default async function NewBillingSubscriptionPage({ params }: Props) {
         <h1 className="876-page-title mt-2">New Subscription</h1>
       </div>
 
-      <Suspense fallback={<SubscriptionFormFallback />}>
-        <SubscriptionFormData slug={slug} />
-      </Suspense>
+      <SubscriptionCreate orgSlug={slug} setup={setup} />
     </div>
   )
 }
 
-async function SubscriptionFormData({ slug }: { slug: string }) {
+async function loadSubscriptionSetup(
+  slug: string
+): Promise<SubscriptionCreateSetup> {
   const org = await resolveOrg(slug)
-  if (!org) notFound()
+  if (!org) throw new Error('Organization not found.')
 
   const [accounts, productsResult] = await Promise.all([
     resolveOrgBillingAccounts(org.id),
     $876.entitlementPlans.admin.list({ status: 'active' }),
   ])
+  if (productsResult.error) throw new Error(productsResult.error.message)
 
-  return (
-    <SubscriptionCreate
-      orgId={org.id}
-      orgSlug={slug}
-      accounts={accounts?.data ?? []}
-      products={productsResult.data?.data ?? []}
-    />
-  )
-}
-
-function SubscriptionFormFallback() {
-  return (
-    <div className="876-card space-y-5 p-5">
-      {Array.from({ length: 5 }, (_, index) => (
-        <div key={index} className="space-y-2">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-9 w-full" />
-        </div>
-      ))}
-    </div>
-  )
+  return {
+    orgId: org.id,
+    accounts: accounts?.data ?? [],
+    products: productsResult.data?.data ?? [],
+  }
 }
