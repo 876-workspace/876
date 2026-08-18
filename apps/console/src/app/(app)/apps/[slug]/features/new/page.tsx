@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Info } from '@876/ui/icons'
 import { Alert, AlertTitle, AlertDescription } from '@876/ui/alert'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { CreateFeatureForm } from '@/features/access/components/create-feature-form'
@@ -19,12 +21,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `New Feature • ${app.name} - Apps` }
 }
 
-export default async function NewAppFeaturePage({
-  params,
-  searchParams,
-}: Props) {
-  const { slug } = await params
-  const { parent } = await searchParams
+export default function NewAppFeaturePage({ params, searchParams }: Props) {
+  return (
+    <Suspense fallback={<NewAppFeatureFallback />}>
+      <NewAppFeatureData params={params} searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function NewAppFeatureData({ params, searchParams }: Props) {
+  const [{ slug }, { parent }] = await Promise.all([params, searchParams])
   const app = await resolveApp(slug)
   if (!app) notFound()
 
@@ -68,6 +74,22 @@ export default async function NewAppFeaturePage({
         lockApp
         returnHref={`/apps/${slug}/features`}
       />
+    </div>
+  )
+}
+
+function NewAppFeatureFallback() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-8 w-48" />
+      <div className="876-card space-y-5 p-5">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
