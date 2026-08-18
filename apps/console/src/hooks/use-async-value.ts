@@ -8,6 +8,12 @@ type AsyncValueState<T> = {
   pending: boolean
 }
 
+type PromiseResolution<T> = {
+  source: Promise<T>
+  value: T | undefined
+  error: Error | null
+}
+
 function isPromiseLike<T>(value: T | Promise<T>): value is Promise<T> {
   return (
     typeof value === 'object' &&
@@ -26,32 +32,23 @@ function isPromiseLike<T>(value: T | Promise<T>): value is Promise<T> {
  * control shows a loading state.
  */
 export function useAsyncValue<T>(source: T | Promise<T>): AsyncValueState<T> {
-  const immediate = isPromiseLike(source) ? undefined : source
-  const [state, setState] = useState<AsyncValueState<T>>(() => ({
-    value: immediate,
-    error: null,
-    pending: immediate === undefined,
-  }))
+  const promise = isPromiseLike(source) ? source : null
+  const [resolution, setResolution] = useState<PromiseResolution<T> | null>(null)
 
   useEffect(() => {
-    if (!isPromiseLike(source)) {
-      setState({ value: source, error: null, pending: false })
-      return
-    }
+    if (!promise) return
 
     let cancelled = false
-    setState({ value: undefined, error: null, pending: true })
-
-    void source.then(
+    void promise.then(
       (value) => {
-        if (!cancelled) setState({ value, error: null, pending: false })
+        if (!cancelled) setResolution({ source: promise, value, error: null })
       },
       (reason: unknown) => {
         if (cancelled) return
-        setState({
+        setResolution({
+          source: promise,
           value: undefined,
           error: reason instanceof Error ? reason : new Error(String(reason)),
-          pending: false,
         })
       }
     )
@@ -59,7 +56,15 @@ export function useAsyncValue<T>(source: T | Promise<T>): AsyncValueState<T> {
     return () => {
       cancelled = true
     }
-  }, [source])
+  }, [promise])
 
-  return state
+  if (!promise) return { value: source, error: null, pending: false }
+  if (!resolution || resolution.source !== promise)
+    return { value: undefined, error: null, pending: true }
+
+  return {
+    value: resolution.value,
+    error: resolution.error,
+    pending: false,
+  }
 }
