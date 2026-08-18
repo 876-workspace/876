@@ -41,7 +41,14 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: optionalString('http://localhost:3004'),
   SENTRY_DSN: optionalString(),
   IDENTITY_API_TIMEOUT_SECONDS: optionalNumber(5),
-  BILLING_PLATFORM_TENANT_SLUG: optionalString(),
+  // Efesto is the platform operator workspace. Core customer.ensure events do
+  // not carry a tenant id, so an omitted or accidentally blank environment
+  // variable must still resolve to the canonical operator tenant rather than
+  // failing every customer-sync event at runtime.
+  BILLING_PLATFORM_TENANT_SLUG: z
+    .string()
+    .optional()
+    .transform((value) => value?.trim() || 'efesto'),
 })
 
 function build(env: NodeJS.ProcessEnv) {
