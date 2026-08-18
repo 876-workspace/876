@@ -18,36 +18,39 @@ function AppLogos({ access }: { access: AdminSubscription[] }) {
     return <span className="text-muted-foreground text-xs">—</span>
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {active.map((item) => {
+    <div className="flex items-center gap-2">
+      {active.slice(0, 3).map((item) => {
         const label = item.app_name || item.app_slug || item.app_id
         const appKey = item.app_slug || item.app_id
         const initial = label.trim().charAt(0).toUpperCase() || 'A'
-        return (
+
+        return item.app_logo_url ? (
+          <Image
+            key={item.id}
+            src={item.app_logo_url}
+            alt={label}
+            title={label}
+            width={20}
+            height={20}
+            unoptimized
+            className="size-5 rounded-sm object-cover"
+          />
+        ) : (
           <span
             key={item.id}
             title={label}
             aria-label={label}
-            className={cn(
-              'border-876-surface-border inline-flex size-7 items-center justify-center overflow-hidden rounded-md border text-[11px] font-semibold',
-              item.app_logo_url ? 'bg-background' : `text-white ${appColor(appKey)}`
-            )}
+            className={`inline-flex size-5 items-center justify-center rounded-sm text-[10px] font-semibold text-white ${appColor(appKey)}`}
           >
-            {item.app_logo_url ? (
-              <Image
-                src={item.app_logo_url}
-                alt=""
-                width={28}
-                height={28}
-                unoptimized
-                className="size-full object-cover"
-              />
-            ) : (
-              initial
-            )}
+            {initial}
           </span>
         )
       })}
+      {active.length > 3 && (
+        <span className="text-muted-foreground text-xs">
+          +{active.length - 3}
+        </span>
+      )}
     </div>
   )
 }
