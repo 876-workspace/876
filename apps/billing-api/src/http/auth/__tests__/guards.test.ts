@@ -5,7 +5,10 @@ import { resetSettingsForTest } from '@/config'
 import { type BillingSecurity } from '@/http/api-router'
 import { envelope } from '@/http/middleware/envelope'
 import { errorHandler, notFoundHandler } from '@/http/middleware/error-handler'
-import type { IdentityGateway } from '@/providers/identity'
+import {
+  IdentityUnavailableError,
+  type IdentityGateway,
+} from '@/providers/identity'
 
 import { createGuardResolver, type AuthRepository } from '../guards'
 import { getPrincipal } from '../principal'
@@ -49,6 +52,18 @@ function createAuthApp(): Express {
   app.use(errorHandler)
 
   return app
+}
+
+function identityUnavailable(
+  path: string,
+  options?: { status?: number; reason?: 'network' | 'timeout' | 'upstream' }
+) {
+  return new IdentityUnavailableError({
+    attempts: 2,
+    path,
+    reason: options?.reason ?? 'upstream',
+    status: options?.status ?? 503,
+  })
 }
 
 describe('Billing authentication guards', () => {
@@ -133,7 +148,7 @@ describe('Billing authentication guards', () => {
     )
   })
 
-  it('rejects a user who no longer has an active organization membership', async () => {
+  it('rejects a user only when identity authoritatively reports no active organization membership', async () => {
     vi.mocked(identity.organizationMembership).mockResolvedValue(null)
 
     const response = await request(createAuthApp())
@@ -144,6 +159,58 @@ describe('Billing authentication guards', () => {
     expect(response.status).toBe(403)
     expect(response.body.error.code).toBe('auth/organization-forbidden')
     expect(repository.effectiveMember).not.toHaveBeenCalled()
+  })
+
+  it('returns 503 instead of false organization-forbidden when membership verification is unavailable', async () => {
+    vi.mocked(identity.organizationMembership).mockRejectedValue(
+      identityUnavailable('/users/me/memberships?status=active')
+    )
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(503)
+    expect(response.body.error).toEqual({
+      code: 'auth/identity-unavailable',
+      message: 'The identity service could not verify access. Please retry.',
+    })
+    expect(repository.effectiveMember).not.toHaveBeenCalled()
+  })
+
+  it('returns 503 instead of false invalid-token when introspection is unavailable', async () => {
+    vi.mocked(identity.introspect).mockRejectedValue(
+      identityUnavailable('/oauth/introspect', { status: 502 })
+    )
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(503)
+    expect(response.body.error.code).toBe('auth/identity-unavailable')
+    expect(identity.organizationMembership).not.toHaveBeenCalled()
+    expect(repository.effectiveMember).not.toHaveBeenCalled()
+  })
+
+  it('keeps an authoritative inactive token as a 401 invalid-token response', async () => {
+    vi.mocked(identity.introspect).mockResolvedValue({
+      active: false,
+      subject: null,
+      appId: null,
+      scopes: new Set(),
+    })
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer expired-token')
+
+    expect(response.status).toBe(401)
+    expect(response.body.error.code).toBe('auth/invalid-token')
+    expect(identity.organizationMembership).not.toHaveBeenCalled()
   })
 
   it('passes the organization role into effective Billing access resolution', async () => {
@@ -176,6 +243,18 @@ describe('Billing authentication guards', () => {
 
     expect(response.status).toBe(403)
     expect(response.body.error.code).toBe('auth/forbidden')
+  })
+
+  it('keeps a genuinely missing Billing workspace distinct from identity failures', async () => {
+    vi.mocked(repository.tenantByOrganizationId).mockResolvedValue(null)
+
+    const response = await request(createAuthApp())
+      .get('/tenant')
+      .set('x-billing-organization-id', 'org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(404)
+    expect(response.body.error.code).toBe('billing/tenant-not-found')
   })
 
   it('requires the configured internal secret for admin routes', async () => {
@@ -220,6 +299,22 @@ describe('Billing authentication guards', () => {
     expect(repository.activeConnection).not.toHaveBeenCalled()
   })
 
+  it('returns 503 for an integration OAuth membership outage before evaluating scopes', async () => {
+    vi.mocked(identity.organizationMembership).mockRejectedValue(
+      identityUnavailable('/users/me/memberships?status=active', {
+        reason: 'network',
+      })
+    )
+
+    const response = await request(createAuthApp())
+      .get('/integration/org_123')
+      .set('authorization', 'Bearer access-token')
+
+    expect(response.status).toBe(503)
+    expect(response.body.error.code).toBe('auth/identity-unavailable')
+    expect(repository.activeConnection).not.toHaveBeenCalled()
+  })
+
   it('derives app identity from an integration API key and checks its connection', async () => {
     const response = await request(createAuthApp())
       .get('/integration/org_123')
@@ -235,6 +330,33 @@ describe('Billing authentication guards', () => {
       'btenant_123',
       'app_123'
     )
+  })
+
+  it('keeps an authoritatively invalid integration API key as 401', async () => {
+    vi.mocked(identity.appForApiKey).mockResolvedValue(null)
+
+    const response = await request(createAuthApp())
+      .get('/integration/org_123')
+      .set('x-876-api-key', 'bad-key')
+
+    expect(response.status).toBe(401)
+    expect(response.body.error.code).toBe('auth/invalid-api-key')
+    expect(repository.tenantByOrganizationId).not.toHaveBeenCalled()
+  })
+
+  it('returns 503 instead of false invalid-api-key when app identity verification is unavailable', async () => {
+    vi.mocked(identity.appForApiKey).mockRejectedValue(
+      identityUnavailable('/apps/current', { status: 500 })
+    )
+
+    const response = await request(createAuthApp())
+      .get('/integration/org_123')
+      .set('x-876-api-key', 'valid-looking-key')
+
+    expect(response.status).toBe(503)
+    expect(response.body.error.code).toBe('auth/identity-unavailable')
+    expect(repository.tenantByOrganizationId).not.toHaveBeenCalled()
+    expect(repository.activeConnection).not.toHaveBeenCalled()
   })
 
   it('keeps guards route-local so an unknown path returns 404', async () => {
