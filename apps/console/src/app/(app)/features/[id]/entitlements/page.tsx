@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Skeleton } from '@876/ui/skeleton'
 import { FeatureAccessBoard } from '@/features/access/components/feature-access-board'
 import { loadGrants, toAccessFlag } from '@/features/access/to-access-flag'
 import { $876 } from '@/lib/876'
@@ -14,7 +16,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${feature.name} • Entitlements - Features` }
 }
 
-export default async function FeatureEntitlementsPage({ params }: Props) {
+export default function FeatureEntitlementsPage({ params }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-80 w-full rounded-lg" />}>
+      <FeatureEntitlementsData params={params} />
+    </Suspense>
+  )
+}
+
+async function FeatureEntitlementsData({ params }: Props) {
   const { id } = await params
   const feature = await resolveFeature(id)
   if (!feature) notFound()
