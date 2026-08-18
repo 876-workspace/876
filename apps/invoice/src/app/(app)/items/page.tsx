@@ -19,7 +19,7 @@ import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { redirect } from 'next/navigation'
 
-import { get876Client } from '@/lib/876'
+import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { ItemsTable } from './_components/items-table'
 
@@ -85,8 +85,9 @@ async function ItemsTableData({ searchParams }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const $876 = await get876Client(context.orgId)
-  const result = await $876.items.list(
+  const billing = await getInvoiceBillingIntegration()
+  const result = await billing.items.list(
+    context.orgId,
     selectedStatus === 'all'
       ? {}
       : { active: selectedStatus === 'active' }

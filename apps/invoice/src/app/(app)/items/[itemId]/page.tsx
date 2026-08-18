@@ -5,7 +5,7 @@ import { ChevronRightIcon } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { get876Client } from '@/lib/876'
+import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/format'
 import { ItemActions } from './_components/item-actions'
@@ -24,8 +24,8 @@ export default async function ItemDetailPage({ params }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const $876 = await get876Client(context.orgId)
-  const result = await $876.items.retrieve(itemId)
+  const billing = await getInvoiceBillingIntegration()
+  const result = await billing.items.retrieve(context.orgId, itemId)
 
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()

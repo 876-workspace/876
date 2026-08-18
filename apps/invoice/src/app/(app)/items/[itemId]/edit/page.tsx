@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { get876Client } from '@/lib/876'
+import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { ItemForm } from '../../_components/item-form'
@@ -17,9 +17,9 @@ export default async function EditItemPage({ params }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const $876 = await get876Client(context.orgId)
+  const billing = await getInvoiceBillingIntegration()
   const [itemResult, platform] = await Promise.all([
-    $876.items.retrieve(itemId),
+    billing.items.retrieve(context.orgId, itemId),
     getPlatformClient(),
   ])
 
