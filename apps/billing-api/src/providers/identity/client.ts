@@ -4,6 +4,7 @@ import { getLogger } from '@/platform/logger'
 import {
   IdentityUnavailableError,
   type IdentityApp,
+  type IdentityFailureReason,
   type IdentityGateway,
   type OrganizationMembership,
   type TokenIntrospection,
@@ -39,7 +40,7 @@ function unwrapEnvelope(raw: unknown): unknown {
 function unavailable(options: {
   attempts?: number
   path: string
-  reason: ConstructorParameters<typeof IdentityUnavailableError>[0]['reason']
+  reason: IdentityFailureReason
   status?: number | null
 }): IdentityUnavailableError {
   return new IdentityUnavailableError({
@@ -202,10 +203,7 @@ export class HttpIdentityGateway implements IdentityGateway {
       } catch (error) {
         const reason = isTimeoutError(error) ? 'timeout' : 'network'
         if (attempt < MAX_ATTEMPTS) {
-          log.warn(
-            { attempt, path, reason },
-            'identity.request.retrying'
-          )
+          log.warn({ attempt, path, reason }, 'identity.request.retrying')
           continue
         }
         log.error({ err: error, path, reason }, 'identity.request.failed')
