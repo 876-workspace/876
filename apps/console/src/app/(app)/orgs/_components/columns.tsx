@@ -1,12 +1,12 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { AdminOrganization, AdminSubscription } from '@876/admin'
 import { cn } from '@876/core/utils'
 
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
+import { AppLogoChip } from '@/components/patterns/app-logo-chip'
 import { formatDate, statusBadgeClass } from '@/lib/format'
 
 function AppLogos({ access }: { access: AdminSubscription[] }) {
@@ -20,27 +20,16 @@ function AppLogos({ access }: { access: AdminSubscription[] }) {
     <div className="flex flex-wrap items-center gap-1.5">
       {active.map((item) => {
         const label = item.app_name || item.app_slug || item.app_id
-        const initial = label.trim().charAt(0).toUpperCase() || 'A'
         return (
-          <span
+          <AppLogoChip
             key={item.id}
-            title={label}
-            aria-label={label}
-            className="border-876-surface-border bg-background inline-flex size-7 items-center justify-center overflow-hidden rounded-md border text-[11px] font-semibold"
-          >
-            {item.app_logo_url ? (
-              <Image
-                src={item.app_logo_url}
-                alt=""
-                width={28}
-                height={28}
-                unoptimized
-                className="size-full object-cover"
-              />
-            ) : (
-              initial
-            )}
-          </span>
+            appId={item.app_id}
+            slug={item.app_slug}
+            name={label}
+            logoUrl={item.app_logo_url}
+            size="md"
+            className="border-876-surface-border border"
+          />
         )
       })}
     </div>
