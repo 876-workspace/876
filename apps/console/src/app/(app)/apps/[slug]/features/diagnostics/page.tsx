@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
+import { Skeleton } from '@876/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -19,12 +21,29 @@ type Props = {
   searchParams: Promise<{ organizationId?: string; userId?: string }>
 }
 
-export default async function FeatureDiagnosticsPage({
-  params,
-  searchParams,
-}: Props) {
-  const { slug } = await params
-  const { organizationId, userId } = await searchParams
+export default function FeatureDiagnosticsPage({ params, searchParams }: Props) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="876-page-title">Feature & entitlement diagnostics</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Explain global, parent, subscription-module, organization, and user
+          decisions. Product permissions remain a separate final access check.
+        </p>
+      </div>
+
+      <Suspense fallback={<DiagnosticsFallback />}>
+        <FeatureDiagnosticsData params={params} searchParams={searchParams} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function FeatureDiagnosticsData({ params, searchParams }: Props) {
+  const [{ slug }, { organizationId, userId }] = await Promise.all([
+    params,
+    searchParams,
+  ])
   const app = await resolveApp(slug)
   if (!app) notFound()
 
@@ -42,15 +61,7 @@ export default async function FeatureDiagnosticsPage({
   if (result?.error) throw new Error(result.error.message)
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h2 className="876-page-title">Feature & entitlement diagnostics</h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Explain global, parent, subscription-module, organization, and user
-          decisions. Product permissions remain a separate final access check.
-        </p>
-      </div>
-
+    <>
       <form className="876-card grid gap-4 p-5 md:grid-cols-2" method="get">
         <div>
           <label className="text-sm font-medium" htmlFor="organizationId">
@@ -137,7 +148,20 @@ export default async function FeatureDiagnosticsPage({
           </Table>
         </div>
       )}
-    </div>
+    </>
+  )
+}
+
+function DiagnosticsFallback() {
+  return (
+    <>
+      <div className="876-card grid gap-4 p-5 md:grid-cols-2">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-9 w-32 md:col-span-2" />
+      </div>
+      <Skeleton className="h-64 w-full rounded-lg" />
+    </>
   )
 }
 
