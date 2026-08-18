@@ -1,45 +1,23 @@
 # API Access Rules
 
-Read this file before writing or modifying any data-fetching code in `apps/876` or `apps/console`.
+Read this file before writing or modifying data access in `apps/876` or `apps/console`.
 
 ## Core Rule
 
-**All backend calls must go through the FastAPI backend (`apps/api`). Next.js apps are presentation-only.**
+**Next.js feature code talks through the application's approved server facade and product-owned API surface. Backend/service topology is not a browser contract.**
 
-This means:
+- Do not access databases or external providers from Next.js feature code.
+- Do not call dedicated service origins directly from browser code.
+- Do not create dedicated service clients in pages, feature components, or route handlers when the application facade already owns that integration.
+- Client-initiated mutations use thin route handlers under the application's own `/api/<resource>` vocabulary. Do not use Server Actions for backend mutations.
+- Route handlers authorize and adapt transport only. Business/domain logic remains in the owning backend service.
+- Browser components call the typed app client under `src/lib/client`; they do not know service URLs, internal keys, integration paths, or backend API versions.
 
-- **No Server Actions.** Client-initiated mutations use a **pure-transport route handler** instead (see below). Business logic always lives in FastAPI.
-- **No raw `fetch` calls** from Next.js apps directly to the Python API or any external provider.
-- **No business logic, DB access, or provider calls in route handlers.** Route handlers may only authorize the request and call the package `$876` (`@876/sdk` / `@876/admin`); the logic lives in FastAPI.
+Protocol adapters such as auth callbacks/bridges and Uploadthing may keep protocol-specific routes when the protocol itself requires them. They still must not absorb domain business logic.
 
-### Client-initiated mutations: pure-transport route handlers
+## Consumer app (`apps/876`)
 
-Reads happen in server components via `$876`. For mutations triggered from client components, do **not** use server actions. Instead:
-
-1. Add a thin route handler under `app/api/...` that (a) authorizes the request — session check, and for Console `requireConsolePermission(...)` — and (b) calls `$876.<resource>.<verb>()`. It contains no business logic.
-2. Call it from the client via the app's typed browser client (`client` from `@/lib/client` — `apps/876/src/lib/client/`, `apps/console/src/lib/client/`) — or, for no-JS form posts, a native `<form action="/api/..." method="post">` that redirects.
-
-This keeps a single, testable RPC surface and avoids server actions while still owning no business logic in Next.js. See `.claude/rules/sdk-conventions.md`.
-
-The OAuth callback at `apps/876/src/app/callback/route.ts` and the auth bridge at `app/api/auth/[...path]/route.ts` are protocol adapters (session-cookie copy / transport forwarding) and contain no business logic.
-
-> Known follow-up: `apps/876/src/app/oauth/consent/actions.ts` is the last remaining server action (an OAuth approve/deny redirect flow); convert it to a route handler in a dedicated change.
-
-Auth protocol bridge routes may forward transport metadata to the API, but they must not own provider/business logic. When an auth flow needs an absolute browser origin (for example WorkOS social callback URLs), derive it from the incoming request/forwarded headers and pass it explicitly to FastAPI. Do not hardcode environment-specific URLs in code. The 876 auth bridge forwards this as `x-876-origin`; the API may use it to replace missing or local-only callback configuration while production/non-local configured URLs remain authoritative.
-
-## How to Fetch Data
-
-### Consumer app (`apps/876`)
-
-Browser-side auth calls → `@876/sdk` via `authClient` (`apps/876/src/lib/auth/client.ts`)
-
-```ts
-import { authClient } from '@/lib/auth/client'
-
-const result = await authClient.auth.login({ identifier, password })
-```
-
-Server-side data → API-key-tier `$876` from `@/lib/876` (`apps/876/src/lib/876.ts`); privileged session bootstrap uses the internal-key admin client in `apps/876/src/lib/auth/guards.ts`:
+Server-side platform data goes through the app's `$876` facade and the canonical 876 API. Browser auth/data operations use the approved typed clients and same-origin bridge routes where required.
 
 ```ts
 import { $876 } from '@/lib/876'
@@ -47,56 +25,90 @@ import { $876 } from '@/lib/876'
 const result = await $876.apps.retrieve(appId)
 ```
 
-### Console (`apps/console`)
+Do not bypass the core API with direct provider or database access from the Next.js application.
 
-All server-side data calls → `@876/admin` via the `$876` singleton at `src/lib/876.ts`:
+## Console (`apps/console`)
+
+Console is intentionally broader than a normal product app. Its server facade spans the services Console administrates.
+
+**The canonical server boundary is `createConsole876Client()` / `$876` in `apps/console/src/lib/876`.** It may compose the platform admin client plus approved Billing, Couriers, Storage, and Widgets service clients. That fan-out belongs in `src/lib`; feature code consumes the unified Console facade.
 
 ```ts
 import { $876 } from '@/lib/876'
 
-const result = await $876.users.list()
+const users = await $876.users.admin.list()
+const billingStats = await $876.billing.stats.apps.list()
+const notes = await $876.widgets.admin.notes.list()
 ```
 
-Browser-side auth calls → `@876/sdk` (`create876Client`) with `credentials: 'include'`:
+When request metadata must be propagated, construct the request-scoped facade through `createConsole876Client(requestId)` inside the thin route adapter. Do not construct the underlying Billing/Widgets/etc. client directly in the route.
+
+### Console browser routes
+
+Console browser URLs describe **Console resources**, not the service that owns the data. Examples:
+
+```text
+/api/users/:id/image
+/api/organizations/:id/customers
+/api/billing-accounts
+/api/billing-subscriptions
+/api/widget-features/:id
+/api/notes
+/api/note-collections
+/api/finance/reconcile
+```
+
+Do not introduce service namespaces such as:
+
+```text
+/api/billing/*
+/api/storage/*
+/api/widgets/*
+/api/integrations/*
+/api/v1/*
+```
+
+The internal handler may still call Billing, Storage, Widgets, Couriers, or the platform API through `$876`.
+
+Shared browser packages may expose host-route configuration when the same UI runs in several products. The host application owns the final same-origin URL. Package defaults must not force Console to reveal a service namespace.
+
+## Client-initiated mutations
+
+1. Add or reuse the canonical backend capability in the service that owns the domain.
+2. Expose that capability through the app's server facade/package client.
+3. Add a thin, permission-checked app route under the product-owned resource path.
+4. Call the route from the typed browser client.
+5. Add boundary/authorization regression coverage.
+
+For Console, a typical route is:
 
 ```ts
-const $876 = create876Client({
-  apiKey: process.env.NEXT_PUBLIC_876_API_KEY,
-  baseUrl:
-    process.env.NEXT_PUBLIC_876_API_URL ?? process.env.NEXT_PUBLIC_API_URL,
-  credentials: 'include',
-})
+export async function POST(request: NextRequest) {
+  const { response } = await requireConsolePermission('console:organizations')
+  if (response) return response
+
+  const requestId = request.headers.get('x-request-id') ?? crypto.randomUUID()
+  const $876 = createConsole876Client(requestId)
+  // Parse transport input, call one approved facade operation, return envelope.
+}
 ```
 
-## SDK Client Configuration
-
-All `create876Client` calls in browser-rendered components **must** include `credentials: 'include'`. This is required for the session cookie to be set and cleared across the API origin boundary.
-
-```ts
-// CORRECT
-create876Client({
-  apiKey: process.env.NEXT_PUBLIC_876_API_KEY,
-  baseUrl:
-    process.env.NEXT_PUBLIC_876_API_URL ?? process.env.NEXT_PUBLIC_API_URL,
-  credentials: 'include',
-})
-
-// WRONG — omitting credentials breaks login/logout
-create876Client({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL,
-})
-```
+Keep route handlers free of database queries, provider SDKs, and duplicated domain rules.
 
 ## Authentication Boundary
 
-- **Server-side route guards** (`requireSession`, `requireConsoleAccount`, etc.) are the authoritative auth gate. They run in RSC layouts before any page renders.
-- **Client-side state** (Zustand stores) holds display-only user data (name, avatar, role) hydrated after the server guard passes. Never use client-side state to decide whether a route is accessible.
-- Session cookies are set by the Python API and read by Next.js via `cookies()` from `next/headers`. Next.js apps do not seal or validate HMAC on cookies — that is the API's responsibility.
+- Server-side guards (`requireSession`, `requireConsoleAccount`, `requireConsolePermission`, etc.) are authoritative.
+- Client state is display state, never an authorization boundary.
+- Service credentials/internal keys remain server-only inside approved facade construction.
+- Never expose internal keys or service base URLs through `NEXT_PUBLIC_*` merely to let browser code call a backend directly.
 
-## Adding a New API Operation
+## Adding a New Cross-Service Console Capability
 
-1. Add the endpoint to `apps/api` (FastAPI router + repository method).
-2. Add the typed method to the correct tier per the auth-tier gating rule: `@876/admin` (`packages/admin/src/client.ts`) if the endpoint is `AdminDep`, and/or `@876/sdk` (`packages/sdk/src/client.ts`) if it is API-key/session and self-scoped. A method may live in `@876/sdk` only if its endpoint is not `AdminDep`.
-3. Call through the package's exported `$876` in the Next.js app — never `fetch` the API directly, and never add bespoke flat wrappers (`listUsers()`) around the client.
+1. Add/verify the canonical operation in the owning backend.
+2. Add the typed operation to the appropriate server package/facade tier.
+3. Wire it into `createConsole876Client()` if Console does not already expose it.
+4. Choose a Console resource URL based on what the administrator is acting on, not which service receives the request.
+5. Add the thin route and typed browser call only when client-side interaction is needed.
+6. Add tests proving permissions, canonical envelopes, and the absence of a leaked service namespace.
 
-See `sdk-conventions.md` for the `$876.<resource>.<verb>()` surface, client initialization, and the auth-tier gating rule. See `stripe-api-pattern.md` for resource shape conventions.
+See `product-api-boundary.md` and `sdk-conventions.md` for the broader resource/facade conventions.
