@@ -1,7 +1,7 @@
 import type { AdminSubscription } from '@876/admin'
 import { cache } from 'react'
 
-import { $876 } from '@/lib/876'
+import { $876, coreAdmin } from '@/lib/876'
 import { listConsoleApps } from '@/lib/apps-catalog'
 
 export const resolveApp = cache(async (slug: string) => {
@@ -32,8 +32,8 @@ export const resolveProduct = cache(async (appId: string, slugOrId: string) => {
  * summary despite the admin SDK historically typing it as `AdminSubscription`.
  * In particular, production responses omit `items`, so callers that use the
  * advertised shape can crash while rendering. Hydrate those summaries through
- * the organization batch endpoint, which uses Core's canonical subscription
- * serializer and includes product/price items.
+ * Core's admin organization-subscription batch endpoint, whose canonical
+ * serializer includes product/price items.
  *
  * The summary call still determines which organizations belong to this app;
  * one batch request then replaces each summary with the complete entitlement.
@@ -54,7 +54,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   const organizationIds = [
     ...new Set(summaries.map((subscription) => subscription.organization_id)),
   ]
-  const hydratedResult = await $876.organizations.subscriptions.list({
+  const hydratedResult = await coreAdmin.organizations.subscriptions.list({
     organizationIds,
   })
 
@@ -77,10 +77,10 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
     }
   }
 
-  const hydratedById = new Map(
+  const hydratedById = new Map<string, AdminSubscription>(
     (hydratedResult.data?.data ?? [])
       .filter((subscription) => subscription.app_id === appId)
-      .map((subscription) => [subscription.id, subscription] as const)
+      .map((subscription) => [subscription.id, subscription])
   )
 
   return {
