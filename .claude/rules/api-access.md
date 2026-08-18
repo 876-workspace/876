@@ -29,19 +29,21 @@ Do not bypass the core API with direct provider or database access from the Next
 
 ## Console (`apps/console`)
 
-Console is intentionally broader than a normal product app. Its server facade spans the services Console administrates.
+Console is intentionally broader than a normal product app. Its server boundary spans the services Console administrates.
 
-**The canonical server boundary is `createConsole876Client()` / `$876` in `apps/console/src/lib/876`.** It may compose the platform admin client plus approved Billing, Couriers, Storage, and Widgets service clients. That fan-out belongs in `src/lib`; feature code consumes the unified Console facade.
+**The canonical composition point is `createConsole876Client()` / `$876` in `apps/console/src/lib/876`.** It composes the platform admin client plus approved Billing, Couriers, Storage, and Widgets clients. That construction belongs in `src/lib/876`; feature code consumes the resource-oriented surface instead of constructing service clients.
 
 ```ts
 import { $876 } from '@/lib/876'
 
-const users = await $876.users.admin.list()
-const billingStats = await $876.billing.stats.apps.list()
-const notes = await $876.widgets.admin.notes.list()
+const user = await $876.users.admin.retrieve({ id: userId })
+const plan = await $876.plans.admin.create(params)
+const customer = await $876.customers.admin.create(params)
 ```
 
-When request metadata must be propagated, construct the request-scoped facade through `createConsole876Client(requestId)` inside the thin route adapter. Do not construct the underlying Billing/Widgets/etc. client directly in the route.
+Some service-specific admin capabilities are not yet present on the canonical composed surface. `src/lib/876` may expose narrow internal aliases such as `billingAdmin`, `billingIntegration`, or `widgetsAdmin` for those cases. Import those aliases only from `@/lib/876`; never construct the underlying service package client in a feature or route. Prefer wrapping specialized workflows in `src/lib` when they coordinate multiple resources.
+
+When request metadata must be propagated, construct the request-scoped facade through `createConsole876Client(requestId)` inside the thin route adapter.
 
 ### Console browser routes
 
@@ -68,7 +70,7 @@ Do not introduce service namespaces such as:
 /api/v1/*
 ```
 
-The internal handler may still call Billing, Storage, Widgets, Couriers, or the platform API through `$876`.
+The internal handler may still call Billing, Storage, Widgets, Couriers, or the platform API through the approved Console server boundary.
 
 Shared browser packages may expose host-route configuration when the same UI runs in several products. The host application owns the final same-origin URL. Package defaults must not force Console to reveal a service namespace.
 
