@@ -19,8 +19,7 @@ import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { redirect } from 'next/navigation'
 
-import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
-import { getInvoiceContext } from '@/lib/auth/context'
+import { getInvoice } from '@/lib/invoice'
 import { ItemsTable } from './_components/items-table'
 
 export const metadata = {
@@ -82,12 +81,10 @@ async function ItemsTableData({ searchParams }: Props) {
   const selectedStatus = ['active', 'inactive'].includes(status ?? '')
     ? status!
     : 'all'
-  const context = await getInvoiceContext()
-  if (!context) redirect('/no-access')
+  const invoice = await getInvoice()
+  if (!invoice) redirect('/no-access')
 
-  const billing = await getInvoiceBillingIntegration()
-  const result = await billing.items.list(
-    context.orgId,
+  const result = await invoice.items.list(
     selectedStatus === 'all' ? {} : { active: selectedStatus === 'active' }
   )
 

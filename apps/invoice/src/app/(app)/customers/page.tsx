@@ -17,8 +17,7 @@ import {
 } from '@876/ui/status-filter-heading'
 import { redirect } from 'next/navigation'
 
-import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
-import { getInvoiceContext } from '@/lib/auth/context'
+import { getInvoice } from '@/lib/invoice'
 import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
 import type { BillingCustomerStatus } from '@876/billing/integration'
 import { CustomersTable } from './_components/customers-table'
@@ -94,13 +93,10 @@ async function CustomersTableData({ searchParams }: Props) {
         ? 'ARCHIVED'
         : undefined
 
-  const context = await getInvoiceContext()
-  if (!context) redirect('/no-access')
+  const invoice = await getInvoice()
+  if (!invoice) redirect('/no-access')
 
-  const billing = await getInvoiceBillingIntegration()
-  const result = await billing.customers.list(context.orgId, {
-    status: apiStatus,
-  })
+  const result = await invoice.customers.list({ status: apiStatus })
   if (result.error) {
     redirectIfSignedOut(result.error.code, '/customers')
 
@@ -116,7 +112,7 @@ async function CustomersTableData({ searchParams }: Props) {
           extra: {
             call: 'customers.list',
             errorCode: result.error.code,
-            organizationId: context.orgId,
+            organizationId: invoice.organizationId,
           },
         }
       )
@@ -139,7 +135,7 @@ async function CustomersTableData({ searchParams }: Props) {
         extra: {
           call: 'customers.list',
           errorCode: result.error.code,
-          organizationId: context.orgId,
+          organizationId: invoice.organizationId,
         },
       })
       return (
@@ -161,7 +157,7 @@ async function CustomersTableData({ searchParams }: Props) {
       extra: {
         call: 'customers.list',
         errorCode: result.error.code,
-        organizationId: context.orgId,
+        organizationId: invoice.organizationId,
       },
     })
 

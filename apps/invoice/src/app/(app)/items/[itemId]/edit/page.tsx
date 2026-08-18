@@ -1,9 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
-import { getInvoiceContext } from '@/lib/auth/context'
 import { getPlatformClient } from '@/lib/876/platform-client'
+import { getInvoice } from '@/lib/invoice'
 import { ItemForm } from '../../_components/item-form'
 
 export const metadata = { title: 'Edit Item' }
@@ -14,12 +13,11 @@ interface Props {
 
 export default async function EditItemPage({ params }: Props) {
   const { itemId } = await params
-  const context = await getInvoiceContext()
-  if (!context) redirect('/no-access')
+  const invoice = await getInvoice()
+  if (!invoice) redirect('/no-access')
 
-  const billing = await getInvoiceBillingIntegration()
   const [itemResult, platform] = await Promise.all([
-    billing.items.retrieve(context.orgId, itemId),
+    invoice.items.retrieve(itemId),
     getPlatformClient(),
   ])
 
@@ -30,7 +28,7 @@ export default async function EditItemPage({ params }: Props) {
 
   const item = itemResult.data
   const organization = await platform.organizations.retrieve({
-    id: context.orgId,
+    id: invoice.organizationId,
   })
   const currency =
     organization.data?.currency_code ?? item.defaultSellingCurrency ?? 'JMD'

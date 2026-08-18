@@ -6,8 +6,7 @@ import { Badge } from '@876/ui/badge'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 
-import { getInvoiceBillingIntegration } from '@/lib/876/billing-integration'
-import { getInvoiceContext } from '@/lib/auth/context'
+import { getInvoice } from '@/lib/invoice'
 import { formatMoney } from '@/lib/format'
 import { CustomerActions } from './_components/customer-actions'
 
@@ -22,11 +21,10 @@ export const metadata: Metadata = {
 
 export default async function CustomerDetailPage({ params }: Props) {
   const { customerId } = await params
-  const context = await getInvoiceContext()
-  if (!context) redirect('/no-access')
+  const invoice = await getInvoice()
+  if (!invoice) redirect('/no-access')
 
-  const billing = await getInvoiceBillingIntegration()
-  const result = await billing.customers.retrieve(context.orgId, customerId)
+  const result = await invoice.customers.retrieve(customerId)
 
   if (result.error) {
     if (result.error.code.endsWith('/not-found')) notFound()
@@ -49,7 +47,7 @@ export default async function CustomerDetailPage({ params }: Props) {
       null
     : null
   const currency = customer.defaultCurrency ?? 'JMD'
-  const canManage = context.role !== 'member'
+  const canManage = invoice.role !== 'member'
 
   return (
     <Page>
