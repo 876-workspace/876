@@ -9,6 +9,8 @@ import { redirect } from 'next/navigation'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
+import { getInvoiceBillingConfig } from './billing-config'
+
 /**
  * Builds the request-scoped Invoice client. The Billing tenant transport is
  * bound to the caller's own access token and organization, so Invoice never
@@ -22,16 +24,17 @@ export async function get876Client(
 
   const requestId = (await headers()).get('x-request-id') ?? undefined
   const accessToken = session.accessToken
+  const { apiKey, baseUrl } = getInvoiceBillingConfig()
 
   return create876ServerClient({
     app: 'invoice',
-    apiKey: process.env.INVOICE_API_876_KEY ?? '',
+    apiKey,
     accessToken,
     requestId,
     services: {
       billing: {
         tenant: {
-          baseUrl: process.env.BILLING_API_URL ?? 'http://127.0.0.1:4004',
+          baseUrl,
           accessToken,
           organizationId,
           requestId,
