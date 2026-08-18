@@ -11,7 +11,7 @@ push.** Make the edits only.
 `packages/billing/src/resources/customers.ts`. That resource today has only
 `create`, `account`, and `recordOpeningBalance` — so Invoice cannot list,
 retrieve, update, archive, or delete a customer even though `apps/billing-api`
-already serves every one of those endpoints. The 876 Billing *app* works around
+already serves every one of those endpoints. The 876 Billing _app_ works around
 the gap with a legacy `service.*` HTTP facade that new code must not copy.
 
 Your job is to close that gap in the client package only. No app code.
@@ -35,12 +35,12 @@ any other resource file.
 From `apps/billing-api/src/modules/customers/customers.routes.ts` — all are
 `security: { kind: 'tenant' }`:
 
-| Method | Path                       | Permission        | Response schema         |
-| ------ | -------------------------- | ----------------- | ----------------------- |
-| GET    | `/customers`               | `customers:read`  | `customerListSchema`    |
-| GET    | `/customers/:customerId`   | `customers:read`  | `customerSchema`        |
-| PATCH  | `/customers/:customerId`   | `customers:write` | `customerSchema`        |
-| DELETE | `/customers/:customerId`   | `customers:write` | `deletedCustomerSchema` |
+| Method | Path                     | Permission        | Response schema         |
+| ------ | ------------------------ | ----------------- | ----------------------- |
+| GET    | `/customers`             | `customers:read`  | `customerListSchema`    |
+| GET    | `/customers/:customerId` | `customers:read`  | `customerSchema`        |
+| PATCH  | `/customers/:customerId` | `customers:write` | `customerSchema`        |
+| DELETE | `/customers/:customerId` | `customers:write` | `deletedCustomerSchema` |
 
 The client `Request` helper prefixes nothing, so paths in the resource file are
 written in full as `/api/v1/customers` (see the existing `create` verb).

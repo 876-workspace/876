@@ -220,9 +220,13 @@ describe('browser surface never leaks server-only resources', () => {
 
 describe('facade delegation parity', () => {
   it('sessions.me delegates to underlying SDK auth methods', async () => {
-    const getSession = vi.fn().mockResolvedValue({ data: { object: 'session' }, error: null })
+    const getSession = vi
+      .fn()
+      .mockResolvedValue({ data: { object: 'session' }, error: null })
     const listSessions = vi.fn().mockResolvedValue({ data: [], error: null })
-    const revokeSession = vi.fn().mockResolvedValue({ data: { object: 'session' }, error: null })
+    const revokeSession = vi
+      .fn()
+      .mockResolvedValue({ data: { object: 'session' }, error: null })
 
     const { createCoreSurface } = await import('./composers/base.ts')
     const platform: any = {
@@ -386,17 +390,31 @@ describe('facade delegation parity', () => {
     expect(retrieveCatalog).toHaveBeenCalledTimes(1)
     expect(retrieveCatalog).toHaveBeenCalledWith('application', 'app_123')
 
-    await core.provisioning.draft.update('application', 'app_123', { foo: 'bar' } as any)
+    await core.provisioning.draft.update('application', 'app_123', {
+      foo: 'bar',
+    } as any)
     expect(replaceDraft).toHaveBeenCalledTimes(1)
-    expect(replaceDraft).toHaveBeenCalledWith('application', 'app_123', { foo: 'bar' })
+    expect(replaceDraft).toHaveBeenCalledWith('application', 'app_123', {
+      foo: 'bar',
+    })
 
-    await core.provisioning.runs.claim({ organizationId: 'org_1', appId: 'app_1' } as any)
+    await core.provisioning.runs.claim({
+      organizationId: 'org_1',
+      appId: 'app_1',
+    } as any)
     expect(claimApplication).toHaveBeenCalledTimes(1)
-    expect(claimApplication).toHaveBeenCalledWith({ organizationId: 'org_1', appId: 'app_1' })
+    expect(claimApplication).toHaveBeenCalledWith({
+      organizationId: 'org_1',
+      appId: 'app_1',
+    })
 
-    await core.provisioning.runs.complete('run_123', { status: 'succeeded' } as any)
+    await core.provisioning.runs.complete('run_123', {
+      status: 'succeeded',
+    } as any)
     expect(completeApplication).toHaveBeenCalledTimes(1)
-    expect(completeApplication).toHaveBeenCalledWith('run_123', { status: 'succeeded' })
+    expect(completeApplication).toHaveBeenCalledWith('run_123', {
+      status: 'succeeded',
+    })
 
     expect(core.provisioning.retrievePublished).toBe(retrievePublished)
     expect(core.provisioning.retrieveCatalog).toBe(retrieveCatalog)

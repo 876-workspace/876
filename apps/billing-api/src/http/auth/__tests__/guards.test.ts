@@ -73,7 +73,9 @@ describe('Billing authentication guards', () => {
       appId: 'app_123',
       scopes: new Set(['billing.customers.write']),
     })
-    vi.mocked(identity.organizationMembership).mockResolvedValue({ role: 'owner' })
+    vi.mocked(identity.organizationMembership).mockResolvedValue({
+      role: 'owner',
+    })
     vi.mocked(identity.appForApiKey).mockResolvedValue({ id: 'app_123' })
   })
 
@@ -145,7 +147,9 @@ describe('Billing authentication guards', () => {
   })
 
   it('passes the organization role into effective Billing access resolution', async () => {
-    vi.mocked(identity.organizationMembership).mockResolvedValue({ role: 'admin' })
+    vi.mocked(identity.organizationMembership).mockResolvedValue({
+      role: 'admin',
+    })
 
     const response = await request(createAuthApp())
       .get('/tenant')

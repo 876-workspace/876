@@ -28,7 +28,9 @@ vi.mock('@/modules/finance-connections', async (importOriginal) => ({
   activeConnectionAuthorization: mocks.activeConnection,
 }))
 vi.mock('@/modules/tenants/tenants.service', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/modules/tenants/tenants.service')>()),
+  ...(await importOriginal<
+    typeof import('@/modules/tenants/tenants.service')
+  >()),
   listTenantsByOrganizationIds: mocks.listTenantsByOrganizationIds,
   applyTenantLifecycle: mocks.applyTenantLifecycle,
 }))
@@ -46,8 +48,14 @@ describe('Internal tenants routes', () => {
     process.env.BILLING_INTERNAL_KEY = 'internal-secret'
     process.env.BILLING_SCHEDULER_KEY = 'scheduler-secret'
     resetSettingsForTest(process.env)
-    mocks.tenantByOrganizationId.mockResolvedValue({ id: 'btenant_1', active: true })
-    mocks.activeMember.mockResolvedValue({ kind: 'internal', permissions: [] } as never)
+    mocks.tenantByOrganizationId.mockResolvedValue({
+      id: 'btenant_1',
+      active: true,
+    })
+    mocks.activeMember.mockResolvedValue({
+      kind: 'internal',
+      permissions: [],
+    } as never)
     mocks.activeConnection.mockResolvedValue(null)
     mocks.listTenantsByOrganizationIds.mockResolvedValue([])
     mocks.applyTenantLifecycle.mockResolvedValue({
@@ -62,8 +70,22 @@ describe('Internal tenants routes', () => {
 
   describe('POST /internal/projections/tenants', () => {
     it('returns tenants for allowed internal key', async () => {
-      const tenants = [{ id: 'ten_1', organizationId: 'org_1', slug: 'test-org', name: 'Test', status: 'ACTIVE', defaultCurrency: 'JMD', defaultLanguage: 'en', createdAt: 1, updatedAt: 1 }]
-      mocks.listTenantsByOrganizationIds.mockResolvedValue(tenants as unknown as never)
+      const tenants = [
+        {
+          id: 'ten_1',
+          organizationId: 'org_1',
+          slug: 'test-org',
+          name: 'Test',
+          status: 'ACTIVE',
+          defaultCurrency: 'JMD',
+          defaultLanguage: 'en',
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      ]
+      mocks.listTenantsByOrganizationIds.mockResolvedValue(
+        tenants as unknown as never
+      )
       const res = await request(createApp())
         .post('/internal/projections/tenants')
         .set('x-internal-key', 'internal-secret')
@@ -127,7 +149,12 @@ describe('Internal tenants routes', () => {
       const res = await request(createApp())
         .post('/internal/tenants/lifecycle')
         .set('x-internal-key', 'internal-secret')
-        .send({ organizationId: 'org_1', action: 'archive', deletedBy: 'user_1', reason: 'deleted' })
+        .send({
+          organizationId: 'org_1',
+          action: 'archive',
+          deletedBy: 'user_1',
+          reason: 'deleted',
+        })
       expect(res.status).toBe(200)
       expect(res.body.data).toEqual({
         object: 'billing_tenant_lifecycle',
@@ -240,7 +267,12 @@ describe('Internal tenants routes', () => {
       const res = await request(createApp())
         .post('/internal/tenants/lifecycle')
         .set('x-internal-key', 'internal-secret')
-        .send({ organizationId: 'org_1', action: 'archive', deletedBy: null, reason: null })
+        .send({
+          organizationId: 'org_1',
+          action: 'archive',
+          deletedBy: null,
+          reason: null,
+        })
       expect(res.status).toBe(200)
     })
 
@@ -248,7 +280,11 @@ describe('Internal tenants routes', () => {
       const res = await request(createApp())
         .post('/internal/tenants/lifecycle')
         .set('x-internal-key', 'internal-secret')
-        .send({ organizationId: 'org_1', action: 'archive', deletedBy: 'u'.repeat(192) })
+        .send({
+          organizationId: 'org_1',
+          action: 'archive',
+          deletedBy: 'u'.repeat(192),
+        })
       expect(res.status).toBe(422)
     })
 
@@ -256,7 +292,11 @@ describe('Internal tenants routes', () => {
       const res = await request(createApp())
         .post('/internal/tenants/lifecycle')
         .set('x-internal-key', 'internal-secret')
-        .send({ organizationId: 'org_1', action: 'archive', reason: 'a'.repeat(501) })
+        .send({
+          organizationId: 'org_1',
+          action: 'archive',
+          reason: 'a'.repeat(501),
+        })
       expect(res.status).toBe(422)
     })
 
@@ -264,9 +304,16 @@ describe('Internal tenants routes', () => {
       const res = await request(createApp())
         .post('/internal/tenants/lifecycle')
         .set('x-internal-key', 'internal-secret')
-        .send({ organizationId: 'org_1', action: 'archive', reason: '  hello  ' })
+        .send({
+          organizationId: 'org_1',
+          action: 'archive',
+          reason: '  hello  ',
+        })
       expect(res.status).toBe(200)
-      expect(mocks.applyTenantLifecycle).toHaveBeenCalledWith('org_1', expect.objectContaining({ reason: 'hello' }))
+      expect(mocks.applyTenantLifecycle).toHaveBeenCalledWith(
+        'org_1',
+        expect.objectContaining({ reason: 'hello' })
+      )
     })
 
     it('rejects unknown fields (strict)', async () => {

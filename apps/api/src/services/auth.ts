@@ -806,14 +806,13 @@ export class AuthService {
     const password = validatePassword(params.password)
     const email = validateEmail(params.email)
 
-    const { user: workosUser } =
-      await this.registerOrAdoptWorkosUser({
-        email,
-        password,
-        firstName,
-        lastName,
-        metadata: {},
-      })
+    const { user: workosUser } = await this.registerOrAdoptWorkosUser({
+      email,
+      password,
+      firstName,
+      lastName,
+      metadata: {},
+    })
 
     const now = nowUnixSeconds()
     const nowBigint = BigInt(now)

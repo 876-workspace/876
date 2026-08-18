@@ -14,11 +14,10 @@ interface ItemRow {
   type: string
   sku: string | null
   unit: string | null
-  defaultSellingAmount: bigint | string | null
+  defaultSellingAmount: string | null
   defaultSellingCurrency: string | null
   isTaxable: boolean
   isActive: boolean
-  prices: unknown[]
 }
 
 interface Props {
@@ -70,11 +69,6 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
           {row.original.isTaxable ? 'Taxable' : 'Non-taxable'}
         </span>
       ),
-    },
-    {
-      id: 'prices',
-      header: 'Prices',
-      cell: ({ row }: any) => row.original.prices.length,
     },
     {
       id: 'status',

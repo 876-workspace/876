@@ -24,7 +24,7 @@ export function createInvoiceClient(options: InvoiceServerClientOptions) {
   return {
     ...core,
     customers: billing.customers,
-    items: billing.products,
+    items: billing.items,
     quotes: billing.quotes,
     estimates: billing.estimates,
     invoices: billing.invoices,

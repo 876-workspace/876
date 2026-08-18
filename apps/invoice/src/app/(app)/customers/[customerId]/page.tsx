@@ -72,7 +72,9 @@ export default async function CustomerDetailPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-2">
                 <PageTitle>{customer.name}</PageTitle>
                 <Badge
-                  variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
+                  variant={
+                    customer.status === 'ACTIVE' ? 'success' : 'secondary'
+                  }
                 >
                   {customer.status === 'ACTIVE' ? 'Active' : 'Archived'}
                 </Badge>

@@ -108,15 +108,18 @@ async function CustomersTableData({ searchParams }: Props) {
     const isUnreachable = result.error.code === BILLING_UNREACHABLE
 
     if (isTenantNotFound) {
-      Sentry.captureMessage('Invoice customers list: tenant not found invariant', {
-        level: 'error',
-        tags: { category: 'billing_integration' },
-        extra: {
-          call: 'customers.list',
-          errorCode: result.error.code,
-          organizationId: context.orgId,
-        },
-      })
+      Sentry.captureMessage(
+        'Invoice customers list: tenant not found invariant',
+        {
+          level: 'error',
+          tags: { category: 'billing_integration' },
+          extra: {
+            call: 'customers.list',
+            errorCode: result.error.code,
+            organizationId: context.orgId,
+          },
+        }
+      )
       return (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <p className="text-sm font-medium">Billing workspace missing</p>
@@ -164,7 +167,9 @@ async function CustomersTableData({ searchParams }: Props) {
 
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
-        <p className="text-sm font-medium">Customers are unavailable right now</p>
+        <p className="text-sm font-medium">
+          Customers are unavailable right now
+        </p>
         <p className="text-muted-foreground mt-1 text-sm">
           {result.error.message}
         </p>

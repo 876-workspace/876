@@ -31,11 +31,13 @@ Server components only, exactly as `apps/invoice/src/app/(app)/invoices/page.tsx
 does it:
 
 ```ts
-const context = await getInvoiceContext()   // '@/lib/auth/context'
+const context = await getInvoiceContext() // '@/lib/auth/context'
 if (!context) redirect('/no-access')
-const $876 = await get876Client(context.orgId)   // '@/lib/876'
+const $876 = await get876Client(context.orgId) // '@/lib/876'
 const result = await $876.customers.list({ status })
-if (result.error) { /* render the same inline error card the invoices page renders */ }
+if (result.error) {
+  /* render the same inline error card the invoices page renders */
+}
 ```
 
 Keep the invoices page's `PROVISIONING_ERROR_CODES` treatment: a provisioning
@@ -117,14 +119,17 @@ differences:
   the platform client:
 
   ```ts
-  const platform = await getPlatformClient()   // '@/lib/876/platform-client'
-  const organization = await platform.organizations.retrieve({ id: context.orgId })
+  const platform = await getPlatformClient() // '@/lib/876/platform-client'
+  const organization = await platform.organizations.retrieve({
+    id: context.orgId,
+  })
   const currency = organization.data?.currency_code ?? 'JMD'
   ```
 
   `PlatformOrganization.currency_code` already exists. Do **not** add a new
   client method, and do **not** hardcode `'JMD'` as the primary source — it is
   the fallback only.
+
 - No price list field. That is a Billing pricing policy, not a customer
   attribute.
 - Breadcrumb, `Page`/`PageHeader`/`PageTitle` usage, and toolbar copy follow

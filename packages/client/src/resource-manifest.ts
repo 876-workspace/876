@@ -42,7 +42,8 @@ export const RESOURCE_MANIFEST = {
   // Core identity / platform (owned by @876/sdk + @876/admin)
   auth: {
     owner: 'core',
-    meaning: 'authentication flows: login, registration, recovery, OTP and OAuth',
+    meaning:
+      'authentication flows: login, registration, recovery, OTP and OAuth',
   },
   sessions: {
     owner: 'core',

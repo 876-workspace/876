@@ -55,18 +55,18 @@ beside the component per `.claude/rules/types.md`.
 
 Rows, each a `FormRow` with the shared row className:
 
-| Row      | Control                                      | Notes                                                              |
-| -------- | -------------------------------------------- | ------------------------------------------------------------------ |
-| Name     | `Input`                                      | `required`                                                         |
-| Company  | `Input`                                      | optional                                                           |
-| Email    | `EmailInput`                                 | optional                                                           |
-| Phone    | `PhoneInput` + `listDialCodes()`             | port Couriers' `splitPhone` helper and its `DEFAULT_*` constants    |
-| Currency | `Input` with `readOnly` and `disabled`       | shows the org currency; `hint` explains the org bills in one currency |
-| Status   | `Select` (`ACTIVE` / `ARCHIVED`)             | **only when `customer` is present**, exactly as Couriers gates it    |
+| Row      | Control                                | Notes                                                                 |
+| -------- | -------------------------------------- | --------------------------------------------------------------------- |
+| Name     | `Input`                                | `required`                                                            |
+| Company  | `Input`                                | optional                                                              |
+| Email    | `EmailInput`                           | optional                                                              |
+| Phone    | `PhoneInput` + `listDialCodes()`       | port Couriers' `splitPhone` helper and its `DEFAULT_*` constants      |
+| Currency | `Input` with `readOnly` and `disabled` | shows the org currency; `hint` explains the org bills in one currency |
+| Status   | `Select` (`ACTIVE` / `ARCHIVED`)       | **only when `customer` is present**, exactly as Couriers gates it     |
 
 Submit: `client.customers.create(params)` when creating, `client.customers.update(customer.id, params)`
 when editing, then `router.push('/customers')` (create) or
-`router.push(\`/customers/${customer.id}\`)` (edit) plus `router.refresh()`.
+`router.push(\`/customers/${customer.id}\`)`(edit) plus`router.refresh()`.
 Send phone as the joined dial code + number, or `null` when empty. **Never send
 the currency** — the server derives it from the workspace.
 
