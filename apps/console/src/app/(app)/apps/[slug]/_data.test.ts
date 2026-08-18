@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   listAppSubscriptions: vi.fn(),
@@ -80,6 +80,8 @@ describe('listCompleteAppSubscriptions', () => {
       error: null,
     })
   })
+
+  afterEach(() => vi.restoreAllMocks())
 
   it('hydrates the lightweight app subscription response with canonical items', async () => {
     mocks.listOrganizationSubscriptions.mockResolvedValue({
