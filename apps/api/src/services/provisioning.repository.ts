@@ -73,13 +73,64 @@ export function findAppBySlug(
   })
 }
 
-export function findSubscription(
+export async function findSubscription(
   organizationId: string,
   appId: string
-): Promise<{ id: string; status: string } | null> {
-  return prisma.subscription.findFirst({
+): Promise<{ id: string; status: string; hasItems: boolean } | null> {
+  const row = await prisma.subscription.findFirst({
     where: { organizationId, appId },
-    select: { id: true, status: true },
+    select: {
+      id: true,
+      status: true,
+      subscriptionItems: { take: 1, select: { id: true } },
+    },
+  })
+  if (!row) return null
+
+  // Tests and older mocked callers can omit the selected relation. Real Prisma
+  // always returns it, so an omitted value is treated conservatively as
+  // "already has items" rather than causing an unexpected repair write.
+  return {
+    id: row.id,
+    status: row.status,
+    hasItems: row.subscriptionItems
+      ? row.subscriptionItems.length > 0
+      : true,
+  }
+}
+
+/**
+ * Attach the current default price to an existing itemless subscription.
+ *
+ * This is deliberately narrower than changing a subscription's price: once an
+ * item exists, provisioning leaves it untouched. The transaction re-checks the
+ * invariant immediately before the repair write so ordinary retries stay
+ * idempotent.
+ */
+export async function ensureSubscriptionDefaultPrice(params: {
+  subscriptionId: string
+  itemId: string
+  priceId: string
+  now: bigint
+}): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const existingItem = await tx.subscriptionItem.findFirst({
+      where: { subscriptionId: params.subscriptionId },
+      select: { id: true },
+    })
+    if (existingItem) return false
+
+    await tx.subscriptionItem.create({
+      data: {
+        id: params.itemId,
+        subscriptionId: params.subscriptionId,
+        priceId: params.priceId,
+        quantity: 1,
+        createdAt: params.now,
+        updatedAt: params.now,
+      },
+    })
+    return true
   })
 }
 

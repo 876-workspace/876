@@ -146,6 +146,11 @@ export async function seedDefaultRoles(
  * a missing app row means a partially seeded environment, which is worth
  * shouting about but is not a reason to fail somebody's signup.
  *
+ * Existing active subscriptions are also checked for a missing line item. That
+ * repairs organizations provisioned before a default/free price existed: once a
+ * default price is available, the next provisioning pass attaches it without
+ * replacing or changing any subscription that already has an item.
+ *
  * Returns both the full set of resolved app ids the org is entitled to (`appIds`
  * — the set the finance-readiness pass runs over, so an app whose Billing tenant
  * was never opened is repaired even when its subscription already existed) and
@@ -178,7 +183,20 @@ export async function ensureOrgAppSubscriptions(
 
   const provisioned: string[] = []
   for (const appId of appIds) {
-    if (await repository.findSubscription(organizationId, appId)) continue
+    const existing = await repository.findSubscription(organizationId, appId)
+    if (existing) {
+      if (existing.status === 'active' && !existing.hasItems) {
+        const defaultPrice = await repository.findDefaultPriceForApp(appId)
+        if (defaultPrice)
+          await repository.ensureSubscriptionDefaultPrice({
+            subscriptionId: existing.id,
+            itemId: generateId('subscriptionItem'),
+            priceId: defaultPrice.id,
+            now: BigInt(Math.floor(Date.now() / 1000)),
+          })
+      }
+      continue
+    }
 
     const defaultPrice = await repository.findDefaultPriceForApp(appId)
     await repository.provisionSubscription({
