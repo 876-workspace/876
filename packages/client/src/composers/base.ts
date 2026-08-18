@@ -124,6 +124,8 @@ export type CoreSurfaceAdmin = Omit<
   | 'features'
   | 'entitlements'
   | 'roles'
+  | 'organizationMembers'
+  | 'invites'
   | 'sessions'
 > & {
   users: WithAdmin<{ me: SDK876Client['users'] }, Admin876Client['users']>
@@ -142,6 +144,11 @@ export type CoreSurfaceAdmin = Omit<
     Admin876Client['subscriptions']
   >
   roles: WithAdmin<SDK876Client['roles'], Admin876Client['roles']>
+  organizationMembers: WithAdmin<
+    SDK876Client['organizationMembers'],
+    Admin876Client['organizationMembers']
+  >
+  invites: WithAdmin<SDK876Client['invites'], Admin876Client['invites']>
   sessions: AdminSessionSurface
 } & AdminNamespaces
 
@@ -203,6 +210,11 @@ function createCoreSurfaceAdmin(
     features: withAdmin(platform.features, admin.features),
     entitlements: withAdmin(platform.subscriptions, admin.subscriptions),
     roles: withAdmin(platform.roles, admin.roles),
+    organizationMembers: withAdmin(
+      platform.organizationMembers,
+      admin.organizationMembers
+    ),
+    invites: withAdmin(platform.invites, admin.invites),
     sessions: createAdminSessionSurface(platform, admin.sessions),
     auditEvents: admin.auditEvents,
     apiKeys: admin.apiKeys,

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { AdminInviteToken, AdminMembership, AdminUser } from '@876/admin'
+import type { AdminInviteToken, AdminOrgMember } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { DataTable } from '@876/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
@@ -31,35 +31,29 @@ function statusBadgeClass(status: string): string {
   }
 }
 
-type MemberRow = {
-  membership: AdminMembership
-  user: AdminUser | undefined
-}
-
-const memberColumns: ColumnDef<MemberRow, unknown>[] = [
+const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
   {
     id: 'name',
     header: 'Member',
     cell: ({ row }) => {
-      const user = row.original.user
-      const name = user
-        ? `${user.first_name} ${user.last_name}`.trim()
-        : row.original.membership.user_id
+      const member = row.original
+      const name =
+        [member.first_name, member.last_name].filter(Boolean).join(' ').trim() ||
+        member.user_id
+
       return (
         <div className="flex flex-col">
-          {user ? (
-            <Link
-              href={`/users/${user.username ?? user.id}`}
-              className="hover:text-primary font-medium"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {name}
-            </Link>
-          ) : (
-            <span className="font-medium">{name}</span>
-          )}
-          {user?.email && (
-            <span className="text-muted-foreground text-xs">{user.email}</span>
+          <Link
+            href={`/users/${member.user_id}`}
+            className="hover:text-primary font-medium"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {name}
+          </Link>
+          {member.email && (
+            <span className="text-muted-foreground text-xs">
+              {member.email}
+            </span>
           )}
         </div>
       )
@@ -72,10 +66,10 @@ const memberColumns: ColumnDef<MemberRow, unknown>[] = [
       <span
         className={cn(
           'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
-          roleBadgeClass(row.original.membership.role)
+          roleBadgeClass(row.original.role)
         )}
       >
-        {row.original.membership.role}
+        {row.original.role}
       </span>
     ),
   },
@@ -86,10 +80,10 @@ const memberColumns: ColumnDef<MemberRow, unknown>[] = [
       <span
         className={cn(
           'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
-          statusBadgeClass(row.original.membership.status)
+          statusBadgeClass(row.original.status)
         )}
       >
-        {row.original.membership.status}
+        {row.original.status}
       </span>
     ),
   },
@@ -98,7 +92,7 @@ const memberColumns: ColumnDef<MemberRow, unknown>[] = [
     header: 'Joined',
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
-        {formatDate(row.original.membership.created_at)}
+        {formatDate(row.original.created_at)}
       </span>
     ),
   },
@@ -151,34 +145,28 @@ const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
   },
 ]
 
-type Props = {
-  memberships: AdminMembership[]
-  usersById: Record<string, AdminUser>
-  invites: AdminInviteToken[]
+export function MembersTable({ members }: { members: AdminOrgMember[] }) {
+  return (
+    <div className="876-card overflow-hidden">
+      <DataTable columns={memberColumns} data={members} />
+    </div>
+  )
 }
 
-export function MembersTable({ memberships, usersById, invites }: Props) {
-  const memberRows: MemberRow[] = memberships.map((m) => ({
-    membership: m,
-    user: usersById[m.user_id],
-  }))
-
-  const pendingInvites = invites.filter((i) => i.status === 'pending')
+export function PendingInvitesTable({
+  invites,
+}: {
+  invites: AdminInviteToken[]
+}) {
+  const pendingInvites = invites.filter((invite) => invite.status === 'pending')
+  if (pendingInvites.length === 0) return null
 
   return (
-    <div className="space-y-6">
+    <div className="mt-6">
+      <h3 className="876-section-title mb-3">Pending Invites</h3>
       <div className="876-card overflow-hidden">
-        <DataTable columns={memberColumns} data={memberRows} />
+        <DataTable columns={inviteColumns} data={pendingInvites} />
       </div>
-
-      {pendingInvites.length > 0 && (
-        <div>
-          <h3 className="876-section-title mb-3">Pending Invites</h3>
-          <div className="876-card overflow-hidden">
-            <DataTable columns={inviteColumns} data={pendingInvites} />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

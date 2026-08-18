@@ -22,5 +22,6 @@ model Membership {
   orgDepartments                      OrgDepartment[]
 
   @@unique([organizationId, userId])
+  @@index([organizationId, createdAt], map: "ix_memberships_organization_created_at")
   @@map("memberships")
 }
