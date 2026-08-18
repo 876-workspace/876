@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import type { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
@@ -40,13 +40,10 @@ export function RegisterWidgetFlagsForm({
   const [widgetId, setWidgetId] = useState('')
   const widgetsState = useAsyncValue(widgets)
   const resolvedWidgets = widgetsState.value ?? []
-
-  useEffect(() => {
-    if (!widgetId && resolvedWidgets.length > 0)
-      setWidgetId(resolvedWidgets[0]!.id)
-  }, [resolvedWidgets, widgetId])
-
-  const selected = resolvedWidgets.find((widget) => widget.id === widgetId)
+  const effectiveWidgetId = widgetId || resolvedWidgets[0]?.id || ''
+  const selected = resolvedWidgets.find(
+    (widget) => widget.id === effectiveWidgetId
+  )
   const missing = selected?.flags.filter((flag) => !flag.existingId) ?? []
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -109,7 +106,7 @@ export function RegisterWidgetFlagsForm({
           <Label htmlFor="widget-id">Widget</Label>
           <NativeSelect
             id="widget-id"
-            value={widgetId}
+            value={effectiveWidgetId}
             onChange={(event) => setWidgetId(event.target.value)}
             className="w-full"
             disabled={widgetsState.pending || Boolean(widgetsState.error)}
