@@ -398,7 +398,8 @@ export function ensureCoreCustomerRows(
             lastName: body.primaryContact.lastName ?? null,
             email: body.primaryContact.email ?? null,
             workPhone: body.primaryContact.workPhone ?? null,
-            mobilePhone: body.primaryContact.mobilePhone ?? null,
+            mobilePhone:
+              body.primaryContact.mobilePhone ?? body.primaryContact.phone ?? null,
             isPrimary: true,
             coreSyncedAt: now,
             createdAt: now,

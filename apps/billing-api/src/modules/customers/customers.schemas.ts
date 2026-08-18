@@ -108,6 +108,7 @@ export const customerEnsureBodySchema = z.strictObject({
       firstName: nullableText(80),
       lastName: nullableText(80),
       email: z.string().email().nullable().optional(),
+      phone: nullableText(160),
       workPhone: nullableText(160),
       mobilePhone: nullableText(160),
     })
