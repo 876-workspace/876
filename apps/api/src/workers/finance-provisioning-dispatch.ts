@@ -1,3 +1,10 @@
+import {
+  FinanceProvisioningContractError,
+  parseFinanceProvisioningEvent,
+  parseFinanceProvisioningReceipt,
+  type FinanceProvisioningReceipt,
+} from '@876/server/finance-provisioning'
+
 import { getSettings } from '@/config'
 import { AppHttpError } from '@/http/errors'
 import { getLogger } from '@/platform/logger'
@@ -27,6 +34,12 @@ export type FinanceEnsureResult = FinanceDispatchSummary & {
 }
 
 function deliveryError(error: unknown): string {
+  if (error instanceof FinanceProvisioningContractError) {
+    return `Finance provisioning contract ${error.issue}: ${error.message}`.slice(
+      0,
+      2000
+    )
+  }
   if (
     error instanceof Error &&
     error.message.startsWith('Billing returned HTTP')
@@ -65,35 +78,94 @@ export type FinanceDeliveryRow = {
   payload: Record<string, unknown>
 }
 
+/**
+ * Performs the API → Billing wire hop without mutating outbox state.
+ *
+ * A 2xx status alone is not delivery. The response must satisfy the shared
+ * finance receipt contract and prove a lifecycle at least as new as the event.
+ * Foreground readiness additionally requires the exact lifecycle/status that
+ * activation requested, preventing a stale or superseding state from being
+ * mistaken for a ready workspace.
+ */
+export async function deliverFinanceProvisioningEvent(options: {
+  eventId: string
+  payload: unknown
+  billingUrl: string
+  internalKey: string
+  exactState?: boolean
+  timeoutMs?: number
+}): Promise<FinanceProvisioningReceipt> {
+  const event = parseFinanceProvisioningEvent(options.payload)
+  if (event.eventId !== options.eventId) {
+    throw new FinanceProvisioningContractError(
+      'invalid-event',
+      `Outbox event id ${options.eventId} does not match payload event id ${event.eventId}.`
+    )
+  }
+
+  const baseUrl = options.billingUrl.trim().replace(/\/+$/, '')
+  const endpoint = `${baseUrl}/api/v1/admin/finance-connections/ensure`
+  const response = await postWithTimeout(
+    endpoint,
+    {
+      'x-internal-key': options.internalKey,
+      'content-type': 'application/json',
+      'x-request-id': options.eventId,
+    },
+    event,
+    options.timeoutMs ?? 15_000
+  )
+
+  if (!response.ok) {
+    const text = await response.text()
+    const snippet = text.slice(0, 500).trim()
+    throw new Error(`Billing returned HTTP ${response.status}: ${snippet}`)
+  }
+
+  let body: unknown
+  try {
+    body = await response.json()
+  } catch {
+    throw new FinanceProvisioningContractError(
+      'invalid-response',
+      `Billing returned HTTP ${response.status} with a non-JSON success body.`
+    )
+  }
+
+  return parseFinanceProvisioningReceipt(event, body, {
+    exactState: options.exactState,
+  })
+}
+
 async function deliverClaimedRows(
   rows: FinanceDeliveryRow[],
   billingUrl: string,
-  internalKey: string
+  internalKey: string,
+  options: { exactState?: boolean } = {}
 ): Promise<{ delivered: number; failed: number }> {
   let delivered = 0
   let failed = 0
-  const endpoint = `${billingUrl}/api/v1/admin/finance-connections/ensure`
   for (const item of rows) {
     try {
-      const response = await postWithTimeout(
-        endpoint,
-        {
-          'x-internal-key': internalKey,
-          'content-type': 'application/json',
-          'x-request-id': item.id,
-        },
-        item.payload,
-        15_000
-      )
-      if (!response.ok) {
-        const text = await response.text()
-        const snippet = text.slice(0, 500).trim()
-        throw new Error(`Billing returned HTTP ${response.status}: ${snippet}`)
-      }
+      const receipt = await deliverFinanceProvisioningEvent({
+        eventId: item.id,
+        payload: item.payload,
+        billingUrl,
+        internalKey,
+        exactState: options.exactState,
+      })
       delivered += 1
       await markFinanceProvisioningDelivered(item.id, nowUnixSeconds())
       logger.info(
-        { event_id: item.id, attempt_count: item.attemptCount },
+        {
+          event_id: item.id,
+          attempt_count: item.attemptCount,
+          tenant_id: receipt.tenantId,
+          connection_status: receipt.status,
+          lifecycle_version: receipt.lifecycleVersion,
+          applied: receipt.applied,
+          duplicate: receipt.duplicate,
+        },
         'finance_provisioning.delivered'
       )
     } catch (error) {
@@ -128,10 +200,6 @@ export async function dispatchFinanceProvisioningOnce(): Promise<FinanceDispatch
   const internalKey = settings.billing.internalKey.trim()
 
   if (!billingUrl || !internalKey) {
-    // This returned a success-shaped summary and said nothing, so a missing
-    // BILLING_API_URL looked exactly like an empty queue. Every
-    // `finance_connection.ensure` event sat pending indefinitely and no
-    // organization ever got a Billing workspace. Say so, loudly, every time.
     logger.error(
       {
         has_billing_url: Boolean(billingUrl),
@@ -144,7 +212,6 @@ export async function dispatchFinanceProvisioningOnce(): Promise<FinanceDispatch
 
   const now = nowUnixSeconds()
   const limit = settings.billing.financeProvisioningBatchSize
-
   const claimedRows = await claimFinanceProvisioningEvents(now, limit)
 
   if (claimedRows.length === 0) {
@@ -203,7 +270,9 @@ export async function ensureFinanceProvisioningDelivered(
   let delivered = 0
   let failed = 0
   if (snapshots.length > 0) {
-    const result = await deliverClaimedRows(snapshots, billingUrl, internalKey)
+    const result = await deliverClaimedRows(snapshots, billingUrl, internalKey, {
+      exactState: true,
+    })
     delivered = result.delivered
     failed = result.failed
   }
