@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
+import { BrowserApiBoundary } from '@/components/providers/browser-api-boundary'
 import { Shell } from '@/components/shell/shell'
 import { WidgetBar } from '@/features/widgets/components/widget-bar'
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
@@ -31,6 +32,7 @@ export default async function ConsoleRootLayout({
 
   return (
     <>
+      <BrowserApiBoundary />
       <AnalyticsIdentity
         user={{
           id: user.id,

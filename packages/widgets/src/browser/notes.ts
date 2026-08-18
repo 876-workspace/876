@@ -23,9 +23,40 @@ export type BrowserNotesResult<T> =
   | { data: T; error: null }
   | { data: null; error: string; status?: number }
 
-const MEMBER_BASE = '/api/widgets/notepad'
-const MEMBER_COLLECTIONS = '/api/widgets/notepad/collections'
-const ADMIN_BASE = '/api/widgets/admin/notepad'
+export type BrowserNotepadRoutes = {
+  notes: string
+  collections: string
+  adminNotes: string
+}
+
+const DEFAULT_BROWSER_NOTEPAD_ROUTES: BrowserNotepadRoutes = {
+  notes: '/api/widgets/notepad',
+  collections: '/api/widgets/notepad/collections',
+  adminNotes: '/api/widgets/admin/notepad',
+}
+
+let browserNotepadRoutes = { ...DEFAULT_BROWSER_NOTEPAD_ROUTES }
+
+/**
+ * Configures the same-origin routes exposed by the host application.
+ *
+ * Shared widget components keep using the same browser client while each host
+ * is free to present its own public API vocabulary. Unspecified routes retain
+ * the package defaults for backwards-compatible hosts.
+ */
+export function configureBrowserNotepadRoutes(
+  routes: Partial<BrowserNotepadRoutes>
+): void {
+  browserNotepadRoutes = {
+    ...DEFAULT_BROWSER_NOTEPAD_ROUTES,
+    ...routes,
+  }
+}
+
+/** Restores the package defaults; intended primarily for isolated tests. */
+export function resetBrowserNotepadRoutes(): void {
+  browserNotepadRoutes = { ...DEFAULT_BROWSER_NOTEPAD_ROUTES }
+}
 
 function toQueryString(
   query: Record<string, string | number | undefined>
@@ -80,12 +111,12 @@ async function hostRequest<T>(
 export const browserNotes = {
   list(params: NoteListParams = {}) {
     return hostRequest<NoteList>(
-      `${MEMBER_BASE}${toQueryString(toNoteListQuery(params))}`
+      `${browserNotepadRoutes.notes}${toQueryString(toNoteListQuery(params))}`
     )
   },
 
   create(params: NoteCreateParams) {
-    return hostRequest<NotepadNote>(MEMBER_BASE, {
+    return hostRequest<NotepadNote>(browserNotepadRoutes.notes, {
       method: 'POST',
       body: JSON.stringify(toNoteBody(params)),
     })
@@ -93,7 +124,7 @@ export const browserNotes = {
 
   update(id: string, params: NoteWriteParams) {
     return hostRequest<NotepadNote>(
-      `${MEMBER_BASE}/${encodeURIComponent(id)}`,
+      `${browserNotepadRoutes.notes}/${encodeURIComponent(id)}`,
       {
         method: 'PATCH',
         body: JSON.stringify(toNoteBody(params)),
@@ -103,39 +134,43 @@ export const browserNotes = {
 
   delete(id: string) {
     return hostRequest<DeletedNote>(
-      `${MEMBER_BASE}/${encodeURIComponent(id)}`,
+      `${browserNotepadRoutes.notes}/${encodeURIComponent(id)}`,
       { method: 'DELETE' }
     )
   },
 
   listAll(params: AdminNoteListParams = {}) {
     return hostRequest<NoteList>(
-      `${ADMIN_BASE}${toQueryString(toAdminNoteListQuery(params))}`
+      `${browserNotepadRoutes.adminNotes}${toQueryString(toAdminNoteListQuery(params))}`
     )
   },
 
   adminUpdate(id: string, params: NoteWriteParams) {
-    return hostRequest<NotepadNote>(`${ADMIN_BASE}/${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      body: JSON.stringify(toNoteBody(params)),
-    })
+    return hostRequest<NotepadNote>(
+      `${browserNotepadRoutes.adminNotes}/${encodeURIComponent(id)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(toNoteBody(params)),
+      }
+    )
   },
 
   adminDelete(id: string) {
-    return hostRequest<DeletedNote>(`${ADMIN_BASE}/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    })
+    return hostRequest<DeletedNote>(
+      `${browserNotepadRoutes.adminNotes}/${encodeURIComponent(id)}`,
+      { method: 'DELETE' }
+    )
   },
 }
 
 /** Browser client for host same-origin Notepad collection routes. */
 export const browserCollections = {
   list() {
-    return hostRequest<CollectionList>(MEMBER_COLLECTIONS)
+    return hostRequest<CollectionList>(browserNotepadRoutes.collections)
   },
 
   create(params: { name: string; color?: NoteColor | null }) {
-    return hostRequest<NotepadCollection>(MEMBER_COLLECTIONS, {
+    return hostRequest<NotepadCollection>(browserNotepadRoutes.collections, {
       method: 'POST',
       body: JSON.stringify(params),
     })
@@ -143,7 +178,7 @@ export const browserCollections = {
 
   update(id: string, params: { name?: string; color?: NoteColor | null }) {
     return hostRequest<NotepadCollection>(
-      `${MEMBER_COLLECTIONS}/${encodeURIComponent(id)}`,
+      `${browserNotepadRoutes.collections}/${encodeURIComponent(id)}`,
       {
         method: 'PATCH',
         body: JSON.stringify(params),
@@ -153,7 +188,7 @@ export const browserCollections = {
 
   delete(id: string) {
     return hostRequest<DeletedCollection>(
-      `${MEMBER_COLLECTIONS}/${encodeURIComponent(id)}`,
+      `${browserNotepadRoutes.collections}/${encodeURIComponent(id)}`,
       { method: 'DELETE' }
     )
   },
