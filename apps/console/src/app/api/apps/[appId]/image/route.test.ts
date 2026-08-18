@@ -29,7 +29,7 @@ import { DELETE as remove } from './remove/route'
 const context = { params: Promise.resolve({ appId: 'app_123' }) }
 
 function request(method: string, body?: unknown) {
-  return new Request('http://console.test/api/storage/apps/app_123/image', {
+  return new Request('http://console.test/api/apps/app_123/image', {
     method,
     body: body === undefined ? undefined : JSON.stringify(body),
     headers:
