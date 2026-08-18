@@ -3,7 +3,15 @@ export type InvoiceBillingConfig = {
   apiKey: string
 }
 
-function required(env: NodeJS.ProcessEnv, name: string): string {
+export type InvoiceBillingEnvironment = {
+  BILLING_API_URL?: string
+  INVOICE_API_876_KEY?: string
+}
+
+function required(
+  env: InvoiceBillingEnvironment,
+  name: keyof InvoiceBillingEnvironment
+): string {
   const value = env[name]?.trim()
   if (!value) throw new Error(`${name} is required for Invoice Billing integration.`)
   return value
@@ -17,7 +25,7 @@ function required(env: NodeJS.ProcessEnv, name: string): string {
  * Billing clients, not environment configuration.
  */
 export function getInvoiceBillingConfig(
-  env: NodeJS.ProcessEnv = process.env
+  env: InvoiceBillingEnvironment = process.env
 ): InvoiceBillingConfig {
   const apiKey = required(env, 'INVOICE_API_876_KEY')
   const rawBaseUrl = required(env, 'BILLING_API_URL')
