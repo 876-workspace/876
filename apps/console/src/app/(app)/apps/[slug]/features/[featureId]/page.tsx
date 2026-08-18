@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveFeature } from '../../../../features/[id]/_data'
@@ -22,7 +24,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${feature.name} - ${app.name} Features` }
 }
 
-export default async function AppFeatureDetailPage({ params }: Props) {
+export default function AppFeatureDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-56 w-full rounded-lg" />}>
+      <AppFeatureDetailData params={params} />
+    </Suspense>
+  )
+}
+
+async function AppFeatureDetailData({ params }: Props) {
   const { slug, featureId } = await params
   const [app, feature] = await Promise.all([
     resolveApp(slug),
