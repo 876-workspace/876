@@ -1,4 +1,9 @@
+import { Suspense } from 'react'
 import { Page } from '@876/ui/page'
+import {
+  DataTableSkeleton,
+  type DataTableSkeletonColumn,
+} from '@876/ui/data-table-skeleton'
 import { WIDGET_HOST_APP_SLUGS } from '@876/widgets'
 
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
@@ -28,6 +33,13 @@ const HOST_LABELS = {
   '876': '876',
 } as const
 
+const WIDGETS_SKELETON_COLUMNS = [
+  { label: 'Widget', cell: 'avatar' },
+  { label: 'Apps' },
+  { label: 'Status' },
+  { label: '' },
+] satisfies DataTableSkeletonColumn[]
+
 export default async function WidgetsPage({
   searchParams,
 }: {
@@ -38,6 +50,41 @@ export default async function WidgetsPage({
     requestedDistribution === 'shared' || requestedDistribution === 'host'
       ? requestedDistribution
       : 'all'
+
+  return (
+    <Page>
+      <ResourceToolbar
+        title="Widgets"
+        titleFilter={
+          <StatusFilterHeading
+            label="Widgets"
+            value={distribution}
+            options={DISTRIBUTION_OPTIONS}
+            paramKey="distribution"
+          />
+        }
+        primaryLabel="Add"
+        primaryHref="/widgets/new"
+        primaryVariant="info"
+        refresh
+      />
+
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={WIDGETS_SKELETON_COLUMNS} rows={5} />
+        }
+      >
+        <WidgetsTableData distribution={distribution} />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function WidgetsTableData({
+  distribution,
+}: {
+  distribution: 'all' | 'shared' | 'host'
+}) {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
     $876.apps.admin.list({ limit: 100, clientType: 'public' }),
@@ -77,25 +124,5 @@ export default async function WidgetsPage({
     }
   })
 
-  return (
-    <Page>
-      <ResourceToolbar
-        title="Widgets"
-        titleFilter={
-          <StatusFilterHeading
-            label="Widgets"
-            value={distribution}
-            options={DISTRIBUTION_OPTIONS}
-            paramKey="distribution"
-          />
-        }
-        primaryLabel="Add"
-        primaryHref="/widgets/new"
-        primaryVariant="info"
-        refresh
-      />
-
-      <WidgetsTable data={widgetRows} />
-    </Page>
-  )
+  return <WidgetsTable data={widgetRows} />
 }
