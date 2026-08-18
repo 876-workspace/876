@@ -60,9 +60,15 @@ jobs:
           # now requires an Accelerate URL because that is what the runtime
           # client passes as `accelerateUrl`. A direct postgres:// placeholder
           # is rejected at boot, by design.
+          #
+          # Finance provisioning is deliberately disabled in this generic image
+          # smoke. The dedicated Billing integration workflow verifies the
+          # Billing URL/key preflight and API→Billing contract; this job should
+          # not invent fake peer credentials just to exercise /health.
           docker run -d --name api-ci \
             -e DATABASE_URL='prisma://127.0.0.1:1/?api_key=ci-placeholder' \
             -e API_INTERNAL_KEY='ci-internal-key' \
+            -e FINANCE_PROVISIONING_DISABLE='true' \
             -e PORT=4000 \
             -p 4000:4000 \
             876-api:ci
