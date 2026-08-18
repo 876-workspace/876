@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
@@ -6,7 +8,15 @@ import { ModulesManager } from './_components/modules-manager'
 
 type Props = { params: Promise<{ slug: string }> }
 
-export default async function AppModulesPage({ params }: Props) {
+export default function AppModulesPage({ params }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-80 w-full rounded-lg" />}>
+      <AppModulesData params={params} />
+    </Suspense>
+  )
+}
+
+async function AppModulesData({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
   if (!app || !['product', 'platform'].includes(app.app_kind)) notFound()
