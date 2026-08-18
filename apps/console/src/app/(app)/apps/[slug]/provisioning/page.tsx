@@ -1,6 +1,8 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
@@ -8,7 +10,15 @@ import { FinanceProvisioningEditor } from '@/features/provisioning/components/fi
 
 type Props = { params: Promise<{ slug: string }> }
 
-export default async function AppProvisioningPage({ params }: Props) {
+export default function AppProvisioningPage({ params }: Props) {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full rounded-lg" />}>
+      <AppProvisioningData params={params} />
+    </Suspense>
+  )
+}
+
+async function AppProvisioningData({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
   if (!app) notFound()
