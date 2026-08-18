@@ -1,10 +1,8 @@
-import { Suspense } from 'react'
 import Link from 'next/link'
 import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import { Skeleton } from '@876/ui/skeleton'
 
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { $876 } from '@/lib/876'
@@ -32,6 +30,8 @@ const HOST_LABELS: Record<WidgetHost, string> = {
  * "Missing: <slug>" until those flags exist. This page provisions them.
  */
 export default function NewWidgetFlagsPage() {
+  const widgets = loadPendingWidgets()
+
   return (
     <Page>
       <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
@@ -47,18 +47,18 @@ export default function NewWidgetFlagsPage() {
 
       <ResourceToolbar title="Register widget flags" />
 
-      <Suspense fallback={<RegisterWidgetFlagsFallback />}>
-        <RegisterWidgetFlagsData />
-      </Suspense>
+      <RegisterWidgetFlagsForm widgets={widgets} />
     </Page>
   )
 }
 
-async function RegisterWidgetFlagsData() {
+async function loadPendingWidgets(): Promise<PendingWidget[]> {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
     $876.apps.admin.list({ limit: 100, clientType: 'public' }),
   ])
+  if (featuresResult.error) throw new Error(featuresResult.error.message)
+  if (appsResult.error) throw new Error(appsResult.error.message)
 
   const existingIdBySlug = new Map(
     (featuresResult.data?.data ?? []).map((feature) => [
@@ -77,7 +77,7 @@ async function RegisterWidgetFlagsData() {
     return null
   }
 
-  const widgets: PendingWidget[] = widgetCatalog.map((widget) => {
+  return widgetCatalog.map((widget) => {
     const scopes: { label: string; parent: string; widget: string }[] = []
 
     const platform = getWidgetPlatformFeatureKeys(widget)
@@ -125,19 +125,4 @@ async function RegisterWidgetFlagsData() {
       flags,
     }
   })
-
-  return <RegisterWidgetFlagsForm widgets={widgets} />
-}
-
-function RegisterWidgetFlagsFallback() {
-  return (
-    <div className="876-card space-y-5 p-5">
-      {Array.from({ length: 4 }, (_, index) => (
-        <div key={index} className="space-y-2">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-9 w-full" />
-        </div>
-      ))}
-    </div>
-  )
 }
