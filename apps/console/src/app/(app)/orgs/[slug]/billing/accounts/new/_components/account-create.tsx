@@ -13,7 +13,7 @@ import {
 } from '@/app/(app)/orgs/[slug]/billing/accounts/_lib/account-utils'
 
 type Props = {
-  orgId: string
+  orgId: string | Promise<string>
   orgSlug: string
 }
 
@@ -30,16 +30,25 @@ export function BillingAccountCreate({ orgId, orgSlug }: Props) {
   function handleCreate() {
     setError(null)
     startTransition(async () => {
-      const { error: resultError } = await client.billing.createAccount(
-        toBillingAccountCreateParams(orgId, draft)
-      )
-      if (resultError) {
-        setError(resultError.message)
-        return
-      }
+      try {
+        const resolvedOrgId = await Promise.resolve(orgId)
+        const { error: resultError } = await client.billing.createAccount(
+          toBillingAccountCreateParams(resolvedOrgId, draft)
+        )
+        if (resultError) {
+          setError(resultError.message)
+          return
+        }
 
-      router.push(`/orgs/${orgSlug}/billing/accounts`)
-      router.refresh()
+        router.push(`/orgs/${orgSlug}/billing/accounts`)
+        router.refresh()
+      } catch (reason) {
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : 'The organization could not be resolved.'
+        )
+      }
     })
   }
 
