@@ -76,7 +76,9 @@ export default async function PlanSubscribersPage({ params }: Props) {
     )
 
     const orgIds = [
-      ...new Set(coreSubscriptions.map((subscription) => subscription.organization_id)),
+      ...new Set(
+        coreSubscriptions.map((subscription) => subscription.organization_id)
+      ),
     ]
     const orgMap = new Map<string, AdminOrganization>()
     await Promise.all(
@@ -107,10 +109,7 @@ export default async function PlanSubscribersPage({ params }: Props) {
           organization?.name ??
           financial?.customerName ??
           subscription.organization_id,
-        email:
-          organization?.primary_email ??
-          financial?.customerId ??
-          subscription.organization_id,
+        email: organization?.primary_email ?? '—',
         status: subscription.status,
         startedAt: subscription.start_date,
         mrr: Number(financial?.monthlyRecurringRevenue ?? '0'),
@@ -134,7 +133,7 @@ export default async function PlanSubscribersPage({ params }: Props) {
     planStats?.subscribers.map((subscriber) => ({
       id: subscriber.subscriptionId,
       name: subscriber.customerName,
-      email: subscriber.customerId,
+      email: '—',
       status: subscriber.status,
       startedAt: subscriber.startAt,
       mrr: Number(subscriber.monthlyRecurringRevenue),
