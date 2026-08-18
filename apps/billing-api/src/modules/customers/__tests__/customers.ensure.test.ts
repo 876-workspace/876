@@ -16,7 +16,10 @@ vi.mock('@/modules/customers/customers.repository', async (importOriginal) => ({
 }))
 
 import { ensureCoreCustomer } from '../customers.service'
-import type { CustomerEnsureBody } from '../customers.schemas'
+import {
+  customerEnsureBodySchema,
+  type CustomerEnsureBody,
+} from '../customers.schemas'
 
 const PLATFORM_TENANT = {
   id: 'btenant_platform',
@@ -51,6 +54,42 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs()
   resetSettingsForTest()
+})
+
+describe('customer.ensure contract', () => {
+  it('accepts the generic primary contact phone emitted by Core', () => {
+    const parsed = customerEnsureBodySchema.parse({
+      customerType: 'CORE_ORGANIZATION',
+      organizationId: 'org_customer',
+      name: 'Acme Couriers',
+      primaryContact: {
+        userId: 'user_owner',
+        email: 'owner@acme.example',
+        phone: '+18765550123',
+      },
+    })
+
+    expect(parsed.primaryContact).toMatchObject({
+      userId: 'user_owner',
+      email: 'owner@acme.example',
+      phone: '+18765550123',
+    })
+  })
+})
+
+describe('Billing platform tenant configuration', () => {
+  it('defaults an omitted or blank platform tenant slug to efesto', () => {
+    const omitted = { ...process.env }
+    delete omitted.BILLING_PLATFORM_TENANT_SLUG
+
+    expect(resetSettingsForTest(omitted).platformTenantSlug).toBe('efesto')
+    expect(
+      resetSettingsForTest({
+        ...omitted,
+        BILLING_PLATFORM_TENANT_SLUG: '   ',
+      }).platformTenantSlug
+    ).toBe('efesto')
+  })
 })
 
 describe('ensureCoreCustomer — operator self-customer guard', () => {
