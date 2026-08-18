@@ -79,7 +79,7 @@ async function PendingInvitesData({ params }: Props) {
   const org = await resolveOrg(slug)
   if (!org) return null
 
-  const invitesResult = await $876.invites.list(org.id)
+  const invitesResult = await $876.invites.admin.list(org.id)
   const invites = invitesResult.data?.data ?? []
 
   return <PendingInvitesTable invites={invites} />
