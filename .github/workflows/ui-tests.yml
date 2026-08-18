@@ -31,8 +31,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Typecheck Console
         run: pnpm --filter @876/console typecheck
+      - name: Typecheck Invoice
+        run: pnpm --filter @876/invoice-app typecheck
       - run: pnpm --filter @876/console exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/billing-app exec vitest run --pool=forks --maxWorkers=2
+      - run: pnpm --filter @876/invoice-app exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/couriers-app exec vitest run --pool=forks --maxWorkers=2
       - run: pnpm --filter @876/widgets exec vitest run --pool=forks --maxWorkers=2
 
