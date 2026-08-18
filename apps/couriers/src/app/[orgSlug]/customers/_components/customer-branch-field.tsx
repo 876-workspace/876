@@ -24,22 +24,39 @@ type Props = {
   className?: string
 }
 
+type PromiseState = {
+  source: Promise<CustomerBranchOption[]>
+  branches: CustomerBranchOption[] | null
+  error: string | null
+}
+
 /** Streams the branch selector without delaying the rest of the customer form. */
 export function CustomerBranchField({ branches, ...props }: Props) {
-  const [resolvedPromise, setResolvedPromise] = useState<{
-    source: Promise<CustomerBranchOption[]>
-    branches: CustomerBranchOption[]
-  } | null>(null)
+  const [promiseState, setPromiseState] = useState<PromiseState | null>(null)
 
   useEffect(() => {
     if (Array.isArray(branches)) return
 
     let cancelled = false
+    setPromiseState({ source: branches, branches: null, error: null })
 
-    void branches.then((nextBranches) => {
-      if (!cancelled)
-        setResolvedPromise({ source: branches, branches: nextBranches })
-    })
+    void branches.then(
+      (nextBranches) => {
+        if (!cancelled)
+          setPromiseState({ source: branches, branches: nextBranches, error: null })
+      },
+      (reason: unknown) => {
+        if (!cancelled)
+          setPromiseState({
+            source: branches,
+            branches: null,
+            error:
+              reason instanceof Error
+                ? reason.message
+                : 'Branches could not be loaded.',
+          })
+      }
+    )
 
     return () => {
       cancelled = true
@@ -48,9 +65,22 @@ export function CustomerBranchField({ branches, ...props }: Props) {
 
   const resolvedBranches = Array.isArray(branches)
     ? branches
-    : resolvedPromise?.source === branches
-      ? resolvedPromise.branches
+    : promiseState?.source === branches
+      ? promiseState.branches
       : null
+  const error =
+    !Array.isArray(branches) && promiseState?.source === branches
+      ? promiseState.error
+      : null
+
+  if (error)
+    return (
+      <FormRow label="Branch" required className={props.className}>
+        <div className="border-destructive/30 bg-destructive/5 text-destructive w-80 rounded-md border px-3 py-2 text-sm">
+          {error}
+        </div>
+      </FormRow>
+    )
 
   if (!resolvedBranches)
     return <CustomerBranchFieldSkeleton className={props.className} />
