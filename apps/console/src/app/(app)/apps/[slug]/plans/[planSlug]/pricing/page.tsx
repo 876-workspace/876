@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../../_data'
@@ -30,7 +32,20 @@ type PriceItem = {
   status: string
 }
 
-export default async function PlanPricingPage({ params }: Props) {
+export default function PlanPricingPage({ params }: Props) {
+  return (
+    <div className="space-y-5">
+      <div className="mb-2">
+        <h2 className="text-lg font-medium tracking-tight">Pricing</h2>
+      </div>
+      <Suspense fallback={<Skeleton className="h-72 w-full rounded-lg" />}>
+        <PlanPricingData params={params} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function PlanPricingData({ params }: Props) {
   const { slug, planSlug } = await params
   const app = await resolveApp(slug)
 
@@ -52,12 +67,5 @@ export default async function PlanPricingPage({ params }: Props) {
     status: p.status,
   }))
 
-  return (
-    <div className="space-y-5">
-      <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Pricing</h2>
-      </div>
-      <PricingTable prices={pricesData} productId={product.id} />
-    </div>
-  )
+  return <PricingTable prices={pricesData} productId={product.id} />
 }
