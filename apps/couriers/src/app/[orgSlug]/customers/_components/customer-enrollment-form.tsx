@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@876/ui/button'
@@ -17,26 +17,65 @@ import {
 
 const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
+export type CustomerSelection = {
+  data: GlobalCustomerOption[]
+  error: string | null
+}
+
 export function CustomerEnrollmentForm({
   orgSlug,
   branches,
   customers,
-  loadError,
 }: {
   orgSlug: string
-  branches: CustomerBranchOption[]
-  customers: GlobalCustomerOption[]
-  loadError: string | null
+  branches: CustomerBranchOption[] | Promise<CustomerBranchOption[]>
+  customers: CustomerSelection | Promise<CustomerSelection>
 }) {
   const router = useRouter()
   const [customerId, setCustomerId] = useState('')
   const [branchId, setBranchId] = useState(
-    branches.length === 1 ? (branches[0]?.id ?? '') : ''
+    Array.isArray(branches) && branches.length === 1
+      ? (branches[0]?.id ?? '')
+      : ''
   )
-  const [branchesReady, setBranchesReady] = useState(true)
+  const [branchesReady, setBranchesReady] = useState(Array.isArray(branches))
+  const [customerSelection, setCustomerSelection] = useState<CustomerSelection | null>(
+    isPromiseLike(customers) ? null : customers
+  )
+  const [customerLoadError, setCustomerLoadError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const handleBranchesReady = useCallback(() => setBranchesReady(true), [])
+
+  useEffect(() => {
+    if (!isPromiseLike(customers)) {
+      setCustomerSelection(customers)
+      setCustomerLoadError(null)
+      return
+    }
+
+    let cancelled = false
+    setCustomerSelection(null)
+    setCustomerLoadError(null)
+
+    void customers.then(
+      (selection) => {
+        if (!cancelled) setCustomerSelection(selection)
+      },
+      (reason: unknown) => {
+        if (!cancelled)
+          setCustomerLoadError(
+            reason instanceof Error
+              ? reason.message
+              : 'Billing customers could not be loaded.'
+          )
+      }
+    )
+
+    return () => {
+      cancelled = true
+    }
+  }, [customers])
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -61,7 +100,10 @@ export function CustomerEnrollmentForm({
     })
   }
 
-  const options = customers.map((customer) => ({
+  const loadError = customerLoadError ?? customerSelection?.error ?? null
+  const customerData = customerSelection?.data ?? []
+  const customersReady = customerSelection !== null && !loadError
+  const options = customerData.map((customer) => ({
     value: customer.id,
     label: [customer.name, customer.email ?? customer.phone]
       .filter(Boolean)
@@ -88,10 +130,16 @@ export function CustomerEnrollmentForm({
             options={options}
             value={customerId}
             onValueChange={setCustomerId}
-            placeholder="Select a Billing customer"
+            placeholder={
+              customersReady
+                ? 'Select a Billing customer'
+                : loadError
+                  ? 'Billing customers unavailable'
+                  : 'Loading Billing customers…'
+            }
             searchPlaceholder="Search customers…"
             emptyMessage="No unenrolled Billing customers found."
-            disabled={isPending}
+            disabled={isPending || !customersReady}
           />
         </FormRow>
         <CustomerBranchField
@@ -111,9 +159,9 @@ export function CustomerEnrollmentForm({
           disabled={
             isPending ||
             !branchesReady ||
+            !customersReady ||
             !customerId ||
-            customers.length === 0 ||
-            Boolean(loadError)
+            customerData.length === 0
           }
         >
           Add to Couriers
@@ -128,5 +176,14 @@ export function CustomerEnrollmentForm({
         </Button>
       </div>
     </form>
+  )
+}
+
+function isPromiseLike<T>(value: T | Promise<T>): value is Promise<T> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'then' in value &&
+    typeof (value as Promise<T>).then === 'function'
   )
 }
