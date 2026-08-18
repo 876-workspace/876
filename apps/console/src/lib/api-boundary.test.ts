@@ -53,7 +53,7 @@ describe('Console product API boundary', () => {
     expect(offenders).toEqual([])
   })
 
-  it('keeps service construction centralized in the Console $876 facade', () => {
+  it('keeps multi-service construction centralized in the Console $876 module', () => {
     const source = readFileSync(
       join(APP_ROOT, 'src/lib/876/index.ts'),
       'utf8'
@@ -61,8 +61,9 @@ describe('Console product API boundary', () => {
 
     expect(source).toContain('createConsole876Client')
     expect(source).toContain('create876ServerClient')
-    expect(source).toContain('create876BillingAdminClient')
+    expect(source).toContain('createBillingAdminClient')
     expect(source).toContain('create876BillingIntegrationClient')
+    expect(source).toContain('createWidgetsAdminClient')
   })
 })
 
