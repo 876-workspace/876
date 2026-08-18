@@ -1,8 +1,13 @@
+import { Suspense } from 'react'
 import type {
   AdminCommunicationCall,
   AdminCommunicationMessage,
 } from '@876/admin'
 import { Badge } from '@876/ui/badge'
+import {
+  DataTableSkeleton,
+  type DataTableSkeletonColumn,
+} from '@876/ui/data-table-skeleton'
 import { Empty, EmptyHeader, EmptyTitle } from '@876/ui/empty'
 import { Page } from '@876/ui/page'
 import {
@@ -49,6 +54,15 @@ const STATUS_OPTIONS: StatusFilterOption[] = [
   })),
 ]
 
+const COMMUNICATIONS_SKELETON_COLUMNS = [
+  { label: 'Recipient' },
+  { label: 'Channel' },
+  { label: 'Status' },
+  { label: 'Template key' },
+  { label: 'App / org' },
+  { label: 'Created' },
+] satisfies DataTableSkeletonColumn[]
+
 type CommunicationRow = {
   id: string
   recipient: string
@@ -68,18 +82,6 @@ export default async function CommunicationsPage({ searchParams }: Props) {
   )
     ? status!
     : 'all'
-  const statusFilter = selectedStatus === 'all' ? undefined : selectedStatus
-  const [messagesResult, callsResult] = await Promise.all([
-    $876.messages.list({ limit: 50, status: statusFilter }),
-    $876.calls.list({ limit: 50, status: statusFilter }),
-  ])
-  if (messagesResult.error) throw new Error(messagesResult.error.message)
-  if (callsResult.error) throw new Error(callsResult.error.message)
-
-  const rows = [
-    ...messagesResult.data.data.map(messageRow),
-    ...callsResult.data.data.map(callRow),
-  ].sort((left, right) => right.createdAt - left.createdAt)
 
   return (
     <Page>
@@ -95,49 +97,79 @@ export default async function CommunicationsPage({ searchParams }: Props) {
         refresh
       />
 
-      {rows.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>No communications</EmptyTitle>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="876-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Recipient</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Template key</TableHead>
-                <TableHead>App / org</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={`${row.channel}-${row.id}`}>
-                  <TableCell className="font-medium tabular-nums">
-                    {maskPhoneNumber(row.recipient)}
-                  </TableCell>
-                  <TableCell className="capitalize">{row.channel}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {row.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{row.templateKey ?? '—'}</TableCell>
-                  <TableCell>{row.appOrOrganization ?? '—'}</TableCell>
-                  <TableCell className="text-muted-foreground tabular-nums">
-                    {formatDateTime(row.createdAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <Suspense
+        fallback={
+          <DataTableSkeleton
+            columns={COMMUNICATIONS_SKELETON_COLUMNS}
+            rows={6}
+          />
+        }
+      >
+        <CommunicationsTableData status={selectedStatus} />
+      </Suspense>
     </Page>
+  )
+}
+
+async function CommunicationsTableData({ status }: { status: string }) {
+  const statusFilter = status === 'all' ? undefined : status
+  const [messagesResult, callsResult] = await Promise.all([
+    $876.messages.list({ limit: 50, status: statusFilter }),
+    $876.calls.list({ limit: 50, status: statusFilter }),
+  ])
+  if (messagesResult.error) throw new Error(messagesResult.error.message)
+  if (callsResult.error) throw new Error(callsResult.error.message)
+
+  const rows = [
+    ...messagesResult.data.data.map(messageRow),
+    ...callsResult.data.data.map(callRow),
+  ].sort((left, right) => right.createdAt - left.createdAt)
+
+  if (rows.length === 0) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>No communications</EmptyTitle>
+        </EmptyHeader>
+      </Empty>
+    )
+  }
+
+  return (
+    <div className="876-card">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Recipient</TableHead>
+            <TableHead>Channel</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Template key</TableHead>
+            <TableHead>App / org</TableHead>
+            <TableHead>Created</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={`${row.channel}-${row.id}`}>
+              <TableCell className="font-medium tabular-nums">
+                {maskPhoneNumber(row.recipient)}
+              </TableCell>
+              <TableCell className="capitalize">{row.channel}</TableCell>
+              <TableCell>
+                <Badge variant="outline" className="capitalize">
+                  {row.status}
+                </Badge>
+              </TableCell>
+              <TableCell>{row.templateKey ?? '—'}</TableCell>
+              <TableCell>{row.appOrOrganization ?? '—'}</TableCell>
+              <TableCell className="text-muted-foreground tabular-nums">
+                {formatDateTime(row.createdAt)}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 
