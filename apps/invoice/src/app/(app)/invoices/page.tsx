@@ -96,16 +96,27 @@ async function InvoicesTableData({ searchParams }: Props) {
     const isTenantNotFound = result.error.code === TENANT_NOT_FOUND
     const isUnreachable = result.error.code === BILLING_UNREACHABLE
     if (isTenantNotFound) {
-      Sentry.captureMessage('Invoice invoices list: tenant not found invariant', {
-        level: 'error',
-        tags: { category: 'billing_client' },
-        extra: { call: 'invoices.list', errorCode: result.error.code, organizationId: context.orgId },
-      })
+      Sentry.captureMessage(
+        'Invoice invoices list: tenant not found invariant',
+        {
+          level: 'error',
+          tags: { category: 'billing_client' },
+          extra: {
+            call: 'invoices.list',
+            errorCode: result.error.code,
+            organizationId: context.orgId,
+          },
+        }
+      )
       return (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <p className="text-sm font-medium">Billing workspace missing</p>
-          <p className="text-muted-foreground mt-1 text-sm">{result.error.message}</p>
-          <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {result.error.message}
+          </p>
+          <p className="text-muted-foreground mt-2 font-mono text-xs">
+            {result.error.code}
+          </p>
         </div>
       )
     }
@@ -113,26 +124,44 @@ async function InvoicesTableData({ searchParams }: Props) {
       Sentry.captureMessage('Invoice invoices list: billing unreachable', {
         level: 'warning',
         tags: { category: 'billing_client' },
-        extra: { call: 'invoices.list', errorCode: result.error.code, organizationId: context.orgId },
+        extra: {
+          call: 'invoices.list',
+          errorCode: result.error.code,
+          organizationId: context.orgId,
+        },
       })
       return (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <p className="text-sm font-medium">Billing is unreachable</p>
-          <p className="text-muted-foreground mt-1 text-sm">Please retry shortly. If this persists, contact support.</p>
-          <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Please retry shortly. If this persists, contact support.
+          </p>
+          <p className="text-muted-foreground mt-2 font-mono text-xs">
+            {result.error.code}
+          </p>
         </div>
       )
     }
     Sentry.captureMessage('Invoice invoices list failed', {
       level: 'error',
       tags: { category: 'billing_client' },
-      extra: { call: 'invoices.list', errorCode: result.error.code, organizationId: context.orgId },
+      extra: {
+        call: 'invoices.list',
+        errorCode: result.error.code,
+        organizationId: context.orgId,
+      },
     })
     return (
       <div className="rounded-lg border border-dashed p-10 text-center">
-        <p className="text-sm font-medium">Invoices are unavailable right now</p>
-        <p className="text-muted-foreground mt-1 text-sm">{result.error.message}</p>
-        <p className="text-muted-foreground mt-2 font-mono text-xs">{result.error.code}</p>
+        <p className="text-sm font-medium">
+          Invoices are unavailable right now
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {result.error.message}
+        </p>
+        <p className="text-muted-foreground mt-2 font-mono text-xs">
+          {result.error.code}
+        </p>
       </div>
     )
   }

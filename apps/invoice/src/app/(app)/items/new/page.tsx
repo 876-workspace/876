@@ -12,7 +12,9 @@ export default async function NewItemPage() {
   if (!context) redirect('/no-access')
 
   const platform = await getPlatformClient()
-  const organization = await platform.organizations.retrieve({ id: context.orgId })
+  const organization = await platform.organizations.retrieve({
+    id: context.orgId,
+  })
   const currency = organization.data?.currency_code ?? 'JMD'
 
   return (

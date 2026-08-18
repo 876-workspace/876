@@ -88,7 +88,10 @@ export default async function ItemDetailPage({ params }: Props) {
             <span className="876-eyebrow">Item</span>
           </div>
           <dl className="divide-y">
-            <FactRow label="Type" value={item.type === 'GOOD' ? 'Good' : 'Service'} />
+            <FactRow
+              label="Type"
+              value={item.type === 'GOOD' ? 'Good' : 'Service'}
+            />
             <FactRow label="SKU" value={item.sku ?? '—'} mono />
             <FactRow label="Unit" value={item.unit ?? '—'} />
             <FactRow label="Item ID" value={item.id} mono />
@@ -106,7 +109,10 @@ export default async function ItemDetailPage({ params }: Props) {
               mono
             />
             <FactRow label="Currency" value={currency} mono />
-            <FactRow label="Tax" value={item.isTaxable ? 'Taxable' : 'Non-taxable'} />
+            <FactRow
+              label="Tax"
+              value={item.isTaxable ? 'Taxable' : 'Non-taxable'}
+            />
             <FactRow label="Tax code" value={item.taxCode ?? '—'} mono />
           </dl>
         </div>
@@ -128,7 +134,9 @@ function FactRow({
     <div className="flex items-center justify-between gap-4 px-5 py-2.5">
       <dt className="text-muted-foreground text-sm">{label}</dt>
       <dd
-        className={['text-sm font-medium', mono ? 'tabular-nums' : ''].join(' ')}
+        className={['text-sm font-medium', mono ? 'tabular-nums' : ''].join(
+          ' '
+        )}
       >
         {value}
       </dd>

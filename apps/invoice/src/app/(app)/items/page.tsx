@@ -88,9 +88,7 @@ async function ItemsTableData({ searchParams }: Props) {
   const billing = await getInvoiceBillingIntegration()
   const result = await billing.items.list(
     context.orgId,
-    selectedStatus === 'all'
-      ? {}
-      : { active: selectedStatus === 'active' }
+    selectedStatus === 'all' ? {} : { active: selectedStatus === 'active' }
   )
 
   if (result.error) {

@@ -36,8 +36,8 @@ function currencyDigits(currency: string): number {
   try {
     return (
       new Intl.NumberFormat('en-JM', {
-      style: 'currency',
-      currency,
+        style: 'currency',
+        currency,
       }).resolvedOptions().maximumFractionDigits ?? 2
     )
   } catch {
@@ -65,7 +65,9 @@ function inputToMinor(value: string, currency: string): string | null {
 
   const [whole = '0', fraction = ''] = normalized.split('.')
   if (fraction.length > digits) return null
-  return `${whole}${fraction.padEnd(digits, '0')}`.replace(/^0+(?=\d)/, '') || '0'
+  return (
+    `${whole}${fraction.padEnd(digits, '0')}`.replace(/^0+(?=\d)/, '') || '0'
+  )
 }
 
 export function ItemForm({
@@ -158,11 +160,7 @@ export function ItemForm({
   return (
     <form className="max-w-3xl space-y-6" onSubmit={submit}>
       <div className="876-card space-y-5 p-5">
-        <FormRow
-          label="Type"
-          required
-          className={itemFormRowClassName}
-        >
+        <FormRow label="Type" required className={itemFormRowClassName}>
           <Select
             value={type}
             onValueChange={(value) => setType(value as InvoiceItemType)}

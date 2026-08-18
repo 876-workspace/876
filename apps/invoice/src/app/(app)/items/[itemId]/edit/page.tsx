@@ -29,7 +29,9 @@ export default async function EditItemPage({ params }: Props) {
   }
 
   const item = itemResult.data
-  const organization = await platform.organizations.retrieve({ id: context.orgId })
+  const organization = await platform.organizations.retrieve({
+    id: context.orgId,
+  })
   const currency =
     organization.data?.currency_code ?? item.defaultSellingCurrency ?? 'JMD'
 
