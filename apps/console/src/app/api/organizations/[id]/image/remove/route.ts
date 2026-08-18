@@ -6,14 +6,14 @@ import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-type Context = { params: Promise<{ organizationId: string }> }
+type Context = { params: Promise<{ id: string }> }
 
 /** Detaches an organization logo before soft-deleting its Storage file. */
 export async function DELETE(_request: NextRequest, context: Context) {
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
 
-  const { organizationId } = await context.params
+  const { id: organizationId } = await context.params
   const retrieveResult = await $876.organizations.admin.retrieve({
     id: organizationId,
   })

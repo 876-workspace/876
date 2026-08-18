@@ -18,9 +18,7 @@ vi.mock('@/lib/876', () => ({
   $876: {
     uploads: { create: mocks.create, complete: mocks.complete },
     files: { delete: mocks.deleteFile },
-    organizations: {
-      admin: { retrieve: mocks.retrieve, update: mocks.update },
-    },
+    apps: { admin: { retrieve: mocks.retrieve, update: mocks.update } },
   },
 }))
 
@@ -28,24 +26,19 @@ import { POST as start } from './route'
 import { POST as complete } from './complete/route'
 import { DELETE as remove } from './remove/route'
 
-const context = {
-  params: Promise.resolve({ organizationId: 'org_123' }),
-}
+const context = { params: Promise.resolve({ appId: 'app_123' }) }
 
 function request(method: string, body?: unknown) {
-  return new Request(
-    'http://console.test/api/storage/organizations/org_123/image',
-    {
-      method,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      headers:
-        body === undefined ? undefined : { 'content-type': 'application/json' },
-    }
-  ) as NextRequest
+  return new Request('http://console.test/api/apps/app_123/image', {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers:
+      body === undefined ? undefined : { 'content-type': 'application/json' },
+  }) as NextRequest
 }
 
 const startBody = {
-  route_key: 'organization.primaryLogo',
+  route_key: 'app.logo',
   file_name: 'logo.png',
   content_type: 'image/png',
   size_bytes: 4,
@@ -53,13 +46,13 @@ const startBody = {
 
 const readyFile = {
   id: 'file_new',
-  owner_type: 'organization',
-  owner_id: 'org_123',
+  owner_type: 'platform',
+  owner_id: 'app_123',
   status: 'ready',
   url: 'https://assets.876.test/logo.png',
 }
 
-describe('organization image routes', () => {
+describe('app image routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.requirePermission.mockResolvedValue({
@@ -110,19 +103,17 @@ describe('organization image routes', () => {
     }
   )
 
-  it('starts with the organization route and owner', async () => {
+  it('starts with the app route and platform owner', async () => {
     mocks.create.mockResolvedValue({ data: { id: 'upl_123' }, error: null })
 
     const response = await start(request('POST', startBody), context)
 
     expect(response.status).toBe(201)
-    expect(mocks.requirePermission).toHaveBeenCalledWith(
-      'console:organizations'
-    )
+    expect(mocks.requirePermission).toHaveBeenCalledWith('console:apps')
     expect(mocks.create).toHaveBeenCalledWith({
       ...startBody,
-      owner_type: 'organization',
-      owner_id: 'org_123',
+      owner_type: 'platform',
+      owner_id: 'app_123',
       actor_user_id: 'user_admin',
       source_app_id: '876-console',
     })
@@ -130,7 +121,7 @@ describe('organization image routes', () => {
 
   it('rejects a completed file with the wrong owner without updating', async () => {
     mocks.complete.mockResolvedValue({
-      data: { ...readyFile, owner_id: 'org_other' },
+      data: { ...readyFile, owner_id: 'app_other' },
       error: null,
     })
 
@@ -152,25 +143,25 @@ describe('organization image routes', () => {
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
-  it('updates both organization image fields after verification', async () => {
+  it('updates both app image fields after verification', async () => {
     mocks.complete.mockResolvedValue({ data: readyFile, error: null })
-    mocks.update.mockResolvedValue({ data: { id: 'org_123' }, error: null })
+    mocks.update.mockResolvedValue({ data: { id: 'app_123' }, error: null })
 
     const response = await complete(request('POST', { id: 'upl_123' }), context)
 
     expect(response.status).toBe(200)
-    expect(mocks.update).toHaveBeenCalledWith('org_123', {
+    expect(mocks.update).toHaveBeenCalledWith('app_123', {
       logo_file_id: 'file_new',
       logo_url: 'https://assets.876.test/logo.png',
     })
   })
 
-  it('clears the organization reference before deleting the Storage file', async () => {
+  it('clears the app reference before deleting the Storage file', async () => {
     mocks.retrieve.mockResolvedValue({
-      data: { id: 'org_123', logo_file_id: 'file_old' },
+      data: { id: 'app_123', logo_file_id: 'file_old' },
       error: null,
     })
-    mocks.update.mockResolvedValue({ data: { id: 'org_123' }, error: null })
+    mocks.update.mockResolvedValue({ data: { id: 'app_123' }, error: null })
     mocks.deleteFile.mockResolvedValue({
       data: { object: 'file', id: 'file_old', deleted: true },
       error: null,
@@ -179,7 +170,7 @@ describe('organization image routes', () => {
     const response = await remove(request('DELETE'), context)
 
     expect(response.status).toBe(200)
-    expect(mocks.update).toHaveBeenCalledWith('org_123', {
+    expect(mocks.update).toHaveBeenCalledWith('app_123', {
       logo_file_id: null,
       logo_url: null,
     })

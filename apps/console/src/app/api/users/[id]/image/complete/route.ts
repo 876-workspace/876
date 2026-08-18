@@ -7,7 +7,7 @@ import { imageUploadCompleteSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
 
-type Context = { params: Promise<{ userId: string }> }
+type Context = { params: Promise<{ id: string }> }
 
 /** Verifies a user-avatar upload and attaches the ready file. */
 export async function POST(request: NextRequest, context: Context) {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest, context: Context) {
   if (!parsed.success)
     return apiJson({ error: 'The upload request is invalid.' }, { status: 400 })
 
-  const { userId } = await context.params
+  const { id: userId } = await context.params
   const result = await $876.uploads.complete(parsed.data.id)
   if (result.error || !result.data)
     return apiJson(

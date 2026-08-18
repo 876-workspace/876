@@ -6,14 +6,14 @@ import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
 
-type Context = { params: Promise<{ userId: string }> }
+type Context = { params: Promise<{ id: string }> }
 
 /** Detaches a user avatar before soft-deleting its Storage file. */
 export async function DELETE(_request: NextRequest, context: Context) {
   const { response } = await requireConsolePermission('console:users')
   if (response) return response
 
-  const { userId } = await context.params
+  const { id: userId } = await context.params
   const retrieveResult = await $876.users.admin.retrieve({ id: userId })
   if (retrieveResult.error || !retrieveResult.data)
     return apiJson(
@@ -23,10 +23,7 @@ export async function DELETE(_request: NextRequest, context: Context) {
 
   const fileId = retrieveResult.data.avatar_file_id
   if (!fileId && !retrieveResult.data.avatar)
-    return apiJson(
-      { error: 'The user has no image to remove.' },
-      { status: 409 }
-    )
+    return apiJson({ error: 'The user has no image to remove.' }, { status: 409 })
 
   const updateResult = await $876.users.admin.update(userId, {
     avatar_file_id: null,

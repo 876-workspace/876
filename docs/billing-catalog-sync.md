@@ -52,110 +52,48 @@ Helpers: `mirrorCoreProductPrices`, `mirrorCoreSubscription`,
 | `DELETE /api/products/[id]`                                      | `mirrorCoreProductPrices` (archive projection)         |
 | `POST /api/products/[id]/prices`                                 | `mirrorCoreProductPrices` (product + new price)        |
 | `PATCH` / `DELETE` `/api/products/[id]/prices/[priceId]`         | `mirrorCoreProductPrices`                              |
-| `POST /api/billing/subscriptions`                                | `mirrorCoreSubscription`                               |
-| `PATCH` / `DELETE` `/api/billing/subscriptions/[subscriptionId]` | `mirrorCoreSubscription`                               |
+| `POST /api/billing-subscriptions`                                | `mirrorCoreSubscription`                               |
+| `PATCH` / `DELETE` `/api/billing-subscriptions/[subscriptionId]` | `mirrorCoreSubscription`                               |
 | `POST` / `PATCH` / `DELETE` subscription items                   | `mirrorCoreSubscriptionById`                           |
 | `POST /api/organizations/[id]/apps`                              | `mirrorCoreSubscription`                               |
 | `PATCH /api/organizations/[id]/apps/[appId]`                     | `mirrorCoreSubscription`                               |
-| `POST /api/billing/mirror/reconcile`                             | `reconcileBillingMirror` (full catalog + all org subs) |
+| `POST /api/finance/reconcile`                                    | `reconcileBillingMirror` (full catalog + all org subs) |
 
 Products without `app_id` are skipped (`mirrorCoreProductPrices` returns
 `false`).
 
 ---
 
-## Ensure schemas
+## Projection clients
 
-Source: `apps/billing/src/types/sync.ts`. Posted via `@876/billing/admin`
-(`$billing.products.ensure`, `.plans.ensure`, `.prices.ensure`,
-`.customers.ensure`, `.subscriptions.ensure`).
+The mirror is a Console control-plane workflow. It uses the canonical flat
+`$876` resource facade where that resource is available and narrow internal
+aliases from `apps/console/src/lib/876` only for Billing admin operations that
+are not yet surfaced on the composed client.
 
-### Product
-
-```ts
-// ProductEnsureSchema
-{
-  sourceAppId: string
-  slug: string            // /^[a-z0-9-]{2,80}$/
-  name: string            // 1–160
-  description?: string | null
-  active: boolean         // default true
-}
-```
-
-### Plan
+Current shape:
 
 ```ts
-// PlanEnsureSchema
-{
-  productId: string
-  entitlementReferenceId: string  // core product id
-  code: string                    // /^[A-Za-z0-9_-]{2,100}$/
-  name: string
-  description?: string | null
-  intervalUnit: IntervalUnit
-  intervalCount: number           // 1–3650, default 1
-  trialDays: number               // 0–3650, default 0
-  active: boolean
-}
+import { $876, billingAdmin, coreAdmin } from '@/lib/876'
+
+await billingAdmin.products.create(...)
+await $876.plans.admin.create(...)
+await $876.prices.admin.create(...)
+await $876.customers.admin.create(...)
+await billingAdmin.subscriptions.create(...)
 ```
 
-### Price
-
-```ts
-// PriceEnsureSchema
-{
-  planId: string
-  entitlementReferenceId: string  // core price id
-  nickname?: string | null
-  currency: string                // ISO 4217
-  unitAmount: number              // minor units
-  intervalUnit: IntervalUnit
-  intervalCount: number
-  active: boolean
-}
-```
-
-### Customer (also used by Core outbox)
-
-```ts
-// CustomerEnsureSchema
-{
-  customerType: 'CORE_ORGANIZATION' | 'CORE_USER'
-  organizationId?: string
-  userId?: string
-  name: string
-  email?: string | null
-}
-```
-
-### Subscription
-
-```ts
-// SubscriptionEnsureSchema
-{
-  externalReference: string       // core subscription id
-  sourceAppId?: string | null
-  customerId: string              // Billing customer id
-  items: Array<{
-    priceEntitlementReferenceId: string  // core price id
-    quantity: number                     // default 1
-  }>  // 1–100
-  status: SubscriptionStatus      // default ACTIVE
-  startAt?: number                // unix seconds
-  cancelAtPeriodEnd: boolean
-}
-```
+Feature/browser code must not construct these service clients directly.
 
 ---
 
 ## Reconcile route
 
 ```http
-POST /api/billing/mirror/reconcile
+POST /api/finance/reconcile
 ```
 
-- Console Next.js route: `apps/console/src/app/api/billing/mirror/reconcile/route.ts`
+- Console Next.js route: `apps/console/src/app/api/finance/reconcile/route.ts`
 - Auth: session + `console:organizations`
 - Body: none
 - Work: list all core products → `mirrorCoreProductPrices`; page all orgs → list
@@ -192,7 +130,6 @@ From `apps/console/src/lib/billing/mirror.ts`:
 ### `x-876-billing-sync` header
 
 ```ts
-// withBillingSyncHeader
 response.headers.set(
   'x-876-billing-sync',
   succeeded ? 'succeeded' : 'pending-reconciliation'
@@ -201,20 +138,9 @@ response.headers.set(
 
 | Value                    | Meaning                                                        |
 | ------------------------ | -------------------------------------------------------------- |
-| `succeeded`              | All ensure steps for that mutation completed                   |
-| `pending-reconciliation` | One or more ensure steps failed; repair via retry or reconcile |
+| `succeeded`              | All projection steps for that mutation completed               |
+| `pending-reconciliation` | One or more steps failed; repair via retry or reconcile         |
 
----
-
-## Client surface
-
-```ts
-// packages/billing/src/admin/client.ts
-create876AdminClient({
-  /* baseUrl, internalKey — server-only */
-}).products.ensure / .plans.ensure / .prices.ensure /
-  .customers.ensure / .subscriptions.ensure /
-  .stats.apps.list / .stats.apps.retrieve
-```
-
-Console singleton: `$billing` from `apps/console/src/lib/billing`.
+Browser code never calls Billing admin directly. Console mutations use its
+product-owned routes such as `/api/billing-subscriptions` and
+`/api/finance/reconcile`.
