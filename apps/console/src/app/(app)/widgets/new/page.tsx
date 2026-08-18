@@ -1,9 +1,11 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
-
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { Skeleton } from '@876/ui/skeleton'
+
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { $876 } from '@/lib/876'
 
@@ -29,7 +31,30 @@ const HOST_LABELS: Record<WidgetHost, string> = {
  * feature flags that gate it, which is why a catalog widget shows
  * "Missing: <slug>" until those flags exist. This page provisions them.
  */
-export default async function NewWidgetFlagsPage() {
+export default function NewWidgetFlagsPage() {
+  return (
+    <Page>
+      <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
+        <Link
+          href="/widgets"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Widgets
+        </Link>
+        <ChevronRightIcon className="text-muted-foreground size-4" />
+        <span className="font-medium">Register widget flags</span>
+      </nav>
+
+      <ResourceToolbar title="Register widget flags" />
+
+      <Suspense fallback={<RegisterWidgetFlagsFallback />}>
+        <RegisterWidgetFlagsData />
+      </Suspense>
+    </Page>
+  )
+}
+
+async function RegisterWidgetFlagsData() {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
     $876.apps.admin.list({ limit: 100, clientType: 'public' }),
@@ -101,22 +126,18 @@ export default async function NewWidgetFlagsPage() {
     }
   })
 
+  return <RegisterWidgetFlagsForm widgets={widgets} />
+}
+
+function RegisterWidgetFlagsFallback() {
   return (
-    <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
-        <Link
-          href="/widgets"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Widgets
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">Register widget flags</span>
-      </nav>
-
-      <ResourceToolbar title="Register widget flags" />
-
-      <RegisterWidgetFlagsForm widgets={widgets} />
-    </Page>
+    <div className="876-card space-y-5 p-5">
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index} className="space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ))}
+    </div>
   )
 }
