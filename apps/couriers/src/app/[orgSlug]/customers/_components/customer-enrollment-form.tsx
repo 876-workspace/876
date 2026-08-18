@@ -46,6 +46,9 @@ export function CustomerEnrollmentForm({
   )
   const [branchesReady, setBranchesReady] = useState(Array.isArray(branches))
   const customerPromise = isPromiseLike(customers) ? customers : null
+  const directCustomerSelection = customerPromise
+    ? null
+    : (customers as CustomerSelection)
   const [customerResolution, setCustomerResolution] =
     useState<CustomerSelectionResolution | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -110,7 +113,7 @@ export function CustomerEnrollmentForm({
     ? customerResolution?.source === customerPromise
       ? customerResolution.selection
       : null
-    : customers
+    : directCustomerSelection
   const customerLoadError = customerPromise
     ? customerResolution?.source === customerPromise
       ? customerResolution.error
