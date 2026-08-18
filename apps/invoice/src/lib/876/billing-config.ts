@@ -13,8 +13,16 @@ function required(
   name: keyof InvoiceBillingEnvironment
 ): string {
   const value = env[name]?.trim()
-  if (!value) throw new Error(`${name} is required for Invoice Billing integration.`)
+  if (!value)
+    throw new Error(`${name} is required for Invoice Billing integration.`)
   return value
+}
+
+function invoiceBillingEnvironment(): InvoiceBillingEnvironment {
+  return {
+    BILLING_API_URL: process.env.BILLING_API_URL,
+    INVOICE_API_876_KEY: process.env.INVOICE_API_876_KEY,
+  }
 }
 
 /**
@@ -25,10 +33,11 @@ function required(
  * Billing clients, not environment configuration.
  */
 export function getInvoiceBillingConfig(
-  env: InvoiceBillingEnvironment = process.env
+  env?: InvoiceBillingEnvironment
 ): InvoiceBillingConfig {
-  const apiKey = required(env, 'INVOICE_API_876_KEY')
-  const rawBaseUrl = required(env, 'BILLING_API_URL')
+  const source = env ?? invoiceBillingEnvironment()
+  const apiKey = required(source, 'INVOICE_API_876_KEY')
+  const rawBaseUrl = required(source, 'BILLING_API_URL')
 
   let url: URL
   try {
