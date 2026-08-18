@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mockTx = vi.hoisted(() => ({
   $queryRaw: vi.fn(),
@@ -94,7 +94,7 @@ function financeRow(overrides: Record<string, unknown> = {}) {
     provisioningVersion: 1,
     lifecycleVersion: 1,
     desiredStatus: 'ACTIVE',
-    scopes: ['read'],
+    scopes: ['billing.customers.read'],
     occurredAt: BigInt(NOW),
     status: 'pending',
     attemptCount: 0,
@@ -107,6 +107,24 @@ function financeRow(overrides: Record<string, unknown> = {}) {
     runId: null,
     ...overrides,
   }
+}
+
+function billingResponse(overrides: Record<string, unknown> = {}) {
+  return new Response(
+    JSON.stringify({
+      data: {
+        id: 'finance_connection_01',
+        tenantId: 'btenant_01',
+        status: 'ACTIVE',
+        lifecycleVersion: 1,
+        applied: true,
+        duplicate: false,
+        ...overrides,
+      },
+      error: null,
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } }
+  )
 }
 
 describe('finance-provisioning-dispatch', () => {
@@ -137,9 +155,7 @@ describe('finance-provisioning-dispatch', () => {
     mockTx.provisioningRunStep.update.mockResolvedValue({})
     mockTx.provisioningRunStep.updateMany.mockResolvedValue({ count: 0 })
 
-    fetchMock = vi.fn(
-      async () => new Response(JSON.stringify({ ok: true }), { status: 200 })
-    )
+    fetchMock = vi.fn(async () => billingResponse())
     vi.stubGlobal('fetch', fetchMock)
   })
 
@@ -163,7 +179,7 @@ describe('finance-provisioning-dispatch', () => {
 
   it('expires stale application runs before checking configuration', async () => {
     mockSettings.billing.url = ''
-    mockTx.$queryRaw.mockResolvedValueOnce([]) // expire SELECT
+    mockTx.$queryRaw.mockResolvedValueOnce([])
     const { dispatchFinanceProvisioningOnce } =
       await import('../finance-provisioning-dispatch')
     await dispatchFinanceProvisioningOnce()
@@ -174,9 +190,8 @@ describe('finance-provisioning-dispatch', () => {
   })
 
   it('returns zero claimed when no events are available', async () => {
-    // expire returns 0
-    mockTx.$queryRaw.mockResolvedValueOnce([]) // expire
-    mockTx.$queryRaw.mockResolvedValueOnce([]) // claim
+    mockTx.$queryRaw.mockResolvedValueOnce([])
+    mockTx.$queryRaw.mockResolvedValueOnce([])
     const { dispatchFinanceProvisioningOnce } =
       await import('../finance-provisioning-dispatch')
     const result = await dispatchFinanceProvisioningOnce()
@@ -188,7 +203,7 @@ describe('finance-provisioning-dispatch', () => {
     })
   })
 
-  it('delivers a claimed event and marks succeeded run', async () => {
+  it('delivers a claimed event only after Billing returns a valid persisted-state receipt', async () => {
     const row = financeRow({ id: 'fpe_01', runId: 'prn_01', attemptCount: 0 })
     const updated = {
       ...row,
@@ -197,13 +212,11 @@ describe('finance-provisioning-dispatch', () => {
       lockedAt: BigInt(NOW),
     }
 
-    // expire
-    mockTx.$queryRaw.mockResolvedValueOnce([]) // expire
-    // claim: ids
+    mockTx.$queryRaw.mockResolvedValueOnce([])
     mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_01' }])
     mockTx.financeProvisioningOutbox.findMany
-      .mockResolvedValueOnce([updated]) // first fetch for ordering
-      .mockResolvedValueOnce([updated]) // refreshed fetch
+      .mockResolvedValueOnce([updated])
+      .mockResolvedValueOnce([updated])
     mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
     mockTx.provisioningRun.findUnique.mockResolvedValue({ id: 'prn_01' })
     mockTx.provisioningRun.update.mockResolvedValue({})
@@ -211,8 +224,6 @@ describe('finance-provisioning-dispatch', () => {
       { id: 'prs_01', status: 'queued' } as never,
     ])
     mockTx.provisioningRunStep.update.mockResolvedValue({})
-
-    // mark delivered will SELECT then update; need to mock that transaction's SELECT
     mockTx.$queryRaw.mockResolvedValueOnce([
       { id: 'fpe_01', status: 'processing', run_id: 'prn_01' },
     ])
@@ -239,7 +250,7 @@ describe('finance-provisioning-dispatch', () => {
     )
   })
 
-  it('marks failed on delivery error and continues to next event', async () => {
+  it('marks failed on delivery error and continues to the next event', async () => {
     const row1 = financeRow({ id: 'fpe_01', runId: null })
     const row2 = financeRow({ id: 'fpe_02', runId: null })
     const upd1 = {
@@ -255,7 +266,7 @@ describe('finance-provisioning-dispatch', () => {
       lockedAt: BigInt(NOW),
     }
 
-    mockTx.$queryRaw.mockResolvedValueOnce([]) // expire
+    mockTx.$queryRaw.mockResolvedValueOnce([])
     mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_01' }, { id: 'fpe_02' }])
     mockTx.financeProvisioningOutbox.findMany
       .mockResolvedValueOnce([upd1, upd2])
@@ -265,18 +276,15 @@ describe('finance-provisioning-dispatch', () => {
 
     fetchMock
       .mockResolvedValueOnce(new Response('bad', { status: 500 }))
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ ok: true }), { status: 200 })
-      )
+      .mockResolvedValueOnce(billingResponse())
 
     mockTx.$queryRaw
       .mockResolvedValueOnce([
         { id: 'fpe_01', status: 'processing', run_id: null },
-      ]) // markFailed
+      ])
       .mockResolvedValueOnce([
         { id: 'fpe_02', status: 'processing', run_id: null },
-      ]) // markDelivered
-
+      ])
     mockTx.financeProvisioningOutbox.update.mockResolvedValue({})
 
     const { dispatchFinanceProvisioningOnce } =
@@ -290,6 +298,41 @@ describe('finance-provisioning-dispatch', () => {
       configured: true,
     })
     expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('treats a 2xx malformed Billing receipt as a failed delivery', async () => {
+    const row = financeRow({ id: 'fpe_bad_receipt', runId: null })
+    const claimed = {
+      ...row,
+      attemptCount: 1,
+      status: 'processing',
+      lockedAt: BigInt(NOW),
+    }
+    mockTx.$queryRaw.mockResolvedValueOnce([])
+    mockTx.$queryRaw.mockResolvedValueOnce([{ id: row.id }])
+    mockTx.financeProvisioningOutbox.findMany
+      .mockResolvedValueOnce([claimed])
+      .mockResolvedValueOnce([claimed])
+    mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
+    mockTx.$queryRaw.mockResolvedValueOnce([
+      { id: row.id, status: 'processing', run_id: null },
+    ])
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    )
+
+    const { dispatchFinanceProvisioningOnce } =
+      await import('../finance-provisioning-dispatch')
+    const result = await dispatchFinanceProvisioningOnce()
+
+    expect(result).toMatchObject({ delivered: 0, failed: 1 })
+    expect(mockTx.financeProvisioningOutbox.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          lastError: expect.stringContaining('contract invalid-response'),
+        }),
+      })
+    )
   })
 
   it('claim uses correct ordering and FOR UPDATE SKIP LOCKED', async () => {
@@ -334,7 +377,6 @@ describe('finance-provisioning-dispatch', () => {
       data: { lastError: string; availableAt: bigint }
     }
     expect(data.data.lastError.length).toBe(2000)
-    // attempt 2 => 5*4=20
     expect(data.data.availableAt).toBe(BigInt(NOW + 20))
   })
 
@@ -348,7 +390,7 @@ describe('finance-provisioning-dispatch', () => {
       prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([
         deliveredRow,
       ] as never)
-      mockTx.$queryRaw.mockResolvedValue([]) // claim returns 0 because already delivered
+      mockTx.$queryRaw.mockResolvedValue([])
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
       const result = await ensureFinanceProvisioningDelivered(['fpe_target'])
@@ -364,14 +406,11 @@ describe('finance-provisioning-dispatch', () => {
         attemptCount: 1,
         lockedAt: BigInt(NOW),
       }
-      mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_target' }]) // claimByIds
+      mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_target' }])
       mockTx.financeProvisioningOutbox.findMany
         .mockResolvedValueOnce([claimed] as never)
         .mockResolvedValueOnce([claimed] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
-        count: 1,
-      } as never)
-      // after delivery, get helper returns delivered
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
       prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([
         { ...claimed, status: 'delivered', deliveredAt: BigInt(NOW) },
       ] as never)
@@ -379,9 +418,11 @@ describe('finance-provisioning-dispatch', () => {
         { id: 'fpe_target', status: 'processing', run_id: null },
       ])
       mockTx.financeProvisioningOutbox.update.mockResolvedValue({} as never)
+
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
       const result = await ensureFinanceProvisioningDelivered(['fpe_target'])
+
       expect(fetchMock).toHaveBeenCalledWith(
         expect.stringContaining('/finance-connections/ensure'),
         expect.objectContaining({
@@ -391,7 +432,39 @@ describe('finance-provisioning-dispatch', () => {
       expect(result.ensured).toBe(1)
     })
 
-    it('claimFinanceProvisioningEventsByIds targets specific IDs without touching older backlog', async () => {
+    it('fails foreground readiness if Billing reports a newer superseding lifecycle', async () => {
+      const pending = financeRow({ id: 'fpe_target', status: 'pending' })
+      const claimed = {
+        ...pending,
+        status: 'processing',
+        attemptCount: 1,
+        lockedAt: BigInt(NOW),
+      }
+      mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_target' }])
+      mockTx.financeProvisioningOutbox.findMany
+        .mockResolvedValueOnce([claimed] as never)
+        .mockResolvedValueOnce([claimed] as never)
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
+      fetchMock.mockResolvedValueOnce(
+        billingResponse({ lifecycleVersion: 2, status: 'SUSPENDED' })
+      )
+      mockTx.$queryRaw.mockResolvedValueOnce([
+        { id: 'fpe_target', status: 'processing', run_id: null },
+      ])
+      prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([
+        { ...claimed, status: 'failed', lastError: 'superseded' },
+      ] as never)
+
+      const { ensureFinanceProvisioningDelivered } =
+        await import('../finance-provisioning-dispatch')
+      await expect(
+        ensureFinanceProvisioningDelivered(['fpe_target'])
+      ).rejects.toMatchObject({
+        code: 'provisioning/finance-workspace-unavailable',
+      })
+    })
+
+    it('claimFinanceProvisioningEventsByIds targets IDs without sweeping older backlog', async () => {
       const { claimFinanceProvisioningEventsByIds } =
         await import('../finance-provisioning-dispatch.repository')
       const requestedId = 'fpe_target_100'
@@ -404,13 +477,9 @@ describe('finance-provisioning-dispatch', () => {
       mockTx.financeProvisioningOutbox.findMany
         .mockResolvedValueOnce([claimedRow] as never)
         .mockResolvedValueOnce([claimedRow] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
-        count: 1,
-      } as never)
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
 
-      const result = await claimFinanceProvisioningEventsByIds(NOW, [
-        requestedId,
-      ])
+      const result = await claimFinanceProvisioningEventsByIds(NOW, [requestedId])
 
       expect(mockTx.$queryRaw).toHaveBeenCalledOnce()
       const rawSql = mockTx.$queryRaw.mock.calls[0]![0] as {
@@ -426,7 +495,6 @@ describe('finance-provisioning-dispatch', () => {
             : String(rawSql?.text ?? rawSql?.sql ?? '')
       expect(sqlText).toMatch(/finance_provisioning_outbox/)
       expect(sqlText).toMatch(/FOR UPDATE SKIP LOCKED/)
-      // Verifies the query does not apply the background batch limit or sweep unrelated events
       expect(sqlText).not.toMatch(/LIMIT/)
       expect(mockTx.financeProvisioningOutbox.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -446,12 +514,8 @@ describe('finance-provisioning-dispatch', () => {
         lockedAt: BigInt(NOW),
       }
       mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_target' }])
-      mockTx.financeProvisioningOutbox.findMany.mockResolvedValue([
-        claimed,
-      ] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
-        count: 1,
-      } as never)
+      mockTx.financeProvisioningOutbox.findMany.mockResolvedValue([claimed] as never)
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
       fetchMock.mockResolvedValueOnce(new Response('bad', { status: 500 }))
       mockTx.$queryRaw.mockResolvedValueOnce([
         { id: 'fpe_target', status: 'processing', run_id: null },
@@ -465,6 +529,7 @@ describe('finance-provisioning-dispatch', () => {
           lastError: 'Billing returned HTTP 500: bad',
         },
       ] as never)
+
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
       await expect(
@@ -485,16 +550,14 @@ describe('finance-provisioning-dispatch', () => {
       })
     })
 
-    it('throws when claimed 0 but event is pending (concurrent processing)', async () => {
-      mockTx.$queryRaw.mockResolvedValueOnce([]) // claim 0
+    it('throws when claimed 0 but event is concurrently processing', async () => {
+      mockTx.$queryRaw.mockResolvedValueOnce([])
       prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([
-        {
-          ...financeRow({
-            id: 'fpe_target',
-            status: 'processing',
-            lockedAt: BigInt(NOW),
-          }),
-        },
+        financeRow({
+          id: 'fpe_target',
+          status: 'processing',
+          lockedAt: BigInt(NOW),
+        }),
       ] as never)
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
@@ -506,15 +569,13 @@ describe('finance-provisioning-dispatch', () => {
     })
 
     it('throws when event is failed in backoff', async () => {
-      mockTx.$queryRaw.mockResolvedValueOnce([]) // claim 0 due to available_at > now
+      mockTx.$queryRaw.mockResolvedValueOnce([])
       prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([
-        {
-          ...financeRow({
-            id: 'fpe_target',
-            status: 'failed',
-            availableAt: BigInt(NOW + 3600),
-          }),
-        },
+        financeRow({
+          id: 'fpe_target',
+          status: 'failed',
+          availableAt: BigInt(NOW + 3600),
+        }),
       ] as never)
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
@@ -525,11 +586,9 @@ describe('finance-provisioning-dispatch', () => {
       })
     })
 
-    it('throws when event id missing', async () => {
+    it('throws when event id is missing', async () => {
       mockTx.$queryRaw.mockResolvedValueOnce([])
-      prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue(
-        [] as never
-      )
+      prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([] as never)
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
       await expect(
