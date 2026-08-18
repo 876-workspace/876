@@ -22,6 +22,12 @@ export type CustomerSelection = {
   error: string | null
 }
 
+type CustomerSelectionResolution = {
+  source: Promise<CustomerSelection>
+  selection: CustomerSelection | null
+  error: string | null
+}
+
 export function CustomerEnrollmentForm({
   orgSlug,
   branches,
@@ -39,43 +45,43 @@ export function CustomerEnrollmentForm({
       : ''
   )
   const [branchesReady, setBranchesReady] = useState(Array.isArray(branches))
-  const [customerSelection, setCustomerSelection] = useState<CustomerSelection | null>(
-    isPromiseLike(customers) ? null : customers
-  )
-  const [customerLoadError, setCustomerLoadError] = useState<string | null>(null)
+  const customerPromise = isPromiseLike(customers) ? customers : null
+  const [customerResolution, setCustomerResolution] =
+    useState<CustomerSelectionResolution | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const handleBranchesReady = useCallback(() => setBranchesReady(true), [])
 
   useEffect(() => {
-    if (!isPromiseLike(customers)) {
-      setCustomerSelection(customers)
-      setCustomerLoadError(null)
-      return
-    }
+    if (!customerPromise) return
 
     let cancelled = false
-    setCustomerSelection(null)
-    setCustomerLoadError(null)
-
-    void customers.then(
+    void customerPromise.then(
       (selection) => {
-        if (!cancelled) setCustomerSelection(selection)
+        if (!cancelled)
+          setCustomerResolution({
+            source: customerPromise,
+            selection,
+            error: null,
+          })
       },
       (reason: unknown) => {
         if (!cancelled)
-          setCustomerLoadError(
-            reason instanceof Error
-              ? reason.message
-              : 'Billing customers could not be loaded.'
-          )
+          setCustomerResolution({
+            source: customerPromise,
+            selection: null,
+            error:
+              reason instanceof Error
+                ? reason.message
+                : 'Billing customers could not be loaded.',
+          })
       }
     )
 
     return () => {
       cancelled = true
     }
-  }, [customers])
+  }, [customerPromise])
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -100,9 +106,19 @@ export function CustomerEnrollmentForm({
     })
   }
 
-  const loadError = customerLoadError ?? customerSelection?.error ?? null
-  const customerData = customerSelection?.data ?? []
-  const customersReady = customerSelection !== null && !loadError
+  const resolvedCustomerSelection = customerPromise
+    ? customerResolution?.source === customerPromise
+      ? customerResolution.selection
+      : null
+    : customers
+  const customerLoadError = customerPromise
+    ? customerResolution?.source === customerPromise
+      ? customerResolution.error
+      : null
+    : null
+  const loadError = customerLoadError ?? resolvedCustomerSelection?.error ?? null
+  const customerData = resolvedCustomerSelection?.data ?? []
+  const customersReady = resolvedCustomerSelection !== null && !loadError
   const options = customerData.map((customer) => ({
     value: customer.id,
     label: [customer.name, customer.email ?? customer.phone]
