@@ -19,7 +19,6 @@ import { redirect } from 'next/navigation'
 
 import { getInvoice } from '@/lib/invoice'
 import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
-import type { BillingCustomerStatus } from '@876/billing/integration'
 import { CustomersTable } from './_components/customers-table'
 
 export const metadata = {
@@ -86,11 +85,11 @@ async function CustomersTableData({ searchParams }: Props) {
   const selectedStatus =
     status === 'active' || status === 'archived' ? status : 'all'
 
-  const apiStatus: BillingCustomerStatus | undefined =
+  const apiStatus =
     selectedStatus === 'active'
-      ? 'ACTIVE'
+      ? ('ACTIVE' as const)
       : selectedStatus === 'archived'
-        ? 'ARCHIVED'
+        ? ('ARCHIVED' as const)
         : undefined
 
   const invoice = await getInvoice()
