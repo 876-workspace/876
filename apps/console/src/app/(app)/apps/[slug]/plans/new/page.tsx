@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
@@ -14,7 +16,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `New Plan • ${app.name} - Apps` }
 }
 
-export default async function NewPlanPage({ params }: Props) {
+export default function NewPlanPage({ params }: Props) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h1 className="876-page-title">New Plan</h1>
+      </div>
+
+      <Suspense fallback={<NewPlanFormFallback />}>
+        <NewPlanFormData params={params} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function NewPlanFormData({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
   if (!app) notFound()
@@ -29,13 +45,18 @@ export default async function NewPlanPage({ params }: Props) {
     status: module.status,
   }))
 
-  return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="876-page-title">New Plan</h1>
-      </div>
+  return <CreatePlanForm appId={app.id} appSlug={app.slug} modules={modules} />
+}
 
-      <CreatePlanForm appId={app.id} appSlug={app.slug} modules={modules} />
+function NewPlanFormFallback() {
+  return (
+    <div className="876-card space-y-5 p-5">
+      {Array.from({ length: 5 }, (_, index) => (
+        <div key={index} className="space-y-2">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ))}
     </div>
   )
 }
