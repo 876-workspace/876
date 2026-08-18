@@ -12,7 +12,7 @@ export function CustomerCreateForm({
   organizationId,
   orgSlug,
 }: {
-  organizationId: string
+  organizationId: string | Promise<string>
   orgSlug: string
 }) {
   const router = useRouter()
@@ -29,24 +29,33 @@ export function CustomerCreateForm({
     setError(null)
 
     startTransition(async () => {
-      const result = await client.billingIntegrations.createCustomer(
-        organizationId,
-        {
-          name: name.trim(),
-          customerKind: companyName.trim() ? 'BUSINESS' : 'INDIVIDUAL',
-          companyName: companyName.trim() || null,
-          email: email.trim() || null,
-          phone: phone.trim() || null,
-          customerType: 'EXTERNAL',
+      try {
+        const resolvedOrganizationId = await Promise.resolve(organizationId)
+        const result = await client.billingIntegrations.createCustomer(
+          resolvedOrganizationId,
+          {
+            name: name.trim(),
+            customerKind: companyName.trim() ? 'BUSINESS' : 'INDIVIDUAL',
+            companyName: companyName.trim() || null,
+            email: email.trim() || null,
+            phone: phone.trim() || null,
+            customerType: 'EXTERNAL',
+          }
+        )
+        if (result.error) {
+          setError(result.error.message)
+          return
         }
-      )
-      if (result.error) {
-        setError(result.error.message)
-        return
-      }
 
-      router.push(listHref)
-      router.refresh()
+        router.push(listHref)
+        router.refresh()
+      } catch (reason) {
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : 'The organization could not be resolved.'
+        )
+      }
     })
   }
 
