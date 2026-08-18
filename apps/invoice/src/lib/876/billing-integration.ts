@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
+import { getInvoiceBillingConfig } from './billing-config'
+
 /**
  * Builds Invoice's request-scoped Billing integration client.
  *
@@ -18,16 +20,11 @@ export async function getInvoiceBillingIntegration() {
   const session = await getAuthSession()
   if (!isSignedSession(session)) redirect('/login')
 
-  const apiKey = process.env.INVOICE_API_876_KEY?.trim()
-  if (!apiKey)
-    throw new Error(
-      'INVOICE_API_876_KEY is required for Invoice Billing integration.'
-    )
-
+  const { apiKey, baseUrl } = getInvoiceBillingConfig()
   const requestId = (await headers()).get('x-request-id') ?? undefined
 
   return create876BillingIntegrationClient({
-    baseUrl: process.env.BILLING_API_URL ?? 'http://127.0.0.1:4004',
+    baseUrl,
     apiKey,
     requestId,
   })

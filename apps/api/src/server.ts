@@ -3,6 +3,7 @@ import { createApp } from '@/app'
 import { getSettings } from '@/config'
 import { disconnectDb } from '@/db/client'
 import { configureLogging, getLogger } from '@/platform/logger'
+import { assertFinanceProvisioningConfiguration } from '@/services/finance-provisioning-configuration'
 import { startFinanceProvisioningWorker } from '@/workers/finance-provisioning-dispatch'
 
 const log = getLogger('server')
@@ -12,6 +13,7 @@ export type ServerLifecycleDeps = {
   getSettings: typeof getSettings
   disconnectDb: typeof disconnectDb
   startFinanceWorker: typeof startFinanceProvisioningWorker
+  assertFinanceConfiguration: typeof assertFinanceProvisioningConfiguration
 }
 
 export type ServerLifecycle = {
@@ -27,10 +29,13 @@ export function createServerLifecycle(
     getSettings,
     disconnectDb,
     startFinanceWorker: startFinanceProvisioningWorker,
+    assertFinanceConfiguration: assertFinanceProvisioningConfiguration,
     ...overrides,
   }
 
   const settings = deps.getSettings()
+  deps.assertFinanceConfiguration(settings)
+
   configureLogging({
     environment: settings.environment,
     logLevel: settings.logLevel,
