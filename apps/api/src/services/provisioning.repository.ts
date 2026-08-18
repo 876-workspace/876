@@ -104,8 +104,8 @@ export async function findSubscription(
  *
  * This is deliberately narrower than changing a subscription's price: once an
  * item exists, provisioning leaves it untouched. The transaction re-checks the
- * invariant so concurrent activation/provisioning requests cannot add duplicate
- * default items.
+ * invariant immediately before the repair write so ordinary retries stay
+ * idempotent.
  */
 export async function ensureSubscriptionDefaultPrice(params: {
   subscriptionId: string
@@ -267,14 +267,14 @@ export async function assignApp(params: {
       userId: params.userId,
       appId: params.appId,
       status: 'active',
-      assignedBy,
-      createdAt: now,
-      updatedAt: now,
+      assignedBy: params.assignedBy,
+      createdAt: params.now,
+      updatedAt: params.now,
     },
     update: {
       status: 'active',
-      assignedBy,
-      updatedAt: now,
+      assignedBy: params.assignedBy,
+      updatedAt: params.now,
     },
   })
 }
