@@ -7,7 +7,7 @@ import { imageUploadStartSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
 
-type Context = { params: Promise<{ organizationId: string }> }
+type Context = { params: Promise<{ id: string }> }
 
 /** Opens a signed organization-logo upload after authorizing the Console actor. */
 export async function POST(request: NextRequest, context: Context) {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest, context: Context) {
   if (!parsed.success || parsed.data.route_key !== 'organization.primaryLogo')
     return apiJson({ error: 'The upload request is invalid.' }, { status: 400 })
 
-  const { organizationId } = await context.params
+  const { id: organizationId } = await context.params
   const { route_key, ...file } = parsed.data
   const result = await $876.uploads.create({
     route_key,
