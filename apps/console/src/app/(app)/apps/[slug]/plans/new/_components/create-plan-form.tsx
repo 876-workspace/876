@@ -6,22 +6,29 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { Skeleton } from '@876/ui/skeleton'
 
 import { PlanModulePicker } from '@/features/plans/components/plan-module-picker'
+import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 import type { PlanModuleOption } from '@/types/plans'
 
-type Props = {
+export type CreatePlanSetup = {
   appId: string
-  appSlug: string
   modules: PlanModuleOption[]
 }
 
-export function CreatePlanForm({ appId, appSlug, modules }: Props) {
+type Props = {
+  appSlug: string
+  setup: CreatePlanSetup | Promise<CreatePlanSetup>
+}
+
+export function CreatePlanForm({ appSlug, setup }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState<'details' | 'modules'>('details')
+  const setupState = useAsyncValue(setup)
 
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
@@ -32,9 +39,11 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([])
 
   function handleSubmit() {
-    if (!name.trim() || !slug.trim()) return
+    if (!name.trim() || !slug.trim() || !setupState.value) return
     setError(null)
     const unitAmount = Math.round(Number(priceDollars || '0') * 100)
+    const { appId } = setupState.value
+
     startTransition(async () => {
       const { data, error } = await client.products.create({
         slug: slug.trim(),
@@ -175,12 +184,26 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
               feature flag remains an independent rollout kill switch.
             </p>
           </div>
-          <PlanModulePicker
-            modules={modules}
-            selectedModuleIds={selectedModuleIds}
-            onSelectedModuleIdsChange={setSelectedModuleIds}
-            disabled={isPending}
-          />
+
+          {setupState.pending ? (
+            <div className="876-card space-y-3 p-4" aria-label="Loading modules">
+              {Array.from({ length: 4 }, (_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
+              ))}
+            </div>
+          ) : setupState.error ? (
+            <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
+              {setupState.error.message}
+            </div>
+          ) : (
+            <PlanModulePicker
+              modules={setupState.value?.modules ?? []}
+              selectedModuleIds={selectedModuleIds}
+              onSelectedModuleIdsChange={setSelectedModuleIds}
+              disabled={isPending}
+            />
+          )}
+
           {error && (
             <p className="text-destructive text-[0.8125rem]">{error}</p>
           )}
@@ -208,7 +231,10 @@ export function CreatePlanForm({ appId, appSlug, modules }: Props) {
             Continue
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isPending || setupState.pending || !setupState.value}
+          >
             {isPending ? 'Creating…' : 'Create plan'}
           </Button>
         )}
