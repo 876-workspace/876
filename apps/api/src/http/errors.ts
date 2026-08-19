@@ -6,9 +6,9 @@
  * HTTP concern because each one fixes a status code.
  */
 
-import { AppHttpError } from '@/platform/errors'
+import { appError } from '@/platform/errors'
 
-export { AppHttpError, isAppHttpError } from '@/platform/errors'
+export { AppHttpError, appError, isAppHttpError } from '@/platform/errors'
 
 /**
  * Constructors for the errors raised from more than one module.
@@ -17,75 +17,42 @@ export { AppHttpError, isAppHttpError } from '@/platform/errors'
  * match the FastAPI service exactly and renaming one is a breaking change.
  */
 export const errors = {
-  noSession: () =>
-    new AppHttpError({
-      code: 'auth/no-session',
-      message: 'No active session.',
-      httpStatus: 401,
-    }),
+  noSession: () => appError('auth/no-session'),
 
-  forbidden: (message = 'Forbidden.') =>
-    new AppHttpError({ code: 'auth/forbidden', message, httpStatus: 403 }),
+  forbidden: (message = 'Forbidden.') => appError('auth/forbidden', { message }),
 
-  wrongRealm: () =>
-    new AppHttpError({
-      code: 'auth/wrong-realm',
-      message: 'This account cannot access this resource.',
-      httpStatus: 403,
-    }),
+  wrongRealm: () => appError('auth/wrong-realm'),
 
   invalidToken: (message = 'The bearer token is invalid or expired.') =>
-    new AppHttpError({ code: 'auth/invalid-token', message, httpStatus: 401 }),
+    appError('auth/invalid-token', { message }),
 
   notFound: (resource: string) =>
-    new AppHttpError({
-      code: `${resource}/not-found`,
+    appError(`${resource}/not-found`, {
       message: 'Not found.',
       httpStatus: 404,
     }),
 
   validation: (message: string, param?: string) =>
-    new AppHttpError({
-      code: 'request/invalid',
+    appError('request/invalid', {
       message,
       httpStatus: 422,
       ...(param ? { param } : {}),
     }),
 
   conflict: (code: string, message: string) =>
-    new AppHttpError({ code, message, httpStatus: 409 }),
+    appError(code, { message, httpStatus: 409 }),
 
   rateLimited: (message = 'Too many requests. Try again later.') =>
-    new AppHttpError({ code: 'rate-limit/exceeded', message, httpStatus: 429 }),
+    appError('rate-limit/exceeded', { message, httpStatus: 429 }),
 
   internal: (message = 'Internal error.') =>
-    new AppHttpError({ code: 'auth/internal-error', message, httpStatus: 500 }),
+    appError('auth/internal-error', { message }),
 
-  apiKeyMissing: () =>
-    new AppHttpError({
-      code: 'api-key/missing',
-      message: 'An API key is required.',
-      httpStatus: 401,
-    }),
+  apiKeyMissing: () => appError('api-key/missing'),
 
-  apiKeyInvalid: () =>
-    new AppHttpError({
-      code: 'api-key/invalid',
-      message: 'Invalid API key.',
-      httpStatus: 401,
-    }),
+  apiKeyInvalid: () => appError('api-key/invalid'),
 
-  apiKeyRevoked: () =>
-    new AppHttpError({
-      code: 'api-key/revoked',
-      message: 'API key has been revoked.',
-      httpStatus: 401,
-    }),
+  apiKeyRevoked: () => appError('api-key/revoked'),
 
-  apiKeyExpired: () =>
-    new AppHttpError({
-      code: 'api-key/expired',
-      message: 'API key has expired.',
-      httpStatus: 401,
-    }),
+  apiKeyExpired: () => appError('api-key/expired'),
 } as const
