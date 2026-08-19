@@ -41,7 +41,7 @@
     "@prisma/extension-accelerate": "3.0.1",
     "@sentry/nextjs": "^10.70.0",
     "@tanstack/react-form": "1.33.5",
-    "@tanstack/react-table": "^9.1.2",
+    "@tanstack/react-table": "^8.21.3",
     "@uploadthing/react": "7.3.3",
     "@workos-inc/node": "10.10.0",
     "class-variance-authority": "0.7.1",
