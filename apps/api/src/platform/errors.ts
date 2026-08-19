@@ -21,7 +21,7 @@ import { getError, isErrorCode } from '@876/core'
  * and strips it from the body: a client-facing error carries `code` and
  * `message` only (.claude/rules/stripe-api-pattern.md).
  */
-export type AppHttpErrorOptions = {
+type AppHttpErrorOptions = {
   code: string
   message: string
   httpStatus?: number
