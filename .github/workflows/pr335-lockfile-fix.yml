@@ -1,0 +1,40 @@
+name: PR 335 lockfile fix
+
+on:
+  push:
+    branches:
+      - fix/error-registry-enforcement
+    paths:
+      - '.github/workflows/pr335-lockfile-fix.yml'
+      - 'apps/api/package.json'
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/error-registry-enforcement
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+          cache: pnpm
+      - name: Regenerate lockfile
+        run: pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
+      - name: Commit lockfile
+        run: |
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git commit -m "fix(api): sync workspace lockfile"
+          git push origin HEAD:fix/error-registry-enforcement
