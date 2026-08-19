@@ -7,8 +7,7 @@ fixes the module shape, the layer responsibilities, the contract surface, the
 auth tiers, and the database conventions so a new service inherits the whole
 pattern instead of inventing a fifth one.
 
-Companion to `.grok/rules/api-backend.md` (which still governs the FastAPI
-services until each is migrated), `.grok/rules/stripe-api-pattern.md`
+Companion to `.grok/rules/api-backend.md`, `.grok/rules/stripe-api-pattern.md`
 (resource shapes), `.grok/rules/sdk-conventions.md` (the client surface these
 services are consumed through), and `.grok/rules/platform-services.md`
 (which bounded context owns what).
@@ -157,7 +156,7 @@ Rules:
 Routes register themselves into an OpenAPI registry as they are defined, so a
 route cannot exist undocumented. The prose lives in `*.docs.ts` as plain
 exported constants — summaries, descriptions, response examples — mirroring the
-`docs.py` split the FastAPI services already use, and for the same reason:
+documentation split the other Express services use, and for the same reason:
 route files stay readable when the documentation is somewhere else.
 
 `/openapi.json` is served from the registry. A snapshot test asserts the
@@ -178,16 +177,26 @@ Lists use the platform list object, always:
 Cursor pagination is `starting_after` / `ending_before` on item IDs. Never
 offset/limit on a public list endpoint.
 
-Errors are thrown, not returned:
+Errors are thrown, not returned. Registered application errors are created by
+code through the registry-backed factory:
 
 ```ts
-throw new AppHttpError({
-  code: 'auth/no-session',
-  message: 'No active session.',
-  httpStatus: 401,
-})
+import { appError } from '@/http/errors'
+
+throw appError('auth/no-session')
 ```
 
+- **Do not repeat a registered error's code, message, and HTTP status at the
+  call site.** The registry is the source of truth; `appError(code)` resolves
+  the canonical definition.
+- `AppHttpError` is the transport primitive behind the factory. Normal module,
+  provider, and middleware code must not instantiate it directly for a known
+  application error. Legacy direct construction is registry-normalized by the
+  primitive so an old call site cannot override a registered HTTP status.
+- A new public/domain error code must be added to the owning error registry
+  before use. Service-local compatibility codes that have not yet been promoted
+  may temporarily provide their existing message/status through `appError`, but
+  must not create a second ad-hoc registry in a service file.
 - `code` is a stable, namespaced, machine-readable string. It is part of the
   contract — clients branch on it, so renaming one is a breaking change.
 - `message` is user-safe. **Never** put a provider exception, a SQL error, a
