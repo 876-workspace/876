@@ -121,7 +121,7 @@
     "@vitest/browser-playwright": "4.1.11",
     "@vitest/coverage-v8": "4.1.11",
     "esbuild": "0.28.2",
-    "eslint": "10.8.1",
+    "eslint": "9.39.4",
     "eslint-config-next": "16.3.1",
     "jsdom": "30.0.1",
     "opencode-ai": "1.18.18",
@@ -131,7 +131,7 @@
     "tailwindcss": "4.3.3",
     "tsx": "4.23.12",
     "turbo": "2.10.11",
-    "typescript": "7.0.2",
+    "typescript": "6.0.3",
     "vitest": "4.1.11",
     "vitest-browser-react": "2.2.0",
     "wrangler": "4.124.0"
