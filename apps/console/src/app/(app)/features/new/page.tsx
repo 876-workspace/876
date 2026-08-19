@@ -3,7 +3,10 @@ import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { $876 } from '@/lib/876'
-import { CreateFeatureForm } from '@/features/access/components/create-feature-form'
+import {
+  CreateFeatureForm,
+  type CreateFeatureFormSetup,
+} from '@/features/access/components/create-feature-form'
 
 export const metadata = { title: 'New Feature' }
 
@@ -15,23 +18,7 @@ type Props = {
 
 export default async function NewFeaturePage({ searchParams }: Props) {
   const { parent } = await searchParams
-  const [parentResult, ...results] = await Promise.all([
-    parent
-      ? $876.features.admin.retrieve(parent)
-      : Promise.resolve({ data: null }),
-    ...APP_KINDS.map((appKind) =>
-      $876.apps.admin.list({
-        limit: 100,
-        appKind,
-        clientType: 'public',
-        status: 'active',
-      })
-    ),
-  ])
-  const apps = results
-    .flatMap((result) => result.data?.data ?? [])
-    .sort((a, b) => a.name.localeCompare(b.name))
-  const parentFeature = parentResult.data
+  const setup = loadFeatureSetup(parent)
 
   return (
     <Page>
@@ -51,18 +38,47 @@ export default async function NewFeaturePage({ searchParams }: Props) {
         <PageDescription>Create a PostHog-backed feature flag.</PageDescription>
       </PageHeader>
 
-      <CreateFeatureForm
-        apps={apps}
-        defaultAppId={parentFeature?.app_id ?? null}
-        defaultDescription={
-          parentFeature
-            ? `Controls access to a ${parentFeature.name.toLowerCase()} capability.`
-            : ''
-        }
-        defaultSlug={parentFeature ? `${parentFeature.slug}_` : ''}
-        parentFeatureId={parentFeature?.id ?? null}
-        lockApp={Boolean(parentFeature)}
-      />
+      <CreateFeatureForm setup={setup} lockAppHint={Boolean(parent)} />
     </Page>
   )
+}
+
+async function loadFeatureSetup(
+  parent?: string
+): Promise<CreateFeatureFormSetup> {
+  const [parentResult, ...results] = await Promise.all([
+    parent
+      ? $876.features.admin.retrieve(parent)
+      : Promise.resolve({ data: null, error: null }),
+    ...APP_KINDS.map((appKind) =>
+      $876.apps.admin.list({
+        limit: 100,
+        appKind,
+        clientType: 'public',
+        status: 'active',
+      })
+    ),
+  ])
+
+  if (parentResult.error) throw new Error(parentResult.error.message)
+  for (const result of results) {
+    if (result.error) throw new Error(result.error.message)
+  }
+
+  const apps = results
+    .flatMap((result) => result.data?.data ?? [])
+    .sort((a, b) => a.name.localeCompare(b.name))
+  const parentFeature = parentResult.data
+
+  return {
+    apps,
+    defaultAppId: parentFeature?.app_id ?? null,
+    defaultDescription: parentFeature
+      ? `Controls access to a ${parentFeature.name.toLowerCase()} capability.`
+      : '',
+    defaultSlug: parentFeature ? `${parentFeature.slug}_` : '',
+    parentFeatureId: parentFeature?.id ?? null,
+    parentFeatureName: parentFeature?.name ?? null,
+    lockApp: Boolean(parentFeature),
+  }
 }

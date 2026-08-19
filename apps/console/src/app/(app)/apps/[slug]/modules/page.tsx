@@ -1,36 +1,59 @@
 import { notFound } from 'next/navigation'
+import type { AdminApplicationModule } from '@876/admin'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../_data'
-import { ModulesManager } from './_components/modules-manager'
+import {
+  ModulesManager,
+  type ModuleFeatureOption,
+  type ModulesContext,
+} from './_components/modules-manager'
 
 type Props = { params: Promise<{ slug: string }> }
 
 export default async function AppModulesPage({ params }: Props) {
   const { slug } = await params
+  const context = loadModulesContext(slug)
+  const modules = loadModules(context)
+  const features = loadModuleFeatures(context)
+
+  return (
+    <ModulesManager context={context} modules={modules} features={features} />
+  )
+}
+
+async function loadModulesContext(slug: string): Promise<ModulesContext> {
   const app = await resolveApp(slug)
   if (!app || !['product', 'platform'].includes(app.app_kind)) notFound()
 
-  const canManage = app.app_kind === 'product'
-  const [modulesResult, featuresResult] = await Promise.all([
-    $876.modules.list(app.id, { includeArchived: true }),
-    canManage
-      ? $876.features.admin.list({ appId: app.id, rootOnly: true, limit: 100 })
-      : Promise.resolve({ data: null, error: null }),
-  ])
-  if (modulesResult.error) throw new Error(modulesResult.error.message)
-  if (featuresResult.error) throw new Error(featuresResult.error.message)
+  return { appId: app.id, canManage: app.app_kind === 'product' }
+}
 
-  return (
-    <ModulesManager
-      appId={app.id}
-      initialModules={modulesResult.data?.data ?? []}
-      canManage={canManage}
-      features={(featuresResult.data?.data ?? []).map((feature) => ({
-        id: feature.id,
-        name: feature.name,
-        slug: feature.slug,
-      }))}
-    />
-  )
+async function loadModules(
+  context: Promise<ModulesContext>
+): Promise<AdminApplicationModule[]> {
+  const { appId } = await context
+  const result = await $876.modules.list(appId, { includeArchived: true })
+  if (result.error) throw new Error(result.error.message)
+  return result.data?.data ?? []
+}
+
+async function loadModuleFeatures(
+  context: Promise<ModulesContext>
+): Promise<ModuleFeatureOption[]> {
+  const { appId, canManage } = await context
+  if (!canManage) return []
+
+  const result = await $876.features.admin.list({
+    appId,
+    rootOnly: true,
+    limit: 100,
+  })
+  if (result.error) throw new Error(result.error.message)
+
+  return (result.data?.data ?? []).map((feature) => ({
+    id: feature.id,
+    name: feature.name,
+    slug: feature.slug,
+  }))
 }

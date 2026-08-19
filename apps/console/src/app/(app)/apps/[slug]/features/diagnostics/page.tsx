@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
+import { Skeleton } from '@876/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -23,23 +25,10 @@ export default async function FeatureDiagnosticsPage({
   params,
   searchParams,
 }: Props) {
-  const { slug } = await params
-  const { organizationId, userId } = await searchParams
-  const app = await resolveApp(slug)
-  if (!app) notFound()
-
-  const requiresOrganization = app.app_kind === 'product'
-  const canEvaluate = requiresOrganization
-    ? Boolean(organizationId)
-    : Boolean(organizationId || userId)
-  const result = canEvaluate
-    ? await $876.features.admin.evaluateDetails({
-        appId: app.id,
-        organizationId: organizationId || undefined,
-        userId: userId || undefined,
-      })
-    : null
-  if (result?.error) throw new Error(result.error.message)
+  const [{ slug }, { organizationId, userId }] = await Promise.all([
+    params,
+    searchParams,
+  ])
 
   return (
     <div className="space-y-5">
@@ -62,14 +51,10 @@ export default async function FeatureDiagnosticsPage({
             defaultValue={organizationId}
             placeholder="org_…"
             className="mt-2"
-            required={requiresOrganization}
           />
-          {requiresOrganization && (
-            <p className="text-muted-foreground mt-1.5 text-xs">
-              Required for product apps so subscription entitlement can be
-              evaluated.
-            </p>
-          )}
+          <p className="text-muted-foreground mt-1.5 text-xs">
+            Required when evaluating a product app subscription.
+          </p>
         </div>
         <div>
           <label className="text-sm font-medium" htmlFor="userId">
@@ -88,55 +73,96 @@ export default async function FeatureDiagnosticsPage({
         </div>
       </form>
 
-      {result?.data && (
-        <div className="876-card overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Feature</TableHead>
-                <TableHead>Global</TableHead>
-                <TableHead>Parent</TableHead>
-                <TableHead>Module</TableHead>
-                <TableHead>Org override</TableHead>
-                <TableHead>User override</TableHead>
-                <TableHead>Effective</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {result.data.data.map((decision) => (
-                <TableRow key={decision.feature.id}>
-                  <TableCell>
-                    <p className="font-medium">{decision.feature.name}</p>
-                    <p className="text-muted-foreground font-mono text-xs">
-                      {decision.feature.slug}
-                    </p>
-                  </TableCell>
-                  <DecisionCell value={decision.global_enabled} />
-                  <DecisionCell value={decision.parent_enabled} />
-                  <TableCell>
-                    {decision.module_gated ? (
-                      <Badge
-                        variant={
-                          decision.module_entitled ? 'success' : 'destructive'
-                        }
-                      >
-                        {decision.module_entitled ? 'Entitled' : 'Not entitled'}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">
-                        Not gated
-                      </span>
-                    )}
-                  </TableCell>
-                  <OverrideCell value={decision.organization_override} />
-                  <OverrideCell value={decision.user_override} />
-                  <DecisionCell value={decision.enabled} />
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <Suspense
+        fallback={<Skeleton className="h-64 w-full rounded-lg" />}
+      >
+        <FeatureDiagnosticsResult
+          slug={slug}
+          organizationId={organizationId}
+          userId={userId}
+        />
+      </Suspense>
+    </div>
+  )
+}
+
+async function FeatureDiagnosticsResult({
+  slug,
+  organizationId,
+  userId,
+}: {
+  slug: string
+  organizationId?: string
+  userId?: string
+}) {
+  const app = await resolveApp(slug)
+  if (!app) notFound()
+
+  const requiresOrganization = app.app_kind === 'product'
+  if (requiresOrganization && !organizationId) {
+    if (!userId) return null
+    return (
+      <p className="text-muted-foreground text-sm">
+        Enter an organization ID to evaluate this product app.
+      </p>
+    )
+  }
+  if (!organizationId && !userId) return null
+
+  const result = await $876.features.admin.evaluateDetails({
+    appId: app.id,
+    organizationId: organizationId || undefined,
+    userId: userId || undefined,
+  })
+  if (result.error) throw new Error(result.error.message)
+
+  return (
+    <div className="876-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Feature</TableHead>
+            <TableHead>Global</TableHead>
+            <TableHead>Parent</TableHead>
+            <TableHead>Module</TableHead>
+            <TableHead>Org override</TableHead>
+            <TableHead>User override</TableHead>
+            <TableHead>Effective</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {result.data.data.map((decision) => (
+            <TableRow key={decision.feature.id}>
+              <TableCell>
+                <p className="font-medium">{decision.feature.name}</p>
+                <p className="text-muted-foreground font-mono text-xs">
+                  {decision.feature.slug}
+                </p>
+              </TableCell>
+              <DecisionCell value={decision.global_enabled} />
+              <DecisionCell value={decision.parent_enabled} />
+              <TableCell>
+                {decision.module_gated ? (
+                  <Badge
+                    variant={
+                      decision.module_entitled ? 'success' : 'destructive'
+                    }
+                  >
+                    {decision.module_entitled ? 'Entitled' : 'Not entitled'}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground text-xs">
+                    Not gated
+                  </span>
+                )}
+              </TableCell>
+              <OverrideCell value={decision.organization_override} />
+              <OverrideCell value={decision.user_override} />
+              <DecisionCell value={decision.enabled} />
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }

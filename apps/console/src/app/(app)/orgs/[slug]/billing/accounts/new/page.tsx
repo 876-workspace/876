@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveOrg } from '../../../_data'
@@ -18,8 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewBillingAccountPage({ params }: Props) {
   const { slug } = await params
-  const org = await resolveOrg(slug)
-  if (!org) notFound()
+  const orgId = resolveOrgId(slug)
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -32,7 +30,13 @@ export default async function NewBillingAccountPage({ params }: Props) {
         <h1 className="876-page-title mt-2">New Account</h1>
       </div>
 
-      <BillingAccountCreate orgId={org.id} orgSlug={slug} />
+      <BillingAccountCreate orgId={orgId} orgSlug={slug} />
     </div>
   )
+}
+
+async function resolveOrgId(slug: string): Promise<string> {
+  const org = await resolveOrg(slug)
+  if (!org) throw new Error('Organization not found.')
+  return org.id
 }

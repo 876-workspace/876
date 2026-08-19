@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 
 import { $876 } from '@/lib/876'
 import { resolveApp } from '../../_data'
-import { CreatePlanForm } from './_components/create-plan-form'
+import {
+  CreatePlanForm,
+  type CreatePlanSetup,
+} from './_components/create-plan-form'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -16,18 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewPlanPage({ params }: Props) {
   const { slug } = await params
-  const app = await resolveApp(slug)
-  if (!app) notFound()
-
-  const { data: moduleList } = await $876.modules.list(app.id)
-  const modules = (moduleList?.data ?? []).map((module) => ({
-    id: module.id,
-    key: module.key,
-    name: module.name,
-    description: module.description,
-    featureSlug: module.feature_slug,
-    status: module.status,
-  }))
+  const setup = loadPlanSetup(slug)
 
   return (
     <div className="space-y-5">
@@ -35,7 +26,27 @@ export default async function NewPlanPage({ params }: Props) {
         <h1 className="876-page-title">New Plan</h1>
       </div>
 
-      <CreatePlanForm appId={app.id} appSlug={app.slug} modules={modules} />
+      <CreatePlanForm appSlug={slug} setup={setup} />
     </div>
   )
+}
+
+async function loadPlanSetup(slug: string): Promise<CreatePlanSetup> {
+  const app = await resolveApp(slug)
+  if (!app) throw new Error('App not found.')
+
+  const result = await $876.modules.list(app.id)
+  if (result.error) throw new Error(result.error.message)
+
+  return {
+    appId: app.id,
+    modules: (result.data?.data ?? []).map((module) => ({
+      id: module.id,
+      key: module.key,
+      name: module.name,
+      description: module.description,
+      featureSlug: module.feature_slug,
+      status: module.status,
+    })),
+  }
 }

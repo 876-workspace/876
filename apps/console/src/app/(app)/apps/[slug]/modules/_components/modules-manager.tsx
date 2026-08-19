@@ -7,6 +7,7 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { Skeleton } from '@876/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -17,9 +18,12 @@ import {
 } from '@876/ui/table'
 import { Pencil, Plus, Trash } from '@876/ui/icons'
 
+import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
-type FeatureOption = { id: string; name: string; slug: string }
+export type ModuleFeatureOption = { id: string; name: string; slug: string }
+export type ModulesContext = { appId: string; canManage: boolean }
+
 type Draft = {
   key: string
   name: string
@@ -37,21 +41,29 @@ const emptyDraft: Draft = {
 }
 
 export function ModulesManager({
-  appId,
-  initialModules,
+  context,
+  modules,
   features,
-  canManage = true,
 }: {
-  appId: string
-  initialModules: AdminApplicationModule[]
-  features: FeatureOption[]
-  canManage?: boolean
+  context: ModulesContext | Promise<ModulesContext>
+  modules: AdminApplicationModule[] | Promise<AdminApplicationModule[]>
+  features: ModuleFeatureOption[] | Promise<ModuleFeatureOption[]>
 }) {
-  const [modules, setModules] = useState(initialModules)
+  const contextState = useAsyncValue(context)
+  const modulesState = useAsyncValue(modules)
+  const featuresState = useAsyncValue(features)
+  const [localModules, setLocalModules] = useState<
+    AdminApplicationModule[] | null
+  >(null)
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [draft, setDraft] = useState(emptyDraft)
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const appId = contextState.value?.appId ?? null
+  const canManage = contextState.value?.canManage ?? false
+  const resolvedModules = localModules ?? modulesState.value ?? []
+  const resolvedFeatures = featuresState.value ?? []
 
   function edit(module: AdminApplicationModule) {
     setEditingId(module.id)
@@ -66,11 +78,14 @@ export function ModulesManager({
 
   function save() {
     if (
+      !appId ||
       !editingId ||
       !draft.name.trim() ||
+      modulesState.pending ||
       (editingId === 'new' && !draft.key.trim())
     )
       return
+
     const targetId = editingId
     setMessage(null)
     startTransition(async () => {
@@ -95,13 +110,14 @@ export function ModulesManager({
         setMessage(result.error?.message ?? 'Failed to save module.')
         return
       }
-      setModules((current) => {
-        const exists = current.some((item) => item.id === result.data!.id)
+      setLocalModules((current) => {
+        const base = current ?? modulesState.value ?? []
+        const exists = base.some((item) => item.id === result.data!.id)
         return exists
-          ? current.map((item) =>
+          ? base.map((item) =>
               item.id === result.data!.id ? result.data! : item
             )
-          : [...current, result.data!]
+          : [...base, result.data!]
       })
       setEditingId(null)
       setDraft(emptyDraft)
@@ -114,11 +130,15 @@ export function ModulesManager({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="876-eyebrow">
-            {canManage ? 'Product structure' : 'Platform structure'}
+            {contextState.pending
+              ? 'Product structure'
+              : canManage
+                ? 'Product structure'
+                : 'Platform structure'}
           </p>
           <h1 className="876-page-title mt-1">Modules</h1>
         </div>
-        {canManage && (
+        {canManage ? (
           <Button
             size="sm"
             onClick={() => {
@@ -128,91 +148,107 @@ export function ModulesManager({
           >
             <Plus className="size-4" /> Add
           </Button>
-        )}
+        ) : contextState.pending ? (
+          <Skeleton className="h-8 w-16" />
+        ) : null}
       </div>
 
-      <div className="876-card overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Module</TableHead>
-              <TableHead>Key</TableHead>
-              <TableHead>Rollout flag</TableHead>
-              <TableHead>Status</TableHead>
-              {canManage && (
-                <TableHead className="text-right">Actions</TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {modules.map((module) => (
-              <TableRow key={module.id}>
-                <TableCell>
-                  <p className="font-medium">{module.name}</p>
-                  <p className="text-muted-foreground max-w-md text-xs">
-                    {module.description || 'No description'}
-                  </p>
-                </TableCell>
-                <TableCell className="font-mono text-xs">
-                  {module.key}
-                </TableCell>
-                <TableCell>{module.feature_slug || 'None'}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      module.status === 'active' ? 'success' : 'secondary'
-                    }
-                  >
-                    {module.status}
-                  </Badge>
-                </TableCell>
+      {contextState.error ? (
+        <InlineError message={contextState.error.message} />
+      ) : null}
+
+      {modulesState.pending ? (
+        <Skeleton className="h-64 w-full rounded-lg" />
+      ) : modulesState.error ? (
+        <InlineError message={modulesState.error.message} />
+      ) : (
+        <div className="876-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Module</TableHead>
+                <TableHead>Key</TableHead>
+                <TableHead>Rollout flag</TableHead>
+                <TableHead>Status</TableHead>
                 {canManage && (
-                  <TableCell>
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        aria-label={`Edit ${module.name}`}
-                        size="icon-sm"
-                        variant="ghost"
-                        onClick={() => edit(module)}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        aria-label={`Archive ${module.name}`}
-                        size="icon-sm"
-                        variant="ghost"
-                        disabled={module.status === 'archived' || isPending}
-                        onClick={() =>
-                          startTransition(async () => {
-                            const result = await client.modules.archive(
-                              module.id
-                            )
-                            if (!result.error)
-                              setModules((current) =>
-                                current.map((item) =>
-                                  item.id === module.id
-                                    ? { ...item, status: 'archived' }
-                                    : item
-                                )
-                              )
-                          })
-                        }
-                      >
-                        <Trash className="size-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+                  <TableHead className="text-right">Actions</TableHead>
                 )}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {resolvedModules.map((module) => (
+                <TableRow key={module.id}>
+                  <TableCell>
+                    <p className="font-medium">{module.name}</p>
+                    <p className="text-muted-foreground max-w-md text-xs">
+                      {module.description || 'No description'}
+                    </p>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {module.key}
+                  </TableCell>
+                  <TableCell>{module.feature_slug || 'None'}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        module.status === 'active' ? 'success' : 'secondary'
+                      }
+                    >
+                      {module.status}
+                    </Badge>
+                  </TableCell>
+                  {canManage && (
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          aria-label={`Edit ${module.name}`}
+                          size="icon-sm"
+                          variant="ghost"
+                          onClick={() => edit(module)}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          aria-label={`Archive ${module.name}`}
+                          size="icon-sm"
+                          variant="ghost"
+                          disabled={module.status === 'archived' || isPending}
+                          onClick={() =>
+                            startTransition(async () => {
+                              const result = await client.modules.archive(
+                                module.id
+                              )
+                              if (!result.error)
+                                setLocalModules((current) => {
+                                  const base =
+                                    current ?? modulesState.value ?? []
+                                  return base.map((item) =>
+                                    item.id === module.id
+                                      ? { ...item, status: 'archived' }
+                                      : item
+                                  )
+                                })
+                            })
+                          }
+                        >
+                          <Trash className="size-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
 
       {editingId && (
         <ModuleForm
           draft={draft}
-          features={features}
+          features={resolvedFeatures}
+          featuresPending={featuresState.pending}
+          featuresError={featuresState.error?.message ?? null}
           isNew={editingId === 'new'}
           onChange={setDraft}
         />
@@ -222,7 +258,15 @@ export function ModulesManager({
           <Button variant="outline" onClick={() => setEditingId(null)}>
             Cancel
           </Button>
-          <Button disabled={isPending} onClick={save}>
+          <Button
+            disabled={
+              isPending ||
+              contextState.pending ||
+              modulesState.pending ||
+              !appId
+            }
+            onClick={save}
+          >
             Save module
           </Button>
         </div>
@@ -237,11 +281,15 @@ export function ModulesManager({
 function ModuleForm({
   draft,
   features,
+  featuresPending,
+  featuresError,
   isNew,
   onChange,
 }: {
   draft: Draft
-  features: FeatureOption[]
+  features: ModuleFeatureOption[]
+  featuresPending: boolean
+  featuresError: string | null
   isNew: boolean
   onChange: (draft: Draft) => void
 }) {
@@ -280,14 +328,24 @@ function ModuleForm({
           className="w-full"
           value={draft.featureId}
           onChange={(e) => onChange({ ...draft, featureId: e.target.value })}
+          disabled={featuresPending || Boolean(featuresError)}
         >
-          <NativeSelectOption value="">No flag</NativeSelectOption>
+          <NativeSelectOption value="">
+            {featuresPending
+              ? 'Loading flags…'
+              : featuresError
+                ? 'Flags unavailable'
+                : 'No flag'}
+          </NativeSelectOption>
           {features.map((feature) => (
             <NativeSelectOption key={feature.id} value={feature.id}>
               {feature.name} · {feature.slug}
             </NativeSelectOption>
           ))}
         </NativeSelect>
+        {featuresError ? (
+          <p className="text-destructive text-xs">{featuresError}</p>
+        ) : null}
       </div>
       <div className="space-y-2">
         <Label htmlFor="module-position">Position</Label>
@@ -300,5 +358,13 @@ function ModuleForm({
         />
       </div>
     </section>
+  )
+}
+
+function InlineError({ message }: { message: string }) {
+  return (
+    <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
+      {message}
+    </div>
   )
 }

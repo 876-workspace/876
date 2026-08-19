@@ -18,6 +18,7 @@ import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { Skeleton } from '@876/ui/skeleton'
 import {
   Dialog,
   DialogContent,
@@ -42,9 +43,10 @@ import {
 } from '@876/ui/empty'
 import { toast } from 'sonner'
 
+import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
-type PriceItem = {
+export type PriceItem = {
   id: string
   name: string | null
   nickname: string | null
@@ -52,6 +54,11 @@ type PriceItem = {
   currency: string
   billing_interval: string | null
   status: string
+}
+
+export type PricingSetup = {
+  productId: string
+  prices: PriceItem[]
 }
 
 const formatMoney = (amount: number, currency: string = 'usd') => {
@@ -74,10 +81,13 @@ function CopyChip({ value, className }: { value: string; className?: string }) {
   )
 }
 
-type Props = { prices: PriceItem[]; productId: string }
+type Props = { setup: PricingSetup | Promise<PricingSetup> }
 
-export function PricingTable({ prices, productId }: Props) {
+export function PricingTable({ setup }: Props) {
   const router = useRouter()
+  const setupState = useAsyncValue(setup)
+  const productId = setupState.value?.productId ?? null
+  const prices = setupState.value?.prices ?? []
 
   // Add price state
   const [showAdd, setShowAdd] = useState(false)
@@ -102,6 +112,13 @@ export function PricingTable({ prices, productId }: Props) {
 
   const handleAddPrice = useCallback(() => {
     setAddError(null)
+    if (!productId) {
+      setAddError(
+        setupState.error?.message ?? 'The plan is still loading. Try again.'
+      )
+      return
+    }
+
     const unitAmount = Math.round(Number(newPriceDollars || '0') * 100)
     startAddTransition(async () => {
       const { error } = await client.products.createPrice(productId, {
@@ -120,7 +137,14 @@ export function PricingTable({ prices, productId }: Props) {
       setNewPriceInterval('none')
       router.refresh()
     })
-  }, [productId, newPriceName, newPriceDollars, newPriceInterval, router])
+  }, [
+    productId,
+    setupState.error,
+    newPriceName,
+    newPriceDollars,
+    newPriceInterval,
+    router,
+  ])
 
   const handleStartEdit = useCallback((price: PriceItem) => {
     setEditingPriceId(price.id)
@@ -129,7 +153,7 @@ export function PricingTable({ prices, productId }: Props) {
   }, [])
 
   const handleSaveName = useCallback(() => {
-    if (!editingPriceId) return
+    if (!productId || !editingPriceId) return
     setEditError(null)
     startEditTransition(async () => {
       const { error } = await client.products.updatePrice(
@@ -154,7 +178,7 @@ export function PricingTable({ prices, productId }: Props) {
   }, [])
 
   const handleConfirmArchive = useCallback(() => {
-    if (!archivingPriceId) return
+    if (!productId || !archivingPriceId) return
     setArchiveError(null)
     startArchiveTransition(async () => {
       const { error } = await client.products.archivePrice(
@@ -321,41 +345,49 @@ export function PricingTable({ prices, productId }: Props) {
           Add price
         </Button>
       </div>
-      <div className="876-card">
-        <DataTable
-          columns={columns}
-          data={prices}
-          emptyState={
-            <div className="p-6">
-              <Empty className="border-border/60 bg-muted/5 border-dashed py-8">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <CreditCard className="text-violet-600 dark:text-violet-400" />
-                  </EmptyMedia>
-                  <EmptyTitle className="text-foreground text-base font-semibold">
-                    No prices configured
-                  </EmptyTitle>
-                  <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
-                    Configure prices in Stripe or add one here to get started.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs"
-                    onClick={() => setShowAdd(true)}
-                  >
-                    Add price
-                  </Button>
-                </EmptyContent>
-              </Empty>
-            </div>
-          }
-        />
-      </div>
 
-      {/* Add Price Dialog */}
+      {setupState.pending ? (
+        <Skeleton className="h-64 w-full rounded-lg" />
+      ) : setupState.error ? (
+        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-sm">
+          {setupState.error.message}
+        </div>
+      ) : (
+        <div className="876-card">
+          <DataTable
+            columns={columns}
+            data={prices}
+            emptyState={
+              <div className="p-6">
+                <Empty className="border-border/60 bg-muted/5 border-dashed py-8">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <CreditCard className="text-violet-600 dark:text-violet-400" />
+                    </EmptyMedia>
+                    <EmptyTitle className="text-foreground text-base font-semibold">
+                      No prices configured
+                    </EmptyTitle>
+                    <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
+                      Configure prices in Stripe or add one here to get started.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs"
+                      onClick={() => setShowAdd(true)}
+                    >
+                      Add price
+                    </Button>
+                  </EmptyContent>
+                </Empty>
+              </div>
+            }
+          />
+        </div>
+      )}
+
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent>
           <DialogHeader>
@@ -407,6 +439,16 @@ export function PricingTable({ prices, productId }: Props) {
                 <NativeSelectOption value="year">Yearly</NativeSelectOption>
               </NativeSelect>
             </div>
+            {setupState.pending ? (
+              <p className="text-muted-foreground text-[0.8125rem]">
+                The plan is still loading. You can complete the fields now.
+              </p>
+            ) : null}
+            {setupState.error && !addError ? (
+              <p className="text-destructive text-[0.8125rem]">
+                {setupState.error.message}
+              </p>
+            ) : null}
             {addError && (
               <p className="text-destructive text-[0.8125rem]">{addError}</p>
             )}
@@ -420,14 +462,16 @@ export function PricingTable({ prices, productId }: Props) {
             >
               Cancel
             </Button>
-            <Button onClick={handleAddPrice} disabled={isAddPending}>
+            <Button
+              onClick={handleAddPrice}
+              disabled={isAddPending || !productId}
+            >
               {isAddPending ? 'Adding…' : 'Add'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Archive Confirm Dialog */}
       <Dialog
         open={!!archivingPriceId}
         onOpenChange={() => {

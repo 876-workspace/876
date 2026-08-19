@@ -1,12 +1,24 @@
+import { Suspense } from 'react'
 import type { AdminOrganization } from '@876/admin'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import {
+  DataTableSkeleton,
+  type DataTableSkeletonColumn,
+} from '@876/ui/data-table-skeleton'
 
 import { $876, billingAdmin } from '@/lib/876'
 import { listCompleteAppSubscriptions, resolveApp } from '../../../_data'
 import { SubscribersTable } from './_components/subscribers-table'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }
+
+const SUBSCRIBERS_SKELETON_COLUMNS = [
+  { label: 'Customer' },
+  { label: 'Status' },
+  { label: 'Started' },
+  { label: 'MRR' },
+] satisfies DataTableSkeletonColumn[]
 
 async function retrieveBillingStats(sourceAppId: string) {
   try {
@@ -44,7 +56,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${product.name} Subscribers • ${app.name}` }
 }
 
-export default async function PlanSubscribersPage({ params }: Props) {
+export default function PlanSubscribersPage({ params }: Props) {
+  return (
+    <div className="space-y-5">
+      <div className="mb-2">
+        <h2 className="text-lg font-medium tracking-tight">Subscribers</h2>
+      </div>
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={SUBSCRIBERS_SKELETON_COLUMNS} rows={5} />
+        }
+      >
+        <PlanSubscribersData params={params} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function PlanSubscribersData({ params }: Props) {
   const { slug, planSlug } = await params
   const app = await resolveApp(slug)
 
@@ -115,14 +144,7 @@ export default async function PlanSubscribersPage({ params }: Props) {
       }
     })
 
-    return (
-      <div className="space-y-5">
-        <div className="mb-2">
-          <h2 className="text-lg font-medium tracking-tight">Subscribers</h2>
-        </div>
-        <SubscribersTable subscribers={subscribers} />
-      </div>
-    )
+    return <SubscribersTable subscribers={subscribers} />
   }
 
   // Degrade to the Billing projection only when Core itself is unavailable.
@@ -138,12 +160,5 @@ export default async function PlanSubscribersPage({ params }: Props) {
       mrr: Number(subscriber.monthlyRecurringRevenue),
     })) ?? []
 
-  return (
-    <div className="space-y-5">
-      <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Subscribers</h2>
-      </div>
-      <SubscribersTable subscribers={subscribers} />
-    </div>
-  )
+  return <SubscribersTable subscribers={subscribers} />
 }

@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { getWidgetPlatformFeatureKeys, type WidgetHost } from '@876/widgets'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
-
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+
 import { widgetCatalog } from '@/features/widgets/widget-catalog'
 import { $876 } from '@/lib/876'
 
@@ -29,11 +29,36 @@ const HOST_LABELS: Record<WidgetHost, string> = {
  * feature flags that gate it, which is why a catalog widget shows
  * "Missing: <slug>" until those flags exist. This page provisions them.
  */
-export default async function NewWidgetFlagsPage() {
+export default function NewWidgetFlagsPage() {
+  const widgets = loadPendingWidgets()
+
+  return (
+    <Page>
+      <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
+        <Link
+          href="/widgets"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Widgets
+        </Link>
+        <ChevronRightIcon className="text-muted-foreground size-4" />
+        <span className="font-medium">Register widget flags</span>
+      </nav>
+
+      <ResourceToolbar title="Register widget flags" />
+
+      <RegisterWidgetFlagsForm widgets={widgets} />
+    </Page>
+  )
+}
+
+async function loadPendingWidgets(): Promise<PendingWidget[]> {
   const [featuresResult, appsResult] = await Promise.all([
     $876.features.admin.list({ limit: 100, includeTag: 'widget' }),
     $876.apps.admin.list({ limit: 100, clientType: 'public' }),
   ])
+  if (featuresResult.error) throw new Error(featuresResult.error.message)
+  if (appsResult.error) throw new Error(appsResult.error.message)
 
   const existingIdBySlug = new Map(
     (featuresResult.data?.data ?? []).map((feature) => [
@@ -52,7 +77,7 @@ export default async function NewWidgetFlagsPage() {
     return null
   }
 
-  const widgets: PendingWidget[] = widgetCatalog.map((widget) => {
+  return widgetCatalog.map((widget) => {
     const scopes: { label: string; parent: string; widget: string }[] = []
 
     const platform = getWidgetPlatformFeatureKeys(widget)
@@ -100,23 +125,4 @@ export default async function NewWidgetFlagsPage() {
       flags,
     }
   })
-
-  return (
-    <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
-        <Link
-          href="/widgets"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Widgets
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">Register widget flags</span>
-      </nav>
-
-      <ResourceToolbar title="Register widget flags" />
-
-      <RegisterWidgetFlagsForm widgets={widgets} />
-    </Page>
-  )
 }

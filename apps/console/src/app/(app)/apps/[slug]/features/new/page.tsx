@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { Info } from '@876/ui/icons'
-import { Alert, AlertTitle, AlertDescription } from '@876/ui/alert'
 
 import { $876 } from '@/lib/876'
-import { CreateFeatureForm } from '@/features/access/components/create-feature-form'
+import {
+  CreateFeatureForm,
+  type CreateFeatureFormSetup,
+} from '@/features/access/components/create-feature-form'
 import { resolveApp } from '../../_data'
 
 type Props = {
@@ -23,51 +23,50 @@ export default async function NewAppFeaturePage({
   params,
   searchParams,
 }: Props) {
-  const { slug } = await params
-  const { parent } = await searchParams
-  const app = await resolveApp(slug)
-  if (!app) notFound()
-
-  const parentFeature = parent
-    ? (await $876.features.admin.retrieve(parent)).data
-    : null
-  if (parentFeature && parentFeature.app_id !== app.id) notFound()
-
-  const title = parentFeature
-    ? `New ${parentFeature.name} child feature`
-    : 'New Feature'
+  const [{ slug }, { parent }] = await Promise.all([params, searchParams])
+  const setup = loadAppFeatureSetup(slug, parent)
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="876-page-title">{title}</h1>
+        <h1 className="876-page-title">New Feature</h1>
       </div>
 
-      {parentFeature && (
-        <Alert variant="info" className="max-w-2xl">
-          <Info />
-          <AlertTitle>Child feature</AlertTitle>
-          <AlertDescription>
-            You are creating a new child feature under{' '}
-            <strong>{parentFeature.name}</strong>. It will automatically be
-            grouped with its parent in the feature list.
-          </AlertDescription>
-        </Alert>
-      )}
-
       <CreateFeatureForm
-        apps={[app]}
-        defaultAppId={app.id}
-        defaultDescription={
-          parentFeature
-            ? `Controls access to a ${parentFeature.name.toLowerCase()} capability.`
-            : ''
-        }
-        defaultSlug={parentFeature ? `${parentFeature.slug}_` : ''}
-        parentFeatureId={parentFeature?.id ?? null}
-        lockApp
+        setup={setup}
+        lockAppHint
         returnHref={`/apps/${slug}/features`}
       />
     </div>
   )
+}
+
+async function loadAppFeatureSetup(
+  slug: string,
+  parent?: string
+): Promise<CreateFeatureFormSetup> {
+  const [app, parentResult] = await Promise.all([
+    resolveApp(slug),
+    parent
+      ? $876.features.admin.retrieve(parent)
+      : Promise.resolve({ data: null, error: null }),
+  ])
+  if (!app) throw new Error('App not found.')
+  if (parentResult.error) throw new Error(parentResult.error.message)
+
+  const parentFeature = parentResult.data
+  if (parentFeature && parentFeature.app_id !== app.id)
+    throw new Error('The parent feature does not belong to this app.')
+
+  return {
+    apps: [app],
+    defaultAppId: app.id,
+    defaultDescription: parentFeature
+      ? `Controls access to a ${parentFeature.name.toLowerCase()} capability.`
+      : '',
+    defaultSlug: parentFeature ? `${parentFeature.slug}_` : '',
+    parentFeatureId: parentFeature?.id ?? null,
+    parentFeatureName: parentFeature?.name ?? null,
+    lockApp: true,
+  }
 }
