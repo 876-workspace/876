@@ -2,29 +2,24 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@876/ui/tabs'
 
-import type { GlobalCustomerOption } from '@/types/customer'
-
 import type { CustomerBranchOption } from './customer-branch-field'
-import { CustomerEnrollmentForm } from './customer-enrollment-form'
+import {
+  CustomerEnrollmentForm,
+  type CustomerSelection,
+} from './customer-enrollment-form'
 import { CustomerForm } from './customer-form'
 
 export function AddCustomerPanel({
   orgSlug,
   branches,
-  globalCustomers,
-  selectionError,
+  customers,
 }: {
   orgSlug: string
-  branches: CustomerBranchOption[]
-  globalCustomers: GlobalCustomerOption[]
-  selectionError: string | null
+  branches: CustomerBranchOption[] | Promise<CustomerBranchOption[]>
+  customers: CustomerSelection | Promise<CustomerSelection>
 }) {
   return (
-    <Tabs
-      defaultValue={
-        !selectionError && globalCustomers.length > 0 ? 'existing' : 'new'
-      }
-    >
+    <Tabs defaultValue="new">
       <TabsList className="mb-4">
         <TabsTrigger value="existing">Existing Billing customer</TabsTrigger>
         <TabsTrigger value="new">New customer</TabsTrigger>
@@ -33,8 +28,7 @@ export function AddCustomerPanel({
         <CustomerEnrollmentForm
           orgSlug={orgSlug}
           branches={branches}
-          customers={globalCustomers}
-          loadError={selectionError}
+          customers={customers}
         />
       </TabsContent>
       <TabsContent value="new">

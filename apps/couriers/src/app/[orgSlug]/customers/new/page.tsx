@@ -6,6 +6,8 @@ import { getManageContext } from '@/lib/auth/manage-context'
 import { billingIntegration, get876Client } from '@/lib/876'
 import type { GlobalCustomerOption } from '@/types/customer'
 import { AddCustomerPanel } from '../_components/add-customer-panel'
+import type { CustomerBranchOption } from '../_components/customer-branch-field'
+import type { CustomerSelection } from '../_components/customer-enrollment-form'
 
 export const metadata = { title: 'Add customer' }
 
@@ -19,14 +21,15 @@ export default async function NewCustomerPage({ params }: Props) {
       <PageHeader className="mb-4">
         <PageTitle>Add customer</PageTitle>
       </PageHeader>
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <NewCustomerData orgSlug={orgSlug} />
+      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+        <NewCustomerAccess orgSlug={orgSlug} />
       </Suspense>
     </Page>
   )
 }
 
-async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
+/** Authorization is structural; option data is not. */
+async function NewCustomerAccess({ orgSlug }: { orgSlug: string }) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant) notFound()
   if (ctx.role !== 'owner' && ctx.role !== 'admin')
@@ -35,33 +38,46 @@ async function NewCustomerData({ orgSlug }: { orgSlug: string }) {
         You do not have permission to manage customers.
       </div>
     )
-  const $876 = await get876Client()
-  const branches = await $876.branches.list()
-  if (branches.error)
-    return (
-      <div className="border-destructive/30 bg-destructive/5 text-destructive max-w-2xl rounded-lg border p-4 text-sm">
-        {branches.error.message}
-      </div>
-    )
 
-  const [enrolled, global] = await Promise.all([
-    listEnrolledCustomerIds($876),
-    listGlobalCustomers(ctx.orgId),
-  ])
-  const selectionError = enrolled.error ?? global.error
-  const availableCustomers =
-    enrolled.data && global.data
-      ? global.data.filter((customer) => !enrolled.data.has(customer.id))
-      : []
+  const $876 = await get876Client()
+  const branches = loadBranches($876)
+  const customers = loadAvailableCustomers($876, ctx.orgId)
 
   return (
     <AddCustomerPanel
       orgSlug={orgSlug}
-      branches={branches.data.data.map(({ id, name }) => ({ id, name }))}
-      globalCustomers={availableCustomers}
-      selectionError={selectionError}
+      branches={branches}
+      customers={customers}
     />
   )
+}
+
+async function loadBranches(
+  client: Awaited<ReturnType<typeof get876Client>>
+): Promise<CustomerBranchOption[]> {
+  const result = await client.branches.list()
+  if (result.error) throw new Error(result.error.message)
+  return result.data.data.map(({ id, name }) => ({ id, name }))
+}
+
+async function loadAvailableCustomers(
+  client: Awaited<ReturnType<typeof get876Client>>,
+  organizationId: string
+): Promise<CustomerSelection> {
+  const [enrolled, global] = await Promise.all([
+    listEnrolledCustomerIds(client),
+    listGlobalCustomers(organizationId),
+  ])
+  const error = enrolled.error ?? global.error
+
+  if (error || !enrolled.data || !global.data) {
+    return { data: [], error: error ?? 'Customers could not be loaded.' }
+  }
+
+  return {
+    data: global.data.filter((customer) => !enrolled.data.has(customer.id)),
+    error: null,
+  }
 }
 
 type LoadResult<T> = { data: T; error: null } | { data: null; error: string }

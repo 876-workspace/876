@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@876/ui/button'
@@ -17,26 +17,74 @@ import {
 
 const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
+export type CustomerSelection = {
+  data: GlobalCustomerOption[]
+  error: string | null
+}
+
+type CustomerSelectionResolution = {
+  source: Promise<CustomerSelection>
+  selection: CustomerSelection | null
+  error: string | null
+}
+
 export function CustomerEnrollmentForm({
   orgSlug,
   branches,
   customers,
-  loadError,
 }: {
   orgSlug: string
-  branches: CustomerBranchOption[]
-  customers: GlobalCustomerOption[]
-  loadError: string | null
+  branches: CustomerBranchOption[] | Promise<CustomerBranchOption[]>
+  customers: CustomerSelection | Promise<CustomerSelection>
 }) {
   const router = useRouter()
   const [customerId, setCustomerId] = useState('')
   const [branchId, setBranchId] = useState(
-    branches.length === 1 ? (branches[0]?.id ?? '') : ''
+    Array.isArray(branches) && branches.length === 1
+      ? (branches[0]?.id ?? '')
+      : ''
   )
-  const [branchesReady, setBranchesReady] = useState(true)
+  const [branchesReady, setBranchesReady] = useState(Array.isArray(branches))
+  const customerPromise = isPromiseLike(customers) ? customers : null
+  const directCustomerSelection = customerPromise
+    ? null
+    : (customers as CustomerSelection)
+  const [customerResolution, setCustomerResolution] =
+    useState<CustomerSelectionResolution | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const handleBranchesReady = useCallback(() => setBranchesReady(true), [])
+
+  useEffect(() => {
+    if (!customerPromise) return
+
+    let cancelled = false
+    void customerPromise.then(
+      (selection) => {
+        if (!cancelled)
+          setCustomerResolution({
+            source: customerPromise,
+            selection,
+            error: null,
+          })
+      },
+      (reason: unknown) => {
+        if (!cancelled)
+          setCustomerResolution({
+            source: customerPromise,
+            selection: null,
+            error:
+              reason instanceof Error
+                ? reason.message
+                : 'Billing customers could not be loaded.',
+          })
+      }
+    )
+
+    return () => {
+      cancelled = true
+    }
+  }, [customerPromise])
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -61,7 +109,20 @@ export function CustomerEnrollmentForm({
     })
   }
 
-  const options = customers.map((customer) => ({
+  const resolvedCustomerSelection = customerPromise
+    ? customerResolution?.source === customerPromise
+      ? customerResolution.selection
+      : null
+    : directCustomerSelection
+  const customerLoadError = customerPromise
+    ? customerResolution?.source === customerPromise
+      ? customerResolution.error
+      : null
+    : null
+  const loadError = customerLoadError ?? resolvedCustomerSelection?.error ?? null
+  const customerData = resolvedCustomerSelection?.data ?? []
+  const customersReady = resolvedCustomerSelection !== null && !loadError
+  const options = customerData.map((customer) => ({
     value: customer.id,
     label: [customer.name, customer.email ?? customer.phone]
       .filter(Boolean)
@@ -88,10 +149,16 @@ export function CustomerEnrollmentForm({
             options={options}
             value={customerId}
             onValueChange={setCustomerId}
-            placeholder="Select a Billing customer"
+            placeholder={
+              customersReady
+                ? 'Select a Billing customer'
+                : loadError
+                  ? 'Billing customers unavailable'
+                  : 'Loading Billing customers…'
+            }
             searchPlaceholder="Search customers…"
             emptyMessage="No unenrolled Billing customers found."
-            disabled={isPending}
+            disabled={isPending || !customersReady}
           />
         </FormRow>
         <CustomerBranchField
@@ -111,9 +178,9 @@ export function CustomerEnrollmentForm({
           disabled={
             isPending ||
             !branchesReady ||
+            !customersReady ||
             !customerId ||
-            customers.length === 0 ||
-            Boolean(loadError)
+            customerData.length === 0
           }
         >
           Add to Couriers
@@ -128,5 +195,14 @@ export function CustomerEnrollmentForm({
         </Button>
       </div>
     </form>
+  )
+}
+
+function isPromiseLike<T>(value: T | Promise<T>): value is Promise<T> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'then' in value &&
+    typeof (value as Promise<T>).then === 'function'
   )
 }
