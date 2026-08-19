@@ -35,8 +35,7 @@ export function SubscriptionDiscountForm({
         event.preventDefault()
         const data = new FormData(event.currentTarget)
         const discountType = String(data.get('discountType')) as
-          | 'PERCENTAGE'
-          | 'AMOUNT'
+          'PERCENTAGE' | 'AMOUNT'
         const amountOff =
           discountType === 'AMOUNT'
             ? parseMinorAmountInput(
@@ -62,9 +61,7 @@ export function SubscriptionDiscountForm({
                   amountOff,
                   currency: discountType === 'AMOUNT' ? currency : null,
                   duration: String(data.get('duration')) as
-                    | 'ONCE'
-                    | 'FOREVER'
-                    | 'REPEATING',
+                    'ONCE' | 'FOREVER' | 'REPEATING',
                   durationInCycles: String(data.get('durationInCycles') ?? '')
                     ? Number(data.get('durationInCycles'))
                     : null,

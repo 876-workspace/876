@@ -5,12 +5,7 @@ import { currencyCodeSchema } from './currency'
 import { DocumentLineCreateSchema } from './document-line'
 
 export type EstimateStatus =
-  | 'DRAFT'
-  | 'SENT'
-  | 'ACCEPTED'
-  | 'DECLINED'
-  | 'EXPIRED'
-  | 'CANCELED'
+  'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
 
 export const EstimateCreateSchema = z.strictObject({
   customerId: IdSchema,

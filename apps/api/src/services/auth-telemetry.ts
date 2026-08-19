@@ -173,8 +173,7 @@ function fallbackIp(req: Request): string | null {
   const socketIp = req.socket?.remoteAddress
   if (typeof socketIp === 'string' && socketIp) return socketIp
   const clientHost = (req as unknown as Record<string, unknown>).client as
-    | { host?: string }
-    | undefined
+    { host?: string } | undefined
   if (typeof clientHost?.host === 'string' && clientHost.host) {
     return clientHost.host
   }

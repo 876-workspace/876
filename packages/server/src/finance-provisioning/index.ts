@@ -136,7 +136,10 @@ export function parseFinanceProvisioningReceipt(
     )
   }
 
-  if (options.exactState && receipt.lifecycleVersion !== event.lifecycleVersion) {
+  if (
+    options.exactState &&
+    receipt.lifecycleVersion !== event.lifecycleVersion
+  ) {
     throw new FinanceProvisioningContractError(
       'superseded-response',
       `Billing reported lifecycle ${receipt.lifecycleVersion}; foreground readiness requires exact lifecycle ${event.lifecycleVersion}.`

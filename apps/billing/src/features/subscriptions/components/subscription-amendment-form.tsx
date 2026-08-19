@@ -29,10 +29,7 @@ export function SubscriptionAmendmentForm({
     taxBehavior: 'EXCLUSIVE' | 'INCLUSIVE'
     invoiceModeOverride: 'AUTO_FINALIZE' | 'DRAFT' | null
     renewalPricingPolicy:
-      | 'RETAIN_EXISTING'
-      | 'USE_LATEST'
-      | 'MARKUP'
-      | 'MARKDOWN'
+      'RETAIN_EXISTING' | 'USE_LATEST' | 'MARKUP' | 'MARKDOWN'
     renewalAdjustmentPercent: string | null
     billingCycleAnchor: number | null
     remainingCycles: number | null
@@ -63,9 +60,7 @@ export function SubscriptionAmendmentForm({
         setMessage(null)
         startTransition(async () => {
           const timing = String(data.get('timing')) as
-            | 'IMMEDIATE'
-            | 'END_OF_TERM'
-            | 'SCHEDULED'
+            'IMMEDIATE' | 'END_OF_TERM' | 'SCHEDULED'
           const effectiveText = String(data.get('effectiveAt') ?? '')
           const renewal = String(
             data.get('renewalPricingPolicy')
@@ -83,28 +78,22 @@ export function SubscriptionAmendmentForm({
                 ? Math.floor(new Date(effectiveText).getTime() / 1000)
                 : null,
               prorationBehavior: String(data.get('prorationBehavior')) as
-                | 'CREATE_PRORATIONS'
-                | 'NONE'
-                | 'ALWAYS_INVOICE',
+                'CREATE_PRORATIONS' | 'NONE' | 'ALWAYS_INVOICE',
               paymentFailureBehavior: String(
                 data.get('paymentFailureBehavior')
               ) as 'PREVENT_CHANGE' | 'APPLY_CHANGE',
               items,
               collectionMethod: String(data.get('collectionMethod')) as
-                | 'SEND_INVOICE'
-                | 'AUTO_CHARGE',
+                'SEND_INVOICE' | 'AUTO_CHARGE',
               billingTiming: String(data.get('billingTiming')) as
-                | 'IN_ADVANCE'
-                | 'IN_ARREARS',
+                'IN_ADVANCE' | 'IN_ARREARS',
               taxBehavior: String(data.get('taxBehavior')) as
-                | 'EXCLUSIVE'
-                | 'INCLUSIVE',
+                'EXCLUSIVE' | 'INCLUSIVE',
               invoiceModeOverride:
                 String(data.get('invoiceModeOverride')) === 'INHERIT'
                   ? null
                   : (String(data.get('invoiceModeOverride')) as
-                      | 'AUTO_FINALIZE'
-                      | 'DRAFT'),
+                      'AUTO_FINALIZE' | 'DRAFT'),
               renewalPricingPolicy: renewal,
               renewalAdjustmentPercent: adjustmentText
                 ? Number(adjustmentText)

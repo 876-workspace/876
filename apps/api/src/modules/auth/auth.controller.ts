@@ -446,8 +446,7 @@ export async function verifyEmail(req: Request, res: Response): Promise<void> {
       body.pendingAuthenticationToken,
       body.pending_authentication_token,
       (body as Record<string, unknown>)['pendingAuthentication_token'] as
-        | string
-        | undefined
+        string | undefined
     ) ?? ''
   enforceRateLimit('auth.verify_email', pendingToken, {
     maxAttempts: 5,
@@ -642,8 +641,7 @@ export async function switchSession(
       httpStatus: 401,
     })
   const accounts = (payload as { accounts?: unknown }).accounts as
-    | unknown[]
-    | undefined
+    unknown[] | undefined
   const { selectAccount } = await import('@/platform/session')
   const target = selectAccount(accounts as never, body.sid)
   if (!target) {

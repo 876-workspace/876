@@ -152,8 +152,7 @@ export interface ClientAppError {
 
 /** Canonical result returned by same-origin application transports. */
 export type ClientApiResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: ClientAppError }
+  { data: T; error: null } | { data: null; error: ClientAppError }
 
 /** Shared error returned when a request cannot reach the server. */
 export const NETWORK_OFFLINE_ERROR = {

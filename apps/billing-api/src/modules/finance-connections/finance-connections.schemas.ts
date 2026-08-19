@@ -6,10 +6,7 @@ import {
 } from '@876/server/finance-provisioning'
 import { z } from 'zod'
 
-export {
-  financeConnectionScopeSchema,
-  financeProvisioningEventSchema,
-}
+export { financeConnectionScopeSchema, financeProvisioningEventSchema }
 export type { FinanceProvisioningEvent }
 
 /** Billing's persisted result is the shared API→Billing receipt contract. */

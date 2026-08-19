@@ -57,10 +57,7 @@ export function PriceListCreateForm({
               mode === 'PERCENTAGE' ? Number(data.get('percentage')) : null,
             currency: mode === 'CUSTOM' ? String(data.get('currency')) : null,
             rounding: String(data.get('rounding')) as
-              | 'NONE'
-              | 'NEAREST'
-              | 'UP'
-              | 'DOWN',
+              'NONE' | 'NEAREST' | 'UP' | 'DOWN',
             roundingPrecision: Number(data.get('roundingPrecision')),
             entries: customEntries,
           })

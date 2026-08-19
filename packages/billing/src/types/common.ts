@@ -111,9 +111,4 @@ export type MinorAmount = number | string
  * JSON-safe provider configuration. Secrets must be external references.
  */
 export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue }
+  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }

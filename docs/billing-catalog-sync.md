@@ -136,10 +136,10 @@ response.headers.set(
 )
 ```
 
-| Value                    | Meaning                                                        |
-| ------------------------ | -------------------------------------------------------------- |
-| `succeeded`              | All projection steps for that mutation completed               |
-| `pending-reconciliation` | One or more steps failed; repair via retry or reconcile         |
+| Value                    | Meaning                                                 |
+| ------------------------ | ------------------------------------------------------- |
+| `succeeded`              | All projection steps for that mutation completed        |
+| `pending-reconciliation` | One or more steps failed; repair via retry or reconcile |
 
 Browser code never calls Billing admin directly. Console mutations use its
 product-owned routes such as `/api/billing-subscriptions` and

@@ -8,13 +8,7 @@ import {
 } from '@/http/openapi/v1-contract.generated'
 
 export type V1HttpMethod =
-  | 'delete'
-  | 'get'
-  | 'head'
-  | 'options'
-  | 'patch'
-  | 'post'
-  | 'put'
+  'delete' | 'get' | 'head' | 'options' | 'patch' | 'post' | 'put'
 export type V1OperationPath = keyof typeof v1OperationMetadata
 export type V1ComponentSchemaName = keyof typeof v1ComponentSchemas
 

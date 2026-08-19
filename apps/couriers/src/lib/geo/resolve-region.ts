@@ -11,8 +11,7 @@ export type ResolvedRegion = {
 }
 
 export type RegionResolution =
-  | { ok: true; region: ResolvedRegion }
-  | { ok: false; code: AddressErrorCode }
+  { ok: true; region: ResolvedRegion } | { ok: false; code: AddressErrorCode }
 
 /**
  * The country and region catalogs are small, change rarely, and are read on

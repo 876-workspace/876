@@ -17,19 +17,19 @@ The canonical server facade is `createConsole876Client()` / `$876` in `apps/cons
 
 Console URLs describe what the administrator is acting on rather than which backend receives the call.
 
-| Retired service-shaped URL | Console-owned URL |
-| --- | --- |
-| `/api/billing/accounts` | `/api/billing-accounts` |
-| `/api/billing/subscriptions` | `/api/billing-subscriptions` |
+| Retired service-shaped URL                              | Console-owned URL                  |
+| ------------------------------------------------------- | ---------------------------------- |
+| `/api/billing/accounts`                                 | `/api/billing-accounts`            |
+| `/api/billing/subscriptions`                            | `/api/billing-subscriptions`       |
 | `/api/billing/integrations/organizations/:id/customers` | `/api/organizations/:id/customers` |
-| `/api/billing/mirror/reconcile` | `/api/finance/reconcile` |
-| `/api/storage/apps/:id/image` | `/api/apps/:id/image` |
-| `/api/storage/organizations/:id/image` | `/api/organizations/:id/image` |
-| `/api/storage/users/:id/image` | `/api/users/:id/image` |
-| `/api/widgets/features/:id` | `/api/widget-features/:id` |
-| `/api/widgets/notepad` | `/api/notes` |
-| `/api/widgets/notepad/collections` | `/api/note-collections` |
-| `/api/widgets/admin/notepad` | `/api/notes/admin` |
+| `/api/billing/mirror/reconcile`                         | `/api/finance/reconcile`           |
+| `/api/storage/apps/:id/image`                           | `/api/apps/:id/image`              |
+| `/api/storage/organizations/:id/image`                  | `/api/organizations/:id/image`     |
+| `/api/storage/users/:id/image`                          | `/api/users/:id/image`             |
+| `/api/widgets/features/:id`                             | `/api/widget-features/:id`         |
+| `/api/widgets/notepad`                                  | `/api/notes`                       |
+| `/api/widgets/notepad/collections`                      | `/api/note-collections`            |
+| `/api/widgets/admin/notepad`                            | `/api/notes/admin`                 |
 
 Nested actions such as image `complete`/`remove` and subscription items remain beneath these owned resources.
 

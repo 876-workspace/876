@@ -79,8 +79,7 @@ export async function createCustomer(
   const billingResult = await billing.createExternalCustomer(tenant.orgId, {
     idempotencyKey: input.idempotency_key,
     customerKind: (input.customer_kind ?? 'INDIVIDUAL') as
-      | 'INDIVIDUAL'
-      | 'BUSINESS',
+      'INDIVIDUAL' | 'BUSINESS',
     firstName: input.first_name ?? null,
     lastName: input.last_name ?? null,
     companyName: input.company_name ?? null,

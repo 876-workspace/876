@@ -1,9 +1,5 @@
 export type WidgetHost =
-  | 'console'
-  | 'billing'
-  | 'couriers'
-  | 'enterprise'
-  | '876'
+  'console' | 'billing' | 'couriers' | 'enterprise' | '876'
 
 export const WIDGET_HOST_APP_SLUGS: Record<WidgetHost, string> = {
   console: 'console',

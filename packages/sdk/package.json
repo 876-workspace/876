@@ -55,20 +55,20 @@
     "prepublishOnly": "pnpm check"
   },
   "dependencies": {
-    "@876/device": "workspace:*",
     "@876/core": "workspace:*",
+    "@876/device": "workspace:*",
     "@876/types": "workspace:*",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.2",
-    "@eslint/js": "9.39.4",
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "10.0.1",
     "eslint": "9.39.4",
-    "prettier": "3.8.3",
-    "publint": "0.3.21",
+    "prettier": "3.9.6",
+    "publint": "0.3.24",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.50.0",
-    "vitest": "4.1.5"
+    "typescript-eslint": "^8.67.0",
+    "vitest": "4.1.11"
   },
   "publishConfig": {
     "access": "public",

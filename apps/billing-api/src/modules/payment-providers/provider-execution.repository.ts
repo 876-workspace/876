@@ -12,10 +12,7 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 
 type ProviderEventOutcome = 'processed' | 'ignored' | 'failed'
 type PaymentAttemptOutcome =
-  | 'requires_action'
-  | 'succeeded'
-  | 'failed'
-  | 'canceled'
+  'requires_action' | 'succeeded' | 'failed' | 'canceled'
 
 export interface RecordProviderEventInput {
   tenantId: string

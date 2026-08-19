@@ -5,11 +5,7 @@ export type ProvisioningReconciliation = 'create_missing'
 export type ProvisioningFinanceDependency = 'none' | 'embedded'
 export type ProvisioningRevisionStatus = 'draft' | 'published' | 'archived'
 export type ProvisioningValueType =
-  | 'string'
-  | 'integer'
-  | 'decimal'
-  | 'boolean'
-  | 'reference'
+  'string' | 'integer' | 'decimal' | 'boolean' | 'reference'
 
 export type ProvisioningProperty = {
   object: 'provisioning_property'
@@ -144,16 +140,10 @@ export type ProvisioningNote = {
 }
 
 export type ProvisioningRunStatus =
-  | 'queued'
-  | 'processing'
-  | 'succeeded'
-  | 'failed'
+  'queued' | 'processing' | 'succeeded' | 'failed'
 
 export type ProvisioningRunTrigger =
-  | 'app_activation'
-  | 'manifest_publish'
-  | 'manual_reconcile'
-  | 'retry'
+  'app_activation' | 'manifest_publish' | 'manual_reconcile' | 'retry'
 
 export type ProvisioningRunStep = {
   object: 'provisioning_run_step'

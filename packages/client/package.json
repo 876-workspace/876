@@ -22,17 +22,17 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@876/admin": "workspace:*",
     "@876/billing": "workspace:*",
+    "@876/couriers": "workspace:*",
     "@876/sdk": "workspace:*",
     "@876/storage": "workspace:*",
     "@876/widgets": "workspace:*",
-    "server-only": "0.0.1",
-    "@876/couriers": "workspace:*",
-    "@876/admin": "workspace:*"
+    "server-only": "0.0.1"
   },
   "devDependencies": {
-    "@types/node": "25.6.2",
+    "@types/node": "26.2.0",
     "typescript": "5.9.3",
-    "vitest": "4.1.5"
+    "vitest": "4.1.11"
   }
 }

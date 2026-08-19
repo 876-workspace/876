@@ -27,7 +27,9 @@ export const resolveOrg = cache(async (slug: string) => {
  * the same render.
  */
 export const resolveOrgMembers = cache(async (orgId: string) => {
-  const result = await $876.organizationMembers.admin.list(orgId, { limit: 100 })
+  const result = await $876.organizationMembers.admin.list(orgId, {
+    limit: 100,
+  })
   if (result.error) throw new Error(result.error.message)
   if (result.data?.has_more) {
     console.warn(

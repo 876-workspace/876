@@ -73,9 +73,7 @@ export default async function FeatureDiagnosticsPage({
         </div>
       </form>
 
-      <Suspense
-        fallback={<Skeleton className="h-64 w-full rounded-lg" />}
-      >
+      <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
         <FeatureDiagnosticsResult
           slug={slug}
           organizationId={organizationId}

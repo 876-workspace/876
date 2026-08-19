@@ -1,10 +1,5 @@
 export type FormFieldType =
-  | 'checkbox'
-  | 'email'
-  | 'money'
-  | 'number'
-  | 'select'
-  | 'text'
+  'checkbox' | 'email' | 'money' | 'number' | 'select' | 'text'
 
 export interface FormOption {
   label: string

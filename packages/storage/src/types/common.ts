@@ -64,8 +64,7 @@ export type AppError = z.infer<typeof appErrorSchema>
  * `{ data: T, error: null }` or a failure payload `{ data: null, error: AppError }`.
  */
 export type StorageResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: AppError }
+  { data: T; error: null } | { data: null; error: AppError }
 
 /** Options used to configure and initialize a server-only Storage client. */
 export interface StorageClientOptions {

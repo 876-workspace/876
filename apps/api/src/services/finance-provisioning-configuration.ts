@@ -38,9 +38,7 @@ export function assertFinanceProvisioningConfiguration(
   }
 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Error(
-      'BILLING_API_URL/BILLING_URL must use http:// or https://.'
-    )
+    throw new Error('BILLING_API_URL/BILLING_URL must use http:// or https://.')
   }
   if (url.username || url.password) {
     throw new Error(

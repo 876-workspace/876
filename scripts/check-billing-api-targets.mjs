@@ -44,7 +44,10 @@ function serviceOrigin(raw, file) {
 const configured = []
 for (const file of TARGETS) {
   const source = await readFile(resolve(ROOT, file), 'utf8')
-  configured.push({ file, origin: serviceOrigin(billingApiUrl(source, file), file) })
+  configured.push({
+    file,
+    origin: serviceOrigin(billingApiUrl(source, file), file),
+  })
 }
 
 const [first, ...rest] = configured

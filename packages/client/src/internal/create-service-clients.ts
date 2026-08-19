@@ -42,8 +42,7 @@ export function createServiceClients(
   })
 
   const servicesRecord = services as unknown as
-    | { platformAdmin?: unknown }
-    | undefined
+    { platformAdmin?: unknown } | undefined
   const adminFromServices = servicesRecord?.platformAdmin
   const adminFallback =
     !adminFromServices && internalKey

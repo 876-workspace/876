@@ -1,10 +1,7 @@
 export type PricingModel = 'FLAT' | 'PER_UNIT' | 'PACKAGE' | 'VOLUME' | 'TIERED'
 export type IntervalUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
 export type RenewalPricingPolicy =
-  | 'RETAIN_EXISTING'
-  | 'USE_LATEST'
-  | 'MARKUP'
-  | 'MARKDOWN'
+  'RETAIN_EXISTING' | 'USE_LATEST' | 'MARKUP' | 'MARKDOWN'
 
 export type PriceTier = {
   fromUnit: number

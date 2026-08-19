@@ -14,5 +14,4 @@ export const portalTenantSchema = z.object({
 
 export type PortalTenant = z.infer<typeof portalTenantSchema>
 export type ResolvePortalTenantParams =
-  | { hostname: string; slug?: never }
-  | { slug: string; hostname?: never }
+  { hostname: string; slug?: never } | { slug: string; hostname?: never }

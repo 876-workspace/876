@@ -108,8 +108,7 @@ export function CatalogCouponCreateForm({
               data.get('maxRedemptionsPerCustomer')
             ),
             discountPreference: String(data.get('discountPreference')) as
-              | 'INVOICE_LEVEL'
-              | 'ITEM_LEVEL',
+              'INVOICE_LEVEL' | 'ITEM_LEVEL',
             appliesToAllPlans: allPlans,
             appliesToAllRecurringAddons: allRecurringAddons,
             appliesToAllOneTimeAddons: allOneTimeAddons,

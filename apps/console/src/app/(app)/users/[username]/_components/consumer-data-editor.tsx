@@ -55,10 +55,7 @@ export function ConsumerDataEditor({ user, profile }: Props) {
         nickname: emptyToNull(profileDraft.nickname),
         avatar: emptyToNull(profileDraft.avatar),
         gender: emptyToNull(profileDraft.gender) as
-          | 'male'
-          | 'female'
-          | 'other'
-          | null,
+          'male' | 'female' | 'other' | null,
         phone_number: emptyToNull(profileDraft.phone_number),
         date_of_birth: emptyToNull(profileDraft.date_of_birth),
         language: emptyToNull(profileDraft.language),

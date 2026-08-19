@@ -50,17 +50,23 @@ describe('finance provisioning configuration', () => {
     ).toThrow('BILLING_INTERNAL_KEY is missing')
   })
 
-  it.each(['not-a-url', 'billing-api', '://bad'])('rejects malformed URL %s', (url) => {
-    expect(() =>
-      assertFinanceProvisioningConfiguration(settings({ url }))
-    ).toThrow('not a valid URL')
-  })
+  it.each(['not-a-url', 'billing-api', '://bad'])(
+    'rejects malformed URL %s',
+    (url) => {
+      expect(() =>
+        assertFinanceProvisioningConfiguration(settings({ url }))
+      ).toThrow('not a valid URL')
+    }
+  )
 
-  it.each(['ftp://billing.example.test', 'file:///tmp/billing'])('rejects unsupported scheme %s', (url) => {
-    expect(() =>
-      assertFinanceProvisioningConfiguration(settings({ url }))
-    ).toThrow('must use http:// or https://')
-  })
+  it.each(['ftp://billing.example.test', 'file:///tmp/billing'])(
+    'rejects unsupported scheme %s',
+    (url) => {
+      expect(() =>
+        assertFinanceProvisioningConfiguration(settings({ url }))
+      ).toThrow('must use http:// or https://')
+    }
+  )
 
   it('rejects embedded URL credentials', () => {
     expect(() =>

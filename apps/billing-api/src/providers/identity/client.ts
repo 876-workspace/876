@@ -211,10 +211,7 @@ export class HttpIdentityGateway implements IdentityGateway {
       }
 
       if (!response.ok) {
-        if (
-          RETRYABLE_STATUSES.has(response.status) &&
-          attempt < MAX_ATTEMPTS
-        ) {
+        if (RETRYABLE_STATUSES.has(response.status) && attempt < MAX_ATTEMPTS) {
           log.warn(
             { attempt, path, status: response.status },
             'identity.request.retrying'

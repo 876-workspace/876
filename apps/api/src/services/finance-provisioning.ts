@@ -10,10 +10,7 @@ const REVOKED_SUBSCRIPTION_STATES = new Set(['canceled', 'incomplete_expired'])
 
 export type FinanceConnectionStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED'
 export type ProvisioningRunTrigger =
-  | 'app_activation'
-  | 'manifest_publish'
-  | 'manual_reconcile'
-  | 'retry'
+  'app_activation' | 'manifest_publish' | 'manual_reconcile' | 'retry'
 
 export type SubscriptionRow = {
   id: string

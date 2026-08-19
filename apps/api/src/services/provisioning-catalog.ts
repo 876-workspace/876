@@ -8,11 +8,7 @@ import { BILLING_APP_SLUG } from './provisioning'
 
 export type ProvisioningTargetType = 'organization' | 'finance' | 'application'
 export type ProvisioningValueType =
-  | 'string'
-  | 'integer'
-  | 'decimal'
-  | 'boolean'
-  | 'reference'
+  'string' | 'integer' | 'decimal' | 'boolean' | 'reference'
 export type FinanceDependency = 'none' | 'embedded'
 
 export type ProvisioningFieldDefinition = {

@@ -118,7 +118,9 @@ export const customerCreateParamsSchema = z
     isCommercial: z.boolean().optional(),
     status: customerStatusSchema.optional(),
   })
-  .superRefine(/* INDIVIDUAL requires firstName; BUSINESS requires companyName */)
+  .superRefine(
+    /* INDIVIDUAL requires firstName; BUSINESS requires companyName */
+  )
 ```
 
 `customerUpdateParamsSchema` — every field above optional, no `customerKind`

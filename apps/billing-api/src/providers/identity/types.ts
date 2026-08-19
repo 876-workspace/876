@@ -14,11 +14,7 @@ export type OrganizationMembership = {
 }
 
 export type IdentityFailureReason =
-  | 'configuration'
-  | 'invalid-response'
-  | 'network'
-  | 'timeout'
-  | 'upstream'
+  'configuration' | 'invalid-response' | 'network' | 'timeout' | 'upstream'
 
 export class IdentityUnavailableError extends Error {
   readonly attempts: number

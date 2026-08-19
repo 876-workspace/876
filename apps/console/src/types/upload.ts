@@ -1,9 +1,5 @@
 export type UploadPhase =
-  | 'idle'
-  | 'starting'
-  | 'uploading'
-  | 'verifying'
-  | 'done'
+  'idle' | 'starting' | 'uploading' | 'verifying' | 'done'
 
 export type DirectUploadParams = {
   url: string

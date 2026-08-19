@@ -146,5 +146,4 @@ export type PkcePair = {
 }
 
 export type OAuthResult<TSuccess> =
-  | { data: TSuccess; error: null }
-  | { data: null; error: OAuthError }
+  { data: TSuccess; error: null } | { data: null; error: OAuthError }

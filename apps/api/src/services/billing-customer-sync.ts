@@ -183,9 +183,7 @@ export async function snapshotForOrganization(
 
   const contactPhone = contact
     ? (((contact as Record<string, unknown>).phone as
-        | string
-        | null
-        | undefined) ?? null)
+        string | null | undefined) ?? null)
     : null
 
   return {

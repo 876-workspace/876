@@ -86,7 +86,9 @@ async function ProvisioningRunData({ params }: Props) {
         <Fact label="Created" value={formatDateTime(run.created_at)} />
         <Fact
           label="Started"
-          value={run.started_at ? formatDateTime(run.started_at) : 'Not started'}
+          value={
+            run.started_at ? formatDateTime(run.started_at) : 'Not started'
+          }
         />
         <Fact
           label="Completed"

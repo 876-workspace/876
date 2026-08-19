@@ -410,7 +410,9 @@ describe('finance-provisioning-dispatch', () => {
       mockTx.financeProvisioningOutbox.findMany
         .mockResolvedValueOnce([claimed] as never)
         .mockResolvedValueOnce([claimed] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
+        count: 1,
+      })
       prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([
         { ...claimed, status: 'delivered', deliveredAt: BigInt(NOW) },
       ] as never)
@@ -444,7 +446,9 @@ describe('finance-provisioning-dispatch', () => {
       mockTx.financeProvisioningOutbox.findMany
         .mockResolvedValueOnce([claimed] as never)
         .mockResolvedValueOnce([claimed] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
+        count: 1,
+      })
       fetchMock.mockResolvedValueOnce(
         billingResponse({ lifecycleVersion: 2, status: 'SUSPENDED' })
       )
@@ -477,9 +481,13 @@ describe('finance-provisioning-dispatch', () => {
       mockTx.financeProvisioningOutbox.findMany
         .mockResolvedValueOnce([claimedRow] as never)
         .mockResolvedValueOnce([claimedRow] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
+        count: 1,
+      })
 
-      const result = await claimFinanceProvisioningEventsByIds(NOW, [requestedId])
+      const result = await claimFinanceProvisioningEventsByIds(NOW, [
+        requestedId,
+      ])
 
       expect(mockTx.$queryRaw).toHaveBeenCalledOnce()
       const rawSql = mockTx.$queryRaw.mock.calls[0]![0] as {
@@ -514,8 +522,12 @@ describe('finance-provisioning-dispatch', () => {
         lockedAt: BigInt(NOW),
       }
       mockTx.$queryRaw.mockResolvedValueOnce([{ id: 'fpe_target' }])
-      mockTx.financeProvisioningOutbox.findMany.mockResolvedValue([claimed] as never)
-      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({ count: 1 })
+      mockTx.financeProvisioningOutbox.findMany.mockResolvedValue([
+        claimed,
+      ] as never)
+      mockTx.financeProvisioningOutbox.updateMany.mockResolvedValue({
+        count: 1,
+      })
       fetchMock.mockResolvedValueOnce(new Response('bad', { status: 500 }))
       mockTx.$queryRaw.mockResolvedValueOnce([
         { id: 'fpe_target', status: 'processing', run_id: null },
@@ -588,7 +600,9 @@ describe('finance-provisioning-dispatch', () => {
 
     it('throws when event id is missing', async () => {
       mockTx.$queryRaw.mockResolvedValueOnce([])
-      prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue([] as never)
+      prismaMock.financeProvisioningOutbox.findMany.mockResolvedValue(
+        [] as never
+      )
       const { ensureFinanceProvisioningDelivered } =
         await import('../finance-provisioning-dispatch')
       await expect(

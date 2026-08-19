@@ -93,10 +93,7 @@ export interface SubscriptionCreateParams {
    * How renewal pricing is selected. One of `RETAIN_EXISTING`, `USE_LATEST`, `MARKUP`, or `MARKDOWN`.
    */
   renewalPricingPolicy?:
-    | 'RETAIN_EXISTING'
-    | 'USE_LATEST'
-    | 'MARKUP'
-    | 'MARKDOWN'
+    'RETAIN_EXISTING' | 'USE_LATEST' | 'MARKUP' | 'MARKDOWN'
 
   /**
    * Percentage used when `renewalPricingPolicy` is `MARKUP` or `MARKDOWN`.

@@ -54,10 +54,7 @@ describe('Console product API boundary', () => {
   })
 
   it('keeps multi-service construction centralized in the Console $876 module', () => {
-    const source = readFileSync(
-      join(APP_ROOT, 'src/lib/876/index.ts'),
-      'utf8'
-    )
+    const source = readFileSync(join(APP_ROOT, 'src/lib/876/index.ts'), 'utf8')
 
     expect(source).toContain('createConsole876Client')
     expect(source).toContain('create876ServerClient')
@@ -81,6 +78,8 @@ function findSourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
     if (entry.isDirectory()) return findSourceFiles(path)
-    return entry.name.endsWith('.ts') || entry.name.endsWith('.tsx') ? [path] : []
+    return entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')
+      ? [path]
+      : []
   })
 }

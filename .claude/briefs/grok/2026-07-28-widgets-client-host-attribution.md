@@ -42,11 +42,7 @@ The host key comes from the `WidgetHost` union in
 
 ```ts
 export type WidgetHost =
-  | 'console'
-  | 'billing'
-  | 'couriers'
-  | 'enterprise'
-  | '876'
+  'console' | 'billing' | 'couriers' | 'enterprise' | '876'
 ```
 
 ### File 1 — `apps/console/src/lib/widgets.ts`

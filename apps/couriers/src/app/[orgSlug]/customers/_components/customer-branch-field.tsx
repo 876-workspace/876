@@ -42,7 +42,11 @@ export function CustomerBranchField({ branches, ...props }: Props) {
     void promise.then(
       (nextBranches) => {
         if (!cancelled)
-          setPromiseState({ source: promise, branches: nextBranches, error: null })
+          setPromiseState({
+            source: promise,
+            branches: nextBranches,
+            error: null,
+          })
       },
       (reason: unknown) => {
         if (!cancelled)

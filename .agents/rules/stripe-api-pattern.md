@@ -30,8 +30,7 @@ Use a predictable `{ data, error }` result envelope at SDK and JSON API boundari
 
 ```ts
 type ApiResult<TSuccess, TError> =
-  | { data: TSuccess; error: null }
-  | { data: null; error: TError }
+  { data: TSuccess; error: null } | { data: null; error: TError }
 ```
 
 Do not add a synthetic result object discriminator. Stripe returns resources, lists, search results, deleted tombstones, and errors with their own shapes; it does not use a synthetic result resource.

@@ -45,8 +45,7 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
   error: { code: string; message: string } | null
 }> {
   const summariesResult = await $876.appSubscriptions.list(appId)
-  if (summariesResult.error)
-    return { data: [], error: summariesResult.error }
+  if (summariesResult.error) return { data: [], error: summariesResult.error }
 
   const summaries = summariesResult.data ?? []
   if (summaries.length === 0) return { data: [], error: null }
@@ -87,11 +86,11 @@ export async function listCompleteAppSubscriptions(appId: string): Promise<{
     data: summaries.map(
       (subscription) =>
         hydratedById.get(subscription.id) ??
-        (({
+        ({
           ...subscription,
           items: Array.isArray(subscription.items) ? subscription.items : [],
           start_date: subscription.start_date ?? null,
-        }) as AdminSubscription)
+        } as AdminSubscription)
     ),
     error: null,
   }

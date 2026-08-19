@@ -54,22 +54,14 @@ export type BankTransactionType = 'CREDIT' | 'DEBIT'
  * One of `UNCATEGORIZED`, `CATEGORIZED`, `MATCHED`, or `EXCLUDED`.
  */
 export type BankTransactionStatus =
-  | 'UNCATEGORIZED'
-  | 'CATEGORIZED'
-  | 'MATCHED'
-  | 'EXCLUDED'
+  'UNCATEGORIZED' | 'CATEGORIZED' | 'MATCHED' | 'EXCLUDED'
 
 /**
  * Lifecycle status of a commercial subscription.
  * One of `DRAFT`, `TRIALING`, `ACTIVE`, `PAUSED`, `CANCELED`, or `ENDED`.
  */
 export type SubscriptionStatus =
-  | 'DRAFT'
-  | 'TRIALING'
-  | 'ACTIVE'
-  | 'PAUSED'
-  | 'CANCELED'
-  | 'ENDED'
+  'DRAFT' | 'TRIALING' | 'ACTIVE' | 'PAUSED' | 'CANCELED' | 'ENDED'
 
 /**
  * Catalog item kind.
@@ -106,9 +98,7 @@ export type AddonAssociationType = 'OPTIONAL' | 'RECOMMENDED' | 'MANDATORY'
  * One of `SUBSCRIPTION_ACTIVATION`, `PLAN_CHANGE`, or `TRIAL_ACTIVATION`.
  */
 export type AddonAssociationEvent =
-  | 'SUBSCRIPTION_ACTIVATION'
-  | 'PLAN_CHANGE'
-  | 'TRIAL_ACTIVATION'
+  'SUBSCRIPTION_ACTIVATION' | 'PLAN_CHANGE' | 'TRIAL_ACTIVATION'
 
 /**
  * How often an addon association should be applied.
@@ -127,5 +117,4 @@ export type SubscriptionChangeTiming = 'IMMEDIATE' | 'END_OF_TERM' | 'SCHEDULED'
  * One of `CONTINUE_EXISTING_PERIOD` or `START_NEW_PERIOD`.
  */
 export type SubscriptionResumeBillingBehavior =
-  | 'CONTINUE_EXISTING_PERIOD'
-  | 'START_NEW_PERIOD'
+  'CONTINUE_EXISTING_PERIOD' | 'START_NEW_PERIOD'
