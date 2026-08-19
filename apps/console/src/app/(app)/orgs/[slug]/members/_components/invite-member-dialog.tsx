@@ -83,13 +83,13 @@ export function InviteMemberDialog({ orgId }: Props) {
         render={
           <Button variant="info" size="sm">
             <UserPlusIcon className="size-4" strokeWidth={2.25} />
-            Invite Member
+            Invite member
           </Button>
         }
       />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Invite Member</DialogTitle>
+          <DialogTitle>Invite member</DialogTitle>
         </DialogHeader>
 
         {!created ? (

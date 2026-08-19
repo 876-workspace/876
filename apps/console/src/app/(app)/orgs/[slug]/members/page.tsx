@@ -9,6 +9,7 @@ import { resolveOrg, resolveOrgMembers } from '../_data'
 import { MembersTable, PendingInvitesTable } from './_components/members-table'
 import { InviteMemberDialog } from './_components/invite-member-dialog'
 import { MEMBERS_SKELETON_COLUMNS } from './_components/members-skeleton-columns'
+import { MembersHeading } from './_components/members-heading'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -28,7 +29,9 @@ export default function OrganizationMembersPage({ params }: Props) {
   return (
     <div>
       <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 className="876-page-title">Members</h2>
+        <Suspense fallback={<h2 className="876-page-title">Members</h2>}>
+          <MembersHeading />
+        </Suspense>
         <Suspense fallback={<InviteMemberButton />}>
           <InviteMemberData params={params} />
         </Suspense>
@@ -85,7 +88,7 @@ async function PendingInvitesData({ params }: Props) {
 function InviteMemberButton() {
   return (
     <Button variant="info" size="sm" disabled>
-      Invite Member
+      Invite member
     </Button>
   )
 }

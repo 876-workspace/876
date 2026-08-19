@@ -8,7 +8,7 @@ export default function Loading() {
       <div className="mb-5 flex items-center justify-between gap-4">
         <h2 className="876-page-title">Members</h2>
         <Button variant="info" size="sm" disabled>
-          Invite Member
+          Invite member
         </Button>
       </div>
       <DataTableSkeleton columns={MEMBERS_SKELETON_COLUMNS} />
