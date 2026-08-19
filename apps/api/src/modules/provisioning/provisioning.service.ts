@@ -11,6 +11,7 @@ import { createFinanceProvisioningRepository } from '@/services/finance-provisio
 
 import * as repository from './provisioning.repository'
 import {
+  serializeCatalog,
   serializeManifest,
   serializeNote,
   serializeRevision,
@@ -107,12 +108,7 @@ function revisionAsDraft(row: {
 export async function retrieveCatalog(targetType: string, targetKey: string) {
   const catalogKey = await requireValidTarget(targetType, targetKey)
   const definitions = catalogDefinitions(targetType as never, catalogKey)
-  return {
-    object: 'provisioning_catalog' as const,
-    manifest_version: 1 as const,
-    target_type: targetType as never,
-    resource_types: definitions,
-  }
+  return serializeCatalog(targetType, definitions)
 }
 
 export async function retrieveManifest(targetType: string, targetKey: string) {
