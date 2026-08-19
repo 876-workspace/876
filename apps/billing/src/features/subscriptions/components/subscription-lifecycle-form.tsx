@@ -71,14 +71,11 @@ export function SubscriptionLifecycleForm({
                   effectiveAt: optionalTimestamp(data.get('effectiveAt')),
                   resumeAt: optionalTimestamp(data.get('resumeAt')),
                   pauseUnbilledBehavior: stringValue(data, 'unbilled') as
-                    | 'RETAIN'
-                    | 'INVOICE_IMMEDIATELY',
+                    'RETAIN' | 'INVOICE_IMMEDIATELY',
                   pauseCreditBehavior: stringValue(data, 'credit') as
-                    | 'NONE'
-                    | 'PRORATE_CREDIT',
+                    'NONE' | 'PRORATE_CREDIT',
                   resumeBillingBehavior: stringValue(data, 'resumeBehavior') as
-                    | 'CONTINUE_EXISTING_PERIOD'
-                    | 'START_NEW_PERIOD',
+                    'CONTINUE_EXISTING_PERIOD' | 'START_NEW_PERIOD',
                   reason: optionalString(data.get('reason')),
                 }),
               'Pause request saved.'
@@ -136,8 +133,7 @@ export function SubscriptionLifecycleForm({
                       : 'IMMEDIATE',
                   effectiveAt: optionalTimestamp(data.get('effectiveAt')),
                   resumeBillingBehavior: stringValue(data, 'resumeBehavior') as
-                    | 'CONTINUE_EXISTING_PERIOD'
-                    | 'START_NEW_PERIOD',
+                    'CONTINUE_EXISTING_PERIOD' | 'START_NEW_PERIOD',
                   reason: optionalString(data.get('reason')),
                 }),
               'Resume request saved.'
@@ -428,9 +424,7 @@ function Select({
 
 function timing(data: FormData) {
   return stringValue(data, 'timing') as
-    | 'IMMEDIATE'
-    | 'END_OF_TERM'
-    | 'SCHEDULED'
+    'IMMEDIATE' | 'END_OF_TERM' | 'SCHEDULED'
 }
 function stringValue(data: FormData, name: string) {
   return String(data.get(name) ?? '')

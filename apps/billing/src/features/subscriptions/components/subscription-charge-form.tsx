@@ -67,8 +67,7 @@ export function SubscriptionChargeForm({
               taxBehavior,
               isTaxable,
               invoiceBehavior: String(data.get('invoiceBehavior')) as
-                | 'INVOICE_IMMEDIATELY'
-                | 'NEXT_INVOICE',
+                'INVOICE_IMMEDIATELY' | 'NEXT_INVOICE',
               serviceAt: null,
             }
           )

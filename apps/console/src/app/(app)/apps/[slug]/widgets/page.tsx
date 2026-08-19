@@ -101,9 +101,9 @@ async function AppWidgetsData({
           : null
         const live = Boolean(
           master?.enabled &&
-            feature?.enabled &&
-            (!platformKeys ||
-              (platformMaster?.enabled && platformFeature?.enabled))
+          feature?.enabled &&
+          (!platformKeys ||
+            (platformMaster?.enabled && platformFeature?.enabled))
         )
 
         return (

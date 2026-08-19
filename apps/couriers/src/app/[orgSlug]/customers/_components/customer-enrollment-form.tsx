@@ -119,7 +119,8 @@ export function CustomerEnrollmentForm({
       ? customerResolution.error
       : null
     : null
-  const loadError = customerLoadError ?? resolvedCustomerSelection?.error ?? null
+  const loadError =
+    customerLoadError ?? resolvedCustomerSelection?.error ?? null
   const customerData = resolvedCustomerSelection?.data ?? []
   const customersReady = resolvedCustomerSelection !== null && !loadError
   const options = customerData.map((customer) => ({

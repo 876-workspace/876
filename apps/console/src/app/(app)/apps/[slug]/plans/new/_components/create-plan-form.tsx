@@ -186,7 +186,10 @@ export function CreatePlanForm({ appSlug, setup }: Props) {
           </div>
 
           {setupState.pending ? (
-            <div className="876-card space-y-3 p-4" aria-label="Loading modules">
+            <div
+              className="876-card space-y-3 p-4"
+              aria-label="Loading modules"
+            >
               {Array.from({ length: 4 }, (_, index) => (
                 <Skeleton key={index} className="h-10 w-full" />
               ))}

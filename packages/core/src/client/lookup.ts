@@ -11,8 +11,7 @@
 export type LookupError = { code: string; message: string }
 
 export type LookupResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: LookupError }
+  { data: T; error: null } | { data: null; error: LookupError }
 
 const definitiveNotFoundCodes = new Set([
   'account/not-found',

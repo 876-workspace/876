@@ -20,11 +20,7 @@
  */
 
 export type ServiceOwner =
-  | 'core'
-  | 'billing'
-  | 'couriers'
-  | 'storage'
-  | 'widgets'
+  'core' | 'billing' | 'couriers' | 'storage' | 'widgets'
 
 export interface ResourceOwnership {
   /** The service that is authoritative for this canonical noun. */

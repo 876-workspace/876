@@ -102,8 +102,7 @@ async function signIn() {
   if (!sealed) throw new Error('no session cookie was set')
 
   const row = createSessionRow.mock.calls[0]?.[0] as
-    | { tokenHash: string; expiresAt: bigint }
-    | undefined
+    { tokenHash: string; expiresAt: bigint } | undefined
   if (!row) throw new Error('no session row was written')
 
   return {

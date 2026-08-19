@@ -5,12 +5,7 @@ import { currencyCodeSchema } from './currency'
 import { DocumentLineCreateSchema } from './document-line'
 
 export type QuoteStatus =
-  | 'DRAFT'
-  | 'SENT'
-  | 'ACCEPTED'
-  | 'DECLINED'
-  | 'EXPIRED'
-  | 'CANCELED'
+  'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
 
 export const QuoteCreateSchema = z.strictObject({
   customerId: IdSchema,

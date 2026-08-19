@@ -21,10 +21,7 @@ describe('Invoice app API boundary', () => {
     expect(config).not.toContain("destination: '/api/billing-gateway/:path*'")
     expect(
       existsSync(
-        join(
-          APP_ROOT,
-          'src/app/api/billing-gateway/[...path]/route.ts'
-        )
+        join(APP_ROOT, 'src/app/api/billing-gateway/[...path]/route.ts')
       )
     ).toBe(false)
   })
@@ -65,6 +62,8 @@ function findSourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
     if (entry.isDirectory()) return findSourceFiles(path)
-    return entry.name.endsWith('.ts') || entry.name.endsWith('.tsx') ? [path] : []
+    return entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')
+      ? [path]
+      : []
   })
 }

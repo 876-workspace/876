@@ -111,9 +111,7 @@ export function AddonCreateForm({
               ([planId, associationType]) => ({
                 planId,
                 associationType: associationType as
-                  | 'OPTIONAL'
-                  | 'RECOMMENDED'
-                  | 'MANDATORY',
+                  'OPTIONAL' | 'RECOMMENDED' | 'MANDATORY',
                 events: ['SUBSCRIPTION_ACTIVATION' as const],
                 frequency: 'EVERY_OCCURRENCE' as const,
               })

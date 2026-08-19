@@ -63,8 +63,7 @@ export function SubscriptionCreateForm({
           ? {}
           : {
               collectionMethod: collectionMethod as
-                | 'SEND_INVOICE'
-                | 'AUTO_CHARGE',
+                'SEND_INVOICE' | 'AUTO_CHARGE',
             }),
         ...(billingTiming === 'INHERIT'
           ? {}
@@ -75,9 +74,7 @@ export function SubscriptionCreateForm({
           ? {}
           : {
               prorationBehavior: prorationBehavior as
-                | 'CREATE_PRORATIONS'
-                | 'NONE'
-                | 'ALWAYS_INVOICE',
+                'CREATE_PRORATIONS' | 'NONE' | 'ALWAYS_INVOICE',
             }),
         ...(taxBehavior === 'INHERIT'
           ? {}
@@ -90,10 +87,7 @@ export function SubscriptionCreateForm({
           ? {}
           : {
               renewalPricingPolicy: renewalPricingPolicy as
-                | 'RETAIN_EXISTING'
-                | 'USE_LATEST'
-                | 'MARKUP'
-                | 'MARKDOWN',
+                'RETAIN_EXISTING' | 'USE_LATEST' | 'MARKUP' | 'MARKDOWN',
             }),
         renewalAdjustmentPercent: String(
           data.get('renewalAdjustmentPercent') ?? ''

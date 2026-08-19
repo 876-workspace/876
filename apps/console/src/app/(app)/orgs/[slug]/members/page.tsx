@@ -6,10 +6,7 @@ import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
 import { $876 } from '@/lib/876'
 import { resolveOrg, resolveOrgMembers } from '../_data'
-import {
-  MembersTable,
-  PendingInvitesTable,
-} from './_components/members-table'
+import { MembersTable, PendingInvitesTable } from './_components/members-table'
 import { InviteMemberDialog } from './_components/invite-member-dialog'
 import { MEMBERS_SKELETON_COLUMNS } from './_components/members-skeleton-columns'
 

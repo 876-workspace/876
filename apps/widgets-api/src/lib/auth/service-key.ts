@@ -3,11 +3,7 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 import { apiError } from '@876/core/api'
 
 export type WidgetHost =
-  | 'console'
-  | 'billing'
-  | 'couriers'
-  | 'enterprise'
-  | '876'
+  'console' | 'billing' | 'couriers' | 'enterprise' | '876'
 
 const KNOWN_WIDGET_HOSTS: readonly string[] = [
   'console',

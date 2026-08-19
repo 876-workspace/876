@@ -20,8 +20,7 @@ import {
 } from '../types/notes'
 
 export type BrowserNotesResult<T> =
-  | { data: T; error: null }
-  | { data: null; error: string; status?: number }
+  { data: T; error: null } | { data: null; error: string; status?: number }
 
 export type BrowserNotepadRoutes = {
   notes: string

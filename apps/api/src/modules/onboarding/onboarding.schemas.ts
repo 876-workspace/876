@@ -39,12 +39,7 @@ export type OnboardingStatus = z.infer<typeof onboardingStatusSchema>
 
 /** Any JSON value — an answer's shape is decided by its field's type. */
 export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue }
+  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
 
 export const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([

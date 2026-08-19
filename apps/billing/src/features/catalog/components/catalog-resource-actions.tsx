@@ -37,12 +37,7 @@ import { Label } from '@876/ui/label'
 import { client } from '@/lib/client'
 
 type CatalogResource =
-  | 'product'
-  | 'plan'
-  | 'addon'
-  | 'coupon'
-  | 'price-list'
-  | 'item'
+  'product' | 'plan' | 'addon' | 'coupon' | 'price-list' | 'item'
 
 type Props = {
   resource: CatalogResource

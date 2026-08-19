@@ -79,8 +79,7 @@ export type ProviderConsentRequiredResponse = {
 }
 
 export type ProviderAuthorizationResponse =
-  | ProviderAuthorizeResponse
-  | ProviderConsentRequiredResponse
+  ProviderAuthorizeResponse | ProviderConsentRequiredResponse
 
 export type ProviderConsentRequest = {
   app: {

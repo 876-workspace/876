@@ -168,16 +168,12 @@ function applyOrgProfileFields(
   }
   if ('country_code' in explicitlySet) {
     const value = (body as Record<string, unknown>).country_code as
-      | string
-      | null
-      | undefined
+      string | null | undefined
     updateData.countryCode = value ? value.toUpperCase() : (value ?? null)
   }
   if ('currency_code' in explicitlySet) {
     const value = (body as Record<string, unknown>).currency_code as
-      | string
-      | null
-      | undefined
+      string | null | undefined
     updateData.currencyCode = value ? value.toUpperCase() : (value ?? null)
   }
 }

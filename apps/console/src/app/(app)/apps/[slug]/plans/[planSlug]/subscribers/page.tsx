@@ -99,8 +99,9 @@ async function PlanSubscribersData({ params }: Props) {
   // missing Billing mirror must not make an active Core subscriber disappear
   // from Console.
   if (!coreSubscriptionsResult.error) {
-    const coreSubscriptions = coreSubscriptionsResult.data.filter((subscription) =>
-      subscription.items.some((item) => item.product_id === product.id)
+    const coreSubscriptions = coreSubscriptionsResult.data.filter(
+      (subscription) =>
+        subscription.items.some((item) => item.product_id === product.id)
     )
 
     const orgIds = [

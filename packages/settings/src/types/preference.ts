@@ -1,10 +1,5 @@
 export type PreferenceValueType =
-  | 'boolean'
-  | 'string'
-  | 'enum'
-  | 'integer'
-  | 'decimal'
-  | 'reference'
+  'boolean' | 'string' | 'enum' | 'integer' | 'decimal' | 'reference'
 
 /** A decimal is carried as a string end-to-end — never a JS number — so money
  * and rate values never lose precision. */

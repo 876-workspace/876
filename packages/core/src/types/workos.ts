@@ -27,9 +27,7 @@ export type WorkosRawError =
     }
 
 export type WorkosServiceResult<TSuccess, Code extends string = string> =
-  | TSuccess
-  | ServiceError<Code>
-  | WorkosRawError
+  TSuccess | ServiceError<Code> | WorkosRawError
 
 export const workosIdSchema = z.string().trim().min(1)
 export const workosTokenSchema = z.string().trim().min(1)

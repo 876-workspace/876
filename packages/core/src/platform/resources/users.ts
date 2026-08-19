@@ -17,8 +17,7 @@ export function createPlatformUsersResource(runtime: PlatformRuntime) {
   return {
     retrieve(
       params:
-        | { id: string; workosId?: never }
-        | { workosId: string; id?: never }
+        { id: string; workosId?: never } | { workosId: string; id?: never }
     ) {
       if ('workosId' in params) {
         return platformRequest<PlatformUser>(runtime, {

@@ -270,9 +270,14 @@ export async function ensureFinanceProvisioningDelivered(
   let delivered = 0
   let failed = 0
   if (snapshots.length > 0) {
-    const result = await deliverClaimedRows(snapshots, billingUrl, internalKey, {
-      exactState: true,
-    })
+    const result = await deliverClaimedRows(
+      snapshots,
+      billingUrl,
+      internalKey,
+      {
+        exactState: true,
+      }
+    )
     delivered = result.delivered
     failed = result.failed
   }

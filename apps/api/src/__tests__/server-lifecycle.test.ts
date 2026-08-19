@@ -51,7 +51,9 @@ describe('Server Lifecycle', () => {
 
     const lifecycle = createServerLifecycle({
       createApp: createAppMock,
-      getSettings: vi.fn(() => serverSettings()) as unknown as typeof import('../config').getSettings,
+      getSettings: vi.fn(() =>
+        serverSettings()
+      ) as unknown as typeof import('../config').getSettings,
       assertFinanceConfiguration,
       startFinanceWorker,
       disconnectDb: vi.fn().mockResolvedValue(undefined),
@@ -99,7 +101,9 @@ describe('Server Lifecycle', () => {
 
     const lifecycle = createServerLifecycle({
       createApp: createAppMock,
-      getSettings: vi.fn(() => serverSettings()) as unknown as typeof import('../config').getSettings,
+      getSettings: vi.fn(() =>
+        serverSettings()
+      ) as unknown as typeof import('../config').getSettings,
       startFinanceWorker: startFinanceWorkerMock,
       disconnectDb: disconnectDbMock,
     })
@@ -155,7 +159,9 @@ describe('Server Lifecycle', () => {
 
     const lifecycle = createServerLifecycle({
       createApp: createAppMock,
-      getSettings: vi.fn(() => serverSettings()) as unknown as typeof import('../config').getSettings,
+      getSettings: vi.fn(() =>
+        serverSettings()
+      ) as unknown as typeof import('../config').getSettings,
       startFinanceWorker: startFinanceWorkerMock,
       disconnectDb: disconnectDbMock,
     })
@@ -186,7 +192,9 @@ describe('Server Lifecycle', () => {
 
     const lifecycle = createServerLifecycle({
       createApp: createAppMock,
-      getSettings: vi.fn(() => serverSettings()) as unknown as typeof import('../config').getSettings,
+      getSettings: vi.fn(() =>
+        serverSettings()
+      ) as unknown as typeof import('../config').getSettings,
       startFinanceWorker: startFinanceWorkerMock,
       disconnectDb: disconnectDbMock,
     })

@@ -42,8 +42,7 @@ export interface ApiErrorResult<TError> {
  * Application result envelope with success and error branches.
  */
 export type ApiResult<TSuccess, TError> =
-  | ApiSuccessResult<TSuccess>
-  | ApiErrorResult<TError>
+  ApiSuccessResult<TSuccess> | ApiErrorResult<TError>
 
 /**
  * Paginated list container.

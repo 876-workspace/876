@@ -53,12 +53,7 @@ type Props = {
   primaryLabel?: string
   primaryDisabled?: boolean
   primaryVariant?:
-    | 'default'
-    | 'brand'
-    | 'outline'
-    | 'info'
-    | 'success'
-    | 'warning'
+    'default' | 'brand' | 'outline' | 'info' | 'success' | 'warning'
   /** Navigate to this URL when the primary button is clicked. */
   primaryHref?: string
   /** Called when the primary button is clicked (ignored if primaryHref is set). */

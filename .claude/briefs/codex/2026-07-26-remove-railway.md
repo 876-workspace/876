@@ -73,9 +73,9 @@ Keep edits surgical and factually correct. Do not rewrite whole documents.
 ## Do NOT touch
 
 - **`.claude/briefs/**`** — briefs are the committed historical record of what
-was asked of a delegated tool and when. Rewriting them would falsify that
-record. Leave every Railway mention in them alone, including
-`.claude/briefs/codex/2026-07-26-service-urls-off-railway.md`.
+  was asked of a delegated tool and when. Rewriting them would falsify that
+  record. Leave every Railway mention in them alone, including
+  `.claude/briefs/codex/2026-07-26-service-urls-off-railway.md`.
 - Any `wrangler.jsonc` `vars` block — the previous phase already fixed those.
 - `apps/api/Dockerfile` build logic. It has a comment mentioning Railway
   ("Used by Railway when Root Directory is set to apps/api"); reword **only**

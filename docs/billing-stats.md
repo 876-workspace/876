@@ -31,9 +31,7 @@ List envelope:
 ```json
 {
   "object": "list",
-  "data": [
-    /* AppBillingStats[] */
-  ]
+  "data": [/* AppBillingStats[] */]
 }
 ```
 

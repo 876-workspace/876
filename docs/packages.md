@@ -90,8 +90,7 @@ await $876.organizations.subscriptions.retrieve({ organizationId, appId })
 
 ```ts
 type Result<T> =
-  | { data: T; error: null }
-  | { data: null; error: { code; message } }
+  { data: T; error: null } | { data: null; error: { code; message } }
 const { data, error } = await $876.users.retrieve({ id })
 if (error) return handle(error)
 ```
@@ -229,15 +228,15 @@ Validates params, sends `fetch` to `POST /auth/*`, `GET /organizations/{id}/deta
 
 **Resources (`src/resources/*`):**
 
-| Resource                    | Verbs                                                                                                                                                                           | Notes                                                                             |
+| Resource | Verbs | Notes |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------ | ---------------------------- |
-| `auth`                      | `resolve`, `login`, `register`, `registerBusiness`, `socialLogin`, `verifyEmailCode`, `recover`, `resetPassword`, `logout`, `getSession`, `sendMagicOtp`, `verifyMagicOtp`      | Session/page flows, device signal attached                                        |
-| `users`                     | `list`, `retrieve({id}                                                                                                                                                          | {workosId}                                                                        | {username})` | Self-scoped where applicable |
+| `auth` | `resolve`, `login`, `register`, `registerBusiness`, `socialLogin`, `verifyEmailCode`, `recover`, `resetPassword`, `logout`, `getSession`, `sendMagicOtp`, `verifyMagicOtp` | Session/page flows, device signal attached |
+| `users` | `list`, `retrieve({id}                                                                                                                                                          | {workosId}                                                                        | {username})` | Self-scoped where applicable |
 | `organizations` (`orgs.ts`) | `retrieve(orgId)`, `update(orgId)`, `locations.*`, `contacts.*`, `departments.*`, `employees.*`, `members`, `roles`, `appAssignments`, `subscriptions.list/retrieve`, `invites` | Member-scoped; `subscriptions` is `organizations.subscriptions` (org entitlement) |
-| `apps`                      | `list`, `retrieve`                                                                                                                                                              | Public app catalog                                                                |
-| `products`/`prices`         | `list`, `retrieve`                                                                                                                                                              | Catalog                                                                           |
-| `features`                  | `list`, `retrieve`                                                                                                                                                              | Feature flags                                                                     |
-| `oauth`                     | `getAuthorizationUrl`, `exchangeCodeForToken`, `getUserInfo`                                                                                                                    | PKCE                                                                              |
+| `apps` | `list`, `retrieve` | Public app catalog |
+| `products`/`prices` | `list`, `retrieve` | Catalog |
+| `features` | `list`, `retrieve` | Feature flags |
+| `oauth` | `getAuthorizationUrl`, `exchangeCodeForToken`, `getUserInfo` | PKCE |
 
 **Example:**
 
@@ -278,14 +277,14 @@ const sub = await client.organizations.subscriptions.retrieve({
 
 **Resources (`src/resources/*`):**
 
-| Resource                                                                                         | File               | Verbs / Distinctness                                                                                                                                                                       |
+| Resource | File | Verbs / Distinctness |
 | ------------------------------------------------------------------------------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `users`                                                                                          | `users.ts`         | `create`, `list`, `retrieve({id}                                                                                                                                                           | {workosId}                                                                                                                                                                                                                                                                                                                                                                                                     | {username})`, `search`, `update`, `delete`, plus `identifications._`, `pin._`, `addresses`, `contacts`, `sessions` etc. |
-| `organizations`                                                                                  | `orgs.ts`          | `create`, `list`, `retrieve({id}                                                                                                                                                           | {slug})`, `search`, `update`, `delete`/`purge`, plus `locations`, `contacts`, `departments`, `employees`, `members`, `roles`, `permissions`, `appAssignments`. `organizations.subscriptions` is **org-to-app entitlement** (`POST /organizations/{id}/apps`, `GET /organizations/{id}/apps`, `GET .../by-slug/{slug}`, batch `GET /organizations/app-access/batch`) — distinct from top-level `subscriptions`. |
-| `subscriptions` (top-level)                                                                      | `subscriptions.ts` | Platform billing subscriptions (`GET/POST /billing/subscriptions`, `/billing/subscriptions/{id}`) — distinct from `organizations.subscriptions`. See `src/client.ts:85` vs `121` comments. |
-| `apps`                                                                                           | `apps.ts`          | `list`, `retrieve`, `create`, `update`, plus `features`, `subscriptions`                                                                                                                   |
-| `features`/`modules`/`provisioning`/`onboarding`                                                 |                    | Feature/catalog/provisioning                                                                                                                                                               |
-| `memberships`, `auditEvents`, `auth`, `devices`, `sessions`, `billingAccounts`, `communications` |                    | Platform ops                                                                                                                                                                               |
+| `users` | `users.ts` | `create`, `list`, `retrieve({id}                                                                                                                                                           | {workosId}                                                                                                                                                                                                                                                                                                                                                                                                     | {username})`, `search`, `update`, `delete`, plus `identifications._`, `pin._`, `addresses`, `contacts`, `sessions` etc. |
+| `organizations` | `orgs.ts` | `create`, `list`, `retrieve({id}                                                                                                                                                           | {slug})`, `search`, `update`, `delete`/`purge`, plus `locations`, `contacts`, `departments`, `employees`, `members`, `roles`, `permissions`, `appAssignments`. `organizations.subscriptions` is **org-to-app entitlement** (`POST /organizations/{id}/apps`, `GET /organizations/{id}/apps`, `GET .../by-slug/{slug}`, batch `GET /organizations/app-access/batch`) — distinct from top-level `subscriptions`. |
+| `subscriptions` (top-level) | `subscriptions.ts` | Platform billing subscriptions (`GET/POST /billing/subscriptions`, `/billing/subscriptions/{id}`) — distinct from `organizations.subscriptions`. See `src/client.ts:85` vs `121` comments. |
+| `apps` | `apps.ts` | `list`, `retrieve`, `create`, `update`, plus `features`, `subscriptions` |
+| `features`/`modules`/`provisioning`/`onboarding` | | Feature/catalog/provisioning |
+| `memberships`, `auditEvents`, `auth`, `devices`, `sessions`, `billingAccounts`, `communications` | | Platform ops |
 
 **Embedded product shims (compat, do not add new products):** `billing` (admin+integration), `storage`, `widgets` are embedded until Console migrates to explicit composition (`apps/console/src/lib/876/index.ts`). Target: `@876/admin` = Core/platform only.
 

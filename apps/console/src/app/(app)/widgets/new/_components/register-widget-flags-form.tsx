@@ -114,9 +114,13 @@ export function RegisterWidgetFlagsForm({
             {widgetsState.pending ? (
               <NativeSelectOption value="">Loading widgets…</NativeSelectOption>
             ) : widgetsState.error ? (
-              <NativeSelectOption value="">Widgets unavailable</NativeSelectOption>
+              <NativeSelectOption value="">
+                Widgets unavailable
+              </NativeSelectOption>
             ) : resolvedWidgets.length === 0 ? (
-              <NativeSelectOption value="">No widgets declared</NativeSelectOption>
+              <NativeSelectOption value="">
+                No widgets declared
+              </NativeSelectOption>
             ) : (
               resolvedWidgets.map((widget) => (
                 <NativeSelectOption key={widget.id} value={widget.id}>
@@ -152,7 +156,9 @@ export function RegisterWidgetFlagsForm({
                   key={flag.slug}
                   className="flex items-center justify-between gap-4 px-3 py-2.5"
                 >
-                  <span className="truncate font-mono text-xs">{flag.slug}</span>
+                  <span className="truncate font-mono text-xs">
+                    {flag.slug}
+                  </span>
                   {flag.existingId ? (
                     <span className="text-muted-foreground inline-flex shrink-0 items-center gap-1.5 text-xs">
                       <CheckCircle className="size-3.5" />

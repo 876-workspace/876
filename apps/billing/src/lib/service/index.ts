@@ -7,9 +7,7 @@ import type { Tenant } from '@/types/tenant'
 import { billingApiRequest } from './api'
 
 type AssociationEvent =
-  | 'SUBSCRIPTION_ACTIVATION'
-  | 'PLAN_CHANGE'
-  | 'TRIAL_ACTIVATION'
+  'SUBSCRIPTION_ACTIVATION' | 'PLAN_CHANGE' | 'TRIAL_ACTIVATION'
 
 type AddonAssociationRecord = LegacyBillingRecord & {
   addon: LegacyBillingRecord

@@ -95,10 +95,8 @@ export async function createLocation(data: {
       timezone: data.timezone ?? null,
       metadata:
         (data.metadata as
-          | Prisma.InputJsonValue
-          | typeof Prisma.DbNull
-          | null
-          | undefined) ?? Prisma.DbNull,
+          Prisma.InputJsonValue | typeof Prisma.DbNull | null | undefined) ??
+        Prisma.DbNull,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     },
@@ -206,10 +204,8 @@ export async function createContact(data: {
       notes: data.notes ?? null,
       metadata:
         (data.metadata as
-          | Prisma.InputJsonValue
-          | typeof Prisma.DbNull
-          | null
-          | undefined) ?? Prisma.DbNull,
+          Prisma.InputJsonValue | typeof Prisma.DbNull | null | undefined) ??
+        Prisma.DbNull,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     },
@@ -300,10 +296,8 @@ export async function createDepartment(data: {
       status: data.status ?? 'active',
       metadata:
         (data.metadata as
-          | Prisma.InputJsonValue
-          | typeof Prisma.DbNull
-          | null
-          | undefined) ?? Prisma.DbNull,
+          Prisma.InputJsonValue | typeof Prisma.DbNull | null | undefined) ??
+        Prisma.DbNull,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     },
@@ -422,10 +416,8 @@ export async function createEmployee(data: {
       endDate: data.endDate ?? null,
       metadata:
         (data.metadata as
-          | Prisma.InputJsonValue
-          | typeof Prisma.DbNull
-          | null
-          | undefined) ?? Prisma.DbNull,
+          Prisma.InputJsonValue | typeof Prisma.DbNull | null | undefined) ??
+        Prisma.DbNull,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     },

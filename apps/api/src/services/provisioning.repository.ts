@@ -93,9 +93,7 @@ export async function findSubscription(
   return {
     id: row.id,
     status: row.status,
-    hasItems: row.subscriptionItems
-      ? row.subscriptionItems.length > 0
-      : true,
+    hasItems: row.subscriptionItems ? row.subscriptionItems.length > 0 : true,
   }
 }
 

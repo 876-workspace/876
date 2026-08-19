@@ -23,7 +23,10 @@ export async function DELETE(_request: NextRequest, context: Context) {
 
   const fileId = retrieveResult.data.avatar_file_id
   if (!fileId && !retrieveResult.data.avatar)
-    return apiJson({ error: 'The user has no image to remove.' }, { status: 409 })
+    return apiJson(
+      { error: 'The user has no image to remove.' },
+      { status: 409 }
+    )
 
   const updateResult = await $876.users.admin.update(userId, {
     avatar_file_id: null,

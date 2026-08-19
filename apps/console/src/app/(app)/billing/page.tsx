@@ -56,8 +56,7 @@ async function BillingAccountsCard() {
             </EmptyMedia>
             <EmptyTitle>No billing accounts</EmptyTitle>
             <EmptyDescription>
-              Billing accounts are created when an organization sets up
-              payment.
+              Billing accounts are created when an organization sets up payment.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

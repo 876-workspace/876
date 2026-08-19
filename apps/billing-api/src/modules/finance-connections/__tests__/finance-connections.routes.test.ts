@@ -69,7 +69,9 @@ describe('Billing finance provisioning HTTP contract', () => {
       .send(event())
 
     expect(response.status).toBe(200)
-    expect(financeProvisioningReceiptEnvelopeSchema.parse(response.body)).toEqual({
+    expect(
+      financeProvisioningReceiptEnvelopeSchema.parse(response.body)
+    ).toEqual({
       data: receipt,
       error: null,
     })
@@ -132,15 +134,18 @@ describe('Billing finance provisioning HTTP contract', () => {
     expect(mocks.ensureFinanceConnection).not.toHaveBeenCalled()
   })
 
-  it.each(['PENDING', 'DELETED', 'active'])('rejects unsupported desired status %s', async (desiredStatus) => {
-    const response = await request(createApp())
-      .post('/api/v1/admin/finance-connections/ensure')
-      .set('x-internal-key', 'shared-secret')
-      .send({ ...event(), desiredStatus })
+  it.each(['PENDING', 'DELETED', 'active'])(
+    'rejects unsupported desired status %s',
+    async (desiredStatus) => {
+      const response = await request(createApp())
+        .post('/api/v1/admin/finance-connections/ensure')
+        .set('x-internal-key', 'shared-secret')
+        .send({ ...event(), desiredStatus })
 
-    expect(response.status).toBe(422)
-    expect(response.body.error.code).toBe('validation/invalid-request')
-  })
+      expect(response.status).toBe(422)
+      expect(response.body.error.code).toBe('validation/invalid-request')
+    }
+  )
 
   it('accepts an idempotent duplicate receipt as a valid success contract', async () => {
     mocks.ensureFinanceConnection.mockResolvedValue({
@@ -155,7 +160,9 @@ describe('Billing finance provisioning HTTP contract', () => {
       .send(event())
 
     expect(response.status).toBe(200)
-    expect(financeProvisioningReceiptEnvelopeSchema.parse(response.body).data).toMatchObject({
+    expect(
+      financeProvisioningReceiptEnvelopeSchema.parse(response.body).data
+    ).toMatchObject({
       lifecycleVersion: 7,
       applied: false,
       duplicate: true,

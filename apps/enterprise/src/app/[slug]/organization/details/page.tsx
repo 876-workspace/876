@@ -73,8 +73,7 @@ export default async function OrganizationDetailsPage({
                   {section.fields.map((field) => {
                     const value =
                       (orgResult.data[field.key as keyof Organization] as
-                        | string
-                        | null) ?? ''
+                        string | null) ?? ''
                     return (
                       <div key={field.key}>
                         <dt className="text-muted-foreground text-xs font-medium">

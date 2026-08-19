@@ -38,8 +38,10 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
     cell: ({ row }) => {
       const member = row.original
       const name =
-        [member.first_name, member.last_name].filter(Boolean).join(' ').trim() ||
-        member.user_id
+        [member.first_name, member.last_name]
+          .filter(Boolean)
+          .join(' ')
+          .trim() || member.user_id
 
       return (
         <div className="flex flex-col">

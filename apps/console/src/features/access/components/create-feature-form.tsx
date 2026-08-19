@@ -216,7 +216,7 @@ export function CreateFeatureForm({
                 <div className="border-input bg-muted/40 rounded-md border px-3 py-2 text-[0.8125rem]">
                   {setupState.pending
                     ? 'Loading app…'
-                    : selectedApp?.name ?? 'Platform (all apps)'}
+                    : (selectedApp?.name ?? 'Platform (all apps)')}
                 </div>
               </div>
             ) : (
@@ -254,7 +254,9 @@ export function CreateFeatureForm({
                 className="w-full"
               >
                 <NativeSelectOption value="global">Global</NativeSelectOption>
-                <NativeSelectOption value="consumer">Consumer</NativeSelectOption>
+                <NativeSelectOption value="consumer">
+                  Consumer
+                </NativeSelectOption>
                 <NativeSelectOption value="enterprise">
                   Enterprise
                 </NativeSelectOption>
@@ -299,7 +301,9 @@ export function CreateFeatureForm({
               {setupState.error.message}
             </p>
           ) : null}
-          {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
+          {error && (
+            <p className="text-destructive text-[0.8125rem]">{error}</p>
+          )}
         </div>
 
         <div className="border-876-surface-border flex justify-end gap-2 border-t px-5 py-4">

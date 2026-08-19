@@ -237,8 +237,4 @@ export type AnalyticsEventPropertiesFor<TEvent extends AnalyticsEventName> =
  * Standard UTM tracking parameter keys.
  */
 export type UtmKey =
-  | 'utm_source'
-  | 'utm_medium'
-  | 'utm_campaign'
-  | 'utm_term'
-  | 'utm_content'
+  'utm_source' | 'utm_medium' | 'utm_campaign' | 'utm_term' | 'utm_content'

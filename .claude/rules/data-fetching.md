@@ -12,11 +12,11 @@ not** contain raw service fetches or direct DB/provider access.
 
 ## Correct pattern
 
-| App                              | Package / facade | Auth method                                               |
-| -------------------------------- | ---------------- | --------------------------------------------------------- |
-| `@876/app` (consumer/enterprise) | `@876/sdk`       | Session cookie / OAuth                                    |
-| `@876/console`                   | `$876`           | Internal service credentials, server-only                 |
-| `@876/billing-app`               | `$876` / billing | OAuth/session through its authenticated application path  |
+| App                              | Package / facade | Auth method                                              |
+| -------------------------------- | ---------------- | -------------------------------------------------------- |
+| `@876/app` (consumer/enterprise) | `@876/sdk`       | Session cookie / OAuth                                   |
+| `@876/console`                   | `$876`           | Internal service credentials, server-only                |
+| `@876/billing-app`               | `$876` / billing | OAuth/session through its authenticated application path |
 
 ### Console server component example
 

@@ -93,9 +93,7 @@ export function SubscriptionViewForm({
             visibility: String(data.get('visibility')) as 'PRIVATE' | 'TENANT',
             isFavorite: data.get('isFavorite') === 'on',
             sortField: String(data.get('sortField')) as
-              | 'createdAt'
-              | 'currentPeriodEnd'
-              | 'status',
+              'createdAt' | 'currentPeriodEnd' | 'status',
             sortDirection: String(data.get('sortDirection')) as 'asc' | 'desc',
             rules: rules.map((rule) => ({
               ...rule,

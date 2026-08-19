@@ -20,10 +20,7 @@ describe('Console browser API boundary', () => {
 
   it.each([
     ['/api/billing/accounts', '/api/billing-accounts'],
-    [
-      '/api/billing/accounts/acct_1',
-      '/api/billing-accounts/acct_1',
-    ],
+    ['/api/billing/accounts/acct_1', '/api/billing-accounts/acct_1'],
     [
       '/api/billing/subscriptions/sub_1/items/item_1',
       '/api/billing-subscriptions/sub_1/items/item_1',

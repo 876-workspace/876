@@ -24,8 +24,4 @@ export interface DirectUploadParams {
 
 /** Lifecycle of an in-flight upload, in the order the phases occur. */
 export type UploadPhase =
-  | 'idle'
-  | 'starting'
-  | 'uploading'
-  | 'verifying'
-  | 'done'
+  'idle' | 'starting' | 'uploading' | 'verifying' | 'done'

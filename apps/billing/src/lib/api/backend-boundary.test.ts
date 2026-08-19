@@ -50,10 +50,7 @@ describe('standalone Billing API boundary', () => {
     expect(config).not.toContain("destination: '/api/billing-gateway/:path*'")
     expect(
       existsSync(
-        join(
-          APP_ROOT,
-          'src/app/api/billing-gateway/[...path]/route.ts'
-        )
+        join(APP_ROOT, 'src/app/api/billing-gateway/[...path]/route.ts')
       )
     ).toBe(false)
   })

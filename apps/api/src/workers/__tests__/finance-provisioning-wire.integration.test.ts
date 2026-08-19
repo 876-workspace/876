@@ -1,5 +1,9 @@
 import { once } from 'node:events'
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from 'node:http'
 
 import type { FinanceProvisioningEvent } from '@876/server/finance-provisioning'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -175,7 +179,11 @@ describe('API → Billing finance provisioning wire contract', () => {
         res.setHeader('content-type', 'application/json')
         res.end(
           JSON.stringify(
-            receipt({ lifecycleVersion: 8, status: 'SUSPENDED', applied: false })
+            receipt({
+              lifecycleVersion: 8,
+              status: 'SUSPENDED',
+              applied: false,
+            })
           )
         )
       },

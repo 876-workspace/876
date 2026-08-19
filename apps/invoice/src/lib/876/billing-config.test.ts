@@ -55,17 +55,23 @@ describe('Invoice Billing configuration', () => {
     }
   )
 
-  it.each(['not-a-url', 'billing-api', '://bad'])('rejects malformed URL %s', (url) => {
-    expect(() =>
-      getInvoiceBillingConfig(env({ BILLING_API_URL: url }))
-    ).toThrow('must be a valid URL')
-  })
+  it.each(['not-a-url', 'billing-api', '://bad'])(
+    'rejects malformed URL %s',
+    (url) => {
+      expect(() =>
+        getInvoiceBillingConfig(env({ BILLING_API_URL: url }))
+      ).toThrow('must be a valid URL')
+    }
+  )
 
-  it.each(['ftp://billing.example.test', 'file:///tmp/billing'])('rejects unsupported scheme %s', (url) => {
-    expect(() =>
-      getInvoiceBillingConfig(env({ BILLING_API_URL: url }))
-    ).toThrow('must use http:// or https://')
-  })
+  it.each(['ftp://billing.example.test', 'file:///tmp/billing'])(
+    'rejects unsupported scheme %s',
+    (url) => {
+      expect(() =>
+        getInvoiceBillingConfig(env({ BILLING_API_URL: url }))
+      ).toThrow('must use http:// or https://')
+    }
+  )
 
   it('rejects embedded credentials', () => {
     expect(() =>
@@ -87,9 +93,8 @@ describe('Invoice Billing configuration', () => {
 
   it('permits explicit localhost configuration for local development', () => {
     expect(
-      getInvoiceBillingConfig(
-        env({ BILLING_API_URL: 'http://127.0.0.1:4004' })
-      ).baseUrl
+      getInvoiceBillingConfig(env({ BILLING_API_URL: 'http://127.0.0.1:4004' }))
+        .baseUrl
     ).toBe('http://127.0.0.1:4004')
   })
 })

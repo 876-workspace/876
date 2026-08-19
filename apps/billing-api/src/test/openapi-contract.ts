@@ -3,13 +3,7 @@ import { fileURLToPath } from 'node:url'
 
 type JsonObject = Record<string, unknown>
 type HttpMethod =
-  | 'delete'
-  | 'get'
-  | 'head'
-  | 'options'
-  | 'patch'
-  | 'post'
-  | 'put'
+  'delete' | 'get' | 'head' | 'options' | 'patch' | 'post' | 'put'
 type OperationKey = `${Uppercase<HttpMethod>} ${string}`
 
 type ValueMismatch = {
