@@ -1,48 +1,39 @@
-import { AppHttpError } from '@/platform/errors'
+import { appError } from '@/platform/errors'
 
-export { AppHttpError, isAppHttpError } from '@/platform/errors'
+export { AppHttpError, appError, isAppHttpError } from '@/platform/errors'
 
 export const errors = {
   missingCredential: () =>
-    new AppHttpError({
-      code: 'auth/missing-credential',
+    appError('auth/missing-credential', {
       message: 'An authentication credential is required.',
       httpStatus: 401,
     }),
   ambiguousCredential: () =>
-    new AppHttpError({
-      code: 'auth/ambiguous-credential',
+    appError('auth/ambiguous-credential', {
       message: 'Use exactly one authentication credential.',
       httpStatus: 400,
     }),
   identityUnavailable: () =>
-    new AppHttpError({
-      code: 'auth/identity-unavailable',
+    appError('auth/identity-unavailable', {
       message: 'The identity service could not verify access. Please retry.',
       httpStatus: 503,
     }),
   forbidden: (
     message = 'The authenticated user lacks the required Billing permission.'
-  ) => new AppHttpError({ code: 'auth/forbidden', message, httpStatus: 403 }),
+  ) => appError('auth/forbidden', { message }),
   validation: (
     message = 'The request body or parameters failed validation.',
     details?: unknown
   ) =>
-    new AppHttpError({
-      code: 'validation/invalid-request',
+    appError('validation/invalid-request', {
       message,
       httpStatus: 422,
       details,
     }),
   notFound: (message = 'Not Found') =>
-    new AppHttpError({
-      code: 'error/not-found',
-      message,
-      httpStatus: 404,
-    }),
+    appError('error/not-found', { message, httpStatus: 404 }),
   writerInactive: (writer: string) =>
-    new AppHttpError({
-      code: 'billing/writer-inactive',
+    appError('billing/writer-inactive', {
       message: `The Billing API is not the active writer (BILLING_WRITER=${writer}, expected express).`,
       httpStatus: 503,
     }),

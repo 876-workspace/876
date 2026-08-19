@@ -177,16 +177,26 @@ Lists use the platform list object, always:
 Cursor pagination is `starting_after` / `ending_before` on item IDs. Never
 offset/limit on a public list endpoint.
 
-Errors are thrown, not returned:
+Errors are thrown, not returned. Registered application errors are created by
+code through the registry-backed factory:
 
 ```ts
-throw new AppHttpError({
-  code: 'auth/no-session',
-  message: 'No active session.',
-  httpStatus: 401,
-})
+import { appError } from '@/http/errors'
+
+throw appError('auth/no-session')
 ```
 
+- **Do not repeat a registered error's code, message, and HTTP status at the
+  call site.** The registry is the source of truth; `appError(code)` resolves
+  the canonical definition.
+- `AppHttpError` is the transport primitive behind the factory. Normal module,
+  provider, and middleware code must not instantiate it directly for a known
+  application error. Legacy direct construction is registry-normalized by the
+  primitive so an old call site cannot override a registered HTTP status.
+- A new public/domain error code must be added to the owning error registry
+  before use. Service-local compatibility codes that have not yet been promoted
+  may temporarily provide their existing message/status through `appError`, but
+  must not create a second ad-hoc registry in a service file.
 - `code` is a stable, namespaced, machine-readable string. It is part of the
   contract — clients branch on it, so renaming one is a breaking change.
 - `message` is user-safe. **Never** put a provider exception, a SQL error, a

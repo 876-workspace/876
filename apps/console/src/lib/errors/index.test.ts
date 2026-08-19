@@ -88,18 +88,31 @@ describe('isAppError', () => {
 })
 
 describe('extractAppError', () => {
-  it('preserves an existing AppError', () => {
+  it('normalizes an existing AppError through the registry', () => {
+    // ARRANGE
     const error = { code: 'role/not-found', message: 'Missing.' }
 
-    expect(extractAppError(error)).toBe(error)
+    // ACT
+    const result = extractAppError(error)
+
+    // ASSERT
+    expect(result).toEqual({
+      code: 'role/not-found',
+      message: 'The requested role was not found.',
+    })
   })
 
-  it('maps an Error message to the requested default code', () => {
-    expect(
-      extractAppError(new Error('Database unavailable.'), 'error/network')
-    ).toEqual({
+  it('maps an Error to the requested default registry code', () => {
+    // ARRANGE
+    const error = new Error('Database unavailable.')
+
+    // ACT
+    const result = extractAppError(error, 'error/network')
+
+    // ASSERT
+    expect(result).toEqual({
       code: 'error/network',
-      message: 'Database unavailable.',
+      message: 'A network error occurred. Please check your connection.',
     })
   })
 
@@ -110,12 +123,20 @@ describe('extractAppError', () => {
     })
   })
 
-  it('unwraps an AppError envelope', () => {
-    expect(
-      extractAppError({
-        error: { code: 'role/not-found', message: 'Missing.' },
-      })
-    ).toEqual({ code: 'role/not-found', message: 'Missing.' })
+  it('normalizes an AppError envelope through the registry', () => {
+    // ARRANGE
+    const error = {
+      error: { code: 'role/not-found', message: 'Missing.' },
+    }
+
+    // ACT
+    const result = extractAppError(error)
+
+    // ASSERT
+    expect(result).toEqual({
+      code: 'role/not-found',
+      message: 'The requested role was not found.',
+    })
   })
 
   it.each([null, undefined, 42, {}, { error: 'failed' }])(
@@ -139,7 +160,7 @@ describe('handleApiError', () => {
     vi.restoreAllMocks()
   })
 
-  it('preserves an AppError and applies its registered status', async () => {
+  it('normalizes an AppError and applies its registered status', async () => {
     const error = {
       code: 'role/duplicate-name',
       message: 'A role with that name already exists.',
@@ -169,14 +190,20 @@ describe('handleApiError', () => {
     expect(console.error).toHaveBeenCalledWith(error)
   })
 
-  it('returns a safe 500 while preserving a non-empty Error message', async () => {
+  it('does not expose a non-empty unexpected Error message', async () => {
+    // ARRANGE
     const error = new Error('Database unavailable.')
 
+    // ACT
     const response = handleApiError(error)
 
+    // ASSERT
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
-      error: { code: 'error/unknown', message: 'Database unavailable.' },
+      error: {
+        code: 'error/unknown',
+        message: 'An unexpected error occurred. Please try again.',
+      },
     })
     expect(console.error).toHaveBeenCalledTimes(1)
     expect(console.error).toHaveBeenCalledWith(error)

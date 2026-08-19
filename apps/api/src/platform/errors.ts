@@ -1,3 +1,5 @@
+import { getError, isErrorCode } from '@876/core'
+
 /**
  * The application error type.
  *
@@ -19,6 +21,20 @@
  * and strips it from the body: a client-facing error carries `code` and
  * `message` only (.claude/rules/stripe-api-pattern.md).
  */
+type AppHttpErrorOptions = {
+  code: string
+  message: string
+  httpStatus?: number
+  description?: string
+  param?: string
+  extra?: Record<string, unknown>
+  cause?: unknown
+}
+
+type AppErrorOverrides = Omit<AppHttpErrorOptions, 'code' | 'message'> & {
+  message?: string
+}
+
 export class AppHttpError extends Error {
   readonly code: string
   readonly httpStatus: number
@@ -27,23 +43,22 @@ export class AppHttpError extends Error {
   /** Extra fields merged into the error body — used by OAuth, which has its own spec-defined shape. */
   readonly extra?: Record<string, unknown>
 
-  constructor(options: {
-    code: string
-    message: string
-    httpStatus?: number
-    description?: string
-    param?: string
-    extra?: Record<string, unknown>
-    cause?: unknown
-  }) {
-    super(options.message, options.cause ? { cause: options.cause } : undefined)
+  constructor(options: AppHttpErrorOptions) {
+    const registered = isErrorCode(options.code)
+      ? getError(options.code, { param: options.param })
+      : null
+    const message = options.message || registered?.message || 'Internal error.'
+
+    super(message, options.cause ? { cause: options.cause } : undefined)
     this.name = 'AppHttpError'
-    this.code = options.code
-    this.message = options.message
-    this.httpStatus = options.httpStatus ?? 500
-    if (options.description !== undefined)
-      this.description = options.description
-    if (options.param !== undefined) this.param = options.param
+    this.code = registered?.code ?? options.code
+    this.message = message
+    this.httpStatus = registered?.httpStatus ?? options.httpStatus ?? 500
+
+    const description = options.description ?? registered?.description
+    const param = options.param ?? registered?.param
+    if (description !== undefined) this.description = description
+    if (param !== undefined) this.param = param
     if (options.extra !== undefined) this.extra = options.extra
   }
 
@@ -59,6 +74,39 @@ export class AppHttpError extends Error {
       ...(this.extra ?? {}),
     }
   }
+}
+
+/**
+ * Creates an HTTP error through the shared error registry when the code is
+ * registered. Unregistered service-local codes retain their explicit legacy
+ * definition until they are promoted into a registry.
+ */
+export function appError(
+  code: string,
+  options: AppErrorOverrides = {}
+): AppHttpError {
+  if (isErrorCode(code)) {
+    const registered = getError(code, { param: options.param })
+    return new AppHttpError({
+      code: registered.code,
+      message: options.message ?? registered.message,
+      httpStatus: registered.httpStatus,
+      description: options.description ?? registered.description,
+      param: options.param ?? registered.param,
+      extra: options.extra,
+      cause: options.cause,
+    })
+  }
+
+  return new AppHttpError({
+    code,
+    message: options.message ?? 'Internal error.',
+    httpStatus: options.httpStatus ?? 500,
+    description: options.description,
+    param: options.param,
+    extra: options.extra,
+    cause: options.cause,
+  })
 }
 
 export function isAppHttpError(value: unknown): value is AppHttpError {

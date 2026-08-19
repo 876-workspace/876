@@ -74,9 +74,8 @@ export function errorResponse(code: string): Response {
  * Checks if a value matches the AppError interface.
  */
 export function isAppError(value: unknown): value is AppError {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
+  if (typeof value !== 'object' || value === null) return false
+
   const candidate = value as Record<string, unknown>
   return (
     typeof candidate.code === 'string' && typeof candidate.message === 'string'
@@ -85,27 +84,18 @@ export function isAppError(value: unknown): value is AppError {
 
 /**
  * Extracts an AppError from an unknown error value.
+ * Registered codes are normalized through the local registry and unexpected
+ * Error messages are never exposed directly to the client.
  */
 export function extractAppError(
   err: unknown,
   defaultCode = 'error/unknown'
 ): AppError {
-  if (isAppError(err)) {
-    return err
-  }
+  if (isAppError(err)) return getAppError(err.code)
 
   if (typeof err === 'object' && err !== null && 'error' in err) {
     const nested = (err as Record<string, unknown>).error
-    if (isAppError(nested)) {
-      return nested
-    }
-  }
-
-  if (err instanceof Error) {
-    return {
-      code: defaultCode,
-      message: err.message,
-    }
+    if (isAppError(nested)) return getAppError(nested.code)
   }
 
   return getAppError(defaultCode)
@@ -117,28 +107,10 @@ export function extractAppError(
 export function handleApiError(err: unknown): Response {
   console.error(err)
 
-  if (isAppError(err)) {
-    return Response.json(
-      { error: err },
-      { status: getError(err.code).httpStatus }
-    )
-  }
+  if (isAppError(err)) return errorResponse(err.code)
 
-  if (typeof err === 'object' && err !== null && 'issues' in err) {
+  if (typeof err === 'object' && err !== null && 'issues' in err)
     return errorResponse('error/validation-failed')
-  }
-
-  if (err instanceof Error) {
-    return Response.json(
-      {
-        error: {
-          code: 'error/unknown',
-          message: err.message,
-        },
-      },
-      { status: HttpStatus.INTERNAL_SERVER_ERROR }
-    )
-  }
 
   return errorResponse('error/unknown')
 }
