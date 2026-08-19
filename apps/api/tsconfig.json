@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     // The service is bundled by tsup and run by tsx in dev; both resolve
     // tsconfig `paths` and extensionless imports. `bundler` matches that, and
     // is what lets the whole codebase use `@/…` without `.js` suffixes.
