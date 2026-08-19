@@ -1,6 +1,6 @@
 import { getError, isErrorCode } from '@876/core'
 
-export type AppHttpErrorOptions = {
+type AppHttpErrorOptions = {
   code: string
   message: string
   httpStatus?: number
