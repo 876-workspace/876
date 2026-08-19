@@ -54,10 +54,12 @@ export function FinanceProvisioningEditor({
   const groupedRows = useMemo(
     () =>
       Object.fromEntries(
-        catalog.resource_types.map((definition) => [
-          definition.resource_type,
-          rows.filter((row) => row.resourceType === definition.resource_type),
-        ])
+        catalog.resource_types.map((definition) => {
+          const typeKey =
+            definition.resource_type ||
+            (definition as { resourceType?: string }).resourceType
+          return [typeKey, rows.filter((row) => row.resourceType === typeKey)]
+        })
       ),
     [catalog.resource_types, rows]
   )
@@ -101,6 +103,8 @@ export function FinanceProvisioningEditor({
       setMessage(saved.error?.message ?? 'Failed to save finance defaults.')
       return null
     }
+    setDraftRevision(saved.data)
+    setRows(revisionRows(saved.data))
     return saved.data
   }
 
@@ -142,11 +146,11 @@ export function FinanceProvisioningEditor({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <section className="876-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[0.8125rem] font-medium">{heading}</p>
+            <h2 className="876-section-title">{heading}</h2>
             <p className="text-muted-foreground mt-1 max-w-3xl text-[0.8125rem]">
               {description}
             </p>
@@ -165,18 +169,29 @@ export function FinanceProvisioningEditor({
         multiple
         defaultValue={catalog.resource_types
           .slice(0, 1)
-          .map((definition) => definition.resource_type)}
+          .map(
+            (definition) =>
+              definition.resource_type ||
+              (definition as { resourceType?: string }).resourceType
+          )
+          .filter(Boolean)}
         className="gap-3"
       >
-        {catalog.resource_types.map((definition) => (
-          <FinanceResourceAccordion
-            key={definition.resource_type}
-            definition={definition}
-            rows={groupedRows[definition.resource_type] ?? []}
-            allRows={rows}
-            onChange={(next) => replaceType(definition.resource_type, next)}
-          />
-        ))}
+        {catalog.resource_types.map((definition, idx) => {
+          const typeKey =
+            definition.resource_type ||
+            (definition as { resourceType?: string }).resourceType ||
+            `resource-${idx}`
+          return (
+            <FinanceResourceAccordion
+              key={typeKey}
+              definition={definition}
+              rows={groupedRows[typeKey] ?? []}
+              allRows={rows}
+              onChange={(next) => replaceType(typeKey, next)}
+            />
+          )
+        })}
       </Accordion>
 
       {issues.length > 0 && (

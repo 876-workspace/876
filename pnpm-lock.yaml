@@ -329,6 +329,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@876/server':
         specifier: workspace:*
         version: link:../../packages/server

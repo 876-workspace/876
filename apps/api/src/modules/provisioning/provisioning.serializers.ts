@@ -231,3 +231,45 @@ export function serializeRun(row: RunRow) {
     updated_at: fromDbUnixSeconds(row.updatedAt),
   }
 }
+
+export function serializeCatalog(
+  targetType: string,
+  definitions: Array<{
+    resourceType: string
+    label: string
+    description: string
+    multiple: boolean
+    minimumItems: number
+    maximumItems: number | null
+    fields: Array<{
+      key: string
+      label: string
+      valueType: string
+      required: boolean
+      referenceNamespace: string | null
+      allowedValues: readonly string[] | null
+    }>
+  }>
+) {
+  return {
+    object: 'provisioning_catalog' as const,
+    manifest_version: 1 as const,
+    target_type: targetType as never,
+    resource_types: definitions.map((def) => ({
+      resource_type: def.resourceType,
+      label: def.label,
+      description: def.description,
+      multiple: def.multiple,
+      minimum_items: def.minimumItems,
+      maximum_items: def.maximumItems,
+      fields: def.fields.map((field) => ({
+        key: field.key,
+        label: field.label,
+        value_type: field.valueType as never,
+        required: field.required,
+        reference_namespace: field.referenceNamespace,
+        allowed_values: field.allowedValues ? [...field.allowedValues] : null,
+      })),
+    })),
+  }
+}

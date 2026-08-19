@@ -3,10 +3,26 @@
 import Link from 'next/link'
 import type { AdminInviteToken, AdminOrgMember } from '@876/admin'
 import { cn } from '@876/core/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import { formatDate } from '@/lib/format'
+
+function initialsOf(user: {
+  first_name?: string | null
+  last_name?: string | null
+  email?: string | null
+}): string {
+  return (
+    [user.first_name?.[0], user.last_name?.[0]]
+      .filter(Boolean)
+      .join('')
+      .toUpperCase() ||
+    user.email?.[0]?.toUpperCase() ||
+    '?'
+  )
+}
 
 function roleBadgeClass(role: string): string {
   switch (role) {
@@ -34,7 +50,7 @@ function statusBadgeClass(status: string): string {
 const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
   {
     id: 'name',
-    header: 'Member',
+    header: 'Name',
     cell: ({ row }) => {
       const member = row.original
       const name =
@@ -44,22 +60,38 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
           .trim() || member.user_id
 
       return (
-        <div className="flex flex-col">
+        <div className="flex items-center gap-3">
+          <Avatar className="size-6 shrink-0 rounded-full after:rounded-full">
+            {member.avatar && (
+              <AvatarImage
+                src={member.avatar}
+                alt=""
+                className="rounded-full"
+              />
+            )}
+            <AvatarFallback className="rounded-full text-[0.5625rem]">
+              {initialsOf(member)}
+            </AvatarFallback>
+          </Avatar>
           <Link
             href={`/users/${member.user_id}`}
-            className="hover:text-primary font-medium"
+            className="font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
             onClick={(e) => e.stopPropagation()}
           >
             {name}
           </Link>
-          {member.email && (
-            <span className="text-muted-foreground text-xs">
-              {member.email}
-            </span>
-          )}
         </div>
       )
     },
+  },
+  {
+    id: 'email',
+    header: 'Email',
+    cell: ({ row }) => (
+      <span className="text-muted-foreground text-[0.8125rem]">
+        {row.original.email ?? '—'}
+      </span>
+    ),
   },
   {
     id: 'role',

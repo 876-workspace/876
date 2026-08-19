@@ -56,7 +56,11 @@ export function FinanceResourceAccordion({
     <DetailAccordionSection
       title={definition.label}
       description={definition.description}
-      value={definition.resource_type}
+      value={
+        definition.resource_type ||
+        (definition as { resourceType?: string }).resourceType ||
+        definition.label
+      }
       count={rows.length}
     >
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4">

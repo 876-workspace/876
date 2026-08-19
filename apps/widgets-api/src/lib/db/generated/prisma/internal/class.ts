@@ -17,8 +17,8 @@ import type * as Prisma from "./prismaNamespace"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.7.0",
-  "engineVersion": "75cbdc1eb7150937890ad5465d861175c6624711",
+  "clientVersion": "7.9.1",
+  "engineVersion": "e922089b7d7502aff4249d5da3420f6fa55fc6ad",
   "activeProvider": "postgresql",
   "inlineSchema": "/// Account-owned Notepad collection (topic folder for grouping notes).\nmodel NotepadCollection {\n  id             String  @id\n  ownerAccountId String  @map(\"owner_account_id\")\n  name           String\n  color          String?\n  createdAt      Int     @map(\"created_at\")\n  updatedAt      Int     @map(\"updated_at\")\n\n  notes NotepadNote[]\n\n  @@unique([ownerAccountId, name], name: \"notepad_collections_owner_name_uidx\")\n  @@index([ownerAccountId, updatedAt(sort: Desc)], name: \"notepad_collections_owner_updated_idx\")\n  @@map(\"notepad_collections\")\n}\n\n/// Account-owned Notepad content (shared portable widget).\nmodel NotepadNote {\n  id             String  @id\n  ownerAccountId String  @map(\"owner_account_id\")\n  collectionId   String? @map(\"collection_id\")\n  title          String\n  body           String\n  color          String?\n  pinned         Boolean @default(false)\n  createdAt      Int     @map(\"created_at\")\n  updatedAt      Int     @map(\"updated_at\")\n  /// Convex document id from the one-time migration; unique when present.\n  legacyConvexId String? @unique @map(\"legacy_convex_id\")\n  /// Widget host the note was created in (@876/widgets WidgetHost). Null for\n  /// rows written before attribution existed.\n  sourceHost     String? @map(\"source_host\")\n\n  collection NotepadCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)\n\n  @@index([ownerAccountId, updatedAt(sort: Desc)], name: \"notepad_notes_owner_updated_idx\")\n  @@index([ownerAccountId, collectionId, updatedAt(sort: Desc)], name: \"notepad_notes_owner_collection_updated_idx\")\n  @@index([updatedAt(sort: Desc)], name: \"notepad_notes_updated_idx\")\n  @@map(\"notepad_notes\")\n}\n\n// Widgets bounded-context database (Prisma 7).\n// Only apps/widgets-api may connect. Hosts never receive this URL.\n\n// runtime = \"workerd\" makes the generated client import Prisma's query-compiler\n// WASM as a module. The default (nodejs) compiles it from bytes at runtime,\n// which Cloudflare Workers refuses: \"WebAssembly.Module(): Wasm code generation\n// disallowed by embedder\".\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../../src/lib/db/generated/prisma\"\n  runtime  = \"workerd\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\n/// Audit trail for administrative mutations of widget-owned content.\nmodel WidgetAuditEvent {\n  id                   String @id\n  widgetId             String @map(\"widget_id\")\n  action               String\n  resourceId           String @map(\"resource_id\")\n  actorUserId          String @map(\"actor_user_id\")\n  targetOwnerAccountId String @map(\"target_owner_account_id\")\n  occurredAt           Int    @map(\"occurred_at\")\n\n  @@index([widgetId, occurredAt], name: \"widget_audit_events_widget_occurred_idx\")\n  @@index([resourceId, occurredAt], name: \"widget_audit_events_resource_occurred_idx\")\n  @@map(\"widget_audit_events\")\n}\n",
   "runtimeDataModel": {
@@ -78,7 +78,7 @@ export interface PrismaClientConstructor {
     LogOpts extends LogOptions<Options> = LogOptions<Options>,
     OmitOpts extends Prisma.PrismaClientOptions['omit'] = Options extends { omit: infer U } ? U : Prisma.PrismaClientOptions['omit'],
     ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs
-  >(options: Prisma.Subset<Options, Prisma.PrismaClientOptions> ): PrismaClient<LogOpts, OmitOpts, ExtArgs>
+  >(options: Prisma.PrismaClientConstructorArgs<Options>): PrismaClient<LogOpts, OmitOpts, ExtArgs>
 }
 
 /**
@@ -99,7 +99,7 @@ export interface PrismaClientConstructor {
 
 export interface PrismaClient<
   in LogOpts extends Prisma.LogLevel = never,
-  in out OmitOpts extends Prisma.PrismaClientOptions['omit'] = undefined,
+  in out OmitOpts extends Prisma.PrismaClientOptions['omit'] = Prisma.PrismaClientOptions['omit'],
   in out ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
@@ -176,7 +176,7 @@ export interface PrismaClient<
    * 
    * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => runtime.Types.Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): runtime.Types.Utils.JsPromise<R>
 
