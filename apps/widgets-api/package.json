@@ -40,7 +40,7 @@
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.1",
     "prisma": "7.9.1",
-    "typescript": "6.0.3",
+    "typescript": "5.9.3",
     "vitest": "4.1.11",
     "wrangler": "4.124.0"
   }

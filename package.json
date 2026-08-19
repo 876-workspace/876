@@ -131,7 +131,7 @@
     "tailwindcss": "4.3.3",
     "tsx": "4.23.12",
     "turbo": "2.10.11",
-    "typescript": "6.0.3",
+    "typescript": "5.9.3",
     "vitest": "4.1.11",
     "vitest-browser-react": "2.2.0",
     "wrangler": "4.124.0"
