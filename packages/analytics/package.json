@@ -16,14 +16,14 @@
   "dependencies": {
     "@876/core": "workspace:*",
     "@876/types": "workspace:*",
-    "next": "16.3.0",
-    "posthog-js": "1.372.10",
-    "react": "19.2.6",
+    "next": "16.3.1",
+    "posthog-js": "1.418.1",
+    "react": "19.2.8",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "25.6.2",
-    "@types/react": "19.2.14",
-    "typescript": "5.9.3"
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "typescript": "7.0.2"
   }
 }
