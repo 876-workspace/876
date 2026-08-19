@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { extractAppError, getAppError, handleApiError } from './index'
+import { extractAppError, handleApiError } from './index'
 
 describe('Couriers error registry', () => {
   it('normalizes an existing AppError through the registry', () => {
@@ -25,7 +25,10 @@ describe('Couriers error registry', () => {
     const result = extractAppError(error)
 
     // ASSERT
-    expect(result).toEqual(getAppError('error/unknown'))
+    expect(result).toEqual({
+      code: 'error/unknown',
+      message: 'An unexpected error occurred. Please try again.',
+    })
   })
 })
 
