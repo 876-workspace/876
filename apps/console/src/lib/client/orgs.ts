@@ -4,11 +4,13 @@ import type {
   AdminDeletedOrganization,
   AdminInviteCreateParams,
   AdminInviteToken,
+  AdminMembership,
   AdminOrgMember,
   AdminSubscription,
   AdminOrganization,
   AdminOrganizationCreateParams,
   AdminOrganizationUpdateParams,
+  AdminUser,
 } from '@876/admin'
 import type {
   DeletedImageFile,
@@ -75,6 +77,23 @@ export const revokeInvite = (orgId: string, inviteId: string) =>
   request<{ deleted: boolean }>(
     `/api/organizations/${encodeURIComponent(orgId)}/invites/${encodeURIComponent(inviteId)}`,
     { method: 'DELETE' }
+  )
+
+export const createMember = (
+  orgId: string,
+  params: { userId: string; role: string }
+) =>
+  request<AdminMembership>(
+    `/api/organizations/${encodeURIComponent(orgId)}/members`,
+    {
+      method: 'POST',
+      body: JSON.stringify(params),
+    }
+  )
+
+export const searchMembers = (orgId: string, query: string) =>
+  request<AdminUser[]>(
+    `/api/organizations/${encodeURIComponent(orgId)}/members/search?q=${encodeURIComponent(query)}`
   )
 
 export const updateMember = (
@@ -182,6 +201,8 @@ export const invites = {
 }
 
 export const members = {
+  create: createMember,
+  search: searchMembers,
   update: updateMember,
   delete: deleteMember,
 }
