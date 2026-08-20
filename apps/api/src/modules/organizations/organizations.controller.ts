@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 
 import { getAppId, getPrincipal } from '@/http/auth/principal'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
+import { createMembership as createMembershipLifecycle } from '@/modules/memberships'
 
 import type {
   InviteCreateBody,
@@ -210,9 +211,18 @@ export async function createOrganizationMembership(
     role?: string | null
     status?: string | null
   }>(req)
-  res
-    .status(201)
-    .json(await service.createOrganizationMembership(organization_id, body))
+
+  // Keep the legacy organization-scoped transport, but route its write through
+  // the canonical membership lifecycle so WorkOS projection, role validation,
+  // role linking, and default app assignment cannot diverge by call site.
+  res.status(201).json(
+    await createMembershipLifecycle({
+      organization_id,
+      user_id: body.user_id,
+      ...(body.role ? { role: body.role } : {}),
+      ...(body.status ? { status: body.status } : {}),
+    })
+  )
 }
 
 export async function listOrganizationInvites(
