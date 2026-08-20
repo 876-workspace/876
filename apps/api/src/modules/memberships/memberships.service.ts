@@ -94,6 +94,14 @@ export async function createMembership(
   const now = nowUnixSeconds()
   const role = body.role ?? 'member'
   const status = body.status ?? 'active'
+  const orgRole = await repository.findRoleByName(body.organization_id, role)
+  if (!orgRole) {
+    throw new AppHttpError({
+      code: 'role/not-found',
+      message: 'No role exists with the provided name.',
+      httpStatus: 400,
+    })
+  }
 
   const workosOrgId =
     (org as { workosOrganizationId?: string | null }).workosOrganizationId ??
