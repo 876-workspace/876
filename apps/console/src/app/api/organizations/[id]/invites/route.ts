@@ -24,7 +24,7 @@ export async function GET(
       { status: 400 }
     )
   }
-  return apiJson({ data })
+  return apiJson({ data: data.data })
 }
 
 /** Creates an invite token for an organization. */
