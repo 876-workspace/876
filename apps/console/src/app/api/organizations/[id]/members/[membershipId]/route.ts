@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
 
 type Params = { params: Promise<{ id: string; membershipId: string }> }
 
-/** Updates a member's role or status in an organization. */
+/** Updates a member's organization role. */
 export async function PATCH(
   request: NextRequest,
   { params }: Params
@@ -16,20 +16,24 @@ export async function PATCH(
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
 
-  const { membershipId } = await params
+  const { id, membershipId } = await params
   const body = (await request.json().catch(() => null)) as {
-    role?: string
-    status?: string
+    role?: unknown
   } | null
+  const role = typeof body?.role === 'string' ? body.role.trim() : ''
 
-  if (!body?.role && !body?.status) {
-    return apiJson({ error: 'role or status is required.' }, { status: 400 })
+  if (!role) {
+    return apiJson({ error: 'role is required.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.memberships.admin.update(membershipId, {
-    ...(body.role ? { role: body.role } : {}),
-    ...(body.status ? { status: body.status } : {}),
-  })
+  // Keep Console on the organization-scoped access path. Besides preventing a
+  // membership ID from another org being mutated through this route, this path
+  // enforces the owner/last-owner invariants in the Core API.
+  const { data, error } = await $876.organizationMembers.admin.update(
+    id,
+    membershipId,
+    { role }
+  )
 
   if (error || !data) {
     return apiJson(
@@ -48,8 +52,11 @@ export async function DELETE(
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
 
-  const { membershipId } = await params
-  const { data, error } = await $876.memberships.admin.delete(membershipId)
+  const { id, membershipId } = await params
+  const { data, error } = await $876.organizationMembers.admin.delete(
+    id,
+    membershipId
+  )
 
   if (error || !data) {
     return apiJson(
