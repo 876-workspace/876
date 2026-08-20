@@ -11,12 +11,11 @@ type Params = { params: Promise<{ id: string }> }
 /** Searches existing 876 users who can be added to an organization. */
 export async function GET(
   request: NextRequest,
-  { params }: Params
+  _context: Params
 ): Promise<Response> {
   const { response } = await requireConsolePermission('console:organizations')
   if (response) return response
 
-  await params
   const query = request.nextUrl.searchParams.get('q')?.trim() ?? ''
   if (query.length < 2) return apiJson({ data: [] })
 
