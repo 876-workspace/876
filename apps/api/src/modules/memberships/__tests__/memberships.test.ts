@@ -1,24 +1,28 @@
 import request from 'supertest'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { membership, organization, user, apiKey } = vi.hoisted(() => ({
-  membership: {
-    findFirst: vi.fn(),
-    findUnique: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    findMany: vi.fn(),
-    delete: vi.fn(),
-  },
-  organization: { findUnique: vi.fn() },
-  user: { findUnique: vi.fn() },
-  apiKey: { findUnique: vi.fn(), update: vi.fn() },
-}))
+const { membership, organization, organizationRole, user, apiKey } = vi.hoisted(
+  () => ({
+    membership: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      findMany: vi.fn(),
+      delete: vi.fn(),
+    },
+    organization: { findUnique: vi.fn() },
+    organizationRole: { findFirst: vi.fn() },
+    user: { findUnique: vi.fn() },
+    apiKey: { findUnique: vi.fn(), update: vi.fn() },
+  })
+)
 
 vi.mock('@/db/client', () => ({
   prisma: {
     membership,
     organization,
+    organizationRole,
     user,
     apiKey,
     $executeRaw: vi.fn().mockResolvedValue(1),
@@ -55,6 +59,7 @@ vi.mock('@/providers/workos/adapter', () => ({
 }))
 
 const { createApp } = await import('@/app')
+const { ensureProviderMembership } = await import('@/services/identity-sync')
 
 const APP_KEY = '876_app_secret_kQ8vN2xLpR7wT4mB'
 const AUTH = { 'X-876-API-Key': APP_KEY, 'x-internal-key': 'test-internal-key' }
@@ -92,6 +97,10 @@ beforeEach(() => {
   organization.findUnique.mockResolvedValue({
     id: 'org_01',
     workosOrganizationId: null,
+  })
+  organizationRole.findFirst.mockResolvedValue({
+    id: 'role_member',
+    name: 'member',
   })
   user.findUnique.mockResolvedValue({ id: 'user_01', workosUserId: null })
 })
@@ -152,6 +161,32 @@ describe('POST /memberships', () => {
       user_id: 'user_01',
       role_id: 'role_member',
     })
+    expect(organizationRole.findFirst).toHaveBeenCalledTimes(1)
+    expect(organizationRole.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: 'org_01', name: 'member' },
+      select: { id: true, name: true },
+    })
+  })
+
+  it('rejects unknown roles before provider or local membership writes', async () => {
+    organizationRole.findFirst.mockResolvedValue(null)
+
+    const res = await request(createApp())
+      .post('/memberships')
+      .set(AUTH)
+      .send({
+        organization_id: 'org_01',
+        user_id: 'user_01',
+        role: 'missing-role',
+      })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error).toEqual({
+      code: 'role/not-found',
+      message: 'No role exists with the provided name.',
+    })
+    expect(vi.mocked(ensureProviderMembership)).not.toHaveBeenCalled()
+    expect(membership.create).not.toHaveBeenCalled()
   })
 
   it('rejects unknown field', async () => {
