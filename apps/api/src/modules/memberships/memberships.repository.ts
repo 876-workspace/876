@@ -58,6 +58,13 @@ export async function findUserById(userId: string) {
   })
 }
 
+export async function findRoleByName(organizationId: string, name: string) {
+  return prisma.organizationRole.findFirst({
+    where: { organizationId, name },
+    select: { id: true, name: true },
+  })
+}
+
 export function createMembership(data: {
   id: string
   organizationId: string
