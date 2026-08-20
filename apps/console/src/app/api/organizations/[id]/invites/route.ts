@@ -17,7 +17,7 @@ export async function GET(
   if (response) return response
 
   const { id } = await params
-  const { data, error } = await $876.invites.list(id)
+  const { data, error } = await $876.invites.admin.list(id)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to list invites.' },
@@ -37,17 +37,17 @@ export async function POST(
 
   const { id } = await params
   const body = (await request.json().catch(() => null)) as {
-    email?: string
-    role?: string
+    email?: unknown
+    role?: unknown
   } | null
+  const email = typeof body?.email === 'string' ? body.email.trim() : ''
+  const role = typeof body?.role === 'string' ? body.role.trim() : ''
 
-  if (!body?.email) {
-    return apiJson({ error: 'email is required.' }, { status: 400 })
-  }
+  if (!email) return apiJson({ error: 'email is required.' }, { status: 400 })
 
-  const { data, error } = await $876.invites.create(id, {
-    email: body.email,
-    role: body.role,
+  const { data, error } = await $876.invites.admin.create(id, {
+    email,
+    ...(role ? { role } : {}),
   })
   if (error || !data) {
     return apiJson(
@@ -55,5 +55,6 @@ export async function POST(
       { status: 400 }
     )
   }
-  return apiJson({ data })
+
+  return apiJson({ data }, { status: 201 })
 }
