@@ -31,11 +31,14 @@ import { GET, POST } from './route'
 const context = { params: Promise.resolve({ id: 'org_target' }) }
 
 function postRequest(body: unknown) {
-  return new Request('http://console.test/api/organizations/org_target/invites', {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: { 'content-type': 'application/json' },
-  }) as NextRequest
+  return new Request(
+    'http://console.test/api/organizations/org_target/invites',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'content-type': 'application/json' },
+    }
+  ) as NextRequest
 }
 
 describe('Console organization invite route', () => {
@@ -64,9 +67,7 @@ describe('Console organization invite route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body.data).toEqual([
-      { id: 'inv_01', email: 'member@example.com' },
-    ])
+    expect(body.data).toEqual([{ id: 'inv_01', email: 'member@example.com' }])
     expect(mocks.listInvites).toHaveBeenCalledWith('org_target')
     expect(mocks.platformListInvites).not.toHaveBeenCalled()
   })

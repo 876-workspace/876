@@ -9,11 +9,7 @@ import type {
   AdminUser,
 } from '@876/admin'
 import { Button } from '@876/ui/button'
-import {
-  CheckIcon,
-  Copy,
-  UserPlusIcon,
-} from '@876/ui/icons'
+import { CheckIcon, Copy, UserPlusIcon } from '@876/ui/icons'
 import { Input } from '@876/ui/input'
 import {
   Dialog,
@@ -170,10 +166,13 @@ export function AddMemberDialog({ orgId, orgName, roles }: Props) {
 
     if (selectedUser) {
       startTransition(async () => {
-        const { data, error: createError } = await client.members.create(orgId, {
-          userId: selectedUser.id,
-          role,
-        })
+        const { data, error: createError } = await client.members.create(
+          orgId,
+          {
+            userId: selectedUser.id,
+            role,
+          }
+        )
         if (createError || !data) {
           setError(createError?.message ?? 'Failed to add member.')
           return

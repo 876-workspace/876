@@ -25,11 +25,14 @@ import { POST } from './route'
 const context = { params: Promise.resolve({ id: 'org_target' }) }
 
 function postRequest(body: unknown) {
-  return new Request('http://console.test/api/organizations/org_target/members', {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: { 'content-type': 'application/json' },
-  }) as NextRequest
+  return new Request(
+    'http://console.test/api/organizations/org_target/members',
+    {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'content-type': 'application/json' },
+    }
+  ) as NextRequest
 }
 
 describe('Console organization member create route', () => {
