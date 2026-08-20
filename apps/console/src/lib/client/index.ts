@@ -5,7 +5,13 @@ import { billingIntegrations } from './billing-integrations'
 import { devices } from './devices'
 import { features } from './features'
 import { financeProvisioning } from './finance-provisioning'
-import { invites, organizations, subscriptions } from './orgs'
+import {
+  appAssignments,
+  invites,
+  members,
+  organizations,
+  subscriptions,
+} from './orgs'
 import { onboarding } from './onboarding'
 import { modules } from './modules'
 import { prices } from './prices'
@@ -28,6 +34,8 @@ export const client = {
   features,
   financeProvisioning,
   organizations,
+  members,
+  appAssignments,
   invites,
   subscriptions,
   onboarding,
@@ -50,7 +58,13 @@ export { billing } from './billing'
 export { billingIntegrations } from './billing-integrations'
 export { features } from './features'
 export { financeProvisioning } from './finance-provisioning'
-export { invites, organizations, subscriptions } from './orgs'
+export {
+  appAssignments,
+  invites,
+  members,
+  organizations,
+  subscriptions,
+} from './orgs'
 export { onboarding } from './onboarding'
 export { modules } from './modules'
 export { prices } from './prices'

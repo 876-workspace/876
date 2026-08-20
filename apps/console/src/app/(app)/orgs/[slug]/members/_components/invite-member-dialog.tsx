@@ -35,8 +35,9 @@ export function InviteMemberDialog({ orgId }: Props) {
   const [copied, setCopied] = useState(false)
 
   // Derive the invite URL from the token returned by the API.
-  const inviteUrl = created
-    ? `${typeof window !== 'undefined' ? window.location.origin.replace(':3002', ':3000') : ''}/invite/${created.id}`
+  const inviteToken = created?.token || created?.id
+  const inviteUrl = inviteToken
+    ? `${typeof window !== 'undefined' ? window.location.origin.replace(':3002', ':3000') : ''}/invite/${inviteToken}`
     : null
 
   function handleOpen(value: boolean) {
