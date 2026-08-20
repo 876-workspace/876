@@ -4,10 +4,12 @@ vi.mock('server-only', () => ({}))
 import { createCoreSurface } from './composers/base.ts'
 
 describe('admin core resource projections', () => {
-  it('preserves platform member methods while exposing internal-key admin namespaces', () => {
+  it('preserves platform methods while exposing internal-key admin namespaces', () => {
     const platformMemberList = vi.fn()
+    const platformAssignmentList = vi.fn()
     const platformInviteList = vi.fn()
     const adminMemberList = vi.fn()
+    const adminAssignmentList = vi.fn()
     const adminInviteList = vi.fn()
 
     const platform: any = {
@@ -31,7 +33,7 @@ describe('admin core resource projections', () => {
       roles: {},
       permissions: {},
       organizationMembers: { list: platformMemberList },
-      appAssignments: {},
+      appAssignments: { list: platformAssignmentList },
       invites: { list: platformInviteList },
       mobileNumbers: {},
       mobileNumberVerifications: {},
@@ -72,6 +74,7 @@ describe('admin core resource projections', () => {
       subscriptions: {},
       roles: {},
       organizationMembers: { list: adminMemberList },
+      appAssignments: { list: adminAssignmentList },
       invites: { list: adminInviteList },
     }
 
@@ -79,6 +82,8 @@ describe('admin core resource projections', () => {
 
     expect(core.organizationMembers.list).toBe(platformMemberList)
     expect(core.organizationMembers.admin.list).toBe(adminMemberList)
+    expect(core.appAssignments.list).toBe(platformAssignmentList)
+    expect(core.appAssignments.admin.list).toBe(adminAssignmentList)
     expect(core.invites.list).toBe(platformInviteList)
     expect(core.invites.admin.list).toBe(adminInviteList)
   })
