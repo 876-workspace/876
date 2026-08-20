@@ -1,11 +1,32 @@
 import type { ReactNode } from 'react'
 import { cookies } from 'next/headers'
 
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@876/ui/sidebar'
+import { NavProgress } from '@876/ui/nav-progress'
+import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
+import {
+  AppShell,
+  AppShellBody,
+  AppShellContent,
+  AppShellHeader,
+  AppShellMain,
+  AppShellSidebarArea,
+} from '@876/ui/app-shell'
+import { SidebarTrigger } from '@876/ui/sidebar'
+import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 
 import { get876ServerClient } from '@/lib/876/server'
-import { Sidebar, type SidebarUser } from './sidebar'
+import { getPlatformClient } from '@/lib/876/platform-client'
+import { unwrapResult } from '@876/core/client/lookup'
+import { Sidebar } from './sidebar'
 import { AppsGroup, AppNavLink } from './apps-group'
+import { OrgSwitcher } from './org-switcher'
+import { UserMenu } from './user-menu'
+
+type ShellOrganization = {
+  id: string
+  name: string | null
+  slug: string
+}
 
 export async function Shell({
   children,
@@ -13,14 +34,16 @@ export async function Shell({
   enabledFeatureSlugs,
   permissions,
   orgId,
+  userId,
   user,
 }: {
   children: ReactNode
-  organization: { name: string | null; slug: string }
+  organization: ShellOrganization
   enabledFeatureSlugs?: string[]
   permissions?: string[]
   orgId: string
-  user: SidebarUser
+  userId: string
+  user: SidebarUserMenuUser
 }) {
   const cookieStore = await cookies()
   const sidebarCookie = cookieStore.get('sidebar_state')
@@ -28,32 +51,47 @@ export async function Shell({
     ? sidebarCookie.value === 'true'
     : true
 
-  const appsSlot = await buildAppsSlot(orgId, organization.slug)
+  const [appsSlot, switcherOrgs] = await Promise.all([
+    buildAppsSlot(orgId, organization.slug),
+    buildSwitcherOrgs(userId),
+  ])
+  const currentOrg: OrgSwitcherOrg = {
+    id: organization.id,
+    name: organization.name,
+    slug: organization.slug,
+  }
 
   return (
-    <SidebarProvider
-      defaultOpen={defaultSidebarOpen}
-      className="h-svh overflow-hidden"
-    >
-      <Sidebar
-        organization={organization}
-        enabledFeatureSlugs={enabledFeatureSlugs}
-        permissions={permissions}
-        appsSlot={appsSlot}
-        user={user}
-      />
+    <AppShell defaultOpen={defaultSidebarOpen}>
+      <NavProgress />
+      <AppShellSidebarArea>
+        <Sidebar
+          organization={organization}
+          enabledFeatureSlugs={enabledFeatureSlugs}
+          permissions={permissions}
+          appsSlot={appsSlot}
+        />
+      </AppShellSidebarArea>
 
-      <SidebarInset className="bg-876-canvas flex h-svh min-h-0 flex-col overflow-hidden">
-        <header className="876-topbar border-876-surface-border dark:bg-876-canvas z-20 flex h-16 shrink-0 items-center gap-3 border-b-0 pr-4 pl-3 backdrop-blur-md sm:pr-6 lg:pr-8 dark:shadow-none dark:backdrop-blur-none">
+      <AppShellContent>
+        <AppShellHeader className="dark:bg-876-canvas h-16 border-b-0 backdrop-blur-md dark:shadow-none dark:backdrop-blur-none">
           <SidebarTrigger />
-          <span className="text-sm font-medium text-[#202124] dark:text-white">
-            {organization.name ?? organization.slug}
-          </span>
-        </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
+          <div className="ml-auto flex items-center gap-2">
+            {switcherOrgs.length > 1 ? (
+              <div className="hidden items-center gap-1.5 md:flex">
+                <OrgSwitcher current={currentOrg} orgs={switcherOrgs} />
+              </div>
+            ) : null}
+            <UserMenu user={user} />
+          </div>
+        </AppShellHeader>
+
+        <AppShellBody>
+          <AppShellMain>{children}</AppShellMain>
+        </AppShellBody>
+      </AppShellContent>
+    </AppShell>
   )
 }
 
@@ -84,4 +122,27 @@ async function buildAppsSlot(
       ))}
     </AppsGroup>
   )
+}
+
+/**
+ * Resolves the signed-in user's active org memberships for the topbar org
+ * switcher. On any platform failure the switcher degrades to a single-org view
+ * (hidden in the topbar), so the shell never crashes.
+ */
+async function buildSwitcherOrgs(userId: string): Promise<OrgSwitcherOrg[]> {
+  const client = await getPlatformClient()
+  const result = await client.memberships.listRouting({
+    userId,
+    status: 'active',
+  })
+  if (result.error) return []
+
+  return unwrapResult(result, 'routing memberships').data
+    .filter((membership) => membership.organization.status === 'active')
+    .map((membership) => ({
+      id: membership.organization.id,
+      name: membership.organization.name,
+      slug: membership.organization.slug,
+      role: membership.role,
+    }))
 }

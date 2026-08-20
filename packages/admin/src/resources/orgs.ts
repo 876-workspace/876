@@ -224,7 +224,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         method: 'POST',
         path: `/organizations/${orgId}/memberships`,
         body: {
-          userId: params.userId,
+          user_id: params.userId,
           role: params.role,
           status: params.status,
         },
@@ -296,7 +296,7 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
      * membership guard.
      */
     locations: {
-      /** Creates a location for an organization. */
+      /** Creates a location within an organization. */
       create(orgId: string, params: AdminOrgLocationCreateParams) {
         return adminRequest<AdminOrgLocation>(runtime, {
           method: 'POST',
@@ -642,6 +642,19 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
 
     /** An organization's member directory (memberships + user identity). */
     members: {
+      /** Creates an active membership for an existing platform user. */
+      create(orgId: string, params: { userId: string; role: string }) {
+        return adminRequest<AdminMembership>(runtime, {
+          method: 'POST',
+          path: `/organizations/${orgId}/memberships`,
+          body: {
+            user_id: params.userId,
+            role: params.role,
+            status: 'active',
+          },
+        })
+      },
+
       /** Returns an organization's members. */
       list(orgId: string, params?: { limit?: number }) {
         return adminRequest<AdminListResponse<AdminOrgMember>>(runtime, {

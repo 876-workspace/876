@@ -49,6 +49,7 @@ export default async function OrgLayout({
         enabledFeatureSlugs={[...enabledFeatureSlugs]}
         permissions={membership.permissions}
         orgId={membership.organization.id}
+        userId={user.id}
         user={{
           name: getDisplayName(user),
           email: user.email,

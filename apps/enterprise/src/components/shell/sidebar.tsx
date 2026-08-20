@@ -19,8 +19,6 @@ import {
 } from '@876/ui/icons'
 import { Logo } from '@876/ui/logo'
 
-import { $876 } from '@/lib/876'
-import { useUserStore } from '@/stores/user'
 import { NavLink } from './nav-link'
 import {
   Sidebar as SidebarRoot,
@@ -29,12 +27,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
 } from '@876/ui/sidebar'
-import {
-  SidebarUserMenu,
-  type SidebarUserMenuUser,
-} from '@876/ui/sidebar-user-menu'
-
-export type SidebarUser = SidebarUserMenuUser
 
 type NavItem = {
   title: string
@@ -56,13 +48,11 @@ export function Sidebar({
   enabledFeatureSlugs = [],
   permissions = [],
   appsSlot,
-  user,
 }: {
   organization: { name: string | null; slug: string }
   enabledFeatureSlugs?: string[]
   permissions?: string[]
   appsSlot?: ReactNode
-  user: SidebarUser
 }) {
   const baseHref = `/${organization.slug}`
   const enabledSet = new Set(enabledFeatureSlugs)
@@ -81,12 +71,6 @@ export function Sidebar({
   const settingsItem = navGroups
     .flatMap((group) => group.items)
     .find((item) => item.href === settingsHref)
-
-  async function handleSignOut() {
-    useUserStore.getState().clearUser()
-    await $876.auth.logout()
-    window.location.href = '/login'
-  }
 
   return (
     <SidebarRoot
@@ -156,12 +140,6 @@ export function Sidebar({
           ) : null}
         </nav>
       </SidebarContent>
-
-      <SidebarUserMenu
-        user={user}
-        onSignOut={handleSignOut}
-        showSystemTheme={false}
-      />
     </SidebarRoot>
   )
 }
