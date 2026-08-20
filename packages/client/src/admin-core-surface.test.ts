@@ -8,6 +8,7 @@ describe('admin core resource projections', () => {
     const platformMemberList = vi.fn()
     const platformAssignmentList = vi.fn()
     const platformInviteList = vi.fn()
+    const adminMemberCreate = vi.fn()
     const adminMemberList = vi.fn()
     const adminAssignmentList = vi.fn()
     const adminInviteList = vi.fn()
@@ -73,7 +74,10 @@ describe('admin core resource projections', () => {
       features: {},
       subscriptions: {},
       roles: {},
-      organizationMembers: { list: adminMemberList },
+      organizationMembers: {
+        create: adminMemberCreate,
+        list: adminMemberList,
+      },
       appAssignments: { list: adminAssignmentList },
       invites: { list: adminInviteList },
     }
@@ -81,6 +85,7 @@ describe('admin core resource projections', () => {
     const core = createCoreSurface({ platform, admin }) as any
 
     expect(core.organizationMembers.list).toBe(platformMemberList)
+    expect(core.organizationMembers.admin.create).toBe(adminMemberCreate)
     expect(core.organizationMembers.admin.list).toBe(adminMemberList)
     expect(core.appAssignments.list).toBe(platformAssignmentList)
     expect(core.appAssignments.admin.list).toBe(adminAssignmentList)
