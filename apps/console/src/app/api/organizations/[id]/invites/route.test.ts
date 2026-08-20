@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NextRequest } from 'next/server'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
@@ -47,15 +47,26 @@ describe('Console organization invite route', () => {
     })
   })
 
-  it('lists invites through the admin facade', async () => {
+  it('lists invites through the admin facade and unwraps the list', async () => {
     mocks.listInvites.mockResolvedValue({
-      data: { object: 'list', data: [], has_more: false },
+      data: {
+        object: 'list',
+        data: [{ id: 'inv_01', email: 'member@example.com' }],
+        has_more: false,
+      },
       error: null,
     })
 
-    const response = await GET(new Request('http://console.test') as NextRequest, context)
+    const response = await GET(
+      new Request('http://console.test') as NextRequest,
+      context
+    )
+    const body = await response.json()
 
     expect(response.status).toBe(200)
+    expect(body.data).toEqual([
+      { id: 'inv_01', email: 'member@example.com' },
+    ])
     expect(mocks.listInvites).toHaveBeenCalledWith('org_target')
     expect(mocks.platformListInvites).not.toHaveBeenCalled()
   })
