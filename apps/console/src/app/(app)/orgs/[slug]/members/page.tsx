@@ -5,9 +5,9 @@ import { Button } from '@876/ui/button'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
 import { $876 } from '@/lib/876'
-import { resolveOrg, resolveOrgMembers } from '../_data'
+import { resolveOrg, resolveOrgMembers, resolveOrgRoles } from '../_data'
 import { MembersTable, PendingInvitesTable } from './_components/members-table'
-import { InviteMemberDialog } from './_components/invite-member-dialog'
+import { AddMemberDialog } from './_components/add-member-dialog'
 import { MEMBERS_SKELETON_COLUMNS } from './_components/members-skeleton-columns'
 import { MembersHeading } from './_components/members-heading'
 
@@ -32,8 +32,8 @@ export default function OrganizationMembersPage({ params }: Props) {
         <Suspense fallback={<h2 className="876-page-title">Members</h2>}>
           <MembersHeading />
         </Suspense>
-        <Suspense fallback={<InviteMemberButton />}>
-          <InviteMemberData params={params} />
+        <Suspense fallback={<AddMemberButton />}>
+          <AddMemberData params={params} />
         </Suspense>
       </div>
 
@@ -50,12 +50,20 @@ export default function OrganizationMembersPage({ params }: Props) {
   )
 }
 
-async function InviteMemberData({ params }: Props) {
+async function AddMemberData({ params }: Props) {
   const { slug } = await params
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  return <InviteMemberDialog orgId={org.id} />
+  const roles = await resolveOrgRoles(org.id)
+
+  return (
+    <AddMemberDialog
+      orgId={org.id}
+      orgName={org.name ?? org.slug}
+      roles={roles}
+    />
+  )
 }
 
 async function MembersTableData({ params }: Props) {
@@ -85,10 +93,10 @@ async function PendingInvitesData({ params }: Props) {
   return <PendingInvitesTable invites={invites} />
 }
 
-function InviteMemberButton() {
+function AddMemberButton() {
   return (
     <Button variant="info" size="sm" disabled>
-      Invite member
+      Add member
     </Button>
   )
 }
