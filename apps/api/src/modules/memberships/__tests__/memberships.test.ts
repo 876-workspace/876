@@ -218,6 +218,47 @@ describe('POST /memberships', () => {
   })
 })
 
+describe('POST /organizations/:organization_id/memberships', () => {
+  it('delegates the organization-scoped transport to the canonical lifecycle', async () => {
+    membership.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(membershipRow({ roleId: 'role_member' }))
+
+    const res = await request(createApp())
+      .post('/organizations/org_01/memberships')
+      .set(AUTH)
+      .send({ user_id: 'user_01', role: 'member', status: 'active' })
+
+    expect(res.status).toBe(201)
+    expect(res.body.data).toMatchObject({
+      object: 'membership',
+      organization_id: 'org_01',
+      user_id: 'user_01',
+      role: 'member',
+      role_id: 'role_member',
+      status: 'active',
+    })
+    expect(organizationRole.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: 'org_01', name: 'member' },
+      select: { id: true, name: true },
+    })
+  })
+
+  it('rejects an unknown role before provider or local writes', async () => {
+    organizationRole.findFirst.mockResolvedValue(null)
+
+    const res = await request(createApp())
+      .post('/organizations/org_01/memberships')
+      .set(AUTH)
+      .send({ user_id: 'user_01', role: 'missing-role', status: 'active' })
+
+    expect(res.status).toBe(400)
+    expect(res.body.error.code).toBe('role/not-found')
+    expect(vi.mocked(ensureProviderMembership)).not.toHaveBeenCalled()
+    expect(membership.create).not.toHaveBeenCalled()
+  })
+})
+
 describe('GET /memberships/:membership_id', () => {
   it('returns the membership', async () => {
     membership.findFirst.mockResolvedValue(membershipRow())
