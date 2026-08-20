@@ -8,6 +8,7 @@ import {
   deleteProviderOrganization,
   deleteProviderUser,
   ensureProviderMembership,
+  updateProviderMembershipRole,
   type IdentitySyncProvider,
 } from '../identity-sync'
 
@@ -15,6 +16,8 @@ function makeProvider() {
   return {
     createOrganizationMembership:
       vi.fn<IdentitySyncProvider['createOrganizationMembership']>(),
+    updateOrganizationMembership:
+      vi.fn<IdentitySyncProvider['updateOrganizationMembership']>(),
     listOrganizationMemberships:
       vi.fn<IdentitySyncProvider['listOrganizationMemberships']>(),
     deleteOrganizationMembership:
@@ -62,9 +65,9 @@ describe('ensureProviderMembership', () => {
     })
   })
 
-  it('maps only the owner role to a provider role slug', async () => {
-    // Every other 876 role takes the environment default, so a custom org role
-    // can never fail the call with a slug WorkOS has never heard of.
+  it('maps only the owner role to a provider role slug on creation', async () => {
+    // Every other 876 role takes the environment default on create; later role
+    // changes use the explicit member/admin projection.
     provider.createOrganizationMembership.mockResolvedValue({ id: 'om_1' })
 
     await ensureProviderMembership(provider, {
@@ -79,7 +82,6 @@ describe('ensureProviderMembership', () => {
   })
 
   it('adopts an existing membership rather than duplicating it', async () => {
-    // A retry after an uncertain create must converge, not raise a conflict.
     provider.createOrganizationMembership.mockRejectedValue(providerDown())
     provider.listOrganizationMemberships.mockResolvedValue([{ id: 'om_prior' }])
 
@@ -128,6 +130,72 @@ describe('ensureProviderMembership', () => {
   })
 })
 
+describe('updateProviderMembershipRole', () => {
+  it('projects owner to the WorkOS admin role', async () => {
+    provider.updateOrganizationMembership.mockResolvedValue({ id: 'om_1' })
+
+    const result = await updateProviderMembershipRole(
+      provider,
+      'om_1',
+      'owner',
+      { localMembershipId: 'mem_1' }
+    )
+
+    expect(result).toBe(true)
+    expect(provider.updateOrganizationMembership).toHaveBeenCalledWith('om_1', {
+      roleSlug: 'admin',
+    })
+  })
+
+  it.each(['member', 'admin', 'dispatcher', 'custom-role'])(
+    'projects the richer local %s role to provider member',
+    async (role) => {
+      provider.updateOrganizationMembership.mockResolvedValue({ id: 'om_1' })
+
+      await updateProviderMembershipRole(provider, 'om_1', role, {
+        localMembershipId: 'mem_1',
+      })
+
+      expect(provider.updateOrganizationMembership).toHaveBeenCalledWith(
+        'om_1',
+        { roleSlug: 'member' }
+      )
+    }
+  )
+
+  it('skips the provider call when the local membership has no provider id', async () => {
+    const result = await updateProviderMembershipRole(provider, null, 'owner', {
+      localMembershipId: 'mem_1',
+    })
+
+    expect(result).toBe(false)
+    expect(provider.updateOrganizationMembership).not.toHaveBeenCalled()
+  })
+
+  it('treats an already-absent provider membership as converged', async () => {
+    provider.updateOrganizationMembership.mockRejectedValue(gone())
+
+    const result = await updateProviderMembershipRole(
+      provider,
+      'om_missing',
+      'member',
+      { localMembershipId: 'mem_1' }
+    )
+
+    expect(result).toBe(false)
+  })
+
+  it('re-raises provider failures so the local role change is not committed', async () => {
+    provider.updateOrganizationMembership.mockRejectedValue(providerDown())
+
+    await expect(
+      updateProviderMembershipRole(provider, 'om_1', 'member', {
+        localMembershipId: 'mem_1',
+      })
+    ).rejects.toThrow('Upstream failed.')
+  })
+})
+
 describe('deleteProviderUser', () => {
   it('deletes and reports that a call landed', async () => {
     provider.deleteUser.mockResolvedValue(undefined)
@@ -141,7 +209,6 @@ describe('deleteProviderUser', () => {
   })
 
   it('treats an already-absent record as success', async () => {
-    // Idempotence: a reconciliation pass must converge, not fail.
     provider.deleteUser.mockRejectedValue(gone())
 
     const result = await deleteProviderUser(provider, 'user_workos', {
@@ -152,8 +219,6 @@ describe('deleteProviderUser', () => {
   })
 
   it('re-raises any other provider failure', async () => {
-    // A 502 means the delete may not have happened, so the local write must
-    // roll back rather than be reported as synced.
     provider.deleteUser.mockRejectedValue(providerDown())
 
     await expect(
@@ -265,8 +330,6 @@ describe('compensateProviderUser', () => {
   })
 
   it('never throws, so the original failure is what the caller re-raises', async () => {
-    // It runs inside a catch that is about to re-raise; letting a compensation
-    // error escape would replace the real cause with a confusing one.
     provider.deleteUser.mockRejectedValue(providerDown())
 
     await expect(

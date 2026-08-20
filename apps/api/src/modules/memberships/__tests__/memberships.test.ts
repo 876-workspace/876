@@ -27,10 +27,9 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
-// Only the two functions this module calls are stubbed. Replacing the whole
-// module wholesale also blanks its exported constants, and `provisioning-catalog`
-// reads `BILLING_APP_SLUG` at module scope — which crashes every suite that
-// mounts the provisioning router, not just this one.
+// Only the functions this module calls are stubbed. Replacing the whole
+// provisioning module also blanks constants read at module scope by other
+// routers mounted in this integration suite.
 vi.mock('@/services/provisioning', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/provisioning')>()),
   linkMembershipRole: vi.fn().mockResolvedValue(undefined),
@@ -39,6 +38,7 @@ vi.mock('@/services/provisioning', async (importOriginal) => ({
 
 vi.mock('@/services/identity-sync', () => ({
   ensureProviderMembership: vi.fn().mockResolvedValue(null),
+  updateProviderMembershipRole: vi.fn().mockResolvedValue(false),
   deleteProviderMembership: vi.fn().mockResolvedValue(false),
 }))
 
@@ -48,6 +48,7 @@ vi.mock('@/services/identity-sync', () => ({
 vi.mock('@/providers/workos/adapter', () => ({
   getAuthProvider: vi.fn().mockReturnValue({
     createOrganizationMembership: vi.fn(),
+    updateOrganizationMembership: vi.fn(),
     listOrganizationMemberships: vi.fn(),
     deleteOrganizationMembership: vi.fn(),
   }),
@@ -134,17 +135,22 @@ describe('GET /memberships', () => {
 })
 
 describe('POST /memberships', () => {
-  it('creates a membership', async () => {
-    membership.findFirst.mockResolvedValue(null)
+  it('creates a membership and returns the post-link membership state', async () => {
+    membership.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(membershipRow({ roleId: 'role_member' }))
+
     const res = await request(createApp())
       .post('/memberships')
       .set(AUTH)
       .send({ organization_id: 'org_01', user_id: 'user_01' })
+
     expect(res.status).toBe(201)
     expect(res.body.data).toMatchObject({
       object: 'membership',
       organization_id: 'org_01',
       user_id: 'user_01',
+      role_id: 'role_member',
     })
   })
 
@@ -197,15 +203,26 @@ describe('GET /memberships/:membership_id', () => {
 })
 
 describe('PATCH /memberships/:membership_id', () => {
-  it('updates role', async () => {
-    membership.findFirst.mockResolvedValue(membershipRow())
-    membership.update.mockResolvedValue(membershipRow({ role: 'admin' }))
+  it('updates role and returns the post-link membership state', async () => {
+    membership.findFirst
+      .mockResolvedValueOnce(membershipRow())
+      .mockResolvedValueOnce(
+        membershipRow({ role: 'admin', roleId: 'role_admin' })
+      )
+    membership.update.mockResolvedValue(
+      membershipRow({ role: 'admin', roleId: null })
+    )
+
     const res = await request(createApp())
       .patch('/memberships/mem_01')
       .set(AUTH)
       .send({ role: 'admin' })
+
     expect(res.status).toBe(200)
-    expect(res.body.data.role).toBe('admin')
+    expect(res.body.data).toMatchObject({
+      role: 'admin',
+      role_id: 'role_admin',
+    })
   })
 
   it('400s duplicate workos id', async () => {

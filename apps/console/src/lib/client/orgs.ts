@@ -1,7 +1,10 @@
 import type {
+  AdminAppAssignment,
+  AdminDeletedOrgMember,
   AdminDeletedOrganization,
   AdminInviteCreateParams,
   AdminInviteToken,
+  AdminOrgMember,
   AdminSubscription,
   AdminOrganization,
   AdminOrganizationCreateParams,
@@ -74,6 +77,51 @@ export const revokeInvite = (orgId: string, inviteId: string) =>
     { method: 'DELETE' }
   )
 
+export const updateMember = (
+  orgId: string,
+  membershipId: string,
+  params: { role: string }
+) =>
+  request<AdminOrgMember>(
+    `/api/organizations/${encodeURIComponent(orgId)}/members/${encodeURIComponent(membershipId)}`,
+    { method: 'PATCH', body: JSON.stringify(params) }
+  )
+
+export const deleteMember = (orgId: string, membershipId: string) =>
+  request<AdminDeletedOrgMember>(
+    `/api/organizations/${encodeURIComponent(orgId)}/members/${encodeURIComponent(membershipId)}`,
+    { method: 'DELETE' }
+  )
+
+export const listAppAssignments = (
+  orgId: string,
+  params?: { userId?: string; appId?: string; includeRevoked?: boolean }
+) => {
+  const query = new URLSearchParams()
+  if (params?.userId) query.set('user_id', params.userId)
+  if (params?.appId) query.set('app_id', params.appId)
+  if (params?.includeRevoked) query.set('include_revoked', 'true')
+  const qs = query.toString()
+  return request<AdminAppAssignment[]>(
+    `/api/organizations/${encodeURIComponent(orgId)}/app-assignments${qs ? `?${qs}` : ''}`
+  )
+}
+
+export const createAppAssignment = (
+  orgId: string,
+  params: { userId: string; appId?: string; appSlug?: string }
+) =>
+  request<AdminAppAssignment>(
+    `/api/organizations/${encodeURIComponent(orgId)}/app-assignments`,
+    { method: 'POST', body: JSON.stringify(params) }
+  )
+
+export const revokeAppAssignment = (orgId: string, assignmentId: string) =>
+  request<AdminAppAssignment>(
+    `/api/organizations/${encodeURIComponent(orgId)}/app-assignments/${encodeURIComponent(assignmentId)}`,
+    { method: 'DELETE' }
+  )
+
 export const updateSubscription = (
   orgId: string,
   appId: string,
@@ -131,6 +179,17 @@ export const invites = {
   list: listInvites,
   create: createInvite,
   revoke: revokeInvite,
+}
+
+export const members = {
+  update: updateMember,
+  delete: deleteMember,
+}
+
+export const appAssignments = {
+  list: listAppAssignments,
+  create: createAppAssignment,
+  revoke: revokeAppAssignment,
 }
 
 export const subscriptions = {

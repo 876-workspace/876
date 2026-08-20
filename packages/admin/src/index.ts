@@ -180,6 +180,7 @@ export type {
   AdminEmployeeProfileUpdateParams,
   AdminDeletedEmployeeProfile,
   AdminOrgMember,
+  AdminDeletedOrgMember,
   AdminAppAssignment,
   AdminAppAssignmentCreateParams,
   AdminPhoneLookup,

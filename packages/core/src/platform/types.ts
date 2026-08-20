@@ -222,6 +222,7 @@ export type PlatformInviteToken = {
   organization_id: string
   email: string
   role: string | null
+  token?: string | null
   status: 'pending' | 'accepted' | 'expired' | 'revoked'
   expires_at: number
   source_app_id: string | null

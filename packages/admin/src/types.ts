@@ -481,8 +481,10 @@ export type AdminInviteToken = {
   organization_id: string
   email: string
   role: string
+  token?: string | null
   status: string
   expires_at: number
+  source_app_id?: string | null
   created_at: number
 }
 
@@ -1422,6 +1424,12 @@ export type AdminOrgMember = {
   email: string | null
   avatar: string | null
   created_at: number
+}
+
+export type AdminDeletedOrgMember = {
+  object: 'organization_member'
+  id: string
+  deleted: true
 }
 
 export type AdminAppAssignment = {

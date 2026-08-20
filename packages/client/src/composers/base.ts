@@ -125,6 +125,7 @@ export type CoreSurfaceAdmin = Omit<
   | 'entitlements'
   | 'roles'
   | 'organizationMembers'
+  | 'appAssignments'
   | 'invites'
   | 'sessions'
 > & {
@@ -147,6 +148,10 @@ export type CoreSurfaceAdmin = Omit<
   organizationMembers: WithAdmin<
     SDK876Client['organizationMembers'],
     Admin876Client['organizationMembers']
+  >
+  appAssignments: WithAdmin<
+    SDK876Client['appAssignments'],
+    Admin876Client['appAssignments']
   >
   invites: WithAdmin<SDK876Client['invites'], Admin876Client['invites']>
   sessions: AdminSessionSurface
@@ -214,6 +219,7 @@ function createCoreSurfaceAdmin(
       platform.organizationMembers,
       admin.organizationMembers
     ),
+    appAssignments: withAdmin(platform.appAssignments, admin.appAssignments),
     invites: withAdmin(platform.invites, admin.invites),
     sessions: createAdminSessionSurface(platform, admin.sessions),
     auditEvents: admin.auditEvents,

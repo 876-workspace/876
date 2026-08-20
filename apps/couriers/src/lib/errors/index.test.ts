@@ -44,7 +44,10 @@ describe('handleApiError', () => {
 
   it('normalizes a forged message for a known code', async () => {
     // ARRANGE
-    const error = { code: 'error/forbidden', message: 'Internal policy details.' }
+    const error = {
+      code: 'error/forbidden',
+      message: 'Internal policy details.',
+    }
 
     // ACT
     const response = handleApiError(error)

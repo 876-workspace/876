@@ -1,5 +1,9 @@
 import { AppHttpError } from '@/http/errors'
 import { listObject, type ListObject } from '@/http/envelope'
+import {
+  deleteMembership as deleteMembershipLifecycle,
+  updateMembership as updateMembershipLifecycle,
+} from '@/modules/memberships'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import {
@@ -337,11 +341,20 @@ export async function updateOrgMemberRole(
       })
     }
   }
-  const updated = await repository.updateMembershipRole(membership.id, {
-    role: newRole.name,
-    roleId: newRole.id,
-    updatedAt: BigInt(nowUnixSeconds()),
-  })
+
+  // The organization resource owns authorization and owner invariants, while
+  // the membership resource owns the actual identity lifecycle. Delegating the
+  // write keeps WorkOS role projection, local role linking, and the returned
+  // roleId consistent for Console, Enterprise, and product apps.
+  await updateMembershipLifecycle(membership.id, { role: newRole.name })
+
+  const updated = await repository.findMembershipByIdWithUser(membership.id, orgId)
+  if (!updated)
+    throw notFound(
+      'membership/not-found',
+      'No membership exists with the provided identifier.'
+    )
+
   return serializeOrganizationMember({
     id: updated.id,
     userId: updated.userId,
@@ -400,8 +413,17 @@ export async function deleteOrgMember(
       })
     }
   }
+
+  // Keep the organization-specific safety checks above, but delegate the
+  // actual lifecycle write to the canonical membership service so local
+  // removal and WorkOS deprovisioning cannot drift apart.
   const now = BigInt(nowUnixSeconds())
-  await repository.softDeleteMembership(membershipId, principal.userId, now)
+  await deleteMembershipLifecycle(membershipId, {
+    status: 'removed',
+    deletedBy: principal.userId,
+    deletedAt: now,
+  })
+
   return { object: 'organization_member', id: membershipId, deleted: true }
 }
 

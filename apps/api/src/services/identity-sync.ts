@@ -10,13 +10,11 @@ import { OWNER_ROLE_NAME } from '@/platform/permissions'
  * WorkOS accumulates accounts that can still authenticate but have no local
  * counterpart, which is the drift Console surfaces as "out of sync".
  *
- * Every helper here is **idempotent**: a record already gone at the provider is
- * treated as success, so a retry or a reconciliation pass converges rather than
- * failing.
- *
- * **Ordering contract for callers: write locally, then call these.** A provider
- * failure then raises and the local write is rolled back, leaving both systems
- * untouched. The reverse order can delete at WorkOS and keep the local row.
+ * The helpers are retry-safe where the provider exposes an idempotent outcome:
+ * a record already gone at WorkOS is treated as success. Callers choose ordering
+ * based on the safety property of the mutation. Membership role changes update
+ * the provider first so a demotion cannot leave an elevated WorkOS role behind;
+ * deletes remove local access first, then deprovision the provider record.
  */
 
 const log = getLogger('identity-sync')
@@ -25,11 +23,18 @@ const log = getLogger('identity-sync')
 const ALREADY_GONE_STATUS = 404
 
 /**
- * WorkOS ships `admin` and `member` in every environment. Only owner is mapped
- * explicitly; anything else takes the environment default, so a custom 876 org
- * role can never fail the call with a slug WorkOS has never heard of.
+ * WorkOS ships `admin` and `member` in every environment. The 876 owner role
+ * maps to provider admin; all other/custom org roles map to provider member so
+ * application-specific authorization stays in the 876 data plane.
  */
 const PROVIDER_ADMIN_ROLE_SLUG = 'admin'
+const PROVIDER_MEMBER_ROLE_SLUG = 'member'
+
+function providerRoleSlug(role: string): string {
+  return role === OWNER_ROLE_NAME
+    ? PROVIDER_ADMIN_ROLE_SLUG
+    : PROVIDER_MEMBER_ROLE_SLUG
+}
 
 /** The provider surface these helpers need — not the whole adapter. */
 export type IdentitySyncProvider = {
@@ -38,6 +43,10 @@ export type IdentitySyncProvider = {
     organizationId: string
     roleSlug?: string | null
   }): Promise<Record<string, unknown>>
+  updateOrganizationMembership(
+    membershipId: string,
+    params: { roleSlug: string }
+  ): Promise<Record<string, unknown>>
   listOrganizationMemberships(filters: {
     organizationId?: string | null
     userId?: string | null
@@ -78,6 +87,8 @@ export async function ensureProviderMembership(
     return null
   }
 
+  // Creation intentionally omits the role for non-owners so WorkOS can apply
+  // the environment's configured default. Owner must be elevated explicitly.
   const roleSlug =
     params.role === OWNER_ROLE_NAME ? PROVIDER_ADMIN_ROLE_SLUG : null
 
@@ -128,6 +139,54 @@ async function findProviderMembership(
   })
 
   return memberships.length > 0 ? String(memberships[0]?.id) : null
+}
+
+/**
+ * Synchronize the provider role for an existing local membership.
+ *
+ * A missing provider id/record is safe to tolerate: there is no provider-side
+ * privilege left to preserve. Other provider failures are re-thrown so callers
+ * can avoid committing a local role change that WorkOS rejected.
+ */
+export async function updateProviderMembershipRole(
+  provider: IdentitySyncProvider,
+  workosMembershipId: string | null,
+  role: string,
+  params: { localMembershipId: string }
+): Promise<boolean> {
+  if (!workosMembershipId) {
+    log.info(
+      { membership_id: params.localMembershipId },
+      'identity_sync.membership.no_provider_record'
+    )
+    return false
+  }
+
+  const roleSlug = providerRoleSlug(role)
+  try {
+    await provider.updateOrganizationMembership(workosMembershipId, { roleSlug })
+  } catch (error) {
+    if (!isAlreadyGone(error)) throw error
+
+    log.info(
+      {
+        membership_id: params.localMembershipId,
+        workos_membership_id: workosMembershipId,
+      },
+      'identity_sync.membership.already_absent'
+    )
+    return false
+  }
+
+  log.info(
+    {
+      membership_id: params.localMembershipId,
+      workos_membership_id: workosMembershipId,
+      role_slug: roleSlug,
+    },
+    'identity_sync.membership.role_updated'
+  )
+  return true
 }
 
 /** Delete the WorkOS user backing a local account. True when a call landed. */

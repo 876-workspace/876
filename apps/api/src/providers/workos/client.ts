@@ -432,6 +432,15 @@ export class WorkOsClient {
     })
   }
 
+  updateOrganizationMembership(
+    membershipId: string,
+    params: { roleSlug: string }
+  ): Promise<Record<string, unknown>> {
+    return this.put(`/user_management/organization_memberships/${membershipId}`, {
+      role_slug: params.roleSlug,
+    })
+  }
+
   deleteOrganizationMembership(membershipId: string): Promise<void> {
     return this.del(`/user_management/organization_memberships/${membershipId}`)
   }

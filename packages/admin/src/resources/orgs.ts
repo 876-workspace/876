@@ -31,6 +31,7 @@ import type {
   AdminOrgLocationCreateParams,
   AdminOrgLocationUpdateParams,
   AdminOrgMember,
+  AdminDeletedOrgMember,
   AdminOrgRole,
   AdminOrgRoleCreateParams,
   AdminOrgRoleUpdateParams,
@@ -656,6 +657,14 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
           method: 'PATCH',
           path: `/organizations/${orgId}/members/${membershipId}`,
           body: params,
+        })
+      },
+
+      /** Soft-deletes a member from an organization. */
+      delete(orgId: string, membershipId: string) {
+        return adminRequest<AdminDeletedOrgMember>(runtime, {
+          method: 'DELETE',
+          path: `/organizations/${orgId}/members/${membershipId}`,
         })
       },
     },
