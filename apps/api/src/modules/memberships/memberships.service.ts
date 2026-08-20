@@ -3,7 +3,6 @@ import { listObject, type ListObject } from '@/http/envelope'
 import { AppHttpError } from '@/platform/errors'
 import { generateId } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
-import { OWNER_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { getAuthProvider } from '@/providers/workos/adapter'
 import {
@@ -36,12 +35,12 @@ async function requireMembership(membershipId: string) {
   return row
 }
 
-function localRoleFromProvider(role: string): string {
-  // WorkOS is deliberately a coarse projection of 876 authorization: provider
-  // admin represents an owner, while every non-owner/custom local role projects
-  // to provider member. A provider event therefore only supplies an initial
-  // local role; it cannot safely overwrite an existing richer local role.
-  return role === 'admin' ? OWNER_ROLE_NAME : 'member'
+function initialLocalRoleFromProvider(role: string): string {
+  // WorkOS is deliberately a coarse projection of 876 authorization. A
+  // provider event can seed a safe initial role for a provider-originated
+  // membership, but it cannot infer the stronger 876 owner role: provider
+  // `admin` is not a reversible representation of local ownership.
+  return role === 'admin' ? 'admin' : 'member'
 }
 
 export async function listMemberships(
@@ -301,8 +300,9 @@ export async function deleteMembership(
  * WorkOS membership role is only a coarse identity-provider projection of the
  * richer 876 org role. For an existing membership we therefore synchronize
  * provider lifecycle status but preserve the local role. For a provider-created
- * membership with no local row yet, provider admin initializes as owner and all
- * other roles initialize as member.
+ * membership with no local row yet, provider admin initializes as local admin
+ * and all other provider roles initialize as member. Provider events never
+ * manufacture the stronger owner role.
  */
 export async function upsertMembershipFromWorkos(params: {
   workosMembershipId: string
@@ -342,7 +342,7 @@ export async function upsertMembershipFromWorkos(params: {
 
   if (!params.organizationId || !params.userId) return 'skipped'
 
-  const role = localRoleFromProvider(params.role)
+  const role = initialLocalRoleFromProvider(params.role)
   const created = await repository.createMembership({
     id: generateId('membership'),
     organizationId: params.organizationId,
