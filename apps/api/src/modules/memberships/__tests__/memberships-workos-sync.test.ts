@@ -1,12 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository } = vi.hoisted(() => ({
+const { repository, linkMembershipRole, assignMemberApps } = vi.hoisted(() => ({
   repository: {
     findMembershipByWorkosId: vi.fn(),
     updateMembership: vi.fn(),
     createMembership: vi.fn(),
     deleteMembership: vi.fn(),
   },
+  linkMembershipRole: vi.fn(),
+  assignMemberApps: vi.fn(),
 }))
 
 vi.mock('@/db/client', () => ({
@@ -18,45 +20,133 @@ vi.mock('../memberships.repository', () => repository)
 vi.mock('@/platform/ids', () => ({
   generateId: vi.fn(() => 'mem_generated'),
 }))
+vi.mock('@/services/provisioning', () => ({
+  linkMembershipRole,
+  assignMemberApps,
+}))
 
 const { upsertMembershipFromWorkos, removeMembershipByWorkosId } =
   await import('../memberships.service')
 
 const NOW = 1_785_000_000
 
+function membershipRow(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'mem_1',
+    organizationId: 'org_1',
+    userId: 'user_1',
+    workosMembershipId: 'om_1',
+    role: 'dispatcher',
+    roleId: 'role_dispatcher',
+    status: 'active',
+    createdAt: BigInt(NOW - 100),
+    updatedAt: BigInt(NOW - 100),
+    ...overrides,
+  }
+}
+
 describe('upsertMembershipFromWorkos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(NOW * 1000)
+    linkMembershipRole.mockResolvedValue(undefined)
+    assignMemberApps.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
     vi.useRealTimers()
   })
 
-  it('updates role/status on an existing membership matched by WorkOS id', async () => {
-    repository.findMembershipByWorkosId.mockResolvedValue({ id: 'mem_1' })
+  it('updates lifecycle status without collapsing an existing richer local role', async () => {
+    repository.findMembershipByWorkosId.mockResolvedValue(membershipRow())
+    repository.updateMembership.mockResolvedValue(
+      membershipRow({ status: 'active', updatedAt: BigInt(NOW) })
+    )
 
     const action = await upsertMembershipFromWorkos({
       workosMembershipId: 'om_1',
       organizationId: 'org_1',
       userId: 'user_1',
-      role: 'admin',
+      role: 'member',
       status: 'active',
     })
 
     expect(action).toBe('updated')
     expect(repository.updateMembership).toHaveBeenCalledWith('mem_1', {
-      role: 'admin',
       status: 'active',
       updatedAt: BigInt(NOW),
+    })
+    expect(linkMembershipRole).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'mem_1',
+        role: 'dispatcher',
+        roleId: 'role_dispatcher',
+      }),
+      NOW
+    )
+    expect(assignMemberApps).toHaveBeenCalledWith({
+      organizationId: 'org_1',
+      userId: 'user_1',
+      now: NOW,
     })
     expect(repository.createMembership).not.toHaveBeenCalled()
   })
 
-  it('creates a membership when none exists and org and user resolve', async () => {
+  it('initializes a provider admin membership as a local owner', async () => {
     repository.findMembershipByWorkosId.mockResolvedValue(null)
+    repository.createMembership.mockResolvedValue(
+      membershipRow({
+        id: 'mem_generated',
+        organizationId: 'org_2',
+        userId: 'user_2',
+        workosMembershipId: 'om_2',
+        role: 'owner',
+        roleId: null,
+        createdAt: BigInt(NOW),
+        updatedAt: BigInt(NOW),
+      })
+    )
+
+    const action = await upsertMembershipFromWorkos({
+      workosMembershipId: 'om_2',
+      organizationId: 'org_2',
+      userId: 'user_2',
+      role: 'admin',
+      status: 'active',
+    })
+
+    expect(action).toBe('created')
+    expect(repository.createMembership).toHaveBeenCalledWith({
+      id: 'mem_generated',
+      organizationId: 'org_2',
+      userId: 'user_2',
+      workosMembershipId: 'om_2',
+      role: 'owner',
+      status: 'active',
+      createdAt: BigInt(NOW),
+      updatedAt: BigInt(NOW),
+    })
+    expect(linkMembershipRole).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'mem_generated', role: 'owner' }),
+      NOW
+    )
+  })
+
+  it('initializes non-admin provider roles as local member', async () => {
+    repository.findMembershipByWorkosId.mockResolvedValue(null)
+    repository.createMembership.mockResolvedValue(
+      membershipRow({
+        id: 'mem_generated',
+        organizationId: 'org_2',
+        userId: 'user_2',
+        workosMembershipId: 'om_2',
+        role: 'member',
+        roleId: null,
+        createdAt: BigInt(NOW),
+        updatedAt: BigInt(NOW),
+      })
+    )
 
     const action = await upsertMembershipFromWorkos({
       workosMembershipId: 'om_2',
@@ -67,17 +157,28 @@ describe('upsertMembershipFromWorkos', () => {
     })
 
     expect(action).toBe('created')
-    expect(repository.createMembership).toHaveBeenCalledWith({
-      id: 'mem_generated',
-      organizationId: 'org_2',
-      userId: 'user_2',
-      workosMembershipId: 'om_2',
+    expect(repository.createMembership).toHaveBeenCalledWith(
+      expect.objectContaining({ role: 'member' })
+    )
+  })
+
+  it('does not auto-assign apps for a non-active provider membership', async () => {
+    repository.findMembershipByWorkosId.mockResolvedValue(
+      membershipRow({ status: 'pending' })
+    )
+    repository.updateMembership.mockResolvedValue(
+      membershipRow({ status: 'pending', updatedAt: BigInt(NOW) })
+    )
+
+    await upsertMembershipFromWorkos({
+      workosMembershipId: 'om_1',
+      organizationId: 'org_1',
+      userId: 'user_1',
       role: 'member',
-      status: 'active',
-      createdAt: BigInt(NOW),
-      updatedAt: BigInt(NOW),
+      status: 'pending',
     })
-    expect(repository.updateMembership).not.toHaveBeenCalled()
+
+    expect(assignMemberApps).not.toHaveBeenCalled()
   })
 
   it('skips creation when the local org or user cannot be resolved', async () => {
@@ -102,14 +203,16 @@ describe('removeMembershipByWorkosId', () => {
     vi.clearAllMocks()
   })
 
-  it('soft-deletes the membership matched by WorkOS id', async () => {
-    repository.findMembershipByWorkosId.mockResolvedValue({ id: 'mem_9' })
+  it('soft-deletes the membership matched by WorkOS id and marks it removed', async () => {
+    repository.findMembershipByWorkosId.mockResolvedValue(membershipRow())
     repository.deleteMembership.mockResolvedValue(true)
 
-    const result = await removeMembershipByWorkosId('om_9')
+    const result = await removeMembershipByWorkosId('om_1')
 
     expect(result).toBe(true)
-    expect(repository.deleteMembership).toHaveBeenCalledWith('mem_9')
+    expect(repository.deleteMembership).toHaveBeenCalledWith('mem_1', {
+      status: 'removed',
+    })
   })
 
   it('returns false when no membership matches', async () => {
