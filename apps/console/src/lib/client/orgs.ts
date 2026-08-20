@@ -1,7 +1,6 @@
 import type {
   AdminAppAssignment,
-  AdminAppAssignmentCreateParams,
-  AdminDeletedMembership,
+  AdminDeletedOrgMember,
   AdminDeletedOrganization,
   AdminInviteCreateParams,
   AdminInviteToken,
@@ -81,15 +80,15 @@ export const revokeInvite = (orgId: string, inviteId: string) =>
 export const updateMember = (
   orgId: string,
   membershipId: string,
-  body: { role?: string; status?: string }
+  params: { role: string }
 ) =>
   request<AdminOrgMember>(
     `/api/organizations/${encodeURIComponent(orgId)}/members/${encodeURIComponent(membershipId)}`,
-    { method: 'PATCH', body: JSON.stringify(body) }
+    { method: 'PATCH', body: JSON.stringify(params) }
   )
 
 export const deleteMember = (orgId: string, membershipId: string) =>
-  request<AdminDeletedMembership>(
+  request<AdminDeletedOrgMember>(
     `/api/organizations/${encodeURIComponent(orgId)}/members/${encodeURIComponent(membershipId)}`,
     { method: 'DELETE' }
   )
@@ -110,7 +109,7 @@ export const listAppAssignments = (
 
 export const createAppAssignment = (
   orgId: string,
-  params: AdminAppAssignmentCreateParams
+  params: { userId: string; appId?: string; appSlug?: string }
 ) =>
   request<AdminAppAssignment>(
     `/api/organizations/${encodeURIComponent(orgId)}/app-assignments`,
