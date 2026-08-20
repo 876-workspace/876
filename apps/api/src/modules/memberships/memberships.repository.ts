@@ -110,22 +110,37 @@ export async function updateMembership(
   }
 }
 
-export async function deleteMembership(membershipId: string): Promise<boolean> {
-  // Respect soft-delete configuration: mimic should_soft_delete() via deletionValues helper.
-  // For the port, check if deletedAt filtering exists — attempt soft delete first.
+export type MembershipDeleteOptions = {
+  /** Optional lifecycle status to persist alongside the soft-delete marker. */
+  status?: string
+  /** Actor responsible for an organization-scoped removal. */
+  deletedBy?: string | null
+  /** Shared timestamp so callers can keep related lifecycle writes consistent. */
+  deletedAt?: bigint
+}
+
+export async function deleteMembership(
+  membershipId: string,
+  options: MembershipDeleteOptions = {}
+): Promise<boolean> {
   const existing = await prisma.membership.findUnique({
     where: { id: membershipId },
     select: { id: true, deletedAt: true },
   })
   if (!existing || existing.deletedAt !== null) return false
 
-  // Use hard delete when soft-delete table not configured; choose update with deletedAt when column exists.
-  // Prisma always has deletedAt; we set it to now.
-  const now = BigInt(Math.floor(Date.now() / 1000))
+  const now = options.deletedAt ?? BigInt(Math.floor(Date.now() / 1000))
   try {
     await prisma.membership.update({
       where: { id: membershipId },
-      data: { deletedAt: now },
+      data: {
+        deletedAt: now,
+        updatedAt: now,
+        ...(options.status !== undefined ? { status: options.status } : {}),
+        ...(options.deletedBy !== undefined
+          ? { deletedBy: options.deletedBy }
+          : {}),
+      },
     })
     return true
   } catch {
