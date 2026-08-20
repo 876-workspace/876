@@ -34,8 +34,9 @@ export function InviteMemberDialog({ orgId }: Props) {
   const [created, setCreated] = useState<AdminInviteToken | null>(null)
   const [copied, setCopied] = useState(false)
 
-  // Derive the invite URL from the token returned by the API.
-  const inviteToken = created?.token || created?.id
+  // The secret token is the invite credential. Never fall back to the public
+  // inv_* record ID: the acceptance endpoint intentionally does not accept it.
+  const inviteToken = created?.token ?? null
   const inviteUrl = inviteToken
     ? `${typeof window !== 'undefined' ? window.location.origin.replace(':3002', ':3000') : ''}/invite/${inviteToken}`
     : null
@@ -150,7 +151,7 @@ export function InviteMemberDialog({ orgId }: Props) {
               <span className="font-medium">{created.email}</span>. Share the
               link below — it expires in 7 days.
             </p>
-            {inviteUrl && (
+            {inviteUrl ? (
               <div className="bg-muted flex items-center gap-2 rounded-lg p-3">
                 <code className="min-w-0 flex-1 truncate text-xs break-all">
                   {inviteUrl}
@@ -168,6 +169,11 @@ export function InviteMemberDialog({ orgId }: Props) {
                   )}
                 </Button>
               </div>
+            ) : (
+              <p className="text-destructive text-[0.8125rem]">
+                The invite was created, but no shareable token was returned.
+                Create a new invite instead of sharing the invite record ID.
+              </p>
             )}
             <div className="flex justify-end">
               <Button onClick={() => handleOpen(false)}>Done</Button>
