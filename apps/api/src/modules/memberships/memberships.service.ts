@@ -12,6 +12,7 @@ import {
 import { assignMemberApps, linkMembershipRole } from '@/services/provisioning'
 
 import * as repository from './memberships.repository'
+import type { MembershipDeleteOptions } from './memberships.repository'
 import type {
   CreateMembershipBody,
   ListMembershipsQuery,
@@ -220,12 +221,27 @@ export async function updateMembership(
   return serializeMembership(updated)
 }
 
+/**
+ * Soft-deletes a membership locally and removes its WorkOS organization
+ * membership through the canonical lifecycle path.
+ *
+ * Organization-scoped callers may provide audit/status metadata, while the
+ * platform-wide admin endpoint keeps its existing default deletion semantics.
+ */
 export async function deleteMembership(
-  membershipId: string
+  membershipId: string,
+  options: MembershipDeleteOptions = {}
 ): Promise<{ object: string; id: string; deleted: boolean }> {
   const membership = await requireMembership(membershipId)
   const workosMembershipId = membership.workosMembershipId
-  await repository.deleteMembership(membershipId)
+  const deleted = await repository.deleteMembership(membershipId, options)
+  if (!deleted) {
+    throw new AppHttpError({
+      code: 'membership/not-found',
+      message: 'No membership exists with the provided identifier.',
+      httpStatus: 404,
+    })
+  }
 
   // Called unconditionally: the helper already treats a null id and an
   // already-absent provider record as success, and swallowing a real provider
