@@ -93,7 +93,7 @@ describe('upsertMembershipFromWorkos', () => {
     expect(repository.createMembership).not.toHaveBeenCalled()
   })
 
-  it('initializes a provider admin membership as a local owner', async () => {
+  it('initializes a provider admin membership as local admin, never owner', async () => {
     repository.findMembershipByWorkosId.mockResolvedValue(null)
     repository.createMembership.mockResolvedValue(
       membershipRow({
@@ -101,7 +101,7 @@ describe('upsertMembershipFromWorkos', () => {
         organizationId: 'org_2',
         userId: 'user_2',
         workosMembershipId: 'om_2',
-        role: 'owner',
+        role: 'admin',
         roleId: null,
         createdAt: BigInt(NOW),
         updatedAt: BigInt(NOW),
@@ -122,13 +122,13 @@ describe('upsertMembershipFromWorkos', () => {
       organizationId: 'org_2',
       userId: 'user_2',
       workosMembershipId: 'om_2',
-      role: 'owner',
+      role: 'admin',
       status: 'active',
       createdAt: BigInt(NOW),
       updatedAt: BigInt(NOW),
     })
     expect(linkMembershipRole).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'mem_generated', role: 'owner' }),
+      expect.objectContaining({ id: 'mem_generated', role: 'admin' }),
       NOW
     )
   })
