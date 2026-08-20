@@ -4,6 +4,19 @@ import type {
   AdminProvisioningManifestRevision,
   AdminProvisioningResource,
 } from '@876/admin'
+import type { IconComponent } from '@876/ui/icons'
+import {
+  Building2,
+  Calendar,
+  CreditCard,
+  Database,
+  DocumentTextIcon,
+  Globe,
+  ReceiptPercent,
+  ReceiptText,
+  ShieldCheck,
+  TableIcon,
+} from '@876/ui/icons'
 
 export type FinanceResourceDefinition =
   AdminProvisioningCatalog['resource_types'][number]
@@ -18,6 +31,22 @@ export type FinanceResourceRow = {
 type DraftProperty = NonNullable<
   AdminProvisioningDraftReplaceParams['resources']
 >[number]['properties'][number]
+
+export const RESOURCE_TYPE_ICONS: Record<string, IconComponent> = {
+  workspace: Globe,
+  currency: Database,
+  payment_mode: CreditCard,
+  payment_term: Calendar,
+  invoice_preference: ReceiptText,
+  tax_authority: ShieldCheck,
+  tax_rate: ReceiptPercent,
+  document_preference: DocumentTextIcon,
+  organization_profile: Building2,
+}
+
+export function getResourceTypeIcon(resourceType: string): IconComponent {
+  return RESOURCE_TYPE_ICONS[resourceType] ?? TableIcon
+}
 
 function propertyValue(
   property: AdminProvisioningResource['properties'][number]
