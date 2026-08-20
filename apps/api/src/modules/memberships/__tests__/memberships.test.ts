@@ -171,14 +171,11 @@ describe('POST /memberships', () => {
   it('rejects unknown roles before provider or local membership writes', async () => {
     organizationRole.findFirst.mockResolvedValue(null)
 
-    const res = await request(createApp())
-      .post('/memberships')
-      .set(AUTH)
-      .send({
-        organization_id: 'org_01',
-        user_id: 'user_01',
-        role: 'missing-role',
-      })
+    const res = await request(createApp()).post('/memberships').set(AUTH).send({
+      organization_id: 'org_01',
+      user_id: 'user_01',
+      role: 'missing-role',
+    })
 
     expect(res.status).toBe(400)
     expect(res.body.error).toEqual({

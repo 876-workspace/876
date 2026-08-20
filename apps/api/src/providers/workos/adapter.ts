@@ -357,7 +357,10 @@ export class WorkOsAuthProvider {
     params: { roleSlug: string }
   ): Promise<Record<string, unknown>> {
     try {
-      return await this.client.updateOrganizationMembership(membershipId, params)
+      return await this.client.updateOrganizationMembership(
+        membershipId,
+        params
+      )
     } catch (error) {
       this.rethrow(error)
     }
