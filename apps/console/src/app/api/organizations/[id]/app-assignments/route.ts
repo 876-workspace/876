@@ -34,7 +34,10 @@ export async function GET(
       { status: 400 }
     )
   }
-  return apiJson({ data })
+
+  // The browser client exposes a simple array for this non-paginated resource;
+  // do not leak the Core API list envelope through the Console-owned route.
+  return apiJson({ data: data.data })
 }
 
 /** Creates an app assignment for an organization member. */
@@ -47,29 +50,25 @@ export async function POST(
 
   const { id } = await params
   const body = (await request.json().catch(() => null)) as {
-    userId?: string
-    user_id?: string
-    appId?: string
-    app_id?: string
-    appSlug?: string
-    app_slug?: string
+    userId?: unknown
+    appId?: unknown
+    appSlug?: unknown
   } | null
 
-  const userId = body?.userId ?? body?.user_id
-  const appId = body?.appId ?? body?.app_id
-  const appSlug = body?.appSlug ?? body?.app_slug
+  const userId = typeof body?.userId === 'string' ? body.userId.trim() : ''
+  const appId = typeof body?.appId === 'string' ? body.appId.trim() : ''
+  const appSlug = typeof body?.appSlug === 'string' ? body.appSlug.trim() : ''
 
-  if (!userId || (!appId && !appSlug)) {
+  if (!userId || Boolean(appId) === Boolean(appSlug)) {
     return apiJson(
-      { error: 'user_id and app_id (or app_slug) are required.' },
+      { error: 'userId and exactly one of appId or appSlug are required.' },
       { status: 400 }
     )
   }
 
   const { data, error } = await $876.appAssignments.admin.create(id, {
     user_id: userId,
-    ...(appId ? { app_id: appId } : {}),
-    ...(appSlug ? { app_slug: appSlug } : {}),
+    ...(appId ? { app_id: appId } : { app_slug: appSlug }),
   })
 
   if (error || !data) {
