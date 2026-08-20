@@ -109,6 +109,7 @@ export type InviteTokenRow = {
   organizationId: string
   email: string
   role: string
+  token?: string | null
   status: string
   expiresAt: bigint
   sourceAppId: string | null
@@ -219,6 +220,7 @@ export function serializeInvite(row: InviteTokenRow): InviteToken {
     organization_id: row.organizationId,
     email: row.email,
     role: row.role,
+    token: row.token ?? null,
     status: row.status,
     expires_at: fromDbUnixSeconds(row.expiresAt),
     source_app_id: row.sourceAppId,

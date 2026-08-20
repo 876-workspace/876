@@ -341,6 +341,7 @@ export const inviteTokenSchema = z
     organization_id: z.string(),
     email: z.string(),
     role: z.string(),
+    token: z.string().nullable().optional(),
     status: z.string(),
     expires_at: z.number().int(),
     source_app_id: z.string().nullable(),
