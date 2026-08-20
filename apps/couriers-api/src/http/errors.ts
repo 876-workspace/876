@@ -5,7 +5,8 @@ export { AppHttpError, appError, isAppHttpError } from '@/platform/errors'
 export const errors = {
   noSession: () => appError('auth/no-session'),
 
-  forbidden: (message = 'Forbidden.') => appError('auth/forbidden', { message }),
+  forbidden: (message = 'Forbidden.') =>
+    appError('auth/forbidden', { message }),
 
   invalidToken: (message = 'The Bearer [REDACTED] is invalid or expired.') =>
     appError('auth/invalid-token', { message }),
