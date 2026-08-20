@@ -1,5 +1,5 @@
+import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { NextRequest } from 'next/server'
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
@@ -25,9 +25,9 @@ import { GET } from './route'
 const context = { params: Promise.resolve({ id: 'org_target' }) }
 
 function getRequest(query: string) {
-  return new Request(
+  return new NextRequest(
     `http://console.test/api/organizations/org_target/members/search?q=${encodeURIComponent(query)}`
-  ) as NextRequest
+  )
 }
 
 describe('Console organization member candidate search route', () => {
