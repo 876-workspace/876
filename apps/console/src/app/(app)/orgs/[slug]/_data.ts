@@ -40,6 +40,13 @@ export const resolveOrgMembers = cache(async (orgId: string) => {
   return result.data
 })
 
+/** Cached role catalog used by member-management controls. */
+export const resolveOrgRoles = cache(async (orgId: string) => {
+  const result = await $876.roles.admin.list(orgId)
+  if (result.error) throw new Error(result.error.message)
+  return result.data?.data ?? []
+})
+
 export const resolveOrgSubscriptions = cache(async (orgId: string) => {
   const result = await $876.organizations.admin.subscriptions.list({
     organizationId: orgId,
