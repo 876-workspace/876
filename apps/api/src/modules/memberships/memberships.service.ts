@@ -3,11 +3,13 @@ import { listObject, type ListObject } from '@/http/envelope'
 import { AppHttpError } from '@/platform/errors'
 import { generateId } from '@/platform/ids'
 import { getLogger } from '@/platform/logger'
+import { OWNER_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { getAuthProvider } from '@/providers/workos/adapter'
 import {
   deleteProviderMembership,
   ensureProviderMembership,
+  updateProviderMembershipRole,
 } from '@/services/identity-sync'
 import { assignMemberApps, linkMembershipRole } from '@/services/provisioning'
 
@@ -32,6 +34,14 @@ async function requireMembership(membershipId: string) {
       httpStatus: 404,
     })
   return row
+}
+
+function localRoleFromProvider(role: string): string {
+  // WorkOS is deliberately a coarse projection of 876 authorization: provider
+  // admin represents an owner, while every non-owner/custom local role projects
+  // to provider member. A provider event therefore only supplies an initial
+  // local role; it cannot safely overwrite an existing richer local role.
+  return role === 'admin' ? OWNER_ROLE_NAME : 'member'
 }
 
 export async function listMemberships(
@@ -143,7 +153,8 @@ export async function createMembership(
     'memberships.create'
   )
 
-  return serializeMembership(membership)
+  // linkMembershipRole may have populated roleId after the create returned.
+  return serializeMembership(await requireMembership(membership.id))
 }
 
 export async function updateMembership(
@@ -179,13 +190,31 @@ export async function updateMembership(
   const now = nowUnixSeconds()
   updateData.updatedAt = BigInt(now)
 
-  // Map camelCase keys to repository expected keys
+  // Map camelCase keys to repository expected keys.
   const repoData: Parameters<typeof repository.updateMembership>[1] = {}
   if ('workosMembershipId' in updateData)
     repoData.workosMembershipId = updateData.workosMembershipId as string | null
   if ('role' in updateData) repoData.role = updateData.role as string
   if ('status' in updateData) repoData.status = updateData.status as string
   repoData.updatedAt = updateData.updatedAt as bigint
+
+  if (body.role !== undefined && body.role !== null) {
+    const providerMembershipId =
+      body.workos_membership_id !== undefined &&
+      body.workos_membership_id !== null
+        ? body.workos_membership_id
+        : membership.workosMembershipId
+
+    // Provider first for role changes: if a demotion cannot be applied at
+    // WorkOS, do not commit a local role change while the provider still carries
+    // the old (potentially elevated) role.
+    await updateProviderMembershipRole(
+      getAuthProvider(getSettings()),
+      providerMembershipId,
+      body.role,
+      { localMembershipId: membershipId }
+    )
+  }
 
   const updated = await repository.updateMembership(membershipId, repoData)
   if (!updated)
@@ -218,7 +247,9 @@ export async function updateMembership(
     'memberships.update'
   )
 
-  return serializeMembership(updated)
+  // Role linking is a separate repository write; refetch so the response never
+  // exposes a stale roleId from before linkMembershipRole ran.
+  return serializeMembership(await requireMembership(membershipId))
 }
 
 /**
@@ -243,9 +274,9 @@ export async function deleteMembership(
     })
   }
 
-  // Called unconditionally: the helper already treats a null id and an
-  // already-absent provider record as success, and swallowing a real provider
-  // failure here would leave an orphaned WorkOS membership nothing reconciles.
+  // Local access is revoked before the external call. A provider failure is
+  // still surfaced, but cannot restore access in the 876 data plane; retry or
+  // reconciliation can finish deleting the orphaned WorkOS membership.
   await deleteProviderMembership(
     getAuthProvider(getSettings()),
     workosMembershipId,
@@ -265,11 +296,13 @@ export async function deleteMembership(
 }
 
 /**
- * Apply a WorkOS `organization_membership.created`/`.updated` to the local row
- * (WorkOS is source of record). Matches on the WorkOS membership id: an existing
- * row has its role/status updated; when none exists yet, one is created only if
- * the local org and user both resolve (the caller passes them), otherwise it is
- * skipped rather than fabricated. Returns the action taken.
+ * Apply a WorkOS `organization_membership.created`/`.updated` to the local row.
+ *
+ * WorkOS membership role is only a coarse identity-provider projection of the
+ * richer 876 org role. For an existing membership we therefore synchronize
+ * provider lifecycle status but preserve the local role. For a provider-created
+ * membership with no local row yet, provider admin initializes as owner and all
+ * other roles initialize as member.
  */
 export async function upsertMembershipFromWorkos(params: {
   workosMembershipId: string
@@ -281,29 +314,61 @@ export async function upsertMembershipFromWorkos(params: {
   const existing = await repository.findMembershipByWorkosId(
     params.workosMembershipId
   )
-  const now = BigInt(nowUnixSeconds())
+  const now = nowUnixSeconds()
 
   if (existing) {
     await repository.updateMembership(existing.id, {
-      role: params.role,
       status: params.status,
-      updatedAt: now,
+      updatedAt: BigInt(now),
     })
+    await linkMembershipRole(
+      {
+        id: existing.id,
+        organizationId: existing.organizationId,
+        role: existing.role,
+        roleId: existing.roleId,
+      },
+      now
+    )
+    if (params.status === 'active') {
+      await assignMemberApps({
+        organizationId: existing.organizationId,
+        userId: existing.userId,
+        now,
+      })
+    }
     return 'updated'
   }
 
   if (!params.organizationId || !params.userId) return 'skipped'
 
-  await repository.createMembership({
+  const role = localRoleFromProvider(params.role)
+  const created = await repository.createMembership({
     id: generateId('membership'),
     organizationId: params.organizationId,
     userId: params.userId,
     workosMembershipId: params.workosMembershipId,
-    role: params.role,
+    role,
     status: params.status,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: BigInt(now),
+    updatedAt: BigInt(now),
   })
+  await linkMembershipRole(
+    {
+      id: created.id,
+      organizationId: created.organizationId,
+      role: created.role,
+      roleId: created.roleId,
+    },
+    now
+  )
+  if (created.status === 'active') {
+    await assignMemberApps({
+      organizationId: created.organizationId,
+      userId: created.userId,
+      now,
+    })
+  }
   return 'created'
 }
 
@@ -316,5 +381,5 @@ export async function removeMembershipByWorkosId(
 ): Promise<boolean> {
   const existing = await repository.findMembershipByWorkosId(workosMembershipId)
   if (!existing) return false
-  return repository.deleteMembership(existing.id)
+  return repository.deleteMembership(existing.id, { status: 'removed' })
 }
