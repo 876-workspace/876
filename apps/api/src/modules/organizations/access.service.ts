@@ -1,5 +1,6 @@
 import { AppHttpError } from '@/http/errors'
 import { listObject, type ListObject } from '@/http/envelope'
+import { deleteMembership as deleteMembershipLifecycle } from '@/modules/memberships'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import {
@@ -400,8 +401,17 @@ export async function deleteOrgMember(
       })
     }
   }
+
+  // Keep the organization-specific safety checks above, but delegate the
+  // actual lifecycle write to the canonical membership service so local
+  // removal and WorkOS deprovisioning cannot drift apart.
   const now = BigInt(nowUnixSeconds())
-  await repository.softDeleteMembership(membershipId, principal.userId, now)
+  await deleteMembershipLifecycle(membershipId, {
+    status: 'removed',
+    deletedBy: principal.userId,
+    deletedAt: now,
+  })
+
   return { object: 'organization_member', id: membershipId, deleted: true }
 }
 
