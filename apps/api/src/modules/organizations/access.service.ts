@@ -348,7 +348,10 @@ export async function updateOrgMemberRole(
   // roleId consistent for Console, Enterprise, and product apps.
   await updateMembershipLifecycle(membership.id, { role: newRole.name })
 
-  const updated = await repository.findMembershipByIdWithUser(membership.id, orgId)
+  const updated = await repository.findMembershipByIdWithUser(
+    membership.id,
+    orgId
+  )
   if (!updated)
     throw notFound(
       'membership/not-found',

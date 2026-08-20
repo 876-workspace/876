@@ -19,7 +19,8 @@ vi.mock('../access.repository', () => ({
   findRoleByName: mocks.findRoleByName,
 }))
 
-const { deleteOrgMember, updateOrgMemberRole } = await import('../access.service')
+const { deleteOrgMember, updateOrgMemberRole } =
+  await import('../access.service')
 
 const member = (overrides: Record<string, unknown> = {}) => ({
   id: 'mem_target',
@@ -62,9 +63,7 @@ describe('organization member lifecycle delegation', () => {
   it('keeps org invariants but delegates role writes to the canonical membership lifecycle', async () => {
     mocks.findMembershipByIdWithUser
       .mockResolvedValueOnce(member())
-      .mockResolvedValueOnce(
-        member({ role: 'admin', roleId: 'role_admin' })
-      )
+      .mockResolvedValueOnce(member({ role: 'admin', roleId: 'role_admin' }))
 
     const result = await updateOrgMemberRole(
       'org_target',

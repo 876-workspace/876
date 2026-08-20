@@ -1,4 +1,4 @@
-import { Page } from '@876/ui/page'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import {
   Table,
@@ -9,25 +9,21 @@ import {
   TableRow,
 } from '@876/ui/table'
 
-import { ProvisioningNav } from '@/app/(app)/orgs/provisioning/_components/provisioning-nav'
+import { ProvisioningNav } from '../../_components/provisioning-nav'
 
-/**
- * The runs page resolves its filters and its table from the same top-level
- * await, so it needs a boundary of its own now that `/orgs` no longer carries a
- * segment-level one. Everything that is known without fetching — the heading,
- * the section nav, the table's column labels — renders for real.
- */
 export default function Loading() {
   return (
     <Page className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="876-eyebrow">Organizations</p>
-          <h1 className="876-page-title mt-1">Provisioning run history</h1>
+          <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
+          <h1 className="876-page-title">Provisioning</h1>
         </div>
         <Skeleton className="h-9 w-32" />
       </div>
-      <ProvisioningNav current="runs" />
+      <div className="border-border border-b pb-px">
+        <ProvisioningNav />
+      </div>
 
       <Skeleton className="h-[86px] w-full rounded-lg" />
 

@@ -1,7 +1,7 @@
 import Link from 'next/link'
-
-import { SETTINGS_SECTIONS } from '@/components/shell/nav-config'
 import { Page } from '@876/ui/page'
+
+import { CONSOLE_SETTINGS_OPTIONS } from './_lib/settings-options'
 
 export const metadata = { title: 'Settings' }
 
@@ -16,7 +16,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {SETTINGS_SECTIONS.map((section) => {
+        {CONSOLE_SETTINGS_OPTIONS.map((section) => {
           const Icon = section.icon
           return (
             <Link

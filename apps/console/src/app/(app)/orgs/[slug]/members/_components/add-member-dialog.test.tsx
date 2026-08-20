@@ -52,9 +52,7 @@ const existingUser = {
 } as unknown as AdminUser
 
 function renderDialog() {
-  render(
-    <AddMemberDialog orgId="org_01" orgName="Test Org" roles={roles} />
-  )
+  render(<AddMemberDialog orgId="org_01" orgName="Test Org" roles={roles} />)
   fireEvent.click(screen.getByRole('button', { name: 'Add member' }))
   return screen.getByRole('dialog')
 }
@@ -95,9 +93,7 @@ describe('AddMemberDialog', () => {
     const dialog = renderDialog()
 
     await searchFor('member@example.com')
-    fireEvent.click(
-      within(dialog).getByRole('button', { name: /Test User/i })
-    )
+    fireEvent.click(within(dialog).getByRole('button', { name: /Test User/i }))
     fireEvent.click(within(dialog).getByRole('button', { name: 'Add member' }))
     await act(async () => Promise.resolve())
 
@@ -174,7 +170,9 @@ describe('AddMemberDialog', () => {
     expect(
       within(dialog).getByText(/no shareable token was returned/i)
     ).toBeVisible()
-    expect(within(dialog).queryByText(/inv_public_record/)).not.toBeInTheDocument()
+    expect(
+      within(dialog).queryByText(/inv_public_record/)
+    ).not.toBeInTheDocument()
     expect(
       within(dialog).queryByRole('button', { name: 'Copy invitation link' })
     ).not.toBeInTheDocument()

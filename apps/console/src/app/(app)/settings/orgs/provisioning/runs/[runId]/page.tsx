@@ -1,6 +1,9 @@
 import { Suspense } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
+import { OrgAvatar } from '@876/ui/org-avatar'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
 import {
@@ -13,10 +16,11 @@ import {
 } from '@876/ui/table'
 
 import { $876 } from '@/lib/876'
+import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
-import { ProvisioningNav } from '@/app/(app)/orgs/provisioning/_components/provisioning-nav'
-import { RetryRunButton } from '@/app/(app)/orgs/provisioning/runs/_components/run-actions'
-import { RunStatus } from '@/app/(app)/orgs/provisioning/runs/_components/run-status'
+import { ProvisioningNav } from '../../_components/provisioning-nav'
+import { RetryRunButton } from '../_components/run-actions'
+import { RunStatus } from '../_components/run-status'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -27,11 +31,13 @@ export default function ProvisioningRunPage({ params }: Props) {
   return (
     <Page className="space-y-6">
       <PageBreadcrumb
-        href="/orgs/provisioning/runs"
+        href="/settings/orgs/provisioning/runs"
         label="Runs"
         className="mb-4"
       />
-      <ProvisioningNav current="runs" />
+      <div className="border-border border-b pb-px">
+        <ProvisioningNav />
+      </div>
 
       <Suspense fallback={<ProvisioningRunFallback />}>
         <ProvisioningRunData params={params} />
@@ -53,6 +59,9 @@ async function ProvisioningRunData({ params }: Props) {
   ])
   const app = appResult.data
   const organization = organizationResult.data
+  const appLabel = app?.name ?? run.app_id
+  const appKey = app?.slug ?? run.app_id
+  const initial = appLabel.trim().charAt(0).toUpperCase() || 'A'
 
   return (
     <>
@@ -62,10 +71,57 @@ async function ProvisioningRunData({ params }: Props) {
           <h1 className="876-page-title">{run.id}</h1>
           <RunStatus status={run.status} />
         </div>
-        <p className="text-muted-foreground mt-2 text-[0.8125rem]">
-          {organization?.name ?? run.organization_id} ·{' '}
-          {app?.name ?? run.app_id}
-        </p>
+        <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-3 text-[0.8125rem]">
+          <div className="flex items-center gap-1.5">
+            <OrgAvatar
+              name={organization?.name ?? run.organization_id}
+              src={organization?.logo_url}
+              size="sm"
+            />
+            {organization ? (
+              <Link
+                href={`/orgs/${organization.slug}`}
+                className="text-foreground font-medium hover:underline"
+              >
+                {organization.name}
+              </Link>
+            ) : (
+              <span>{run.organization_id}</span>
+            )}
+          </div>
+          <span>·</span>
+          <div className="flex items-center gap-1.5">
+            {app?.logo_url ? (
+              <Image
+                src={app.logo_url}
+                alt={app.name}
+                title={app.name}
+                width={20}
+                height={20}
+                unoptimized
+                className="size-5 shrink-0 rounded-sm object-cover"
+              />
+            ) : (
+              <span
+                title={appLabel}
+                aria-label={appLabel}
+                className={`inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-semibold text-white ${appColor(appKey)}`}
+              >
+                {initial}
+              </span>
+            )}
+            {app ? (
+              <Link
+                href={`/apps/${app.slug}`}
+                className="text-foreground font-medium hover:underline"
+              >
+                {app.name}
+              </Link>
+            ) : (
+              <span>{run.app_id}</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <section className="876-card grid gap-5 p-5 sm:grid-cols-2 lg:grid-cols-4">

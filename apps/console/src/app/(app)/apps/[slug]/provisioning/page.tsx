@@ -47,13 +47,13 @@ async function AppProvisioningData({ params }: Props) {
         </p>
         <div className="flex flex-wrap gap-2">
           <Link
-            href={`/orgs/provisioning/runs?app_id=${encodeURIComponent(app.id)}`}
+            href={`/settings/orgs/provisioning/runs?app_id=${encodeURIComponent(app.id)}`}
             className={buttonVariants({ variant: 'outline' })}
           >
             View runs
           </Link>
           <Link
-            href="/orgs/provisioning"
+            href="/settings/orgs/provisioning"
             className={buttonVariants({ variant: 'outline' })}
           >
             Shared finance defaults

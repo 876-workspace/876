@@ -164,7 +164,9 @@ export async function updateProviderMembershipRole(
 
   const roleSlug = providerRoleSlug(role)
   try {
-    await provider.updateOrganizationMembership(workosMembershipId, { roleSlug })
+    await provider.updateOrganizationMembership(workosMembershipId, {
+      roleSlug,
+    })
   } catch (error) {
     if (!isAlreadyGone(error)) throw error
 

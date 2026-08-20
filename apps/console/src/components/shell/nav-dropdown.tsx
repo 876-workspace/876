@@ -61,7 +61,7 @@ export function NavDropdown({ item }: { item: NavItem }) {
             <Icon
               aria-hidden="true"
               className="size-[1.125rem] shrink-0"
-              style={color ? { color } : undefined}
+              style={!isHighlighted && color ? { color } : undefined}
             />
             <span className="flex-1 truncate">{title}</span>
           </Link>
@@ -92,7 +92,7 @@ export function NavDropdown({ item }: { item: NavItem }) {
             <Icon
               aria-hidden="true"
               className="size-[1.125rem] shrink-0"
-              style={color ? { color } : undefined}
+              style={!isHighlighted && color ? { color } : undefined}
             />
             <span className="flex-1 truncate">{title}</span>
           </CollapsibleTrigger>
