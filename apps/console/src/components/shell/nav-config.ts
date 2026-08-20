@@ -8,9 +8,13 @@ import {
   Settings,
   SquaresPlusIcon,
   Users,
-  Waves,
 } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
+
+import {
+  CONSOLE_SETTINGS_OPTIONS,
+  type ConsoleSettingsOption,
+} from '@/app/(app)/settings/_lib/settings-options'
 
 /** A single child link rendered inside a dropdown item. */
 export type NavChild = {
@@ -45,7 +49,7 @@ export const navConfig: NavGroup[] = [
         title: 'Users',
         href: '/users',
         icon: Users,
-        color: 'var(--876-green)',
+        color: 'var(--876-blue)',
       },
       {
         title: 'Organizations',
@@ -112,35 +116,9 @@ export const navConfig: NavGroup[] = [
   },
 ]
 
-/** Settings sub-sections used on the /settings overview page. */
-export const SETTINGS_SECTIONS = [
-  {
-    title: 'General',
-    description: 'Platform name, timezone, and global defaults.',
-    href: '/settings/general',
-    icon: Settings,
-    iconColor: 'text-muted-foreground',
-  },
-  {
-    title: 'Users',
-    description: 'Manage who has access to Console.',
-    href: '/settings/users',
-    icon: Users,
-    iconColor: 'text-blue-600 dark:text-blue-400',
-  },
-  {
-    title: 'Security',
-    description:
-      'Auth policies, session limits, reserved usernames, and OAuth configuration.',
-    href: '/settings/security',
-    icon: KeyRound,
-    iconColor: 'text-amber-600 dark:text-amber-400',
-  },
-  {
-    title: 'Notifications',
-    description: 'Alert channels and event subscriptions.',
-    href: '/settings/notifications',
-    icon: Waves,
-    iconColor: 'text-violet-600 dark:text-violet-400',
-  },
-]
+/**
+ * Settings options used on the /settings overview page and in global search.
+ * Re-exported from the single source of truth at @/app/(app)/settings/_lib/settings-options.
+ */
+export const SETTINGS_SECTIONS: ConsoleSettingsOption[] =
+  CONSOLE_SETTINGS_OPTIONS

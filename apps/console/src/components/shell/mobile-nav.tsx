@@ -166,7 +166,7 @@ function MobileNavLink({
         <Icon
           aria-hidden="true"
           className="size-[1.125rem]"
-          style={item.color ? { color: item.color } : undefined}
+          style={!isActive && item.color ? { color: item.color } : undefined}
         />
       </span>
       <span className="min-w-0 flex-1 truncate">{item.title}</span>
@@ -207,7 +207,9 @@ function MobileNavSection({
           <Icon
             aria-hidden="true"
             className="size-[1.125rem]"
-            style={item.color ? { color: item.color } : undefined}
+            style={
+              !isHighlighted && item.color ? { color: item.color } : undefined
+            }
           />
         </span>
         <span className="min-w-0 flex-1 truncate">{item.title}</span>

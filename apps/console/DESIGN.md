@@ -95,8 +95,8 @@ icon and was added here because it is absent upstream.
 - **List/section headers** (`.mc-header-row`): a one‑step elevation tint + hairline
   so the top of a table anchors instead of reading as a blank band.
 - **Sidebar**: white in light, raised surface in dark; per‑item colored icons
-  (blue/green/gold/purple/red) provide the only multi‑color moment — the active
-  item uses the green accent pill.
+  provide restrained hierarchy — the active item uses the 876 blue accent pill
+  matching the toolbar action buttons.
 
 ## Extending the system
 

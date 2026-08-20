@@ -43,7 +43,7 @@ export function NavLink({
       <Icon
         aria-hidden="true"
         className="size-[1.125rem] shrink-0 transition-colors"
-        style={color ? { color } : undefined}
+        style={!isActive && color ? { color } : undefined}
       />
       <span className="truncate group-data-[collapsible=icon]:hidden">
         {title}
