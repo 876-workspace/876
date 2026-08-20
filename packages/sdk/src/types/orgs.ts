@@ -380,6 +380,7 @@ export const sdk876InviteTokenSchema = z.strictObject({
   organization_id: z.string(),
   email: z.string(),
   role: z.string(),
+  token: z.string().nullable().optional(),
   status: z.string(),
   expires_at: z.number(),
   source_app_id: z.string().nullable(),
