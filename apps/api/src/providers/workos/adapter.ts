@@ -352,6 +352,17 @@ export class WorkOsAuthProvider {
     }
   }
 
+  async updateOrganizationMembership(
+    membershipId: string,
+    params: { roleSlug: string }
+  ): Promise<Record<string, unknown>> {
+    try {
+      return await this.client.updateOrganizationMembership(membershipId, params)
+    } catch (error) {
+      this.rethrow(error)
+    }
+  }
+
   async deleteOrganization(organizationId: string): Promise<void> {
     try {
       await this.client.deleteOrganization(organizationId)
