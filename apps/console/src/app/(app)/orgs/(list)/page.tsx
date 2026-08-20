@@ -1,14 +1,15 @@
 import { Suspense } from 'react'
 import type { AdminOrganization, AdminSubscription } from '@876/admin'
-import { Building2 } from '@876/ui/icons'
-
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import {
   Empty,
+  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-  EmptyDescription,
 } from '@876/ui/empty'
+import { Building2 } from '@876/ui/icons'
+import { Page } from '@876/ui/page'
 
 import { $876 } from '@/lib/876'
 import { AnalyticsEvent } from '@/lib/analytics/events'
@@ -16,10 +17,6 @@ import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { isOrgStatus } from '@/lib/org-status'
 import { OrgSearchBar } from '../_components/org-search-bar'
 import { OrgTable } from '../_components/org-table'
-import { Page } from '@876/ui/page'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import Link from 'next/link'
-import { buttonVariants } from '@876/ui/button'
 import { ORGS_SKELETON_COLUMNS } from '../_components/orgs-skeleton-columns'
 import { OrgsToolbar } from '../_components/orgs-toolbar'
 
@@ -43,18 +40,10 @@ export default async function OrganizationsPage({ searchParams }: Props) {
     <Page>
       <TrackMCEventOnMount event={AnalyticsEvent.OrgListViewed} />
       <OrgsToolbar status={selectedStatus} />
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="w-full max-w-sm">
-          <Suspense>
-            <OrgSearchBar />
-          </Suspense>
-        </div>
-        <Link
-          href="/orgs/provisioning"
-          className={buttonVariants({ variant: 'outline' })}
-        >
-          Provisioning defaults
-        </Link>
+      <div className="mb-4 w-full max-w-sm">
+        <Suspense>
+          <OrgSearchBar />
+        </Suspense>
       </div>
       <Suspense
         fallback={

@@ -1,7 +1,9 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import type { AdminProvisioningRunStatus } from '@876/admin'
 import { buttonVariants } from '@876/ui/button'
-import { Page } from '@876/ui/page'
+import { OrgAvatar } from '@876/ui/org-avatar'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 import {
   Table,
   TableBody,
@@ -12,8 +14,9 @@ import {
 } from '@876/ui/table'
 
 import { $876 } from '@/lib/876'
+import { appColor } from '@/lib/app-color'
 import { formatDateTime } from '@/lib/format'
-import { ProvisioningNav } from '@/app/(app)/orgs/provisioning/_components/provisioning-nav'
+import { ProvisioningNav } from '../../_components/provisioning-nav'
 import { ReconcileRunsButton } from '../_components/run-actions'
 import { RunStatus } from '../_components/run-status'
 
@@ -70,12 +73,14 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
     <Page className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="876-eyebrow">Organizations</p>
-          <h1 className="876-page-title mt-1">Provisioning run history</h1>
+          <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
+          <h1 className="876-page-title">Provisioning</h1>
         </div>
         <ReconcileRunsButton appId={appId} organizationId={organizationId} />
       </div>
-      <ProvisioningNav current="runs" />
+      <div className="border-border border-b pb-px">
+        <ProvisioningNav />
+      </div>
 
       <form className="876-card grid gap-3 p-4 md:grid-cols-[180px_1fr_1fr_auto_auto]">
         <label className="space-y-1 text-[0.8125rem]">
@@ -121,7 +126,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
           Apply filters
         </button>
         <Link
-          href="/orgs/provisioning/runs"
+          href="/settings/orgs/provisioning/runs"
           className={buttonVariants({
             variant: 'outline',
             className: 'self-end',
@@ -159,28 +164,82 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
               runs.map((run) => {
                 const app = appsById.get(run.app_id)
                 const organization = organizationsById.get(run.organization_id)
+                const appLabel = app?.name ?? run.app_id
+                const appKey = app?.slug ?? run.app_id
+                const initial = appLabel.trim().charAt(0).toUpperCase() || 'A'
+
                 return (
                   <TableRow key={run.id}>
                     <TableCell>
                       <RunStatus status={run.status} />
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">
-                        {organization?.name ?? run.organization_id}
-                      </p>
-                      {organization ? (
-                        <p className="text-muted-foreground text-xs">
-                          {run.organization_id}
-                        </p>
-                      ) : null}
+                      <div className="flex items-center gap-2.5">
+                        <OrgAvatar
+                          name={organization?.name ?? run.organization_id}
+                          src={organization?.logo_url}
+                          size="sm"
+                        />
+                        <div className="min-w-0">
+                          {organization ? (
+                            <Link
+                              href={`/orgs/${organization.slug}`}
+                              className="truncate font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+                            >
+                              {organization.name}
+                            </Link>
+                          ) : (
+                            <p className="truncate font-medium">
+                              {run.organization_id}
+                            </p>
+                          )}
+                          {organization ? (
+                            <p className="text-muted-foreground truncate text-xs">
+                              {run.organization_id}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">{app?.name ?? run.app_id}</p>
-                      {app ? (
-                        <p className="text-muted-foreground text-xs">
-                          {app.slug}
-                        </p>
-                      ) : null}
+                      <div className="flex items-center gap-2.5">
+                        {app?.logo_url ? (
+                          <Image
+                            src={app.logo_url}
+                            alt={app.name}
+                            title={app.name}
+                            width={20}
+                            height={20}
+                            unoptimized
+                            className="size-5 shrink-0 rounded-sm object-cover"
+                          />
+                        ) : (
+                          <span
+                            title={appLabel}
+                            aria-label={appLabel}
+                            className={`inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-semibold text-white ${appColor(appKey)}`}
+                          >
+                            {initial}
+                          </span>
+                        )}
+                        <div className="min-w-0">
+                          {app ? (
+                            <Link
+                              href={`/apps/${app.slug}`}
+                              className="truncate font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+                            >
+                              {app.name}
+                            </Link>
+                          ) : (
+                            <p className="truncate font-medium">{run.app_id}</p>
+                          )}
+                          {app ? (
+                            <p className="text-muted-foreground truncate text-xs">
+                              {app.slug}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="capitalize">
                       {run.trigger.replaceAll('_', ' ')}
@@ -193,7 +252,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
                     <TableCell>{formatDateTime(run.updated_at)}</TableCell>
                     <TableCell className="text-right">
                       <Link
-                        href={`/orgs/provisioning/runs/${encodeURIComponent(run.id)}`}
+                        href={`/settings/orgs/provisioning/runs/${encodeURIComponent(run.id)}`}
                         className={buttonVariants({
                           variant: 'ghost',
                           size: 'sm',
@@ -214,7 +273,7 @@ export default async function ProvisioningRunsPage({ searchParams }: Props) {
         <div className="flex justify-end">
           <Link
             href={{
-              pathname: '/orgs/provisioning/runs',
+              pathname: '/settings/orgs/provisioning/runs',
               query: {
                 ...(status ? { status } : {}),
                 ...(appId ? { app_id: appId } : {}),
