@@ -1,0 +1,9 @@
+# Canonical repository contributor identities.
+#
+# AI tools are not contributors. Historical AI co-author identities that leaked
+# into commit metadata are mapped to the human repository maintainer so Git
+# tooling does not treat them as standalone contributors.
+876-workspace <raheemforschool@gmail.com> GPT-5 Codex <codex@openai.com>
+876-workspace <raheemforschool@gmail.com> GPT-5 <codex@openai.com>
+876-workspace <raheemforschool@gmail.com> Codex <codex@openai.com>
+876-workspace <raheemforschool@gmail.com> Ona <no-reply@ona.com>
