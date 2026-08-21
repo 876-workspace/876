@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const AI_MARKER =
   /\b(?:codex|openai|claude|anthropic|ona(?:-agent)?|grok|xai|gemini|copilot|muse|cursor|windsurf|devin|opencode|aider)\b/i
@@ -11,6 +11,14 @@ const ATTRIBUTION_TRAILER =
 
 const GENERATED_WITH =
   /^\s*(?:generated|created|assisted)\s+(?:with|by)\s+(.+)$/gim
+
+function checkRetiredPaths() {
+  if (!existsSync('.grok')) return
+
+  console.error('The retired .grok directory must not exist in this repository.')
+  console.error('Use .claude/rules or .agents/rules instead.')
+  process.exit(1)
+}
 
 function findForbiddenMessageAttribution(message) {
   const matches = []
@@ -96,6 +104,8 @@ function checkRange(range) {
 
   if (offenders.length > 0) fail(offenders)
 }
+
+checkRetiredPaths()
 
 const args = process.argv.slice(2)
 
