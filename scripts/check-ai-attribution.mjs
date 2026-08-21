@@ -12,7 +12,7 @@ const ATTRIBUTION_TRAILER =
 const GENERATED_WITH =
   /^\s*(?:generated|created|assisted)\s+(?:with|by)\s+(.+)$/gim
 
-function findForbiddenAttribution(message) {
+function findForbiddenMessageAttribution(message) {
   const matches = []
 
   for (const pattern of [ATTRIBUTION_TRAILER, GENERATED_WITH]) {
@@ -27,6 +27,10 @@ function findForbiddenAttribution(message) {
   return matches
 }
 
+function findForbiddenIdentity(label, identity) {
+  return identity && AI_MARKER.test(identity) ? [`${label}: ${identity}`] : []
+}
+
 function fail(entries) {
   console.error('AI attribution is forbidden in this repository.')
   console.error('Git authorship and co-authorship must identify human contributors only.\n')
@@ -39,26 +43,37 @@ function fail(entries) {
   process.exit(1)
 }
 
+function currentIdentity(variable) {
+  return execFileSync('git', ['var', variable], { encoding: 'utf8' }).trim()
+}
+
 function checkMessageFile(path) {
   const message = readFileSync(path, 'utf8')
-  const matches = findForbiddenAttribution(message)
+  const matches = [
+    ...findForbiddenIdentity('Author', currentIdentity('GIT_AUTHOR_IDENT')),
+    ...findForbiddenIdentity('Committer', currentIdentity('GIT_COMMITTER_IDENT')),
+    ...findForbiddenMessageAttribution(message),
+  ]
+
   if (matches.length > 0) fail([{ label: `Commit message: ${path}`, matches }])
 }
 
 function readCommits(range) {
   const output = execFileSync(
     'git',
-    ['log', '--format=%H%x00%B%x00', range],
+    ['log', '--format=%H%x00%an <%ae>%x00%cn <%ce>%x00%B%x00', range],
     { encoding: 'utf8' },
   )
 
   const parts = output.split('\0')
   const commits = []
 
-  for (let index = 0; index + 1 < parts.length; index += 2) {
+  for (let index = 0; index + 3 < parts.length; index += 4) {
     const sha = parts[index]?.trim()
-    const message = parts[index + 1] ?? ''
-    if (sha) commits.push({ sha, message })
+    const author = parts[index + 1]?.trim() ?? ''
+    const committer = parts[index + 2]?.trim() ?? ''
+    const message = parts[index + 3] ?? ''
+    if (sha) commits.push({ sha, author, committer, message })
   }
 
   return commits
@@ -68,7 +83,12 @@ function checkRange(range) {
   const offenders = []
 
   for (const commit of readCommits(range)) {
-    const matches = findForbiddenAttribution(commit.message)
+    const matches = [
+      ...findForbiddenIdentity('Author', commit.author),
+      ...findForbiddenIdentity('Committer', commit.committer),
+      ...findForbiddenMessageAttribution(commit.message),
+    ]
+
     if (matches.length > 0) {
       offenders.push({ label: `Commit ${commit.sha}`, matches })
     }
