@@ -24,16 +24,33 @@ const str = (fallback = '') =>
     .transform((value) => value ?? fallback)
 
 const ACCELERATE_URL_PROTOCOLS = ['prisma:', 'prisma+postgres:']
+const POSTGRES_URL_PROTOCOLS = ['postgres:', 'postgresql:']
+const DATABASE_URL_PROTOCOLS = [
+  ...ACCELERATE_URL_PROTOCOLS,
+  ...POSTGRES_URL_PROTOCOLS,
+]
 
-const accelerateUrl = () =>
+/**
+ * A connection string the runtime client can build a transport from.
+ *
+ * `src/db/client.ts` selects Accelerate for a `prisma:`/`prisma+postgres:` URL
+ * and the pg driver adapter for a direct PostgreSQL URL. Any other scheme has
+ * no transport, and Prisma would not report that until the first query — as an
+ * opaque internal error, with every data route 500ing and nothing naming the
+ * cause. Rejecting it here turns that into a boot-time failure with a readable
+ * message, which is the whole point of parsing env through this schema.
+ *
+ * Only the scheme is ever reported: the rest of the URL carries a credential.
+ */
+const databaseUrl = () =>
   str().refine(
     (value) =>
       value.trim() === '' ||
-      ACCELERATE_URL_PROTOCOLS.includes(
+      DATABASE_URL_PROTOCOLS.includes(
         value.slice(0, value.indexOf(':') + 1).toLowerCase()
       ),
     {
-      message: `must be a Prisma Accelerate URL (${ACCELERATE_URL_PROTOCOLS.join(' or ')}).`,
+      message: `must be a PostgreSQL URL (${POSTGRES_URL_PROTOCOLS.join(' or ')}) or a Prisma Accelerate URL (${ACCELERATE_URL_PROTOCOLS.join(' or ')}).`,
     }
   )
 
@@ -41,7 +58,7 @@ const envSchema = z.object({
   PORT: int(4001),
   ENVIRONMENT: str('production'),
   LOG_LEVEL: str('info'),
-  DATABASE_URL: accelerateUrl(),
+  DATABASE_URL: databaseUrl(),
   DIRECT_DATABASE_URL: z.string().optional(),
   API_876_KEY: z.string().min(1, 'API_876_KEY is required'),
   // Integration callers receive a separate secret and can reach only the

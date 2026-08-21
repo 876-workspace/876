@@ -148,6 +148,106 @@ export function requireAccelerateUrl(
   return value
 }
 
+/**
+ * The URL schemes a direct PostgreSQL driver adapter accepts.
+ *
+ * Neon hands out `postgresql:` URLs. These belong to `adapter`, which is
+ * mutually exclusive with `accelerateUrl` in the generated client's
+ * constructor type.
+ */
+export const POSTGRES_URL_PROTOCOLS = ['postgres:', 'postgresql:']
+
+/**
+ * Returns the lowercased URL scheme of `value`, including the trailing colon.
+ *
+ * Only the scheme is ever extracted: the rest of the URL carries credentials
+ * and must never reach an error message, a log line, or a Sentry event.
+ *
+ * @param value - A connection string.
+ * @returns The scheme, e.g. `postgresql:`, or `''` when there is none.
+ */
+export function databaseUrlProtocol(value: string): string {
+  const index = value.indexOf(':')
+
+  return index === -1 ? '' : value.slice(0, index + 1).toLowerCase()
+}
+
+/**
+ * Whether `value` is a Prisma Accelerate connection string.
+ *
+ * @param value - A connection string.
+ * @returns `true` for `prisma:` / `prisma+postgres:` URLs.
+ */
+export function isAccelerateUrl(value: string): boolean {
+  return ACCELERATE_URL_PROTOCOLS.includes(databaseUrlProtocol(value))
+}
+
+/**
+ * A datastore's runtime URL is neither an Accelerate URL nor a direct
+ * PostgreSQL URL, so no client transport can be selected for it.
+ */
+export class DatabaseUrlUnsupportedError extends Error {
+  override readonly name = 'DatabaseUrlUnsupportedError'
+
+  constructor(
+    /** The environment variable that was read, e.g. `CONSOLE_DATABASE_URL`. */
+    readonly variable: string,
+    /** The datastore it configures, e.g. `Console`. */
+    readonly datastore: string,
+    /** The scheme that was found, or `undefined` when the value was unset. */
+    readonly protocol?: string
+  ) {
+    super(
+      protocol === undefined
+        ? `${variable} is not set; ${datastore} DB unavailable.`
+        : `${variable} is a "${protocol}" URL, which ${datastore}'s Prisma ` +
+            `client cannot use. Set it to a direct PostgreSQL URL ` +
+            `(${POSTGRES_URL_PROTOCOLS.join(' or ')}) for a driver adapter, ` +
+            `or a ${ACCELERATE_URL_PROTOCOLS.join(' or ')} URL for Accelerate.`
+    )
+  }
+}
+
+/**
+ * Returns `value` once it is confirmed to be a connection string this platform
+ * can build a Prisma client from — Accelerate or direct PostgreSQL.
+ *
+ * Checked at client construction so a wrong-shaped connection string is a
+ * single named startup failure rather than an opaque per-query error.
+ *
+ * @param value - The raw environment value, possibly unset.
+ * @param options - Which variable was read and which datastore it configures.
+ * @returns The value, unchanged.
+ * @throws {DatabaseUrlUnsupportedError} When unset or of an unusable scheme.
+ *
+ * @example
+ * const databaseUrl = requireDatabaseUrl(process.env.CONSOLE_DATABASE_URL, {
+ *   variable: 'CONSOLE_DATABASE_URL',
+ *   datastore: 'Console',
+ * })
+ */
+export function requireDatabaseUrl(
+  value: string | undefined,
+  options: { variable: string; datastore: string }
+): string {
+  const { variable, datastore } = options
+
+  if (!value) throw new DatabaseUrlUnsupportedError(variable, datastore)
+
+  const protocol = databaseUrlProtocol(value)
+  if (
+    !ACCELERATE_URL_PROTOCOLS.includes(protocol) &&
+    !POSTGRES_URL_PROTOCOLS.includes(protocol)
+  )
+    throw new DatabaseUrlUnsupportedError(
+      variable,
+      datastore,
+      protocol || 'unknown'
+    )
+
+  return value
+}
+
 // ── Error identification ────────────────────────────────────────────────────
 
 /** The workerd message emitted when an I/O object outlives its request. */

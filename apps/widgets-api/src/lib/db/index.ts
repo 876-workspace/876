@@ -1,10 +1,12 @@
 import 'server-only'
 
+import { PrismaNeon } from '@prisma/adapter-neon'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import {
   createQueryGuard,
   createRequestScopedResolver,
-  requireAccelerateUrl,
+  isAccelerateUrl,
+  requireDatabaseUrl,
   type QueryFailure,
 } from '@876/core/db'
 import * as Sentry from '@sentry/nextjs'
@@ -49,54 +51,66 @@ function reportDbFailure(
 }
 
 function createPrisma() {
-  const accelerateUrl = requireAccelerateUrl(process.env.WIDGETS_DATABASE_URL, {
+  const databaseUrl = requireDatabaseUrl(process.env.WIDGETS_DATABASE_URL, {
     variable: 'WIDGETS_DATABASE_URL',
     datastore: 'Widgets',
   })
+  const accelerated = isAccelerateUrl(databaseUrl)
 
-  const client = new PrismaClient({ accelerateUrl })
-    .$extends({
-      query: {
-        notepadNote: {
-          async create({
-            args,
-            query,
-          }: {
-            args: Record<string, unknown>
-            query: (args: unknown) => Promise<unknown>
-          }) {
-            const data = args.data as Record<string, unknown>
-            if (!data.id) data.id = noteId()
-            return query(args)
+  // Neon is reached over its serverless WebSocket driver: workerd cannot open
+  // the raw TCP socket `pg` needs, and the adapter owns the remote pool the
+  // way Accelerate used to.
+  const client = accelerated
+    ? new PrismaClient({ accelerateUrl: databaseUrl })
+    : new PrismaClient({
+        adapter: new PrismaNeon({ connectionString: databaseUrl }),
+      } as unknown as { accelerateUrl: string })
+        .$extends({
+          query: {
+            notepadNote: {
+              async create({
+                args,
+                query,
+              }: {
+                args: Record<string, unknown>
+                query: (args: unknown) => Promise<unknown>
+              }) {
+                const data = args.data as Record<string, unknown>
+                if (!data.id) data.id = noteId()
+                return query(args)
+              },
+            },
+            notepadCollection: {
+              async create({
+                args,
+                query,
+              }: {
+                args: Record<string, unknown>
+                query: (args: unknown) => Promise<unknown>
+              }) {
+                const data = args.data as Record<string, unknown>
+                if (!data.id) data.id = collectionId()
+                return query(args)
+              },
+            },
           },
-        },
-        notepadCollection: {
-          async create({
-            args,
-            query,
-          }: {
-            args: Record<string, unknown>
-            query: (args: unknown) => Promise<unknown>
-          }) {
-            const data = args.data as Record<string, unknown>
-            if (!data.id) data.id = collectionId()
-            return query(args)
+        })
+        .$extends({
+          query: {
+            $allOperations: createQueryGuard({
+              onFailure: (error, failure) =>
+                reportDbFailure(error, { ...failure, stage: 'query' }),
+            }),
           },
-        },
-      },
-    })
-    .$extends({
-      query: {
-        $allOperations: createQueryGuard({
-          onFailure: (error, failure) =>
-            reportDbFailure(error, { ...failure, stage: 'query' }),
-        }),
-      },
-    })
+        })
 
   // Keep the existing service-facing extension type stable. Accelerate is
   // applied at runtime for pooling; cacheStrategy is intentionally deferred.
-  return client.$extends(withAccelerate()) as unknown as typeof client
+  // Accelerate's extension only applies when the URL is actually an
+  // Accelerate URL; the driver adapter needs no extension.
+  return (accelerated
+    ? client.$extends(withAccelerate())
+    : client) as unknown as typeof client
 }
 
 type WidgetsPrisma = ReturnType<typeof createPrisma>

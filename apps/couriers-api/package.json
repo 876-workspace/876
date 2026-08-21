@@ -22,6 +22,7 @@
     "@876/server": "workspace:*",
     "@876/settings": "workspace:*",
     "@cloudflare/containers": "0.3.7",
+    "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@prisma/extension-accelerate": "3.0.1",
     "compression": "1.8.1",
@@ -29,6 +30,7 @@
     "express": "5.2.1",
     "helmet": "8.3.0",
     "jose": "6.2.9",
+    "pg": "8.23.0",
     "pino": "10.3.1",
     "zod": "4.4.3",
     "zod-openapi": "6.0.1"

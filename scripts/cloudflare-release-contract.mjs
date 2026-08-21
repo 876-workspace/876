@@ -12,7 +12,7 @@ export const CLOUDFLARE_WORKERS = {
     databaseSecret: 'API_DATABASE_URL',
     migrationOwner: 'prisma',
     runtimeDatabaseSecret: 'DATABASE_URL',
-    runtimeDatabaseMode: 'accelerate',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-api.1876.workers.dev/health',
     requiredSecrets: [
       'API_INTERNAL_KEY',
@@ -87,7 +87,7 @@ export const CLOUDFLARE_WORKERS = {
     databaseSecret: 'CONSOLE_DATABASE_URL',
     migrationOwner: 'prisma',
     runtimeDatabaseSecret: 'CONSOLE_DATABASE_URL',
-    runtimeDatabaseMode: 'accelerate',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-console.1876.workers.dev/api/health',
     requiredSecrets: [
       'API_876_KEY',
@@ -124,7 +124,7 @@ export const CLOUDFLARE_WORKERS = {
     databaseSecret: 'COURIERS_DATABASE_URL',
     migrationOwner: 'prisma',
     runtimeDatabaseSecret: 'DATABASE_URL',
-    runtimeDatabaseMode: 'accelerate',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-couriers-api.1876.workers.dev/health',
     requiredSecrets: [
       'API_876_KEY',
@@ -173,7 +173,7 @@ export const CLOUDFLARE_WORKERS = {
     databaseSecret: 'WIDGETS_DATABASE_URL',
     migrationOwner: 'prisma',
     runtimeDatabaseSecret: 'WIDGETS_DATABASE_URL',
-    runtimeDatabaseMode: 'accelerate',
+    runtimeDatabaseMode: 'shared-direct',
     readinessUrl: 'https://876-widgets-api.1876.workers.dev/api/health',
     requiredSecrets: ['WIDGETS_DATABASE_URL', 'WIDGETS_SERVICE_KEY'],
   },

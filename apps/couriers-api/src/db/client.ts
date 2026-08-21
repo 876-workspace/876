@@ -1,3 +1,4 @@
+import { PrismaPg } from '@prisma/adapter-pg'
 import { withAccelerate } from '@prisma/extension-accelerate'
 
 import { getSettings } from '@/config'
@@ -11,12 +12,25 @@ function createClient() {
   const { databaseUrl, environment } = getSettings()
   if (!databaseUrl) throw new Error('DATABASE_URL is not set.')
 
-  const client = new PrismaClient({
-    accelerateUrl: databaseUrl,
-    log: environment === 'development' ? ['warn', 'error'] : ['error'],
-  } as never)
+  const logging: Array<'warn' | 'error'> =
+    environment === 'development' ? ['warn', 'error'] : ['error']
 
-  return client.$extends(withAccelerate()) as unknown as PrismaClient
+  // Accelerate is still accepted so a `prisma+postgres:` URL keeps working.
+  // A direct PostgreSQL URL (Neon) goes through the pg driver adapter, which
+  // owns the connection pool for this long-lived container process.
+  if (
+    databaseUrl.startsWith('prisma:') ||
+    databaseUrl.startsWith('prisma+postgres:')
+  )
+    return new PrismaClient({
+      accelerateUrl: databaseUrl,
+      log: logging,
+    }).$extends(withAccelerate()) as unknown as PrismaClient
+
+  return new PrismaClient({
+    adapter: new PrismaPg({ connectionString: databaseUrl }),
+    log: logging,
+  })
 }
 
 export const prisma: PrismaClient = createClient()

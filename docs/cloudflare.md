@@ -24,16 +24,17 @@ Prisma Postgres databases.
 **Hostname strategy:** `*.workers.dev` script names above, with custom domains
 (`api.876.app`, etc.) added as needed.
 
-**Databases:** Prisma Postgres (production).
+**Databases:** Neon (production). Migrated off Prisma Postgres on 2026-08-21,
+after that account hit `planLimitReached` and stopped accepting connections.
 
-| Prisma Postgres database ID    | Used by            | Runtime env var        | CI secret               |
-| ------------------------------ | ------------------ | ---------------------- | ----------------------- |
-| `db_cmsjqpjkh1d1tx9dx3ikmt7a7` | Identity API       | `DATABASE_URL`         | `API_DATABASE_URL`      |
-| `db_cmsjqul950ec62mdvtv2i3xfi` | Console app-local  | `CONSOLE_DATABASE_URL` | `CONSOLE_DATABASE_URL`  |
-| `db_cmsjqt0eb0ebi2mdv9x30t2lw` | Couriers app-local | `DATABASE_URL`         | `COURIERS_DATABASE_URL` |
-| `db_cmsjqva230ecs2mdvu7bnc88p` | Billing API        | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
-| `db_cmsjqwxfz0edo2mdvo4orab5f` | Widgets API        | `WIDGETS_DATABASE_URL` | `WIDGETS_DATABASE_URL`  |
-| `db_cmsjqw5we0ed82mdvce70w4sf` | Storage API        | `STORAGE_DATABASE_URL` | `STORAGE_DATABASE_URL`  |
+| Neon project   | Used by            | Runtime env var        | CI secret               |
+| -------------- | ------------------ | ---------------------- | ----------------------- |
+| `876-core`     | Identity API       | `DATABASE_URL`         | `API_DATABASE_URL`      |
+| `876-console`  | Console app-local  | `CONSOLE_DATABASE_URL` | `CONSOLE_DATABASE_URL`  |
+| `876-couriers` | Couriers app-local | `DATABASE_URL`         | `COURIERS_DATABASE_URL` |
+| `876-billing`  | Billing API        | `BILLING_DATABASE_URL` | `BILLING_DATABASE_URL`  |
+| `876-widgets`  | Widgets API        | `WIDGETS_DATABASE_URL` | `WIDGETS_DATABASE_URL`  |
+| `876-storage`  | Storage API        | `STORAGE_DATABASE_URL` | `STORAGE_DATABASE_URL`  |
 
 Two services read a variable literally named `DATABASE_URL` at runtime — the
 identity API and Couriers — so the **CI secret names are always prefixed**, and
@@ -43,41 +44,40 @@ repository secret `API_DATABASE_URL` exists because the unprefixed
 deploy spent a day trying to build the identity schema inside the couriers
 database. Do not add an unprefixed database secret back.
 
-The **CI** secrets in that table hold the **direct** `postgres://` URL: the only
-thing CI does with them is `prisma migrate deploy`, and the deploy workflow maps
-each onto that app's `*_DIRECT_DATABASE_URL`. The **Worker** secret of the same
-name holds the **Accelerate** URL instead, because that is what the runtime
-client reads. Same database, two URLs, two consumers — see below.
-
 ### Each database has two URLs, and they are not interchangeable
 
 Every Prisma workspace reads **two** connection strings for the same database:
 
-| Variable                      | Scheme               | Read by                                                      |
-| ----------------------------- | -------------------- | ------------------------------------------------------------ |
-| `<PREFIX>DATABASE_URL`        | `prisma+postgres://` | the runtime client, as `new PrismaClient({ accelerateUrl })` |
-| `<PREFIX>DIRECT_DATABASE_URL` | `postgres://`        | `prisma.config.ts` — migrate, generate, seed, baseline       |
+| Variable                      | Endpoint | Read by                                                |
+| ----------------------------- | -------- | ------------------------------------------------------ |
+| `<PREFIX>DATABASE_URL`        | pooled   | the runtime client, through a driver adapter           |
+| `<PREFIX>DIRECT_DATABASE_URL` | direct   | `prisma.config.ts` — migrate, generate, seed, baseline |
 
-`accelerateUrl` is **mutually exclusive with a driver adapter** and rejects a
-direct TCP URL. Prisma does not check the scheme when the client is
-constructed, so a direct URL in the runtime variable fails on the _first query_
-as an opaque internal error, and every data-backed route 500s with nothing
-naming the cause. That is exactly what happened on 2026-08-08: the runtime
-clients moved to Accelerate while every Worker secret, CI secret, and local
-`.env` still held `postgres://…@pooled.db.prisma.io:5432`. `/health` stayed
-green throughout because it never touches the database.
+Both are `postgresql://` URLs; they differ by host — the pooled one carries the
+`-pooler` suffix. **Migrations must use the direct endpoint.** Neon's pooler is
+transaction-mode PgBouncer, and `prisma migrate deploy` takes advisory locks it
+cannot hold there. The CI secrets named `*_DIRECT_DATABASE_URL` exist for
+exactly that, and the deploy workflow maps each onto the variable its app's
+`prisma.config.ts` reads.
 
-Both halves are now validated where they are read — `requireAccelerateUrl()`
-from `@876/core/db` in each app client, an `accelerateUrl()` refinement in
-`apps/api/src/config`, and `pnpm check:database-env` ahead of every `pnpm dev*`
-that starts a Prisma workspace. A wrong-shaped URL is a named startup failure,
-not a runtime mystery.
+### Which driver adapter, and why it differs by runtime
 
-Get both from Prisma Console → the database → **Connect**: the Accelerate
-string, and the **direct connection** string.
+| Runtime                                     | Adapter                | Why                                                                               |
+| ------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| Containers (api, billing-api, couriers-api) | `@prisma/adapter-pg`   | a real Node process can open a TCP socket and keep its own pool                   |
+| OpenNext Workers (console, widgets-api)     | `@prisma/adapter-neon` | workerd cannot open the raw TCP socket `pg` needs; the Neon driver uses WebSocket |
 
-**Hyperdrive is not used.** Accelerate owns the remote connection pool, so
-Workers hold no database socket and there is no Hyperdrive binding to wire.
+Each app's client factory selects the adapter from the URL scheme, and still
+accepts a `prisma+postgres://` Accelerate URL so the move is reversible.
+`requireDatabaseUrl()` in `@876/core/db` and the `databaseUrl()` refinement in
+`apps/api/src/config` reject a scheme that has no transport at **startup**,
+rather than letting it surface as an opaque per-query error — which is what
+happened on 2026-08-08, when the runtime clients moved to Accelerate while every
+secret still held a direct URL. `/health` stayed green throughout because it
+never touches the database.
+
+**Hyperdrive is not used.** Neon's pooled endpoint owns the remote connection
+pool, so there is no Hyperdrive binding to wire.
 
 ---
 
@@ -439,7 +439,7 @@ unknown dependency, or has no deployment job/manual-dispatch option. This is
 also run before the deployment workflow evaluates path filters, so a newly
 introduced app cannot silently fall outside the release graph.
 
-Data-backed OpenNext Workers are required to use Prisma Accelerate at runtime;
+Data-backed OpenNext Workers reach Neon through its serverless driver;
 direct PostgreSQL driver adapters are rejected by the contract. Every Alembic
 service must use its own non-default revision table so services sharing one
 Postgres database cannot overwrite each other's migration head.

@@ -338,6 +338,9 @@ importers:
       '@cloudflare/containers':
         specifier: 0.3.7
         version: 0.3.7
+      '@prisma/adapter-pg':
+        specifier: 7.9.1
+        version: 7.9.1
       '@prisma/client':
         specifier: 7.9.1
         version: 7.9.1(prisma@7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@5.9.3))(typescript@5.9.3)
@@ -680,9 +683,15 @@ importers:
       '@876/widgets':
         specifier: workspace:*
         version: link:../../packages/widgets
+      '@neondatabase/serverless':
+        specifier: 1.1.0
+        version: 1.1.0
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.1(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(wrangler@4.124.0)
+      '@prisma/adapter-neon':
+        specifier: 7.9.1
+        version: 7.9.1
       '@prisma/adapter-pg':
         specifier: 7.9.1
         version: 7.9.1
@@ -943,6 +952,9 @@ importers:
       '@cloudflare/containers':
         specifier: 0.3.7
         version: 0.3.7
+      '@prisma/adapter-pg':
+        specifier: 7.9.1
+        version: 7.9.1
       '@prisma/client':
         specifier: 7.9.1
         version: 7.9.1(prisma@7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@5.9.3))(typescript@5.9.3)
@@ -964,6 +976,9 @@ importers:
       jose:
         specifier: 6.2.9
         version: 6.2.9
+      pg:
+        specifier: 8.23.0
+        version: 8.23.0
       pino:
         specifier: 10.3.1
         version: 10.3.1
@@ -1247,6 +1262,9 @@ importers:
       '@opennextjs/cloudflare':
         specifier: 1.20.2
         version: 1.20.2(next@16.3.1(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@26.2.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(wrangler@4.124.0)
+      '@prisma/adapter-neon':
+        specifier: 7.9.1
+        version: 7.9.1
       '@prisma/client':
         specifier: 7.9.1
         version: 7.9.1(prisma@7.9.1(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@5.9.3))(typescript@5.9.3)
@@ -3696,6 +3714,9 @@ packages:
 
   '@posthog/types@1.405.0':
     resolution: {integrity: sha512-4rZ/taVXKQxs9Jrf7ZjlCRgrOSL69oKAgIWJQa5kRNJ6wll1UANbrJTSY+Su1e88LIG4zZVjKKKjyQHCkHdHcw==}
+
+  '@prisma/adapter-neon@7.9.1':
+    resolution: {integrity: sha512-YqJYuohI03da41N4X+DaA9RlQGWrA4gND24TIkuPPXAsNpnMlFuSfTgUycP4UXiGr7nwZ8PeQIUqMxaYzaAcNw==}
 
   '@prisma/adapter-pg@7.9.1':
     resolution: {integrity: sha512-Ho2RK1KanQxLNSC0sR5bpiiVep10sWPLXCcxK+KXfI/Q69TMRbiafSvLPv3V9snimX72rMCqGlyJ4sBO4lKTAw==}
@@ -12257,6 +12278,12 @@ snapshots:
       '@types/react': 19.2.18
 
   '@posthog/types@1.405.0': {}
+
+  '@prisma/adapter-neon@7.9.1':
+    dependencies:
+      '@neondatabase/serverless': 1.1.0
+      '@prisma/driver-adapter-utils': 7.9.1
+      postgres-array: 3.0.4
 
   '@prisma/adapter-pg@7.9.1':
     dependencies:
