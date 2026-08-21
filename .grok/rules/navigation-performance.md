@@ -110,17 +110,23 @@ instead.
 
 ## Rule 4 — Scope pooled database clients to the Worker request
 
-Console, Couriers, Billing, and Widgets API use `@prisma/adapter-pg` against
-their isolated Prisma Postgres pooled endpoints. Keep that adapter consistent
-across the Worker apps; do not reintroduce a provider-specific Neon transport.
+Every app datastore runs on its own isolated Neon project. **The adapter is
+chosen by runtime, not by app:** a container service (api, billing-api,
+couriers-api) uses `@prisma/adapter-pg`, and an OpenNext Worker (Console,
+Widgets API) uses `@prisma/adapter-neon`. workerd cannot open the raw TCP
+socket `pg` needs, so a Worker reaches Neon over its serverless WebSocket
+driver. Do not put `pg` on a Worker path.
 
 - The request-scoped client resolver (`createRequestScopedResolver`) is
-  **mandatory**. A pooled TCP socket belongs to the workerd request that opened
+  **mandatory**. A pooled socket belongs to the workerd request that opened
   it, and reusing it from a later request on the same isolate can hang the query
   until Cloudflare cancels the invocation with Error 1101.
 - Construct the adapter lazily. OpenNext imports route modules while building,
   when runtime database secrets are deliberately unavailable.
-- Interactive `$transaction` calls are supported by `@prisma/adapter-pg`.
+- **Migrations use the direct endpoint, never the pooled one.** Neon's pooler is
+  transaction-mode PgBouncer and `prisma migrate deploy` cannot hold its
+  advisory locks there. That is what `*_DIRECT_DATABASE_URL` is for.
+- Interactive `$transaction` calls are supported by both adapters.
   Keep the existing transaction bounds in Couriers and Billing.
 - The process-wide HMR singleton remains appropriate under Node development;
   only workerd requires one client per request.
