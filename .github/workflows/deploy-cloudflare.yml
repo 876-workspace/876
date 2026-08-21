@@ -123,7 +123,14 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @876/widgets-api exec prisma migrate deploy
         env:
-          WIDGETS_DIRECT_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
+          WIDGETS_DIRECT_DATABASE_URL: ${{ secrets.WIDGETS_DIRECT_DATABASE_URL }}
+      - name: Sync runtime database secret
+        working-directory: apps/widgets-api
+        run: |
+          printf '%s' "$WIDGETS_DATABASE_URL" |
+            pnpm exec wrangler secret put WIDGETS_DATABASE_URL
+        env:
+          WIDGETS_DATABASE_URL: ${{ secrets.WIDGETS_DATABASE_URL }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-widgets-api
       - name: Deploy
@@ -164,11 +171,11 @@ jobs:
       - name: Baseline the database
         run: pnpm --filter @876/api run db:baseline
         env:
-          DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.API_DIRECT_DATABASE_URL }}
       - name: Apply migrations
         run: pnpm --filter @876/api exec prisma migrate deploy
         env:
-          DIRECT_DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.API_DIRECT_DATABASE_URL }}
       # Gated on the same condition as the deploy below, and never run without
       # it. The API runs in a Container that copies the Worker's secrets into
       # its environment when the instance *starts*, so a secret written here
@@ -192,6 +199,13 @@ jobs:
           app-directory: apps/api
           secret-name: BILLING_INTERNAL_KEY
           secret: ${{ secrets.BILLING_INTERNAL_KEY }}
+      - name: Sync runtime database secret
+        working-directory: apps/api
+        run: |
+          printf '%s' "$DATABASE_URL" |
+            pnpm exec wrangler secret put DATABASE_URL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-api
       # Containers build and push the Dockerfile image; the runner's Docker
@@ -240,7 +254,14 @@ jobs:
           echo "::error title=Migrations failed::prisma migrate deploy did not succeed after 3 attempts."
           exit 1
         env:
-          DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DATABASE_URL }}
+          DIRECT_DATABASE_URL: ${{ secrets.COURIERS_DIRECT_DATABASE_URL }}
+      - name: Sync runtime database secret
+        working-directory: apps/couriers-api
+        run: |
+          printf '%s' "$DATABASE_URL" |
+            pnpm exec wrangler secret put DATABASE_URL
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-couriers-api
       - name: Deploy container Worker
@@ -263,11 +284,11 @@ jobs:
       - name: Adopt the Billing migration ledger
         run: pnpm --filter @876/billing-api run db:baseline
         env:
-          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DIRECT_DATABASE_URL }}
       - name: Apply migrations
         run: pnpm --filter @876/billing-api run db:deploy
         env:
-          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DATABASE_URL }}
+          BILLING_DIRECT_DATABASE_URL: ${{ secrets.BILLING_DIRECT_DATABASE_URL }}
       - name: Sync runtime database secret
         working-directory: apps/billing-api
         run: |
@@ -343,7 +364,7 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter @876/console exec prisma migrate deploy
         env:
-          CONSOLE_DIRECT_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
+          CONSOLE_DIRECT_DATABASE_URL: ${{ secrets.CONSOLE_DIRECT_DATABASE_URL }}
       - name: Sync the shared session cookie secret
         uses: ./.github/actions/sync-session-secret
         with:
@@ -357,6 +378,13 @@ jobs:
           app-directory: apps/console
           secret-name: BILLING_INTERNAL_KEY
           secret: ${{ secrets.BILLING_INTERNAL_KEY }}
+      - name: Sync runtime database secret
+        working-directory: apps/console
+        run: |
+          printf '%s' "$CONSOLE_DATABASE_URL" |
+            pnpm exec wrangler secret put CONSOLE_DATABASE_URL
+        env:
+          CONSOLE_DATABASE_URL: ${{ secrets.CONSOLE_DATABASE_URL }}
       - name: Verify runtime secrets
         run: pnpm check:worker-secrets 876-console
       - name: Deploy
