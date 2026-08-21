@@ -53,33 +53,35 @@ const str = (fallback = '') =>
     .optional()
     .transform((value) => value ?? fallback)
 
-/** The URL schemes Prisma accepts for `accelerateUrl`. */
+/** The URL schemes the runtime Prisma client can build a transport from. */
 const ACCELERATE_URL_PROTOCOLS = ['prisma:', 'prisma+postgres:']
+const POSTGRES_URL_PROTOCOLS = ['postgres:', 'postgresql:']
+const DATABASE_URL_PROTOCOLS = [
+  ...ACCELERATE_URL_PROTOCOLS,
+  ...POSTGRES_URL_PROTOCOLS,
+]
 
 /**
- * A connection string that must be a Prisma Accelerate URL when present.
+ * A connection string the runtime client can build a transport from.
  *
- * `src/db/client.ts` passes this value as `accelerateUrl`, which is mutually
- * exclusive with a driver adapter and rejects a direct TCP URL. Prisma does not
- * validate it at construction — it fails on the first query as an opaque
- * internal error, so every data route 500s with nothing naming the cause.
- * Rejecting it here turns that into a boot-time failure with a readable
+ * `src/db/client.ts` selects Accelerate for a `prisma:`/`prisma+postgres:` URL
+ * and the pg driver adapter for a direct PostgreSQL URL. Any other scheme has
+ * no transport, and Prisma would not report that until the first query — as an
+ * opaque internal error, with every data route 500ing and nothing naming the
+ * cause. Rejecting it here turns that into a boot-time failure with a readable
  * message, which is the whole point of parsing env through this schema.
  *
- * Only the scheme is ever reported: the rest of the URL carries an API key.
+ * Only the scheme is ever reported: the rest of the URL carries a credential.
  */
-const accelerateUrl = () =>
+const databaseUrl = () =>
   str().refine(
     (value) =>
       value.trim() === '' ||
-      ACCELERATE_URL_PROTOCOLS.includes(
+      DATABASE_URL_PROTOCOLS.includes(
         value.slice(0, value.indexOf(':') + 1).toLowerCase()
       ),
     {
-      message:
-        `must be a Prisma Accelerate URL (${ACCELERATE_URL_PROTOCOLS.join(' or ')}). ` +
-        'A direct TCP URL only works with a driver adapter; keep it on ' +
-        'DIRECT_DATABASE_URL, which is what the Prisma CLI uses for migrations.',
+      message: `must be a PostgreSQL URL (${POSTGRES_URL_PROTOCOLS.join(' or ')}) or a Prisma Accelerate URL (${ACCELERATE_URL_PROTOCOLS.join(' or ')}).`,
     }
   )
 
@@ -90,7 +92,7 @@ const envSchema = z.object({
   LOG_LEVEL: str('info'),
   DELETION_MODE: str('hard'),
 
-  DATABASE_URL: accelerateUrl(),
+  DATABASE_URL: databaseUrl(),
 
   WORKOS_API_KEY: str(),
   WORKOS_CLIENT_ID: str(),
