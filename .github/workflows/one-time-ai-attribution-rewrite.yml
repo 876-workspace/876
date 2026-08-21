@@ -1,0 +1,87 @@
+name: One-time AI attribution history rewrite
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  rewrite:
+    if: startsWith(github.event.head_commit.message, 'chore(git): run one-time AI attribution history rewrite (#345)')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rewrite commit messages on a temporary branch
+        shell: bash
+        env:
+          CLEAN_BRANCH: history/ai-attribution-cleanup-20260821
+          EXPECTED_TREE: c3c8cf9650589f1161e87f72158c19798af7a496
+        run: |
+          set -euo pipefail
+
+          source_sha="${GITHUB_SHA}"
+          baseline_sha="$(git rev-parse "${source_sha}^1")"
+          original_count="$(git rev-list --count "${baseline_sha}")"
+          original_merges="$(git rev-list --merges --count "${baseline_sha}")"
+
+          git branch rewrite-main "${source_sha}"
+          git branch baseline "${baseline_sha}"
+
+          cat > /tmp/strip-ai-attribution.py <<'PY'
+          import re
+          import sys
+
+          marker = re.compile(
+              r"\b(?:codex|openai|claude|anthropic|ona(?:-agent)?|grok|xai|gemini|copilot|muse|cursor|windsurf|devin|opencode|aider)\b",
+              re.IGNORECASE,
+          )
+          trailer = re.compile(
+              r"^\s*(?:co-authored-by|coauthored-by|authored-by|signed-off-by):\s*(.+)$",
+              re.IGNORECASE,
+          )
+          generated = re.compile(
+              r"^\s*(?:generated|created|assisted)\s+(?:with|by)\s+(.+)$",
+              re.IGNORECASE,
+          )
+
+          message = sys.stdin.read()
+          output = []
+
+          for line in message.splitlines(keepends=True):
+              text = line.rstrip("\r\n")
+              trailer_match = trailer.match(text)
+              generated_match = generated.match(text)
+
+              if trailer_match and marker.search(trailer_match.group(1)):
+                  continue
+              if generated_match and marker.search(generated_match.group(1)):
+                  continue
+
+              output.append(line)
+
+          sys.stdout.write("".join(output))
+          PY
+
+          FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f \
+            --msg-filter 'python3 /tmp/strip-ai-attribution.py' \
+            -- rewrite-main baseline
+
+          cleaned_count="$(git rev-list --count baseline)"
+          cleaned_merges="$(git rev-list --merges --count baseline)"
+          cleaned_tree="$(git rev-parse 'baseline^{tree}')"
+
+          test "${cleaned_count}" = "${original_count}"
+          test "${cleaned_merges}" = "${original_merges}"
+          test "${cleaned_tree}" = "${EXPECTED_TREE}"
+
+          node scripts/check-ai-attribution.mjs baseline
+
+          git push --force origin "baseline:refs/heads/${CLEAN_BRANCH}"
+
+          echo "Cleaned ${cleaned_count} commits (${cleaned_merges} merge commits)."
+          echo "Verified tree ${cleaned_tree}; repository contents are unchanged."
