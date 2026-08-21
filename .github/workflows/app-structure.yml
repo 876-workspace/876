@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.3.0
@@ -25,6 +27,20 @@ jobs:
         with:
           node-version: 22.13
           cache: pnpm
+
+      - name: Reject AI commit attribution
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}"
+          elif [[ "${{ github.event_name }}" == "push" ]] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
+            range="${{ github.event.before }}..${{ github.sha }}"
+          else
+            range="${{ github.sha }}^..${{ github.sha }}"
+          fi
+
+          node scripts/check-ai-attribution.mjs "$range"
+
       - run: pnpm install --frozen-lockfile
 
       # The structural invariants ESLint cannot express — notably the
