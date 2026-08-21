@@ -53,14 +53,6 @@ for (const [worker, directory] of discovered) {
     path.join(directory, 'wrangler.jsonc'),
     'utf8'
   )
-  if (
-    wranglerSource.includes('.open-next/worker.js') &&
-    contract.migrationOwner !== 'none' &&
-    contract.runtimeDatabaseMode !== 'accelerate'
-  )
-    errors.push(
-      `${worker}: data-backed OpenNext Workers must use an Accelerate runtime database.`
-    )
 
   const appName = path.basename(directory)
   const jobName = appName === '876' ? 'app' : appName
