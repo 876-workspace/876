@@ -6,6 +6,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminApp, AdminFeature } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 import { CursorPagination } from '@/components/patterns/cursor-pagination'
 import { formatDate } from '@/lib/format'
@@ -35,7 +36,9 @@ export function FeaturesTable({
   const columns: ColumnDef<AdminFeature, unknown>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <Link
@@ -50,7 +53,9 @@ export function FeaturesTable({
     },
     {
       accessorKey: 'slug',
-      header: 'Slug',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Slug" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs">
           {row.original.slug}
@@ -59,7 +64,9 @@ export function FeaturesTable({
     },
     {
       accessorKey: 'app_id',
-      header: 'App',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="App" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.app_id
@@ -70,7 +77,9 @@ export function FeaturesTable({
     },
     {
       accessorKey: 'scope',
-      header: 'Scope',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Scope" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem] capitalize">
           {row.original.scope}
@@ -79,7 +88,9 @@ export function FeaturesTable({
     },
     {
       accessorKey: 'enabled',
-      header: 'Enabled',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Enabled" />
+      ),
       cell: ({ row }) => (
         <span
           className={cn(
@@ -95,7 +106,9 @@ export function FeaturesTable({
     },
     {
       accessorKey: 'updated_at',
-      header: 'Updated',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Updated" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}
@@ -110,6 +123,7 @@ export function FeaturesTable({
         columns={columns}
         data={sortedData}
         emptyState={emptyState}
+        enableColumnVisibility
         onRowClick={(feature) => router.push(`/features/${feature.id}`)}
       />
       <CursorPagination

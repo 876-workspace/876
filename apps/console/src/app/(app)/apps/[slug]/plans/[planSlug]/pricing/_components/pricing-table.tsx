@@ -18,6 +18,7 @@ import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { Skeleton } from '@876/ui/skeleton'
 import {
   Dialog,
@@ -199,7 +200,9 @@ export function PricingTable({ setup }: Props) {
     (): ColumnDef<PriceItem>[] => [
       {
         accessorKey: 'name',
-        header: 'Name',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Name" />
+        ),
         cell: ({ row }) => {
           const price = row.original
           if (editingPriceId === price.id) {
@@ -249,7 +252,9 @@ export function PricingTable({ setup }: Props) {
       },
       {
         accessorKey: 'unit_amount',
-        header: 'Amount',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Amount" />
+        ),
         cell: ({ row }) => {
           const price = row.original
           return (
@@ -261,7 +266,9 @@ export function PricingTable({ setup }: Props) {
       },
       {
         accessorKey: 'billing_interval',
-        header: 'Billing',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Billing" />
+        ),
         cell: ({ row }) => {
           const price = row.original
           return (
@@ -273,7 +280,9 @@ export function PricingTable({ setup }: Props) {
       },
       {
         accessorKey: 'status',
-        header: 'Status',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
         cell: ({ row }) => {
           const price = row.original
           return price.status === 'active' ? (

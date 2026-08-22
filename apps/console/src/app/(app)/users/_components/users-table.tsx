@@ -33,6 +33,7 @@ export function UsersTable({
       <DataTable
         columns={columns}
         data={data}
+        enableColumnVisibility
         onRowClick={(user) => router.push(`/users/${user.username ?? user.id}`)}
       />
       {!isSearching && (
