@@ -37,6 +37,7 @@ import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 import { client } from '@/lib/client'
 
@@ -128,7 +129,10 @@ export function MembersTable({
   const columns: ColumnDef<OrgMember, unknown>[] = [
     {
       id: 'member',
-      header: 'Member',
+      accessorFn: (member) => getDisplayName(member),
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Member" />
+      ),
       cell: ({ row }) => {
         const member = row.original
         return (
@@ -151,7 +155,10 @@ export function MembersTable({
     },
     {
       id: 'role',
-      header: 'Role',
+      accessorKey: 'role',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Role" />
+      ),
       cell: ({ row }) => {
         const member = row.original
         return (
@@ -163,7 +170,10 @@ export function MembersTable({
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => {
         const member = row.original
         return (
@@ -175,7 +185,10 @@ export function MembersTable({
     },
     {
       id: 'joined',
-      header: 'Joined',
+      accessorKey: 'created_at',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Joined" />
+      ),
       cell: ({ row }) => {
         const member = row.original
         return (
@@ -229,7 +242,7 @@ export function MembersTable({
   return (
     <>
       <div className="876-card overflow-hidden">
-        <DataTable columns={columns} data={members} />
+        <DataTable columns={columns} data={members} enableColumnVisibility />
       </div>
 
       <Dialog
