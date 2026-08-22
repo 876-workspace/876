@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Avatar, AvatarFallback } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 export type PackageTableRow = {
   id: string
@@ -58,7 +59,9 @@ function statusClass(status: string): string {
 const columns: ColumnDef<PackageTableRow, unknown>[] = [
   {
     accessorKey: 'trackingNumber',
-    header: 'Tracking #',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tracking #" />
+    ),
     cell: ({ row }) => (
       <span className="font-medium text-sky-600">
         {row.original.trackingNumber}
@@ -67,7 +70,9 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
   },
   {
     accessorKey: 'customerName',
-    header: 'Customer',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Customer" />
+    ),
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <Avatar className="size-6 rounded-md">
@@ -87,10 +92,17 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
       </div>
     ),
   },
-  { accessorKey: 'description', header: 'Description' },
+  {
+    accessorKey: 'description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+  },
   {
     accessorKey: 'branch',
-    header: 'Branch',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Branch" />
+    ),
     cell: ({ row }) => (
       <span
         className={`text-muted-foreground rounded-full border bg-transparent px-2 py-1 text-xs font-medium ${branchColor(row.original.branch)}`}
@@ -101,7 +113,9 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <span
         className={`rounded-full border border-transparent px-2 py-1 text-xs font-medium dark:border-current ${statusClass(row.original.status)}`}
