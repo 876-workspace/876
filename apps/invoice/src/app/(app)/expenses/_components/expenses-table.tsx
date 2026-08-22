@@ -24,13 +24,18 @@ interface Props {
   expenses: ExpenseRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function ExpensesTable({ expenses, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<ExpenseRow, unknown>[] = [
     {
       id: 'expense',
-      header: 'Expense',
-      cell: ({ row }: any) => (
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expense" />
+      ),
+      cell: ({ row }) => (
         <Link
           href={`/expenses/${row.original.id}`}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
@@ -42,13 +47,19 @@ export function ExpensesTable({ expenses, emptyState }: Props) {
     },
     {
       id: 'vendor',
-      header: 'Vendor',
-      cell: ({ row }: any) => row.original.vendor,
+      accessorKey: 'vendor',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Vendor" />
+      ),
+      cell: ({ row }) => row.original.vendor,
     },
     {
       id: 'category',
-      header: 'Category',
-      cell: ({ row }: any) => (
+      accessorKey: 'category',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Category" />
+      ),
+      cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
           {row.original.category}
         </span>
@@ -56,14 +67,20 @@ export function ExpensesTable({ expenses, emptyState }: Props) {
     },
     {
       id: 'amount',
-      header: 'Amount',
-      cell: ({ row }: any) =>
+      accessorKey: 'amount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount" />
+      ),
+      cell: ({ row }) =>
         formatMoney(row.original.amount, row.original.currency),
     },
     {
       id: 'date',
-      header: 'Date',
-      cell: ({ row }: any) => (
+      accessorKey: 'date',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
+      cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
           {formatDate(row.original.date)}
         </span>
@@ -71,8 +88,11 @@ export function ExpensesTable({ expenses, emptyState }: Props) {
     },
     {
       id: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => (
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
         <Badge
           variant={row.original.status === 'BILLED' ? 'success' : 'secondary'}
         >
