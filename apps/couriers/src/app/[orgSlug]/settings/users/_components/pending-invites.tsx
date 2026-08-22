@@ -41,24 +41,35 @@ export function PendingInvites({ orgSlug, invites }: Props) {
     })
   }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
   const columns: ColumnDef<PendingTeamInvite, unknown>[] = [
     {
       id: 'email',
-      header: 'Email',
+      accessorKey: 'email',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Email" />
+      ),
       cell: ({ row }) => (
         <span className="font-medium">{row.original.email}</span>
       ),
     },
     {
       id: 'role',
-      header: 'Role',
+      accessorKey: 'role',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Role" />
+      ),
       cell: ({ row }) => (
         <Badge variant="outline">{row.original.role ?? 'member'}</Badge>
       ),
     },
     {
       id: 'expires',
-      header: 'Expires',
+      accessorKey: 'expiresAt',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expires" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.expiresAt)}
