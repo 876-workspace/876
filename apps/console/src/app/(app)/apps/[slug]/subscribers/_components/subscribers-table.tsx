@@ -129,6 +129,8 @@ function StatusCell({ record }: { record: AdminSubscription }) {
   )
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 function buildColumns(
   orgMap: Record<string, AdminOrganization>,
   prices: PriceOption[]
@@ -159,17 +161,21 @@ function buildColumns(
     },
     {
       id: 'plan',
+      enableSorting: false,
       header: 'Plan',
       cell: ({ row }) => <PriceCell record={row.original} prices={prices} />,
     },
     {
       id: 'status',
+      enableSorting: false,
       header: 'Access',
       cell: ({ row }) => <StatusCell record={row.original} />,
     },
     {
       accessorKey: 'updated_at',
-      header: 'Updated',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Updated" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}
