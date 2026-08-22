@@ -23,13 +23,18 @@ interface Props {
   entries: TimeEntryRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function TimeEntriesTable({ entries, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<TimeEntryRow, unknown>[] = [
     {
       id: 'task',
-      header: 'Task',
-      cell: ({ row }: any) => (
+      accessorKey: 'task',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Task" />
+      ),
+      cell: ({ row }) => (
         <Link
           href={`/time-tracking/${row.original.id}`}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
@@ -41,26 +46,36 @@ export function TimeEntriesTable({ entries, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
-      cell: ({ row }: any) => row.original.customer,
+      accessorKey: 'customer',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
+      cell: ({ row }) => row.original.customer,
     },
     {
       id: 'hours',
-      header: 'Hours',
-      cell: ({ row }: any) => (
+      accessorKey: 'hours',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Hours" />
+      ),
+      cell: ({ row }) => (
         <span className="tabular-nums">{row.original.hours.toFixed(2)}</span>
       ),
     },
     {
       id: 'rate',
-      header: 'Rate',
-      cell: ({ row }: any) =>
+      accessorKey: 'rate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Rate" />
+      ),
+      cell: ({ row }) =>
         formatMoney(row.original.rate, row.original.currency),
     },
     {
       id: 'amount',
+      enableSorting: false,
       header: 'Amount',
-      cell: ({ row }: any) =>
+      cell: ({ row }) =>
         formatMoney(
           BigInt(Math.round(row.original.hours * Number(row.original.rate))),
           row.original.currency
@@ -68,8 +83,11 @@ export function TimeEntriesTable({ entries, emptyState }: Props) {
     },
     {
       id: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => (
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
         <Badge
           variant={row.original.status === 'BILLED' ? 'success' : 'secondary'}
         >

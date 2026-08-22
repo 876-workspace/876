@@ -20,12 +20,17 @@ type PriceListRow = {
   _count: { customers: number }
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function PriceListsTable({ lists }: { lists: PriceListRow[] }) {
   const router = useRouter()
   const columns: ColumnDef<PriceListRow, unknown>[] = [
     {
       id: 'name',
-      header: 'Price list',
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Price list" />
+      ),
       cell: ({ row }) => (
         <Link
           href={`/price-lists/${row.original.id}`}
@@ -38,7 +43,10 @@ export function PriceListsTable({ lists }: { lists: PriceListRow[] }) {
     },
     {
       id: 'method',
-      header: 'Method',
+      accessorKey: 'mode',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Method" />
+      ),
       cell: ({ row }) =>
         row.original.mode === 'PERCENTAGE'
           ? `${row.original.percentage?.toString() ?? 0}% ${row.original.direction?.toLowerCase()}`
@@ -46,17 +54,22 @@ export function PriceListsTable({ lists }: { lists: PriceListRow[] }) {
     },
     {
       id: 'prices',
+      enableSorting: false,
       header: 'Prices',
       cell: ({ row }) => row.original.entries.length,
     },
     {
       id: 'customers',
+      enableSorting: false,
       header: 'Customers',
       cell: ({ row }) => row.original._count.customers,
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (row.original.isActive ? 'Active' : 'Archived'),
     },
     {

@@ -7,10 +7,15 @@ import { DataTable } from '@876/ui/data-table'
 
 import type { RoleView } from '@/types/role'
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const columns: ColumnDef<RoleView, unknown>[] = [
   {
     id: 'name',
-    header: 'Name',
+    accessorKey: 'name',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
     cell: ({ row }) => (
       <div className="flex items-center gap-2 font-medium">
         {row.original.name}
@@ -22,7 +27,9 @@ const columns: ColumnDef<RoleView, unknown>[] = [
   },
   {
     accessorKey: 'description',
-    header: 'Description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground">
         {row.original.description || '—'}
@@ -31,7 +38,9 @@ const columns: ColumnDef<RoleView, unknown>[] = [
   },
   {
     accessorKey: 'memberCount',
-    header: 'Members',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Members" />
+    ),
   },
 ]
 

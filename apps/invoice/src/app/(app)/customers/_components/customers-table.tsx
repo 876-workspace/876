@@ -23,12 +23,16 @@ interface Props {
   customers: CustomerRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function CustomersTable({ customers, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<CustomerRow, unknown>[] = [
     {
       accessorKey: 'name',
-      header: 'Customer',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <CustomerAvatar name={row.original.name} />
@@ -44,7 +48,9 @@ export function CustomersTable({ customers, emptyState }: Props) {
     },
     {
       accessorKey: 'companyName',
-      header: 'Company',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Company" />
+      ),
       cell: ({ row }) => (
         <span
           className={
@@ -59,7 +65,9 @@ export function CustomersTable({ customers, emptyState }: Props) {
     },
     {
       accessorKey: 'contactName',
-      header: 'Contact',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Contact" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground">
           {row.original.contactName ?? '—'}
@@ -68,7 +76,9 @@ export function CustomersTable({ customers, emptyState }: Props) {
     },
     {
       accessorKey: 'phone',
-      header: 'Phone',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Phone" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground">
           {row.original.phone ?? '—'}
@@ -77,7 +87,11 @@ export function CustomersTable({ customers, emptyState }: Props) {
     },
     {
       accessorKey: 'receivables',
-      header: () => <div className="text-right">Receivables</div>,
+      header: ({ column }) => (
+        <div className="flex justify-end">
+          <DataTableColumnHeader column={column} title="Receivables" />
+        </div>
+      ),
       cell: ({ row }) => (
         <div className="text-right font-medium tabular-nums">
           {formatMoney(row.original.receivables, row.original.currency)}
