@@ -118,7 +118,7 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
     ),
     cell: ({ row }) => (
       <span
-        className={`rounded-full px-2 py-1 text-[0.6875rem] font-medium ${statusClass(row.original.status)}`}
+        className={`rounded-full border border-transparent px-2 py-1 text-xs font-medium dark:border-current ${statusClass(row.original.status)}`}
       >
         {row.original.status}
       </span>
