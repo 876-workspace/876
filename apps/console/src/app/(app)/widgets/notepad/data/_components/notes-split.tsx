@@ -88,10 +88,14 @@ const titleColumn: ColumnDef<AdminNoteRow, unknown> = {
   ),
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const fullColumns: ColumnDef<AdminNoteRow, unknown>[] = [
   {
-    id: 'title',
-    header: 'Note',
+    accessorKey: 'title',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Note" />
+    ),
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-2">
         <span className="truncate font-medium">
@@ -131,8 +135,10 @@ const fullColumns: ColumnDef<AdminNoteRow, unknown>[] = [
     ),
   },
   {
-    id: 'sourceApp',
-    header: 'Written in',
+    accessorKey: 'sourceApp',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Written in" />
+    ),
     cell: ({ row }) =>
       row.original.sourceApp ? (
         <span className="text-[0.8125rem]">{row.original.sourceApp}</span>
@@ -143,8 +149,10 @@ const fullColumns: ColumnDef<AdminNoteRow, unknown>[] = [
       ),
   },
   {
-    id: 'updated',
-    header: 'Updated',
+    accessorKey: 'updatedAt',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Updated" />
+    ),
     cell: ({ row }) => (
       <span className="text-[0.8125rem] whitespace-nowrap tabular-nums">
         {formatNoteTimestamp(row.original.updatedAt)}

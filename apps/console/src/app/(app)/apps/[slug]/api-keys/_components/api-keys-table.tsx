@@ -16,6 +16,7 @@ import {
   XCircle,
 } from '@876/ui/icons'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { Button } from '@876/ui/button'
 import {
   Empty,
@@ -202,7 +203,9 @@ export function ApiKeysTable({
   const columns: ColumnDef<AdminApiKey, unknown>[] = [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
       cell: ({ row }) => (
         <span className="font-medium">
           {row.original.name ?? (
@@ -213,12 +216,16 @@ export function ApiKeysTable({
     },
     {
       accessorKey: 'id',
-      header: 'Key ID',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Key ID" />
+      ),
       cell: ({ row }) => <KeyIdCell id={row.original.id} />,
     },
     {
       accessorKey: 'revoked',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span
           className={cn(
@@ -234,7 +241,9 @@ export function ApiKeysTable({
     },
     {
       accessorKey: 'last_used_at',
-      header: 'Last used',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Last used" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.last_used_at
@@ -245,7 +254,9 @@ export function ApiKeysTable({
     },
     {
       accessorKey: 'expires_at',
-      header: 'Expires',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expires" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.expires_at ? formatDate(row.original.expires_at) : '—'}
@@ -254,7 +265,9 @@ export function ApiKeysTable({
     },
     {
       accessorKey: 'created_at',
-      header: 'Created',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Created" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
