@@ -34,13 +34,18 @@ function getAmountDue(row: InvoiceRow): bigint | string {
   return row.totalAmount
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function InvoicesTable({ invoices, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<InvoiceRow, unknown>[] = [
     {
       id: 'invoice',
-      header: 'Invoice',
-      cell: ({ row }: any) => (
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Invoice" />
+      ),
+      cell: ({ row }) => (
         <Link
           href={`/invoices/${row.original.id}`}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
@@ -52,25 +57,37 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
-      cell: ({ row }: any) => getCustomerName(row.original.customer),
+      accessorFn: (row) => getCustomerName(row.customer),
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
+      cell: ({ row }) => getCustomerName(row.original.customer),
     },
     {
       id: 'total',
-      header: 'Total',
-      cell: ({ row }: any) =>
+      accessorKey: 'totalAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Total" />
+      ),
+      cell: ({ row }) =>
         formatMoney(row.original.totalAmount, row.original.currency),
     },
     {
       id: 'amountDue',
-      header: 'Amount due',
-      cell: ({ row }: any) =>
+      accessorKey: 'amountDue',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount due" />
+      ),
+      cell: ({ row }) =>
         formatMoney(getAmountDue(row.original), row.original.currency),
     },
     {
       id: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => (
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
         <Badge variant={documentStatusVariant(row.original.status)}>
           <span className="capitalize">
             {row.original.status.toLowerCase().replace(/_/g, ' ')}
