@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
 
@@ -25,12 +25,17 @@ interface InvoiceRow {
   customer: { name: string }
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function InvoicesTable({ invoices, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<InvoiceRow, unknown>[] = [
     {
       id: 'invoice',
-      header: 'Invoice',
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Invoice" />
+      ),
       cell: ({ row }) => (
         <Link
           href={`/invoices/${row.original.id}`}
@@ -43,24 +48,36 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
+      accessorFn: (row) => row.customer.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
       cell: ({ row }) => row.original.customer.name,
     },
     {
       id: 'total',
-      header: 'Total',
+      accessorKey: 'totalAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Total" />
+      ),
       cell: ({ row }) =>
         formatMoney(row.original.totalAmount, row.original.currency),
     },
     {
       id: 'amountDue',
-      header: 'Amount due',
+      accessorKey: 'amountDue',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount due" />
+      ),
       cell: ({ row }) =>
         formatMoney(row.original.amountDue, row.original.currency),
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <Badge variant={documentStatusVariant(row.original.status)}>
           <span className="capitalize">

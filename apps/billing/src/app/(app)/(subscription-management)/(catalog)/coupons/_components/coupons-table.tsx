@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatMoney } from '@/lib/format'
 
@@ -22,12 +22,17 @@ type CouponRow = {
   promotionCodes: { id: string; code: string; isActive: boolean }[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function CouponsTable({ coupons }: { coupons: CouponRow[] }) {
   const router = useRouter()
   const columns: ColumnDef<CouponRow, unknown>[] = [
     {
       id: 'coupon',
-      header: 'Coupon',
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Coupon" />
+      ),
       cell: ({ row }) => (
         <>
           <Link
@@ -48,17 +53,22 @@ export function CouponsTable({ coupons }: { coupons: CouponRow[] }) {
     },
     {
       id: 'product',
+      enableSorting: false,
       header: 'Product',
       cell: ({ row }) => row.original.product?.name ?? 'All products',
     },
     {
       id: 'discount',
+      enableSorting: false,
       header: 'Discount',
       cell: ({ row }) => formatDiscount(row.original),
     },
     {
       id: 'duration',
-      header: 'Duration',
+      accessorKey: 'duration',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Duration" />
+      ),
       cell: ({ row }) =>
         row.original.duration === 'REPEATING'
           ? `${row.original.durationInCycles ?? 0} cycles`
@@ -66,12 +76,18 @@ export function CouponsTable({ coupons }: { coupons: CouponRow[] }) {
     },
     {
       id: 'redemptions',
-      header: 'Redemptions',
+      accessorKey: 'timesRedeemed',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Redemptions" />
+      ),
       cell: ({ row }) => row.original.timesRedeemed,
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (row.original.isActive ? 'Active' : 'Archived'),
     },
   ]

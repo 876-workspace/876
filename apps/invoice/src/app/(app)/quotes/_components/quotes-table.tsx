@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
@@ -24,13 +24,18 @@ interface Props {
   quotes: QuoteRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function QuotesTable({ quotes, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<QuoteRow, unknown>[] = [
     {
       id: 'quote',
-      header: 'Quote',
-      cell: ({ row }: any) => (
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Quote" />
+      ),
+      cell: ({ row }) => (
         <Link
           href={`/quotes/${row.original.id}`}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
@@ -42,19 +47,28 @@ export function QuotesTable({ quotes, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
-      cell: ({ row }: any) => row.original.customer.name,
+      accessorFn: (row) => row.customer.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
+      cell: ({ row }) => row.original.customer.name,
     },
     {
       id: 'total',
-      header: 'Total',
-      cell: ({ row }: any) =>
+      accessorKey: 'totalAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Total" />
+      ),
+      cell: ({ row }) =>
         formatMoney(row.original.totalAmount, row.original.currency),
     },
     {
       id: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => (
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
         <Badge variant={documentStatusVariant(row.original.status)}>
           <span className="capitalize">
             {row.original.status.toLowerCase().replace(/_/g, ' ')}
@@ -64,8 +78,9 @@ export function QuotesTable({ quotes, emptyState }: Props) {
     },
     {
       id: 'invoice',
+      enableSorting: false,
       header: 'Invoice',
-      cell: ({ row }: any) => (
+      cell: ({ row }) => (
         <span className="text-xs">
           {row.original.convertedInvoice?.number ?? 'Not converted'}
         </span>

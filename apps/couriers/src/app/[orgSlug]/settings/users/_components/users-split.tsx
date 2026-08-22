@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
@@ -18,6 +18,8 @@ type Props = {
   orgSlug: string
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const userColumn: ColumnDef<TeamMemberRow, unknown> = {
   id: 'user',
   header: 'User',
@@ -28,14 +30,20 @@ const fullColumns: ColumnDef<TeamMemberRow, unknown>[] = [
   userColumn,
   {
     id: 'role',
-    header: 'Role',
+    accessorKey: 'roleName',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Role" />
+    ),
     cell: ({ row }) => (
       <span className="text-[0.8125rem]">{row.original.roleName}</span>
     ),
   },
   {
     id: 'status',
-    header: 'Status',
+    accessorKey: 'status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <Badge
         variant={row.original.status === 'active' ? 'success' : 'secondary'}

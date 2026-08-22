@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 import { client } from '@/lib/client'
 import type { PendingTeamInvite } from '@/types/team'
@@ -44,21 +45,30 @@ export function PendingInvites({ orgSlug, invites }: Props) {
   const columns: ColumnDef<PendingTeamInvite, unknown>[] = [
     {
       id: 'email',
-      header: 'Email',
+      accessorKey: 'email',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Email" />
+      ),
       cell: ({ row }) => (
         <span className="font-medium">{row.original.email}</span>
       ),
     },
     {
       id: 'role',
-      header: 'Role',
+      accessorKey: 'role',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Role" />
+      ),
       cell: ({ row }) => (
         <Badge variant="outline">{row.original.role ?? 'member'}</Badge>
       ),
     },
     {
       id: 'expires',
-      header: 'Expires',
+      accessorKey: 'expiresAt',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expires" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.expiresAt)}

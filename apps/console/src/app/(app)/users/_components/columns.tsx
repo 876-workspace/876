@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminUser, AdminUserApp } from '@876/admin'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
@@ -47,14 +47,18 @@ function AppLogoChip({ app }: { app: AdminUserApp }) {
   )
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function makeUserColumns(
   enrollmentsMap: Record<string, AdminUserApp[]>
 ): ColumnDef<AdminUser, unknown>[] {
   return [
     {
       accessorKey: 'first_name',
-      header: 'Name',
-      sortingFn: (a, b) => {
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
+      sortFn: (a: { original: AdminUser }, b: { original: AdminUser }) => {
         const nameA =
           [a.original.first_name, a.original.last_name]
             .filter(Boolean)
@@ -107,7 +111,9 @@ export function makeUserColumns(
     },
     {
       accessorKey: 'company',
-      header: 'Company',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Company" />
+      ),
       cell: ({ row }) =>
         row.original.company ? (
           <span className="flex items-center gap-2.5 text-[0.8125rem]">
@@ -124,7 +130,9 @@ export function makeUserColumns(
     },
     {
       accessorKey: 'email',
-      header: 'Email',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Email" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {row.original.email}
@@ -157,7 +165,9 @@ export function makeUserColumns(
     },
     {
       accessorKey: 'created_at',
-      header: 'Joined',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Joined" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}

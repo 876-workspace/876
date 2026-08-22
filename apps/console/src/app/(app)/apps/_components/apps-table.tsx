@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminApp } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { OrgAvatar as AppLogo } from '@876/ui/org-avatar'
 
 import { CursorPagination } from '@/components/patterns/cursor-pagination'
@@ -22,7 +23,9 @@ function appKindBadgeClass(appKind: AdminApp['app_kind']): string {
 const columns: ColumnDef<AdminApp, unknown>[] = [
   {
     accessorKey: 'name',
-    header: 'Name',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <AppLogo
@@ -42,7 +45,9 @@ const columns: ColumnDef<AdminApp, unknown>[] = [
   },
   {
     accessorKey: 'homepage_url',
-    header: 'URL',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="URL" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground max-w-64 truncate text-[0.8125rem]">
         {row.original.homepage_url ?? '—'}
@@ -51,7 +56,9 @@ const columns: ColumnDef<AdminApp, unknown>[] = [
   },
   {
     accessorKey: 'app_kind',
-    header: 'Type',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Type" />
+    ),
     cell: ({ row }) => (
       <Badge
         variant="outline"
@@ -63,7 +70,9 @@ const columns: ColumnDef<AdminApp, unknown>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <Badge
         variant="outline"

@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminFeature } from '@876/admin'
 import { DataTable } from '@876/ui/data-table'
 import { Badge } from '@876/ui/badge'
@@ -71,6 +71,8 @@ function ToggleCell({ feature }: { feature: AdminFeature }) {
   )
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 function buildColumns(
   appSlug: string,
   parentById: ReadonlyMap<string, AdminFeature>,
@@ -79,7 +81,9 @@ function buildColumns(
   return [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
       cell: ({ row }) => (
         <div
           className="flex items-center gap-3"
@@ -104,7 +108,9 @@ function buildColumns(
     },
     {
       accessorKey: 'slug',
-      header: 'Slug',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Slug" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs">
           {row.original.slug}
@@ -113,7 +119,9 @@ function buildColumns(
     },
     {
       accessorKey: 'scope',
-      header: 'Scope',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Scope" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem] capitalize">
           {row.original.scope}
@@ -122,6 +130,7 @@ function buildColumns(
     },
     {
       id: 'controls',
+      enableSorting: false,
       header: 'Controls',
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1.5">
@@ -136,12 +145,16 @@ function buildColumns(
     },
     {
       accessorKey: 'enabled',
-      header: 'Enabled',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Enabled" />
+      ),
       cell: ({ row }) => <ToggleCell feature={row.original} />,
     },
     {
       accessorKey: 'updated_at',
-      header: 'Updated',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Updated" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}

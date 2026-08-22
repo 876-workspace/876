@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminBillingAccount } from '@876/admin'
 import {
   AlertDialog,
@@ -345,6 +345,8 @@ function AccountsTableView({
   )
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 function createAccountColumns({
   orgSlug,
   isPending,
@@ -357,7 +359,9 @@ function createAccountColumns({
   return [
     {
       accessorKey: 'name',
-      header: 'Account',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Account" />
+      ),
       cell: ({ row }) => (
         <div className="min-w-0">
           <p className="truncate font-medium">
@@ -371,6 +375,7 @@ function createAccountColumns({
     },
     {
       id: 'invoice_email',
+      enableSorting: false,
       header: 'Invoice email',
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
@@ -382,7 +387,9 @@ function createAccountColumns({
     },
     {
       accessorKey: 'currency',
-      header: 'Currency',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Currency" />
+      ),
       cell: ({ row }) => (
         <Badge variant="outline">
           {(row.original.currency ?? 'n/a').toUpperCase()}
@@ -391,7 +398,9 @@ function createAccountColumns({
     },
     {
       accessorKey: 'balance',
-      header: 'Balance',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Balance" />
+      ),
       cell: ({ row }) => (
         <span className="text-[0.8125rem] tabular-nums">
           {formatMoney(row.original.balance, row.original.currency)}

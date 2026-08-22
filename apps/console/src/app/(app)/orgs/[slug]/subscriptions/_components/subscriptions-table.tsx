@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import type { AdminSubscription } from '@876/admin'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatDate, statusBadgeClass } from '@/lib/format'
 import { cn } from '@876/core/utils'
@@ -31,6 +31,8 @@ function resolveAppSlug(sub: AdminSubscription): string {
   return sub.app_slug || sub.app_id
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const columns: ColumnDef<AdminSubscription, unknown>[] = [
   {
     id: 'plan',
@@ -49,7 +51,9 @@ const columns: ColumnDef<AdminSubscription, unknown>[] = [
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <span
         className={cn(
@@ -63,7 +67,9 @@ const columns: ColumnDef<AdminSubscription, unknown>[] = [
   },
   {
     accessorKey: 'collection_method',
-    header: 'Collection Method',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Collection Method" />
+    ),
     cell: ({ row }) => (
       <span className="capitalize">
         {row.original.collection_method.replace('_', ' ')}
@@ -72,7 +78,9 @@ const columns: ColumnDef<AdminSubscription, unknown>[] = [
   },
   {
     accessorKey: 'created_at',
-    header: 'Created',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
         {formatDate(row.original.created_at)}

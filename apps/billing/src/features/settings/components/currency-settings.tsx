@@ -17,7 +17,7 @@ import {
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { Pencil, Trash, Plus } from '@876/ui/icons'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { client } from '@/lib/client'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'

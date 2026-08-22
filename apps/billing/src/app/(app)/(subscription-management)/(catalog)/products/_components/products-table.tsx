@@ -5,7 +5,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
@@ -23,12 +23,17 @@ interface ProductRow {
   plans: unknown[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function ProductsTable({ products, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<ProductRow, unknown>[] = [
     {
       id: 'product',
-      header: 'Product',
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Product" />
+      ),
       cell: ({ row }) => {
         const product = row.original
         return (
@@ -49,13 +54,17 @@ export function ProductsTable({ products, emptyState }: Props) {
     },
     {
       id: 'plans',
+      enableSorting: false,
       header: 'Plans',
       cell: ({ row }) =>
         `${row.original.plans.length} plan${row.original.plans.length === 1 ? '' : 's'}`,
     },
     {
       id: 'source',
-      header: 'Source',
+      accessorKey: 'sourceAppId',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Source" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs">
           {row.original.sourceAppId ?? 'Standalone'}
@@ -64,7 +73,10 @@ export function ProductsTable({ products, emptyState }: Props) {
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span className="text-xs">
           {row.original.isActive ? 'Active' : 'Archived'}

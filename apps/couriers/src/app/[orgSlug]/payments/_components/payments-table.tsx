@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { DataTable } from '@876/ui/data-table'
 import {
   Empty,
@@ -20,12 +20,39 @@ type PaymentTableRow = {
   mode: string
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const columns: ColumnDef<PaymentTableRow, unknown>[] = [
-  { accessorKey: 'date', header: 'Date' },
-  { accessorKey: 'paymentNumber', header: 'Payment #' },
-  { accessorKey: 'customer', header: 'Customer' },
-  { accessorKey: 'packageNumber', header: 'Package #' },
-  { accessorKey: 'mode', header: 'Mode' },
+  {
+    accessorKey: 'date',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
+  },
+  {
+    accessorKey: 'paymentNumber',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Payment #" />
+    ),
+  },
+  {
+    accessorKey: 'customer',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Customer" />
+    ),
+  },
+  {
+    accessorKey: 'packageNumber',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Package #" />
+    ),
+  },
+  {
+    accessorKey: 'mode',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Mode" />
+    ),
+  },
 ]
 
 export function PaymentsTable({ emptyMessage }: { emptyMessage: string }) {

@@ -5,7 +5,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { formatPriceCadence } from '@/lib/format'
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
@@ -26,12 +26,17 @@ interface PlanRow {
   prices: unknown[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function PlansTable({ plans, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<PlanRow, unknown>[] = [
     {
       id: 'plan',
-      header: 'Plan',
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Plan" />
+      ),
       cell: ({ row }) => {
         const plan = row.original
         return (
@@ -52,11 +57,15 @@ export function PlansTable({ plans, emptyState }: Props) {
     },
     {
       id: 'product',
-      header: 'Product',
+      accessorFn: (row) => row.product.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Product" />
+      ),
       cell: ({ row }) => row.original.product.name,
     },
     {
       id: 'cadence',
+      enableSorting: false,
       header: 'Cadence',
       cell: ({ row }) => {
         const plan = row.original
@@ -69,18 +78,25 @@ export function PlansTable({ plans, emptyState }: Props) {
     },
     {
       id: 'trial',
-      header: 'Trial',
+      accessorKey: 'trialDays',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Trial" />
+      ),
       cell: ({ row }) =>
         row.original.trialDays ? `${row.original.trialDays} days` : '—',
     },
     {
       id: 'prices',
+      enableSorting: false,
       header: 'Prices',
       cell: ({ row }) => row.original.prices.length,
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span className="text-xs">
           {row.original.isActive ? 'Active' : 'Archived'}

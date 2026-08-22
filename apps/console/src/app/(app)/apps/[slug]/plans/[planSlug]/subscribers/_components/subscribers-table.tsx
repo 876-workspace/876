@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { Users, Plus } from '@876/ui/icons'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { Button } from '@876/ui/button'
 import { Badge } from '@876/ui/badge'
@@ -34,11 +34,15 @@ const formatMoney = (amount: number, currency: string = 'usd') => {
   }).format(amount / 100)
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 function buildColumns(): ColumnDef<SubscriberItem>[] {
   return [
     {
       accessorKey: 'name',
-      header: 'Customer',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
       cell: ({ row }) => {
         const sub = row.original
         return (
@@ -53,7 +57,9 @@ function buildColumns(): ColumnDef<SubscriberItem>[] {
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => {
         const status = row.original.status
         return (
@@ -65,7 +71,9 @@ function buildColumns(): ColumnDef<SubscriberItem>[] {
     },
     {
       accessorKey: 'startedAt',
-      header: 'Started',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Started" />
+      ),
       cell: ({ row }) => {
         return (
           <span className="text-muted-foreground text-xs">
@@ -78,7 +86,9 @@ function buildColumns(): ColumnDef<SubscriberItem>[] {
     },
     {
       accessorKey: 'mrr',
-      header: 'MRR',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="MRR" />
+      ),
       cell: ({ row }) => {
         return (
           <span className="text-foreground font-mono text-[0.8125rem] tabular-nums">

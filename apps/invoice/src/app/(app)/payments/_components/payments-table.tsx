@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatMoney, formatDate } from '@/lib/format'
 
@@ -24,13 +24,18 @@ interface Props {
   payments: PaymentRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function PaymentsTable({ payments, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<PaymentRow, unknown>[] = [
     {
       id: 'payment',
-      header: 'Payment',
-      cell: ({ row }: any) => (
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Payment" />
+      ),
+      cell: ({ row }) => (
         <Link
           href={`/payments/${row.original.id}`}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
@@ -42,26 +47,38 @@ export function PaymentsTable({ payments, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
-      cell: ({ row }: any) => row.original.customer.name,
+      accessorFn: (row) => row.customer.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
+      cell: ({ row }) => row.original.customer.name,
     },
     {
       id: 'account',
-      header: 'Deposit account',
-      cell: ({ row }: any) => (
+      accessorKey: 'depositAccount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Deposit account" />
+      ),
+      cell: ({ row }) => (
         <span className="text-xs">{row.original.depositAccount}</span>
       ),
     },
     {
       id: 'amount',
-      header: 'Amount',
-      cell: ({ row }: any) =>
+      accessorKey: 'amount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount" />
+      ),
+      cell: ({ row }) =>
         formatMoney(row.original.amount, row.original.currency),
     },
     {
       id: 'date',
-      header: 'Date',
-      cell: ({ row }: any) => (
+      accessorKey: 'paymentDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
+      cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
           {formatDate(row.original.paymentDate)}
         </span>
@@ -69,8 +86,11 @@ export function PaymentsTable({ payments, emptyState }: Props) {
     },
     {
       id: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => (
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
         <Badge variant="secondary">{row.original.status}</Badge>
       ),
     },

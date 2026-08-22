@@ -1,9 +1,10 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminConsumerContact } from '@876/admin'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Button } from '@876/ui/button'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { Pencil, Trash } from '@876/ui/icons'
 
 import { formatDate } from '@/lib/format'
@@ -22,7 +23,9 @@ export function createContactColumns(
     {
       id: 'contact',
       accessorFn: (contact) => contactDisplayName(contact),
-      header: 'Contact',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Contact" />
+      ),
       cell: ({ row }) => {
         const contact = row.original
         const contactName = contactDisplayName(contact)
@@ -52,14 +55,18 @@ export function createContactColumns(
     },
     {
       accessorKey: 'nickname',
-      header: 'Nickname',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Nickname" />
+      ),
       cell: ({ row }) => (
         <span className="text-[0.8125rem]">{row.original.nickname || '—'}</span>
       ),
     },
     {
       accessorKey: 'notes',
-      header: 'Notes',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Notes" />
+      ),
       cell: ({ row }) => (
         <div className="max-w-[24rem] whitespace-normal">
           <p className="text-muted-foreground line-clamp-2 text-[0.8125rem]">
@@ -70,7 +77,9 @@ export function createContactColumns(
     },
     {
       accessorKey: 'created_at',
-      header: 'Added',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Added" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}

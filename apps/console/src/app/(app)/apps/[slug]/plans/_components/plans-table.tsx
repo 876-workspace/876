@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminProduct } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { DataTable } from '@876/ui/data-table'
@@ -31,11 +31,15 @@ function formatPrice(product: AdminProduct): string {
   return `$${amount} ${price.currency.toUpperCase()}${interval}`
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 function buildColumns(): ColumnDef<AdminProduct, unknown>[] {
   return [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
       cell: ({ row }) => (
         <div>
           <p className="font-medium">{row.original.name}</p>
@@ -47,6 +51,7 @@ function buildColumns(): ColumnDef<AdminProduct, unknown>[] {
     },
     {
       id: 'price',
+      enableSorting: false,
       header: 'Price',
       cell: ({ row }) => (
         <span className="text-[0.8125rem]">{formatPrice(row.original)}</span>
@@ -54,7 +59,9 @@ function buildColumns(): ColumnDef<AdminProduct, unknown>[] {
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span
           className={cn(
@@ -68,7 +75,9 @@ function buildColumns(): ColumnDef<AdminProduct, unknown>[] {
     },
     {
       accessorKey: 'updated_at',
-      header: 'Updated',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Updated" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.updated_at)}

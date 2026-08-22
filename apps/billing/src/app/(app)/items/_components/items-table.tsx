@@ -5,7 +5,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { formatMoney } from '@/lib/format'
 import { ResourceRowLink } from '@/components/patterns/resource-row-link'
 
@@ -28,12 +28,17 @@ interface ItemRow {
   prices: unknown[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<ItemRow, unknown>[] = [
     {
       id: 'item',
-      header: 'Item',
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Item" />
+      ),
       cell: ({ row }) => {
         const item = row.original
         return (
@@ -54,7 +59,10 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
     },
     {
       id: 'defaultPrice',
-      header: 'Default price',
+      accessorKey: 'defaultSellingAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Default price" />
+      ),
       cell: ({ row }) => {
         const item = row.original
         return formatMoney(
@@ -65,7 +73,10 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
     },
     {
       id: 'tax',
-      header: 'Tax',
+      accessorKey: 'isTaxable',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Tax" />
+      ),
       cell: ({ row }) => (
         <span className="text-xs">
           {row.original.isTaxable ? 'Taxable' : 'Non-taxable'}
@@ -74,12 +85,16 @@ export function ItemsTable({ items, defaultCurrency, emptyState }: Props) {
     },
     {
       id: 'prices',
+      enableSorting: false,
       header: 'Prices',
       cell: ({ row }) => row.original.prices.length,
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span className="text-xs">
           {row.original.isActive ? 'Active' : 'Archived'}
