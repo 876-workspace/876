@@ -31,19 +31,9 @@ interface DataTableToolbarProps<TData extends RowData> {
  * - A **Columns** visibility toggle dropdown on the right when any column
  *   supports hiding (`column.getCanHide() === true`).
  *
- * Pass this as the `toolbar` prop on `DataTable`, or compose it directly above
- * the table card when you need full layout control.
- *
- * @example
- * <DataTable
- *   columns={columns}
- *   data={data}
- *   toolbar={
- *     <DataTableToolbar table={table}>
- *       <Input placeholder="Search…" />
- *     </DataTableToolbar>
- *   }
- * />
+ * `DataTable` wires this component automatically when
+ * `enableColumnVisibility` is enabled. Compose it directly only when you
+ * already own the TanStack table instance.
  */
 function DataTableToolbar<TData extends RowData>({
   table,
@@ -68,7 +58,7 @@ function DataTableToolbar<TData extends RowData>({
           <DropdownMenuTrigger
             className={cn(
               buttonVariants({ variant: 'outline', size: 'sm' }),
-              'ml-auto hidden h-8 lg:flex'
+              'ml-auto h-8'
             )}
           >
             <ChevronsUpDown className="mr-2 size-4" />
@@ -84,7 +74,7 @@ function DataTableToolbar<TData extends RowData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {column.id.replaceAll('_', ' ')}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
