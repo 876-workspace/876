@@ -3,6 +3,7 @@
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminAddress } from '@876/admin'
 import { Button } from '@876/ui/button'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import { Pencil, Star, Trash } from '@876/ui/icons'
 
 import { formatDate } from '@/lib/format'
@@ -21,7 +22,9 @@ export function createAddressColumns(
     {
       id: 'type-label',
       accessorFn: (address) => address.type,
-      header: 'Type / Label',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Type / Label" />
+      ),
       cell: ({ row }) => {
         const address = row.original
 
@@ -40,7 +43,9 @@ export function createAddressColumns(
     {
       id: 'address',
       accessorFn: (address) => address.line1,
-      header: 'Address',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Address" />
+      ),
       cell: ({ row }) => {
         const address = row.original
 
@@ -57,7 +62,9 @@ export function createAddressColumns(
     {
       id: 'default',
       accessorFn: (address) => address.is_default,
-      header: () => <span className="block w-[7rem]">Default</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Default" />
+      ),
       cell: ({ row }) => {
         const address = row.original
 
@@ -74,7 +81,9 @@ export function createAddressColumns(
     {
       id: 'created',
       accessorFn: (address) => address.created_at,
-      header: () => <span className="block w-[9rem]">Created</span>,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Created" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
