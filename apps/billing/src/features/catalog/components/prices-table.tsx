@@ -28,6 +28,8 @@ interface PriceRow {
   addon: { name: string; product: { name: string } } | null
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function PricesTable({ prices, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<PriceRow, unknown>[] = [
@@ -59,18 +61,25 @@ export function PricesTable({ prices, emptyState }: Props) {
     },
     {
       id: 'amount',
-      header: 'Amount',
+      accessorKey: 'unitAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Amount" />
+      ),
       cell: ({ row }) =>
         formatMoney(row.original.unitAmount, row.original.currency),
     },
     {
       id: 'cadence',
+      enableSorting: false,
       header: 'Cadence',
       cell: ({ row }) => formatPriceCadence(row.original),
     },
     {
       id: 'model',
-      header: 'Model',
+      accessorKey: 'pricingModel',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Model" />
+      ),
       cell: ({ row }) => (
         <span className="text-xs">
           {row.original.pricingModel.toLowerCase().replaceAll('_', ' ')}
@@ -79,7 +88,10 @@ export function PricesTable({ prices, emptyState }: Props) {
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span className="text-xs">
           {row.original.isActive ? 'Active' : 'Archived'}
