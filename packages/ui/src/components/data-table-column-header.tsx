@@ -43,6 +43,7 @@ function DataTableColumnHeader<TData extends RowData, TValue>({
     )
 
   const sorted = column.getIsSorted()
+  const toggleSorting = column.getToggleSortingHandler()
 
   return (
     <div className={cn('flex items-center space-x-2', className)}>
@@ -50,7 +51,10 @@ function DataTableColumnHeader<TData extends RowData, TValue>({
         variant="ghost"
         size="sm"
         className="-ml-3 h-8"
-        onClick={() => column.toggleSorting(sorted === 'asc')}
+        onClick={(event) => {
+          event.stopPropagation()
+          toggleSorting?.(event)
+        }}
       >
         <span>{title}</span>
         {sorted === 'desc' ? (
