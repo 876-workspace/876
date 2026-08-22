@@ -25,6 +25,13 @@ function initialsOf(user: {
   )
 }
 
+function memberDisplayName(member: AdminOrgMember): string {
+  return (
+    [member.first_name, member.last_name].filter(Boolean).join(' ').trim() ||
+    member.user_id
+  )
+}
+
 function roleBadgeClass(role: string): string {
   switch (role) {
     case 'owner':
@@ -50,17 +57,14 @@ function statusBadgeClass(status: string): string {
 
 const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
   {
-    accessorKey: 'name',
+    id: 'name',
+    accessorFn: memberDisplayName,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => {
       const member = row.original
-      const name =
-        [member.first_name, member.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim() || member.user_id
+      const name = memberDisplayName(member)
 
       return (
         <div className="flex items-center gap-3">
