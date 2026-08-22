@@ -6,6 +6,7 @@ import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 import { client } from '@/lib/client'
 import type { PendingTeamInvite } from '@/types/team'
@@ -40,8 +41,6 @@ export function PendingInvites({ orgSlug, invites }: Props) {
       router.refresh()
     })
   }
-
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
   const columns: ColumnDef<PendingTeamInvite, unknown>[] = [
     {
