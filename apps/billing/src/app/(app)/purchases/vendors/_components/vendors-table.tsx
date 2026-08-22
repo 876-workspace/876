@@ -15,12 +15,16 @@ interface Props {
   vendors: VendorTableRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function VendorsTable({ vendors, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<VendorTableRow, unknown>[] = [
     {
       accessorKey: 'name',
-      header: 'Vendor',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Vendor" />
+      ),
       cell: ({ row }) => (
         <div>
           <Link
@@ -38,7 +42,9 @@ export function VendorsTable({ vendors, emptyState }: Props) {
     },
     {
       accessorKey: 'reference',
-      header: 'Reference',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Reference" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs">
           {row.original.reference}
@@ -47,11 +53,15 @@ export function VendorsTable({ vendors, emptyState }: Props) {
     },
     {
       accessorKey: 'defaultCurrency',
-      header: 'Currency',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Currency" />
+      ),
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <Badge
           variant={row.original.status === 'ACTIVE' ? 'success' : 'secondary'}

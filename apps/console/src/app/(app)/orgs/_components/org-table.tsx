@@ -33,6 +33,7 @@ export function OrgTable({
       <DataTable
         columns={columns}
         data={data}
+        enableColumnVisibility
         onRowClick={(org) => router.push(`/orgs/${org.slug}`)}
       />
       {!isSearching && (

@@ -10,6 +10,8 @@ import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { appColor } from '@/lib/app-color'
 import { formatDate, statusBadgeClass } from '@/lib/format'
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 function AppLogos({ access }: { access: AdminSubscription[] }) {
   const active = access.filter(
     (item) => item.status === 'active' && item.app_kind === 'product'
@@ -61,7 +63,9 @@ export function buildOrgColumns(
   return [
     {
       accessorKey: 'name',
-      header: 'Name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <OrgLogo
@@ -81,7 +85,9 @@ export function buildOrgColumns(
     },
     {
       accessorKey: 'primary_contact_user_id',
-      header: 'Primary Contact',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Primary Contact" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground font-mono text-xs">
           {row.original.primary_contact_user_id ?? '—'}
@@ -90,6 +96,7 @@ export function buildOrgColumns(
     },
     {
       id: 'apps',
+      enableSorting: false,
       header: 'Apps',
       cell: ({ row }) => (
         <AppLogos access={subscriptionsMap[row.original.id] ?? []} />
@@ -97,7 +104,9 @@ export function buildOrgColumns(
     },
     {
       accessorKey: 'created_at',
-      header: 'Joined',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Joined" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-[0.8125rem]">
           {formatDate(row.original.created_at)}
@@ -106,7 +115,9 @@ export function buildOrgColumns(
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <span
           className={cn(

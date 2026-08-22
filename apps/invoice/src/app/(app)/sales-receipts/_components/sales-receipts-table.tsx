@@ -24,13 +24,18 @@ interface Props {
   receipts: SalesReceiptRow[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function SalesReceiptsTable({ receipts, emptyState }: Props) {
   const router = useRouter()
   const columns: ColumnDef<SalesReceiptRow, unknown>[] = [
     {
       id: 'receipt',
-      header: 'Sales Receipt',
-      cell: ({ row }: any) => (
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Sales Receipt" />
+      ),
+      cell: ({ row }) => (
         <Link
           href={`/sales-receipts/${row.original.id}`}
           className="font-medium text-sky-600 hover:text-sky-700 hover:underline dark:text-sky-400 dark:hover:text-sky-300"
@@ -42,19 +47,28 @@ export function SalesReceiptsTable({ receipts, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
-      cell: ({ row }: any) => row.original.customer.name,
+      accessorFn: (row) => row.customer.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
+      cell: ({ row }) => row.original.customer.name,
     },
     {
       id: 'total',
-      header: 'Total',
-      cell: ({ row }: any) =>
+      accessorKey: 'totalAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Total" />
+      ),
+      cell: ({ row }) =>
         formatMoney(row.original.totalAmount, row.original.currency),
     },
     {
       id: 'date',
-      header: 'Date',
-      cell: ({ row }: any) => (
+      accessorKey: 'date',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Date" />
+      ),
+      cell: ({ row }) => (
         <span className="text-muted-foreground text-xs">
           {formatDate(row.original.date)}
         </span>
@@ -62,8 +76,11 @@ export function SalesReceiptsTable({ receipts, emptyState }: Props) {
     },
     {
       id: 'status',
-      header: 'Status',
-      cell: ({ row }: any) => (
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
         <Badge variant={documentStatusVariant(row.original.status)}>
           <span className="capitalize">
             {row.original.status.toLowerCase()}
