@@ -20,6 +20,8 @@ interface Props {
   visibleColumns?: string[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function SubscriptionsTable({
   subscriptions,
   defaultCurrency,
@@ -35,7 +37,9 @@ export function SubscriptionsTable({
       ? [
           {
             accessorKey: 'customer.name',
-            header: 'Customer',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Customer" />
+            ),
             cell: ({ row }) => (
               <div>
                 <Link
@@ -57,7 +61,9 @@ export function SubscriptionsTable({
       ? [
           {
             accessorKey: 'offering.productName',
-            header: 'Product & plan',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Product & plan" />
+            ),
             cell: ({ row }) => (
               <div>
                 <Link
@@ -82,7 +88,10 @@ export function SubscriptionsTable({
       ? [
           {
             id: 'amount',
-            header: 'Recurring amount',
+            accessorKey: 'amount',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Recurring amount" />
+            ),
             cell: ({ row }) => {
               const currency = row.original.currency ?? defaultCurrency
 
@@ -108,7 +117,9 @@ export function SubscriptionsTable({
       ? [
           {
             accessorKey: 'status',
-            header: 'Status',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Status" />
+            ),
             cell: ({ row }) => (
               <SubscriptionStatusBadge status={row.original.status} />
             ),
@@ -119,7 +130,9 @@ export function SubscriptionsTable({
       ? [
           {
             accessorKey: 'nextBillingAt',
-            header: 'Renews / ends',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Renews / ends" />
+            ),
             cell: ({ row }) => (
               <span className="text-muted-foreground text-xs">
                 {row.original.nextBillingAt
@@ -136,7 +149,9 @@ export function SubscriptionsTable({
       ? [
           {
             accessorKey: 'createdAt',
-            header: 'Created',
+            header: ({ column }) => (
+              <DataTableColumnHeader column={column} title="Created" />
+            ),
             cell: ({ row }) => (
               <span className="text-muted-foreground text-xs">
                 {new Date(row.original.createdAt * 1000).toLocaleDateString(

@@ -22,6 +22,8 @@ type AddonRow = {
   planAssociations: unknown[]
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function AddonsTable({
   addons,
   emptyState,
@@ -33,7 +35,10 @@ export function AddonsTable({
   const columns: ColumnDef<AddonRow, unknown>[] = [
     {
       id: 'addon',
-      header: 'Add-on',
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Add-on" />
+      ),
       cell: ({ row }) => (
         <>
           <Link
@@ -51,27 +56,36 @@ export function AddonsTable({
     },
     {
       id: 'product',
-      header: 'Product',
+      accessorFn: (row) => row.product.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Product" />
+      ),
       cell: ({ row }) => row.original.product.name,
     },
     {
       id: 'cadence',
+      enableSorting: false,
       header: 'Charge',
       cell: ({ row }) => formatPriceCadence(row.original),
     },
     {
       id: 'plans',
+      enableSorting: false,
       header: 'Plans',
       cell: ({ row }) => row.original.planAssociations.length,
     },
     {
       id: 'prices',
+      enableSorting: false,
       header: 'Prices',
       cell: ({ row }) => row.original.prices.length,
     },
     {
       id: 'status',
-      header: 'Status',
+      accessorKey: 'isActive',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (row.original.isActive ? 'Active' : 'Archived'),
     },
     {
