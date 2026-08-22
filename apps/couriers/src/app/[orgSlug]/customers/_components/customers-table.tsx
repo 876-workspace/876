@@ -25,10 +25,14 @@ type Props = {
   emptyState?: ReactNode
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   {
     accessorKey: 'customerName',
-    header: 'Name',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         <CustomerAvatar name={row.original.customerName} />
@@ -43,7 +47,9 @@ export const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   },
   {
     accessorKey: 'companyName',
-    header: 'Company',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Company" />
+    ),
     cell: ({ row }) =>
       row.original.companyName ? (
         <span className="flex items-center gap-2.5">
@@ -58,21 +64,27 @@ export const columns: ColumnDef<CustomerTableRow, unknown>[] = [
   },
   {
     accessorKey: 'email',
-    header: 'Email',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground">{row.original.email ?? '—'}</span>
     ),
   },
   {
     accessorKey: 'phone',
-    header: 'Phone',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Phone" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground">{row.original.phone ?? '—'}</span>
     ),
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <Badge
         variant={row.original.status === 'ACTIVE' ? 'success' : 'secondary'}

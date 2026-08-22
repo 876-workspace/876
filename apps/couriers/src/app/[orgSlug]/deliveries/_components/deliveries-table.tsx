@@ -13,21 +13,47 @@ export type DeliveryTableRow = {
   status: string
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const columns: ColumnDef<DeliveryTableRow, unknown>[] = [
-  { accessorKey: 'customerName', header: 'Customer' },
+  {
+    accessorKey: 'customerName',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Customer" />
+    ),
+  },
   {
     accessorKey: 'code',
-    header: 'Code',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Code" />
+    ),
     cell: ({ row }) => (
       <span className="font-medium text-sky-600">{row.original.code}</span>
     ),
   },
-  { accessorKey: 'area', header: 'Area' },
-  { accessorKey: 'dateTime', header: 'Date & Time' },
-  { accessorKey: 'packages', header: 'Packages' },
+  {
+    accessorKey: 'area',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Area" />
+    ),
+  },
+  {
+    accessorKey: 'dateTime',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date & Time" />
+    ),
+  },
+  {
+    accessorKey: 'packages',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Packages" />
+    ),
+  },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <span className="rounded-full bg-emerald-50 px-2 py-1 text-[0.6875rem] font-medium text-emerald-700">
         {row.original.status}
