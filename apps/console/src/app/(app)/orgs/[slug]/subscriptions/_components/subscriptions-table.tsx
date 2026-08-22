@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import type { AdminSubscription } from '@876/admin'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatDate, statusBadgeClass } from '@/lib/format'
 import { cn } from '@876/core/utils'

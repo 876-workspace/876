@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import type { InviteToken } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { DataTable } from '@876/ui/data-table'
 
 import { client } from '@/lib/client'

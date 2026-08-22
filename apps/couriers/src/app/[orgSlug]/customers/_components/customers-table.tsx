@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { DataTable } from '@876/ui/data-table'
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'

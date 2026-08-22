@@ -35,7 +35,7 @@ import {
 import { MoreHorizontalIcon } from '@876/ui/icons'
 import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { DataTable } from '@876/ui/data-table'
 
 import { client } from '@/lib/client'

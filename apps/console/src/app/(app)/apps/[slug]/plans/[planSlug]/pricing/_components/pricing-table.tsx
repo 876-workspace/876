@@ -9,7 +9,7 @@ import {
   Plus,
   Trash,
 } from '@876/ui/icons'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { cn } from '@876/core/utils'
 import { Button, buttonVariants } from '@876/ui/button'

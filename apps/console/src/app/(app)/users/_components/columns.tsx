@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminUser, AdminUserApp } from '@876/admin'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
@@ -54,7 +54,7 @@ export function makeUserColumns(
     {
       accessorKey: 'first_name',
       header: 'Name',
-      sortingFn: (a, b) => {
+      sortFn: (a: { original: AdminUser }, b: { original: AdminUser }) => {
         const nameA =
           [a.original.first_name, a.original.last_name]
             .filter(Boolean)

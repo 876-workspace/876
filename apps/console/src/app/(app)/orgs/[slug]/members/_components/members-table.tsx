@@ -5,7 +5,7 @@ import type { AdminInviteToken, AdminOrgMember } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatDate } from '@/lib/format'
 

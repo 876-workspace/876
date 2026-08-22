@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminFeature } from '@876/admin'
 import { DataTable } from '@876/ui/data-table'
 import { Badge } from '@876/ui/badge'

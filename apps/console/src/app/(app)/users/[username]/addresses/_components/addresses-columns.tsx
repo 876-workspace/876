@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminAddress } from '@876/admin'
 import { Button } from '@876/ui/button'
 import { Pencil, Star, Trash } from '@876/ui/icons'

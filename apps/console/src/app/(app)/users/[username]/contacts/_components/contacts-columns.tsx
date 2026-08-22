@@ -1,6 +1,6 @@
 'use client'
 
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { AdminConsumerContact } from '@876/admin'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Button } from '@876/ui/button'

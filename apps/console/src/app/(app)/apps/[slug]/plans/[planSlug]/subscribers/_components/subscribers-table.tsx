@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { Users, Plus } from '@876/ui/icons'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { Button } from '@876/ui/button'
 import { Badge } from '@876/ui/badge'

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import type { ColumnDef } from '@tanstack/react-table'
+import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import type { WidgetVisual } from '@876/widgets'
 import { DataTable } from '@876/ui/data-table'
 import { ChevronRight, LayoutGrid } from '@876/ui/icons'
