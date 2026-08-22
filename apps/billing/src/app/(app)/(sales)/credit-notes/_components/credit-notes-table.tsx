@@ -43,13 +43,17 @@ function statusVariant(
   }
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export function CreditNotesTable({ creditNotes, emptyState }: Props) {
   const router = useRouter()
 
   const columns: ColumnDef<CreditNoteRow, unknown>[] = [
     {
-      id: 'number',
-      header: 'Number',
+      accessorKey: 'number',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Number" />
+      ),
       cell: ({ row }) => (
         <Link
           href={`/credit-notes/${row.original.id}`}
@@ -62,7 +66,10 @@ export function CreditNotesTable({ creditNotes, emptyState }: Props) {
     },
     {
       id: 'customer',
-      header: 'Customer',
+      accessorFn: (row) => row.customer.name,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Customer" />
+      ),
       cell: ({ row }) => (
         <Link
           href={`/customers/${row.original.customer.id}`}
@@ -74,8 +81,10 @@ export function CreditNotesTable({ creditNotes, emptyState }: Props) {
       ),
     },
     {
-      id: 'status',
-      header: 'Status',
+      accessorKey: 'status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
         <Badge variant={statusVariant(row.original.status)}>
           {row.original.status.charAt(0) +
@@ -84,8 +93,12 @@ export function CreditNotesTable({ creditNotes, emptyState }: Props) {
       ),
     },
     {
-      id: 'total',
-      header: () => <span className="block text-right">Total</span>,
+      accessorKey: 'totalAmount',
+      header: ({ column }) => (
+        <div className="flex justify-end">
+          <DataTableColumnHeader column={column} title="Total" />
+        </div>
+      ),
       cell: ({ row }) => (
         <span className="block text-right tabular-nums">
           {formatMoney(row.original.totalAmount, row.original.currency)}
@@ -93,8 +106,12 @@ export function CreditNotesTable({ creditNotes, emptyState }: Props) {
       ),
     },
     {
-      id: 'balance',
-      header: () => <span className="block text-right">Balance</span>,
+      accessorKey: 'balanceAmount',
+      header: ({ column }) => (
+        <div className="flex justify-end">
+          <DataTableColumnHeader column={column} title="Balance" />
+        </div>
+      ),
       cell: ({ row }) => (
         <span className="block text-right tabular-nums">
           {formatMoney(row.original.balanceAmount, row.original.currency)}
