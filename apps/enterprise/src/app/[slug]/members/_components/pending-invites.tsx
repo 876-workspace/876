@@ -9,6 +9,7 @@ import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 import { client } from '@/lib/client'
 
@@ -40,19 +41,28 @@ export function PendingInvites({
   const columns: ColumnDef<InviteToken, unknown>[] = [
     {
       id: 'email',
-      header: 'Email',
+      accessorKey: 'email',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Email" />
+      ),
       cell: ({ row }) => (
         <span className="font-medium">{row.original.email}</span>
       ),
     },
     {
       id: 'role',
-      header: 'Role',
+      accessorKey: 'role',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Role" />
+      ),
       cell: ({ row }) => <Badge variant="outline">{row.original.role}</Badge>,
     },
     {
       id: 'expires',
-      header: 'Expires',
+      accessorKey: 'expires_at',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expires" />
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">
           {formatDate(row.original.expires_at)}
