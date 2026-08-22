@@ -1,12 +1,10 @@
 /**
  * Verifies that every Prisma workspace has both halves of its database config.
  *
- * Each Prisma app now reads **two** connection strings, and they are not
- * interchangeable:
+ * Each Prisma app reads **two** connection strings:
  *
- *   <PREFIX>DATABASE_URL         Prisma Accelerate URL (prisma+postgres://…),
- *                                passed to `new PrismaClient({ accelerateUrl })`
- *                                at runtime.
+ *   <PREFIX>DATABASE_URL         Runtime connection URL (PostgreSQL direct/pooler
+ *                                or Prisma Accelerate URL).
  *   <PREFIX>DIRECT_DATABASE_URL  Direct TCP URL (postgres://…), read by
  *                                `prisma.config.ts` for migrate/generate/seed.
  *
@@ -17,12 +15,11 @@
  *     environment variable: DIRECT_DATABASE_URL` from inside `prisma migrate
  *     deploy`, which runs as the first half of each app's `dev` script. The
  *     app never starts and the message names no file to edit.
- *   - A direct URL sitting in the *runtime* variable does not fail at all until
- *     the first query, which then surfaces as an opaque Prisma internal error.
- *     That took the whole platform down on 2026-08-08.
+ *   - An unsupported URL scheme sitting in the *runtime* variable fails at
+ *     client construction or on the first query.
  *
- * Values are never read beyond their scheme — the Accelerate URL carries an API
- * key and the direct URL carries a password.
+ * Values are never read beyond their scheme — the connection URLs carry
+ * sensitive credentials.
  *
  * Run via `pnpm check:database-env [app…|all]`; the `pnpm dev*` scripts for
  * Prisma-backed apps run it first.
@@ -36,6 +33,7 @@ const repoRoot = resolve(import.meta.dirname, '..')
 
 const ACCELERATE_PROTOCOLS = ['prisma:', 'prisma+postgres:']
 const DIRECT_PROTOCOLS = ['postgres:', 'postgresql:']
+const RUNTIME_PROTOCOLS = [...ACCELERATE_PROTOCOLS, ...DIRECT_PROTOCOLS]
 
 /**
  * Every workspace with its own Prisma datastore.
@@ -54,22 +52,37 @@ const APPS = {
   console: {
     runtime: 'CONSOLE_DATABASE_URL',
     direct: 'CONSOLE_DIRECT_DATABASE_URL',
-    envFiles: ['.env', '.env.development.local'],
+    envFiles: ['.env', '.env.development', '.env.development.local'],
   },
   billing: {
     runtime: 'BILLING_DATABASE_URL',
     direct: 'BILLING_DIRECT_DATABASE_URL',
-    envFiles: ['.env', '.env.local'],
+    envFiles: [
+      '.env',
+      '.env.development',
+      '.env.development.local',
+      '.env.local',
+    ],
   },
   couriers: {
     runtime: 'DATABASE_URL',
     direct: 'DIRECT_DATABASE_URL',
-    envFiles: ['.env', '.env.local'],
+    envFiles: [
+      '.env',
+      '.env.development',
+      '.env.development.local',
+      '.env.local',
+    ],
   },
   'widgets-api': {
     runtime: 'WIDGETS_DATABASE_URL',
     direct: 'WIDGETS_DIRECT_DATABASE_URL',
-    envFiles: ['.env', '.env.local'],
+    envFiles: [
+      '.env',
+      '.env.development',
+      '.env.development.local',
+      '.env.local',
+    ],
   },
 }
 
@@ -125,15 +138,13 @@ function checkApp(app) {
   const runtimeEntry = env[runtime]
   if (!runtimeEntry) {
     problems.push(
-      `${runtime} is not set. It is the Prisma Accelerate URL the app uses at ` +
-        `runtime (${ACCELERATE_PROTOCOLS.join(' or ')}).`
+      `${runtime} is not set. It is the database connection URL the app uses at ` +
+        `runtime (${RUNTIME_PROTOCOLS.join(' or ')}).`
     )
-  } else if (!ACCELERATE_PROTOCOLS.includes(protocolOf(runtimeEntry.value))) {
+  } else if (!RUNTIME_PROTOCOLS.includes(protocolOf(runtimeEntry.value))) {
     problems.push(
       `${runtime} is a "${protocolOf(runtimeEntry.value) || 'scheme-less'}" ` +
-        `URL (from ${runtimeEntry.source}), but it is passed as ` +
-        `\`accelerateUrl\` and must be ${ACCELERATE_PROTOCOLS.join(' or ')}. ` +
-        `Move this value to ${direct} and put the Accelerate URL here.`
+        `URL (from ${runtimeEntry.source}), but must be ${RUNTIME_PROTOCOLS.join(' or ')}.`
     )
   }
 
@@ -177,7 +188,7 @@ const failures = scope
 if (failures.length === 0) {
   console.log(
     `Database environment is configured for ${scope.join(', ')} ` +
-      `(Accelerate runtime URL + direct CLI URL).`
+      `(runtime URL + direct CLI URL).`
   )
   process.exit(0)
 }
@@ -189,9 +200,9 @@ for (const { app, problems } of failures) {
   console.error('')
 }
 console.error(
-  'Both values come from the same Prisma Postgres database:\n' +
-    '  Accelerate URL — Prisma Console > the database > "Connect" (prisma+postgres://…)\n' +
-    '  Direct URL     — the same page, "Direct connection" (postgres://…)\n\n' +
+  'Both values come from the database provider (e.g. Neon or Prisma Postgres):\n' +
+    '  Runtime URL — Neon pooled connection or Prisma Accelerate URL\n' +
+    '  Direct URL  — Direct PostgreSQL connection URL\n\n' +
     'See apps/<app>/.env.example and docs/cloudflare.md.'
 )
 process.exit(1)
