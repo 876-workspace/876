@@ -56,11 +56,15 @@ const APP_PILL_COLORS: Record<string, string> = {
     'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300',
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const columns: ColumnDef<WidgetTableRow, unknown>[] = [
   {
     accessorKey: 'name',
     size: 320,
-    header: 'Widget',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Widget" />
+    ),
     cell: ({ row }) => (
       <div className="flex max-w-80 items-start gap-3">
         {row.original.kind === 'master' ? (
@@ -93,7 +97,9 @@ const columns: ColumnDef<WidgetTableRow, unknown>[] = [
   },
   {
     accessorKey: 'apps',
-    header: 'Apps',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Apps" />
+    ),
     cell: ({ row }) => {
       const apps = row.original.apps === 'all' ? ['All'] : row.original.apps
       return (

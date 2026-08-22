@@ -5,6 +5,7 @@ import type { AdminInviteToken, AdminOrgMember } from '@876/admin'
 import { cn } from '@876/core/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatDate } from '@/lib/format'
@@ -21,6 +22,13 @@ function initialsOf(user: {
       .toUpperCase() ||
     user.email?.[0]?.toUpperCase() ||
     '?'
+  )
+}
+
+function memberDisplayName(member: AdminOrgMember): string {
+  return (
+    [member.first_name, member.last_name].filter(Boolean).join(' ').trim() ||
+    member.user_id
   )
 }
 
@@ -50,14 +58,13 @@ function statusBadgeClass(status: string): string {
 const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
   {
     id: 'name',
-    header: 'Name',
+    accessorFn: memberDisplayName,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
     cell: ({ row }) => {
       const member = row.original
-      const name =
-        [member.first_name, member.last_name]
-          .filter(Boolean)
-          .join(' ')
-          .trim() || member.user_id
+      const name = memberDisplayName(member)
 
       return (
         <div className="flex items-center gap-3">
@@ -85,8 +92,10 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
     },
   },
   {
-    id: 'email',
-    header: 'Email',
+    accessorKey: 'email',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
         {row.original.email ?? '—'}
@@ -94,8 +103,10 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
     ),
   },
   {
-    id: 'role',
-    header: 'Role',
+    accessorKey: 'role',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Role" />
+    ),
     cell: ({ row }) => (
       <span
         className={cn(
@@ -108,8 +119,10 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
     ),
   },
   {
-    id: 'status',
-    header: 'Status',
+    accessorKey: 'status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <span
         className={cn(
@@ -122,8 +135,10 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
     ),
   },
   {
-    id: 'joined',
-    header: 'Joined',
+    accessorKey: 'created_at',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Joined" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
         {formatDate(row.original.created_at)}
@@ -134,15 +149,19 @@ const memberColumns: ColumnDef<AdminOrgMember, unknown>[] = [
 
 const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
   {
-    id: 'email',
-    header: 'Email',
+    accessorKey: 'email',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
     cell: ({ row }) => (
       <span className="font-medium">{row.original.email}</span>
     ),
   },
   {
-    id: 'role',
-    header: 'Role',
+    accessorKey: 'role',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Role" />
+    ),
     cell: ({ row }) => (
       <span
         className={cn(
@@ -155,8 +174,10 @@ const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
     ),
   },
   {
-    id: 'status',
-    header: 'Status',
+    accessorKey: 'status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
     cell: ({ row }) => (
       <span
         className={cn(
@@ -169,8 +190,10 @@ const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
     ),
   },
   {
-    id: 'expires',
-    header: 'Expires',
+    accessorKey: 'expires_at',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Expires" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
         {formatDate(row.original.expires_at)}
@@ -182,7 +205,7 @@ const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
 export function MembersTable({ members }: { members: AdminOrgMember[] }) {
   return (
     <div className="876-card overflow-hidden">
-      <DataTable columns={memberColumns} data={members} />
+      <DataTable columns={memberColumns} data={members} enableColumnVisibility />
     </div>
   )
 }
