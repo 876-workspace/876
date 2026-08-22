@@ -35,10 +35,15 @@ function itemLogoColor(name: string): string {
   return ITEM_LOGO_COLORS[Math.abs(hash) % ITEM_LOGO_COLORS.length]!
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 export const columns: ColumnDef<ItemTableRow, unknown>[] = [
   {
     id: 'name',
-    header: 'Name',
+    accessorKey: 'name',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
     cell: ({ row }) => (
       <div className="flex items-center gap-3">
         {row.original.imageUrl ? (
@@ -62,7 +67,9 @@ export const columns: ColumnDef<ItemTableRow, unknown>[] = [
   },
   {
     accessorKey: 'sku',
-    header: 'SKU',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="SKU" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
         {row.original.sku ?? '—'}
@@ -71,7 +78,10 @@ export const columns: ColumnDef<ItemTableRow, unknown>[] = [
   },
   {
     id: 'price',
-    header: 'Price',
+    accessorKey: 'priceLabel',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Price" />
+    ),
     cell: ({ row }) => (
       <span className="text-[0.8125rem] tabular-nums">
         {row.original.priceLabel}
@@ -80,7 +90,9 @@ export const columns: ColumnDef<ItemTableRow, unknown>[] = [
   },
   {
     accessorKey: 'description',
-    header: 'Description',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
     cell: ({ row }) => (
       <span className="text-muted-foreground text-[0.8125rem]">
         {row.original.description ?? '—'}

@@ -21,13 +21,45 @@ type DisputeTableRow = {
   status: string
 }
 
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
 const columns: ColumnDef<DisputeTableRow, unknown>[] = [
-  { accessorKey: 'date', header: 'Date' },
-  { accessorKey: 'disputeNumber', header: 'Dispute #' },
-  { accessorKey: 'customer', header: 'Customer' },
-  { accessorKey: 'paymentNumber', header: 'Payment #' },
-  { accessorKey: 'reason', header: 'Reason' },
-  { accessorKey: 'status', header: 'Status' },
+  {
+    accessorKey: 'date',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
+  },
+  {
+    accessorKey: 'disputeNumber',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Dispute #" />
+    ),
+  },
+  {
+    accessorKey: 'customer',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Customer" />
+    ),
+  },
+  {
+    accessorKey: 'paymentNumber',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Payment #" />
+    ),
+  },
+  {
+    accessorKey: 'reason',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Reason" />
+    ),
+  },
+  {
+    accessorKey: 'status',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+  },
 ]
 
 export function DisputesTable() {
