@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
 import { formatMoney } from '@/lib/format'
@@ -33,8 +34,6 @@ function getAmountDue(row: InvoiceRow): bigint | string {
   if (row.amountDue !== undefined) return row.amountDue
   return row.totalAmount
 }
-
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 export function InvoicesTable({ invoices, emptyState }: Props) {
   const router = useRouter()
@@ -74,7 +73,7 @@ export function InvoicesTable({ invoices, emptyState }: Props) {
     },
     {
       id: 'amountDue',
-      accessorKey: 'amountDue',
+      accessorFn: getAmountDue,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Amount due" />
       ),
