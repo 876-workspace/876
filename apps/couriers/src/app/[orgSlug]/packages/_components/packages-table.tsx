@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 import { Avatar, AvatarFallback } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 export type PackageTableRow = {
   id: string
