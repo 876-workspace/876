@@ -137,8 +137,8 @@ async function buildSwitcherOrgs(userId: string): Promise<OrgSwitcherOrg[]> {
   })
   if (result.error) return []
 
-  return unwrapResult(result, 'routing memberships').data
-    .filter((membership) => membership.organization.status === 'active')
+  return unwrapResult(result, 'routing memberships')
+    .data.filter((membership) => membership.organization.status === 'active')
     .map((membership) => ({
       id: membership.organization.id,
       name: membership.organization.name,

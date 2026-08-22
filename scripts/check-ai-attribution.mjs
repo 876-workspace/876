@@ -15,7 +15,9 @@ const GENERATED_WITH =
 function checkRetiredPaths() {
   if (!existsSync('.grok')) return
 
-  console.error('The retired .grok directory must not exist in this repository.')
+  console.error(
+    'The retired .grok directory must not exist in this repository.'
+  )
   console.error('Use .claude/rules or .agents/rules instead.')
   process.exit(1)
 }
@@ -41,7 +43,9 @@ function findForbiddenIdentity(label, identity) {
 
 function fail(entries) {
   console.error('AI attribution is forbidden in this repository.')
-  console.error('Git authorship and co-authorship must identify human contributors only.\n')
+  console.error(
+    'Git authorship and co-authorship must identify human contributors only.\n'
+  )
 
   for (const entry of entries) {
     console.error(entry.label)
@@ -59,7 +63,10 @@ function checkMessageFile(path) {
   const message = readFileSync(path, 'utf8')
   const matches = [
     ...findForbiddenIdentity('Author', currentIdentity('GIT_AUTHOR_IDENT')),
-    ...findForbiddenIdentity('Committer', currentIdentity('GIT_COMMITTER_IDENT')),
+    ...findForbiddenIdentity(
+      'Committer',
+      currentIdentity('GIT_COMMITTER_IDENT')
+    ),
     ...findForbiddenMessageAttribution(message),
   ]
 
@@ -70,7 +77,7 @@ function readCommits(range) {
   const output = execFileSync(
     'git',
     ['log', '--format=%H%x00%an <%ae>%x00%cn <%ce>%x00%B%x00', range],
-    { encoding: 'utf8' },
+    { encoding: 'utf8' }
   )
 
   const parts = output.split('\0')
