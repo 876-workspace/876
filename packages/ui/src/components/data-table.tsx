@@ -18,6 +18,7 @@ import {
 
 import { cn } from '../lib/utils'
 import { Checkbox } from './checkbox'
+import { DataTableToolbar } from './data-table-toolbar'
 import {
   Table,
   TableBody,
@@ -36,14 +37,13 @@ interface DataTableProps<TData extends RowData> {
   rowClassName?: string | ((row: TData) => string)
   layout?: 'table' | 'grid'
   /**
-   * Optional toolbar rendered above the table (inside the same card surface).
-   * Use {@link DataTableToolbar} or a custom element.
+   * Optional toolbar content rendered above the table. When column visibility
+   * is enabled, this content is placed in the left side of the shared toolbar.
    */
   toolbar?: React.ReactNode
   /**
    * Enable per-column visibility toggles. Columns opt-in by **not** setting
-   * `enableHiding: false` in their `LegacyColumnDef`. When `true`, a column
-   * visibility control can be rendered via {@link DataTableToolbar}.
+   * `enableHiding: false` in their `LegacyColumnDef`.
    */
   enableColumnVisibility?: boolean
   /** Initial column visibility state. Only applied on first mount. */
@@ -83,18 +83,21 @@ function DataTable<TData extends RowData>({
         enableSorting: false,
         enableHiding: false,
         size: 36,
-        header: ({ table }: { table: LegacyReactTable<TData> }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              table.getIsSomePageRowsSelected()
-            }
-            onCheckedChange={(checked) =>
-              table.toggleAllPageRowsSelected(!!checked)
-            }
-            aria-label="Select all"
-          />
-        ),
+        header: ({ table }: { table: LegacyReactTable<TData> }) => {
+          const allSelected = table.getIsAllPageRowsSelected()
+          const someSelected = table.getIsSomePageRowsSelected()
+
+          return (
+            <Checkbox
+              checked={allSelected}
+              indeterminate={!allSelected && someSelected}
+              onCheckedChange={(checked) =>
+                table.toggleAllPageRowsSelected(!!checked)
+              }
+              aria-label="Select all"
+            />
+          )
+        },
         cell: ({
           row,
         }: {
@@ -107,6 +110,7 @@ function DataTable<TData extends RowData>({
           <Checkbox
             checked={row.getIsSelected()}
             disabled={!row.getCanSelect()}
+            onClick={(event) => event.stopPropagation()}
             onCheckedChange={(checked) => row.toggleSelected(!!checked)}
             aria-label="Select row"
           />
@@ -150,80 +154,97 @@ function DataTable<TData extends RowData>({
     getSortedRowModel: getSortedRowModel(),
   })
 
+  const resolvedToolbar = enableColumnVisibility ? (
+    <DataTableToolbar table={table}>{toolbar}</DataTableToolbar>
+  ) : (
+    toolbar
+  )
+
   if (layout === 'grid') {
-    if (data.length === 0 && emptyState) return <>{emptyState}</>
-
     return (
-      <div
-        className={cn(
-          'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
-          className
-        )}
-      >
-        {table.getRowModel().rows.map((row) => {
-          const visibleCells = row.getVisibleCells()
-          const firstCell = visibleCells[0]
-          const otherCells = visibleCells.slice(1)
+      <>
+        {resolvedToolbar}
+        {data.length === 0 && emptyState ? (
+          <>{emptyState}</>
+        ) : (
+          <div
+            className={cn(
+              'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
+              className
+            )}
+          >
+            {table.getRowModel().rows.map((row) => {
+              const visibleCells = row
+                .getVisibleCells()
+                .filter((cell) => cell.column.id !== 'select')
+              const firstCell = visibleCells[0]
+              const otherCells = visibleCells.slice(1)
 
-          return (
-            <div
-              key={row.id}
-              className={cn(
-                '876-card group flex flex-col overflow-hidden transition-all duration-300 ease-out',
-                onRowClick &&
-                  '876-card-interactive cursor-pointer hover:-translate-y-1'
-              )}
-              onClick={onRowClick ? () => onRowClick(row.original as TData) : undefined}
-            >
-              {firstCell && (
-                <div className="border-border/40 flex items-center border-b bg-black/5 px-6 py-4 transition-colors group-hover:bg-black/[0.07] dark:bg-white/[0.03] dark:group-hover:bg-white/[0.06]">
-                  <div className="truncate text-base font-semibold">
-                    {flexRender(
-                      firstCell.column.columnDef.cell,
-                      firstCell.getContext()
-                    )}
-                  </div>
-                </div>
-              )}
-              {otherCells.length > 0 && (
-                <div className="px-6 py-6">
-                  <dl className="grid grid-cols-2 gap-x-4 gap-y-6">
-                    {otherCells.map((cell) => (
-                      <div key={cell.id} className="flex flex-col gap-1.5">
-                        <dt className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
-                          {(() => {
-                            const header = table
-                              .getFlatHeaders()
-                              .find((h) => h.column.id === cell.column.id)
-                            return header && !header.isPlaceholder
-                              ? flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )
-                              : null
-                          })()}
-                        </dt>
-                        <dd className="text-foreground text-sm">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </dd>
+              return (
+                <div
+                  key={row.id}
+                  className={cn(
+                    '876-card group flex flex-col overflow-hidden transition-all duration-300 ease-out',
+                    onRowClick &&
+                      '876-card-interactive cursor-pointer hover:-translate-y-1'
+                  )}
+                  onClick={
+                    onRowClick
+                      ? () => onRowClick(row.original as TData)
+                      : undefined
+                  }
+                >
+                  {firstCell && (
+                    <div className="border-border/40 flex items-center border-b bg-black/5 px-6 py-4 transition-colors group-hover:bg-black/[0.07] dark:bg-white/[0.03] dark:group-hover:bg-white/[0.06]">
+                      <div className="truncate text-base font-semibold">
+                        {flexRender(
+                          firstCell.column.columnDef.cell,
+                          firstCell.getContext()
+                        )}
                       </div>
-                    ))}
-                  </dl>
+                    </div>
+                  )}
+                  {otherCells.length > 0 && (
+                    <div className="px-6 py-6">
+                      <dl className="grid grid-cols-2 gap-x-4 gap-y-6">
+                        {otherCells.map((cell) => (
+                          <div key={cell.id} className="flex flex-col gap-1.5">
+                            <dt className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                              {(() => {
+                                const header = table
+                                  .getFlatHeaders()
+                                  .find((h) => h.column.id === cell.column.id)
+                                return header && !header.isPlaceholder
+                                  ? flexRender(
+                                      header.column.columnDef.header,
+                                      header.getContext()
+                                    )
+                                  : null
+                              })()}
+                            </dt>
+                            <dd className="text-foreground text-sm">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+              )
+            })}
+          </div>
+        )}
+      </>
     )
   }
 
   return (
     <>
-      {toolbar}
+      {resolvedToolbar}
       <Table className={className}>
         <TableHeader className="876-header-row">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -264,7 +285,7 @@ function DataTable<TData extends RowData>({
           {table.getRowModel().rows.length === 0 && emptyState ? (
             <TableRow>
               <TableCell
-                colSpan={resolvedColumns.length}
+                colSpan={table.getVisibleLeafColumns().length}
                 className="px-5 py-8"
               >
                 {emptyState}
