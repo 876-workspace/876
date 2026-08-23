@@ -2,31 +2,19 @@
 
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { useParams, useSearchParams } from 'next/navigation'
-import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
 
-const SUBSCRIPTION_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Subscriptions' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Subscriptions' },
-  { value: 'trialing', label: 'Trialing', headingLabel: 'Trialing Subscriptions' },
-  { value: 'past_due', label: 'Past due', headingLabel: 'Past Due Subscriptions' },
-  { value: 'paused', label: 'Paused', headingLabel: 'Paused Subscriptions' },
-  { value: 'canceled', label: 'Canceled', headingLabel: 'Canceled Subscriptions' },
-]
+import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
+import { SUBSCRIPTION_STATUS_OPTIONS } from '../_components/subscription-status-options'
 
 export default function Loading() {
   const { slug } = useParams<{ slug: string }>()
   const searchParams = useSearchParams()
   const status = searchParams.get('status') ?? 'all'
-  const selectedStatus = SUBSCRIPTION_STATUS_OPTIONS.some(
-    (o) => o.value === status
-  )
-    ? status
-    : 'all'
+  const selectedStatus =
+    SUBSCRIPTION_STATUS_OPTIONS.find((option) => option.value === status)
+      ?.value ?? 'all'
 
   return (
     <div>
@@ -44,7 +32,8 @@ export default function Loading() {
         primaryVariant="info"
         refresh
       />
-      <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />
+      <DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} rows={5} />
     </div>
   )
 }
+

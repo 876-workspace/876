@@ -1,30 +1,23 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { AdminOrganization } from '@876/admin'
-import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
-import {
-  StatusFilterHeading,
-  type StatusFilterOption,
-} from '@876/ui/status-filter-heading'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
-import { resolveOrg, resolveOrgSubscriptions } from '../../_data'
+import {
+  resolveOrg,
+  resolveOrgBillingAccounts,
+  resolveOrgSubscriptions,
+} from '../../_data'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
-import { SubscriptionsTable } from '../_components/subscriptions-table'
-
-const SUBSCRIPTION_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Subscriptions' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Subscriptions' },
-  { value: 'trialing', label: 'Trialing', headingLabel: 'Trialing Subscriptions' },
-  { value: 'past_due', label: 'Past due', headingLabel: 'Past Due Subscriptions' },
-  { value: 'paused', label: 'Paused', headingLabel: 'Paused Subscriptions' },
-  { value: 'canceled', label: 'Canceled', headingLabel: 'Canceled Subscriptions' },
-]
+import { SUBSCRIPTION_STATUS_OPTIONS } from '../_components/subscription-status-options'
+import { SubscriptionsSplit } from '../_components/subscriptions-split'
 
 type Props = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ subscription?: string; status?: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,12 +33,13 @@ export default async function OrganizationSubscriptionsPage({
   params,
   searchParams,
 }: Props) {
-  const { slug } = await params
-  const { status } = await searchParams
+  const [{ slug }, { subscription, status }] = await Promise.all([
+    params,
+    searchParams,
+  ])
   const selectedStatus =
-    status && SUBSCRIPTION_STATUS_OPTIONS.some((o) => o.value === status)
-      ? status
-      : 'all'
+    SUBSCRIPTION_STATUS_OPTIONS.find((option) => option.value === status)
+      ?.value ?? 'all'
 
   return (
     <div>
@@ -64,9 +58,14 @@ export default async function OrganizationSubscriptionsPage({
         refresh
       />
       <Suspense
-        fallback={<DataTableSkeleton columns={SUBSCRIPTIONS_SKELETON_COLUMNS} />}
+        fallback={
+          <DataTableSkeleton
+            columns={SUBSCRIPTIONS_SKELETON_COLUMNS}
+            rows={5}
+          />
+        }
       >
-        <SubscriptionsShell slug={slug} status={selectedStatus} />
+        <SubscriptionsShell slug={slug} selectedId={subscription} />
       </Suspense>
     </div>
   )
@@ -74,29 +73,43 @@ export default async function OrganizationSubscriptionsPage({
 
 async function SubscriptionsShell({
   slug,
-  status,
+  selectedId,
 }: {
   slug: string
-  status: string
+  selectedId?: string
 }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  return <SubscriptionsData org={org} status={status} />
+  return <SubscriptionsData org={org} slug={slug} selectedId={selectedId} />
 }
 
 async function SubscriptionsData({
   org,
-  status,
+  slug,
+  selectedId,
 }: {
   org: AdminOrganization
-  status: string
+  slug: string
+  selectedId?: string
 }) {
-  const subscriptions = await resolveOrgSubscriptions(org.id)
-  const filtered =
-    status === 'all'
-      ? (subscriptions ?? [])
-      : (subscriptions ?? []).filter((sub) => sub.status === status)
+  const [subscriptions, billingAccountsResult] = await Promise.all([
+    resolveOrgSubscriptions(org.id),
+    resolveOrgBillingAccounts(org.id),
+  ])
 
-  return <SubscriptionsTable subscriptions={filtered} />
+  const billingAccounts: Record<string, string> = {}
+  for (const account of billingAccountsResult?.data ?? []) {
+    const label = account.name || account.email
+    if (label) billingAccounts[account.id] = label
+  }
+
+  return (
+    <SubscriptionsSplit
+      subscriptions={subscriptions ?? []}
+      billingAccounts={billingAccounts}
+      selectedId={selectedId}
+      basePath={`/orgs/${slug}/subscriptions`}
+    />
+  )
 }
