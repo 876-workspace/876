@@ -75,6 +75,52 @@ Every provider object      ──> Provider Reference   (never a canonical id)
 Every financial movement   ──> Ledger Entry
 ```
 
+## Billing accounts — the payer, not a payment method
+
+A **billing account is the payer**: the thing a payment method is attached to,
+the thing an invoice is addressed to, and the thing a subscription is billed
+against. It is emphatically *not* a payment method, and a payment method is not
+a smaller billing account.
+
+The model is Google Cloud's, and it is the right one for a platform where one
+organization runs several products:
+
+```
+Organization
+  └── Billing Account          the payer: legal entity, currency, tax status,
+        │                      invoice settings, balance, payment methods
+        ├── Payment Method(s)  one marked default
+        ├── Invoice(s)
+        └── Subscription(s)    many, across many apps, all billed here
+```
+
+A subscription points at exactly one billing account
+(`subscriptions.billing_account_id`, already in core). One billing account pays
+for many subscriptions, exactly as one GCP billing account pays for many
+projects. An organization may hold more than one — a separate cost centre, a
+separate legal entity — and each carries its own instruments and its own
+invoices.
+
+**One billing account resolves to exactly one Billing `Customer`.** Core's
+`billing_accounts` row is the org-facing handle that entitlement subscriptions
+reference; the Billing `Customer` is the same payer in the finance plane, and it
+is where the payment methods, balance, tax ids, credits, and invoices actually
+live. They are one concept with a record on each side of the boundary, linked by
+opaque id — never two competing sources of truth. Console renders them as one
+screen; that composition is Console's job, not the schema's.
+
+Consequences worth stating, because getting them wrong is expensive later:
+
+- **Changing a subscription's billing account is a real operation**, not an
+  edit — it moves who pays. It must be explicit, audited, and must not
+  retroactively re-address invoices already finalized against the old payer.
+- **A default payment method belongs to the billing account**, with a
+  per-subscription override (`subscriptions.default_payment_method_id`) for the
+  case where one product is deliberately paid a different way.
+- **An organization with no payment method is normal.** Every org is on a free
+  plan today; a billing account with zero instruments is a fully valid state and
+  must render as one, not as an error or an empty-state nag.
+
 ## Vocabulary — fixed, do not invent synonyms
 
 | Term                   | Meaning                                                                                     | Never call it                       |
@@ -259,3 +305,6 @@ setting and a documented decision — never a half-deleted code path.
 - Do not surface a raw provider error message or status to an end user.
 - Do not decrypt a payment credential anywhere but the processor call path.
 - Do not ship a late-fee, dunning, or payout feature enabled by default.
+- Do not model a billing account as a payment method, or let one subscription
+  be billed to two payers.
+- Do not treat a billing account with no payment method as an error state.
