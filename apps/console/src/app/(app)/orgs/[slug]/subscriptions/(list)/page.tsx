@@ -18,6 +18,11 @@ import {
   SUBSCRIPTION_STATUS_OPTIONS,
 } from '../_components/subscription-status-options'
 import { SubscriptionsSplit } from '../_components/subscriptions-split'
+import { SubscriptionActivity } from '../_components/subscription-activity'
+import {
+  SubscriptionTransactions,
+  SubscriptionTransactionsFallback,
+} from '../_components/subscription-transactions'
 import {
   SubscriptionBillingSummary,
   SubscriptionBillingSummaryFallback,
@@ -134,11 +139,22 @@ async function SubscriptionsData({
       />
     </Suspense>
   ) : null
+  const transactions = selected ? (
+    <Suspense fallback={<SubscriptionTransactionsFallback />}>
+      <SubscriptionTransactions
+        organizationId={org.id}
+        subscription={selected}
+      />
+    </Suspense>
+  ) : null
+  const activity = selected ? <SubscriptionActivity subscription={selected} /> : null
 
   return (
     <SubscriptionsSplit
       subscriptions={subscriptions ?? []}
       billing={billing}
+      transactions={transactions}
+      activity={activity}
       selectedId={selectedId}
       basePath={`/orgs/${slug}/subscriptions`}
     />
