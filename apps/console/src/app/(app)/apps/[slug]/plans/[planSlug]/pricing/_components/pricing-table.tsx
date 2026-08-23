@@ -48,11 +48,13 @@ export type PricingSetup = {
   productId: string
   prices: PriceItem[]
   newHref: string
-  editHref: (id: string) => string
+  /** Base path for this product's prices; edit hrefs are derived from it. */
+  basePath: string
 }
 
 export function PricingTable({ setup }: { setup: PricingSetup }) {
   const router = useRouter()
+  const editHref = (id: string) => `${setup.basePath}/${id}/edit`
   const [archiving, setArchiving] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const archive = () => {
@@ -76,7 +78,7 @@ export function PricingTable({ setup }: { setup: PricingSetup }) {
       ),
       cell: ({ row }) => (
         <div>
-          <Link className="font-medium" href={setup.editHref(row.original.id)}>
+          <Link className="font-medium" href={editHref(row.original.id)}>
             {row.original.name || row.original.nickname || '—'}
           </Link>
           <div className="text-muted-foreground font-mono text-xs">
@@ -157,7 +159,7 @@ export function PricingTable({ setup }: { setup: PricingSetup }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => router.push(setup.editHref(row.original.id))}
+              onClick={() => router.push(editHref(row.original.id))}
             >
               Edit
             </DropdownMenuItem>

@@ -64,6 +64,6 @@ async function loadPricingSetup(
     productId: product.id,
     prices,
     newHref: `${base}/new`,
-    editHref: (id) => `${base}/${id}/edit`,
+    basePath: base,
   }
 }
