@@ -139,8 +139,7 @@ function DataTable<TData extends RowData>({
       : undefined,
     onRowSelectionChange: (
       updater:
-        | RowSelectionState
-        | ((old: RowSelectionState) => RowSelectionState)
+        RowSelectionState | ((old: RowSelectionState) => RowSelectionState)
     ) => {
       const next =
         typeof updater === 'function' ? updater(rowSelection) : updater
@@ -303,7 +302,9 @@ function DataTable<TData extends RowData>({
                     : rowClassName
                 )}
                 onClick={
-                  onRowClick ? () => onRowClick(row.original as TData) : undefined
+                  onRowClick
+                    ? () => onRowClick(row.original as TData)
+                    : undefined
                 }
               >
                 {row.getVisibleCells().map((cell) => (

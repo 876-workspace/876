@@ -68,8 +68,7 @@ export function TimeEntriesTable({ entries, emptyState }: Props) {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Rate" />
       ),
-      cell: ({ row }) =>
-        formatMoney(row.original.rate, row.original.currency),
+      cell: ({ row }) => formatMoney(row.original.rate, row.original.currency),
     },
     {
       id: 'amount',
