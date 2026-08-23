@@ -44,22 +44,26 @@ export default async function OrganizationSubscriptionsPage({
     SUBSCRIPTION_STATUS_OPTIONS.find((option) => option.value === status)
       ?.value ?? 'all'
 
+  // With a subscription selected the detail panel owns the whole area, so the
+  // list toolbar (title filter, Add, refresh) steps aside until it is closed.
   return (
     <div>
-      <ResourceToolbar
-        title="Subscriptions"
-        titleFilter={
-          <StatusFilterHeading
-            label="Subscriptions"
-            value={selectedStatus}
-            options={SUBSCRIPTION_STATUS_OPTIONS}
-          />
-        }
-        primaryLabel="Add"
-        primaryHref={`/orgs/${slug}/subscriptions/new`}
-        primaryVariant="info"
-        refresh
-      />
+      {!subscription && (
+        <ResourceToolbar
+          title="Subscriptions"
+          titleFilter={
+            <StatusFilterHeading
+              label="Subscriptions"
+              value={selectedStatus}
+              options={SUBSCRIPTION_STATUS_OPTIONS}
+            />
+          }
+          primaryLabel="Add"
+          primaryHref={`/orgs/${slug}/subscriptions/new`}
+          primaryVariant="info"
+          refresh
+        />
+      )}
       <Suspense
         fallback={
           <DataTableSkeleton
