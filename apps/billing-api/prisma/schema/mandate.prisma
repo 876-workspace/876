@@ -1,0 +1,31 @@
+/// Customer authorization for a payment method, retained for repeat collection
+/// and audit rather than represented as a processor-specific identifier.
+model Mandate {
+  id                  String                @id
+  tenantId            String                @map("tenant_id")
+  customerId          String                @map("customer_id")
+  paymentMethodId     String                @map("payment_method_id")
+  type                MandateType
+  status              MandateStatus
+  acceptanceType      MandateAcceptanceType @map("acceptance_type")
+  acceptedAt          Int?                  @map("accepted_at")
+  acceptanceIp        String?               @map("acceptance_ip")
+  acceptanceUserAgent String?               @map("acceptance_user_agent") @db.Text
+  provider            String?
+  providerMandateId   String?               @map("provider_mandate_id")
+  reference           String?
+  revokedAt           Int?                  @map("revoked_at")
+  metadata            Json?
+  createdAt           Int                   @map("created_at")
+  updatedAt           Int                   @map("updated_at")
+  tenant              Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_mandates_tenant_fkey")
+  customer            Customer              @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_mandates_customer_fkey")
+  paymentMethod       PaymentMethod         @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_mandates_payment_method_fkey")
+  setupIntents        SetupIntent[]
+  paymentIntents      PaymentIntent[]
+
+  @@unique([tenantId, id], map: "billing_mandates_tenant_id_id_key")
+  @@unique([provider, providerMandateId], map: "billing_mandates_provider_external_key")
+  @@index([tenantId, paymentMethodId], map: "billing_mandates_tenant_method_idx")
+  @@map("billing_mandates")
+}

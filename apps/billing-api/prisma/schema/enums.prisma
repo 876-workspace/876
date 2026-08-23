@@ -481,11 +481,156 @@ enum DiscountStatus {
 
 enum PaymentStatus {
   PENDING
+  REQUIRES_ACTION
+  AUTHORIZED
+  PROCESSING
   SUCCEEDED
   FAILED
   CANCELED
+  PARTIALLY_REFUNDED
+  REFUNDED
+  DISPUTED
 
   @@map("BillingPaymentStatus")
+}
+
+enum PaymentMethodType {
+  CARD
+  BANK_ACCOUNT
+  WALLET
+  MANUAL
+
+  @@map("BillingPaymentMethodType")
+}
+
+enum PaymentMethodStatus {
+  PENDING
+  ACTIVE
+  REQUIRES_ACTION
+  EXPIRED
+  DETACHED
+  FAILED
+
+  @@map("BillingPaymentMethodStatus")
+}
+
+enum PaymentMethodRedisplay {
+  ALWAYS
+  LIMITED
+  UNSPECIFIED
+
+  @@map("BillingPaymentMethodRedisplay")
+}
+
+enum PaymentCredentialType {
+  CARD_PAN
+  BANK_ACCOUNT_NUMBER
+  PROVIDER_TOKEN
+
+  @@map("BillingPaymentCredentialType")
+}
+
+enum PaymentCredentialStorage {
+  WORKOS_VAULT
+  LOCAL_KEY
+  PROVIDER_TOKEN
+
+  @@map("BillingPaymentCredentialStorage")
+}
+
+enum PaymentCredentialStatus {
+  ACTIVE
+  ROTATED
+  REVOKED
+
+  @@map("BillingPaymentCredentialStatus")
+}
+
+enum SetupIntentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  SUCCEEDED
+  CANCELED
+
+  @@map("BillingSetupIntentStatus")
+}
+
+enum SetupIntentUsage {
+  ON_SESSION
+  OFF_SESSION
+
+  @@map("BillingSetupIntentUsage")
+}
+
+enum MandateType {
+  SINGLE_USE
+  MULTI_USE
+
+  @@map("BillingMandateType")
+}
+
+enum MandateStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  REVOKED
+
+  @@map("BillingMandateStatus")
+}
+
+enum MandateAcceptanceType {
+  ONLINE
+  OFFLINE
+
+  @@map("BillingMandateAcceptanceType")
+}
+
+enum PaymentIntentStatus {
+  REQUIRES_PAYMENT_METHOD
+  REQUIRES_CONFIRMATION
+  REQUIRES_ACTION
+  PROCESSING
+  REQUIRES_CAPTURE
+  SUCCEEDED
+  CANCELED
+
+  @@map("BillingPaymentIntentStatus")
+}
+
+enum CaptureMethod {
+  AUTOMATIC
+  MANUAL
+
+  @@map("BillingCaptureMethod")
+}
+
+enum ConfirmationMethod {
+  AUTOMATIC
+  MANUAL
+
+  @@map("BillingConfirmationMethod")
+}
+
+enum SetupFutureUsage {
+  NONE
+  ON_SESSION
+  OFF_SESSION
+
+  @@map("BillingSetupFutureUsage")
+}
+
+enum DisputeStatus {
+  WARNING_NEEDS_RESPONSE
+  WARNING_UNDER_REVIEW
+  WARNING_CLOSED
+  NEEDS_RESPONSE
+  UNDER_REVIEW
+  WON
+  LOST
+
+  @@map("BillingDisputeStatus")
 }
 
 enum PaymentProviderEnvironment {

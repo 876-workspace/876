@@ -1,0 +1,32 @@
+/// Processor-normalized challenge to a Payment, preserving evidence and its
+/// lifecycle without making a provider identifier the canonical identity.
+model Dispute {
+  id                   String                     @id
+  tenantId             String                     @map("tenant_id")
+  paymentId            String                     @map("payment_id")
+  customerId           String                     @map("customer_id")
+  amount               BigInt
+  currency             String                     @db.Char(3)
+  reason               String?
+  status               DisputeStatus
+  isPaymentRefundable  Boolean                    @default(true) @map("is_payment_refundable")
+  evidence             Json?
+  evidenceDetails      Json?                      @map("evidence_details")
+  dueBy                Int?                       @map("due_by")
+  provider             String?
+  providerConnectionId String?                    @map("provider_connection_id")
+  providerDisputeId    String?                    @map("provider_dispute_id")
+  openedAt             Int?                       @map("opened_at")
+  resolvedAt           Int?                       @map("resolved_at")
+  metadata             Json?
+  createdAt            Int                        @map("created_at")
+  updatedAt            Int                        @map("updated_at")
+  tenant               Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_disputes_tenant_fkey")
+  payment              Payment                    @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_disputes_payment_fkey")
+  customer             Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_disputes_customer_fkey")
+  providerConnection   PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_disputes_provider_connection_fkey")
+
+  @@unique([tenantId, id], map: "billing_disputes_tenant_id_id_key")
+  @@unique([providerConnectionId, providerDisputeId], map: "billing_disputes_provider_external_key")
+  @@map("billing_disputes")
+}

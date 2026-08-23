@@ -1,0 +1,55 @@
+/// Stateful attempt to collect one amount, independent of the processor that
+/// may eventually execute it and distinct from the resulting Payment record.
+model PaymentIntent {
+  id                        String                     @id
+  tenantId                  String                     @map("tenant_id")
+  customerId                String                     @map("customer_id")
+  invoiceId                 String?                    @map("invoice_id")
+  subscriptionId            String?                    @map("subscription_id")
+  amount                    BigInt
+  amountCapturable          BigInt                     @default(0) @map("amount_capturable")
+  amountReceived            BigInt                     @default(0) @map("amount_received")
+  currency                  String                     @db.Char(3)
+  status                    PaymentIntentStatus
+  captureMethod             CaptureMethod              @map("capture_method")
+  confirmationMethod        ConfirmationMethod         @map("confirmation_method")
+  paymentMethodId           String?                    @map("payment_method_id")
+  mandateId                 String?                    @map("mandate_id")
+  paymentMethodTypes        String[]                   @map("payment_method_types")
+  setupFutureUsage          SetupFutureUsage           @default(NONE) @map("setup_future_usage")
+  description               String?
+  receiptEmail              String?                    @map("receipt_email")
+  statementDescriptor       String?                    @map("statement_descriptor")
+  statementDescriptorSuffix String?                    @map("statement_descriptor_suffix")
+  lastPaymentError          Json?                      @map("last_payment_error")
+  nextAction                Json?                      @map("next_action")
+  processing                Json?
+  attemptCount              Int                        @default(0) @map("attempt_count")
+  latestPaymentId           String?                    @map("latest_payment_id")
+  latestAttemptId           String?                    @map("latest_attempt_id")
+  canceledAt                Int?                       @map("canceled_at")
+  cancellationReason        String?                    @map("cancellation_reason")
+  provider                  String?
+  providerConnectionId      String?                    @map("provider_connection_id")
+  providerIntentId          String?                    @map("provider_intent_id")
+  idempotencyKey            String?                    @map("idempotency_key")
+  metadata                  Json?
+  createdAt                 Int                        @map("created_at")
+  updatedAt                 Int                        @map("updated_at")
+  tenant                    Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payment_intents_tenant_fkey")
+  customer                  Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_intents_customer_fkey")
+  invoice                   Invoice?                   @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_intents_invoice_fkey")
+  paymentMethod             PaymentMethod?             @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_intents_payment_method_fkey")
+  mandate                   Mandate?                   @relation(fields: [tenantId, mandateId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_intents_mandate_fkey")
+  providerConnection        PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_intents_provider_connection_fkey")
+  payments                  Payment[]
+  attempts                  PaymentAttempt[]
+
+  @@unique([tenantId, id], map: "billing_payment_intents_tenant_id_id_key")
+  @@unique([tenantId, idempotencyKey], map: "billing_payment_intents_tenant_idempotency_key")
+  @@unique([providerConnectionId, providerIntentId], map: "billing_payment_intents_provider_external_key")
+  @@index([tenantId, customerId], map: "billing_payment_intents_tenant_customer_idx")
+  @@index([tenantId, status], map: "billing_payment_intents_tenant_status_idx")
+  @@index([tenantId, invoiceId], map: "billing_payment_intents_tenant_invoice_idx")
+  @@map("billing_payment_intents")
+}
