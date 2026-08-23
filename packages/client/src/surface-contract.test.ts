@@ -162,6 +162,8 @@ describe('per-app resource boundaries (no cross-app leakage)', () => {
     const $876 = create876ServerClient(billingOptions())
     expect($876.invoices).toBeDefined()
     expect($876.payments).toBeDefined()
+    expect($876.paymentMethods).toBeDefined()
+    expect($876.paymentIntents).toBeDefined()
     expect($876.customers).toBeDefined()
     expect($876.subscriptions).toBeDefined()
     expect($876.products.list).toBeTypeOf('function')
@@ -189,6 +191,8 @@ describe('browser surface never leaks server-only resources', () => {
       'packages',
       'invoices',
       'payments',
+      'paymentMethods',
+      'paymentIntents',
       'products',
       'storage',
       'billing',

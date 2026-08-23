@@ -2,8 +2,28 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('server-only', () => ({}))
 
 import { createCoreSurface } from './composers/base.ts'
+import { createConsoleClient } from './composers/console.ts'
 
 describe('admin core resource projections', () => {
+  it('exposes payment instrument resources only on the server Console surface', () => {
+    const options: any = {
+      app: 'console',
+      apiKey: '876_app_secret_test1234567890123456',
+      services: {
+        platformAdmin: {},
+        billing: { admin: {}, integration: {} },
+        couriers: { admin: {} },
+        storage: {},
+        widgets: { member: {}, admin: {} },
+      },
+    }
+
+    const $876 = createConsoleClient(options)
+
+    expect($876.paymentMethods.list).toBeTypeOf('function')
+    expect($876.paymentIntents.list).toBeTypeOf('function')
+  })
+
   it('preserves platform methods while exposing internal-key admin namespaces', () => {
     const platformMemberList = vi.fn()
     const platformAssignmentList = vi.fn()

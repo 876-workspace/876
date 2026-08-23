@@ -21,6 +21,8 @@ export function createBillingClient(options: BillingServerClientOptions) {
     invoicePreferences: billing.invoicePreferences,
     payments: billing.payments,
     paymentModes: billing.paymentModes,
+    paymentMethods: billing.paymentMethods,
+    paymentIntents: billing.paymentIntents,
     paymentProviders: billing.paymentProviders,
     paymentTerms: billing.paymentTerms,
     subscriptions: billing.subscriptions,

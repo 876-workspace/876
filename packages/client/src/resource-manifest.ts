@@ -101,6 +101,11 @@ export const RESOURCE_MANIFEST = {
   invoicePreferences: { owner: 'billing', meaning: 'invoice settings' },
   payments: { owner: 'billing', meaning: 'payments' },
   paymentModes: { owner: 'billing', meaning: 'payment modes' },
+  paymentMethods: {
+    owner: 'billing',
+    meaning: 'non-secret reusable payment instrument metadata',
+  },
+  paymentIntents: { owner: 'billing', meaning: 'payment collection attempts' },
   paymentProviders: { owner: 'billing', meaning: 'payment providers' },
   paymentTerms: { owner: 'billing', meaning: 'payment terms' },
   subscriptions: {
