@@ -872,6 +872,68 @@ export const v1OperationMetadata = {
     summary: 'End an active subscription discount',
     tags: ['Subscriptions'],
   },
+  'GET /organizations/{organizationId}/payment-methods': {
+    summary: '/organizations/:organizationId/payment-methods',
+    tags: ['Billing'],
+  },
+  'POST /organizations/{organizationId}/payment-methods': {
+    summary: '/organizations/:organizationId/payment-methods',
+    tags: ['Billing'],
+  },
+  'GET /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
+    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    tags: ['Billing'],
+  },
+  'PATCH /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
+    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    tags: ['Billing'],
+  },
+  'DELETE /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
+    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    tags: ['Billing'],
+  },
+  'POST /organizations/{organizationId}/payment-methods/{paymentMethodId}/default':
+    {
+      summary:
+        '/organizations/:organizationId/payment-methods/:paymentMethodId/default',
+      tags: ['Billing'],
+    },
+  'GET /organizations/{organizationId}/customers/{customerId}/payment-methods':
+    {
+      summary:
+        '/organizations/:organizationId/customers/:customerId/payment-methods',
+      tags: ['Billing'],
+    },
+  'GET /organizations/{organizationId}/payment-intents': {
+    summary: '/organizations/:organizationId/payment-intents',
+    tags: ['Billing'],
+  },
+  'POST /organizations/{organizationId}/payment-intents': {
+    summary: '/organizations/:organizationId/payment-intents',
+    tags: ['Billing'],
+  },
+  'GET /organizations/{organizationId}/payment-intents/{paymentIntentId}': {
+    summary: '/organizations/:organizationId/payment-intents/:paymentIntentId',
+    tags: ['Billing'],
+  },
+  'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/confirm':
+    {
+      summary:
+        '/organizations/:organizationId/payment-intents/:paymentIntentId/confirm',
+      tags: ['Billing'],
+    },
+  'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/capture':
+    {
+      summary:
+        '/organizations/:organizationId/payment-intents/:paymentIntentId/capture',
+      tags: ['Billing'],
+    },
+  'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/cancel':
+    {
+      summary:
+        '/organizations/:organizationId/payment-intents/:paymentIntentId/cancel',
+      tags: ['Billing'],
+    },
 } as const
 
 export const v1OperationContracts = {
@@ -14653,6 +14715,1727 @@ export const v1OperationContracts = {
     summary: 'End an active subscription discount',
     tags: ['Subscriptions'],
   },
+  'GET /organizations/{organizationId}/payment-methods': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-methods',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'type',
+        schema: {
+          type: 'string',
+          enum: ['CARD', 'BANK_ACCOUNT', 'WALLET', 'MANUAL'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: [
+            'PENDING',
+            'ACTIVE',
+            'REQUIRES_ACTION',
+            'EXPIRED',
+            'DETACHED',
+            'FAILED',
+          ],
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+      {
+        in: 'query',
+        name: 'starting_after',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'OK',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'payment_method',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /organizations/{organizationId}/payment-methods': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-methods',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              customerId: {
+                type: 'string',
+                minLength: 1,
+              },
+              type: {
+                type: 'string',
+                enum: ['CARD', 'BANK_ACCOUNT', 'WALLET', 'MANUAL'],
+              },
+              allowRedisplay: {
+                type: 'string',
+                enum: ['ALWAYS', 'LIMITED', 'UNSPECIFIED'],
+              },
+              reusable: {
+                type: 'boolean',
+              },
+              billingDetails: {
+                type: 'object',
+                propertyNames: {
+                  type: 'string',
+                },
+                additionalProperties: {},
+              },
+              card: {
+                type: 'object',
+                properties: {
+                  brand: {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  last4: {
+                    type: 'string',
+                    pattern: '^\\d{4}$',
+                  },
+                  expMonth: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 12,
+                  },
+                  expYear: {
+                    type: 'integer',
+                    minimum: 2000,
+                    maximum: 9007199254740991,
+                  },
+                },
+                required: ['brand', 'last4', 'expMonth', 'expYear'],
+                additionalProperties: {},
+              },
+              bankAccount: {
+                type: 'object',
+                properties: {
+                  last4: {
+                    type: 'string',
+                    pattern: '^\\d{4}$',
+                  },
+                },
+                required: ['last4'],
+                additionalProperties: {},
+              },
+              wallet: {
+                type: 'object',
+                propertyNames: {
+                  type: 'string',
+                },
+                additionalProperties: {},
+              },
+              manual: {
+                type: 'object',
+                properties: {
+                  method: {
+                    type: 'string',
+                    enum: [
+                      'bank_transfer',
+                      'cash',
+                      'cheque',
+                      'wire',
+                      'mobile_money',
+                      'point_of_sale',
+                      'cash_deposit',
+                      'other',
+                    ],
+                  },
+                  displayName: {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  instructions: {
+                    type: 'string',
+                  },
+                },
+                required: ['method', 'displayName'],
+                additionalProperties: false,
+              },
+              metadata: {
+                type: 'object',
+                propertyNames: {
+                  type: 'string',
+                },
+                additionalProperties: {},
+              },
+              credential: {
+                oneOf: [
+                  {
+                    type: 'object',
+                    properties: {
+                      storage: {
+                        type: 'string',
+                        const: 'provider_token',
+                      },
+                      provider: {
+                        type: 'string',
+                        minLength: 1,
+                      },
+                      providerConnectionId: {
+                        type: 'string',
+                        minLength: 1,
+                      },
+                      providerToken: {
+                        type: 'string',
+                        minLength: 1,
+                      },
+                    },
+                    required: [
+                      'storage',
+                      'provider',
+                      'providerConnectionId',
+                      'providerToken',
+                    ],
+                    additionalProperties: false,
+                  },
+                  {
+                    type: 'object',
+                    properties: {
+                      storage: {
+                        type: 'string',
+                        const: 'vault',
+                      },
+                      value: {
+                        type: 'string',
+                        minLength: 1,
+                      },
+                    },
+                    required: ['storage', 'value'],
+                    additionalProperties: false,
+                  },
+                  {
+                    type: 'object',
+                    properties: {
+                      storage: {
+                        type: 'string',
+                        const: 'none',
+                      },
+                    },
+                    required: ['storage'],
+                    additionalProperties: false,
+                  },
+                ],
+                type: 'object',
+              },
+            },
+            required: ['customerId', 'type'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_method',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'paymentMethodId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'OK',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_method',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'paymentMethodId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              billingDetails: {
+                type: 'object',
+                propertyNames: {
+                  type: 'string',
+                },
+                additionalProperties: {},
+              },
+              metadata: {
+                type: 'object',
+                propertyNames: {
+                  type: 'string',
+                },
+                additionalProperties: {},
+              },
+              allowRedisplay: {
+                type: 'string',
+                enum: ['ALWAYS', 'LIMITED', 'UNSPECIFIED'],
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'OK',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_method',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'paymentMethodId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'OK',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_method',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /organizations/{organizationId}/payment-methods/{paymentMethodId}/default':
+    {
+      tags: ['Billing'],
+      summary:
+        '/organizations/:organizationId/payment-methods/:paymentMethodId/default',
+      security: [
+        {
+          tenantOAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'paymentMethodId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'OK',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'payment_method',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /organizations/{organizationId}/customers/{customerId}/payment-methods':
+    {
+      tags: ['Billing'],
+      summary:
+        '/organizations/:organizationId/customers/:customerId/payment-methods',
+      security: [
+        {
+          tenantOAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'customerId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'customerId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+        },
+        {
+          in: 'query',
+          name: 'type',
+          schema: {
+            type: 'string',
+            enum: ['CARD', 'BANK_ACCOUNT', 'WALLET', 'MANUAL'],
+          },
+        },
+        {
+          in: 'query',
+          name: 'status',
+          schema: {
+            type: 'string',
+            enum: [
+              'PENDING',
+              'ACTIVE',
+              'REQUIRES_ACTION',
+              'EXPIRED',
+              'DETACHED',
+              'FAILED',
+            ],
+          },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: {
+            type: 'integer',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+        {
+          in: 'query',
+          name: 'starting_after',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'OK',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'list',
+                      },
+                      data: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            object: {
+                              type: 'string',
+                              const: 'payment_method',
+                            },
+                            id: {
+                              type: 'string',
+                            },
+                          },
+                          required: ['object', 'id'],
+                          additionalProperties: {},
+                        },
+                      },
+                      has_more: {
+                        type: 'boolean',
+                      },
+                      total_count: {
+                        anyOf: [
+                          {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      url: {
+                        type: 'string',
+                      },
+                    },
+                    required: [
+                      'object',
+                      'data',
+                      'has_more',
+                      'total_count',
+                      'url',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /organizations/{organizationId}/payment-intents': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-intents',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: [
+            'REQUIRES_PAYMENT_METHOD',
+            'REQUIRES_CONFIRMATION',
+            'REQUIRES_ACTION',
+            'PROCESSING',
+            'REQUIRES_CAPTURE',
+            'SUCCEEDED',
+            'CANCELED',
+          ],
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'OK',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'payment_intent',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /organizations/{organizationId}/payment-intents': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-intents',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              customerId: {
+                type: 'string',
+                minLength: 1,
+              },
+              amount: {
+                type: 'integer',
+                format: 'int64',
+              },
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+              paymentMethodId: {
+                type: 'string',
+                minLength: 1,
+              },
+              invoiceId: {
+                type: 'string',
+                minLength: 1,
+              },
+              subscriptionId: {
+                type: 'string',
+                minLength: 1,
+              },
+              captureMethod: {
+                type: 'string',
+                enum: ['AUTOMATIC', 'MANUAL'],
+              },
+              confirmationMethod: {
+                type: 'string',
+                enum: ['AUTOMATIC', 'MANUAL'],
+              },
+              paymentMethodTypes: {
+                type: 'array',
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+              },
+              description: {
+                type: 'string',
+                maxLength: 500,
+              },
+              receiptEmail: {
+                type: 'string',
+                format: 'email',
+                pattern:
+                  "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+              },
+              metadata: {
+                type: 'object',
+                propertyNames: {
+                  type: 'string',
+                },
+                additionalProperties: {},
+              },
+            },
+            required: ['customerId', 'amount', 'currency'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_intent',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /organizations/{organizationId}/payment-intents/{paymentIntentId}': {
+    tags: ['Billing'],
+    summary: '/organizations/:organizationId/payment-intents/:paymentIntentId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'paymentIntentId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'OK',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'payment_intent',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/confirm':
+    {
+      tags: ['Billing'],
+      summary:
+        '/organizations/:organizationId/payment-intents/:paymentIntentId/confirm',
+      security: [
+        {
+          tenantOAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'paymentIntentId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'OK',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'payment_intent',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/capture':
+    {
+      tags: ['Billing'],
+      summary:
+        '/organizations/:organizationId/payment-intents/:paymentIntentId/capture',
+      security: [
+        {
+          tenantOAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'paymentIntentId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'OK',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'payment_intent',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/cancel':
+    {
+      tags: ['Billing'],
+      summary:
+        '/organizations/:organizationId/payment-intents/:paymentIntentId/cancel',
+      security: [
+        {
+          tenantOAuth: [],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'paymentIntentId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                cancellationReason: {
+                  type: 'string',
+                  maxLength: 500,
+                },
+              },
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'OK',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'payment_intent',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
 } as const
 
 export const v1ComponentSchemas = {
