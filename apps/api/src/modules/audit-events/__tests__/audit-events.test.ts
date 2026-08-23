@@ -136,6 +136,45 @@ describe('POST /audit-events', () => {
     )
   })
 
+  it('accepts an explicit null for every optional field', async () => {
+    // Regression: the Pydantic `Optional[str]` these replaced accepted null,
+    // and the browser telemetry client sends null for an absent field rather
+    // than omitting the key. `.optional()` alone rejected all eight with 422,
+    // so every console page view failed to record.
+    const response = await request(createApp())
+      .post('/audit-events')
+      .set('X-876-API-Key', APP_KEY)
+      .send({
+        event: 'page_view',
+        app_name: '876-console',
+        user_id: null,
+        path: null,
+        search: null,
+        referrer: null,
+        title: null,
+        request_id: null,
+        session_id: null,
+        distinct_id: null,
+      })
+
+    expect(response.status).toBe(201)
+    expect(auditEvent.create).toHaveBeenCalledTimes(1)
+    expect(auditEvent.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: null,
+          path: null,
+          search: null,
+          referrer: null,
+          title: null,
+          requestId: null,
+          sessionId: null,
+          distinctId: null,
+        }),
+      })
+    )
+  })
+
   it('trims a whitespace-padded event name', async () => {
     await request(createApp())
       .post('/audit-events')
