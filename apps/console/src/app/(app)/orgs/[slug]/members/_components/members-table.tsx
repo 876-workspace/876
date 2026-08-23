@@ -205,7 +205,11 @@ const inviteColumns: ColumnDef<AdminInviteToken, unknown>[] = [
 export function MembersTable({ members }: { members: AdminOrgMember[] }) {
   return (
     <div className="876-card overflow-hidden">
-      <DataTable columns={memberColumns} data={members} enableColumnVisibility />
+      <DataTable
+        columns={memberColumns}
+        data={members}
+        enableColumnVisibility
+      />
     </div>
   )
 }
