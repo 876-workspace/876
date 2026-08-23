@@ -35,6 +35,79 @@ const priceNotFound = () =>
     httpStatus: 404,
   })
 
+const PRICE_MONETARY_FIELDS = new Set([
+  'unit_amount',
+  'unit_amount_decimal',
+  'currency',
+  'billing_interval',
+  'interval_count',
+  'type',
+  'billing_scheme',
+  'tiers_mode',
+  'tiers',
+  'recurring',
+  'tax_behavior',
+  'transform_quantity',
+  'trial_period_days',
+])
+
+function priceData(
+  body: PriceCreateBody
+): Omit<
+  repository.PriceCreateData,
+  'id' | 'productId' | 'status' | 'createdAt' | 'updatedAt'
+> {
+  const recurring =
+    body.recurring ??
+    (body.billing_interval
+      ? {
+          interval: body.billing_interval,
+          interval_count: body.interval_count ?? 1,
+          usage_type: 'licensed' as const,
+        }
+      : null)
+  if (
+    body.recurring &&
+    body.billing_interval &&
+    body.recurring.interval !== body.billing_interval
+  )
+    throw new AppHttpError({
+      code: 'price/recurring-interval-mismatch',
+      message: 'Recurring interval must match billing_interval.',
+      httpStatus: 422,
+    })
+  if (
+    body.recurring &&
+    body.interval_count &&
+    body.recurring.interval_count !== body.interval_count
+  )
+    throw new AppHttpError({
+      code: 'price/recurring-interval-count-mismatch',
+      message: 'Recurring interval count must match interval_count.',
+      httpStatus: 422,
+    })
+  return {
+    unitAmount: body.unit_amount == null ? null : BigInt(body.unit_amount),
+    unitAmountDecimal: body.unit_amount_decimal ?? null,
+    currency: body.currency,
+    billingInterval: body.billing_interval ?? recurring?.interval ?? null,
+    intervalCount: body.interval_count ?? recurring?.interval_count ?? null,
+    name: body.name ?? null,
+    nickname: body.nickname ?? null,
+    lookupKey: body.lookup_key ?? null,
+    type: body.type,
+    billingScheme: body.billing_scheme,
+    tiersMode: body.tiers_mode ?? null,
+    tiers: body.tiers ?? null,
+    recurring,
+    taxBehavior: body.tax_behavior ?? null,
+    transformQuantity: body.transform_quantity ?? null,
+    trialPeriodDays:
+      body.trial_period_days ?? recurring?.trial_period_days ?? null,
+    metadata: body.metadata ?? null,
+  }
+}
+
 async function requireProduct(productId: string): Promise<ProductRow> {
   const row = await repository.findById(productId)
   if (!row) throw productNotFound()
@@ -176,12 +249,7 @@ export async function createProduct(body: CreateProductBody): Promise<Product> {
   await repository.createPrice({
     id: generateId('price'),
     productId,
-    unitAmount: body.price.unit_amount ?? null,
-    currency: body.price.currency,
-    billingInterval: body.price.billing_interval ?? null,
-    intervalCount: body.price.interval_count ?? null,
-    name: body.price.name ?? null,
-    nickname: body.price.nickname ?? null,
+    ...priceData(body.price),
     status: 'active',
     createdAt: now,
     updatedAt: now,
@@ -327,12 +395,7 @@ export async function createPrice(
   const row = await repository.createPrice({
     id: generateId('price'),
     productId,
-    unitAmount: body.unit_amount ?? null,
-    currency: body.currency,
-    billingInterval: body.billing_interval ?? null,
-    intervalCount: body.interval_count ?? null,
-    name: body.name ?? null,
-    nickname: body.nickname ?? null,
+    ...priceData(body),
     status: 'active',
     createdAt: now,
     updatedAt: now,
@@ -359,12 +422,22 @@ export async function updatePrice(
   body: UpdatePriceBody,
   provided: Set<string>
 ): Promise<Price> {
-  await requirePrice(productId, priceId)
+  const current = await requirePrice(productId, priceId)
 
   if (provided.size === 0)
     throw new AppHttpError({
       code: 'price/no-updates',
       message: 'Provide at least one field to update.',
+      httpStatus: 422,
+    })
+
+  const monetaryField = [...provided].find((field) =>
+    PRICE_MONETARY_FIELDS.has(field)
+  )
+  if (monetaryField && (await repository.priceHasSubscriptionItems(priceId)))
+    throw new AppHttpError({
+      code: 'price/monetary-terms-immutable',
+      message: `Price field ${monetaryField} is immutable after use; create a new price.`,
       httpStatus: 422,
     })
 
@@ -375,6 +448,41 @@ export async function updatePrice(
   if (provided.has('nickname')) data.nickname = body.nickname ?? null
   if (body.active !== undefined) data.active = body.active
   if (provided.has('metadata')) data.metadata = body.metadata ?? null
+  if (provided.has('lookup_key')) data.lookupKey = body.lookup_key ?? null
+  if (provided.has('unit_amount'))
+    data.unitAmount = body.unit_amount == null ? null : BigInt(body.unit_amount)
+  if (provided.has('unit_amount_decimal'))
+    data.unitAmountDecimal = body.unit_amount_decimal ?? null
+  if (provided.has('currency') && body.currency !== undefined)
+    data.currency = body.currency
+  if (provided.has('type') && body.type !== undefined) data.type = body.type
+  if (provided.has('billing_scheme') && body.billing_scheme !== undefined)
+    data.billingScheme = body.billing_scheme
+  if (provided.has('tiers_mode')) data.tiersMode = body.tiers_mode ?? null
+  if (provided.has('tiers')) data.tiers = body.tiers ?? null
+  if (provided.has('tax_behavior')) data.taxBehavior = body.tax_behavior ?? null
+  if (provided.has('transform_quantity'))
+    data.transformQuantity = body.transform_quantity ?? null
+  if (provided.has('trial_period_days'))
+    data.trialPeriodDays = body.trial_period_days ?? null
+  const recurring =
+    body.recurring ??
+    (provided.has('billing_interval') && body.billing_interval
+      ? {
+          interval: body.billing_interval,
+          interval_count: body.interval_count ?? current.intervalCount ?? 1,
+          usage_type: 'licensed',
+        }
+      : undefined)
+  if (recurring !== undefined) data.recurring = recurring
+  if (provided.has('billing_interval'))
+    data.billingInterval = body.billing_interval ?? null
+  else if (recurring !== undefined)
+    data.billingInterval = recurring?.interval ?? null
+  if (provided.has('interval_count'))
+    data.intervalCount = body.interval_count ?? null
+  else if (recurring !== undefined)
+    data.intervalCount = recurring?.interval_count ?? null
 
   const row = await repository.updatePrice(priceId, data)
   log.info(
