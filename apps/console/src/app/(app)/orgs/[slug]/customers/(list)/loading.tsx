@@ -1,7 +1,6 @@
 'use client'
 
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
@@ -25,11 +24,6 @@ export default function Loading() {
 
   return (
     <div>
-      <PageBreadcrumb
-        href={`/orgs/${slug}/billing`}
-        label="Billing"
-        className="mb-2"
-      />
       <ResourceToolbar
         title="Customers"
         titleFilter={
@@ -40,7 +34,7 @@ export default function Loading() {
           />
         }
         primaryLabel="Add"
-        primaryHref={`/orgs/${slug}/billing/customers/new`}
+        primaryHref={`/orgs/${slug}/customers/new`}
         primaryVariant="info"
         refresh
       />

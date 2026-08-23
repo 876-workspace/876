@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { AdminOrganization } from '@876/admin'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
-import { PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
@@ -11,7 +10,7 @@ import {
 import { Suspense } from 'react'
 
 import { $876 } from '@/lib/876'
-import { resolveOrg } from '../../../_data'
+import { resolveOrg } from '../../_data'
 import { CUSTOMERS_SKELETON_COLUMNS } from '../_components/customers-skeleton-columns'
 import { CustomersTable } from '../_components/customers-table'
 
@@ -29,14 +28,14 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const org = await resolveOrg(slug)
-  if (!org) return { title: 'Billing customers' }
+  if (!org) return { title: 'Customers' }
 
   return {
-    title: `${org.name ?? org.slug} • Billing customers - Organizations`,
+    title: `${org.name ?? org.slug} • Customers - Organizations`,
   }
 }
 
-export default async function OrganizationBillingCustomersPage({
+export default async function OrganizationCustomersPage({
   params,
   searchParams,
 }: Props) {
@@ -47,11 +46,6 @@ export default async function OrganizationBillingCustomersPage({
 
   return (
     <div>
-      <PageBreadcrumb
-        href={`/orgs/${slug}/billing`}
-        label="Billing"
-        className="mb-2"
-      />
       <ResourceToolbar
         title="Customers"
         titleFilter={
@@ -62,20 +56,20 @@ export default async function OrganizationBillingCustomersPage({
           />
         }
         primaryLabel="Add"
-        primaryHref={`/orgs/${slug}/billing/customers/new`}
+        primaryHref={`/orgs/${slug}/customers/new`}
         primaryVariant="info"
         refresh
       />
       <Suspense
         fallback={<DataTableSkeleton columns={CUSTOMERS_SKELETON_COLUMNS} />}
       >
-        <BillingCustomersShell slug={slug} status={selectedStatus} />
+        <CustomersShell slug={slug} status={selectedStatus} />
       </Suspense>
     </div>
   )
 }
 
-async function BillingCustomersShell({
+async function CustomersShell({
   slug,
   status,
 }: {
@@ -85,10 +79,10 @@ async function BillingCustomersShell({
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  return <BillingCustomersData org={org} status={status} />
+  return <CustomersData org={org} status={status} />
 }
 
-async function BillingCustomersData({
+async function CustomersData({
   org,
   status,
 }: {
