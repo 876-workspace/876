@@ -36,12 +36,16 @@ import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 const columns: ColumnDef<AdminSubscription, unknown>[] = [
   {
     id: 'plan',
-    header: 'Plan',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Plan" />
+    ),
     cell: ({ row }) => {
       const sub = row.original
       return (
         <div className="flex flex-col gap-0.5">
-          <span className="font-medium">{resolvePlanName(sub)}</span>
+          <span className="font-medium text-sky-600 dark:text-sky-400">
+            {resolvePlanName(sub)}
+          </span>
           <span className="text-muted-foreground/70 text-xs">
             {resolveAppSlug(sub)}
           </span>
