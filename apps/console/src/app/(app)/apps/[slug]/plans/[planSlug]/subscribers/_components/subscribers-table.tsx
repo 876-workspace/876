@@ -1,40 +1,31 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Users, Plus } from '@876/ui/icons'
+import { Users } from '@876/ui/icons'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
 
-import { Button } from '@876/ui/button'
-import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
-
+import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 import {
   Empty,
   EmptyHeader,
   EmptyTitle,
   EmptyDescription,
-  EmptyContent,
   EmptyMedia,
 } from '@876/ui/empty'
-import { formatDate } from '@/lib/format'
+import { cn } from '@876/core/utils'
+
+import { formatMoney } from '@/lib/money'
+import { formatDate, statusBadgeClass } from '@/lib/format'
 
 type SubscriberItem = {
   id: string
   name: string
-  email: string
+  email: string | null
   status: string
   startedAt: number | null
   mrr: number
 }
-
-const formatMoney = (amount: number, currency: string = 'usd') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-  }).format(amount / 100)
-}
-
-import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
 
 function buildColumns(): ColumnDef<SubscriberItem>[] {
   return [
@@ -43,59 +34,60 @@ function buildColumns(): ColumnDef<SubscriberItem>[] {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Customer" />
       ),
-      cell: ({ row }) => {
-        const sub = row.original
-        return (
-          <div className="flex flex-col gap-0.5">
-            <span className="text-foreground text-[0.8125rem] font-medium">
-              {sub.name}
-            </span>
-            <span className="text-muted-foreground text-xs">{sub.email}</span>
-          </div>
-        )
-      },
+      cell: ({ row }) => (
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span className="text-foreground truncate text-[0.8125rem] font-medium">
+            {row.original.name}
+          </span>
+          <span className="text-muted-foreground truncate text-xs">
+            {row.original.email ?? '—'}
+          </span>
+        </div>
+      ),
     },
     {
       accessorKey: 'status',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
       ),
-      cell: ({ row }) => {
-        const status = row.original.status
-        return (
-          <Badge className="border-0 bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-500 hover:bg-emerald-500/10">
-            {status}
-          </Badge>
-        )
-      },
+      cell: ({ row }) => (
+        <span
+          className={cn(
+            'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
+            statusBadgeClass(row.original.status)
+          )}
+        >
+          {row.original.status}
+        </span>
+      ),
     },
     {
       accessorKey: 'startedAt',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Started" />
       ),
-      cell: ({ row }) => {
-        return (
-          <span className="text-muted-foreground text-xs">
-            {row.original.startedAt === null
-              ? '—'
-              : formatDate(row.original.startedAt)}
-          </span>
-        )
-      },
+      cell: ({ row }) => (
+        <span className="text-muted-foreground text-xs">
+          {row.original.startedAt === null
+            ? '—'
+            : formatDate(row.original.startedAt)}
+        </span>
+      ),
     },
     {
       accessorKey: 'mrr',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="MRR" />
+        <DataTableColumnHeader
+          column={column}
+          title="MRR"
+          className="justify-end"
+        />
       ),
-      cell: ({ row }) => {
-        return (
-          <span className="text-foreground font-mono text-[0.8125rem] tabular-nums">
-            {formatMoney(row.original.mrr)}
-          </span>
-        )
-      },
+      cell: ({ row }) => (
+        <span className="block text-right font-mono text-[0.8125rem] tabular-nums">
+          {formatMoney(row.original.mrr, 'usd')}
+        </span>
+      ),
     },
   ]
 }
@@ -108,57 +100,27 @@ export function SubscribersTable({
   const columns = useMemo(() => buildColumns(), [])
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-end">
-        <Button
-          variant="info"
-          size="sm"
-          className="h-8 gap-1.5 px-2.5 text-xs"
-          disabled
-        >
-          <Plus className="size-4" strokeWidth={2.25} />
-          Add subscriber
-        </Button>
-      </div>
-      <div className="876-card">
-        <DataTable
-          columns={columns}
-          data={subscribers}
-          emptyState={
-            <div className="p-6">
-              <Empty className="border-border/60 bg-muted/5 border-dashed py-8">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Users className="text-cyan-600 dark:text-cyan-400" />
-                  </EmptyMedia>
-                  <EmptyTitle className="text-foreground text-base font-semibold">
-                    No recent subscriptions
-                  </EmptyTitle>
-                  <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
-                    Subscriptions for this plan will appear here once customers
-                    subscribe.
-                  </EmptyDescription>
-                </EmptyHeader>
-                <EmptyContent>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      disabled
-                    >
-                      View all subscribers
-                    </Button>
-                    <Button size="sm" className="h-8 text-xs" disabled>
-                      Create test subscription
-                    </Button>
-                  </div>
-                </EmptyContent>
-              </Empty>
-            </div>
-          }
-        />
-      </div>
+    <div className="876-card overflow-hidden">
+      <DataTable
+        columns={columns}
+        data={subscribers}
+        emptyState={
+          <Empty className="border-border/60 bg-muted/5 border-dashed py-10">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Users />
+              </EmptyMedia>
+              <EmptyTitle className="text-foreground text-base font-semibold">
+                No subscribers yet
+              </EmptyTitle>
+              <EmptyDescription className="text-muted-foreground/90 max-w-[360px] text-[0.8125rem] leading-relaxed">
+                Organizations on this plan will appear here as soon as their
+                subscriptions start.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        }
+      />
     </div>
   )
 }
