@@ -85,7 +85,7 @@ describe('SubscriptionDetail / Component / advanced billing integration', () => 
         onClose={onClose}
       />
     )
-    const btn = screen.getByRole('button')
+    const btn = screen.getByRole('button', { name: /close/i })
     fireEvent.click(btn)
     // Assert
     expect(onClose).toHaveBeenCalledTimes(1)

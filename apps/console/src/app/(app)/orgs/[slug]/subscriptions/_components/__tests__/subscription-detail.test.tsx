@@ -2,6 +2,7 @@
 import type { AdminSubscription } from '@876/admin'
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { SubscriptionDetail } from '../subscription-detail'
 
 vi.mock('next/navigation', () => ({
@@ -66,5 +67,39 @@ describe('SubscriptionDetail', () => {
     expect(onClose).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: /close/i }))
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows slot content when switching to the transactions tab', async () => {
+    const user = userEvent.setup()
+    render(
+      <SubscriptionDetail
+        subscription={sub as unknown as AdminSubscription}
+        billing={null}
+        transactions={<div>TXN_SLOT</div>}
+        activity={<div>ACTIVITY_SLOT</div>}
+        now={1000}
+        onClose={vi.fn()}
+      />
+    )
+
+    await user.click(screen.getByRole('tab', { name: 'Transactions' }))
+    expect(screen.getByText('TXN_SLOT')).toBeInTheDocument()
+  })
+
+  it('shows slot content when switching to the activity tab', async () => {
+    const user = userEvent.setup()
+    render(
+      <SubscriptionDetail
+        subscription={sub as unknown as AdminSubscription}
+        billing={null}
+        transactions={<div>TXN_SLOT</div>}
+        activity={<div>ACTIVITY_SLOT</div>}
+        now={1000}
+        onClose={vi.fn()}
+      />
+    )
+
+    await user.click(screen.getByRole('tab', { name: 'Activity' }))
+    expect(screen.getByText('ACTIVITY_SLOT')).toBeInTheDocument()
   })
 })
