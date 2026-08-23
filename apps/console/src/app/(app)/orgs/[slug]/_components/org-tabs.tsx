@@ -16,6 +16,8 @@ export function orgTabs(base: string, slug: string): RouteTabItem[] {
   return [
     { label: 'Overview', href: base, exact: true },
     { label: <MemberTabLabel slug={slug} />, href: `${base}/members` },
+    { label: 'Customers', href: `${base}/customers` },
+    { label: 'Subscriptions', href: `${base}/subscriptions` },
     { label: 'Onboarding', href: `${base}/onboarding` },
     { label: 'Billing', href: `${base}/billing` },
     { label: 'Activity', href: `${base}/activity` },
