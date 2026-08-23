@@ -164,13 +164,12 @@ describe('LocalAesGcmProvider', () => {
 describe('WorkOSVaultProvider', () => {
   function vaultClient(): VaultClient {
     return {
-      encrypt: vi.fn().mockResolvedValue({
-        ciphertext: 'vault-ciphertext',
-        key_id: 'key_1',
-      }),
+      encrypt: vi.fn().mockResolvedValue('vault-ciphertext'),
       decrypt: vi.fn().mockResolvedValue(PLAINTEXT),
     }
   }
+
+  const AAD = '{"type":"trn","user_id":"user_2kL9"}'
 
   it('prefixes the stored value so its provider is readable from the row', async () => {
     const sealed = await new WorkOSVaultProvider(vaultClient()).seal(
@@ -179,36 +178,55 @@ describe('WorkOSVaultProvider', () => {
     )
 
     expect(sealed.ciphertext).toBe('wv1:vault-ciphertext')
-    expect(sealed.keyId).toBe('key_1')
+    expect(sealed.keyId).toBeNull()
     expect(sealed.provider).toBe('workos_vault')
   })
 
-  it('binds the namespace and the sorted context into the vault call', async () => {
+  it('selects the key by namespace and binds the row into the associated data', async () => {
     const client = vaultClient()
     await new WorkOSVaultProvider(client, '876').seal(PLAINTEXT, CONTEXT)
 
-    expect(client.encrypt).toHaveBeenCalledWith(PLAINTEXT, {
-      context: { namespace: '876', type: 'trn', user_id: 'user_2kL9' },
-    })
+    expect(client.encrypt).toHaveBeenCalledTimes(1)
+    expect(client.encrypt).toHaveBeenCalledWith(
+      PLAINTEXT,
+      { namespace: '876' },
+      AAD
+    )
   })
 
-  it('strips the prefix before handing the value back to the vault', async () => {
+  it('accepts a key context map so a service can isolate keys by tenant', async () => {
     const client = vaultClient()
-    await new WorkOSVaultProvider(client).unseal(
+    await new WorkOSVaultProvider(client, {
+      namespace: '876',
+      tenant_id: 'ten_1',
+    }).seal(PLAINTEXT, CONTEXT)
+
+    expect(client.encrypt).toHaveBeenCalledWith(
+      PLAINTEXT,
+      { namespace: '876', tenant_id: 'ten_1' },
+      AAD
+    )
+  })
+
+  it('strips the prefix and replays the same associated data on unseal', async () => {
+    const client = vaultClient()
+    const value = await new WorkOSVaultProvider(client).unseal(
       { ciphertext: 'wv1:vault-ciphertext', keyId: null, provider: 'x' },
       CONTEXT
     )
 
-    expect(client.decrypt).toHaveBeenCalledWith(
-      'vault-ciphertext',
-      expect.anything()
-    )
+    expect(value).toBe(PLAINTEXT)
+    expect(client.decrypt).toHaveBeenCalledTimes(1)
+    expect(client.decrypt).toHaveBeenCalledWith('vault-ciphertext', AAD)
   })
 
   it('requires a context, exactly as the local provider does', async () => {
+    const client = vaultClient()
+
     await expect(
-      new WorkOSVaultProvider(vaultClient()).seal(PLAINTEXT, {})
+      new WorkOSVaultProvider(client).seal(PLAINTEXT, {})
     ).rejects.toThrow('A secure field context is required.')
+    expect(client.encrypt).not.toHaveBeenCalled()
   })
 })
 
