@@ -15783,7 +15783,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-methods",
+        "summary": "List payment methods",
         "security": [
           {
             "tenantOAuth": []
@@ -15972,7 +15972,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-methods",
+        "summary": "Create a payment method",
         "security": [
           {
             "tenantOAuth": []
@@ -16271,7 +16271,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-methods/:paymentMethodId",
+        "summary": "Retrieve a payment method",
         "security": [
           {
             "tenantOAuth": []
@@ -16378,7 +16378,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-methods/:paymentMethodId",
+        "summary": "Update a payment method",
         "security": [
           {
             "tenantOAuth": []
@@ -16520,7 +16520,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-methods/:paymentMethodId",
+        "summary": "Detach payment method",
         "security": [
           {
             "tenantOAuth": []
@@ -16634,7 +16634,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-methods/:paymentMethodId/default",
+        "summary": "Set default payment method",
         "security": [
           {
             "tenantOAuth": []
@@ -16743,7 +16743,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/customers/:customerId/payment-methods",
+        "summary": "List customer payment methods",
         "security": [
           {
             "tenantOAuth": []
@@ -16943,7 +16943,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-intents",
+        "summary": "List payment intents",
         "security": [
           {
             "tenantOAuth": []
@@ -17112,7 +17112,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-intents",
+        "summary": "Create a payment intent",
         "security": [
           {
             "tenantOAuth": []
@@ -17292,7 +17292,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-intents/:paymentIntentId",
+        "summary": "Retrieve a payment intent",
         "security": [
           {
             "tenantOAuth": []
@@ -17401,7 +17401,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-intents/:paymentIntentId/confirm",
+        "summary": "Confirm a payment intent",
         "security": [
           {
             "tenantOAuth": []
@@ -17510,7 +17510,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-intents/:paymentIntentId/capture",
+        "summary": "Capture a payment intent",
         "security": [
           {
             "tenantOAuth": []
@@ -17619,7 +17619,7 @@
         "tags": [
           "Billing"
         ],
-        "summary": "/organizations/:organizationId/payment-intents/:paymentIntentId/cancel",
+        "summary": "Cancel a payment intent",
         "security": [
           {
             "tenantOAuth": []

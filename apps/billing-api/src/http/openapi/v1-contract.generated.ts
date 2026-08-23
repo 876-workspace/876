@@ -873,65 +873,60 @@ export const v1OperationMetadata = {
     tags: ['Subscriptions'],
   },
   'GET /organizations/{organizationId}/payment-methods': {
-    summary: '/organizations/:organizationId/payment-methods',
+    summary: 'List payment methods',
     tags: ['Billing'],
   },
   'POST /organizations/{organizationId}/payment-methods': {
-    summary: '/organizations/:organizationId/payment-methods',
+    summary: 'Create a payment method',
     tags: ['Billing'],
   },
   'GET /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
-    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    summary: 'Retrieve a payment method',
     tags: ['Billing'],
   },
   'PATCH /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
-    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    summary: 'Update a payment method',
     tags: ['Billing'],
   },
   'DELETE /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
-    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    summary: 'Detach payment method',
     tags: ['Billing'],
   },
   'POST /organizations/{organizationId}/payment-methods/{paymentMethodId}/default':
     {
-      summary:
-        '/organizations/:organizationId/payment-methods/:paymentMethodId/default',
+      summary: 'Set default payment method',
       tags: ['Billing'],
     },
   'GET /organizations/{organizationId}/customers/{customerId}/payment-methods':
     {
-      summary:
-        '/organizations/:organizationId/customers/:customerId/payment-methods',
+      summary: 'List customer payment methods',
       tags: ['Billing'],
     },
   'GET /organizations/{organizationId}/payment-intents': {
-    summary: '/organizations/:organizationId/payment-intents',
+    summary: 'List payment intents',
     tags: ['Billing'],
   },
   'POST /organizations/{organizationId}/payment-intents': {
-    summary: '/organizations/:organizationId/payment-intents',
+    summary: 'Create a payment intent',
     tags: ['Billing'],
   },
   'GET /organizations/{organizationId}/payment-intents/{paymentIntentId}': {
-    summary: '/organizations/:organizationId/payment-intents/:paymentIntentId',
+    summary: 'Retrieve a payment intent',
     tags: ['Billing'],
   },
   'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/confirm':
     {
-      summary:
-        '/organizations/:organizationId/payment-intents/:paymentIntentId/confirm',
+      summary: 'Confirm a payment intent',
       tags: ['Billing'],
     },
   'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/capture':
     {
-      summary:
-        '/organizations/:organizationId/payment-intents/:paymentIntentId/capture',
+      summary: 'Capture a payment intent',
       tags: ['Billing'],
     },
   'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/cancel':
     {
-      summary:
-        '/organizations/:organizationId/payment-intents/:paymentIntentId/cancel',
+      summary: 'Cancel a payment intent',
       tags: ['Billing'],
     },
 } as const
@@ -14717,7 +14712,7 @@ export const v1OperationContracts = {
   },
   'GET /organizations/{organizationId}/payment-methods': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-methods',
+    summary: 'List payment methods',
     security: [
       {
         tenantOAuth: [],
@@ -14887,7 +14882,7 @@ export const v1OperationContracts = {
   },
   'POST /organizations/{organizationId}/payment-methods': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-methods',
+    summary: 'Create a payment method',
     security: [
       {
         tenantOAuth: [],
@@ -15143,7 +15138,7 @@ export const v1OperationContracts = {
   },
   'GET /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    summary: 'Retrieve a payment method',
     security: [
       {
         tenantOAuth: [],
@@ -15236,7 +15231,7 @@ export const v1OperationContracts = {
   },
   'PATCH /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    summary: 'Update a payment method',
     security: [
       {
         tenantOAuth: [],
@@ -15360,7 +15355,7 @@ export const v1OperationContracts = {
   },
   'DELETE /organizations/{organizationId}/payment-methods/{paymentMethodId}': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-methods/:paymentMethodId',
+    summary: 'Detach payment method',
     security: [
       {
         tenantOAuth: [],
@@ -15458,8 +15453,7 @@ export const v1OperationContracts = {
   'POST /organizations/{organizationId}/payment-methods/{paymentMethodId}/default':
     {
       tags: ['Billing'],
-      summary:
-        '/organizations/:organizationId/payment-methods/:paymentMethodId/default',
+      summary: 'Set default payment method',
       security: [
         {
           tenantOAuth: [],
@@ -15553,8 +15547,7 @@ export const v1OperationContracts = {
   'GET /organizations/{organizationId}/customers/{customerId}/payment-methods':
     {
       tags: ['Billing'],
-      summary:
-        '/organizations/:organizationId/customers/:customerId/payment-methods',
+      summary: 'List customer payment methods',
       security: [
         {
           tenantOAuth: [],
@@ -15733,7 +15726,7 @@ export const v1OperationContracts = {
     },
   'GET /organizations/{organizationId}/payment-intents': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-intents',
+    summary: 'List payment intents',
     security: [
       {
         tenantOAuth: [],
@@ -15888,7 +15881,7 @@ export const v1OperationContracts = {
   },
   'POST /organizations/{organizationId}/payment-intents': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-intents',
+    summary: 'Create a payment intent',
     security: [
       {
         tenantOAuth: [],
@@ -16043,7 +16036,7 @@ export const v1OperationContracts = {
   },
   'GET /organizations/{organizationId}/payment-intents/{paymentIntentId}': {
     tags: ['Billing'],
-    summary: '/organizations/:organizationId/payment-intents/:paymentIntentId',
+    summary: 'Retrieve a payment intent',
     security: [
       {
         tenantOAuth: [],
@@ -16137,8 +16130,7 @@ export const v1OperationContracts = {
   'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/confirm':
     {
       tags: ['Billing'],
-      summary:
-        '/organizations/:organizationId/payment-intents/:paymentIntentId/confirm',
+      summary: 'Confirm a payment intent',
       security: [
         {
           tenantOAuth: [],
@@ -16232,8 +16224,7 @@ export const v1OperationContracts = {
   'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/capture':
     {
       tags: ['Billing'],
-      summary:
-        '/organizations/:organizationId/payment-intents/:paymentIntentId/capture',
+      summary: 'Capture a payment intent',
       security: [
         {
           tenantOAuth: [],
@@ -16327,8 +16318,7 @@ export const v1OperationContracts = {
   'POST /organizations/{organizationId}/payment-intents/{paymentIntentId}/cancel':
     {
       tags: ['Billing'],
-      summary:
-        '/organizations/:organizationId/payment-intents/:paymentIntentId/cancel',
+      summary: 'Cancel a payment intent',
       security: [
         {
           tenantOAuth: [],
