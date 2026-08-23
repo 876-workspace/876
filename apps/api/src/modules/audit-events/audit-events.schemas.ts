@@ -20,9 +20,12 @@ const trimmedOptional = (max: number) =>
   z
     .string()
     .max(max)
-    .optional()
+    // `.nullish()`, not `.optional()`: the Pydantic `Optional[str]` this
+    // replaces accepted an explicit `null`, and every client sends one for an
+    // absent field rather than omitting the key.
+    .nullish()
     .transform((value) => {
-      if (value === undefined) return null
+      if (value == null) return null
       const trimmed = value.trim()
       return trimmed === '' ? null : trimmed
     })
