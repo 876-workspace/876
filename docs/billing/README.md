@@ -33,12 +33,12 @@ collected**, so a feature that can only act on real money must not act at all.
 These stay in the tree, stay compiling, stay tested, and stay **off** behind an
 explicit setting that defaults to disabled:
 
-| Parked                               | Why                                                       |
-| ------------------------------------ | --------------------------------------------------------- |
-| Late fees and their assessment sweep | Nothing is overdue when nothing is charged.               |
-| Dunning beyond a simple retry        | No processor is wired, so there is nothing to retry into. |
-| Payout / settlement reconciliation   | No settlement exists yet.                                 |
-| Revenue recognition                  | Depends on real recognised revenue.                       |
+| Parked                               | Setting                     | Why                                                       |
+| ------------------------------------ | --------------------------- | --------------------------------------------------------- |
+| Late fees and their assessment sweep | `BILLING_LATE_FEES_ENABLED` | Nothing is overdue when nothing is charged.               |
+| Dunning beyond a simple retry        | `BILLING_DUNNING_ENABLED`   | No processor is wired, so there is nothing to retry into. |
+| Payout / settlement reconciliation   | `BILLING_PAYOUTS_ENABLED`   | No settlement exists yet.                                 |
+| Revenue recognition                  | —                           | Depends on real recognised revenue.                       |
 
 Parking is a setting and a written decision, never a half-deleted code path.
 Configuration UI for a parked feature may remain visible — an operator setting a
