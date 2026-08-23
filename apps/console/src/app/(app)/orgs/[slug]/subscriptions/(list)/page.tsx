@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import type { AdminOrganization } from '@876/admin'
+import type { AdminOrganization, AdminSubscriptionStatus } from '@876/admin'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
@@ -12,7 +12,10 @@ import {
 } from '../../_data'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
-import { SUBSCRIPTION_STATUS_OPTIONS } from '../_components/subscription-status-options'
+import {
+  isSubscriptionStatus,
+  SUBSCRIPTION_STATUS_OPTIONS,
+} from '../_components/subscription-status-options'
 import { SubscriptionsSplit } from '../_components/subscriptions-split'
 
 type Props = {
@@ -65,7 +68,13 @@ export default async function OrganizationSubscriptionsPage({
           />
         }
       >
-        <SubscriptionsShell slug={slug} selectedId={subscription} />
+        <SubscriptionsShell
+          slug={slug}
+          selectedId={subscription}
+          status={
+            isSubscriptionStatus(selectedStatus) ? selectedStatus : undefined
+          }
+        />
       </Suspense>
     </div>
   )
@@ -74,27 +83,38 @@ export default async function OrganizationSubscriptionsPage({
 async function SubscriptionsShell({
   slug,
   selectedId,
+  status,
 }: {
   slug: string
   selectedId?: string
+  status?: AdminSubscriptionStatus
 }) {
   const org = await resolveOrg(slug)
   if (!org) notFound()
 
-  return <SubscriptionsData org={org} slug={slug} selectedId={selectedId} />
+  return (
+    <SubscriptionsData
+      org={org}
+      slug={slug}
+      selectedId={selectedId}
+      status={status}
+    />
+  )
 }
 
 async function SubscriptionsData({
   org,
   slug,
   selectedId,
+  status,
 }: {
   org: AdminOrganization
   slug: string
   selectedId?: string
+  status?: AdminSubscriptionStatus
 }) {
   const [subscriptions, billingAccountsResult] = await Promise.all([
-    resolveOrgSubscriptions(org.id),
+    resolveOrgSubscriptions(org.id, status),
     resolveOrgBillingAccounts(org.id),
   ])
 

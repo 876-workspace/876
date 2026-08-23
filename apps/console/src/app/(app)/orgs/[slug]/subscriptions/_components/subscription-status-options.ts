@@ -1,3 +1,4 @@
+import type { AdminSubscriptionStatus } from '@876/admin'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 export const SUBSCRIPTION_STATUS_OPTIONS: StatusFilterOption[] = [
@@ -26,3 +27,13 @@ export const SUBSCRIPTION_STATUS_OPTIONS: StatusFilterOption[] = [
     headingLabel: 'Incomplete Subscriptions',
   },
 ]
+
+/** Narrows a raw `?status=` value to a status the API accepts. */
+export function isSubscriptionStatus(
+  value: string
+): value is AdminSubscriptionStatus {
+  return (
+    value !== 'all' &&
+    SUBSCRIPTION_STATUS_OPTIONS.some((option) => option.value === value)
+  )
+}
