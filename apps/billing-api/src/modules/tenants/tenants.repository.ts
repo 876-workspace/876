@@ -32,6 +32,8 @@ const OWNER_PERMISSIONS = [
   'banking:write',
   'payments:read',
   'payments:write',
+  'payment_methods:read',
+  'payment_methods:write',
 ]
 
 /**

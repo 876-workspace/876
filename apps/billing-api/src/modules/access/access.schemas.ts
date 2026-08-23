@@ -29,6 +29,11 @@ export const billingPermissionValues = [
   'banking:write',
   'payments:read',
   'payments:write',
+  // Handling a stored instrument is a different sensitivity from recording a
+  // receipt: a bookkeeper can reconcile payments without being able to attach
+  // or detach a customer's card.
+  'payment_methods:read',
+  'payment_methods:write',
 ] as const
 
 export const billingPermissionSchema = z.enum(billingPermissionValues)

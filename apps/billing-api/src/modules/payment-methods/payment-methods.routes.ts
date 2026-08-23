@@ -25,8 +25,16 @@ const errors = {
 }
 export function createPaymentMethodsRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter({ tag: 'Payment methods', resolveGuards })
-  const read = { kind: 'tenant' as const, permission: 'payments:read' }
-  const write = { kind: 'tenant' as const, permission: 'payments:write' }
+  // Narrower than `payments:*` on purpose: recording a receipt and handling a
+  // stored card are different sensitivities.
+  const read = {
+    kind: 'tenant' as const,
+    permission: 'payment_methods:read',
+  }
+  const write = {
+    kind: 'tenant' as const,
+    permission: 'payment_methods:write',
+  }
   api.get({
     path: '/organizations/:organizationId/payment-methods',
     summary: 'List payment methods',
