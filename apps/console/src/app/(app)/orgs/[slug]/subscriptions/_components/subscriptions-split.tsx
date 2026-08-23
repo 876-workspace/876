@@ -18,8 +18,7 @@ import { humanize, planName } from './subscription-format'
 
 type Props = {
   subscriptions: AdminSubscription[]
-  /** Billing account id → display label, resolved by the page. */
-  billingAccounts: Record<string, string>
+  billing: React.ReactNode
   /** The `?subscription=` id, resolved server-side. */
   selectedId?: string
   basePath: string
@@ -32,7 +31,7 @@ function AppCell({
   sub: AdminSubscription
   size?: 'sm' | 'md'
 }) {
-  const name = sub.app_name || sub.app_slug || sub.app_id
+  const name = sub.app_name || sub.app_slug || sub.app_id || 'Unknown app'
   const small = size === 'sm'
   const px = small ? 16 : 24
 
@@ -148,7 +147,7 @@ const fullColumns: ColumnDef<AdminSubscription, unknown>[] = [
 
 export function SubscriptionsSplit({
   subscriptions,
-  billingAccounts,
+  billing,
   selectedId,
   basePath,
 }: Props) {
@@ -197,7 +196,7 @@ export function SubscriptionsSplit({
       <SubscriptionDetail
         key={selected.id}
         subscription={selected}
-        billingAccounts={billingAccounts}
+        billing={billing}
         now={today}
         onClose={() => select()}
       />

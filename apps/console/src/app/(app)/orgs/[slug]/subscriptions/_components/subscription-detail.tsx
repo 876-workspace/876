@@ -12,8 +12,7 @@ import { humanize, planName } from './subscription-format'
 
 type Props = {
   subscription: AdminSubscription
-  /** Billing account id → display label, resolved by the page. */
-  billingAccounts: Record<string, string>
+  billing: React.ReactNode
   /** Today at UTC midnight, in Unix seconds. */
   now: number
   onClose: () => void
@@ -153,11 +152,13 @@ function ItemRow({ item }: { item: AdminSubscriptionItem }) {
 
 export function SubscriptionDetail({
   subscription: sub,
-  billingAccounts,
+  billing,
   now,
   onClose,
 }: Props) {
-  const appName = sub.app_name || sub.app_slug || sub.app_id
+  // Every one of these is nullable on the resource, so a subscription whose
+  // app was deleted would otherwise crash the panel on `.charAt`.
+  const appName = sub.app_name || sub.app_slug || sub.app_id || 'Unknown app'
   const note = sub.status_reason || sub.provider_status
 
   return (
@@ -236,29 +237,6 @@ export function SubscriptionDetail({
                 </span>
               }
             />
-            {sub.billing_account_id && (
-              <Field
-                label="Billed to"
-                value={
-                  billingAccounts[sub.billing_account_id] ??
-                  'Unnamed billing account'
-                }
-              />
-            )}
-            {sub.default_payment_method_id && (
-              <Field
-                label="Payment method"
-                value={sub.default_payment_method_id}
-                mono
-              />
-            )}
-            {sub.latest_invoice_id && (
-              <Field
-                label="Latest invoice"
-                value={sub.latest_invoice_id}
-                mono
-              />
-            )}
             {sub.billing_cycle_anchor && (
               <Field
                 label="Cycle anchor"
@@ -269,6 +247,9 @@ export function SubscriptionDetail({
               <Field label="Schedule" value={sub.schedule_id} mono />
             )}
           </dl>
+          <div className="border-876-surface-border mt-4 border-t pt-4">
+            {billing}
+          </div>
         </Section>
 
         <Section title="Lifecycle">

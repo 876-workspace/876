@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { AdminOrganization, AdminSubscriptionStatus } from '@876/admin'
+import type { AdminSubscription } from '@876/admin'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
@@ -17,6 +18,11 @@ import {
   SUBSCRIPTION_STATUS_OPTIONS,
 } from '../_components/subscription-status-options'
 import { SubscriptionsSplit } from '../_components/subscriptions-split'
+import {
+  SubscriptionBillingSummary,
+  SubscriptionBillingSummaryFallback,
+} from '@/features/billing/components/subscription-billing-summary'
+import { $876 } from '@/lib/876'
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -117,23 +123,91 @@ async function SubscriptionsData({
   selectedId?: string
   status?: AdminSubscriptionStatus
 }) {
-  const [subscriptions, billingAccountsResult] = await Promise.all([
-    resolveOrgSubscriptions(org.id, status),
-    resolveOrgBillingAccounts(org.id),
-  ])
+  const subscriptions = await resolveOrgSubscriptions(org.id, status)
 
-  const billingAccounts: Record<string, string> = {}
-  for (const account of billingAccountsResult?.data ?? []) {
-    const label = account.name || account.email
-    if (label) billingAccounts[account.id] = label
-  }
+  const selected = (subscriptions ?? []).find((item) => item.id === selectedId)
+  const billing = selected ? (
+    <Suspense fallback={<SubscriptionBillingSummaryFallback />}>
+      <SubscriptionBillingData
+        organizationId={org.id}
+        subscription={selected}
+      />
+    </Suspense>
+  ) : null
 
   return (
     <SubscriptionsSplit
       subscriptions={subscriptions ?? []}
-      billingAccounts={billingAccounts}
+      billing={billing}
       selectedId={selectedId}
       basePath={`/orgs/${slug}/subscriptions`}
+    />
+  )
+}
+
+async function SubscriptionBillingData({
+  organizationId,
+  subscription,
+}: {
+  organizationId: string
+  subscription: AdminSubscription
+}) {
+  const [accounts, customers] = await Promise.all([
+    resolveOrgBillingAccounts(organizationId),
+    $876.customers.list(organizationId, { limit: 25 }),
+  ])
+  const account = subscription.billing_account_id
+    ? ((accounts?.data ?? []).find(
+        (item) => item.id === subscription.billing_account_id
+      ) ?? null)
+    : null
+  if (!account)
+    return (
+      <SubscriptionBillingSummary
+        account={null}
+        paymentMethods={[]}
+        subscriptionPaymentMethodId={subscription.default_payment_method_id}
+        latestInvoiceId={subscription.latest_invoice_id}
+      />
+    )
+
+  const customer = customers.data?.data[0]
+  if (!customer)
+    return (
+      <SubscriptionBillingSummary
+        account={null}
+        paymentMethods={[]}
+        subscriptionPaymentMethodId={subscription.default_payment_method_id}
+        latestInvoiceId={subscription.latest_invoice_id}
+      />
+    )
+
+  const methods = await $876.paymentMethods.listForCustomer(
+    organizationId,
+    customer.id,
+    { limit: 25 }
+  )
+  return (
+    <SubscriptionBillingSummary
+      account={{
+        id: account.id,
+        name: account.name,
+        email: account.email,
+        currency: account.currency,
+        taxExempt: account.tax_exempt,
+        balance: account.balance,
+        defaultPaymentMethodId: account.default_payment_method_id,
+      }}
+      paymentMethods={(methods.data?.data ?? []).map((method) => ({
+        id: method.id,
+        displayLabel: method.displayLabel,
+        isDefault: method.isDefault,
+        card: method.card,
+        expMonth: method.expMonth,
+        expYear: method.expYear,
+      }))}
+      subscriptionPaymentMethodId={subscription.default_payment_method_id}
+      latestInvoiceId={subscription.latest_invoice_id}
     />
   )
 }
