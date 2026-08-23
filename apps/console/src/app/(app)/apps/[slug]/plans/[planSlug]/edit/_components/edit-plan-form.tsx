@@ -5,23 +5,22 @@ import { useRouter } from 'next/navigation'
 import type { AdminProduct } from '@876/admin'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
-import { Label } from '@876/ui/label'
-import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
+import { FormRow } from '@876/ui/form-row'
 import { toast } from 'sonner'
 
+import { formatMoney } from '@/lib/money'
+import { statusBadgeClass } from '@/lib/format'
+import { cn } from '@876/core/utils'
 import { client } from '@/lib/client'
 
 type Props = { product: AdminProduct; appSlug: string }
 
-function formatPrice(
-  unitAmount: number,
-  currency: string,
-  interval: string | null
-): string {
-  if (unitAmount === 0) return 'Free'
-  const amount = (unitAmount / 100).toFixed(2)
-  return `$${amount} ${currency.toUpperCase()}${interval ? `/${interval}` : ''}`
-}
+const INTERVAL_OPTIONS = [
+  { value: 'none', label: 'No recurrence' },
+  { value: 'month', label: 'Monthly' },
+  { value: 'year', label: 'Yearly' },
+] as const
 
 export function EditPlanForm({ product, appSlug }: Props) {
   const router = useRouter()
@@ -93,80 +92,71 @@ export function EditPlanForm({ product, appSlug }: Props) {
   }
 
   return (
-    <div className="max-w-2xl space-y-5">
-      <section className="876-card p-5">
-        <div className="mb-4 flex flex-col gap-1">
+    <div className="space-y-5">
+      <section className="876-card space-y-5 p-5">
+        <div className="flex flex-col gap-1">
           <span className="876-eyebrow">Plan</span>
           <h3 className="text-foreground text-[0.8125rem] font-medium">
             Catalog details and status
           </h3>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="plan-name">Name</Label>
-            <Input
-              id="plan-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoFocus
-            />
-          </div>
+        <FormRow label="Name" required>
+          <Input
+            id="plan-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoFocus
+          />
+        </FormRow>
 
-          <div className="space-y-2">
-            <Label htmlFor="plan-slug">Slug</Label>
-            <Input
-              id="plan-slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              spellCheck={false}
-              className="font-mono"
-            />
-            <p className="text-muted-foreground text-xs">
-              Routes use this value; subscriptions and billing references remain
-              linked by ID.
-            </p>
-          </div>
+        <FormRow
+          label="Slug"
+          required
+          hint="Routes use this value; subscriptions and billing references stay linked by ID."
+        >
+          <Input
+            id="plan-slug"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            spellCheck={false}
+            className="font-mono"
+          />
+        </FormRow>
 
-          <div className="space-y-2">
-            <Label htmlFor="plan-status">Status</Label>
-            <NativeSelect
-              id="plan-status"
-              value={status}
-              onChange={(e) =>
-                setStatus(e.target.value as 'active' | 'archived')
-              }
-              className="w-full capitalize"
-            >
-              <NativeSelectOption value="active">Active</NativeSelectOption>
-              <NativeSelectOption value="archived">Archived</NativeSelectOption>
-            </NativeSelect>
-          </div>
+        <FormRow label="Status" required>
+          <RadioGroup
+            value={status}
+            onValueChange={(value) => setStatus(value as 'active' | 'archived')}
+            disabled={isPending}
+            className="grid-flow-col justify-start gap-6 pt-1"
+          >
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <RadioGroupItem value="active" />
+              Active
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <RadioGroupItem value="archived" />
+              Archived
+            </label>
+          </RadioGroup>
+        </FormRow>
 
-          <div className="space-y-2">
-            <Label htmlFor="plan-description">
-              Description{' '}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
-            </Label>
-            <Input
-              id="plan-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+        <FormRow label="Description">
+          <Input
+            id="plan-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </FormRow>
 
-          {error && (
-            <p className="text-destructive text-[0.8125rem]">{error}</p>
-          )}
-        </div>
+        {error && <p className="text-destructive text-[0.8125rem]">{error}</p>}
 
-        <div className="mt-5 flex items-center justify-between gap-2 border-t pt-4">
+        <div className="mt-2 flex items-center justify-between gap-2 border-t pt-4">
           {product.status === 'active' ? (
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={() => void handleArchive()}
             >
               Archive
@@ -190,8 +180,8 @@ export function EditPlanForm({ product, appSlug }: Props) {
         </div>
       </section>
 
-      <section className="876-card p-5">
-        <div className="mb-4 flex flex-col gap-1">
+      <section className="876-card space-y-5 p-5">
+        <div className="flex flex-col gap-1">
           <span className="876-eyebrow">Prices</span>
           <h3 className="text-foreground text-[0.8125rem] font-medium">
             Every price point this plan has been sold at
@@ -199,27 +189,31 @@ export function EditPlanForm({ product, appSlug }: Props) {
         </div>
 
         {product.prices.length > 0 && (
-          <div className="divide-876-surface-border mb-5 divide-y rounded-lg border">
+          <div className="divide-876-surface-border mb-2 divide-y rounded-lg border">
             {product.prices.map((price) => (
               <div
                 key={price.id}
                 className="flex items-center justify-between px-4 py-3"
               >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[0.8125rem] font-medium">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  <span className="truncate text-[0.8125rem] font-medium">
                     {price.name || (
                       <span className="text-muted-foreground">—</span>
                     )}
                   </span>
-                  <span className="text-[0.8125rem]">
-                    {formatPrice(
-                      price.unit_amount,
-                      price.currency,
-                      price.billing_interval
-                    )}
+                  <span className="text-[0.8125rem] tabular-nums">
+                    {formatMoney(price.unit_amount, price.currency)}
+                    {price.billing_interval
+                      ? ` / ${price.billing_interval}`
+                      : ''}
                   </span>
                 </div>
-                <span className="text-muted-foreground font-mono text-xs capitalize">
+                <span
+                  className={cn(
+                    'inline-flex shrink-0 items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
+                    statusBadgeClass(price.status)
+                  )}
+                >
                   {price.status}
                 </span>
               </div>
@@ -227,61 +221,64 @@ export function EditPlanForm({ product, appSlug }: Props) {
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="new-price-name">
-              Name{' '}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
-            </Label>
-            <Input
-              id="new-price-name"
-              placeholder="e.g. Monthly Standard"
-              value={newPriceName}
-              onChange={(e) => setNewPriceName(e.target.value)}
-            />
+        <div className="border-t pt-4">
+          <div className="space-y-5">
+            <FormRow label="Name" hint="Optional label for this price point.">
+              <Input
+                id="new-price-name"
+                placeholder="e.g. Monthly Standard"
+                value={newPriceName}
+                onChange={(e) => setNewPriceName(e.target.value)}
+              />
+            </FormRow>
+            <FormRow label="Price (JMD)" required>
+              <Input
+                id="new-price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={newPriceDollars}
+                onChange={(e) => setNewPriceDollars(e.target.value)}
+              />
+            </FormRow>
+            <FormRow label="Interval" required>
+              <RadioGroup
+                value={newPriceInterval}
+                onValueChange={(value) =>
+                  setNewPriceInterval(value as 'none' | 'month' | 'year')
+                }
+                disabled={isPricePending}
+                className="grid-flow-col justify-start gap-x-6 gap-y-2 pt-1"
+              >
+                {INTERVAL_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className="flex cursor-pointer items-center gap-2 text-sm"
+                  >
+                    <RadioGroupItem value={option.value} />
+                    {option.label}
+                  </label>
+                ))}
+              </RadioGroup>
+            </FormRow>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="new-price">Price (JMD)</Label>
-            <Input
-              id="new-price"
-              type="number"
-              min="0"
-              step="0.01"
-              value={newPriceDollars}
-              onChange={(e) => setNewPriceDollars(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="new-price-interval">Interval</Label>
-            <NativeSelect
-              id="new-price-interval"
-              value={newPriceInterval}
-              onChange={(e) =>
-                setNewPriceInterval(e.target.value as typeof newPriceInterval)
-              }
-              className="w-full"
+
+          <div className="mt-4 flex justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddPrice}
+              disabled={isPricePending}
             >
-              <NativeSelectOption value="none">
-                No recurring charge
-              </NativeSelectOption>
-              <NativeSelectOption value="month">Monthly</NativeSelectOption>
-              <NativeSelectOption value="year">Yearly</NativeSelectOption>
-            </NativeSelect>
+              {isPricePending ? 'Adding…' : 'Add'}
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleAddPrice}
-            disabled={isPricePending}
-          >
-            {isPricePending ? 'Adding…' : 'Add price'}
-          </Button>
+          {priceError && (
+            <p className="text-destructive mt-2 text-[0.8125rem]">
+              {priceError}
+            </p>
+          )}
         </div>
-        {priceError && (
-          <p className="text-destructive mt-2 text-[0.8125rem]">{priceError}</p>
-        )}
       </section>
     </div>
   )

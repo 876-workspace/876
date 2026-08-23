@@ -12,7 +12,7 @@ export const resolveApp = cache(async (slug: string) => {
   //
   // Shares the per-request catalog with the shell's feature-flag resolution,
   // which was issuing the identical list call on the same render.
-  const apps = await listConsoleApps()
+  const { apps } = await listConsoleApps()
   return apps?.find((a) => a.slug === slug) ?? null
 })
 

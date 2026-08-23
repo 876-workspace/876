@@ -2,14 +2,14 @@ import { Suspense, type ReactNode } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ExternalLink, Pencil } from '@876/ui/icons'
+import { ArrowLeft, CreditCard, Pencil } from '@876/ui/icons'
 import { cn } from '@876/core/utils'
 
-import { Button, buttonVariants } from '@876/ui/button'
-import { Badge } from '@876/ui/badge'
+import { buttonVariants } from '@876/ui/button'
 import { Skeleton } from '@876/ui/skeleton'
-import { RouteTabs, type RouteTabItem as DetailTab } from '@876/ui/route-tabs'
 import { PlanActions } from './_components/plan-actions'
+import { PlanStatusBadge, CopyChip } from './_components/copy-chip'
+import { PlanTabs, type PlanTab } from './_components/plan-tabs'
 
 import { resolveApp, resolveProduct } from '../../_data'
 
@@ -39,60 +39,69 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * renders outside its own `loading.tsx`, nothing this route owns can catch it.
  * That is what made opening a plan sit on the previous screen.
  *
- * The tab strip does not depend on the plan at all, so it is real and clickable
- * immediately. Only the parts that read the record stream in.
+ * The back control and tab strip do not depend on the plan at all, so they
+ * are real and clickable immediately. Only the identity band and the actions
+ * stream in, each into a boundary sized to match.
  */
 export default async function PlanDetailLayout({ children, params }: Props) {
   const { slug, planSlug } = await params
 
   const base = `/apps/${slug}/plans/${planSlug}`
-  const tabs: DetailTab[] = [
+  const tabs: PlanTab[] = [
     { label: 'Overview', href: base, exact: true },
     { label: 'Pricing', href: `${base}/pricing` },
     { label: 'Entitlements', href: `${base}/entitlements` },
     { label: 'Subscribers', href: `${base}/subscribers` },
   ]
   const editHref = `${base}/edit`
+  const plansHref = `/apps/${slug}/plans`
 
   return (
-    <div className="max-w-[1120px] space-y-6">
-      <header className="flex flex-col gap-4">
-        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <Suspense fallback={<PlanIdentityFallback />}>
-            <PlanIdentity slug={slug} planSlug={planSlug} />
-          </Suspense>
+    <div>
+      <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-2">
+          {/* Back control sits in the header itself, beside the title — the
+              plans list is one click away without spending a header row. */}
+          <Link
+            href={plansHref}
+            aria-label="Back to plans"
+            className={cn(
+              buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+              'mt-1.5 -ml-1 shrink-0'
+            )}
+          >
+            <ArrowLeft className="size-4" />
+          </Link>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5" disabled>
-              <ExternalLink className="size-3.5" />
-              View in Stripe
-            </Button>
-            <Link
-              href={editHref}
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'sm' }),
-                'gap-1.5'
-              )}
-            >
-              <Pencil className="size-3.5" />
-              Edit plan
-            </Link>
-            <Suspense fallback={<PlanActionsFallback />}>
-              <PlanMenu slug={slug} planSlug={planSlug} />
-            </Suspense>
-          </div>
+          <Suspense fallback={<IdentityFallback />}>
+            <Identity slug={slug} planSlug={planSlug} />
+          </Suspense>
         </div>
 
-        <Suspense fallback={<MetricsStrip entitlements={null} />}>
-          <PlanMetrics slug={slug} planSlug={planSlug} />
-        </Suspense>
-
-        <div className="mt-2">
-          <RouteTabs tabs={tabs} variant="pill" />
+        <div className="flex w-full shrink-0 gap-2 pl-9 sm:w-auto sm:justify-end sm:pl-0">
+          <Link
+            href={editHref}
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'gap-1.5'
+            )}
+          >
+            <Pencil className="size-3.5" />
+            Edit
+          </Link>
+          <Suspense fallback={<ActionsFallback />}>
+            <PlanMenu slug={slug} planSlug={planSlug} />
+          </Suspense>
         </div>
       </header>
 
-      <div>{children}</div>
+      {/* The tab strip does not depend on the plan at all, so it is real and
+          clickable immediately. */}
+      <div className="mt-3">
+        <PlanTabs tabs={tabs} />
+      </div>
+
+      <div className="pt-4">{children}</div>
     </div>
   )
 }
@@ -108,7 +117,7 @@ async function loadPlan(slug: string, planSlug: string) {
   return product
 }
 
-async function PlanIdentity({
+async function Identity({
   slug,
   planSlug,
 }: {
@@ -118,47 +127,42 @@ async function PlanIdentity({
   const product = await loadPlan(slug, planSlug)
 
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="876-page-title text-foreground">{product.name}</h1>
-        <Badge
-          className={
-            product.status === 'active'
-              ? 'border-0 bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-500 hover:bg-emerald-500/10'
-              : 'bg-muted text-muted-foreground border-0 px-2 py-0.5'
-          }
-        >
-          {product.status === 'active' && (
-            <span
-              className="mr-1.5 size-1.5 rounded-full bg-emerald-500"
-              aria-hidden="true"
-            />
-          )}
-          <span className="text-[11px] capitalize">{product.status}</span>
-        </Badge>
-        <span className="text-muted-foreground/60 font-mono text-xs select-all">
-          {product.id}
-        </span>
+    <div className="flex min-w-0 flex-1 items-center gap-4">
+      <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-xl max-sm:hidden sm:size-14">
+        <CreditCard aria-hidden="true" className="size-[1.375rem]" />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h1 className="876-page-title text-foreground min-w-0 truncate">
+            {product.name}
+          </h1>
+          <PlanStatusBadge status={product.status} />
+          <CopyChip value={product.id} className="max-w-[180px] truncate" />
+        </div>
+        {product.description && (
+          <p className="text-muted-foreground max-w-2xl text-[0.8125rem] leading-relaxed">
+            {product.description}
+          </p>
+        )}
       </div>
-      {product.description && (
-        <p className="text-muted-foreground max-w-xl text-[0.8125rem] leading-relaxed">
-          {product.description}
-        </p>
-      )}
     </div>
   )
 }
 
 /** Sized to the resolved identity band so nothing shifts on hand-off. */
-function PlanIdentityFallback() {
+function IdentityFallback() {
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <div className="flex flex-wrap items-center gap-3">
-        <Skeleton className="h-7 w-52" />
-        <Skeleton className="h-5 w-16 rounded-md" />
-        <Skeleton className="h-4 w-28" />
+    <div className="flex min-w-0 flex-1 items-center gap-4">
+      <Skeleton className="size-14 shrink-0 rounded-xl max-sm:hidden" />
+      <div className="min-w-0 flex-1">
+        <div className="mb-1.5 flex items-center gap-x-3">
+          <Skeleton className="h-7 w-52 max-w-full" />
+          <Skeleton className="h-5 w-16 rounded-md" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <Skeleton className="h-5 w-80 max-w-full" />
       </div>
-      <Skeleton className="h-5 w-80 max-w-full" />
     </div>
   )
 }
@@ -181,65 +185,6 @@ async function PlanMenu({
   )
 }
 
-function PlanActionsFallback() {
+function ActionsFallback() {
   return <Skeleton className="size-8 rounded-md" />
-}
-
-async function PlanMetrics({
-  slug,
-  planSlug,
-}: {
-  slug: string
-  planSlug: string
-}) {
-  const product = await loadPlan(slug, planSlug)
-  return <MetricsStrip entitlements={product.module_ids.length} />
-}
-
-/**
- * MRR, Subscribers and Billing are placeholders today, so they are as true
- * before the plan resolves as after — only the entitlement count waits.
- */
-function MetricsStrip({ entitlements }: { entitlements: number | null }) {
-  return (
-    <div className="876-card grid grid-cols-2 gap-6 bg-[var(--876-surface)] p-4 ring-0 md:grid-cols-4 md:px-6 md:py-4">
-      <Metric label="MRR" value="$0.00" />
-      <Metric label="Subscribers" value="0" />
-      <Metric label="Billing" value="Monthly" className="capitalize" />
-      <Metric
-        label="Entitlements"
-        value={entitlements === null ? null : String(entitlements)}
-      />
-    </div>
-  )
-}
-
-function Metric({
-  label,
-  value,
-  className,
-}: {
-  label: string
-  value: string | null
-  className?: string
-}) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-muted-foreground/80 text-[10px] font-bold tracking-wider uppercase">
-        {label}
-      </span>
-      {value === null ? (
-        <Skeleton className="h-7 w-10" />
-      ) : (
-        <span
-          className={cn(
-            'text-foreground text-lg font-semibold tabular-nums',
-            className
-          )}
-        >
-          {value}
-        </span>
-      )}
-    </div>
-  )
 }

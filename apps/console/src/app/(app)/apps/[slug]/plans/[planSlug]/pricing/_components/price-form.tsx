@@ -4,12 +4,24 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
-import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
+import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
+import { FormRow } from '@876/ui/form-row'
 import { client } from '@/lib/client'
 import { majorToMinor } from '@/lib/money'
 
 type Initial = Record<string, unknown> | null
+
+const TYPE_OPTIONS = [
+  { value: 'one_time', label: 'One-time' },
+  { value: 'recurring', label: 'Recurring' },
+] as const
+
+const SCHEME_OPTIONS = [
+  { value: 'per_unit', label: 'Flat' },
+  { value: 'tiered', label: 'Tiered' },
+] as const
+
 export function PriceForm({
   productId,
   priceId,
@@ -22,6 +34,7 @@ export function PriceForm({
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
   const value = (key: string, fallback = '') =>
     String(initial?.[key] ?? fallback)
   const [name, setName] = useState(value('name'))
@@ -35,6 +48,7 @@ export function PriceForm({
   const [usage, setUsage] = useState('licensed')
   const [trial, setTrial] = useState(value('trial_period_days'))
   const [tax, setTax] = useState(value('tax_behavior', 'unspecified'))
+
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
@@ -61,6 +75,7 @@ export function PriceForm({
             trial_period_days: trial ? Number(trial) : null,
           }
         }
+
         const result = priceId
           ? await client.products.updatePrice(productId, priceId, body)
           : await client.products.createPrice(productId, body)
@@ -77,96 +92,114 @@ export function PriceForm({
       }
     })
   }
+
   return (
-    <form onSubmit={submit} className="space-y-8">
-      <section className="space-y-4">
-        <h2 className="text-lg font-medium">Basics</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Name">
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </Field>
-          <Field label="Nickname">
-            <Input
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-            />
-          </Field>
-          <Field label="Currency" required>
-            <Input
-              value={currency}
-              maxLength={3}
-              onChange={(e) => setCurrency(e.target.value)}
-            />
-          </Field>
-          <fieldset>
-            <Label>
-              Type <span aria-hidden="true">*</span>
-            </Label>
-            <div className="mt-2 flex gap-4">
-              <label>
-                <input
-                  type="radio"
-                  checked={type === 'one_time'}
-                  onChange={() => setType('one_time')}
-                />{' '}
-                One-time
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  checked={type === 'recurring'}
-                  onChange={() => setType('recurring')}
-                />{' '}
-                Recurring
-              </label>
-            </div>
-          </fieldset>
+    <form onSubmit={submit} className="space-y-5">
+      <section className="876-card space-y-5 p-5">
+        <div className="flex flex-col gap-1">
+          <span className="876-eyebrow">Basics</span>
+          <h3 className="text-foreground text-[0.8125rem] font-medium">
+            How this price is named and charged
+          </h3>
         </div>
+
+        <FormRow
+          label="Name"
+          hint="Shown to operators only; defaults to the amount."
+        >
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </FormRow>
+
+        <FormRow label="Nickname">
+          <Input
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+        </FormRow>
+
+        <FormRow label="Currency" required>
+          <Input
+            value={currency}
+            maxLength={3}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="uppercase"
+          />
+        </FormRow>
+
+        <FormRow label="Type" required>
+          <RadioGroup
+            value={type}
+            onValueChange={(value) => setType(value as string)}
+            disabled={pending}
+            className="grid-flow-col justify-start gap-6 pt-1"
+          >
+            {TYPE_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <RadioGroupItem value={option.value} />
+                {option.label}
+              </label>
+            ))}
+          </RadioGroup>
+        </FormRow>
       </section>
-      <section className="space-y-4">
-        <h2 className="text-lg font-medium">Amount</h2>
-        <fieldset>
-          <Label>
-            Pricing model <span aria-hidden="true">*</span>
-          </Label>
-          <div className="mt-2 flex gap-4">
-            <label>
-              <input
-                type="radio"
-                checked={scheme === 'per_unit'}
-                onChange={() => setScheme('per_unit')}
-              />{' '}
-              Flat
-            </label>
-            <label>
-              <input
-                type="radio"
-                checked={scheme === 'tiered'}
-                onChange={() => setScheme('tiered')}
-              />{' '}
-              Tiered
-            </label>
-          </div>
-        </fieldset>
+
+      <section className="876-card space-y-5 p-5">
+        <div className="flex flex-col gap-1">
+          <span className="876-eyebrow">Amount</span>
+          <h3 className="text-foreground text-[0.8125rem] font-medium">
+            Flat rate or tiered pricing model
+          </h3>
+        </div>
+
+        <FormRow label="Pricing model" required>
+          <RadioGroup
+            value={scheme}
+            onValueChange={(value) => setScheme(value as string)}
+            disabled={pending}
+            className="grid-flow-col justify-start gap-6 pt-1"
+          >
+            {SCHEME_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <RadioGroupItem value={option.value} />
+                {option.label}
+              </label>
+            ))}
+          </RadioGroup>
+        </FormRow>
+
         {scheme === 'per_unit' ? (
-          <Field label="Amount" required>
+          <FormRow label="Amount" required>
             <Input
               inputMode="decimal"
+              placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
-          </Field>
+          </FormRow>
         ) : (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-[0.8125rem]">
             Tier authoring is available through the API contract.
           </p>
         )}
       </section>
+
       {type === 'recurring' ? (
-        <section className="space-y-4">
-          <h2 className="text-lg font-medium">Recurring</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Interval" required>
+        <section className="876-card space-y-5 p-5">
+          <div className="flex flex-col gap-1">
+            <span className="876-eyebrow">Recurrence</span>
+            <h3 className="text-foreground text-[0.8125rem] font-medium">
+              Billing cadence and trial window
+            </h3>
+          </div>
+
+          <div className="gap-x-4 sm:grid sm:grid-cols-2 sm:gap-y-5">
+            <FormRow label="Interval" required>
               <NativeSelect
                 value={interval}
                 onChange={(e) => setInterval(e.target.value)}
@@ -174,16 +207,16 @@ export function PriceForm({
                 <NativeSelectOption value="month">Month</NativeSelectOption>
                 <NativeSelectOption value="year">Year</NativeSelectOption>
               </NativeSelect>
-            </Field>
-            <Field label="Interval count" required>
+            </FormRow>
+            <FormRow label="Every" required>
               <Input
                 type="number"
                 min="1"
                 value={count}
                 onChange={(e) => setCount(e.target.value)}
               />
-            </Field>
-            <Field label="Usage type">
+            </FormRow>
+            <FormRow label="Usage type">
               <NativeSelect
                 value={usage}
                 onChange={(e) => setUsage(e.target.value)}
@@ -193,21 +226,31 @@ export function PriceForm({
                 </NativeSelectOption>
                 <NativeSelectOption value="metered">Metered</NativeSelectOption>
               </NativeSelect>
-            </Field>
-            <Field label="Trial period days">
+            </FormRow>
+            <FormRow label="Trial days">
               <Input
                 type="number"
                 min="0"
                 value={trial}
                 onChange={(e) => setTrial(e.target.value)}
               />
-            </Field>
+            </FormRow>
           </div>
         </section>
       ) : null}
-      <section className="space-y-4">
-        <h2 className="text-lg font-medium">Tax</h2>
-        <Field label="Tax behavior">
+
+      <section className="876-card space-y-5 p-5">
+        <div className="flex flex-col gap-1">
+          <span className="876-eyebrow">Tax</span>
+          <h3 className="text-foreground text-[0.8125rem] font-medium">
+            How tax is applied at checkout
+          </h3>
+        </div>
+
+        <FormRow
+          label="Tax behavior"
+          hint="Exclusive adds tax on top of the amount; inclusive takes it out of it."
+        >
           <NativeSelect value={tax} onChange={(e) => setTax(e.target.value)}>
             <NativeSelectOption value="unspecified">
               Unspecified
@@ -215,36 +258,19 @@ export function PriceForm({
             <NativeSelectOption value="exclusive">Exclusive</NativeSelectOption>
             <NativeSelectOption value="inclusive">Inclusive</NativeSelectOption>
           </NativeSelect>
-        </Field>
+        </FormRow>
       </section>
+
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
+
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          {pending ? 'Saving…' : 'Save price'}
+          {pending ? 'Saving…' : 'Save'}
         </Button>
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
       </div>
     </form>
-  )
-}
-function Field({
-  label,
-  required,
-  children,
-}: {
-  label: string
-  required?: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <div className="space-y-2">
-      <Label>
-        {label}
-        {required ? <span aria-hidden="true"> *</span> : null}
-      </Label>
-      {children}
-    </div>
   )
 }

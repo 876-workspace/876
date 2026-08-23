@@ -1,23 +1,13 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
-import { Pencil, Plus } from '@876/ui/icons'
 
-import { cn } from '@876/core/utils'
-import { Button } from '@876/ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardAction,
-} from '@876/ui/card'
-import { Separator } from '@876/ui/separator'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
-import { resolveApp } from '../../../_data'
+import { resolveApp, resolveProduct } from '../../../_data'
 import { formatDate } from '@/lib/format'
+import { InfoSection, Field } from '@/components/patterns/detail/info-section'
+import { CopyChip } from '../_components/copy-chip'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }
 
@@ -26,30 +16,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const app = await resolveApp(slug)
   if (!app) return { title: 'Plan not found' }
 
-  const { data } = await $876.entitlementPlans.admin.list({ appId: app.id })
-  const products = data?.data ?? []
-  const product = products.find((p) => p.slug === planSlug || p.id === planSlug)
+  const product = await resolveProduct(app.id, planSlug)
 
   if (!product) return { title: 'Plan not found' }
   return { title: `${product.name} • ${app.name}` }
 }
 
-function CopyChip({ value, className }: { value: string; className?: string }) {
-  return (
-    <code
-      className={cn(
-        'bg-secondary/40 text-muted-foreground/90 rounded px-1.5 py-0.5 font-mono text-[10px] select-all',
-        className
-      )}
-    >
-      {value}
-    </code>
-  )
-}
-
 export default function PlanDetailPage({ params }: Props) {
   return (
-    <Suspense fallback={<PlanSkeleton />}>
+    <Suspense fallback={<OverviewSkeleton />}>
       <PlanDetailData params={params} />
     </Suspense>
   )
@@ -61,138 +36,68 @@ async function PlanDetailData({ params }: Props) {
 
   if (!app || app.app_kind !== 'product') notFound()
 
-  const { data } = await $876.entitlementPlans.admin.list({ appId: app.id })
-  const products = data?.data ?? []
-
-  const product = products.find((p) => p.slug === planSlug || p.id === planSlug)
+  const product = await resolveProduct(app.id, planSlug)
 
   if (!product) notFound()
 
+  const metadata = Object.entries(product.metadata ?? {})
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      {/* Plan Details Card */}
-      <Card className="876-card bg-[var(--876-surface)] ring-0">
-        <CardHeader className="flex items-center justify-between px-5 py-4">
-          <CardTitle className="text-foreground text-[0.8125rem] font-semibold">
-            Plan details
-          </CardTitle>
-          <CardAction>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Edit plan details"
-              disabled
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Pencil className="size-3.5" />
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="p-5 pt-0">
-          <dl className="flex flex-col gap-3.5">
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground text-xs">Plan ID</dt>
-              <dd className="min-w-0 text-right">
-                <CopyChip value={product.id} />
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground text-xs">Product</dt>
-              <dd className="min-w-0 text-right">
-                <CopyChip value={product.slug || product.name} />
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground text-xs">
-                Statement descriptor
-              </dt>
-              <dd className="text-foreground min-w-0 text-right font-mono text-xs">
-                {product.statement_descriptor || '—'}
-              </dd>
-            </div>
-            <Separator className="bg-border/40 my-1" />
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground text-xs">Created</dt>
-              <dd className="text-foreground min-w-0 text-right text-xs font-medium">
-                {formatDate(product.created_at)}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <dt className="text-muted-foreground text-xs">Last updated</dt>
-              <dd className="text-foreground min-w-0 text-right text-xs font-medium">
-                {formatDate(product.updated_at)}
-              </dd>
-            </div>
-          </dl>
-        </CardContent>
-      </Card>
+      <InfoSection title="Plan details">
+        <Field label="Plan ID" mono value={<CopyChip value={product.id} />} />
+        <Field
+          label="Product"
+          mono
+          value={<CopyChip value={product.slug || product.name} />}
+        />
+        <Field
+          label="Statement descriptor"
+          value={product.statement_descriptor || '—'}
+          mono
+        />
+        <Field label="Created" value={formatDate(product.created_at)} />
+        <Field label="Last updated" value={formatDate(product.updated_at)} />
+      </InfoSection>
 
-      {/* Metadata Card */}
-      <Card className="876-card bg-[var(--876-surface)] ring-0">
-        <CardHeader className="flex items-center justify-between px-5 py-4">
-          <CardTitle className="text-foreground text-[0.8125rem] font-semibold">
-            Metadata
-          </CardTitle>
-          <CardAction>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Edit metadata"
-              disabled
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Pencil className="size-3.5" />
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="p-5 pt-0">
-          {!product.metadata || Object.keys(product.metadata).length === 0 ? (
-            <div className="border-border/60 bg-muted/5 flex flex-col items-center justify-center rounded-xl border border-dashed px-4 py-6 text-center">
-              <span className="text-foreground mb-1 text-base font-semibold">
-                No metadata
-              </span>
-              <p className="text-muted-foreground mb-3 max-w-[360px] text-[0.8125rem] leading-relaxed">
-                Add metadata to store internal references or integration values.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 gap-1 px-2.5 text-xs"
-                disabled
+      <InfoSection title="Metadata">
+        {metadata.length === 0 ? (
+          <div className="border-border/60 bg-muted/5 flex flex-col items-center justify-center rounded-xl border border-dashed px-4 py-8 text-center">
+            <span className="text-foreground mb-1 text-base font-semibold">
+              No metadata
+            </span>
+            <p className="text-muted-foreground mb-3 max-w-[360px] text-[0.8125rem] leading-relaxed">
+              Add key-value pairs to store internal references or integration
+              values alongside this plan.
+            </p>
+          </div>
+        ) : (
+          <dl className="divide-876-surface-border divide-y font-mono text-[0.8125rem]">
+            {metadata.map(([key, value]) => (
+              <div
+                key={key}
+                className="group/field flex items-baseline justify-between gap-4 py-2.5 first:pt-0 last:pb-0"
               >
-                <Plus className="size-3" />
-                Add metadata
-              </Button>
-            </div>
-          ) : (
-            <dl className="border-border/40 bg-muted/5 flex flex-col overflow-hidden rounded-lg border font-mono text-xs">
-              {Object.entries(product.metadata).map(([key, value], i) => (
-                <div
-                  key={key}
-                  className={cn(
-                    'flex items-center justify-between gap-4 px-3 py-2',
-                    i > 0 && 'border-border/40 border-t'
-                  )}
-                >
-                  <dt className="text-muted-foreground font-medium">{key}</dt>
-                  <dd className="text-foreground truncate select-all">
-                    {String(value)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
-        </CardContent>
-      </Card>
+                <dt className="text-muted-foreground shrink-0 font-medium">
+                  {key}
+                </dt>
+                <dd className="min-w-0 truncate text-right select-all">
+                  {String(value)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </InfoSection>
     </div>
   )
 }
 
-function PlanSkeleton() {
+function OverviewSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      <Skeleton className="h-80" />
-      <Skeleton className="h-80" />
+      <Skeleton className="h-72 rounded-xl" />
+      <Skeleton className="h-72 rounded-xl" />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveApp, resolveProduct } from '../../../_data'
 import { EditPlanForm } from './_components/edit-plan-form'
@@ -22,9 +23,16 @@ export default async function EditPlanPage({ params }: Props) {
   if (!product) notFound()
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto max-w-3xl space-y-5">
       <div>
-        <h1 className="876-page-title">Edit {product.name}</h1>
+        <PageBreadcrumb
+          href={`/apps/${slug}/plans/${planSlug}`}
+          label={product.name}
+          className="mb-2 -ml-2.5"
+        />
+        <h1 className="876-page-title">
+          Edit <span className="text-muted-foreground">{product.name}</span>
+        </h1>
       </div>
 
       <EditPlanForm product={product} appSlug={app.slug} />

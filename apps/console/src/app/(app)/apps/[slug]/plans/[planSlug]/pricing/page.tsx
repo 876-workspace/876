@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import {
+  StatusFilterHeading,
+  type StatusFilterOption,
+} from '@876/ui/status-filter-heading'
+
 import { resolveApp, resolveProduct } from '../../../_data'
 import {
   PlanPricingTable,
@@ -8,7 +14,20 @@ import {
 } from './_components/plan-pricing-table'
 import { buildPricingSetup } from './_lib/build-pricing-setup'
 
-type Props = { params: Promise<{ slug: string; planSlug: string }> }
+type Props = {
+  params: Promise<{ slug: string; planSlug: string }>
+  searchParams: Promise<{ status?: string }>
+}
+
+const PRICE_STATUS_OPTIONS: StatusFilterOption[] = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'archived', label: 'Archived' },
+]
+
+function isPriceStatus(status: string | undefined): boolean {
+  return status === 'active' || status === 'archived'
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, planSlug } = await params
@@ -20,23 +39,42 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${product.name} Pricing • ${app.name}` }
 }
 
-export default async function PlanPricingPage({ params }: Props) {
+export default async function PlanPricingPage({ params, searchParams }: Props) {
   const { slug, planSlug } = await params
-  const setup = await loadPricingSetup(slug, planSlug)
+  const { status } = await searchParams
+
+  // Unknown or missing status resolves to all — never an API error.
+  const priceStatus = isPriceStatus(status) ? status : undefined
+  const selectedStatus = priceStatus ?? 'all'
+
+  const setup = await loadPricingSetup(slug, planSlug, priceStatus)
 
   return (
-    <div className="space-y-5">
-      <div className="mb-2">
-        <h2 className="text-lg font-medium tracking-tight">Pricing</h2>
+    <div className="space-y-4">
+      <ResourceToolbar
+        title="Pricing"
+        titleFilter={
+          <StatusFilterHeading
+            label="Pricing"
+            value={selectedStatus}
+            options={PRICE_STATUS_OPTIONS}
+          />
+        }
+        primaryLabel="Add"
+        primaryHref={setup.newHref}
+        primaryVariant="info"
+      />
+      <div className="876-card overflow-hidden">
+        <PlanPricingTable setup={setup} />
       </div>
-      <PlanPricingTable setup={setup} />
     </div>
   )
 }
 
 async function loadPricingSetup(
   slug: string,
-  planSlug: string
+  planSlug: string,
+  status?: string
 ): Promise<PricingSetup> {
   const app = await resolveApp(slug)
   if (!app || app.app_kind !== 'product') notFound()
@@ -48,6 +86,8 @@ async function loadPricingSetup(
     slug,
     planSlug,
     productId: product.id,
-    prices: product.prices,
+    prices: (product.prices ?? []).filter(
+      (price) => !status || price.status === status
+    ),
   })
 }
