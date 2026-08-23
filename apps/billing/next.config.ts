@@ -2,6 +2,7 @@ import path from 'node:path'
 
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
+import { devResourceHosts } from '../../scripts/dev-preview.mjs'
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -18,15 +19,12 @@ const securityHeaders = [
   },
 ]
 
-const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
-  '{port}',
-  '*'
-)
+const previewDevOrigins = devResourceHosts()
 
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
-  allowedDevOrigins: previewDevOrigin ? [previewDevOrigin] : [],
+  allowedDevOrigins: previewDevOrigins,
   // Trace from the monorepo root so shared workspace packages are included.
   outputFileTracingRoot: path.join(__dirname, '../../'),
   async headers() {
@@ -74,7 +72,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3004',
         '127.0.0.1:3004',
-        ...(previewDevOrigin ? [previewDevOrigin] : []),
+        ...previewDevOrigins,
       ],
     },
   },
