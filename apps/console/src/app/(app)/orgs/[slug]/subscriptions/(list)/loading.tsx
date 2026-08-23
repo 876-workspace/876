@@ -3,18 +3,18 @@
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 
 import { SUBSCRIPTIONS_SKELETON_COLUMNS } from '../_components/subscriptions-skeleton-columns'
 import { SUBSCRIPTION_STATUS_OPTIONS } from '../_components/subscription-status-options'
 
+/**
+ * Route-level fallback. It reads `useParams()` only — `useSearchParams()`
+ * suspends during prerender and there is no boundary above a `loading.tsx`,
+ * so the status filter always falls back to `all` here.
+ */
 export default function Loading() {
   const { slug } = useParams<{ slug: string }>()
-  const searchParams = useSearchParams()
-  const status = searchParams.get('status') ?? 'all'
-  const selectedStatus =
-    SUBSCRIPTION_STATUS_OPTIONS.find((option) => option.value === status)
-      ?.value ?? 'all'
 
   return (
     <div>
@@ -23,7 +23,7 @@ export default function Loading() {
         titleFilter={
           <StatusFilterHeading
             label="Subscriptions"
-            value={selectedStatus}
+            value="all"
             options={SUBSCRIPTION_STATUS_OPTIONS}
           />
         }
@@ -36,4 +36,3 @@ export default function Loading() {
     </div>
   )
 }
-
