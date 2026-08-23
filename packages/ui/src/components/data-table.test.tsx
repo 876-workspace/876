@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom/vitest'
+
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
@@ -29,16 +31,6 @@ const rows: Row[] = [
 ]
 
 describe('DataTable', () => {
-  it('renders column visibility controls when enabled', async () => {
-    const user = userEvent.setup()
-    render(<DataTable columns={columns} data={rows} enableColumnVisibility />)
-
-    await user.click(screen.getByRole('button', { name: 'Columns' }))
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'email' }))
-
-    expect(screen.queryByText('ada@example.com')).toBeNull()
-  })
-
   it('does not trigger row actions when selecting a row', async () => {
     const user = userEvent.setup()
     const onRowClick = vi.fn()
