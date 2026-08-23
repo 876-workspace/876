@@ -9,6 +9,9 @@ const API_ROOT = join(APP_ROOT, 'src/app/api')
 const OWNED_ROUTES = [
   'billing-accounts/route.ts',
   'billing-subscriptions/route.ts',
+  'payment-methods/route.ts',
+  'payment-methods/[id]/route.ts',
+  'payment-methods/[id]/default/route.ts',
   'organizations/[id]/customers/route.ts',
   'finance/reconcile/route.ts',
   'apps/[appId]/image/route.ts',

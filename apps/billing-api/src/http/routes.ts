@@ -30,6 +30,8 @@ import {
 } from '@/modules/finance-connections'
 import { createHealthRouter } from '@/modules/health'
 import { createPaymentProvidersRouter } from '@/modules/payment-providers'
+import { createPaymentIntentsRouter } from '@/modules/payment-intents'
+import { createPaymentMethodsRouter } from '@/modules/payment-methods'
 import { createPaymentsRouter } from '@/modules/payments'
 import { createInternalReportingRouter } from '@/modules/reporting'
 import { createSubscriptionsRouter } from '@/modules/subscriptions'
@@ -70,6 +72,8 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
   root.use('/api/v1', createTaxRouter(resolveGuards))
   root.use('/api/v1', createPaymentProvidersRouter(resolveGuards))
+  root.use('/api/v1', createPaymentMethodsRouter(resolveGuards))
+  root.use('/api/v1', createPaymentIntentsRouter(resolveGuards))
   root.use('/api/v1', createPaymentsRouter(resolveGuards))
   root.use('/api/v1', createVendorsRouter(resolveGuards))
   root.use('/api/v1', createSubscriptionsRouter(resolveGuards))

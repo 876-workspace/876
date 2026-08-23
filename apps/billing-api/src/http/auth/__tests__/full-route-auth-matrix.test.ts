@@ -23,7 +23,7 @@ describe('frozen v1 route authentication matrix', () => {
     const app = createApp()
     const operations = registeredOperations('public')
 
-    expect(operations).toHaveLength(187)
+    expect(operations).toHaveLength(200)
     for (const operation of operations) {
       const call = request(app)
         [operation.method](fixturePath(operation.path))

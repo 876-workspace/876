@@ -1246,10 +1246,10 @@ export type AdminPrice = {
   type: string
   billing_scheme: string
   tiers_mode: string | null
-  tiers: Record<string, unknown> | null
-  recurring: Record<string, unknown> | null
+  tiers: AdminPriceTier[] | null
+  recurring: AdminPriceRecurring | null
   tax_behavior: string | null
-  transform_quantity: Record<string, unknown> | null
+  transform_quantity: AdminPriceTransformQuantity | null
   unit_amount_decimal: string | null
   trial_period_days: number | null
   metadata: Record<string, unknown> | null
@@ -1258,20 +1258,49 @@ export type AdminPrice = {
   updated_at: number
 }
 
-export type AdminPriceCreateParams = {
-  unit_amount?: number
-  currency?: string
-  billing_interval?: 'month' | 'year' | null
-  interval_count?: number | null
-  name?: string
-  nickname?: string
+export type AdminPriceTier = {
+  up_to: number | null
+  unit_amount?: number | null
+  unit_amount_decimal?: string | null
+  flat_amount?: number | null
+  flat_amount_decimal?: string | null
 }
 
-export type AdminPriceUpdateParams = {
-  name?: string
-  nickname?: string
+export type AdminPriceRecurring = {
+  interval: 'month' | 'year'
+  interval_count: number
+  usage_type: 'licensed' | 'metered'
+  meter_id?: string | null
+  trial_period_days?: number | null
+}
+
+export type AdminPriceTransformQuantity = {
+  divide_by: number
+  round: 'up' | 'down'
+}
+
+export type AdminPriceCreateParams = {
+  unit_amount?: number | null
+  unit_amount_decimal?: string | null
+  currency?: string
+  type?: 'one_time' | 'recurring'
+  billing_scheme?: 'per_unit' | 'tiered'
+  tiers_mode?: 'graduated' | 'volume' | null
+  tiers?: AdminPriceTier[] | null
+  recurring?: AdminPriceRecurring | null
+  tax_behavior?: 'inclusive' | 'exclusive' | 'unspecified' | null
+  transform_quantity?: AdminPriceTransformQuantity | null
+  trial_period_days?: number | null
+  lookup_key?: string | null
+  billing_interval?: 'month' | 'year' | null
+  interval_count?: number | null
+  name?: string | null
+  nickname?: string | null
+  metadata?: Record<string, unknown> | null
+}
+
+export type AdminPriceUpdateParams = Partial<AdminPriceCreateParams> & {
   active?: boolean
-  metadata?: Record<string, unknown>
 }
 
 export type AdminProduct = {

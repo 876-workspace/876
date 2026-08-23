@@ -1,5 +1,7 @@
 import { AppHttpError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
+import { getSettings } from '@/config'
+import { getLogger } from '@/platform/logger'
 import { creditNotes } from './repositories/credit-notes'
 import { estimates } from './repositories/estimates'
 import { invoicePreferences } from './repositories/invoice-preferences'
@@ -29,6 +31,8 @@ import type {
   QuoteUpdateParams,
 } from './schemas/quote'
 import { documentList, serializeDocument } from './documents.serializers'
+
+const log = getLogger('documents')
 
 async function unwrap<T>(
   result: Awaited<ServiceResult<T>>,
@@ -269,6 +273,19 @@ export const documentsService = {
     }
   },
   async assessLateFees(tenantId: string, asOf?: number) {
+    if (!getSettings().features.lateFees) {
+      log.info(
+        { tenantId },
+        'BILLING_LATE_FEES_ENABLED is disabled; skipping late-fee assessment.'
+      )
+      return {
+        object: 'late_fee_run' as const,
+        created: 0,
+        skipped: 0,
+        hasMore: false,
+      }
+    }
+
     return {
       object: 'late_fee_run',
       ...(await unwrap(

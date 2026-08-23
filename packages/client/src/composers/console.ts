@@ -41,6 +41,8 @@ export function createConsoleClient(options: ConsoleServerClientOptions) {
     plans: { admin: billingAdmin.plans },
     prices: { admin: billingAdmin.prices },
     customers: withAdmin(billingIntegration.customers, billingAdmin.customers),
+    paymentMethods: billingIntegration.paymentMethods,
+    paymentIntents: billingIntegration.paymentIntents,
     subscriptions: { admin: platformAdmin.subscriptions },
     packages: { admin: couriersAdmin.packages },
     branches: { admin: couriersAdmin.branches },

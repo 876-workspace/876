@@ -1,0 +1,29 @@
+/// State for collecting and validating a payment method before it is charged.
+model SetupIntent {
+  id                   String            @id
+  tenantId             String            @map("tenant_id")
+  customerId           String            @map("customer_id")
+  status               SetupIntentStatus
+  usage                SetupIntentUsage
+  paymentMethodId      String?           @map("payment_method_id")
+  mandateId            String?           @map("mandate_id")
+  paymentMethodTypes   String[]          @map("payment_method_types")
+  provider             String?
+  providerConnectionId String?           @map("provider_connection_id")
+  providerSetupId      String?           @map("provider_setup_id")
+  lastError            Json?             @map("last_error")
+  nextAction           Json?             @map("next_action")
+  cancellationReason   String?           @map("cancellation_reason")
+  canceledAt           Int?              @map("canceled_at")
+  succeededAt          Int?              @map("succeeded_at")
+  metadata             Json?
+  createdAt            Int               @map("created_at")
+  updatedAt            Int               @map("updated_at")
+  tenant               Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_setup_intents_tenant_fkey")
+  customer             Customer          @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_setup_intents_customer_fkey")
+  paymentMethod        PaymentMethod?    @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_setup_intents_payment_method_fkey")
+  mandate              Mandate?          @relation(fields: [tenantId, mandateId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_setup_intents_mandate_fkey")
+
+  @@unique([tenantId, id], map: "billing_setup_intents_tenant_id_id_key")
+  @@map("billing_setup_intents")
+}

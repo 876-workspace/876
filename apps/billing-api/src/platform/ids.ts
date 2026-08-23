@@ -62,6 +62,9 @@ const entityPrefixes: Record<string, string> = {
   PaymentProviderConnection: 'ppcon',
   PaymentAttempt: 'patm',
   PaymentProviderEvent: 'ppevt',
+  PaymentMethod: 'pm',
+  PaymentCredential: 'pcred',
+  PaymentIntent: 'pi',
   CustomerLedgerEntry: 'cled',
   LateFeeAssessment: 'lfa',
 }

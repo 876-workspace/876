@@ -3,10 +3,6 @@ import type { NextRequest } from 'next/server'
 
 import { coreAdmin } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import {
-  mirrorCoreProductPrices,
-  withBillingSyncHeader,
-} from '@/lib/billing/mirror'
 
 export const runtime = 'nodejs'
 
@@ -38,11 +34,7 @@ export async function PATCH(
     )
   }
 
-  const product = await coreAdmin.products.retrieve(id)
-  const billingSynced = product.data
-    ? await mirrorCoreProductPrices(product.data, [data])
-    : false
-  return withBillingSyncHeader(apiJson({ data }), billingSynced)
+  return apiJson({ data })
 }
 
 /** Archives a price. */
@@ -62,9 +54,5 @@ export async function DELETE(
     )
   }
 
-  const product = await coreAdmin.products.retrieve(id)
-  const billingSynced = product.data
-    ? await mirrorCoreProductPrices(product.data, [data])
-    : false
-  return withBillingSyncHeader(apiJson({ data }), billingSynced)
+  return apiJson({ data })
 }

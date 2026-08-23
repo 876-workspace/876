@@ -38,6 +38,9 @@
     "API_URL": "https://876-api.1876.workers.dev",
     // Bump to restart primary container for BILLING_WRITER activation.
     "BILLING_API_PRIMARY_INSTANCE": "primary-20260815-express",
+    "BILLING_DUNNING_ENABLED": "false",
+    "BILLING_LATE_FEES_ENABLED": "false",
+    "BILLING_PAYOUTS_ENABLED": "false",
     "BILLING_SWEEP_ENABLED": "false",
     "ENVIRONMENT": "production",
     "LOG_LEVEL": "info",

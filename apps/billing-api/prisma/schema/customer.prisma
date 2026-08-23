@@ -75,6 +75,11 @@ model Customer {
   couponRedemptions   CouponRedemption[]
   ledgerEntries       CustomerLedgerEntry[]
   paymentAttempts     PaymentAttempt[]
+  paymentMethods      PaymentMethod[]
+  paymentIntents      PaymentIntent[]
+  setupIntents        SetupIntent[]
+  mandates            Mandate[]
+  disputes            Dispute[]
 
   @@unique([tenantId, id], map: "billing_customers_tenant_id_id_key")
   @@unique([tenantId, organizationId], name: "billing_customers_tenant_id_organization_id_key", map: "billing_customers_tenant_id_organization_id_key")

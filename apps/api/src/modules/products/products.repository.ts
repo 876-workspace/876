@@ -67,7 +67,7 @@ const PRODUCT_SELECT = {
  * inside the repository, where every other storage concern lives.
  */
 function jsonInput(
-  value: Record<string, unknown> | null | undefined
+  value: unknown
 ): Prisma.InputJsonValue | typeof Prisma.DbNull | undefined {
   if (value === undefined) return undefined
 
@@ -166,30 +166,59 @@ export function findPriceById(priceId: string): Promise<PriceRow | null> {
 export type PriceCreateData = {
   id: string
   productId: string
-  unitAmount: number | null
+  unitAmount: bigint | null
+  unitAmountDecimal: string | null
   currency: string
   billingInterval: string | null
   intervalCount: number | null
   name: string | null
   nickname: string | null
+  lookupKey: string | null
+  type: string
+  billingScheme: string
+  tiersMode: string | null
+  tiers: Record<string, unknown>[] | null
+  recurring: Record<string, unknown> | null
+  taxBehavior: string | null
+  transformQuantity: Record<string, unknown> | null
+  trialPeriodDays: number | null
+  metadata: Record<string, unknown> | null
   status: string
   createdAt: bigint
   updatedAt: bigint
 }
 
 export function createPrice(data: PriceCreateData): Promise<PriceRow> {
+  const { tiers, recurring, transformQuantity, metadata, ...rest } = data
   return prisma.price.create({
     data: {
-      ...data,
-      unitAmount: data.unitAmount === null ? null : BigInt(data.unitAmount),
+      ...rest,
+      tiers: jsonInput(tiers),
+      recurring: jsonInput(recurring),
+      transformQuantity: jsonInput(transformQuantity),
+      metadata: jsonInput(metadata),
     },
     select: PRICE_SELECT,
   })
 }
 
 export type PriceUpdateData = {
+  unitAmount?: bigint | null
+  unitAmountDecimal?: string | null
+  currency?: string
+  billingInterval?: string | null
+  intervalCount?: number | null
   name?: string | null
   nickname?: string | null
+  lookupKey?: string | null
+  type?: string
+  billingScheme?: string
+  tiersMode?: string | null
+  tiers?: Record<string, unknown>[] | null
+  recurring?: Record<string, unknown> | null
+  taxBehavior?: string | null
+  transformQuantity?: Record<string, unknown> | null
+  trialPeriodDays?: number | null
   active?: boolean
   metadata?: Record<string, unknown> | null
   status?: string
@@ -200,16 +229,27 @@ export function updatePrice(
   priceId: string,
   data: PriceUpdateData
 ): Promise<PriceRow> {
-  const { metadata, ...rest } = data
+  const { metadata, tiers, recurring, transformQuantity, ...rest } = data
 
   return prisma.price.update({
     where: { id: priceId },
     data: {
       ...rest,
       ...('metadata' in data ? { metadata: jsonInput(metadata) } : {}),
+      ...('tiers' in data ? { tiers: jsonInput(tiers) } : {}),
+      ...('recurring' in data ? { recurring: jsonInput(recurring) } : {}),
+      ...('transformQuantity' in data
+        ? { transformQuantity: jsonInput(transformQuantity) }
+        : {}),
     },
     select: PRICE_SELECT,
   })
+}
+
+export async function priceHasSubscriptionItems(
+  priceId: string
+): Promise<boolean> {
+  return (await prisma.subscriptionItem.count({ where: { priceId } })) > 0
 }
 
 export function findModules(

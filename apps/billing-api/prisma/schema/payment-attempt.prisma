@@ -1,4 +1,3 @@
-
 /// Normalized provider charge lifecycle. A successful attempt may create or
 /// link a Payment, while failures never mutate invoice balances.
 model PaymentAttempt {
@@ -9,6 +8,11 @@ model PaymentAttempt {
   invoiceId            String?              @map("invoice_id")
   subscriptionId       String?              @map("subscription_id")
   paymentId            String?              @map("payment_id")
+  paymentIntentId      String?              @map("payment_intent_id")
+  paymentMethodId      String?              @map("payment_method_id")
+  providerStatus       String?              @map("provider_status")
+  threeDSecure         Json?                @map("three_d_secure")
+  authorizationCode    String?              @map("authorization_code")
   idempotencyKey       String               @map("idempotency_key")
   externalReference    String?              @map("external_reference")
   status               PaymentAttemptStatus @default(PROCESSING)
@@ -22,12 +26,14 @@ model PaymentAttempt {
   createdAt            Int                  @map("created_at")
   updatedAt            Int                  @map("updated_at")
 
-  tenant       Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payment_attempts_tenant_fkey")
-  connection   PaymentProviderConnection? @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_connection_fkey")
-  customer     Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_customer_fkey")
-  invoice      Invoice?                   @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_invoice_fkey")
-  subscription Subscription?              @relation(fields: [subscriptionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_payment_attempts_subscription_fkey")
-  payment      Payment?                   @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_payment_fkey")
+  tenant        Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payment_attempts_tenant_fkey")
+  connection    PaymentProviderConnection? @relation(fields: [tenantId, connectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_connection_fkey")
+  customer      Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_customer_fkey")
+  invoice       Invoice?                   @relation(fields: [tenantId, invoiceId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_invoice_fkey")
+  subscription  Subscription?              @relation(fields: [subscriptionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_payment_attempts_subscription_fkey")
+  payment       Payment?                   @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_payment_fkey")
+  paymentIntent PaymentIntent?             @relation(fields: [tenantId, paymentIntentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_payment_intent_fkey")
+  paymentMethod PaymentMethod?             @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_attempts_payment_method_fkey")
 
   @@unique([tenantId, id], map: "billing_payment_attempts_tenant_id_id_key")
   @@unique([tenantId, idempotencyKey], map: "billing_payment_attempts_tenant_idempotency_key")
@@ -37,5 +43,7 @@ model PaymentAttempt {
   @@index([invoiceId], map: "billing_payment_attempts_invoice_id_idx")
   @@index([paymentId], map: "billing_payment_attempts_payment_id_idx")
   @@index([subscriptionId], map: "billing_payment_attempts_subscription_id_idx")
+  @@index([paymentIntentId], map: "billing_payment_attempts_payment_intent_id_idx")
+  @@index([paymentMethodId], map: "billing_payment_attempts_payment_method_id_idx")
   @@map("billing_payment_attempts")
 }

@@ -3,6 +3,61 @@ import { describe, expect, it, vi } from 'vitest'
 import { create876Client } from './client'
 
 describe('create876Client', () => {
+  it('rejects a payment method response that contains a credential', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        data: {
+          object: 'payment_method',
+          id: 'pm_1',
+          tenantId: 'ten_1',
+          customerId: 'cus_1',
+          type: 'CARD',
+          status: 'ACTIVE',
+          allowRedisplay: 'ALWAYS',
+          reusable: true,
+          isDefault: true,
+          billingDetails: null,
+          card: { brand: 'visa', last4: '4242' },
+          bankAccount: null,
+          wallet: null,
+          manual: null,
+          fingerprint: null,
+          displayLabel: 'Visa •••• 4242',
+          expMonth: 12,
+          expYear: 2030,
+          provider: null,
+          providerPaymentMethodId: null,
+          providerConnectionId: null,
+          detachedAt: null,
+          metadata: null,
+          createdAt: 1,
+          updatedAt: 1,
+          credential: { sealedValue: 'never-returned' },
+        },
+        error: null,
+      })
+    )
+    const client = create876Client({
+      baseUrl: 'https://billing.example.test',
+      organizationId: 'org_1',
+      fetch: fetchMock,
+    })
+
+    const result = await client.paymentMethods.retrieve('pm_1')
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        code: 'billing/invalid-response',
+        message: 'The Billing service returned an invalid response.',
+      },
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://billing.example.test/api/v1/organizations/org_1/payment-methods/pm_1',
+      expect.objectContaining({ method: 'GET' })
+    )
+  })
+
   it('calls the versioned invoice endpoint with session credentials', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({

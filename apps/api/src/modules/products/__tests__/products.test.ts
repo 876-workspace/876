@@ -330,10 +330,34 @@ describe('POST /products', () => {
     expect(data.status).toBe('active')
   })
 
-  it('leaves the not-yet-persisted price fields to their column defaults', async () => {
-    // `type`, `recurring`, `lookup_key`, and `metadata` are accepted on the
-    // request and written by neither service.
+  it('persists the Stripe-shaped price fields carried on a product create', async () => {
+    // These four were accepted and dropped before the write path was widened.
     await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          ...BODY.price,
+          type: 'recurring',
+          recurring: { interval: 'month', interval_count: 3 },
+          lookup_key: 'pro_monthly',
+          metadata: { tier: 'pro' },
+        },
+      })
+
+    const data = price.create.mock.calls[0]?.[0].data as Record<string, unknown>
+    expect(data.type).toBe('recurring')
+    expect(data.lookupKey).toBe('pro_monthly')
+    expect(data.metadata).toEqual({ tier: 'pro' })
+    // The legacy interval columns stay written, derived from `recurring`, so
+    // the two representations cannot drift.
+    expect(data.billingInterval).toBe('month')
+    expect(data.intervalCount).toBe(3)
+  })
+
+  it('refuses a one-time price that also carries a recurring block', async () => {
+    const response = await request(createApp())
       .post('/products')
       .set(AUTH)
       .send({
@@ -342,16 +366,11 @@ describe('POST /products', () => {
           ...BODY.price,
           type: 'one_time',
           recurring: { interval: 'month' },
-          lookup_key: 'pro_monthly',
-          metadata: { tier: 'pro' },
         },
       })
 
-    const data = price.create.mock.calls[0]?.[0].data as Record<string, unknown>
-    expect(data).not.toHaveProperty('type')
-    expect(data).not.toHaveProperty('recurring')
-    expect(data).not.toHaveProperty('lookupKey')
-    expect(data).not.toHaveProperty('metadata')
+    expect(response.status).toBe(422)
+    expect(price.create).not.toHaveBeenCalled()
   })
 
   it('refuses a duplicate slug', async () => {
@@ -991,5 +1010,264 @@ describe('DELETE /products/:product_id/prices/:price_id', () => {
       .set(KEY_ONLY)
 
     expect(response.status).toBe(401)
+  })
+})
+
+describe('POST /products - extended Stripe-shaped price validations', () => {
+  const BODY = {
+    slug: '876-couriers-pro',
+    name: 'Pro',
+    price: { unit_amount: 150000, billing_interval: 'month', name: 'Monthly' },
+  }
+
+  it('derives billingInterval from recurring when creating via Stripe fields', async () => {
+    await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 20000,
+          currency: 'jmd',
+          type: 'recurring',
+          recurring: { interval: 'year', interval_count: 1 },
+        },
+      })
+
+    const data = price.create.mock.calls[0]?.[0].data as Record<string, unknown>
+    expect(data.billingInterval).toBe('year')
+    expect(data.intervalCount).toBe(1)
+    expect(data.type).toBe('recurring')
+  })
+
+  it('persists metadata and lookup_key alongside Stripe fields', async () => {
+    await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 5000,
+          currency: 'usd',
+          type: 'one_time',
+          lookup_key: 'one_time_lookup',
+          metadata: { channel: 'web' },
+        },
+      })
+
+    const data = price.create.mock.calls[0]?.[0].data as Record<string, unknown>
+    expect(data.lookupKey).toBe('one_time_lookup')
+    expect(data.metadata).toEqual({ channel: 'web' })
+    expect(data.type).toBe('one_time')
+  })
+
+  it('refuses one_time price with billing_interval', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 10000,
+          currency: 'jmd',
+          type: 'one_time',
+          billing_interval: 'month',
+        },
+      })
+
+    expect(response.status).toBe(422)
+    expect(price.create).not.toHaveBeenCalled()
+  })
+
+  it('refuses one_time price with interval_count', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 10000,
+          currency: 'jmd',
+          type: 'one_time',
+          interval_count: 1,
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('refuses one_time price with trial_period_days', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 10000,
+          currency: 'jmd',
+          type: 'one_time',
+          trial_period_days: 7,
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('allows recurring price without any interval', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 10000,
+          currency: 'jmd',
+          type: 'recurring',
+        },
+      })
+
+    expect(response.status).toBe(201)
+  })
+
+  it('refuses per-unit price with tiers', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 10000,
+          currency: 'jmd',
+          billing_scheme: 'per_unit',
+          tiers: [{ up_to: 10, unit_amount: 1000 }],
+          tiers_mode: 'graduated',
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('refuses tiered price without tiers or tiers_mode', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          currency: 'jmd',
+          billing_scheme: 'tiered',
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('refuses tiered price with invalid tier boundaries (no open tier)', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          currency: 'jmd',
+          billing_scheme: 'tiered',
+          tiers_mode: 'graduated',
+          tiers: [
+            { up_to: 10, unit_amount: 1000 },
+            { up_to: 20, unit_amount: 800 },
+          ],
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('refuses tiered price with non-monotonic tier order', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          currency: 'jmd',
+          billing_scheme: 'tiered',
+          tiers_mode: 'volume',
+          tiers: [
+            { up_to: 20, unit_amount: 1000 },
+            { up_to: 10, unit_amount: 800 },
+            { up_to: null, unit_amount: 500 },
+          ],
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('refuses metered recurring with transform_quantity', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 1000,
+          currency: 'jmd',
+          recurring: { interval: 'month', usage_type: 'metered' },
+          transform_quantity: { divide_by: 100, round: 'up' },
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+
+  it('refuses tiered per-unit mismatch: tiered forbids unit_amount', async () => {
+    const response = await request(createApp())
+      .post('/products')
+      .set(AUTH)
+      .send({
+        ...BODY,
+        price: {
+          unit_amount: 1000,
+          currency: 'jmd',
+          billing_scheme: 'tiered',
+          tiers_mode: 'graduated',
+          tiers: [{ up_to: null, unit_amount: 100 }],
+        },
+      })
+
+    expect(response.status).toBe(422)
+  })
+})
+
+describe('POST /products/prices - extended validations', () => {
+  it('accepts Stripe recurring fields on standalone price create', async () => {
+    await request(createApp())
+      .post('/products/prd_9tQ6/prices')
+      .set(AUTH)
+      .send({
+        unit_amount: 99900,
+        currency: 'usd',
+        type: 'recurring',
+        recurring: { interval: 'year', interval_count: 1 },
+        lookup_key: 'annual_99',
+      })
+
+    const data = price.create.mock.calls[0]?.[0].data as Record<string, unknown>
+    expect(data.type).toBe('recurring')
+    expect(data.lookupKey).toBe('annual_99')
+  })
+
+  it('refuses standalone one_time price with recurring block', async () => {
+    const response = await request(createApp())
+      .post('/products/prd_9tQ6/prices')
+      .set(AUTH)
+      .send({
+        unit_amount: 5000,
+        currency: 'jmd',
+        type: 'one_time',
+        recurring: { interval: 'month' },
+      })
+
+    expect(response.status).toBe(422)
   })
 })

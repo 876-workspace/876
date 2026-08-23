@@ -51,6 +51,10 @@
       "types": "./src/client/index.ts",
       "default": "./src/client/index.ts"
     },
+    "./crypto/secure-field": {
+      "types": "./src/crypto/secure-field.ts",
+      "default": "./src/crypto/secure-field.ts"
+    },
     "./db": {
       "types": "./src/db/worker-client.ts",
       "default": "./src/db/worker-client.ts"

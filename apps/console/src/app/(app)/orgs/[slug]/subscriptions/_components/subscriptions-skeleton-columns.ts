@@ -6,4 +6,3 @@ export const SUBSCRIPTIONS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Payment Method' },
   { label: 'Started' },
 ]
-

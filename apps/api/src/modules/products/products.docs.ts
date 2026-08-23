@@ -44,7 +44,7 @@ export const ARCHIVE_PRODUCT_RESPONSES = {} as const
 export const CREATE_PRICE_SUMMARY = 'Create a price'
 
 export const CREATE_PRICE_DESCRIPTION =
-  'Adds an additional price to an existing product (e.g. an annual option). **Admin only**.'
+  'Adds an additional price to an existing product. Prices support one-time and recurring charges, per-unit and tiered billing, decimal unit amounts, tax behavior, trials, metered usage, and transform quantity. **Admin only**.'
 
 export const CREATE_PRICE_RESPONSES = {} as const
 
@@ -56,7 +56,8 @@ export const RETRIEVE_PRICE_RESPONSES = {} as const
 
 export const UPDATE_PRICE_SUMMARY = 'Update a price'
 
-export const UPDATE_PRICE_DESCRIPTION = 'Updates a price. **Admin only**.'
+export const UPDATE_PRICE_DESCRIPTION =
+  'Updates a price. Monetary terms can only be corrected before a subscription item uses the price; create a new price after use. **Admin only**.'
 
 export const UPDATE_PRICE_RESPONSES = {} as const
 

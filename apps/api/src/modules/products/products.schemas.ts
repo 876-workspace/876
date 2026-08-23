@@ -78,25 +78,129 @@ export const productSchema = z
  * The initial price carried on a product create, and the body of a standalone
  * price create.
  *
- * `recurring`, `lookup_key`, `metadata`, and `type` are accepted and not yet
- * persisted — the FastAPI service takes the same fields and writes only the
- * subset below, so rejecting them here would break callers that already send
- * them.
+ * The legacy interval columns and the Stripe-shaped recurring object are both
+ * live. The service canonicalizes either representation before persistence.
  */
-export const priceCreateBodySchema = z.strictObject({
+const amountDecimalSchema = z.string().regex(/^\d+(?:\.\d+)?$/)
+const tierSchema = z.strictObject({
+  up_to: z.number().int().nullable(),
+  unit_amount: z.number().int().min(0).nullable().optional(),
+  unit_amount_decimal: amountDecimalSchema.nullable().optional(),
+  flat_amount: z.number().int().min(0).nullable().optional(),
+  flat_amount_decimal: amountDecimalSchema.nullable().optional(),
+})
+const recurringSchema = z.strictObject({
+  interval: z.enum(['month', 'year']),
+  interval_count: z.number().int().min(1).default(1),
+  usage_type: z.enum(['licensed', 'metered']).default('licensed'),
+  meter_id: z.string().nullable().optional(),
+  trial_period_days: z.number().int().min(0).nullable().optional(),
+})
+const transformQuantitySchema = z.strictObject({
+  divide_by: z.number().int().min(1),
+  round: z.enum(['up', 'down']),
+})
+
+const priceFieldsSchema = z.strictObject({
   unit_amount: z.number().int().nullable().optional(),
+  unit_amount_decimal: amountDecimalSchema.nullable().optional(),
   currency: z.string().max(3).default('jmd'),
-  recurring: z.record(z.string(), z.unknown()).nullable().optional(),
+  recurring: recurringSchema.nullable().optional(),
   lookup_key: z.string().nullable().optional(),
   name: z.string().nullable().optional(),
   nickname: z.string().nullable().optional(),
   type: z.enum(['one_time', 'recurring']).default('recurring'),
+  billing_scheme: z.enum(['per_unit', 'tiered']).default('per_unit'),
+  tiers_mode: z.enum(['graduated', 'volume']).nullable().optional(),
+  tiers: z.array(tierSchema).nullable().optional(),
+  tax_behavior: z
+    .enum(['inclusive', 'exclusive', 'unspecified'])
+    .nullable()
+    .optional(),
+  transform_quantity: transformQuantitySchema.nullable().optional(),
+  trial_period_days: z.number().int().min(0).nullable().optional(),
   metadata: z.record(z.string(), z.unknown()).nullable().optional(),
   billing_interval: z.enum(['month', 'year']).nullable().optional(),
   interval_count: z.number().int().nullable().optional(),
 })
 
-export const updatePriceBodySchema = z.strictObject({
+function addIssue(
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+  code: string
+) {
+  ctx.addIssue({ code: 'custom', path, message: code })
+}
+
+function validatePriceFields(
+  value: z.infer<typeof priceFieldsSchema>,
+  ctx: z.RefinementCtx
+) {
+  const perUnit = value.billing_scheme === 'per_unit'
+  const amountCount =
+    Number(value.unit_amount !== undefined && value.unit_amount !== null) +
+    Number(
+      value.unit_amount_decimal !== undefined &&
+        value.unit_amount_decimal !== null
+    )
+  // At most one, deliberately not exactly one. An absent amount has always
+  // been accepted and writes a null-amount price, which is how a free price is
+  // expressed; requiring an amount here would 422 every existing caller. Both
+  // set at once is a genuine contradiction and stays rejected.
+  if (perUnit && amountCount > 1)
+    addIssue(ctx, ['unit_amount'], 'price/invalid-unit-amount')
+  if (!perUnit && amountCount !== 0)
+    addIssue(ctx, ['unit_amount'], 'price/tiered-forbids-unit-amount')
+  if (!perUnit && (!value.tiers?.length || !value.tiers_mode))
+    addIssue(ctx, ['tiers'], 'price/tiered-requires-tiers')
+  if (
+    perUnit &&
+    ((value.tiers !== undefined && value.tiers !== null) ||
+      (value.tiers_mode !== undefined && value.tiers_mode !== null))
+  )
+    addIssue(ctx, ['tiers'], 'price/per-unit-forbids-tiers')
+  if (value.tiers) {
+    const open = value.tiers
+      .map((tier, index) => (tier.up_to === null ? index : -1))
+      .filter((index) => index >= 0)
+    if (open.length !== 1 || open[0] !== value.tiers.length - 1)
+      addIssue(ctx, ['tiers'], 'price/invalid-tier-boundaries')
+    const closed = value.tiers
+      .filter((tier) => tier.up_to !== null)
+      .map((tier) => tier.up_to as number)
+    if (closed.some((upTo, index) => index > 0 && upTo <= closed[index - 1]!))
+      addIssue(ctx, ['tiers'], 'price/invalid-tier-order')
+  }
+  if (
+    value.type === 'one_time' &&
+    ((value.recurring !== undefined && value.recurring !== null) ||
+      (value.billing_interval !== undefined &&
+        value.billing_interval !== null) ||
+      (value.interval_count !== undefined && value.interval_count !== null) ||
+      (value.trial_period_days !== undefined &&
+        value.trial_period_days !== null))
+  )
+    addIssue(ctx, ['type'], 'price/one-time-forbids-recurring')
+  // A recurring price with no interval at all stays valid: `billing_interval`
+  // is a nullable column and callers have always been able to omit it. The
+  // richer path is still guarded, because `recurring.interval` is required by
+  // the object's own schema whenever `recurring` is supplied.
+  if (
+    value.recurring?.usage_type === 'metered' &&
+    value.transform_quantity !== undefined &&
+    value.transform_quantity !== null
+  )
+    addIssue(
+      ctx,
+      ['transform_quantity'],
+      'price/metered-forbids-transform-quantity'
+    )
+}
+
+export const priceCreateBodySchema =
+  priceFieldsSchema.superRefine(validatePriceFields)
+
+export const updatePriceBodySchema = priceFieldsSchema.partial().extend({
   name: z.string().nullable().optional(),
   nickname: z.string().nullable().optional(),
   active: z.boolean().optional(),

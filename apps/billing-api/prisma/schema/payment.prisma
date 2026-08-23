@@ -15,6 +15,18 @@ model Payment {
   status                  PaymentStatus @default(SUCCEEDED)
   revision                Int           @default(0)
   providerPaymentId       String?       @map("provider_payment_id")
+  paymentIntentId         String?       @map("payment_intent_id")
+  paymentMethodId         String?       @map("payment_method_id")
+  billingDetailsSnapshot  Json?         @map("billing_details_snapshot")
+  paymentMethodSnapshot   Json?         @map("payment_method_snapshot")
+  providerStatus          String?       @map("provider_status")
+  failureCode             String?       @map("failure_code")
+  failureMessage          String?       @map("failure_message") @db.Text
+  authorizationCode       String?       @map("authorization_code")
+  receiptUrl              String?       @map("receipt_url")
+  risk                    Json?
+  amountRefunded          BigInt        @default(0) @map("amount_refunded")
+  disputed                Boolean       @default(false)
   amount                  BigInt
   /// Portion of `amount` not yet allocated to invoices — held as customer
   /// credit (advance / overpayment), refundable or appliable to future invoices.
@@ -32,11 +44,14 @@ model Payment {
   paymentMode        PaymentMode                @relation(fields: [tenantId, paymentModeId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_mode_fkey")
   depositAccount     BankAccount                @relation(fields: [tenantId, depositAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_deposit_account_fkey")
   providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_provider_connection_fkey")
+  paymentIntent      PaymentIntent?             @relation(fields: [tenantId, paymentIntentId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_intent_fkey")
+  paymentMethod      PaymentMethod?             @relation(fields: [tenantId, paymentMethodId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payments_payment_method_fkey")
   invoiceAllocations PaymentAllocation[]
   refunds            Refund[]
   bankTransaction    BankTransaction?
   ledgerEntries      CustomerLedgerEntry[]
   paymentAttempts    PaymentAttempt[]
+  disputes           Dispute[]
 
   @@unique([tenantId, id], map: "billing_payments_tenant_id_id_key")
   @@unique([tenantId, number], map: "billing_payments_tenant_id_number_key")
@@ -49,5 +64,7 @@ model Payment {
   @@index([customerId], map: "billing_payments_customer_id_idx")
   @@index([depositAccountId], map: "billing_payments_deposit_account_id_idx")
   @@index([paymentModeId], map: "billing_payments_payment_mode_id_idx")
+  @@index([tenantId, paymentIntentId], map: "billing_payments_tenant_intent_idx")
+  @@index([tenantId, paymentMethodId], map: "billing_payments_tenant_method_idx")
   @@map("billing_payments")
 }

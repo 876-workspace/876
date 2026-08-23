@@ -1,0 +1,47 @@
+/// Non-secret reusable instrument metadata. Secret values are held only by its
+/// credential relation so this record remains safe to display and snapshot.
+model PaymentMethod {
+  id                      String                 @id
+  tenantId                String                 @map("tenant_id")
+  customerId              String                 @map("customer_id")
+  type                    PaymentMethodType
+  status                  PaymentMethodStatus    @default(PENDING)
+  allowRedisplay          PaymentMethodRedisplay @default(UNSPECIFIED) @map("allow_redisplay")
+  reusable                Boolean                @default(false)
+  isDefault               Boolean                @default(false) @map("is_default")
+  billingDetails          Json?                  @map("billing_details")
+  card                    Json?
+  bankAccount             Json?                  @map("bank_account")
+  wallet                  Json?
+  manual                  Json?
+  fingerprint             String?
+  displayLabel            String?                @map("display_label")
+  expMonth                Int?                   @map("exp_month")
+  expYear                 Int?                   @map("exp_year")
+  provider                String?
+  providerPaymentMethodId String?                @map("provider_payment_method_id")
+  providerConnectionId    String?                @map("provider_connection_id")
+  detachedAt              Int?                   @map("detached_at")
+  metadata                Json?
+  createdAt               Int                    @map("created_at")
+  updatedAt               Int                    @map("updated_at")
+
+  tenant             Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_payment_methods_tenant_fkey")
+  customer           Customer                   @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_methods_customer_fkey")
+  providerConnection PaymentProviderConnection? @relation(fields: [tenantId, providerConnectionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_payment_methods_provider_connection_fkey")
+  credential         PaymentCredential?
+  mandates           Mandate[]
+  setupIntents       SetupIntent[]
+  paymentIntents     PaymentIntent[]
+  payments           Payment[]
+  attempts           PaymentAttempt[]
+
+  @@unique([tenantId, id], map: "billing_payment_methods_tenant_id_id_key")
+  @@unique([providerConnectionId, providerPaymentMethodId], map: "billing_payment_methods_provider_external_key")
+  @@index([tenantId, customerId], map: "billing_payment_methods_tenant_customer_idx")
+  @@index([tenantId, status], map: "billing_payment_methods_tenant_status_idx")
+  @@index([tenantId, type], map: "billing_payment_methods_tenant_type_idx")
+  @@index([tenantId, customerId, isDefault], map: "billing_payment_methods_tenant_customer_default_idx")
+  @@index([tenantId, fingerprint], map: "billing_payment_methods_tenant_fingerprint_idx")
+  @@map("billing_payment_methods")
+}

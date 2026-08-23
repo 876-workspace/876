@@ -73,6 +73,7 @@ model Invoice {
   creditNotes               CreditNote[]                     @relation("InvoiceCreditNotes")
   ledgerEntries             CustomerLedgerEntry[]
   paymentAttempts           PaymentAttempt[]
+  paymentIntents            PaymentIntent[]
   couponRedemptions         CouponRedemption[]
 
   @@unique([tenantId, id], map: "billing_invoices_tenant_id_id_key")
