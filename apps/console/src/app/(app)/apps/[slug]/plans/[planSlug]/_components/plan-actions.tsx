@@ -36,7 +36,7 @@ export function PlanActions({ productId, productName, productStatus }: Props) {
         <DropdownMenuContent align="end" className="w-auto min-w-44">
           <DropdownMenuItem disabled>
             <Copy className="size-4" />
-            Duplicate plan
+            Duplicate
           </DropdownMenuItem>
           {productStatus === 'active' && (
             <>
@@ -49,7 +49,7 @@ export function PlanActions({ productId, productName, productStatus }: Props) {
                 }}
               >
                 <Trash className="size-4" />
-                Archive plan
+                Archive
               </DropdownMenuItem>
             </>
           )}
