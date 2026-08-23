@@ -1,4 +1,13 @@
-import { TabContentSkeleton } from '@/components/patterns/detail/tab-content-skeleton'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
+
+const COLUMNS = [
+  { label: 'Name' },
+  { label: 'Amount' },
+  { label: 'Model' },
+  { label: 'Billing' },
+  { label: 'Flags' },
+  { label: 'Status' },
+]
 
 /**
  * Scoped to this route. Held at the segment above, this fallback was also the
@@ -6,5 +15,5 @@ import { TabContentSkeleton } from '@/components/patterns/detail/tab-content-ske
  * navigation painted neutral filler and then the real thing.
  */
 export default function Loading() {
-  return <TabContentSkeleton />
+  return <DataTableSkeleton columns={COLUMNS} rows={4} />
 }

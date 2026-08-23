@@ -5,8 +5,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { formatMoney } from '@/lib/money'
-import { MoreHorizontalIcon, Plus, Trash } from '@876/ui/icons'
-import { Button, buttonVariants } from '@876/ui/button'
+import { MoreHorizontalIcon, Trash } from '@876/ui/icons'
+import { buttonVariants } from '@876/ui/button'
 import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
@@ -28,6 +28,7 @@ import {
 } from '@876/ui/alert-dialog'
 import { cn } from '@876/core/utils'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
+import { statusBadgeClass } from '@/lib/format'
 import { client } from '@/lib/client'
 
 export type PriceItem = {
@@ -52,10 +53,26 @@ export type PricingSetup = {
   basePath: string
 }
 
+function billingLabel(price: PriceItem): string {
+  if (!price.billing_interval) return 'One-time'
+
+  const count = price.interval_count ?? 1
+  const unit = `${price.billing_interval}${count === 1 ? '' : 's'}`
+  return `Every ${count} ${unit}`
+}
+
+function modelLabel(price: PriceItem): string {
+  if (price.billing_scheme !== 'tiered') return 'Flat'
+  return price.tiers_mode === 'volume'
+    ? 'Tiered · Volume'
+    : 'Tiered · Graduated'
+}
+
 export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
   const router = useRouter()
   const [archiving, setArchiving] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+
   const archive = () => {
     if (!archiving) return
     startTransition(async () => {
@@ -69,6 +86,7 @@ export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
       }
     })
   }
+
   const columns: ColumnDef<PriceItem>[] = [
     {
       accessorKey: 'name',
@@ -76,9 +94,9 @@ export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
         <DataTableColumnHeader column={column} title="Name" />
       ),
       cell: ({ row }) => (
-        <div>
+        <div className="min-w-0">
           <Link
-            className="font-medium"
+            className="hover:text-foreground font-medium transition-colors"
             href={`${setup.basePath}/${row.original.id}/edit`}
           >
             {row.original.name || row.original.nickname || '—'}
@@ -92,63 +110,72 @@ export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
     {
       accessorKey: 'unit_amount',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Amount" />
+        <DataTableColumnHeader
+          column={column}
+          title="Amount"
+          className="justify-end"
+        />
       ),
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">
+        <span className="block text-right font-mono tabular-nums">
           {formatMoney(row.original.unit_amount, row.original.currency)}
         </span>
       ),
     },
     {
       id: 'model',
+      enableSorting: false,
       header: 'Model',
-      cell: ({ row }) =>
-        row.original.billing_scheme === 'tiered'
-          ? `Tiered · ${row.original.tiers_mode === 'volume' ? 'Volume' : 'Graduated'}`
-          : 'Flat',
+      cell: ({ row }) => modelLabel(row.original),
     },
     {
       accessorKey: 'billing_interval',
+      enableSorting: false,
       header: 'Billing',
-      cell: ({ row }) => {
-        const p = row.original
-        return p.billing_interval
-          ? `Every ${p.interval_count ?? 1} ${p.billing_interval}${(p.interval_count ?? 1) === 1 ? '' : 's'}`
-          : 'One-time'
-      },
+      cell: ({ row }) => billingLabel(row.original),
     },
     {
       id: 'flags',
+      enableSorting: false,
       header: 'Flags',
       cell: ({ row }) => (
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1">
           {row.original.trial_period_days ? (
-            <Badge variant="secondary">
-              Trial {row.original.trial_period_days} days
+            <Badge variant="info">
+              Trial {row.original.trial_period_days}d
             </Badge>
           ) : null}
-          {row.original.tax_behavior ? (
-            <Badge variant="secondary">Tax {row.original.tax_behavior}</Badge>
-          ) : (
-            <span>—</span>
-          )}
+          {row.original.tax_behavior &&
+          row.original.tax_behavior !== 'unspecified' ? (
+            <Badge variant="outline">Tax {row.original.tax_behavior}</Badge>
+          ) : null}
+          {!row.original.trial_period_days &&
+            (!row.original.tax_behavior ||
+              row.original.tax_behavior === 'unspecified') && (
+              <span className="text-muted-foreground">—</span>
+            )}
         </div>
       ),
     },
     {
       accessorKey: 'status',
-      header: 'Status',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
       cell: ({ row }) => (
-        <Badge
-          variant={row.original.status === 'active' ? 'default' : 'secondary'}
+        <span
+          className={cn(
+            'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize',
+            statusBadgeClass(row.original.status)
+          )}
         >
-          {row.original.status === 'active' ? 'Active' : 'Archived'}
-        </Badge>
+          {row.original.status}
+        </span>
       ),
     },
     {
       id: 'actions',
+      enableSorting: false,
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -169,7 +196,7 @@ export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
             </DropdownMenuItem>
             {row.original.status === 'active' ? (
               <DropdownMenuItem
-                className="text-red-500"
+                className="text-red-500 focus:text-red-500"
                 onClick={() => setArchiving(row.original.id)}
               >
                 <Trash /> Archive
@@ -180,24 +207,19 @@ export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
       ),
     },
   ]
+
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button
-          variant="info"
-          size="sm"
-          onClick={() => router.push(setup.newHref)}
-        >
-          <Plus /> Add price
-        </Button>
-      </div>
-      <div className="876-card">
-        <DataTable
-          key={`pricing-table:${setup.basePath}`}
-          columns={columns}
-          data={setup.prices}
-        />
-      </div>
+    <>
+      <DataTable
+        key={`pricing-table:${setup.basePath}`}
+        columns={columns}
+        data={setup.prices}
+        emptyState={
+          <div className="text-muted-foreground py-6 text-sm">
+            No prices yet. Add one to start selling this plan.
+          </div>
+        }
+      />
       <AlertDialog
         open={archiving !== null}
         onOpenChange={(open) => !open && setArchiving(null)}
@@ -217,6 +239,6 @@ export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   )
 }
