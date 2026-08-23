@@ -3,10 +3,6 @@ import type { NextRequest } from 'next/server'
 
 import { coreAdmin } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import {
-  mirrorCoreProductPrices,
-  withBillingSyncHeader,
-} from '@/lib/billing/mirror'
 
 export const runtime = 'nodejs'
 
@@ -34,20 +30,5 @@ export async function POST(
     )
   }
 
-  const product = await coreAdmin.products.retrieve(id)
-  let billingSynced = false
-  if (!product.data) {
-    console.error(
-      '[console.billing.mirror] product retrieve failed:',
-      id,
-      product.error?.message
-    )
-  } else {
-    billingSynced = await mirrorCoreProductPrices(product.data, [data])
-  }
-
-  return withBillingSyncHeader(
-    apiJson({ data }, { status: 201 }),
-    billingSynced
-  )
+  return apiJson({ data }, { status: 201 })
 }

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PlanPricingPage({ params }: Props) {
   const { slug, planSlug } = await params
-  const setup = loadPricingSetup(slug, planSlug)
+  const setup = await loadPricingSetup(slug, planSlug)
 
   return (
     <div className="space-y-5">
@@ -51,8 +51,19 @@ async function loadPricingSetup(
     unit_amount: price.unit_amount,
     currency: price.currency,
     billing_interval: price.billing_interval ?? null,
+    interval_count: price.interval_count ?? null,
+    billing_scheme: price.billing_scheme,
+    tiers_mode: price.tiers_mode ?? null,
+    trial_period_days: price.trial_period_days ?? null,
+    tax_behavior: price.tax_behavior ?? null,
     status: price.status,
   }))
 
-  return { productId: product.id, prices }
+  const base = `/apps/${slug}/plans/${planSlug}/pricing`
+  return {
+    productId: product.id,
+    prices,
+    newHref: `${base}/new`,
+    editHref: (id) => `${base}/${id}/edit`,
+  }
 }
