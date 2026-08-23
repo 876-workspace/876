@@ -12,6 +12,8 @@ import { createItemsResource } from './resources/items'
 import { createInvoicesResource } from './resources/invoices'
 import { createInvoicePreferencesResource } from './resources/invoice-preferences'
 import { createPaymentModesResource } from './resources/payment-modes'
+import { createPaymentMethodsResource } from './resources/payment-methods'
+import { createPaymentIntentsResource } from './resources/payment-intents'
 import {
   createEstimatesResource,
   createQuotesResource,
@@ -39,6 +41,8 @@ export function create876Client(options: ClientOptions = {}) {
     invoicePreferences: createInvoicePreferencesResource(runtime),
     items: createItemsResource(runtime),
     paymentModes: createPaymentModesResource(runtime),
+    paymentMethods: createPaymentMethodsResource(runtime),
+    paymentIntents: createPaymentIntentsResource(runtime),
     paymentProviders: createPaymentProvidersResource(runtime),
     paymentTerms: createPaymentTermsResource(runtime),
     payments: createPaymentsResource(runtime),

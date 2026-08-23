@@ -143,6 +143,33 @@ export {
   PaymentModeListSchema,
 } from './payment-mode.schema'
 export type {
+  PaymentMethodType,
+  PaymentMethodStatus,
+  PaymentMethodCreateParams,
+  PaymentMethodUpdateParams,
+  PaymentMethodListParams,
+  PaymentMethod,
+  PaymentMethodList,
+  DeletedPaymentMethod,
+} from './payment-method'
+export {
+  DeletedPaymentMethodSchema,
+  PaymentMethodListSchema,
+  PaymentMethodSchema,
+} from './payment-method.schema'
+export type {
+  PaymentIntentStatus,
+  PaymentIntentCreateParams,
+  PaymentIntentCancelParams,
+  PaymentIntentListParams,
+  PaymentIntent,
+  PaymentIntentList,
+} from './payment-intent'
+export {
+  PaymentIntentListSchema,
+  PaymentIntentSchema,
+} from './payment-intent.schema'
+export type {
   PaymentAllocationParams,
   PaymentCreateParams,
   PaymentApplyParams,
