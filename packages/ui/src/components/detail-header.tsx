@@ -23,7 +23,15 @@ const DetailHeader = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement> & { condensedTitle?: React.ReactNode }
 >(({ className, children, condensedTitle, ...props }, ref) => {
   const sentinelRef = React.useRef<HTMLDivElement>(null)
+  const shellRef = React.useRef<HTMLDivElement>(null)
+  const expandedHeightRef = React.useRef(0)
   const [pinned, setPinned] = React.useState(false)
+  // Height the condensed state gives back, reserved below the header so the
+  // document does not shrink when it collapses. Without this the page can
+  // shorten past its own scroll offset, which scrolls the sentinel back into
+  // view, unpins, re-grows, re-pins — an oscillation that reads as violent
+  // jitter on any page only slightly taller than the viewport.
+  const [reserved, setReserved] = React.useState(0)
 
   React.useEffect(() => {
     const sentinel = sentinelRef.current
@@ -38,11 +46,29 @@ const DetailHeader = React.forwardRef<
     return () => observer.disconnect()
   }, [])
 
+  React.useLayoutEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+
+    if (!pinned) {
+      expandedHeightRef.current = shell.offsetHeight
+      setReserved(0)
+      return
+    }
+
+    const delta = expandedHeightRef.current - shell.offsetHeight
+    setReserved(delta > 0 ? delta : 0)
+  }, [pinned])
+
   return (
     <>
       <div ref={sentinelRef} aria-hidden="true" className="h-px" />
       <div
-        ref={ref}
+        ref={(node) => {
+          shellRef.current = node
+          if (typeof ref === 'function') ref(node)
+          else if (ref) ref.current = node
+        }}
         data-condensed={pinned ? 'true' : undefined}
         className={cn(
           '876-detail-header-shell sm:sticky sm:top-0 sm:z-10',
@@ -60,6 +86,9 @@ const DetailHeader = React.forwardRef<
         ) : null}
         {children}
       </div>
+      {reserved > 0 ? (
+        <div aria-hidden="true" style={{ height: reserved }} />
+      ) : null}
     </>
   )
 })
