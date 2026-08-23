@@ -26,6 +26,8 @@ import {
   HOST_TEMPLATE_ENV,
   previewOrigin,
   resolveHostTemplate,
+  TUNNEL_DOMAIN_ENV,
+  tunnelOrigin,
 } from './dev-preview.mjs'
 import { mergeEnvFile, readEnvValue } from './env-file.mjs'
 
@@ -118,12 +120,35 @@ function envPlanFor(origins) {
         origins.invoice,
       ].join(','),
     },
+    // Each product service keeps its own CORS allow-list. Only the app that
+    // fronts it can reach it from a browser, so each list stays narrow.
+    'billing-api': {
+      CORS_ALLOWED_ORIGINS: ['http://localhost:3004', origins.billing].join(
+        ','
+      ),
+    },
+    'couriers-api': {
+      CORS_ALLOWED_ORIGINS: ['http://localhost:3003', origins.couriers].join(
+        ','
+      ),
+    },
+    'storage-api': {
+      CORS_ALLOWED_ORIGINS: [
+        'http://localhost:3003',
+        'http://localhost:3004',
+        origins.couriers,
+        origins.billing,
+      ].join(','),
+    },
   }
 }
 
+const tunnelDomain =
+  process.env[TUNNEL_DOMAIN_ENV]?.trim() ??
+  readEnvValue(join(root, '.env'), TUNNEL_DOMAIN_ENV)?.trim()
 const template = resolveHostTemplate()
 
-if (!template) {
+if (!template && !tunnelDomain) {
   const billingCredentialsSynced = syncBillingPlatformCredentials()
   console.log(
     '[setup-dev-env] No forwarded-port workspace detected — localhost defaults apply.'
@@ -138,13 +163,24 @@ if (!template) {
 const origins = Object.fromEntries(
   Object.entries(PORTS).map(([app, port]) => [
     app,
-    previewOrigin(port, template),
+    tunnelDomain
+      ? tunnelOrigin(app, tunnelDomain)
+      : previewOrigin(port, template),
   ])
 )
 
 for (const [app, updates] of Object.entries(envPlanFor(origins))) {
   const path = join(root, 'apps', app, '.env.development.local')
-  mergeEnvFile(path, { ...updates, [HOST_TEMPLATE_ENV]: template }, HEADER)
+  mergeEnvFile(
+    path,
+    {
+      ...updates,
+      ...(tunnelDomain
+        ? { [TUNNEL_DOMAIN_ENV]: tunnelDomain }
+        : { [HOST_TEMPLATE_ENV]: template }),
+    },
+    HEADER
+  )
   console.log(`[setup-dev-env] Updated apps/${app}/.env.development.local`)
 }
 
@@ -154,7 +190,11 @@ if (billingCredentialsSynced)
     '[setup-dev-env] Synced Billing server credentials from apps/api/.env.'
   )
 
-console.log(`[setup-dev-env] Host template: ${template}`)
+console.log(
+  tunnelDomain
+    ? `[setup-dev-env] Cloudflare Tunnel domain: ${tunnelDomain}`
+    : `[setup-dev-env] Host template: ${template}`
+)
 for (const [app, origin] of Object.entries(origins)) {
   console.log(`[setup-dev-env]   ${app.padEnd(10)} ${origin}`)
 }

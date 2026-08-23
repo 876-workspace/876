@@ -15,6 +15,9 @@
 /** Env var holding the `{port}` hostname template. */
 export const HOST_TEMPLATE_ENV = 'DEV_PREVIEW_HOST_TEMPLATE'
 
+/** Env var holding the Cloudflare zone used for fixed dev origins. */
+export const TUNNEL_DOMAIN_ENV = 'DEV_TUNNEL_DOMAIN'
+
 /** Placeholder replaced with the forwarded port number. */
 export const PORT_PLACEHOLDER = '{port}'
 
@@ -45,4 +48,16 @@ export function previewOrigin(port, template) {
   if (!template) return `http://localhost:${port}`
 
   return `https://${template.replaceAll(PORT_PLACEHOLDER, String(port))}`
+}
+
+/**
+ * Builds a stable public origin for a service exposed through the shared
+ * development tunnel.
+ *
+ * @param service - Stable service name used as the hostname prefix.
+ * @param domain - Cloudflare zone configured for the tunnel.
+ * @returns An absolute HTTPS origin.
+ */
+export function tunnelOrigin(service, domain) {
+  return `https://${service}-dev.${domain}`
 }
