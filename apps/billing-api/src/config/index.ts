@@ -16,6 +16,14 @@ const optionalNumber = (fallback: number) =>
       return Number.isFinite(parsed) ? parsed : fallback
     })
 
+const booleanish = () =>
+  z
+    .string()
+    .optional()
+    .transform((value) =>
+      ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase())
+    )
+
 const envSchema = z.object({
   PORT: optionalNumber(4004),
   ENVIRONMENT: optionalString('production'),
@@ -49,14 +57,12 @@ const envSchema = z.object({
   // AES-256-GCM key for development and tests. Neither configured means the
   // provider raises on seal rather than storing a credential in plaintext.
   WORKOS_API_KEY: optionalString(),
-  WORKOS_VAULT_ENABLED: z
-    .string()
-    .optional()
-    .transform((value) =>
-      ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase())
-    ),
+  WORKOS_VAULT_ENABLED: booleanish(),
   WORKOS_VAULT_KEY_CONTEXT: optionalString('876-billing'),
   SECURE_FIELD_KEY: optionalString(),
+  BILLING_LATE_FEES_ENABLED: booleanish(),
+  BILLING_DUNNING_ENABLED: booleanish(),
+  BILLING_PAYOUTS_ENABLED: booleanish(),
   BILLING_PLATFORM_TENANT_SLUG: z
     .string()
     .optional()
@@ -97,6 +103,11 @@ function build(env: NodeJS.ProcessEnv) {
       apiKey: value.WORKOS_API_KEY,
       vaultEnabled: value.WORKOS_VAULT_ENABLED,
       vaultKeyContext: value.WORKOS_VAULT_KEY_CONTEXT,
+    },
+    features: {
+      lateFees: value.BILLING_LATE_FEES_ENABLED,
+      dunning: value.BILLING_DUNNING_ENABLED,
+      payouts: value.BILLING_PAYOUTS_ENABLED,
     },
     secureFieldKey: value.SECURE_FIELD_KEY,
     isProduction: value.ENVIRONMENT === 'production',
