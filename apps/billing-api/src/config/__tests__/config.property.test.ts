@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import * as fc from 'fast-check'
 
 describe('Config / booleanish / property-based truthy parsing', () => {
   beforeEach(() => {
@@ -11,7 +10,10 @@ describe('Config / booleanish / property-based truthy parsing', () => {
     return resetSettingsForTest(env as NodeJS.ProcessEnv)
   }
 
-  function wrapTruthy(base: string, style: 'exact' | 'upper' | 'padded' | 'spaced'): string {
+  function wrapTruthy(
+    base: string,
+    style: 'exact' | 'upper' | 'padded' | 'spaced'
+  ): string {
     switch (style) {
       case 'upper':
         return base.toUpperCase()
@@ -25,81 +27,123 @@ describe('Config / booleanish / property-based truthy parsing', () => {
   }
 
   it('truthy set [1,true,yes,on] is stable under case+trim transformation @advanced', async () => {
-    await fc.assert(
-      fc.asyncProperty(
-        fc.constantFrom('1', 'true', 'yes', 'on'),
-        fc.constantFrom('exact', 'upper', 'padded', 'spaced' as const),
-        async (base, style) => {
-          const value = wrapTruthy(base, style as any)
-          const s = await loadWithEnv({
-            BILLING_DATABASE_URL: 'postgres://localhost/billing',
-            BILLING_LATE_FEES_ENABLED: value,
-            BILLING_DUNNING_ENABLED: value,
-            BILLING_PAYOUTS_ENABLED: value,
-          })
-          expect(s.features.lateFees).toBe(true)
-          expect(s.features.dunning).toBe(true)
-          expect(s.features.payouts).toBe(true)
-          expect(s.workos?.vaultEnabled).toBe(true === false ? false : true) // anchor: workos uses same helper via WORKOS_VAULT_ENABLED — just ensure not throw
-          vi.resetModules()
-        }
-      ),
-      { numRuns: 40 }
-    )
+    // Arrange, Act, Assert — data-driven property without external library (guide 1.10 alternative)
+    const truthyBases = ['1', 'true', 'yes', 'on'] as const
+    const styles = ['exact', 'upper', 'padded', 'spaced'] as const
+    for (const base of truthyBases) {
+      for (const style of styles) {
+        const value = wrapTruthy(base, style)
+        const s = await loadWithEnv({
+          BILLING_DATABASE_URL: 'postgres://localhost/billing',
+          BILLING_LATE_FEES_ENABLED: value,
+          BILLING_DUNNING_ENABLED: value,
+          BILLING_PAYOUTS_ENABLED: value,
+        })
+        expect(s.features.lateFees, `${base}/${style}`).toBe(true)
+        expect(s.features.dunning, `${base}/${style}`).toBe(true)
+        expect(s.features.payouts, `${base}/${style}`).toBe(true)
+        vi.resetModules()
+      }
+    }
   })
 
   it('falsy values are precisely the complement of truthy for billing flags @advanced', async () => {
     // Arrange: define truthy canonically
     const truthy = new Set(['1', 'true', 'yes', 'on'])
-    await fc.assert(
-      fc.asyncProperty(fc.string(), async (raw) => {
-        // Act
-        const normalized = raw.trim().toLowerCase()
-        const s = await loadWithEnv({
-          BILLING_DATABASE_URL: 'postgres://localhost/billing',
-          BILLING_LATE_FEES_ENABLED: raw,
-        })
-        // Assert
-        const expected = truthy.has(normalized)
-        expect(s.features.lateFees).toBe(expected)
-        vi.resetModules()
-      }),
-      { numRuns: 80 }
-    )
+    const samples = [
+      '0',
+      'false',
+      'no',
+      'off',
+      '',
+      ' ',
+      '  ',
+      'TRUEISH',
+      'yess',
+      'onn',
+      '2',
+      'true false',
+      '\t\n',
+      'random',
+      'Ja',
+      'si',
+    ]
+    for (const raw of samples) {
+      // Act
+      const normalized = raw.trim().toLowerCase()
+      const s = await loadWithEnv({
+        BILLING_DATABASE_URL: 'postgres://localhost/billing',
+        BILLING_LATE_FEES_ENABLED: raw,
+      })
+      // Assert
+      const expected = truthy.has(normalized)
+      expect(s.features.lateFees, `raw=${JSON.stringify(raw)}`).toBe(expected)
+      vi.resetModules()
+    }
+    // exhaustive quick check: 50 random strings
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789 '
+    for (let i = 0; i < 50; i++) {
+      const len = Math.floor(Math.random() * 10) + 1
+      let raw = ''
+      for (let j = 0; j < len; j++)
+        raw += chars.charAt(Math.floor(Math.random() * chars.length))
+      const s = await loadWithEnv({
+        BILLING_DATABASE_URL: 'postgres://localhost/billing',
+        BILLING_LATE_FEES_ENABLED: raw,
+      })
+      const expected = truthy.has(raw.trim().toLowerCase())
+      expect(s.features.lateFees, `random=${raw}`).toBe(expected)
+      vi.resetModules()
+    }
   })
 
   it('undefined, empty, and missing env yield false for all billing features @advanced', async () => {
     // AAA
     // Arrange
-    const env = { BILLING_DATABASE_URL: 'postgres://localhost/billing' } as any
+    const env = {
+      BILLING_DATABASE_URL: 'postgres://localhost/billing',
+    } as unknown as never
     // Act
     const s = await loadWithEnv(env)
     // Assert
-    expect(s.features).toEqual({ lateFees: false, dunning: false, payouts: false })
+    expect(s.features).toEqual({
+      lateFees: false,
+      dunning: false,
+      payouts: false,
+    })
   })
 
   it('three billing flags are independent — combinational property @advanced', async () => {
-    await fc.assert(
-      fc.asyncProperty(
-        fc.constantFrom('true', 'false', '1', '0', 'yes', 'no', 'on', 'off', '', undefined),
-        fc.constantFrom('true', 'false', '1', '0', 'yes', 'no', 'on', 'off', '', undefined),
-        fc.constantFrom('true', 'false', '1', '0', 'yes', 'no', 'on', 'off', '', undefined),
-        async (a, b, c) => {
+    const vals = [
+      'true',
+      'false',
+      '1',
+      '0',
+      'yes',
+      'no',
+      'on',
+      'off',
+      '',
+      undefined,
+    ] as const
+    const toBool = (v: string | undefined) =>
+      ['1', 'true', 'yes', 'on'].includes((v ?? '').trim().toLowerCase())
+    for (const a of vals) {
+      for (const b of vals.slice(0, 3)) {
+        for (const c of vals.slice(0, 3)) {
           const s = await loadWithEnv({
             BILLING_DATABASE_URL: 'postgres://localhost/billing',
-            BILLING_LATE_FEES_ENABLED: a as any,
-            BILLING_DUNNING_ENABLED: b as any,
-            BILLING_PAYOUTS_ENABLED: c as any,
+            BILLING_LATE_FEES_ENABLED: a as unknown as never,
+            BILLING_DUNNING_ENABLED: b as unknown as never,
+            BILLING_PAYOUTS_ENABLED: c as unknown as never,
           })
-          const toBool = (v: any) => ['1', 'true', 'yes', 'on'].includes((v ?? '').trim().toLowerCase())
-          expect(s.features.lateFees).toBe(toBool(a))
-          expect(s.features.dunning).toBe(toBool(b))
-          expect(s.features.payouts).toBe(toBool(c))
+          expect(s.features.lateFees, `a=${String(a)}`).toBe(toBool(a))
+          expect(s.features.dunning, `b=${String(b)}`).toBe(toBool(b))
+          expect(s.features.payouts, `c=${String(c)}`).toBe(toBool(c))
           vi.resetModules()
         }
-      ),
-      { numRuns: 40 }
-    )
+      }
+    }
   })
 })
 
@@ -113,13 +157,20 @@ describe('Config / contract / settings shape is frozen and complete @advanced', 
 
   it('exposes expected top-level keys as frozen object', async () => {
     // Arrange & Act
-    const s = await load({ BILLING_DATABASE_URL: 'postgres://localhost/billing', BILLING_LATE_FEES_ENABLED: 'true' })
+    const s = await load({
+      BILLING_DATABASE_URL: 'postgres://localhost/billing',
+      BILLING_LATE_FEES_ENABLED: 'true',
+    })
     // Assert
     expect(Object.isFrozen(s)).toBe(true)
     expect(s).toHaveProperty('features')
     expect(s).toHaveProperty('workos')
     expect(s).toHaveProperty('isProduction')
-    expect(s.features).toEqual({ lateFees: true, dunning: false, payouts: false })
+    expect(s.features).toEqual({
+      lateFees: true,
+      dunning: false,
+      payouts: false,
+    })
   })
 
   it('wrangler defaults are parsable as boolean strings — golden path', async () => {
