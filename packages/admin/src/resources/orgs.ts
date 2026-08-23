@@ -539,8 +539,16 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
 
       list: ((
         params:
-          | { organizationId: string; organizationIds?: never }
-          | { organizationIds: string[]; organizationId?: never }
+          | {
+              organizationId: string
+              status?: AdminSubscriptionStatus
+              organizationIds?: never
+            }
+          | {
+              organizationIds: string[]
+              organizationId?: never
+              status?: never
+            }
       ) => {
         if ('organizationIds' in params && params.organizationIds) {
           return adminRequest<AdminSubscriptionBatch>(runtime, {
@@ -552,14 +560,17 @@ export function createAdminOrgsResource(runtime: AdminRuntime) {
         return adminRequest<AdminSubscription[]>(runtime, {
           method: 'GET',
           path: `/organizations/${params.organizationId}/apps`,
+          query: { status: params.status },
         })
       }) as {
         (params: {
           organizationIds: string[]
           organizationId?: never
+          status?: never
         }): Promise<AdminResult<AdminSubscriptionBatch>>
         (params: {
           organizationId: string
+          status?: AdminSubscriptionStatus
           organizationIds?: never
         }): Promise<AdminResult<AdminSubscription[]>>
       },

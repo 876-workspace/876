@@ -12,13 +12,11 @@ import {
   flexRender,
   type RowSelectionState,
   type SortingState,
-  type ColumnVisibilityState,
   type RowData,
 } from '@tanstack/react-table'
 
 import { cn } from '../lib/utils'
 import { Checkbox } from './checkbox'
-import { DataTableToolbar } from './data-table-toolbar'
 import {
   Table,
   TableBody,
@@ -36,18 +34,8 @@ interface DataTableProps<TData extends RowData> {
   className?: string
   rowClassName?: string | ((row: TData) => string)
   layout?: 'table' | 'grid'
-  /**
-   * Optional toolbar content rendered above the table. When column visibility
-   * is enabled, this content is placed in the left side of the shared toolbar.
-   */
+  /** Optional toolbar content rendered above the table. */
   toolbar?: React.ReactNode
-  /**
-   * Enable per-column visibility toggles. Columns opt-in by **not** setting
-   * `enableHiding: false` in their `LegacyColumnDef`.
-   */
-  enableColumnVisibility?: boolean
-  /** Initial column visibility state. Only applied on first mount. */
-  defaultColumnVisibility?: ColumnVisibilityState
   /**
    * Prepend a checkbox column and enable row multi-selection.
    * Selected rows are reported via `onRowSelectionChange`.
@@ -66,14 +54,10 @@ function DataTable<TData extends RowData>({
   rowClassName,
   layout = 'table',
   toolbar,
-  enableColumnVisibility = false,
-  defaultColumnVisibility,
   enableRowSelection = false,
   onRowSelectionChange,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<ColumnVisibilityState>(defaultColumnVisibility ?? {})
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
 
   const selectionColumn: LegacyColumnDef<TData, unknown> = React.useMemo(
@@ -129,18 +113,13 @@ function DataTable<TData extends RowData>({
     columns: resolvedColumns,
     state: {
       sorting,
-      columnVisibility: enableColumnVisibility ? columnVisibility : {},
       rowSelection,
     },
     enableRowSelection,
     onSortingChange: setSorting,
-    onColumnVisibilityChange: enableColumnVisibility
-      ? setColumnVisibility
-      : undefined,
     onRowSelectionChange: (
       updater:
-        | RowSelectionState
-        | ((old: RowSelectionState) => RowSelectionState)
+        RowSelectionState | ((old: RowSelectionState) => RowSelectionState)
     ) => {
       const next =
         typeof updater === 'function' ? updater(rowSelection) : updater
@@ -154,16 +133,10 @@ function DataTable<TData extends RowData>({
     getSortedRowModel: getSortedRowModel(),
   })
 
-  const resolvedToolbar = enableColumnVisibility ? (
-    <DataTableToolbar table={table}>{toolbar}</DataTableToolbar>
-  ) : (
-    toolbar
-  )
-
   if (layout === 'grid') {
     return (
       <>
-        {resolvedToolbar}
+        {toolbar}
         {data.length === 0 && emptyState ? (
           <>{emptyState}</>
         ) : (
@@ -244,7 +217,7 @@ function DataTable<TData extends RowData>({
 
   return (
     <>
-      {resolvedToolbar}
+      {toolbar}
       <Table className={className}>
         <TableHeader className="876-header-row">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -303,7 +276,9 @@ function DataTable<TData extends RowData>({
                     : rowClassName
                 )}
                 onClick={
-                  onRowClick ? () => onRowClick(row.original as TData) : undefined
+                  onRowClick
+                    ? () => onRowClick(row.original as TData)
+                    : undefined
                 }
               >
                 {row.getVisibleCells().map((cell) => (

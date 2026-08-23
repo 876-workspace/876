@@ -123,7 +123,6 @@ export function FeaturesTable({
         columns={columns}
         data={sortedData}
         emptyState={emptyState}
-        enableColumnVisibility
         onRowClick={(feature) => router.push(`/features/${feature.id}`)}
       />
       <CursorPagination

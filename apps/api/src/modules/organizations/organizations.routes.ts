@@ -22,6 +22,7 @@ import {
   orgProfileUpdateBodySchema,
   orgSetupBodySchema,
   orgIdParamsSchema,
+  orgSubscriptionsQuerySchema,
   retrieveOrganizationQuerySchema,
   searchOrganizationsQuerySchema,
   subscriptionProvisionBodySchema,
@@ -251,7 +252,10 @@ export function registerOrganizationRoutes(resolveGuards: GuardResolver) {
     operationId: 'organizations-list_org_subscriptions',
     summary: docs.LIST_ORG_SUBSCRIPTIONS_SUMMARY,
     description: docs.LIST_ORG_SUBSCRIPTIONS_DESCRIPTION,
-    request: { params: orgIdParamsSchema },
+    request: {
+      params: orgIdParamsSchema,
+      query: orgSubscriptionsQuerySchema,
+    },
     responses: {
       200: {
         description: 'Subscriptions returned.',

@@ -25,6 +25,18 @@ export function statusBadgeClass(status: string): string {
   switch (status) {
     case 'active':
       return 'border-emerald-400/40 bg-emerald-400/10 text-emerald-700 dark:text-emerald-400'
+    case 'trialing':
+      return 'border-sky-400/40 bg-sky-400/10 text-sky-700 dark:text-sky-400'
+    case 'past_due':
+    case 'unpaid':
+    case 'incomplete':
+      return 'border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-400'
+    case 'canceled':
+    case 'incomplete_expired':
+    case 'blocked':
+      return 'border-red-400/40 bg-red-400/10 text-red-700 dark:text-red-400'
+    case 'paused':
+      return 'border-slate-400/40 bg-slate-400/10 text-slate-600 dark:text-slate-400'
     case 'suspended':
       return 'border-amber-400/40 bg-amber-400/10 text-amber-700 dark:text-amber-400'
     case 'inactive':

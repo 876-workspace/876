@@ -141,7 +141,7 @@ export function SubscriptionsManager({
           className={buttonVariants({ variant: 'info', size: 'sm' })}
         >
           <Plus className="size-4" strokeWidth={2.25} />
-          Add subscription
+          Add
         </Link>
       </div>
 
@@ -212,7 +212,7 @@ function SubscriptionRow({
   return (
     <div className="grid gap-3 px-4 py-3 xl:grid-cols-[minmax(0,1fr)_9rem_14rem_14rem_16rem_auto] xl:items-center">
       <div className="min-w-0">
-        <p className="truncate text-[0.8125rem] font-medium">
+        <p className="truncate text-[0.8125rem] font-medium text-sky-600 dark:text-sky-400">
           {item?.product_name || item?.product_slug || subscription.app_slug}
         </p>
         <p className="text-muted-foreground truncate text-xs">

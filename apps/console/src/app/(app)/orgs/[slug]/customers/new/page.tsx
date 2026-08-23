@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { PageBreadcrumb } from '@876/ui/page'
 
-import { resolveOrg } from '../../../_data'
+import { resolveOrg } from '../../_data'
 import { CustomerCreateForm } from './_components/customer-create-form'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -9,13 +9,13 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const org = await resolveOrg(slug)
-  if (!org) return { title: 'New billing customer' }
+  if (!org) return { title: 'New customer' }
   return {
-    title: `${org.name ?? org.slug} • New billing customer - Organizations`,
+    title: `${org.name ?? org.slug} • New customer - Organizations`,
   }
 }
 
-export default async function NewBillingCustomerPage({ params }: Props) {
+export default async function NewCustomerPage({ params }: Props) {
   const { slug } = await params
   const organizationId = resolveOrganizationId(slug)
 
@@ -23,7 +23,7 @@ export default async function NewBillingCustomerPage({ params }: Props) {
     <div className="space-y-5">
       <div>
         <PageBreadcrumb
-          href={`/orgs/${slug}/billing/customers`}
+          href={`/orgs/${slug}/customers`}
           label="Customers"
           className="mb-2"
         />
