@@ -27,13 +27,13 @@ export async function getConsoleFeatures({
   // Through the shared per-request catalog: the app detail routes resolve their
   // slug from the identical list, and this used to be a second round trip for
   // the same answer on every app page.
-  const apps = await listConsoleApps()
+  const { apps, error: appsError } = await listConsoleApps()
   if (!apps) {
     const message = 'Feature flag outage: apps.list failed'
     const context = {
       call: 'apps.list',
-      errorCode: null,
-      errorMessage: null,
+      errorCode: appsError?.code ?? null,
+      errorMessage: appsError?.message ?? null,
       appSlug: CONSOLE_APP_SLUG,
     }
     Sentry.captureMessage(message, {
