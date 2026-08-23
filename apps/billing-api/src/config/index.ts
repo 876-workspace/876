@@ -45,6 +45,18 @@ const envSchema = z.object({
   // not carry a tenant id, so an omitted or accidentally blank environment
   // variable must still resolve to the canonical operator tenant rather than
   // failing every customer-sync event at runtime.
+  // Payment-credential sealing. WorkOS Vault in deployed environments; a local
+  // AES-256-GCM key for development and tests. Neither configured means the
+  // provider raises on seal rather than storing a credential in plaintext.
+  WORKOS_API_KEY: optionalString(),
+  WORKOS_VAULT_ENABLED: z
+    .string()
+    .optional()
+    .transform((value) =>
+      ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase())
+    ),
+  WORKOS_VAULT_KEY_CONTEXT: optionalString('876-billing'),
+  SECURE_FIELD_KEY: optionalString(),
   BILLING_PLATFORM_TENANT_SLUG: z
     .string()
     .optional()
@@ -81,6 +93,12 @@ function build(env: NodeJS.ProcessEnv) {
     sentryDsn: value.SENTRY_DSN,
     identityTimeoutMs: Math.round(value.IDENTITY_API_TIMEOUT_SECONDS * 1000),
     platformTenantSlug: value.BILLING_PLATFORM_TENANT_SLUG,
+    workos: {
+      apiKey: value.WORKOS_API_KEY,
+      vaultEnabled: value.WORKOS_VAULT_ENABLED,
+      vaultKeyContext: value.WORKOS_VAULT_KEY_CONTEXT,
+    },
+    secureFieldKey: value.SECURE_FIELD_KEY,
     isProduction: value.ENVIRONMENT === 'production',
   })
 }
