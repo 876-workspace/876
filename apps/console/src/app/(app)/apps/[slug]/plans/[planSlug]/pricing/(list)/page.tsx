@@ -7,12 +7,12 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { resolveApp, resolveProduct } from '../../../_data'
+import { resolveApp, resolveProduct } from '../../../../_data'
 import {
   PlanPricingTable,
   type PricingSetup,
-} from './_components/plan-pricing-table'
-import { buildPricingSetup } from './_lib/build-pricing-setup'
+} from '../_components/plan-pricing-table'
+import { buildPricingSetup } from '../_lib/build-pricing-setup'
 
 type Props = {
   params: Promise<{ slug: string; planSlug: string }>
