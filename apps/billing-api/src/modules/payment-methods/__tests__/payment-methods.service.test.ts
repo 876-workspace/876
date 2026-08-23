@@ -59,7 +59,9 @@ function methodRow(overrides: Row = {}): Row {
   }
 }
 
-function cardBody(credential: Row): Row {
+function cardBody(
+  credential: PaymentMethodCreateParams['credential']
+): PaymentMethodCreateParams {
   return {
     customerId: 'cus_1',
     type: 'CARD',

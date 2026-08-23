@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { PrismaClient } from '@/db'
+
+/** A stub standing in for the one delegate this helper actually touches. */
+type SequenceStub = Pick<PrismaClient, 'documentSequence'>
+
 import { nextDocumentNumber } from '../document-numbers.repository'
 
 describe('nextDocumentNumber', () => {
@@ -8,7 +13,7 @@ describe('nextDocumentNumber', () => {
       documentSequence: {
         upsert: vi.fn().mockResolvedValue({ nextNumber: 2 }),
       },
-    } as unknown as never
+    } as unknown as SequenceStub
     const result = await nextDocumentNumber('ten_1', 'INVOICE', 1000, fake)
     expect(result).toBe('INV-000001')
     expect(fake.documentSequence.upsert).toHaveBeenCalledWith(
@@ -30,7 +35,7 @@ describe('nextDocumentNumber', () => {
       documentSequence: {
         upsert: vi.fn().mockResolvedValue({ nextNumber: 43 }),
       },
-    } as unknown as never
+    } as unknown as SequenceStub
     const result = await nextDocumentNumber('ten_1', 'PAYMENT', 1000, fake)
     expect(result).toBe('PAY-000042')
   })
@@ -47,10 +52,10 @@ describe('nextDocumentNumber', () => {
         documentSequence: {
           upsert: vi.fn().mockResolvedValue({ nextNumber: 2 }),
         },
-      }
+      } as unknown as SequenceStub
       const result = await nextDocumentNumber(
         'ten_1',
-        type as unknown as never,
+        type as Parameters<typeof nextDocumentNumber>[1],
         1000,
         fake
       )
@@ -63,7 +68,7 @@ describe('nextDocumentNumber', () => {
       documentSequence: {
         upsert: vi.fn().mockResolvedValue({ nextNumber: 1000001 }),
       },
-    }
+    } as unknown as SequenceStub
     const result = await nextDocumentNumber('ten_1', 'INVOICE', 1000, fake)
     expect(result).toBe('INV-1000000')
   })

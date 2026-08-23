@@ -27,8 +27,9 @@ describe('serializePaymentIntent', () => {
       id: 'pi_1',
       nested: { value: BigInt(42), arr: [BigInt(1), BigInt(2)] },
     }) as Record<string, unknown>
-    expect(out.nested.value).toBe('42')
-    expect(out.nested.arr[0]).toBe('1')
+    const nested = out.nested as { value: string; arr: string[] }
+    expect(nested.value).toBe('42')
+    expect(nested.arr[0]).toBe('1')
   })
 
   it('preserves non-bigint values', () => {

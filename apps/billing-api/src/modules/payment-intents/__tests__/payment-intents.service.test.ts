@@ -13,7 +13,7 @@ const { mockPrisma } = vi.hoisted(() => ({
     paymentAttempt: { create: vi.fn() },
     payment: { create: vi.fn() },
     $transaction: vi.fn(),
-  } as unknown as never,
+  },
 }))
 
 vi.mock('@/db/client', () => ({
@@ -184,7 +184,7 @@ describe('paymentIntentsService.list', () => {
   })
 
   it('defaults limit to 25 when not provided', async () => {
-    await service.list(TENANT, {} as unknown as never)
+    await service.list(TENANT, {})
     expect(mockPrisma.paymentIntent.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ take: 25 })
     )
@@ -470,9 +470,7 @@ describe('paymentIntentsService.cancel', () => {
     mockPrisma.paymentIntent.findFirst.mockResolvedValue(
       intentRow({ status: 'SUCCEEDED' })
     )
-    await expect(
-      service.cancel(TENANT, 'pi_1', {} as unknown as never)
-    ).rejects.toMatchObject({
+    await expect(service.cancel(TENANT, 'pi_1', {})).rejects.toMatchObject({
       code: 'payment-intent/invalid-transition',
       httpStatus: 409,
     })
@@ -482,9 +480,7 @@ describe('paymentIntentsService.cancel', () => {
     mockPrisma.paymentIntent.findFirst.mockResolvedValue(
       intentRow({ status: 'CANCELED' })
     )
-    await expect(
-      service.cancel(TENANT, 'pi_1', {} as unknown as never)
-    ).rejects.toMatchObject({
+    await expect(service.cancel(TENANT, 'pi_1', {})).rejects.toMatchObject({
       code: 'payment-intent/invalid-transition',
       httpStatus: 409,
     })
@@ -494,15 +490,13 @@ describe('paymentIntentsService.cancel', () => {
     mockPrisma.paymentIntent.findFirst.mockResolvedValue(
       intentRow({ status: 'REQUIRES_PAYMENT_METHOD' })
     )
-    const result = await service.cancel(TENANT, 'pi_1', {} as unknown as never)
+    const result = await service.cancel(TENANT, 'pi_1', {})
     expect(result).toBeDefined()
   })
 
   it('404s unknown intent', async () => {
     mockPrisma.paymentIntent.findFirst.mockResolvedValue(null)
-    await expect(
-      service.cancel(TENANT, 'pi_gone', {} as unknown as never)
-    ).rejects.toMatchObject({
+    await expect(service.cancel(TENANT, 'pi_gone', {})).rejects.toMatchObject({
       code: 'payment-intent/not-found',
       httpStatus: 404,
     })
@@ -512,9 +506,7 @@ describe('paymentIntentsService.cancel', () => {
     mockPrisma.paymentIntent.findFirst.mockResolvedValue(
       intentRow({ status: 'REQUIRES_CONFIRMATION' })
     )
-    await service.cancel(TENANT, 'pi_1', {
-      cancellationReason: 'fraud',
-    } as unknown as never)
+    await service.cancel(TENANT, 'pi_1', { cancellationReason: 'fraud' })
     expect(mockPrisma.paymentIntent.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ cancellationReason: 'fraud' }),

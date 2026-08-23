@@ -41,8 +41,9 @@ describe('serializePaymentMethod', () => {
       items: [{ value: BigInt(10) }, { value: BigInt(20) }],
     }
     const out = serializePaymentMethod(row) as Record<string, unknown>
-    expect(out.items[0].value).toBe('10')
-    expect(out.items[1].value).toBe('20')
+    const items = out.items as { value: string }[]
+    expect(items[0]?.value).toBe('10')
+    expect(items[1]?.value).toBe('20')
   })
 
   it('preserves non-bigint primitives', () => {
