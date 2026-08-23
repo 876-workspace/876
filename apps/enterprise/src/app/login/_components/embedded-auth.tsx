@@ -17,7 +17,7 @@ import {
 
 import { $876 } from '@/lib/876'
 
-const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'microsoft']
+const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 
 /**
  * Embedded org-workspace sign-in, built on the shared `@876/ui/auth` flow in
