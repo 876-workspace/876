@@ -167,7 +167,10 @@ export function SubscriptionsSplit({
     else next.delete('subscription')
 
     const query = next.toString()
-    router.push(query ? `${basePath}?${query}` : basePath, { scroll: false })
+    // Opening the panel hides the list toolbar and swaps the layout, so the
+    // previous scroll offset no longer points at anything. Let the router
+    // return to the top.
+    router.push(query ? `${basePath}?${query}` : basePath)
   }
 
   if (!selected)
