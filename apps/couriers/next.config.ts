@@ -1,5 +1,6 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
+import { devResourceHosts } from '../../scripts/dev-preview.mjs'
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -16,10 +17,7 @@ const securityHeaders = [
   },
 ]
 
-const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
-  '{port}',
-  '*'
-)
+const previewDevOrigins = devResourceHosts()
 
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
@@ -29,10 +27,7 @@ const nextConfig: NextConfig = {
   // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
   // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  allowedDevOrigins: [
-    '127.0.0.1',
-    ...(previewDevOrigin ? [previewDevOrigin] : []),
-  ],
+  allowedDevOrigins: ['127.0.0.1', ...previewDevOrigins],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
@@ -86,7 +81,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3003',
         '127.0.0.1:3003',
-        ...(previewDevOrigin ? [previewDevOrigin] : []),
+        ...previewDevOrigins,
       ],
     },
   },

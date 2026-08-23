@@ -61,3 +61,22 @@ export function previewOrigin(port, template) {
 export function tunnelOrigin(service, domain) {
   return `https://${service}-dev.${domain}`
 }
+
+/**
+ * Hosts Next.js must accept for dev-only resources (HMR, `/_next/*`).
+ *
+ * Next blocks cross-origin requests to dev resources unless the host is
+ * allow-listed, so a browser on a tunnel or forwarded-port hostname loses HMR
+ * without this. Returns the tunnel wildcard when `DEV_TUNNEL_DOMAIN` is set and
+ * the forwarded-port template otherwise, so both workspace styles work from one
+ * contract.
+ *
+ * @returns Hosts for `allowedDevOrigins`; empty on a plain local machine.
+ */
+export function devResourceHosts() {
+  const domain = process.env[TUNNEL_DOMAIN_ENV]?.trim()
+  if (domain) return [`*.${domain}`]
+
+  const template = resolveHostTemplate()
+  return template ? [template.replaceAll(PORT_PLACEHOLDER, '*')] : []
+}

@@ -3,6 +3,7 @@ import path from 'node:path'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
+import { devResourceHosts } from '../../scripts/dev-preview.mjs'
 import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
 
 const securityHeaders = [
@@ -20,10 +21,7 @@ const securityHeaders = [
   },
 ]
 
-const previewDevOrigin = process.env.DEV_PREVIEW_HOST_TEMPLATE?.replaceAll(
-  '{port}',
-  '*'
-)
+const previewDevOrigins = devResourceHosts()
 
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
@@ -54,10 +52,7 @@ const nextConfig: NextConfig = {
       'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
     ],
   },
-  allowedDevOrigins: [
-    '127.0.0.1',
-    ...(previewDevOrigin ? [previewDevOrigin] : []),
-  ],
+  allowedDevOrigins: ['127.0.0.1', ...previewDevOrigins],
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
@@ -95,7 +90,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3002',
         '127.0.0.1:3002',
-        ...(previewDevOrigin ? [previewDevOrigin] : []),
+        ...previewDevOrigins,
         '876-console.1876.workers.dev',
       ],
     },
