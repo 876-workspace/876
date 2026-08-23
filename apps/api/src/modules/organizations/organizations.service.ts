@@ -1122,9 +1122,14 @@ export async function batchListSubscriptions(
 }
 
 export async function listOrgSubscriptions(
-  orgId: string
+  orgId: string,
+  status?: string
 ): Promise<Subscription[]> {
-  const rows = await repository.listSubscriptionsByOrgs([orgId], 'product')
+  const rows = await repository.listSubscriptionsByOrgs(
+    [orgId],
+    'product',
+    status
+  )
   return rows.map(serializeSubscription)
 }
 

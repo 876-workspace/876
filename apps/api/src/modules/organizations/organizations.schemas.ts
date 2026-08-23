@@ -405,6 +405,25 @@ export const organizationIdParamsSchema = z.strictObject({
   organization_id: z.string(),
 })
 export const orgIdParamsSchema = z.strictObject({ org_id: z.string() })
+
+export const subscriptionStatusValues = [
+  'incomplete',
+  'incomplete_expired',
+  'trialing',
+  'active',
+  'past_due',
+  'canceled',
+  'unpaid',
+  'paused',
+  'blocked',
+] as const
+
+/** Optional lifecycle filter for an organization's app subscriptions. */
+export const orgSubscriptionsQuerySchema = z.strictObject({
+  status: z.enum(subscriptionStatusValues).optional(),
+})
+
+export type OrgSubscriptionsQuery = z.infer<typeof orgSubscriptionsQuerySchema>
 export const organizationSlugParamsSchema = z.strictObject({ slug: z.string() })
 export const appIdParamsSchema = z.strictObject({
   org_id: z.string(),

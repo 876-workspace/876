@@ -529,13 +529,15 @@ export async function listSubscriptionsByOrg(
 
 export async function listSubscriptionsByOrgs(
   organizationIds: string[],
-  appKind?: string
+  appKind?: string,
+  status?: string
 ): Promise<SubscriptionRow[]> {
   if (organizationIds.length === 0) return []
   const rows = await prisma.subscription.findMany({
     where: {
       organizationId: { in: organizationIds },
       ...(appKind ? { app: { appKind } } : {}),
+      ...(status ? { status } : {}),
     },
     include: {
       app: { select: { slug: true, name: true, logoUrl: true, appKind: true } },

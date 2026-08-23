@@ -14,6 +14,7 @@ import type {
   SearchOrganizationsQuery,
   SubscriptionProvisionBody,
   SubscriptionUpdateBody,
+  OrgSubscriptionsQuery,
 } from './organizations.schemas'
 import * as service from './organizations.service'
 
@@ -311,7 +312,8 @@ export async function listOrgSubscriptions(
   res: Response
 ): Promise<void> {
   const { org_id } = validParams<{ org_id: string }>(req)
-  res.status(200).json(await service.listOrgSubscriptions(org_id))
+  const { status } = validQuery<OrgSubscriptionsQuery>(req)
+  res.status(200).json(await service.listOrgSubscriptions(org_id, status))
 }
 
 export async function provisionSubscription(
