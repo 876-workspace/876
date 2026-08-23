@@ -1,4 +1,4 @@
-import type { PriceItem, PricingSetup } from '../_components/pricing-table'
+import type { PriceItem, PricingSetup } from '../_components/plan-pricing-table'
 
 /** The price fields this view reads; a structural subset of the API resource. */
 export type PricingSetupPrice = {

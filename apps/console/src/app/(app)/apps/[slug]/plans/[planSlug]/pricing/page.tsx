@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { resolveApp, resolveProduct } from '../../../_data'
-import { PricingTable, type PricingSetup } from './_components/pricing-table'
+import {
+  PlanPricingTable,
+  type PricingSetup,
+} from './_components/plan-pricing-table'
 import { buildPricingSetup } from './_lib/build-pricing-setup'
 
 type Props = { params: Promise<{ slug: string; planSlug: string }> }
@@ -26,7 +29,7 @@ export default async function PlanPricingPage({ params }: Props) {
       <div className="mb-2">
         <h2 className="text-lg font-medium tracking-tight">Pricing</h2>
       </div>
-      <PricingTable setup={setup} />
+      <PlanPricingTable setup={setup} />
     </div>
   )
 }

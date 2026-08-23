@@ -52,9 +52,8 @@ export type PricingSetup = {
   basePath: string
 }
 
-export function PricingTable({ setup }: { setup: PricingSetup }) {
+export function PlanPricingTable({ setup }: { setup: PricingSetup }) {
   const router = useRouter()
-  const editHref = (id: string) => `${setup.basePath}/${id}/edit`
   const [archiving, setArchiving] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const archive = () => {
@@ -78,7 +77,10 @@ export function PricingTable({ setup }: { setup: PricingSetup }) {
       ),
       cell: ({ row }) => (
         <div>
-          <Link className="font-medium" href={editHref(row.original.id)}>
+          <Link
+            className="font-medium"
+            href={`${setup.basePath}/${row.original.id}/edit`}
+          >
             {row.original.name || row.original.nickname || '—'}
           </Link>
           <div className="text-muted-foreground font-mono text-xs">
@@ -159,7 +161,9 @@ export function PricingTable({ setup }: { setup: PricingSetup }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => router.push(editHref(row.original.id))}
+              onClick={() =>
+                router.push(`${setup.basePath}/${row.original.id}/edit`)
+              }
             >
               Edit
             </DropdownMenuItem>
@@ -188,7 +192,11 @@ export function PricingTable({ setup }: { setup: PricingSetup }) {
         </Button>
       </div>
       <div className="876-card">
-        <DataTable columns={columns} data={setup.prices} />
+        <DataTable
+          key={`pricing-table:${setup.basePath}`}
+          columns={columns}
+          data={setup.prices}
+        />
       </div>
       <AlertDialog
         open={archiving !== null}
