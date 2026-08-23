@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { AdminSubscription } from '@876/admin'
@@ -16,9 +16,16 @@ import { formatDate } from '@/lib/format'
 import { SubscriptionDetail } from './subscription-detail'
 import { humanize, planName } from './subscription-format'
 
+/** Exit animation length; keep in step with the panel's `animate-out`. */
+const EXIT_MS = 200
+
 type Props = {
   subscriptions: AdminSubscription[]
   billing: React.ReactNode
+  /** Streamed Billing invoices for the selected subscription. */
+  transactions?: React.ReactNode
+  /** Lifecycle timeline for the selected subscription. */
+  activity?: React.ReactNode
   /** The `?subscription=` id, resolved server-side. */
   selectedId?: string
   basePath: string
@@ -148,18 +155,63 @@ const fullColumns: ColumnDef<AdminSubscription, unknown>[] = [
 export function SubscriptionsSplit({
   subscriptions,
   billing,
+  transactions,
+  activity,
   selectedId,
   basePath,
 }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const selected = subscriptions.find((sub) => sub.id === selectedId)
+  // Closing is animated, so the panel has to outlive the click that dismissed
+  // it: hold it mounted for one exit animation, then navigate.
+  const [closing, setClosing] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Opening slides the panel in from the side; moving between two rows is a
+  // much smaller move, so it only cross-fades — replaying the full entrance
+  // would read as the sheet closing and reopening on every row click. The
+  // choice is cached per id rather than recomputed, because a later render
+  // (streamed transactions landing) must not swap the class mid-animation and
+  // restart it. A deep-linked panel is already on screen, so it fades too.
+  // Adjusting state during render (not an effect) keeps the entrance class
+  // correct for the very commit that shows a newly selected row.
+  const [entrance, setEntrance] = useState<{
+    id?: string
+    kind: 'open' | 'switch'
+  }>({
+    id: selectedId,
+    kind: 'switch',
+  })
+
+  if (entrance.id !== selectedId) {
+    setEntrance({
+      id: selectedId,
+      kind: entrance.id === undefined ? 'open' : 'switch',
+    })
+  }
+
+  const isSwitch = entrance.kind === 'switch'
+
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current)
+    },
+    []
+  )
   // Today at UTC midnight, read once. Day granularity is what the panel shows,
   // and it keeps the value identical on the server and at hydration for a
   // deep-linked `?subscription=`.
   const [today] = useState(() => Math.floor(Date.now() / 86_400_000) * 86_400)
 
   function select(id?: string) {
+    // A row clicked mid-exit cancels the close rather than opening the next
+    // panel already playing its own dismissal.
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+    if (closing) setClosing(false)
+
     const next = new URLSearchParams(searchParams.toString())
 
     if (id) next.set('subscription', id)
@@ -170,6 +222,18 @@ export function SubscriptionsSplit({
     // previous scroll offset no longer points at anything. Let the router
     // return to the top.
     router.push(query ? `${basePath}?${query}` : basePath)
+  }
+
+  function requestClose() {
+    if (closing) return
+    setClosing(true)
+    // Deterministic rather than `animationend`: with reduced motion there is
+    // no animation to end, and a panel that never unmounts is worse than one
+    // that skips its exit.
+    closeTimer.current = setTimeout(() => {
+      setClosing(false)
+      select()
+    }, EXIT_MS)
   }
 
   if (!selected)
@@ -197,8 +261,18 @@ export function SubscriptionsSplit({
         key={selected.id}
         subscription={selected}
         billing={billing}
+        transactions={transactions}
+        activity={activity}
         now={today}
-        onClose={() => select()}
+        onClose={requestClose}
+        className={cn(
+          'motion-safe:duration-300 motion-safe:ease-out',
+          closing
+            ? 'motion-safe:animate-out motion-safe:fade-out motion-safe:slide-out-to-right-4 motion-safe:fill-mode-forwards motion-safe:duration-200 motion-safe:ease-in'
+            : isSwitch
+              ? 'motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200'
+              : 'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-4'
+        )}
       />
     </div>
   )
