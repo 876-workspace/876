@@ -35,7 +35,8 @@ describe('organization members loading strategy', () => {
 
     const memberLoader = pageSource.slice(membersStart, invitesStart)
     expect(memberLoader).not.toContain('$876.invites.admin.list')
-    expect(pageSource).toContain('$876.invites.admin.list(org.id)')
-    expect(pageSource).toContain('<PendingInvitesData params={params} />')
+    expect(pageSource).toContain(
+      '<PendingInvitesData params={params} searchParams={searchParams} />'
+    )
   })
 })
