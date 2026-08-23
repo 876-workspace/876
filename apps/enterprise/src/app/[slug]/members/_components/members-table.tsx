@@ -242,7 +242,7 @@ export function MembersTable({
   return (
     <>
       <div className="876-card overflow-hidden">
-        <DataTable columns={columns} data={members} enableColumnVisibility />
+        <DataTable columns={columns} data={members} />
       </div>
 
       <Dialog
