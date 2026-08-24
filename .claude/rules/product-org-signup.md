@@ -86,6 +86,14 @@ Memberships are resolved **live** from the platform API keyed by the account id
 cookie — so the newly created org is visible on the next request without a
 re-login.
 
+An account created by Google, Apple, Microsoft, or SSO does not necessarily
+have an 876 password. After that account has authenticated, route it to the
+session-backed organization-creation step; **never** send it to a
+password-based `register-business` form to complete its workspace. The route
+handler must use the signed-in local user id as `ownerUserId`, so identity
+creation stays with the provider and organization bootstrap stays with the
+platform service.
+
 Reference implementations: `apps/couriers/src/app/onboarding/` (full three-step
 wizard: org → app setup → invites) and `apps/billing/src/app/get-started/` (org
 creation → workspace provisioning). Match the app's existing get-started style;
@@ -149,6 +157,9 @@ to production, where the escape link sends real users to their own machine.
 
 - Do not enable any sign-up affordance (social or email) on a product app's login
   without the org-creation path for the account it creates.
+- Do not send a signed-in social-only account to a password-based registration
+  form. It must create its first organization through the authenticated
+  session-backed bootstrap route.
 - Do not allow a consumer-realm session into an Enterprise workspace or redirect
   it automatically into the consumer app. Require an explicit account change.
 - Do not redirect a stale/deleted session away from the product's login form.
