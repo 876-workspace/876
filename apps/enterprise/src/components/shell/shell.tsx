@@ -60,6 +60,7 @@ export async function Shell({
     name: organization.name,
     slug: organization.slug,
   }
+  const topbarOrgs = switcherOrgs.length > 0 ? switcherOrgs : [currentOrg]
 
   return (
     <AppShell defaultOpen={defaultSidebarOpen}>
@@ -78,11 +79,9 @@ export async function Shell({
           <SidebarTrigger />
 
           <div className="ml-auto flex items-center gap-2">
-            {switcherOrgs.length > 1 ? (
-              <div className="hidden items-center gap-1.5 md:flex">
-                <OrgSwitcher current={currentOrg} orgs={switcherOrgs} />
-              </div>
-            ) : null}
+            <div className="hidden items-center gap-1.5 md:flex">
+              <OrgSwitcher current={currentOrg} orgs={topbarOrgs} />
+            </div>
             <UserMenu user={user} />
           </div>
         </AppShellHeader>
