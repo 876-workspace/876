@@ -24,6 +24,7 @@ export default async function RegisterPage() {
     !session.user.crossRealm
   )
     redirect('/access-denied')
+  if (isSignedSession(session)) redirect('/onboarding')
 
   return <BusinessOnboarding />
 }

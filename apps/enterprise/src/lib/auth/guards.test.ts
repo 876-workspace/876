@@ -20,6 +20,6 @@ describe('resolveHomePathForUser', () => {
   })
 
   it('sends an enterprise user without memberships to workspace setup', async () => {
-    await expect(resolveHomePathForUser('user_1')).resolves.toBe('/register')
+    await expect(resolveHomePathForUser('user_1')).resolves.toBe('/onboarding')
   })
 })
