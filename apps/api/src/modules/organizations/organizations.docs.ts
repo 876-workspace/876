@@ -25,7 +25,7 @@ export const BOOTSTRAP_ORG_DESCRIPTION = `
 Creates a WorkOS organization and active owner membership for an existing 876 user. **Admin only**.
 
 * Generates a unique slug from the organization name when omitted.
-* Provisions the default organization roles and Enterprise app entitlement.
+* Provisions the default organization roles plus Enterprise and Billing app entitlements.
 * Creates the existing user's owner membership with active status.
 `
 

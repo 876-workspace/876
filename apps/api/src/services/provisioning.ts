@@ -43,13 +43,9 @@ export const ENTERPRISE_APP_SLUG = '876-enterprise'
 export const BILLING_APP_SLUG = '876-billing'
 
 /** Provisioned for every new organization, wherever it signed up. */
-/** 876 Invoice — the entry-level invoicing product every organization gets. */
-export const INVOICE_APP_SLUG = '876-invoice'
-
 export const DEFAULT_ORG_APP_SLUGS = [
   ENTERPRISE_APP_SLUG,
   BILLING_APP_SLUG,
-  INVOICE_APP_SLUG,
 ] as const
 
 /**
@@ -226,12 +222,12 @@ export async function ensureOrgAppSubscriptions(
  * readiness contract as explicit app activation.
  *
  * `ensureAppReady` derives *whether* an app needs a Billing workspace from its
- * published profile, so a finance-dependent app (876 Invoice) is guaranteed a
- * delivered finance connection while a finance-less app (876-enterprise,
- * 876-billing) returns immediately. This replaces the old org-wide reconcile
- * whose `eventIds.length > 0` conditional silently skipped delivery whenever a
- * matching event already existed — the exact gap that let a bootstrapped
- * Invoice org open with no Billing tenant.
+ * published profile, so a finance-dependent signup app (such as 876 Invoice)
+ * is guaranteed a delivered finance connection while a finance-less app
+ * (876-enterprise, 876-billing) returns immediately. This replaces the old
+ * org-wide reconcile whose `eventIds.length > 0` conditional silently skipped
+ * delivery whenever a matching event already existed — the exact gap that let
+ * a finance-dependent org open with no Billing tenant.
  *
  * `appIds` may be supplied by the caller that just created the subscriptions;
  * otherwise the org's subscribed apps are re-derived, so a retry after a
