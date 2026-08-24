@@ -31,9 +31,9 @@ describe('OrganizationOnboardingPage — redirects to /register when no org (dif
     expect(mocks.requireSession).toHaveBeenCalledWith('/onboarding')
   })
 
-  it('redirects to consumer app when user not found', async () => {
+  it('redirects to Enterprise login when user is no longer local', async () => {
     mocks.findAuthRoutingUser.mockResolvedValue(null)
-    await expect(OrganizationOnboardingPage()).rejects.toMatchObject({ path: expect.stringContaining('/app') })
+    await expect(OrganizationOnboardingPage()).rejects.toMatchObject({ path: '/login?returnTo=%2Fonboarding' })
   })
 
   it('redirects to org profile when user has primary org', async () => {

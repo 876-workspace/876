@@ -83,7 +83,7 @@ describe('requireSession', () => {
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
 
-  it('redirects consumer realm to /access-denied', async () => {
+  it('blocks a consumer realm from Enterprise', async () => {
     mocks.getAuthSession.mockResolvedValue(signedSession(sessionUser({ realm: 'consumer', crossRealm: false })))
     await expect(requireSession('/')).rejects.toMatchObject({ path: '/access-denied' })
   })
@@ -173,9 +173,9 @@ describe('requireActiveUser', () => {
     expect(user.id).toBe('user_1')
   })
 
-  it('redirects when user not found', async () => {
+  it('redirects an unknown session user to Enterprise login', async () => {
     mocks.usersRetrieve.mockResolvedValue({ data: null, error: null })
-    await expect(requireActiveUser('missing')).rejects.toMatchObject({ path: expect.stringContaining('/app') })
+    await expect(requireActiveUser('missing')).rejects.toMatchObject({ path: '/login?returnTo=%2F' })
   })
 
   it('redirects banned user to /suspended', async () => {
@@ -209,9 +209,9 @@ describe('requireOrgMembership', () => {
     expect(mocks.redirect).not.toHaveBeenCalledWith(expect.stringContaining('no-access'))
   })
 
-  it('redirects to consumer app when user not found', async () => {
+  it('redirects an unknown session user to Enterprise login', async () => {
     mocks.usersRetrieve.mockResolvedValue({ data: null, error: null })
-    await expect(requireOrgMembership('unknown', 'acme')).rejects.toMatchObject({ path: expect.stringContaining('/app') })
+    await expect(requireOrgMembership('unknown', 'acme')).rejects.toMatchObject({ path: '/login?returnTo=%2Facme' })
   })
 
   it('scopes lookup to slug + status active', async () => {

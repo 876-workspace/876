@@ -63,6 +63,9 @@ pnpm --filter @876/couriers-api dev
   opening or updating pull requests, reviewing PR feedback, or merging.
 - Read `.agents/rules/performance.md`, `.agents/rules/types.md`, and `.agents/rules/code-style.md` before editing app code.
 - Read `.agents/rules/data-fetching.md` and `.agents/rules/api-access.md` before writing data-fetching code.
+- Read `.agents/rules/product-org-signup.md` before changing authentication,
+  sign-up, onboarding, or root dynamic organization routing in an org-workspace
+  product app.
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.agents/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.agents/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).

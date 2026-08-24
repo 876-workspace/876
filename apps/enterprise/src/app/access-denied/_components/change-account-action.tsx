@@ -1,18 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
 import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
 
 import { request } from '@/lib/client/request'
 
-/**
- * Clears the active 876 session then navigates to the enterprise login page.
- * A plain <Link> would land on the login page while the consumer session is
- * still active, causing the login page to redirect straight back to /org and
- * into an infinite /access-denied loop.
- */
+/** Clears the blocked consumer session before returning to Enterprise login. */
 export function ChangeAccountAction() {
   const [busy, setBusy] = useState(false)
+  const router = useRouter()
 
   async function handleChangeAccount() {
     if (busy) return
@@ -20,7 +18,7 @@ export function ChangeAccountAction() {
     try {
       await request<unknown>('/api/auth/logout', { method: 'POST' })
     } finally {
-      window.location.href = `/login?${AUTH_RETURN_TO_PARAM}=/org`
+      router.replace(`/login?${AUTH_RETURN_TO_PARAM}=/`)
     }
   }
 

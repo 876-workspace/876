@@ -5,22 +5,34 @@ const mocks = vi.hoisted(() => ({
   requireSession: vi.fn(),
   findAuthRoutingUser: vi.fn(),
   resolveHomePathForUser: vi.fn(),
-  consumerUrl: vi.fn((p: string) => `http://localhost:3000${p}`),
 }))
 
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 vi.mock('@/lib/auth/guards', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>
-  return { ...actual, requireSession: mocks.requireSession, findAuthRoutingUser: mocks.findAuthRoutingUser, resolveHomePathForUser: mocks.resolveHomePathForUser, consumerUrl: mocks.consumerUrl }
+  return {
+    ...actual,
+    requireSession: mocks.requireSession,
+    findAuthRoutingUser: mocks.findAuthRoutingUser,
+    resolveHomePathForUser: mocks.resolveHomePathForUser,
+  }
 })
 
 import RootPage from './page'
 
-function redirectErr(path: string) { const e = Object.assign(new Error(path), { path, digest: `NEXT_REDIRECT:${path}` }); throw e }
+function redirectErr(path: string) {
+  const e = Object.assign(new Error(path), {
+    path,
+    digest: `NEXT_REDIRECT:${path}`,
+  })
+  throw e
+}
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.redirect.mockImplementation((p: string) => { throw redirectErr(p) })
+  mocks.redirect.mockImplementation((p: string) => {
+    throw redirectErr(p)
+  })
   mocks.requireSession.mockResolvedValue({ id: 'user_1' })
   mocks.findAuthRoutingUser.mockResolvedValue({ id: 'user_1', email: 'a@b.co' })
   mocks.resolveHomePathForUser.mockResolvedValue('/acme/profile')
@@ -34,8 +46,8 @@ describe('RootPage — home resolver', () => {
     mocks.resolveHomePathForUser.mockResolvedValue('/register')
     await expect(RootPage()).rejects.toMatchObject({ path: '/register' })
   })
-  it('redirects to consumer app when user not found', async () => {
+  it('redirects to Enterprise login when the session user is no longer local', async () => {
     mocks.findAuthRoutingUser.mockResolvedValue(null)
-    await expect(RootPage()).rejects.toMatchObject({ path: expect.stringContaining('/app') })
+    await expect(RootPage()).rejects.toMatchObject({ path: '/login?returnTo=%2F' })
   })
 })

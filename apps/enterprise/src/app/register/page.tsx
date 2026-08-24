@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
+
+import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 import { BusinessOnboarding } from './_components/business-onboarding'
 
@@ -13,6 +16,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const session = await getAuthSession()
+  if (
+    isSignedSession(session) &&
+    session.user.realm !== 'enterprise' &&
+    !session.user.crossRealm
+  )
+    redirect('/access-denied')
+
   return <BusinessOnboarding />
 }
