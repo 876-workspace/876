@@ -11,8 +11,9 @@ Companion to `.agents/rules/platform-services.md` (org provisioning),
 ## The rule
 
 **An org-workspace product app must provide an org sign-up flow for a signed-in
-account that has no organization yet.** A newly authenticated account with zero
-memberships must be routed into org creation — never stranded on `/no-access`.
+Enterprise account that has no organization yet.** A newly authenticated
+Enterprise account with zero memberships must be routed into org creation —
+never stranded on `/no-access`.
 
 This applies to every app whose management surface authenticates in the
 **enterprise realm** (`X-876-Realm: enterprise`) and gates access on an active
@@ -30,6 +31,44 @@ authenticated, correct, and permanently stuck. Enabling any sign-up affordance
 
 > If an account can authenticate into the app, the app must be able to onboard
 > it. Sign-up and onboarding ship together, or neither ships.
+
+## Realm boundary and safe post-auth routing
+
+Enterprise workspace apps are not an alternate front door to the consumer app.
+Their auth bridge and callback use `X-876-Realm: enterprise`; a successful
+email or social sign-in through that bridge creates or activates an Enterprise
+session. That session has exactly two valid destinations:
+
+```
+active organization membership  → workspace home
+no organization membership      → organization creation / registration
+```
+
+A **consumer-realm** session that arrives by navigation is not an Enterprise
+session and must not enter either destination. Send it to an in-app wrong-account
+page with an explicit action that clears the local session and returns to that
+app's `/login`. Never automatically redirect it to the consumer app, and never
+turn it into `/register` merely because it lacks an Enterprise membership.
+Cross-realm platform administrators remain the intentional exception.
+
+Do not trust a sealed cookie simply because it parses. The login page must
+confirm that the local account is still active before redirecting a signed-in
+visitor away from the form. A deleted or disabled account must render the form,
+so the stale cookie can be replaced instead of producing `/login` ↔ protected
+route loops.
+
+### Root dynamic organization routes
+
+An app with a root dynamic organization route (`/[slug]`, `/[orgSlug]`) must
+reserve every static root segment and all asset-like paths **before** session or
+membership guards run. Otherwise a browser request for `/favicon.ico` is treated
+as an organization, redirected to `/login?returnTo=/favicon.ico`, and loops as
+soon as login succeeds.
+
+Use Couriers' `src/lib/reserved-slugs.ts` pattern: keep a tested set of static
+root routes and reject any slug containing `.` with `notFound()` in the dynamic
+layout. The accompanying test must scan `src/app/` so a future root route cannot
+quietly collide with an organization slug.
 
 ## What the flow must do
 
@@ -110,6 +149,11 @@ to production, where the escape link sends real users to their own machine.
 
 - Do not enable any sign-up affordance (social or email) on a product app's login
   without the org-creation path for the account it creates.
+- Do not allow a consumer-realm session into an Enterprise workspace or redirect
+  it automatically into the consumer app. Require an explicit account change.
+- Do not redirect a stale/deleted session away from the product's login form.
+- Do not allow a root asset or well-known request to be interpreted as an
+  organization slug.
 - Do not redirect a signed-in, org-less account to `/no-access`.
 - Do not answer `/no-access` to an `owner` or `admin` whose organization merely
   lacks the entitlement — that is a setup step they are allowed to complete.

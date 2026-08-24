@@ -289,6 +289,11 @@ Then, in production:
 - [ ] Sign in with Google. Same result.
 - [ ] The social `redirect_uri` is this app's own `/callback` (§3b).
 - [ ] A brand-new account with no organization reaches onboarding (§9).
+- [ ] A consumer-realm session is shown an in-app account-change path, not
+      redirected to another product or silently enrolled in the workspace.
+- [ ] A deleted-account cookie leaves the product login form available.
+- [ ] If the app has a root dynamic org route, `/favicon.ico` returns 404 or an
+      icon response without reaching auth routing.
 
 If sign-in bounces, go straight to `docs/app-configuration.md` §5 — the probe
 there identifies a session-secret mismatch in about ten seconds, without needing
