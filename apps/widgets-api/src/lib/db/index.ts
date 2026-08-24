@@ -50,7 +50,7 @@ function reportDbFailure(
   })
 }
 
-function createPrisma() {
+function createPrisma(): PrismaClient {
   const databaseUrl = requireDatabaseUrl(process.env.WIDGETS_DATABASE_URL, {
     variable: 'WIDGETS_DATABASE_URL',
     datastore: 'Widgets',
@@ -60,60 +60,59 @@ function createPrisma() {
   // Neon is reached over its serverless WebSocket driver: workerd cannot open
   // the raw TCP socket `pg` needs, and the adapter owns the remote pool the
   // way Accelerate used to.
-  const client = accelerated
-    ? new PrismaClient({ accelerateUrl: databaseUrl })
-    : new PrismaClient({
-        adapter: new PrismaNeon({ connectionString: databaseUrl }),
-      } as unknown as { accelerateUrl: string })
-        .$extends({
-          query: {
-            notepadNote: {
-              async create({
-                args,
-                query,
-              }: {
-                args: Record<string, unknown>
-                query: (args: unknown) => Promise<unknown>
-              }) {
-                const data = args.data as Record<string, unknown>
-                if (!data.id) data.id = noteId()
-                return query(args)
-              },
-            },
-            notepadCollection: {
-              async create({
-                args,
-                query,
-              }: {
-                args: Record<string, unknown>
-                query: (args: unknown) => Promise<unknown>
-              }) {
-                const data = args.data as Record<string, unknown>
-                if (!data.id) data.id = collectionId()
-                return query(args)
-              },
-            },
-          },
-        })
-        .$extends({
-          query: {
-            $allOperations: createQueryGuard({
-              onFailure: (error, failure) =>
-                reportDbFailure(error, { ...failure, stage: 'query' }),
-            }),
-          },
-        })
-
   // Keep the existing service-facing extension type stable. Accelerate is
   // applied at runtime for pooling; cacheStrategy is intentionally deferred.
   // Accelerate's extension only applies when the URL is actually an
   // Accelerate URL; the driver adapter needs no extension.
-  return (accelerated
-    ? client.$extends(withAccelerate())
-    : client) as unknown as typeof client
+  if (accelerated)
+    return new PrismaClient({ accelerateUrl: databaseUrl }).$extends(
+      withAccelerate()
+    ) as unknown as PrismaClient
+
+  return new PrismaClient({
+    adapter: new PrismaNeon({ connectionString: databaseUrl }),
+  } as unknown as { accelerateUrl: string })
+    .$extends({
+      query: {
+        notepadNote: {
+          async create({
+            args,
+            query,
+          }: {
+            args: Record<string, unknown>
+            query: (args: unknown) => Promise<unknown>
+          }) {
+            const data = args.data as Record<string, unknown>
+            if (!data.id) data.id = noteId()
+            return query(args)
+          },
+        },
+        notepadCollection: {
+          async create({
+            args,
+            query,
+          }: {
+            args: Record<string, unknown>
+            query: (args: unknown) => Promise<unknown>
+          }) {
+            const data = args.data as Record<string, unknown>
+            if (!data.id) data.id = collectionId()
+            return query(args)
+          },
+        },
+      },
+    })
+    .$extends({
+      query: {
+        $allOperations: createQueryGuard({
+          onFailure: (error, failure) =>
+            reportDbFailure(error, { ...failure, stage: 'query' }),
+        }),
+      },
+    }) as unknown as PrismaClient
 }
 
-type WidgetsPrisma = ReturnType<typeof createPrisma>
+type WidgetsPrisma = PrismaClient
 
 const globalForPrisma = globalThis as unknown as {
   widgetsPrisma?: WidgetsPrisma
@@ -152,7 +151,7 @@ const resolvePrisma = createRequestScopedResolver<WidgetsPrisma>({
 export const prisma = new Proxy({} as WidgetsPrisma, {
   get(_target, property) {
     const resolved = resolvePrisma()
-    const value = resolved[property as keyof WidgetsPrisma]
+    const value = Reflect.get(resolved, property)
 
     return typeof value === 'function' ? value.bind(resolved) : value
   },
