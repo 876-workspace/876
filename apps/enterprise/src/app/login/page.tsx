@@ -6,6 +6,7 @@ import {
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 
+import { isAccountUsable } from '@/lib/auth/account-validity'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 import { EmbeddedAuth } from './_components/embedded-auth'
@@ -32,7 +33,11 @@ export default async function OrgLoginPage({
   )
 
   const result = await getAuthSession()
-  if (isSignedSession(result)) redirect(returnTo)
+  if (isSignedSession(result) && (await isAccountUsable(result.user.id))) {
+    if (result.user.realm !== 'enterprise' && !result.user.crossRealm)
+      redirect('/access-denied')
+    redirect(returnTo)
+  }
 
   return <EmbeddedAuth returnTo={returnTo} />
 }

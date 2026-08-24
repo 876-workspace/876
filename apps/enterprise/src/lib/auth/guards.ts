@@ -16,12 +16,11 @@ export async function requireSession(returnTo: string) {
   const result = await getAuthSession()
   if (!isSignedSession(result)) redirect(createLoginRedirectUrl(returnTo))
 
-  // Realm gate (relocated from the Edge proxy — needs the Node runtime): a
-  // personal 876 account can establish its first workspace here, so it stays
-  // in Enterprise's setup flow instead of being sent to the consumer app.
-  // Cross-realm accounts (owner + curated super admins) are exempt and pass.
+  // Realm gate (relocated from the Edge proxy — needs the Node runtime): only
+  // Enterprise accounts may enter this app. Cross-realm accounts (owner +
+  // curated super admins) are exempt and pass.
   const { realm, crossRealm } = result.user
-  if (realm !== 'enterprise' && !crossRealm) redirect('/register')
+  if (realm !== 'enterprise' && !crossRealm) redirect('/access-denied')
 
   return result.user
 }
@@ -99,7 +98,7 @@ export async function requireActiveUser(
   userId: string
 ): Promise<AuthRoutingUser> {
   const user = await findAuthRoutingUser(userId)
-  if (!user) redirect('/register')
+  if (!user) redirect(createLoginRedirectUrl('/'))
   if (user.banned || user.status !== 'active')
     redirect(consumerUrl('/suspended'))
   return user
@@ -110,7 +109,7 @@ export async function requireOrgMembership(
   slug: string
 ): Promise<{ user: AuthRoutingUser; membership: ActiveMembership }> {
   const user = await findAuthRoutingUser(userId)
-  if (!user) redirect('/register')
+  if (!user) redirect(createLoginRedirectUrl(`/${slug}`))
 
   const membership = await findActiveMembershipBySlug(user.id, slug)
   if (!membership) redirect('/')

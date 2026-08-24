@@ -17,7 +17,7 @@ export default async function OrganizationOnboardingPage() {
   const sessionUser = await requireSession('/onboarding')
   const user = await findAuthRoutingUser(sessionUser.id)
 
-  if (!user) redirect('/app')
+  if (!user) redirect('/login?returnTo=%2Fonboarding')
 
   const primaryOrganizationPath = await resolvePrimaryOrganizationPath(user.id)
   if (primaryOrganizationPath) redirect(primaryOrganizationPath)

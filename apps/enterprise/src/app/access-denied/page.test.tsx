@@ -1,23 +1,25 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ redirect: vi.fn() }))
-
-vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
+vi.mock('./_components/change-account-action', () => ({
+  ChangeAccountAction: () => <button>Change account</button>,
+}))
 
 import AccessDeniedPage from './page'
 
 describe('AccessDeniedPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.redirect.mockImplementation((path: string) => {
-      throw Object.assign(new Error(`redirect:${path}`), { path })
-    })
-  })
+  it('blocks consumer accounts without linking to the consumer app', () => {
+    render(<AccessDeniedPage />)
 
-  it('keeps legacy realm-gate URLs inside Enterprise workspace setup', () => {
-    expect(() => AccessDeniedPage()).toThrow(
-      expect.objectContaining({ path: '/register' })
-    )
-    expect(mocks.redirect).toHaveBeenCalledWith('/register')
+    expect(
+      screen.getByRole('heading', {
+        name: 'This workspace needs a work account',
+      })
+    ).toBeVisible()
+    expect(
+      screen.getByText(/personal 876 account.*Enterprise account/i)
+    ).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Change account' })).toBeVisible()
+    expect(screen.queryByText('Go to my 876 account')).not.toBeInTheDocument()
   })
 })

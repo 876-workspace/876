@@ -83,9 +83,9 @@ describe('requireSession', () => {
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
 
-  it('routes a consumer realm to workspace setup', async () => {
+  it('blocks a consumer realm from Enterprise', async () => {
     mocks.getAuthSession.mockResolvedValue(signedSession(sessionUser({ realm: 'consumer', crossRealm: false })))
-    await expect(requireSession('/')).rejects.toMatchObject({ path: '/register' })
+    await expect(requireSession('/')).rejects.toMatchObject({ path: '/access-denied' })
   })
 
   it('allows cross-realm consumer to pass', async () => {
@@ -113,7 +113,7 @@ describe('requireSession', () => {
     'realm=%s crossRealm=%s → redirects=%s',
     async (realm, crossRealm, shouldRedirect) => {
       mocks.getAuthSession.mockResolvedValue(signedSession(sessionUser({ realm, crossRealm })))
-      if (shouldRedirect) await expect(requireSession('/')).rejects.toMatchObject({ path: '/register' })
+      if (shouldRedirect) await expect(requireSession('/')).rejects.toMatchObject({ path: '/access-denied' })
       else await expect(requireSession('/')).resolves.toBeDefined()
     }
   )
@@ -173,9 +173,9 @@ describe('requireActiveUser', () => {
     expect(user.id).toBe('user_1')
   })
 
-  it('redirects an unknown session user to workspace setup', async () => {
+  it('redirects an unknown session user to Enterprise login', async () => {
     mocks.usersRetrieve.mockResolvedValue({ data: null, error: null })
-    await expect(requireActiveUser('missing')).rejects.toMatchObject({ path: '/register' })
+    await expect(requireActiveUser('missing')).rejects.toMatchObject({ path: '/login?returnTo=%2F' })
   })
 
   it('redirects banned user to /suspended', async () => {
@@ -209,9 +209,9 @@ describe('requireOrgMembership', () => {
     expect(mocks.redirect).not.toHaveBeenCalledWith(expect.stringContaining('no-access'))
   })
 
-  it('redirects an unknown session user to workspace setup', async () => {
+  it('redirects an unknown session user to Enterprise login', async () => {
     mocks.usersRetrieve.mockResolvedValue({ data: null, error: null })
-    await expect(requireOrgMembership('unknown', 'acme')).rejects.toMatchObject({ path: '/register' })
+    await expect(requireOrgMembership('unknown', 'acme')).rejects.toMatchObject({ path: '/login?returnTo=%2Facme' })
   })
 
   it('scopes lookup to slug + status active', async () => {

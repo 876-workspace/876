@@ -17,7 +17,7 @@ export default async function RootPage() {
   const sessionUser = await requireSession('/')
   const user = await findAuthRoutingUser(sessionUser.id)
 
-  if (!user) redirect('/register')
+  if (!user) redirect('/login?returnTo=%2F')
 
   redirect(await resolveHomePathForUser(user.id))
 }

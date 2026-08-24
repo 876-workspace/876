@@ -46,8 +46,8 @@ describe('RootPage — home resolver', () => {
     mocks.resolveHomePathForUser.mockResolvedValue('/register')
     await expect(RootPage()).rejects.toMatchObject({ path: '/register' })
   })
-  it('redirects to workspace setup when the session user is no longer local', async () => {
+  it('redirects to Enterprise login when the session user is no longer local', async () => {
     mocks.findAuthRoutingUser.mockResolvedValue(null)
-    await expect(RootPage()).rejects.toMatchObject({ path: '/register' })
+    await expect(RootPage()).rejects.toMatchObject({ path: '/login?returnTo=%2F' })
   })
 })

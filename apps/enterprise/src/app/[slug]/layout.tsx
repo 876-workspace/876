@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { notFound } from 'next/navigation'
+
 import { Shell } from '@/components/shell/shell'
 import { AnalyticsIdentity } from '@/lib/analytics/provider'
 import {
@@ -7,6 +9,7 @@ import {
   requireOrgMembership,
   requireSession,
 } from '@/lib/auth/guards'
+import { isReservedOrgSlug } from '@/lib/reserved-slugs'
 
 export default async function OrgLayout({
   children,
@@ -16,6 +19,8 @@ export default async function OrgLayout({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  if (isReservedOrgSlug(slug)) notFound()
+
   const sessionUser = await requireSession(`/${slug}`)
   const { membership, user } = await requireOrgMembership(sessionUser.id, slug)
   const enabledFeatureSlugs = await getEnabledEnterpriseFeatureSlugs(
