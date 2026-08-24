@@ -33,6 +33,7 @@ export const sdk876OrganizationSchema = z.strictObject({
   slug: z.string(),
   status: z.string(),
   logo_url: z.string().nullable(),
+  logo_file_id: z.string().nullable(),
   industry: z.string().nullable(),
   business_type: z.string().nullable(),
   registration_number: z.string().nullable(),

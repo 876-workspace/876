@@ -3,9 +3,8 @@ import Link from 'next/link'
 
 import type { Organization } from '@876/sdk'
 import { Badge } from '@876/ui/badge'
-import { Building2, ChevronRight, MapPin, Users } from '@876/ui/icons'
-import type { IconComponent } from '@876/ui/icons'
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
+import { ChevronRight } from '@876/ui/icons'
+import { Page } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
 import { get876ServerClient } from '@/lib/876/server'
@@ -49,20 +48,15 @@ export default async function OrganizationOverviewPage({
 
   return (
     <Page>
-      <PageHeader>
-        <PageTitle>Organization</PageTitle>
-      </PageHeader>
-
-      <div className="max-w-3xl space-y-5">
+      <div className="max-w-3xl space-y-8">
         <OverviewSection
           title="Company details"
-          icon={Building2}
           href={`/${slug}/organization/details`}
         >
           {orgResult.error ? (
             <ErrorState error={orgResult.error} />
           ) : (
-            <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
               {DETAIL_PREVIEW_FIELDS.map((field) => {
                 const value = (orgResult.data[field.key] as string | null) ?? ''
                 return (
@@ -87,17 +81,16 @@ export default async function OrganizationOverviewPage({
         </OverviewSection>
 
         <OverviewSection
-          title="Addresses"
-          icon={MapPin}
+          title="Locations"
           href={`/${slug}/locations`}
           count={locationsResult.error ? null : locations.length}
         >
           {locationsResult.error ? (
             <ErrorState error={locationsResult.error} />
           ) : locations.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No addresses</p>
+            <p className="text-muted-foreground text-sm">No locations</p>
           ) : (
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {locations.slice(0, 3).map((location) => (
                 <li key={location.id} className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
@@ -119,7 +112,6 @@ export default async function OrganizationOverviewPage({
 
         <OverviewSection
           title="Contacts"
-          icon={Users}
           href={`/${slug}/organization/contacts`}
           count={contactsResult.error ? null : contacts.length}
         >
@@ -128,7 +120,7 @@ export default async function OrganizationOverviewPage({
           ) : contacts.length === 0 ? (
             <p className="text-muted-foreground text-sm">No contacts</p>
           ) : (
-            <ul className="space-y-2.5">
+            <ul className="space-y-3">
               {contacts.slice(0, 3).map((contact) => (
                 <li key={contact.id} className="flex items-center gap-2">
                   <div className="min-w-0 flex-1">
@@ -157,38 +149,33 @@ export default async function OrganizationOverviewPage({
 
 function OverviewSection({
   title,
-  icon: Icon,
   href,
   count,
   children,
 }: {
   title: string
-  icon: IconComponent
   href: string
   count?: number | null
   children: ReactNode
 }) {
   return (
-    <section className="876-card">
-      <div className="p-5">
-        <h2 className="text-foreground mb-4 flex items-center gap-2 text-sm font-medium">
-          <span className="bg-876-accent-surface text-876-accent-fg flex size-6 shrink-0 items-center justify-center rounded-md">
-            <Icon aria-hidden="true" className="size-3.5" />
-          </span>
-          {title}
-          {typeof count === 'number' && count > 0 && (
-            <span className="text-muted-foreground font-normal">{count}</span>
-          )}
-        </h2>
-        {children}
+    <section>
+      <h2 className="text-foreground mb-4 flex items-center gap-2 text-base font-semibold">
+        {title}
+        {typeof count === 'number' && count > 0 && (
+          <span className="text-muted-foreground font-normal">{count}</span>
+        )}
+      </h2>
+      <div className="876-card">
+        <div className="p-6">{children}</div>
+        <Link
+          href={href}
+          className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-between border-t px-6 py-3.5 text-sm font-medium transition-colors"
+        >
+          Manage
+          <ChevronRight aria-hidden="true" className="size-4" />
+        </Link>
       </div>
-      <Link
-        href={href}
-        className="text-876-accent-fg hover:bg-accent/40 flex items-center justify-between border-t px-5 py-3 text-sm font-medium transition-colors"
-      >
-        Manage
-        <ChevronRight aria-hidden="true" className="size-4" />
-      </Link>
     </section>
   )
 }

@@ -544,3 +544,200 @@ describe('$876.mobileNumbers response contract', () => {
     )
   })
 })
+
+describe('$876.organizations response contract', () => {
+  // Regression: organizations.serializeOrganization always includes
+  // logo_file_id. This schema is strict, so omitting the field converted a
+  // valid 200 organization-details response into auth/invalid-response in
+  // Enterprise.
+  it('parses organization details exactly as the API serializes them', async () => {
+    const organization = {
+      object: 'organization',
+      id: 'org_123',
+      workos_organization_id: 'org_workos_123',
+      name: 'Acme Corporation',
+      short_name: 'Acme',
+      doing_business_as: 'Acme Logistics',
+      slug: 'acme',
+      status: 'active',
+      logo_url: 'https://storage.example/acme-logo.svg',
+      logo_file_id: 'file_123',
+      industry: 'Logistics',
+      business_type: 'corporation',
+      registration_number: 'RC123',
+      trn: '123-456-789',
+      nis_number: null,
+      gct_number: null,
+      tax_id: null,
+      incorporation_date: '2024-01-01',
+      primary_phone: '+18765550100',
+      primary_email: 'hello@acme.example',
+      fax: null,
+      website_url: 'https://acme.example',
+      support_url: null,
+      primary_contact_user_id: 'user_123',
+      timezone: 'America/Jamaica',
+      language: 'en',
+      address_line1: '1 Main Street',
+      address_line2: null,
+      city: 'Kingston',
+      region_id: 'region_123',
+      country_code: 'JM',
+      currency_code: 'JMD',
+      enrollment_completed_at: null,
+      metadata: null,
+      deleted_at: null,
+      deleted_by: null,
+      deletion_reason: null,
+      created_at: 1717200000,
+      updated_at: 1717200001,
+    } as const
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+
+    const result = await $876.organizations.retrieve('org_123')
+
+    expect(result.error).toBeNull()
+    expect(result.data?.logo_file_id).toBe('file_123')
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/organizations/org_123/details',
+      expect.objectContaining({ method: 'GET' })
+    )
+  })
+})
+
+describe('$876.organizations — logo_file_id strict contract (goldbergyoni AAA, factories, error handling)', () => {
+  function orgFactory(overrides: Record<string, unknown> = {}) {
+    return {
+      object: 'organization' as const,
+      id: 'org_123',
+      workos_organization_id: 'org_workos_123',
+      name: 'Acme',
+      short_name: 'Acme',
+      doing_business_as: null,
+      slug: 'acme',
+      status: 'active',
+      logo_url: null,
+      logo_file_id: 'file_123',
+      industry: null,
+      business_type: null,
+      registration_number: null,
+      trn: null,
+      nis_number: null,
+      gct_number: null,
+      tax_id: null,
+      incorporation_date: null,
+      primary_phone: null,
+      primary_email: null,
+      fax: null,
+      website_url: null,
+      support_url: null,
+      primary_contact_user_id: null,
+      timezone: null,
+      language: null,
+      address_line1: null,
+      address_line2: null,
+      city: null,
+      region_id: null,
+      country_code: null,
+      currency_code: null,
+      enrollment_completed_at: null,
+      metadata: null,
+      deleted_at: null,
+      deleted_by: null,
+      deletion_reason: null,
+      created_at: 1717200000,
+      updated_at: 1717200001,
+      ...overrides,
+    }
+  }
+
+  it('parses logo_file_id as null (no logo uploaded)', async () => {
+    // Arrange
+    const organization = orgFactory({ logo_file_id: null, logo_url: null })
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    // Act
+    const result = await $876.organizations.retrieve('org_123')
+    // Assert
+    expect(result.error).toBeNull()
+    expect(result.data?.logo_file_id).toBeNull()
+  })
+
+  it('parses logo_file_id as string when file uploaded', async () => {
+    const organization = orgFactory({ logo_file_id: 'file_xyz', logo_url: 'https://cdn/file_xyz' })
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    const result = await $876.organizations.retrieve('org_123')
+    expect(result.error).toBeNull()
+    expect(result.data?.logo_file_id).toBe('file_xyz')
+    expect(result.data?.logo_url).toBe('https://cdn/file_xyz')
+  })
+
+  it('rejects payload missing logo_file_id — strict schema converts 200 to invalid-response (regression)', async () => {
+    // Arrange: API 200 but field omitted -> SDK must surface error, not silent null
+    const { logo_file_id: _omit, ...withoutLogoFileId } = orgFactory()
+    const fetchMock = jsonFetch({ data: withoutLogoFileId, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    // Act
+    const result = await $876.organizations.retrieve('org_123')
+    // Assert: strict schema failure becomes error envelope
+    expect(result.data).toBeNull()
+    expect(result.error).not.toBeNull()
+    expect(result.error?.code).toMatch(/invalid-response|validation/i)
+  })
+
+  it('rejects logo_file_id as number (type mismatch)', async () => {
+    const organization = orgFactory({ logo_file_id: 123 as unknown as string })
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    const result = await $876.organizations.retrieve('org_123')
+    expect(result.error).not.toBeNull()
+    expect(result.data).toBeNull()
+  })
+
+  it('rejects extra unknown field due to strictObject (no silent passthrough)', async () => {
+    const organization = orgFactory({ unknown_field: 'oops' } as unknown as Record<string, unknown>)
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    const result = await $876.organizations.retrieve('org_123')
+    // strictObject should fail on unknown_field
+    expect(result.error).not.toBeNull()
+  })
+
+  it('handles very long logo_file_id (boundary)', async () => {
+    const longId = 'file_' + 'a'.repeat(100)
+    const organization = orgFactory({ logo_file_id: longId })
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    const result = await $876.organizations.retrieve('org_123')
+    expect(result.error).toBeNull()
+    expect(result.data?.logo_file_id).toBe(longId)
+  })
+
+  it('is isolated — second call with different logo_file_id does not leak previous result', async () => {
+    const fetchMock1 = jsonFetch({ data: orgFactory({ logo_file_id: 'file_1' }), error: null })
+    const $876a = create876Client({ baseUrl: '/api', fetch: fetchMock1 })
+    const r1 = await $876a.organizations.retrieve('org_1')
+    expect(r1.data?.logo_file_id).toBe('file_1')
+
+    const fetchMock2 = jsonFetch({ data: orgFactory({ logo_file_id: null }), error: null })
+    const $876b = create876Client({ baseUrl: '/api', fetch: fetchMock2 })
+    const r2 = await $876b.organizations.retrieve('org_2')
+    expect(r2.data?.logo_file_id).toBeNull()
+  })
+
+  it.each([
+    [null, null],
+    ['file_abc', 'https://cdn/abc'],
+    [null, 'https://cdn/only-url'],
+  ])('logo_file_id %j with logo_url %j parses independently', async (fileId, url) => {
+    const organization = orgFactory({ logo_file_id: fileId as string | null, logo_url: url as string | null })
+    const fetchMock = jsonFetch({ data: organization, error: null })
+    const $876 = create876Client({ baseUrl: '/api', fetch: fetchMock })
+    const result = await $876.organizations.retrieve('org_123')
+    expect(result.error).toBeNull()
+    expect(result.data?.logo_file_id).toBe(fileId)
+    expect(result.data?.logo_url).toBe(url)
+  })
+})

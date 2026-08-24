@@ -55,6 +55,7 @@ export function Sidebar({
   appsSlot?: ReactNode
 }) {
   const baseHref = `/${organization.slug}`
+  const organizationName = organization.name ?? organization.slug
   const enabledSet = new Set(enabledFeatureSlugs)
   const permissionSet = new Set(permissions)
   const settingsHref = `${baseHref}/settings`
@@ -86,7 +87,10 @@ export function Sidebar({
             <Logo className="text-sm leading-none text-[#202124] dark:text-white" />
           </span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <span className="block truncate text-lg leading-6 font-medium tracking-[-0.02em] text-[#202124] dark:text-white">
+            <span className="block truncate text-[0.9375rem] leading-6 font-semibold tracking-[-0.01em] text-[#202124] dark:text-white">
+              {organizationName}
+            </span>
+            <span className="text-muted-foreground block truncate text-xs">
               Enterprise
             </span>
           </span>
