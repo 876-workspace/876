@@ -49,6 +49,34 @@ const PROVIDER_LABELS: Record<string, string> = {
   slack: 'Slack',
 }
 
+/**
+ * The API may return enabled providers in storage order. Keep the rendered
+ * order independent of that order so the server and client always hydrate the
+ * same button tree.
+ */
+const PROVIDER_DISPLAY_ORDER: readonly SocialProvider[] = [
+  'google',
+  'apple',
+  'microsoft',
+  'github',
+  'gitlab',
+  'linkedin',
+  'slack',
+]
+
+function orderSocialProviders(
+  providers: readonly SocialProvider[]
+): SocialProvider[] {
+  const rank = new Map(PROVIDER_DISPLAY_ORDER.map((provider, index) => [provider, index]))
+
+  return [...new Set(providers)].sort(
+    (left, right) =>
+      (rank.get(left) ?? Number.MAX_SAFE_INTEGER) -
+        (rank.get(right) ?? Number.MAX_SAFE_INTEGER) ||
+      left.localeCompare(right)
+  )
+}
+
 function formatResolvedIdentifier(identifier: string): string {
   const trimmed = identifier.trim()
   if (!trimmed || trimmed.includes('@')) return trimmed
@@ -657,6 +685,8 @@ export function SocialButtons({
   providers: SocialProvider[]
   onStart: (provider: SocialProvider) => void
 }) {
+  const orderedProviders = orderSocialProviders(providers)
+
   return (
     <div className="space-y-3">
       <div className="relative flex items-center gap-3">
@@ -667,7 +697,7 @@ export function SocialButtons({
         <div className="h-px flex-1 bg-[var(--auth-card-border)]" />
       </div>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-center">
-        {providers.map((provider) => {
+        {orderedProviders.map((provider) => {
           const Icon = PROVIDER_ICONS[provider]
           const label = PROVIDER_LABELS[provider] ?? provider
           const buttonClassName =
