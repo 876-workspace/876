@@ -184,4 +184,60 @@ describe('Enterprise organization onboarding route', () => {
       error: { code: 'auth/session-invalid' },
     })
   })
+
+  it('trims name via Zod before platform call', async () => {
+    const response = await POST(request({ name: '  Spaced  ' }))
+    expect(response.status).toBe(200)
+    expect(mocks.createOrganization).toHaveBeenCalledWith(expect.objectContaining({ name: 'Spaced' }))
+  })
+
+  it('does not create organization when listRouting returns existing even with different name', async () => {
+    mocks.listRouting.mockResolvedValue({ data: { data: [{ organization: { id: 'existing_1' } }] }, error: null })
+    const response = await POST(request({ name: 'NewName' }))
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({ data: { organization_id: 'existing_1' } })
+    expect(mocks.createOrganization).not.toHaveBeenCalled()
+  })
+
+  it('propagates listRouting null data as empty (no crash)', async () => {
+    mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null })
+    const response = await POST(request({ name: 'Acme' }))
+    expect(response.status).toBe(200)
+  })
+
+  it.each([
+    ['user/not-found', 401],
+    ['organization/duplicate-slug', 409],
+    ['provisioning/finance-workspace-unavailable', 502],
+  ])('maps error code "%s" to status %i', async (code, status) => {
+    mocks.createOrganization.mockResolvedValue({ data: null, error: { code, message: 'msg' } })
+    const response = await POST(request({ name: 'Acme' }))
+    expect(response.status).toBe(status)
+  })
+
+  it('uses local user id not workos id for platform calls', async () => {
+    mocks.findAuthRoutingUser.mockResolvedValue({ id: 'local_999', email: 'a@b.co' })
+    await POST(request({ name: 'Acme' }))
+    expect(mocks.listRouting).toHaveBeenCalledWith({ userId: 'local_999' })
+    expect(mocks.createOrganization).toHaveBeenCalledWith(expect.objectContaining({ ownerUserId: 'local_999' }))
+  })
+
+  it('response has onboarding_organization object discriminator', async () => {
+    const response = await POST(request({ name: 'Acme' }))
+    await expect(response.json()).resolves.toMatchObject({ data: { object: 'onboarding_organization' } })
+  })
+
+  it('rejects crossRealm=false consumer even if enterprise realm otherwise', async () => {
+    mocks.getAuthSession.mockResolvedValue({ user: { id: 'w1', realm: 'consumer', crossRealm: false } })
+    const response = await POST(request({ name: 'Acme' }))
+    expect(response.status).toBe(401)
+  })
+
+  it('is idempotent: repeated bootstrap with existing org returns same id', async () => {
+    mocks.listRouting.mockResolvedValue({ data: { data: [{ organization: { id: 'org_same' } }] }, error: null })
+    const r1 = await POST(request({ name: 'Acme' }))
+    const r2 = await POST(request({ name: 'Acme' }))
+    await expect(r1.json()).resolves.toEqual(await r2.json())
+  })
+
 })
