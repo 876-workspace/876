@@ -42,12 +42,14 @@ describe('RootPage — home resolver', () => {
   it('redirects to org profile when user has org', async () => {
     await expect(RootPage()).rejects.toMatchObject({ path: '/acme/profile' })
   })
-  it('redirects to /register when user has no org', async () => {
-    mocks.resolveHomePathForUser.mockResolvedValue('/register')
-    await expect(RootPage()).rejects.toMatchObject({ path: '/register' })
+  it('redirects an org-less enterprise user to session-backed onboarding', async () => {
+    mocks.resolveHomePathForUser.mockResolvedValue('/onboarding')
+    await expect(RootPage()).rejects.toMatchObject({ path: '/onboarding' })
   })
   it('redirects to Enterprise login when the session user is no longer local', async () => {
     mocks.findAuthRoutingUser.mockResolvedValue(null)
-    await expect(RootPage()).rejects.toMatchObject({ path: '/login?returnTo=%2F' })
+    await expect(RootPage()).rejects.toMatchObject({
+      path: '/login?returnTo=%2F',
+    })
   })
 })

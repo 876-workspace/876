@@ -297,16 +297,16 @@ describe('resolvePrimaryOrganizationPath', () => {
   })
 })
 
-describe('resolveHomePathForUser — the diff: /register not /no-access', () => {
+describe('resolveHomePathForUser — onboarding not /no-access', () => {
   it('returns org profile path when user has org', async () => {
     mocks.listRouting.mockResolvedValue({ data: { data: [membershipRow({ slug: 'acme' })] }, error: null })
     await expect(resolveHomePathForUser('user_1')).resolves.toBe('/acme/profile')
   })
 
-  it('returns /register when user has no org — never /no-access (diff invariant)', async () => {
+  it('returns /onboarding when user has no org — never /no-access', async () => {
     mocks.listRouting.mockResolvedValue({ data: { data: [] }, error: null })
     const path = await resolveHomePathForUser('user_1')
-    expect(path).toBe('/register')
+    expect(path).toBe('/onboarding')
     expect(path).not.toBe('/no-access')
     expect(path).not.toContain('no-access')
   })

@@ -9,9 +9,14 @@ const mocks = vi.hoisted(() => ({
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 vi.mock('@/lib/auth/session', () => ({
   getAuthSession: mocks.getAuthSession,
-  isSignedSession: (session: { user?: unknown } | null) => Boolean(session?.user),
+  isSignedSession: (session: { user?: unknown } | null) =>
+    Boolean(session?.user),
 }))
-vi.mock('./_components/business-onboarding', () => ({ BusinessOnboarding: () => <div data-testid="business-onboarding">onboarding</div> }))
+vi.mock('./_components/business-onboarding', () => ({
+  BusinessOnboarding: () => (
+    <div data-testid="business-onboarding">onboarding</div>
+  ),
+}))
 
 import RegisterPage from './page'
 
@@ -42,7 +47,17 @@ describe('RegisterPage — simplified: always shows BusinessOnboarding, no auth 
       user: { realm: 'consumer', crossRealm: false },
     })
 
-    await expect(RegisterPage()).rejects.toMatchObject({ path: '/access-denied' })
+    await expect(RegisterPage()).rejects.toMatchObject({
+      path: '/access-denied',
+    })
+  })
+
+  it('routes a signed-in Enterprise account to session-backed onboarding', async () => {
+    mocks.getAuthSession.mockResolvedValue({
+      user: { realm: 'enterprise', crossRealm: false },
+    })
+
+    await expect(RegisterPage()).rejects.toMatchObject({ path: '/onboarding' })
   })
 
   it('exports force-dynamic', async () => {

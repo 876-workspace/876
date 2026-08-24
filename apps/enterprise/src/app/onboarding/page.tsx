@@ -8,6 +8,8 @@ import {
   resolvePrimaryOrganizationPath,
 } from '@/lib/auth/guards'
 
+import { OrganizationSetup } from './_components/organization-setup'
+
 export const metadata: Metadata = {
   title: 'Workspace Onboarding | 876',
   robots: { index: false, follow: false },
@@ -22,5 +24,5 @@ export default async function OrganizationOnboardingPage() {
   const primaryOrganizationPath = await resolvePrimaryOrganizationPath(user.id)
   if (primaryOrganizationPath) redirect(primaryOrganizationPath)
 
-  redirect('/register')
+  return <OrganizationSetup />
 }

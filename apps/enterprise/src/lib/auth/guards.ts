@@ -173,7 +173,10 @@ export async function resolveHomePathForUser(userId: string): Promise<string> {
   const orgPath = await resolvePrimaryOrganizationPath(userId)
   if (orgPath) return orgPath
 
-  return '/register'
+  // An authenticated social account has no 876 password to submit to
+  // `/register`. Its organization must be created through the session-backed
+  // onboarding transport instead.
+  return '/onboarding'
 }
 
 export async function getEnabledEnterpriseFeatureSlugs(
