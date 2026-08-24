@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import {
-  consumerUrl,
   findAuthRoutingUser,
   requireSession,
   resolveHomePathForUser,
@@ -18,7 +17,7 @@ export default async function RootPage() {
   const sessionUser = await requireSession('/')
   const user = await findAuthRoutingUser(sessionUser.id)
 
-  if (!user) redirect(consumerUrl('/app'))
+  if (!user) redirect('/register')
 
   redirect(await resolveHomePathForUser(user.id))
 }
