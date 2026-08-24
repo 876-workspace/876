@@ -1,7 +1,4 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-
-import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 import { BusinessOnboarding } from './_components/business-onboarding'
 
@@ -16,9 +13,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function RegisterPage() {
-  const result = await getAuthSession()
-  if (isSignedSession(result)) redirect('/')
-
+export default function RegisterPage() {
   return <BusinessOnboarding />
 }
