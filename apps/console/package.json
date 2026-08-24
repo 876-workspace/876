@@ -41,7 +41,7 @@
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
     "@prisma/extension-accelerate": "3.0.1",
-    "@sentry/nextjs": "^10.70.0",
+    "@sentry/nextjs": "10.56.0",
     "@tanstack/react-form": "1.33.5",
     "@tanstack/react-table": "^9.1.2",
     "@uploadthing/react": "7.3.3",
