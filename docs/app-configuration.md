@@ -200,7 +200,7 @@ so a new app cannot skip the preflight.
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `876-api`        | `API_INTERNAL_KEY`, `BILLING_INTERNAL_KEY`, `CORS_ALLOWED_ORIGINS`, `DATABASE_URL`, `OAUTH_KEY_ID`, `POSTHOG_*`, `SENTRY_DSN`, `WORKOS_API_KEY`, `WORKOS_CLIENT_ID`, `SESSION_COOKIE_SECRET` |
 | `876-app`        | `SESSION_COOKIE_SECRET`                                                                                                                                                                      |
-| `876-enterprise` | `API_876_KEY`, `SESSION_COOKIE_SECRET`                                                                                                                                                       |
+| `876-enterprise` | `API_876_KEY`, `API_INTERNAL_KEY`, `SESSION_COOKIE_SECRET`                                                                                                                                   |
 | `876-console`    | `API_876_KEY`, `API_INTERNAL_KEY`, `BILLING_INTERNAL_KEY`, `CONSOLE_DATABASE_URL`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                                            |
 | `876-couriers`   | `API_876_KEY`, `API_INTERNAL_KEY`, `DATABASE_URL`, `STORAGE_INTERNAL_KEY`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                                                    |
 | `876-billing`    | `API_INTERNAL_KEY`, `BILLING_API_876_KEY`, `BILLING_INTERNAL_KEY`, `WIDGETS_SERVICE_KEY`, `SESSION_COOKIE_SECRET`                                                                            |
