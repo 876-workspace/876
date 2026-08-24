@@ -22,17 +22,5 @@ export default async function OrganizationOnboardingPage() {
   const primaryOrganizationPath = await resolvePrimaryOrganizationPath(user.id)
   if (primaryOrganizationPath) redirect(primaryOrganizationPath)
 
-  return (
-    <main className="bg-background text-foreground grid min-h-dvh place-items-center px-4 py-10">
-      <section className="border-border/70 bg-card max-w-xl rounded-[1.5rem] border p-6 shadow-[0_24px_70px_rgb(15_23_42_/_10%)]">
-        <h1 className="text-xl font-semibold tracking-[-0.03em]">
-          Organization setup needed
-        </h1>
-        <p className="text-muted-foreground mt-3 text-sm leading-6">
-          No active organization membership is available yet. Ask an
-          organization owner to invite you or finish business account setup.
-        </p>
-      </section>
-    </main>
-  )
+  redirect('/register')
 }

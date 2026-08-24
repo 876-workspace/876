@@ -163,15 +163,11 @@ describe('seedDefaultRoles', () => {
 })
 
 describe('provisionOrgApps', () => {
-  it('subscribes the org to Enterprise, Billing, and Invoice', async () => {
+  it('subscribes the org to Enterprise and Billing only', async () => {
     const provisioned = await provisionOrgApps(ORG)
 
-    expect(provisioned).toEqual([
-      'app_876-enterprise',
-      'app_876-billing',
-      'app_876-invoice',
-    ])
-    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
+    expect(provisioned).toEqual(['app_876-enterprise', 'app_876-billing'])
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(2)
   })
 
   // Regression: provisioning wrote the subscriptions and stopped there, so a
@@ -182,12 +178,8 @@ describe('provisionOrgApps', () => {
   it('runs the app-readiness contract for every provisioned app', async () => {
     await provisionOrgApps(ORG)
 
-    expect(ensureAppReady).toHaveBeenCalledTimes(3)
-    for (const appId of [
-      'app_876-enterprise',
-      'app_876-billing',
-      'app_876-invoice',
-    ]) {
+    expect(ensureAppReady).toHaveBeenCalledTimes(2)
+    for (const appId of ['app_876-enterprise', 'app_876-billing']) {
       expect(ensureAppReady).toHaveBeenCalledWith(
         { repository: { marker: 'repo' } },
         { organizationId: ORG, appId }
@@ -203,10 +195,10 @@ describe('provisionOrgApps', () => {
     // Nothing new was subscribed, but readiness still runs over the entitled
     // apps so an org whose Billing tenant never opened is repaired.
     expect(provisioned).toEqual([])
-    expect(ensureAppReady).toHaveBeenCalledTimes(3)
+    expect(ensureAppReady).toHaveBeenCalledTimes(2)
     expect(ensureAppReady).toHaveBeenCalledWith(
       { repository: { marker: 'repo' } },
-      { organizationId: ORG, appId: 'app_876-invoice' }
+      { organizationId: ORG, appId: 'app_876-billing' }
     )
   })
 
@@ -219,7 +211,7 @@ describe('provisionOrgApps', () => {
       'provisioning/finance-workspace-unavailable'
     )
     // The subscription rows were still written (durable) before the barrier.
-    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(2)
   })
 
   it('additionally subscribes the app the signup came through', async () => {
@@ -237,11 +229,7 @@ describe('provisionOrgApps', () => {
       sourceAppId: 'app_876-billing',
     })
 
-    expect(provisioned).toEqual([
-      'app_876-enterprise',
-      'app_876-billing',
-      'app_876-invoice',
-    ])
+    expect(provisioned).toEqual(['app_876-enterprise', 'app_876-billing'])
   })
 
   it('skips an app the org is already subscribed to', async () => {
@@ -259,7 +247,7 @@ describe('provisionOrgApps', () => {
   it('attaches the default price as a line item', async () => {
     await provisionOrgApps(ORG)
 
-    expect(prisma.subscriptionItem.create).toHaveBeenCalledTimes(3)
+    expect(prisma.subscriptionItem.create).toHaveBeenCalledTimes(2)
     const data = prisma.subscriptionItem.create.mock.calls[0]?.[0]
       .data as Record<string, unknown>
     expect(data.priceId).toBe('prc_1')
@@ -271,7 +259,7 @@ describe('provisionOrgApps', () => {
 
     const provisioned = await provisionOrgApps(ORG)
 
-    expect(provisioned).toHaveLength(3)
+    expect(provisioned).toHaveLength(2)
     expect(prisma.subscriptionItem.create).not.toHaveBeenCalled()
   })
 
@@ -289,7 +277,7 @@ describe('provisionOrgApps', () => {
 
     const provisioned = await provisionOrgApps(ORG)
 
-    expect(provisioned).toEqual(['app_876-enterprise', 'app_876-invoice'])
+    expect(provisioned).toEqual(['app_876-enterprise'])
   })
 })
 
@@ -302,7 +290,7 @@ describe('provisionOrganization', () => {
     })
 
     expect(Object.keys(roles).length).toBe(DEFAULT_ORG_ROLES.length)
-    expect(prisma.subscription.create).toHaveBeenCalledTimes(3)
+    expect(prisma.subscription.create).toHaveBeenCalledTimes(2)
     expect(enqueue).toHaveBeenCalledWith(ORG, NOW)
   })
 

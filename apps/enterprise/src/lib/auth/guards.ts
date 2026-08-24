@@ -115,7 +115,7 @@ export async function requireOrgMembership(
   if (!user) redirect(consumerUrl('/app'))
 
   const membership = await findActiveMembershipBySlug(user.id, slug)
-  if (!membership) redirect(`/no-access?slug=${encodeURIComponent(slug)}`)
+  if (!membership) redirect('/')
 
   return { user, membership }
 }
@@ -176,7 +176,7 @@ export async function resolveHomePathForUser(userId: string): Promise<string> {
   const orgPath = await resolvePrimaryOrganizationPath(userId)
   if (orgPath) return orgPath
 
-  return '/no-access'
+  return '/register'
 }
 
 export async function getEnabledEnterpriseFeatureSlugs(

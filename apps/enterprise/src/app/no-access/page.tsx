@@ -1,20 +1,12 @@
 import type { Metadata } from 'next'
-
-import { requireSession } from '@/lib/auth/guards'
-import { NoAccessView } from './_components/no-access-view'
+import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
-  title: 'No Access | 876',
+  title: 'Workspace setup | 876',
   robots: { index: false, follow: false },
 }
 
-export default async function NoAccessPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ slug?: string }>
-}) {
-  const { slug } = await searchParams
-  await requireSession('/no-access')
-
-  return <NoAccessView orgSlug={slug} />
+/** Legacy access-denied URL; the root route now resolves the next destination. */
+export default function NoAccessPage() {
+  redirect('/')
 }
