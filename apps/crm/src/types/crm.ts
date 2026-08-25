@@ -16,7 +16,7 @@ export type RegistryCustomer = {
 
 export type CrmCustomerProfile = {
   id: string
-  organizationId: string
+  tenantId: string
   billingCustomerId: string
   ownerId: string | null
   status: CrmCustomerProfileStatus
@@ -56,7 +56,7 @@ export type CrmCustomerUpdateInput = {
 
 export type CrmContact = {
   id: string
-  organizationId: string
+  tenantId: string
   customerId: string
   name: string
   email: string | null
@@ -68,7 +68,7 @@ export type CrmContact = {
 
 export type CrmRequest = {
   id: string
-  organizationId: string
+  tenantId: string
   customerId: string
   contactId: string | null
   title: string
@@ -85,7 +85,7 @@ export type CrmRequest = {
 
 export type CrmRequestNote = {
   id: string
-  organizationId: string
+  tenantId: string
   requestId: string
   authorId: string
   content: string
@@ -95,7 +95,7 @@ export type CrmRequestNote = {
 
 export type CrmRequestCategory = {
   id: string
-  organizationId: string
+  tenantId: string
   name: string
   slug: string
   active: boolean
