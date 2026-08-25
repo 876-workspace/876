@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   CONSOLE_ACCESS_PERMISSION,
   CONSOLE_DANGER_ZONE_PERMISSION,
+  hasPermission,
   PERMISSION_GROUPS,
   permissionsForRole,
   SYSTEM_ROLE_DEFINITIONS,
@@ -33,6 +34,13 @@ describe('Console permission catalog', () => {
         role.permissions.includes(CONSOLE_DANGER_ZONE_PERMISSION)
       ).map((role) => role.name)
     ).toEqual(['owner', 'super_admin'])
+  })
+
+  it('checks a supplied permission list', () => {
+    const access = { permissions: ['console:access', 'users:update'] }
+
+    expect(hasPermission(access, 'users:update')).toBe(true)
+    expect(hasPermission(access, 'users:delete')).toBe(false)
   })
 
   it('returns a defensive copy of fallback permissions', () => {
