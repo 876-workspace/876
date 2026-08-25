@@ -10,6 +10,9 @@ export default defineConfig({
   clean: true,
   external: ['@prisma/client', '.prisma/client'],
   noExternal: ['@876/billing'],
+  esbuildOptions(options) {
+    options.conditions = [...(options.conditions ?? []), 'react-server']
+  },
   banner: {
     js: [
       "import { createRequire as __createRequire } from 'node:module'",
