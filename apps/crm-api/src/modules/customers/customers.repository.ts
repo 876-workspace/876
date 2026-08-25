@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
-import { prisma } from '@/db/index.js'
+import { prisma } from '../../db/index.js'
 
 export function list(tenantId: string) {
   return prisma.customerProfile.findMany({
