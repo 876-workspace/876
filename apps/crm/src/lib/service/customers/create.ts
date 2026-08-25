@@ -2,29 +2,35 @@ import 'server-only'
 
 import { randomUUID } from 'node:crypto'
 
-import { prisma, type CustomerProfileStatus } from '@/lib/db'
+import { getCrmBillingIntegration } from '@/lib/876/billing-integration'
+import { prisma } from '@/lib/db'
+import { createExternalCustomer } from '@/lib/finance/customers'
 import { fail, ok, type ServiceResult } from '@/lib/service/result'
+import type { CrmCustomer, CrmCustomerCreateInput } from '@/types/crm'
 
-export async function create(params: {
-  organizationId: string
-  billingCustomerId: string
-  ownerId?: string | null
-  status?: CustomerProfileStatus
-}): Promise<ServiceResult<Awaited<ReturnType<typeof prisma.customerProfile.create>>>> {
+export async function create(
+  organizationId: string,
+  params: CrmCustomerCreateInput
+): Promise<ServiceResult<CrmCustomer>> {
+  const finance = await getCrmBillingIntegration()
+  const shared = await createExternalCustomer(finance, organizationId, params)
+  if (shared.error)
+    return fail(shared.error.code, shared.error.message)
+
   try {
-    const data = await prisma.customerProfile.create({
+    const profile = await prisma.customerProfile.create({
       data: {
         id: `crm_cus_${randomUUID().replaceAll('-', '')}`,
-        organizationId: params.organizationId,
-        billingCustomerId: params.billingCustomerId,
+        organizationId,
+        billingCustomerId: shared.data.id,
         ownerId: params.ownerId ?? null,
-        status: params.status ?? 'ACTIVE',
       },
     })
-    return ok(data)
+    return ok({ profile, customer: shared.data })
   } catch (error) {
     const code = (error as { code?: string }).code
-    if (code === 'P2002') return fail('crm/customer-exists', 'This customer is already in CRM.')
+    if (code === 'P2002')
+      return fail('crm/customer-exists', 'This customer is already in CRM.')
     return fail('crm/customer-create-failed', 'The CRM customer could not be created.')
   }
 }
