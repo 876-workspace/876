@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+@import '@876/ui/876.css';
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}

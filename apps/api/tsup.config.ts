@@ -10,7 +10,7 @@ import { defineConfig } from 'tsup'
  * loader hook in production.
  */
 export default defineConfig({
-  entry: ['src/server.ts'],
+  entry: ['src/server.ts', 'src/vercel.ts'],
   outDir: 'dist',
   format: ['esm'],
   target: 'node22',

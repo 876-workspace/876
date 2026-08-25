@@ -1,5 +1,5 @@
 import type { Server } from 'node:http'
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 import { getSettings } from '@/config'
 import { disconnectDb } from '@/db/client'
 import { configureLogging, getLogger } from '@/platform/logger'

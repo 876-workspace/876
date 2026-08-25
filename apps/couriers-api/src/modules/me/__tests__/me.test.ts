@@ -50,7 +50,7 @@ vi.mock('@/platform/jwt', async (importOriginal) => {
   return { ...mod, verifyProviderJwt: vi.fn() }
 })
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { resetSettingsForTest } = await import('@/config')
 
 const APP_KEY = '876_app_secret_test_key_for_couriers_api'

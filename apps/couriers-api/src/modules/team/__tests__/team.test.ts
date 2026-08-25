@@ -67,7 +67,7 @@ vi.mock('@/db/client', () => ({
   pingDb: vi.fn(),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { resetSettingsForTest } = await import('@/config')
 
 const testEnv: NodeJS.ProcessEnv = {

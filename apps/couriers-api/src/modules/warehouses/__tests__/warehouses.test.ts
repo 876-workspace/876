@@ -81,7 +81,7 @@ vi.mock('@/providers/platform/geo', () => ({
   }),
 }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { resetSettingsForTest } = await import('@/config')
 const { resolveRegion } = await import('@/providers/platform/geo')
 

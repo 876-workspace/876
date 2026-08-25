@@ -1,4 +1,4 @@
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 import { getSettings } from '@/config'
 import { configureLogging } from '@/platform/logger'
 

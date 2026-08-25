@@ -16,6 +16,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
+      "env": ["CRM_DATABASE_URL"],
       "outputs": [".next/**", "!.next/cache/**", ".open-next/**", "dist/**"]
     },
     "lint": {},
