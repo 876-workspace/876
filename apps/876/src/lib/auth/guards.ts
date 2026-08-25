@@ -1,10 +1,9 @@
 import 'server-only'
 
-import { redirect } from 'next/navigation'
-
-import * as Sentry from '@sentry/nextjs'
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
+import { createAuthLoginPath } from '@876/core/auth/return-to'
 import { unwrapOptional, unwrapResult } from '@876/core/client/lookup'
+import * as Sentry from '@sentry/nextjs'
+import { redirect } from 'next/navigation'
 
 import { CONSUMER_APP_SLUG } from '@/lib/consumer-app'
 
@@ -16,7 +15,7 @@ import { getAuthSession, isSignedSession } from './session'
 
 export async function requireSession(returnTo: string) {
   const result = await getAuthSession()
-  if (!isSignedSession(result)) redirect(createAuthStartPath(returnTo))
+  if (!isSignedSession(result)) redirect(createAuthLoginPath(returnTo))
   return result.user
 }
 
@@ -33,7 +32,7 @@ export async function requireSession(returnTo: string) {
  */
 export async function requireConsumerRealm(returnTo: string) {
   const result = await getAuthSession()
-  if (!isSignedSession(result)) redirect(createAuthStartPath(returnTo))
+  if (!isSignedSession(result)) redirect(createAuthLoginPath(returnTo))
 
   if (result.realm === 'enterprise' && !result.crossRealm)
     redirect('/access-denied')
@@ -78,6 +77,7 @@ export async function findAuthRoutingUser(
   const row = unwrapOptional(result, 'auth routing user')
   if (!row) return null
   if (!row.id || !row.email) return null
+
   return {
     id: row.id,
     status: row.status ?? 'active',
@@ -196,11 +196,4 @@ export async function canAccessOrganizationSlug(
 ): Promise<boolean> {
   const membership = await findActiveMembershipBySlug(userId, slug)
   return membership !== null
-}
-
-// ─── Internal ─────────────────────────────────────────────────────────────────
-
-function createAuthStartPath(returnTo: string): string {
-  const searchParams = new URLSearchParams({ [AUTH_RETURN_TO_PARAM]: returnTo })
-  return `/login?${searchParams.toString()}`
 }
