@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { permissionsForRole } from '@/lib/permissions'
+import { CONSOLE_ACCESS_PERMISSION } from '@/lib/permissions'
 
 import {
-  CONSOLE_ACCESS_PERMISSION,
   findConsoleAccess,
-  hasPermission,
   requireConsoleAccount,
   requireConsolePermission,
   requireSession,
@@ -45,6 +43,16 @@ const activeAccess = {
   status: 'active',
 }
 
+function activeMember(overrides = {}) {
+  return {
+    userId: activeAccess.id,
+    roleName: activeAccess.role,
+    status: activeAccess.status,
+    role: { permissions: activeAccess.permissions },
+    ...overrides,
+  }
+}
+
 function redirectSignal(path: string): Error {
   return Object.assign(new Error(`redirect:${path}`), { path })
 }
@@ -61,14 +69,6 @@ describe('Console auth guards', () => {
     })
     mocks.isSignedSession.mockReturnValue(true)
     vi.clearAllMocks()
-  })
-
-  it('checks membership in the supplied permission list', () => {
-    expect(hasPermission(activeAccess, 'users:update')).toBe(true)
-  })
-
-  it('rejects a missing permission', () => {
-    expect(hasPermission(activeAccess, 'users:delete')).toBe(false)
   })
 
   it('returns the signed-in session user', async () => {
@@ -94,122 +94,28 @@ describe('Console auth guards', () => {
     )
   })
 
-  it('bootstraps the designated super admin using normalized email', async () => {
-    mocks.retrieveUser.mockResolvedValue({
-      data: { email: '  RaheemDevs@gmail.com ' },
-      error: null,
-    })
+  it('maps persisted Console team membership to access', async () => {
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
-    const result = await findConsoleAccess('user_bootstrap')
+    const result = await findConsoleAccess(activeAccess.id)
 
-    expect(result).toEqual({
-      id: 'user_bootstrap',
-      role: 'super_admin',
-      permissions: permissionsForRole('super_admin'),
-      status: 'active',
-    })
-    expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
-    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_bootstrap' })
-    expect(mocks.retrieveTeamMember).not.toHaveBeenCalled()
-  })
-
-  it('bootstraps from the sealed session without calling the identity API', async () => {
-    mocks.getAuthSession.mockResolvedValue({
-      user: { id: 'user_bootstrap', email: '  RaheemDevs@gmail.com ' },
-    })
-
-    const result = await findConsoleAccess('user_bootstrap')
-
-    expect(result).toEqual({
-      id: 'user_bootstrap',
-      role: 'super_admin',
-      permissions: permissionsForRole('super_admin'),
-      status: 'active',
-    })
-    // The guard runs in every segment layout ahead of any paint, so the
-    // address must not cost a round trip when the session already carries it.
+    expect(result).toEqual(activeAccess)
+    expect(mocks.retrieveTeamMember).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveTeamMember).toHaveBeenCalledWith(activeAccess.id)
     expect(mocks.retrieveUser).not.toHaveBeenCalled()
-    expect(mocks.retrieveTeamMember).not.toHaveBeenCalled()
   })
 
-  it('ignores the session address when checking a different user', async () => {
-    mocks.getAuthSession.mockResolvedValue({
-      user: { id: 'user_bootstrap', email: 'raheemdevs@gmail.com' },
-    })
-    mocks.retrieveUser.mockResolvedValue({
-      data: { email: 'someone.else@example.com' },
-      error: null,
-    })
-    mocks.retrieveTeamMember.mockResolvedValue(null)
-
-    const result = await findConsoleAccess('user_other')
-
-    // The signed-in operator's own address must never grant super-admin to the
-    // id they happen to be looking at.
-    expect(result).toBeNull()
-    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_other' })
-  })
-
-  it('falls back to the identity API when the session carries no address', async () => {
-    mocks.getAuthSession.mockResolvedValue({
-      user: { id: 'user_bootstrap', email: '' },
-    })
-    mocks.retrieveUser.mockResolvedValue({
-      data: { email: 'raheemdevs@gmail.com' },
-      error: null,
-    })
-
-    const result = await findConsoleAccess('user_bootstrap')
-
-    expect(result?.role).toBe('super_admin')
-    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_bootstrap' })
-  })
-
-  it('does not consult the identity API for an unsigned session', async () => {
-    mocks.isSignedSession.mockReturnValue(false)
-    mocks.retrieveUser.mockResolvedValue({
-      data: { email: 'raheemdevs@gmail.com' },
-      error: null,
-    })
-    mocks.retrieveTeamMember.mockResolvedValue(null)
-
-    const result = await findConsoleAccess('user_bootstrap')
-
-    // An unsigned session cannot vouch for an address, so the authoritative
-    // read still happens and still decides.
-    expect(result?.role).toBe('super_admin')
-    expect(mocks.retrieveUser).toHaveBeenCalledWith({ id: 'user_bootstrap' })
-  })
-
-  it.each([null, { email: '' }, { email: 'operator@example.com' }])(
-    'falls back to a persisted access grant for identity %j',
-    async (identity) => {
-      mocks.retrieveUser.mockResolvedValue({ data: identity, error: null })
-      mocks.retrieveTeamMember.mockResolvedValue({
-        userId: 'user_operator',
-        roleName: 'admin',
-        status: 'active',
-        role: { permissions: ['console:access', 'users:update'] },
-      })
-
-      const result = await findConsoleAccess('user_operator')
-
-      expect(result).toEqual(activeAccess)
-      expect(mocks.retrieveTeamMember).toHaveBeenCalledTimes(1)
-      expect(mocks.retrieveTeamMember).toHaveBeenCalledWith('user_operator')
-    }
-  )
-
-  it('returns null when neither bootstrap nor persisted access exists', async () => {
+  it('returns null when no persisted Console access exists', async () => {
     const result = await findConsoleAccess('user_missing')
 
     expect(result).toBeNull()
     expect(mocks.retrieveTeamMember).toHaveBeenCalledTimes(1)
     expect(mocks.retrieveTeamMember).toHaveBeenCalledWith('user_missing')
+    expect(mocks.retrieveUser).not.toHaveBeenCalled()
   })
 
   it('hydrates an authorized Console account with identity display fields', async () => {
-    mocks.retrieveUser.mockResolvedValueOnce({
+    mocks.retrieveUser.mockResolvedValue({
       data: {
         first_name: 'Alejandra',
         last_name: 'Reyes',
@@ -220,12 +126,7 @@ describe('Console auth guards', () => {
       },
       error: null,
     })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     const result = await requireConsoleAccount(activeAccess.id)
 
@@ -237,9 +138,6 @@ describe('Console auth guards', () => {
       avatar: 'https://cdn.example.com/avatar.png',
       banned: false,
     })
-    // One platform read, in requireAccess — reused for display. The bootstrap
-    // check reads the address off the sealed session when it is the session's
-    // own id, so it costs nothing.
     expect(mocks.retrieveUser).toHaveBeenCalledTimes(1)
     expect(mocks.redirect).not.toHaveBeenCalled()
   })
@@ -249,12 +147,7 @@ describe('Console auth guards', () => {
       data: null,
       error: { code: 'user/not-found', message: 'No user.' },
     })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
       path: '/login',
@@ -266,29 +159,19 @@ describe('Console auth guards', () => {
       data: { status: 'active', banned: true },
       error: null,
     })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
       path: '/login',
     })
   })
 
-  it('signs a suspended account out to /login', async () => {
+  it('signs a suspended platform account out to /login', async () => {
     mocks.retrieveUser.mockResolvedValue({
       data: { status: 'suspended', banned: false },
       error: null,
     })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
       path: '/login',
@@ -296,13 +179,7 @@ describe('Console auth guards', () => {
   })
 
   it('uses safe display defaults when identity hydration returns no data', async () => {
-    mocks.retrieveUser.mockResolvedValue({ data: null, error: null })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     const result = await requireConsoleAccount(activeAccess.id)
 
@@ -319,12 +196,7 @@ describe('Console auth guards', () => {
 
   it('uses safe display defaults when identity hydration throws', async () => {
     mocks.retrieveUser.mockRejectedValueOnce(new Error('API unavailable'))
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     const result = await requireConsoleAccount(activeAccess.id)
 
@@ -340,13 +212,7 @@ describe('Console auth guards', () => {
   })
 
   it('uses the verified session identity when API hydration is unavailable', async () => {
-    mocks.retrieveUser.mockResolvedValue({ data: null, error: null })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     const result = await requireConsoleAccount(activeAccess.id, {
       firstName: '  Alejandra ',
@@ -365,24 +231,17 @@ describe('Console auth guards', () => {
   })
 
   it('fills blank API identity fields from the verified session', async () => {
-    mocks.retrieveUser
-      .mockResolvedValueOnce({ data: null, error: null })
-      .mockResolvedValueOnce({
-        data: {
-          first_name: '',
-          last_name: '',
-          email: '',
-          avatar: null,
-          banned: false,
-        },
-        error: null,
-      })
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
+    mocks.retrieveUser.mockResolvedValue({
+      data: {
+        first_name: '',
+        last_name: '',
+        email: '',
+        avatar: null,
+        banned: false,
+      },
+      error: null,
     })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     const result = await requireConsoleAccount(activeAccess.id, {
       firstName: 'Alejandra',
@@ -405,15 +264,13 @@ describe('Console auth guards', () => {
     expect(mocks.redirect).toHaveBeenCalledWith(
       '/access-denied?reason=no-account'
     )
+    expect(mocks.retrieveUser).not.toHaveBeenCalled()
   })
 
   it('redirects a suspended Console account', async () => {
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: 'suspended',
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(
+      activeMember({ status: 'suspended' })
+    )
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
       path: '/access-denied?reason=suspended',
@@ -425,12 +282,9 @@ describe('Console auth guards', () => {
   })
 
   it('redirects an active account without Console entry permission', async () => {
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: ['users:update'] },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(
+      activeMember({ role: { permissions: ['users:update'] } })
+    )
 
     await expect(requireConsoleAccount(activeAccess.id)).rejects.toMatchObject({
       path: '/access-denied?reason=permission',
@@ -442,12 +296,9 @@ describe('Console auth guards', () => {
   })
 
   it('redirects an authorized account that lacks the requested permission', async () => {
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: [CONSOLE_ACCESS_PERMISSION] },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(
+      activeMember({ role: { permissions: [CONSOLE_ACCESS_PERMISSION] } })
+    )
 
     await expect(
       requireConsolePermission(activeAccess.id, 'users:delete')
@@ -457,12 +308,7 @@ describe('Console auth guards', () => {
   })
 
   it('returns active access with the requested permission', async () => {
-    mocks.retrieveTeamMember.mockResolvedValue({
-      userId: activeAccess.id,
-      roleName: activeAccess.role,
-      status: activeAccess.status,
-      role: { permissions: activeAccess.permissions },
-    })
+    mocks.retrieveTeamMember.mockResolvedValue(activeMember())
 
     const result = await requireConsolePermission(
       activeAccess.id,
