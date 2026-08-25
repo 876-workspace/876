@@ -5,7 +5,7 @@ enum CustomerProfileStatus {
 
 model CustomerProfile {
   id                String                @id
-  organizationId    String                @map("organization_id")
+  tenantId          String                @map("tenant_id")
   billingCustomerId String                @map("billing_customer_id")
   ownerId           String?               @map("owner_id")
   status            CustomerProfileStatus @default(ACTIVE)
@@ -15,8 +15,10 @@ model CustomerProfile {
   deletedBy         String?               @map("deleted_by")
   deletionReason    String?               @map("deletion_reason")
 
-  @@unique([organizationId, billingCustomerId])
-  @@index([organizationId, status, createdAt])
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, billingCustomerId])
+  @@index([tenantId, status, createdAt])
   @@index([ownerId])
   @@map("crm_customer_profiles")
 }
