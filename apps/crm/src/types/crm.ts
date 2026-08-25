@@ -1,8 +1,18 @@
-import type { BillingCustomer } from '@876/billing/integration'
-
 export type RequestStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type RequestPriority = 'low' | 'normal' | 'high'
 export type CrmCustomerProfileStatus = 'ACTIVE' | 'INACTIVE'
+
+export type RegistryCustomer = {
+  id: string
+  customerType: 'EXTERNAL' | 'CORE_USER' | 'CORE_ORGANIZATION'
+  customerKind: 'INDIVIDUAL' | 'BUSINESS'
+  name: string
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+}
 
 export type CrmCustomerProfile = {
   id: string
@@ -10,16 +20,16 @@ export type CrmCustomerProfile = {
   billingCustomerId: string
   ownerId: string | null
   status: CrmCustomerProfileStatus
-  createdAt: Date
-  updatedAt: Date
-  deletedAt: Date | null
+  createdAt: string | Date
+  updatedAt: string | Date
+  deletedAt: string | Date | null
   deletedBy: string | null
   deletionReason: string | null
 }
 
 export type CrmCustomer = {
   profile: CrmCustomerProfile
-  customer: BillingCustomer | null
+  customer: RegistryCustomer | null
 }
 
 export type CrmCustomerCreateInput = {
