@@ -9,9 +9,9 @@ const SECTIONS = [
     description: 'View the shared customer relationships available to this CRM workspace.',
   },
   {
-    href: '/tickets',
-    title: 'Tickets',
-    description: 'Track support and relationship issues with simple statuses and notes.',
+    href: '/requests',
+    title: 'Requests',
+    description: 'Track customer requests with simple statuses, categories, assignees, and notes.',
   },
 ]
 
@@ -21,7 +21,7 @@ export default function DashboardPage() {
       <div className="mb-6">
         <h1 className="876-page-title">CRM</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Customers and tickets in one small workspace.
+          Customers and requests in one small workspace.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
