@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
+import { createAuthLoginPath } from '@876/core/auth/return-to'
 import { redirect } from 'next/navigation'
 
 /**
@@ -37,6 +37,5 @@ export function redirectIfSignedOut(
 ): void {
   if (!isSignedOutError(code)) return
 
-  const searchParams = new URLSearchParams({ [AUTH_RETURN_TO_PARAM]: returnTo })
-  redirect(`/login?${searchParams.toString()}`)
+  redirect(createAuthLoginPath(returnTo))
 }

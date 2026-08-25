@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
+import { createAuthLoginPath } from '@876/core/auth/return-to'
 
 import { Shell } from '@/components/shell/shell'
 import { getContext } from '@/lib/auth/billing-context'
@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const context = await getContext()
   if (!context) {
     const session = await getAuthSession()
-    if (!isSignedSession(session)) redirect(`/login?${AUTH_RETURN_TO_PARAM}=/`)
+    if (!isSignedSession(session)) redirect(createAuthLoginPath('/'))
     // Signed in with no organization yet (brand-new signup, incl. social): send
     // them to create their org rather than stranding them on /no-access.
     redirect('/get-started')
