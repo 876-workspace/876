@@ -16,6 +16,9 @@ vi.mock('./session', () => ({
 
 vi.mock('./guards', () => ({
   findConsoleAccess: mocks.findConsoleAccess,
+}))
+
+vi.mock('@/lib/permissions', () => ({
   hasPermission: mocks.hasPermission,
 }))
 

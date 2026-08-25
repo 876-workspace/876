@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import {
   AUTH_RETURN_TO_PARAM,
+  createAuthLoginPath,
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 
@@ -22,12 +23,7 @@ export async function GET(request: NextRequest) {
   )
 
   const result = await getAuthSession()
-  if (!isSignedSession(result)) redirect(getLoginRedirect(returnTo))
+  if (!isSignedSession(result)) redirect(createAuthLoginPath(returnTo))
 
   redirect(returnTo)
-}
-
-function getLoginRedirect(returnTo: string): string {
-  const searchParams = new URLSearchParams({ [AUTH_RETURN_TO_PARAM]: returnTo })
-  return `/login?${searchParams.toString()}`
 }

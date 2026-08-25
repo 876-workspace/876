@@ -1,3 +1,4 @@
+import type { Access } from '@/types/auth'
 import type { PermissionGroup } from '@/types/permission'
 import type { SystemRole } from '@/types/role'
 
@@ -43,6 +44,13 @@ export const CONSOLE_ACCESS_PERMISSION = 'console:access'
 
 /** Permission that gates destructive (danger-zone) operations. */
 export const CONSOLE_DANGER_ZONE_PERMISSION = 'console:danger_zone'
+
+export function hasPermission(
+  access: Pick<Access, 'permissions'>,
+  permission: string
+): boolean {
+  return access.permissions.includes(permission)
+}
 
 /**
  * Seed definitions for the 4 system Console roles. Used to seed `roles` on
