@@ -13,6 +13,17 @@ describe('auth return-to helpers', () => {
     )
   })
 
+  it.each([
+    ['an absolute off-site URL', 'https://evil.example.com/steal'],
+    ['a protocol-relative URL', '//evil.example.com'],
+    ['a backslash-escaped path', '/\\evil.example.com'],
+    ['the login page itself', '/login'],
+    ['a login page with a query', '/login?returnTo=%2Fusers'],
+    ['an empty destination', ''],
+  ])('falls back to / when the login destination is %s', (_name, returnTo) => {
+    expect(createAuthLoginPath(returnTo)).toBe('/login?returnTo=%2F')
+  })
+
   it('resolves safe relative return paths', () => {
     expect(resolveRelativeReturnTo('/settings')).toBe('/settings')
     expect(createReturnToPath('/settings', '?tab=profile')).toBe(
