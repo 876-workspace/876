@@ -1,6 +1,6 @@
 import request from 'supertest'
 
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 import { resetSettingsForTest } from '@/config'
 import { registeredOperations } from '@/http/openapi/registry'
 

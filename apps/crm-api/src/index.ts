@@ -1,3 +1,3 @@
-import { createApp } from './app.js'
+import { createApp } from './application.js'
 
 export default createApp()

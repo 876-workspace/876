@@ -1,4 +1,4 @@
-import { createApp } from './app.js'
+import { createApp } from './application.js'
 import { disconnectDb } from './db/index.js'
 
 const port = Number(process.env.PORT ?? 4010)

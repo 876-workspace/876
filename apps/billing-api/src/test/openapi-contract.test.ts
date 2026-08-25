@@ -1,4 +1,4 @@
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 import { buildOpenApiDocument } from '@/http/openapi/registry'
 import {
   compareOpenApiContracts,

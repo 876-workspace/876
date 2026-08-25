@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.development.local src/server.ts",
+    "prebuild": "prisma generate",
     "build": "tsup",
     "start": "node dist/server.js",
     "typecheck": "prisma generate && tsc --noEmit",

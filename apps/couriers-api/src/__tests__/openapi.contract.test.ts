@@ -27,7 +27,7 @@ vi.mock('@/platform/jwt', async (importOriginal) => {
   return { ...mod, verifyProviderJwt: vi.fn().mockResolvedValue(null) }
 })
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 
 beforeEach(() => {
   vi.clearAllMocks()

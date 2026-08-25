@@ -53,7 +53,7 @@ vi.mock('@/platform/jwt', async (importOriginal) => {
   return { ...mod, verifyProviderJwt: vi.fn().mockResolvedValue(null) }
 })
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { resetSettingsForTest } = await import('@/config')
 
 const testEnv: NodeJS.ProcessEnv = {

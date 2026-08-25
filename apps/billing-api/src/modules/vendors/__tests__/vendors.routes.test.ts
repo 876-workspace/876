@@ -1,6 +1,6 @@
 import request from 'supertest'
 
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 
 const mocks = vi.hoisted(() => ({
   tenantByOrganizationId: vi.fn(),

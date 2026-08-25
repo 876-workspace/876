@@ -189,7 +189,7 @@ vi.mock('@/db/client', () => ({
 const { resolveRegion } = vi.hoisted(() => ({ resolveRegion: vi.fn() }))
 vi.mock('@/providers/platform/geo', () => ({ resolveRegion }))
 
-const { createApp } = await import('@/app')
+const { createApp } = await import('@/application')
 const { resetSettingsForTest } = await import('@/config')
 
 const testEnv: NodeJS.ProcessEnv = {

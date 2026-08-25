@@ -1,4 +1,4 @@
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 import { getSettings } from '@/config'
 import { disconnectDb } from '@/db'
 import { configureLogging, getLogger } from '@/platform/logger'
