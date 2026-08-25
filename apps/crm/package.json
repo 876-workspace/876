@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack --port 3007",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
+    "build:next": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
     "start": "next start --port ${PORT:-3007}",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
