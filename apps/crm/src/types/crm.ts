@@ -1,14 +1,47 @@
+import type { BillingCustomer } from '@876/billing/integration'
+
 export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'normal' | 'high'
+export type CrmCustomerProfileStatus = 'ACTIVE' | 'INACTIVE'
 
 export type CrmCustomerProfile = {
   id: string
   organizationId: string
-  customerId: string
+  billingCustomerId: string
   ownerId: string | null
-  status: 'active' | 'inactive'
-  createdAt: number
-  updatedAt: number
+  status: CrmCustomerProfileStatus
+  createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
+  deletedBy: string | null
+  deletionReason: string | null
+}
+
+export type CrmCustomer = {
+  profile: CrmCustomerProfile
+  customer: BillingCustomer | null
+}
+
+export type CrmCustomerCreateInput = {
+  idempotencyKey: string
+  customerKind: 'INDIVIDUAL' | 'BUSINESS'
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  ownerId?: string | null
+}
+
+export type CrmCustomerUpdateInput = {
+  customerKind: 'INDIVIDUAL' | 'BUSINESS'
+  firstName?: string | null
+  lastName?: string | null
+  companyName?: string | null
+  email?: string | null
+  phone?: string | null
+  ownerId?: string | null
+  status?: CrmCustomerProfileStatus
 }
 
 export type CrmContact = {
