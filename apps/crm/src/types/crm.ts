@@ -1,7 +1,7 @@
 import type { BillingCustomer } from '@876/billing/integration'
 
-export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
-export type TicketPriority = 'low' | 'normal' | 'high'
+export type RequestStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
+export type RequestPriority = 'low' | 'normal' | 'high'
 export type CrmCustomerProfileStatus = 'ACTIVE' | 'INACTIVE'
 
 export type CrmCustomerProfile = {
@@ -56,15 +56,15 @@ export type CrmContact = {
   updatedAt: number
 }
 
-export type CrmTicket = {
+export type CrmRequest = {
   id: string
   organizationId: string
   customerId: string
   contactId: string | null
   title: string
   description: string | null
-  status: TicketStatus
-  priority: TicketPriority
+  status: RequestStatus
+  priority: RequestPriority
   categoryId: string | null
   assigneeId: string | null
   createdBy: string
@@ -73,17 +73,17 @@ export type CrmTicket = {
   closedAt: number | null
 }
 
-export type CrmTicketNote = {
+export type CrmRequestNote = {
   id: string
   organizationId: string
-  ticketId: string
+  requestId: string
   authorId: string
   content: string
   createdAt: number
   updatedAt: number
 }
 
-export type CrmTicketCategory = {
+export type CrmRequestCategory = {
   id: string
   organizationId: string
   name: string
