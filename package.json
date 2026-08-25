@@ -6,7 +6,8 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "dev": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing console crm widgets-api && pnpm widgets:env:check all && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/storage-api --filter=@876/widgets-api --filter=@876/app --filter=@876/enterprise --filter=@876/console --filter=@876/billing-api --filter=@876/billing-app --filter=@876/crm-api --filter=@876/crm-app",
+    "dev": "node scripts/dev.mjs",
+    "dev:default": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing console crm widgets-api && pnpm widgets:env:check all && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/storage-api --filter=@876/widgets-api --filter=@876/app --filter=@876/enterprise --filter=@876/console --filter=@876/billing-api --filter=@876/billing-app --filter=@876/crm-api --filter=@876/crm-app",
     "dev:all": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api billing console couriers crm widgets-api && pnpm widgets:env:check all && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/storage-api --filter=@876/widgets-api --filter=@876/app --filter=@876/enterprise --filter=@876/console --filter=@876/billing-api --filter=@876/billing-app --filter=@876/couriers-api --filter=@876/couriers-app --filter=@876/crm-api --filter=@876/crm-app --filter=@876/invoice-app",
     "dev:876": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/app",
     "dev:enterprise": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/enterprise",
