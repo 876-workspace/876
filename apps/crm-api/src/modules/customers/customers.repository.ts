@@ -2,35 +2,38 @@ import { randomUUID } from 'node:crypto'
 
 import { prisma } from '@/db/index.js'
 
-export function list(organizationId: string) {
+export function list(tenantId: string) {
   return prisma.customerProfile.findMany({
-    where: { organizationId, deletedAt: null },
+    where: { tenantId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
   })
 }
 
-export function retrieve(organizationId: string, id: string) {
+export function retrieve(tenantId: string, id: string) {
   return prisma.customerProfile.findFirst({
-    where: { organizationId, id, deletedAt: null },
+    where: { tenantId, id, deletedAt: null },
   })
 }
 
 export function create(params: {
-  organizationId: string
+  tenantId: string
   billingCustomerId: string
   ownerId?: string | null
 }) {
   return prisma.customerProfile.create({
     data: {
       id: `crm_cus_${randomUUID().replaceAll('-', '')}`,
-      organizationId: params.organizationId,
+      tenantId: params.tenantId,
       billingCustomerId: params.billingCustomerId,
       ownerId: params.ownerId ?? null,
     },
   })
 }
 
-export function update(id: string, params: { ownerId?: string | null; status?: 'ACTIVE' | 'INACTIVE' }) {
+export function update(
+  id: string,
+  params: { ownerId?: string | null; status?: 'ACTIVE' | 'INACTIVE' }
+) {
   return prisma.customerProfile.update({ where: { id }, data: params })
 }
 
@@ -51,5 +54,6 @@ export async function remove(params: {
       },
     })
   }
+
   return { object: 'customer' as const, id: params.id, deleted: true as const }
 }
