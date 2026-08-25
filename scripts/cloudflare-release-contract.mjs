@@ -143,7 +143,11 @@ export const CLOUDFLARE_WORKERS = {
     dependencies: ['876-api'],
     migrationOwner: 'none',
     readinessUrl: 'https://876-enterprise.1876.workers.dev/api/health',
-    requiredSecrets: ['API_876_KEY', 'SESSION_COOKIE_SECRET'],
+    requiredSecrets: [
+      'API_876_KEY',
+      'API_INTERNAL_KEY',
+      'SESSION_COOKIE_SECRET',
+    ],
   },
   '876-storage-api': {
     directory: 'apps/storage-api',
