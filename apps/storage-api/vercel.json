@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "main.py": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [{ "path": "/_cron/storage-sweep", "schedule": "17 3 * * *" }]
+}

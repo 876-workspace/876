@@ -63,6 +63,9 @@ yarn-error.log*
 cloudflare-env.d.ts
 .dev.vars
 
+# Vercel project links and locally downloaded environment variables
+.vercel
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
