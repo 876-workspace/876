@@ -1,8 +1,9 @@
 import 'server-only'
 
-import { findConsoleAccess, hasPermission } from './guards'
-import type { Access, SessionUser } from '@/types/auth'
+import { hasPermission } from '@/lib/permissions'
+import { findConsoleAccess } from './guards'
 import { getAuthSession, isSignedSession } from './session'
+import type { Access, SessionUser } from '@/types/auth'
 
 type Authorized = {
   caller: Access
