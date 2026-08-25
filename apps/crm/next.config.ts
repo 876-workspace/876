@@ -34,7 +34,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['zod'],
     serverActions: {
-      allowedOrigins: ['localhost:3007', '127.0.0.1:3007', ...previewDevOrigins],
+      allowedOrigins: [
+        'localhost:3007',
+        '127.0.0.1:3007',
+        ...previewDevOrigins,
+      ],
     },
   },
 }
@@ -47,6 +51,3 @@ export default withSentryConfig(nextConfig, {
   tunnelRoute: '/monitoring',
   sourcemaps: { disable: true },
 })
-
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
-initOpenNextCloudflareForDev()
