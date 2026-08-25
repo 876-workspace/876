@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { getPlatformClient } from '@/lib/876/platform-client'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { CRM_APP_SLUG } from '@/lib/crm-app'
+import { crmApi } from '@/lib/crm-api'
 
 export const runtime = 'nodejs'
 
@@ -42,7 +43,10 @@ export async function POST(request: NextRequest) {
     Sentry.captureMessage('CRM onboarding: routing memberships failed', {
       level: 'error',
       tags: { category: 'platform_client', phase: 'crm_onboarding' },
-      extra: { errorCode: memberships.error.code ?? null, userId: session.user.id },
+      extra: {
+        errorCode: memberships.error.code ?? null,
+        userId: session.user.id,
+      },
     })
     return apiJson(
       { error: 'We could not reach 876 to verify your account.' },
@@ -99,6 +103,23 @@ export async function POST(request: NextRequest) {
     return apiJson(
       { error: subscription.error.message || 'Failed to activate 876 CRM.' },
       { status: 502, code: subscription.error.code }
+    )
+  }
+
+  const tenant = await crmApi('/v1/tenants', {
+    method: 'POST',
+    body: JSON.stringify({ organizationId }),
+  }).catch(() => null)
+
+  if (!tenant?.ok) {
+    Sentry.captureMessage('CRM onboarding: tenant provisioning failed', {
+      level: 'error',
+      tags: { category: 'crm_api', phase: 'crm_onboarding' },
+      extra: { organizationId, userId: session.user.id },
+    })
+    return apiJson(
+      { error: '876 CRM could not finish preparing this workspace.' },
+      { status: 502, code: 'crm/tenant-provisioning-failed' }
     )
   }
 
