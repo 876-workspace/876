@@ -1,7 +1,7 @@
 import request from 'supertest'
 import { describe, expect, it } from 'vitest'
 
-import { createApp } from '@/app'
+import { createApp } from '@/application'
 
 describe('GET /openapi.json', () => {
   it('serves a 3.1 document describing the service', async () => {

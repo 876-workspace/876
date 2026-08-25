@@ -44,7 +44,7 @@ does not, so:
 - migrations are applied by CI (`prisma migrate deploy`) or by hand with
   `pnpm --filter @876/api db:deploy`;
 - seeds are an explicit CLI (`pnpm --filter @876/api seed`), composed in
-  `src/seeds/index.ts` and reachable from nothing under `src/app.ts`.
+  `src/seeds/index.ts` and reachable from nothing under `src/application.ts`.
 
 Never run `prisma migrate dev` against a database carrying the `billing_*` or
 `storage_*` tables — they belong to other services under Alembic, and drift

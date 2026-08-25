@@ -1,7 +1,8 @@
 /**
  * Seed orchestration — the CLI entry composition.
  *
- * Nothing under `src/seeds/` may be imported by `src/app.ts` or `src/server.ts`.
+ * Nothing under `src/seeds/` may be imported by `src/application.ts` or
+ * `src/server.ts`.
  * The Express service must not run seeds or DDL at startup
  * (`.claude/rules/express-api.md`). Seeds are idempotent CLI operations;
  * the service boots without them and they are invoked explicitly via
