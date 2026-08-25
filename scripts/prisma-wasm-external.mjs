@@ -31,6 +31,17 @@ import { resolve } from 'node:path'
  * Requires the build to run with `--webpack`; Turbopack has no externals hook.
  */
 export function externalizePrismaWasm(config) {
+  // Vercel runs the application in Node.js, where its output tracer must own
+  // the WASM import. Keeping it external here leaves an absolute build-machine
+  // path in the function bundle, so the first Prisma query fails at runtime.
+  if (process.env.VERCEL === '1') {
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+    }
+    return config
+  }
+
   config.externals = [
     ...(Array.isArray(config.externals)
       ? config.externals
