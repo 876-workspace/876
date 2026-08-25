@@ -5,8 +5,15 @@ import type {
   PrecacheEntry,
   RuntimeCaching,
   SerwistGlobalConfig,
+  SerwistPlugin,
 } from 'serwist'
-import { CacheFirst, ExpirationPlugin, NetworkOnly, Serwist } from 'serwist'
+import {
+  CacheFirst,
+  disableNavigationPreload,
+  ExpirationPlugin,
+  NetworkOnly,
+  Serwist,
+} from 'serwist'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -15,6 +22,37 @@ declare global {
 }
 
 declare const self: ServiceWorkerGlobalScope
+
+/**
+ * Re-issues a navigation as an ordinary same-origin GET that keeps
+ * `redirect: "manual"`.
+ *
+ * A navigation request cannot be handed to `fetch()` together with a
+ * `RequestInit`, so the worker's fetch follows redirects itself and resolves
+ * with a response whose `redirected` flag is set. The browser refuses such a
+ * response for a navigation ("a redirected response was used for a request
+ * whose redirect mode is not 'follow'") and fails the navigation outright —
+ * the strategy reports `no-response` and the page never loads. That is what
+ * broke Console's entry point: `/` redirects a signed-out visitor to
+ * `/login`, so the very first navigation was unrecoverable.
+ *
+ * Fetching with `redirect: "manual"` returns an opaque redirect instead. The
+ * worker cannot read it, but it carries the internal response the browser
+ * needs, and passing it back is exactly how a service worker is meant to hand
+ * a redirect on.
+ */
+const navigationRequestPlugin: SerwistPlugin = {
+  requestWillFetch: async ({ request }) =>
+    request.mode === 'navigate'
+      ? new Request(request.url, {
+          method: 'GET',
+          headers: request.headers,
+          mode: 'same-origin',
+          credentials: 'include',
+          redirect: 'manual',
+        })
+      : request,
+}
 
 const cacheId = process.env.SERWIST_CACHE_ID
 const runtimeCaching: RuntimeCaching[] = [
@@ -34,6 +72,17 @@ const runtimeCaching: RuntimeCaching[] = [
     }),
   },
   {
+    // Navigations are re-issued as a plain `redirect: "manual"` request (see
+    // `navigationRequestPlugin`). Without it a redirecting entry point — the
+    // Console dashboard sending a signed-out visitor to `/login` — comes back
+    // as a followed response, which the browser refuses for a navigation and
+    // turns into a hard `no-response` error instead of a redirect.
+    matcher: ({ sameOrigin, request }) =>
+      sameOrigin && request.mode === 'navigate',
+    method: 'GET',
+    handler: new NetworkOnly({ plugins: [navigationRequestPlugin] }),
+  },
+  {
     // Same-origin only. A catch-all routes cross-origin loads — R2 logo
     // images, Sentry, any CDN — through the worker too, and NetworkOnly
     // turns a transient fetch failure into a hard `no-response` error. The
@@ -51,7 +100,6 @@ const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
-  navigationPreload: true,
   runtimeCaching,
   fallbacks: {
     entries: [
@@ -64,5 +112,13 @@ const serwist = new Serwist({
     ],
   },
 })
+
+// Navigation preload is issued by the browser before the worker runs, so the
+// plugin above cannot give it `redirect: "manual"` — a preloaded navigation
+// that redirects comes back already followed and fails the same way. The flag
+// lives on the registration rather than the script, so turning it off has to
+// be an explicit call: a worker that merely stops asking for it inherits the
+// previous version's enabled state.
+disableNavigationPreload()
 
 serwist.addEventListeners()
