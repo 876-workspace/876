@@ -1,13 +1,25 @@
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 
+import * as tenants from '@/modules/tenants/tenants.service.js'
+
 import * as repository from './customers.repository.js'
-import type { CreateCustomerInput, UpdateCustomerInput } from './customers.schemas.js'
+import type {
+  CreateCustomerInput,
+  UpdateCustomerInput,
+} from './customers.schemas.js'
 
 function finance() {
   return create876BillingIntegrationClient({
     baseUrl: process.env.BILLING_API_URL,
     apiKey: process.env.CRM_API_876_KEY,
   })
+}
+
+async function requireTenant(organizationId: string) {
+  const tenant = await tenants.retrieveByOrganization(organizationId)
+  if (!tenant) throw new Error('CRM tenant not found.')
+  if (tenant.status !== 'ACTIVE') throw new Error('CRM tenant is not active.')
+  return tenant
 }
 
 function resolveName(params: {
@@ -25,7 +37,8 @@ function resolveName(params: {
 }
 
 export async function list(organizationId: string) {
-  const profiles = await repository.list(organizationId)
+  const tenant = await requireTenant(organizationId)
+  const profiles = await repository.list(tenant.id)
   if (!profiles.length) return []
 
   const result = await finance().customers.list(organizationId, {
@@ -34,7 +47,9 @@ export async function list(organizationId: string) {
   })
   if (result.error) throw new Error(result.error.message)
 
-  const byId = new Map(result.data.data.map((customer) => [customer.id, customer]))
+  const byId = new Map(
+    result.data.data.map((customer) => [customer.id, customer])
+  )
   return profiles.map((profile) => ({
     profile,
     customer: byId.get(profile.billingCustomerId) ?? null,
@@ -42,7 +57,8 @@ export async function list(organizationId: string) {
 }
 
 export async function retrieve(organizationId: string, id: string) {
-  const profile = await repository.retrieve(organizationId, id)
+  const tenant = await requireTenant(organizationId)
+  const profile = await repository.retrieve(tenant.id, id)
   if (!profile) return null
 
   const result = await finance().customers.list(organizationId, {
@@ -54,7 +70,11 @@ export async function retrieve(organizationId: string, id: string) {
   return { profile, customer: result.data.data[0] ?? null }
 }
 
-export async function create(organizationId: string, input: CreateCustomerInput) {
+export async function create(
+  organizationId: string,
+  input: CreateCustomerInput
+) {
+  const tenant = await requireTenant(organizationId)
   const key = `crm:create:${input.idempotencyKey}`
   const shared = await finance().customers.create(
     organizationId,
@@ -74,10 +94,11 @@ export async function create(organizationId: string, input: CreateCustomerInput)
   if (shared.error) throw new Error(shared.error.message)
 
   const profile = await repository.create({
-    organizationId,
+    tenantId: tenant.id,
     billingCustomerId: shared.data.id,
     ownerId: input.ownerId ?? null,
   })
+
   return { profile, customer: shared.data }
 }
 
@@ -111,6 +132,7 @@ export async function update(
     ...(input.ownerId !== undefined ? { ownerId: input.ownerId } : {}),
     ...(input.status ? { status: input.status } : {}),
   })
+
   return { profile, customer }
 }
 
@@ -119,7 +141,8 @@ export async function remove(
   id: string,
   params: { deletedBy: string; reason?: string | null }
 ) {
-  const current = await repository.retrieve(organizationId, id)
+  const tenant = await requireTenant(organizationId)
+  const current = await repository.retrieve(tenant.id, id)
   if (!current) return null
   return repository.remove({ id: current.id, ...params })
 }
