@@ -75,7 +75,7 @@ const APPS = {
       '.env.local',
     ],
   },
-  crm: {
+  'crm-api': {
     runtime: 'CRM_DATABASE_URL',
     direct: null,
     envFiles: ['.env', '.env.development', '.env.development.local'],
