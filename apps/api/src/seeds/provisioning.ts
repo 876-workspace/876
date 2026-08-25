@@ -210,6 +210,13 @@ const PLATFORM_APPS_FOR_PROVISIONING: PlatformAppProvisioningDef[] = [
       'billing.payments.write',
     ],
   },
+  {
+    slug: '876-crm',
+    financeDependency: 'embedded',
+    // CRM owns the contact workspace but delegates the organization-wide
+    // customer record to Billing, keeping that shared resource canonical.
+    financeScopes: ['billing.customers.read', 'billing.customers.write'],
+  },
 ]
 
 function revisionContent(revision: {
