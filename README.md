@@ -1,6 +1,6 @@
 # 876 Monorepo
 
-876 is a pnpm/Turborepo workspace for the 876 identity platform — one account that unlocks the consumer app, Enterprise org workspace, internal Console, and Couriers, all backed by a shared Express API core and shared packages.
+876 is a pnpm/Turborepo workspace for the 876 identity platform — one account that unlocks the consumer app, Enterprise org workspace, internal Console, Couriers, Billing, Invoice, and CRM, all backed by shared data services and typed packages.
 
 ---
 
@@ -16,9 +16,11 @@
 | `@876/billing-app`  | `apps/billing`      | 3004 | Standalone multitenant Billing SaaS — catalogue, customers, invoices, quotes, and subscriptions.         |
 | `@876/widgets-api`  | `apps/widgets-api`  | 3005 | Widgets service — Next.js + Prisma datastore backing embeddable widgets.                                 |
 | `@876/invoice-app`  | `apps/invoice`      | 3006 | 876 Invoice SaaS app — a thin product surface over the shared Billing data plane; owns no datastore.     |
+| `@876/crm-app`      | `apps/crm`          | 3007 | 876 CRM SaaS app — customer profiles linked to shared Billing customers.                                 |
 | `@876/api`          | `apps/api`          | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation. |
 | `@876/billing-api`  | `apps/billing-api`  | 4004 | Express Billing financial data plane; owns its PostgreSQL schema and Prisma migrations.                  |
 | `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                 |
+| `@876/crm-api`      | `apps/crm-api`      | 4010 | Express CRM data service; owns CRM tenant/profile data and links it to Billing customer records.         |
 
 ## Packages
 
@@ -32,7 +34,9 @@
 | `@876/ui`        | `packages/ui`        | shadcn/ui primitives (Base UI + Tailwind v4), chart components, embeddable auth UI (`@876/ui/auth`), and shared design tokens.                                          |
 | `@876/analytics` | `packages/analytics` | PostHog analytics provider and shared tracking utilities.                                                                                                               |
 
-Console and the Couriers API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
+Console, the Couriers API, and the CRM API each own an **app-local Prisma datastore** (`apps/console/prisma/`, `apps/couriers-api/prisma/`, `apps/crm-api/prisma/`) for operational data scoped to that app or service — they never store or duplicate identity/platform tables, and reference core 876 entities by opaque ID only. There is no shared `@876/db` package; identity and platform data live exclusively behind `apps/api`.
+
+CRM stores only CRM-owned tenant and profile fields. Financial customer records remain in Billing and are reached server-to-server through `@876/billing/integration`; the CRM Next.js app never accesses either database directly.
 
 876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it.
 
@@ -64,9 +68,11 @@ pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 | Billing            | http://localhost:3004              |
 | Widgets API        | http://localhost:3005              |
 | Invoice            | http://localhost:3006              |
+| CRM                | http://localhost:3007              |
 | API core (spec)    | http://localhost:4000/openapi.json |
 | Billing API (docs) | http://localhost:4004/docs         |
 | Storage API (docs) | http://localhost:4005/docs         |
+| CRM API (health)   | http://localhost:4010/health       |
 
 ---
 
@@ -89,6 +95,8 @@ pnpm dev:billing:min                 # Billing app + API + Billing API (no Widge
 pnpm dev:billing:core                # Billing app + Billing API only (no core API/Widgets)
 pnpm dev:invoice                     # Invoice app + Billing app + Billing API + core API
 pnpm dev:invoice:min                 # Invoice app + Billing API + core API (no Billing app)
+pnpm dev:crm                         # CRM app + CRM API + Billing API + core API
+pnpm dev:crm:api                     # CRM API + Billing API only
 pnpm dev:widgets                     # Widgets API only
 
 # Quality
@@ -103,6 +111,8 @@ pnpm --filter @876/enterprise typecheck
 pnpm --filter @876/console typecheck
 pnpm --filter @876/couriers-app typecheck
 pnpm --filter @876/billing-app typecheck
+pnpm --filter @876/crm-app typecheck
+pnpm --filter @876/crm-api typecheck
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/api typecheck
 pnpm --filter @876/sdk typecheck
@@ -123,9 +133,11 @@ pnpm --filter @876/api seed          # feature/geo/plan/provisioning/bootstrap s
 pnpm --filter @876/storage-api db:migrate
 pnpm dev:storage                     # 876 Storage service alone on :4005
 
-# App-local Prisma datastores (Console, Couriers API)
+# App-local Prisma datastores (Console, Couriers API, CRM API)
 pnpm --filter @876/console db:generate   # Regenerate Console's Prisma client
 pnpm --filter @876/couriers-api db:generate  # Regenerate the Couriers API's Prisma client
+pnpm --filter @876/crm-api db:generate  # Regenerate the CRM API's Prisma client
+pnpm --filter @876/crm-api db:deploy    # Apply committed CRM migrations
 
 # Cloudflare deploy (each app deploys independently)
 pnpm --filter @876/app deploy
@@ -140,7 +152,7 @@ pnpm --filter @876/couriers-api deploy
 ## Architecture
 
 ```
-Browser / Next.js Apps (876, Enterprise, Console, Couriers)
+Browser / Next.js Apps (876, Enterprise, Console, Couriers, Billing, Invoice, CRM)
        │
        │  @876/sdk (consumer/first-party, API-key + session tier)
        │  @876/admin (server-only, internal-key tier)
@@ -154,13 +166,13 @@ Browser / Next.js Apps (876, Enterprise, Console, Couriers)
   Stripe     (billing)
   PostHog    (analytics)
 
-App-local operational data (Console, Couriers API) lives in that
+App-local operational data (Console, Couriers API, CRM API) lives in that
 app's own Prisma datastore — never shared, never a cross-DB FK
 to identity. Core entities are referenced by opaque ID only,
 resolved through @876/admin.
 ```
 
-**Core boundary:** All identity/platform database access, provider calls, and business logic live in `apps/api`. Next.js apps never make raw fetches to the API — they call typed methods on `@876/sdk` or `@876/admin`. An app may still own a database for data local to itself (e.g. Console's and Couriers' in-app Prisma datastores) as long as it never duplicates identity tables and references core entities by opaque ID only.
+**Core boundary:** All identity/platform database access, provider calls, and business logic live in `apps/api`. Next.js apps never make raw fetches to the API — they call typed methods on `@876/sdk` or `@876/admin`. An app may still own a database for data local to itself (e.g. Console's, Couriers', and CRM's Prisma datastores) as long as it never duplicates identity tables and references core entities by opaque ID only.
 
 ### API Auth Tiers
 

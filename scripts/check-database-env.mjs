@@ -1,14 +1,15 @@
 /**
- * Verifies that every Prisma workspace has both halves of its database config.
+ * Verifies that every Prisma workspace has the database URLs its config needs.
  *
- * Each Prisma app reads **two** connection strings:
+ * Most Prisma apps read **two** connection strings:
  *
  *   <PREFIX>DATABASE_URL         Runtime connection URL (PostgreSQL direct/pooler
  *                                or Prisma Accelerate URL).
  *   <PREFIX>DIRECT_DATABASE_URL  Direct TCP URL (postgres://…), read by
  *                                `prisma.config.ts` for migrate/generate/seed.
  *
- * Both failure modes are silent in their own way, which is why this check
+ * CRM uses one direct PostgreSQL URL for both runtime and Prisma CLI access.
+ * These failure modes are silent in their own way, which is why this check
  * exists rather than a comment in `.env.example`:
  *
  *   - A missing direct URL fails as `PrismaConfigEnvError: Cannot resolve
@@ -74,6 +75,11 @@ const APPS = {
       '.env.local',
     ],
   },
+  crm: {
+    runtime: 'CRM_DATABASE_URL',
+    direct: null,
+    envFiles: ['.env', '.env.development', '.env.development.local'],
+  },
   'widgets-api': {
     runtime: 'WIDGETS_DATABASE_URL',
     direct: 'WIDGETS_DIRECT_DATABASE_URL',
@@ -105,7 +111,7 @@ function readEnv(app) {
   }
 
   // A variable exported in the shell wins over any file, same as the CLI.
-  for (const key of [APPS[app].runtime, APPS[app].direct]) {
+  for (const key of [APPS[app].runtime, APPS[app].direct].filter(Boolean)) {
     if (process.env[key]) {
       resolved[key] = { value: process.env[key], source: 'process env' }
     }
@@ -148,13 +154,16 @@ function checkApp(app) {
     )
   }
 
-  const directEntry = env[direct]
-  if (!directEntry) {
+  const directEntry = direct ? env[direct] : null
+  if (direct && !directEntry) {
     problems.push(
       `${direct} is not set. prisma.config.ts reads it for migrate/generate/seed, ` +
         `so \`prisma migrate deploy\` fails before the dev server starts.`
     )
-  } else if (!DIRECT_PROTOCOLS.includes(protocolOf(directEntry.value))) {
+  } else if (
+    directEntry &&
+    !DIRECT_PROTOCOLS.includes(protocolOf(directEntry.value))
+  ) {
     problems.push(
       `${direct} is a "${protocolOf(directEntry.value) || 'scheme-less'}" ` +
         `URL (from ${directEntry.source}), but the Prisma CLI needs a direct ` +
@@ -188,7 +197,7 @@ const failures = scope
 if (failures.length === 0) {
   console.log(
     `Database environment is configured for ${scope.join(', ')} ` +
-      `(runtime URL + direct CLI URL).`
+      `(runtime URL${scope.some((app) => APPS[app].direct) ? ' + direct CLI URL where required' : ''}).`
   )
   process.exit(0)
 }

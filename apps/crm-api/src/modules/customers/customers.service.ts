@@ -1,6 +1,6 @@
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 
-import * as tenants from '@/modules/tenants/tenants.service.js'
+import * as tenants from '../tenants/tenants.service.js'
 
 import * as repository from './customers.repository.js'
 import type {
@@ -33,7 +33,9 @@ function resolveName(params: {
     .filter(Boolean)
     .join(' ')
   const company = params.companyName?.trim() ?? ''
-  return params.customerKind === 'BUSINESS' ? company || person : person || company
+  return params.customerKind === 'BUSINESS'
+    ? company || person
+    : person || company
 }
 
 export async function list(organizationId: string) {

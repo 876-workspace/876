@@ -40,6 +40,7 @@ const PORTS = {
   couriers: 3003,
   billing: 3004,
   invoice: 3006,
+  crm: 3007,
   api: 4000,
 }
 
@@ -60,6 +61,42 @@ function syncBillingPlatformCredentials() {
   const billingEnvPath = join(root, 'apps', 'billing', '.env.development.local')
   mergeEnvFile(billingEnvPath, { API_INTERNAL_KEY: internalKey }, HEADER)
   return true
+}
+
+/** Keeps CRM's server-to-server credentials aligned across local env files. */
+function syncCrmCredentials() {
+  const platformEnvPath = join(root, 'apps', 'api', '.env')
+  const appEnvPath = join(root, 'apps', '876', '.env')
+  const crmApiEnvPath = join(root, 'apps', 'crm-api', '.env')
+  const platformInternalKey = readEnvValue(platformEnvPath, 'API_INTERNAL_KEY')
+  const platformAppKey = readEnvValue(appEnvPath, 'API_876_KEY')
+  const crmInternalKey = readEnvValue(crmApiEnvPath, 'CRM_INTERNAL_KEY')
+  let synced = false
+
+  if (platformInternalKey || crmInternalKey) {
+    mergeEnvFile(
+      join(root, 'apps', 'crm', '.env.development.local'),
+      {
+        ...(platformInternalKey
+          ? { API_INTERNAL_KEY: platformInternalKey }
+          : {}),
+        ...(crmInternalKey ? { CRM_INTERNAL_KEY: crmInternalKey } : {}),
+      },
+      HEADER
+    )
+    synced = true
+  }
+
+  if (platformAppKey) {
+    mergeEnvFile(
+      join(root, 'apps', 'crm-api', '.env.development.local'),
+      { CRM_API_876_KEY: platformAppKey },
+      HEADER
+    )
+    synced = true
+  }
+
+  return synced
 }
 
 /**
@@ -101,6 +138,11 @@ function envPlanFor(origins) {
       NEXT_PUBLIC_APP_URL: origins.app,
       NEXT_PUBLIC_API_URL: origins.api,
     },
+    crm: {
+      NEXT_PUBLIC_CRM_URL: origins.crm,
+      NEXT_PUBLIC_APP_URL: origins.app,
+      NEXT_PUBLIC_API_URL: origins.api,
+    },
     // The API needs the forwarded origins on its CORS allow-list, and the
     // template so `scripts/seed_internal.py` can register matching OAuth
     // redirect/logout URIs for each app.
@@ -112,12 +154,14 @@ function envPlanFor(origins) {
         'http://localhost:3003',
         'http://localhost:3004',
         'http://localhost:3006',
+        'http://localhost:3007',
         origins.app,
         origins.enterprise,
         origins.console,
         origins.couriers,
         origins.billing,
         origins.invoice,
+        origins.crm,
       ].join(','),
     },
     // Each product service keeps its own CORS allow-list. Only the app that
@@ -150,6 +194,7 @@ const template = resolveHostTemplate()
 
 if (!template && !tunnelDomain) {
   const billingCredentialsSynced = syncBillingPlatformCredentials()
+  const crmCredentialsSynced = syncCrmCredentials()
   console.log(
     '[setup-dev-env] No forwarded-port workspace detected — localhost defaults apply.'
   )
@@ -157,6 +202,8 @@ if (!template && !tunnelDomain) {
     console.log(
       '[setup-dev-env] Synced Billing server credentials from apps/api/.env.'
     )
+  if (crmCredentialsSynced)
+    console.log('[setup-dev-env] Synced CRM server credentials.')
   process.exit(0)
 }
 
@@ -185,10 +232,13 @@ for (const [app, updates] of Object.entries(envPlanFor(origins))) {
 }
 
 const billingCredentialsSynced = syncBillingPlatformCredentials()
+const crmCredentialsSynced = syncCrmCredentials()
 if (billingCredentialsSynced)
   console.log(
     '[setup-dev-env] Synced Billing server credentials from apps/api/.env.'
   )
+if (crmCredentialsSynced)
+  console.log('[setup-dev-env] Synced CRM server credentials.')
 
 console.log(
   tunnelDomain

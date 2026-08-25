@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
-import { prisma } from '@/db/index.js'
+import { prisma } from '../../db/index.js'
 
 export function retrieveByOrganization(organizationId: string) {
   return prisma.tenant.findUnique({ where: { organizationId } })
