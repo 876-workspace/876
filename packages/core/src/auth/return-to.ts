@@ -38,6 +38,12 @@ export function createReturnToPath(pathname: string, search = ''): string {
   return resolveRelativeReturnTo(`${pathname}${search}`)
 }
 
+/** Builds the standard embedded-auth login URL used by first-party apps. */
+export function createAuthLoginPath(returnTo: string): string {
+  const searchParams = new URLSearchParams({ [AUTH_RETURN_TO_PARAM]: returnTo })
+  return `/login?${searchParams.toString()}`
+}
+
 function isAppRelativeReturnTo(value: string): boolean {
   return (
     value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/\\')
