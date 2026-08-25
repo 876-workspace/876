@@ -1,20 +1,17 @@
 import 'server-only'
 
+import { createAuthLoginPath } from '@876/core/auth/return-to'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { $876 } from '@/lib/876'
-import {
-  CONSOLE_ACCESS_PERMISSION,
-  hasPermission,
-} from '@/lib/permissions'
+import { CONSOLE_ACCESS_PERMISSION, hasPermission } from '@/lib/permissions'
 import { service } from '@/lib/service'
 import { getAuthSession, isSignedSession } from './session'
 import type { Access, RoutingUser, SessionUser } from '@/types/auth'
 
 export async function requireSession(returnTo: string) {
   const session = await getAuthSession()
-  if (!isSignedSession(session))
-    redirect(`/login?returnTo=${encodeURIComponent(returnTo)}`)
+  if (!isSignedSession(session)) redirect(createAuthLoginPath(returnTo))
 
   return session.user
 }
@@ -26,12 +23,9 @@ const retrievePlatformUserResult = cache(
   }
 )
 
-async function retrievePlatformUser(userId: string) {
-  const { data } = await retrievePlatformUserResult(userId)
-  return data ?? null
-}
-
-type PlatformUserData = Awaited<ReturnType<typeof retrievePlatformUser>>
+type PlatformUserData = Awaited<
+  ReturnType<typeof retrievePlatformUserResult>
+>['data']
 
 /** Resolve Console authorization exclusively from Console's persisted team RBAC. */
 export const findConsoleAccess = cache(async function findConsoleAccess(
@@ -92,8 +86,8 @@ async function requireAccess(
       result.error?.code === 'user/not-found' ||
       Boolean(
         platformUser &&
-          (platformUser.banned ||
-            (platformUser.status && platformUser.status !== 'active'))
+        (platformUser.banned ||
+          (platformUser.status && platformUser.status !== 'active'))
       )
   } catch {
     // Platform outage — preserve the valid Console session.
