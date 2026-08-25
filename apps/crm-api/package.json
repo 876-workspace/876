@@ -1,6 +1,7 @@
 {
   "name": "@876/crm-api",
   "version": "0.1.0",
+  "description": "876 CRM Express API",
   "private": true,
   "type": "module",
   "scripts": {
