@@ -1,10 +1,9 @@
 import 'server-only'
 
-import { redirect } from 'next/navigation'
-
-import { AUTH_RETURN_TO_PARAM } from '@876/core/auth/return-to'
+import { createAuthLoginPath } from '@876/core/auth/return-to'
 import { unwrapOptional, unwrapResult } from '@876/core/client/lookup'
 import * as Sentry from '@sentry/nextjs'
+import { redirect } from 'next/navigation'
 
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
 import { getPlatformClient } from '@/lib/876/platform-client'
@@ -14,7 +13,7 @@ import { getAuthSession, isSignedSession } from './session'
 
 export async function requireSession(returnTo: string) {
   const result = await getAuthSession()
-  if (!isSignedSession(result)) redirect(createLoginRedirectUrl(returnTo))
+  if (!isSignedSession(result)) redirect(createAuthLoginPath(returnTo))
 
   // Realm gate (relocated from the Edge proxy — needs the Node runtime): only
   // Enterprise accounts may enter this app. Cross-realm accounts (owner +
@@ -83,6 +82,7 @@ export async function findAuthRoutingUser(
     )
   if (!row) return null
   if (!row.id || !row.email) return null
+
   return {
     id: row.id,
     status: row.status ?? 'active',
@@ -98,9 +98,10 @@ export async function requireActiveUser(
   userId: string
 ): Promise<AuthRoutingUser> {
   const user = await findAuthRoutingUser(userId)
-  if (!user) redirect(createLoginRedirectUrl('/'))
+  if (!user) redirect(createAuthLoginPath('/'))
   if (user.banned || user.status !== 'active')
     redirect(consumerUrl('/suspended'))
+
   return user
 }
 
@@ -109,7 +110,7 @@ export async function requireOrgMembership(
   slug: string
 ): Promise<{ user: AuthRoutingUser; membership: ActiveMembership }> {
   const user = await findAuthRoutingUser(userId)
-  if (!user) redirect(createLoginRedirectUrl(`/${slug}`))
+  if (!user) redirect(createAuthLoginPath(`/${slug}`))
 
   const membership = await findActiveMembershipBySlug(user.id, slug)
   if (!membership) redirect('/')
@@ -210,10 +211,4 @@ export async function requireEnterpriseFeature(
 ): Promise<void> {
   const slugs = await getEnabledEnterpriseFeatureSlugs(organizationId)
   if (!slugs.has(slug)) redirect(redirectPath)
-}
-
-function createLoginRedirectUrl(returnTo: string): string {
-  const searchParams = new URLSearchParams({ [AUTH_RETURN_TO_PARAM]: returnTo })
-  // Embedded auth: the org workspace hosts its own login surface.
-  return `/login?${searchParams.toString()}`
 }
