@@ -5,10 +5,12 @@ import type {
   PrecacheEntry,
   RuntimeCaching,
   SerwistGlobalConfig,
+  SerwistPlugin,
 } from 'serwist'
 import {
   BackgroundSyncPlugin,
   CacheFirst,
+  disableNavigationPreload,
   ExpirationPlugin,
   NetworkOnly,
   Serwist,
@@ -23,6 +25,25 @@ declare global {
 declare const self: ServiceWorkerGlobalScope
 
 const cacheId = process.env.SERWIST_CACHE_ID || '876-invoice-app'
+
+// Re-issues a navigation as a plain same-origin GET that keeps
+// `redirect: "manual"`, so a redirecting entry point survives the worker.
+// A navigate-mode request cannot carry a RequestInit, so the worker's own
+// fetch follows the hop and returns a response the browser then refuses for a
+// navigation, failing the load outright. See scripts/serwist-shell-worker.ts,
+// which carries the full reasoning for the shared workers.
+const navigationRequestPlugin: SerwistPlugin = {
+  requestWillFetch: async ({ request }) =>
+    request.mode === 'navigate'
+      ? new Request(request.url, {
+          method: 'GET',
+          headers: request.headers,
+          mode: 'same-origin',
+          credentials: 'include',
+          redirect: 'manual',
+        })
+      : request,
+}
 
 // 1. Background Sync Queue for offline mutations (e.g. saving invoice drafts offline)
 const bgSyncPlugin = new BackgroundSyncPlugin('invoice-offline-mutations', {
@@ -73,7 +94,14 @@ const runtimeCaching: RuntimeCaching[] = [
       plugins: [bgSyncPlugin],
     }),
   },
-  // 5. Dynamic same-origin requests (NetworkOnly - never cache sensitive tenant/financial data)
+  // 5. Navigations (NetworkOnly, redirect-safe - see navigationRequestPlugin)
+  {
+    matcher: ({ sameOrigin, request }) =>
+      sameOrigin && request.mode === 'navigate',
+    method: 'GET',
+    handler: new NetworkOnly({ plugins: [navigationRequestPlugin] }),
+  },
+  // 6. Dynamic same-origin requests (NetworkOnly - never cache sensitive tenant/financial data)
   {
     matcher: ({ sameOrigin }) => sameOrigin,
     method: 'GET',
@@ -86,7 +114,6 @@ const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
-  navigationPreload: true,
   runtimeCaching,
   fallbacks: {
     entries: [
@@ -153,5 +180,10 @@ self.addEventListener('notificationclick', (event) => {
       })
   )
 })
+
+// The browser issues a navigation preload before the worker runs, so the
+// plugin above cannot give it `redirect: "manual"`. The flag lives on the
+// registration, so it has to be turned off explicitly rather than by omission.
+disableNavigationPreload()
 
 serwist.addEventListeners()
