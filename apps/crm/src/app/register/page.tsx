@@ -12,8 +12,19 @@ export const metadata: Metadata = {
 
 export default async function RegisterPage() {
   const result = await getCrmContextResult()
-  if (result.status === 'ok' && (result.context.accessStatus === 'active' || result.context.accessStatus === 'trialing'))
-    redirect('/')
+
+  if (result.status === 'unavailable') redirect('/unavailable')
+  if (result.status === 'no-organization') redirect('/onboarding')
+
+  if (result.status === 'ok') {
+    if (
+      result.context.accessStatus === 'active' ||
+      result.context.accessStatus === 'trialing'
+    )
+      redirect('/')
+
+    redirect('/onboarding')
+  }
 
   return <RegistrationAuth />
 }
