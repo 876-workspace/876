@@ -13,7 +13,7 @@ import {
 const NAV = [
   { href: '/', label: 'Dashboard' },
   { href: '/customers', label: 'Customers' },
-  { href: '/tickets', label: 'Tickets' },
+  { href: '/requests', label: 'Requests' },
   { href: '/settings', label: 'Settings' },
 ]
 
@@ -24,9 +24,7 @@ export function Sidebar({ orgName }: { orgName: string }) {
     <SidebarRoot collapsible="icon" className="border-sidebar-border/50 bg-sidebar">
       <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
         <Link href="/" className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
-          <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border text-xs font-bold">
-            876
-          </span>
+          <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border text-xs font-bold">876</span>
           <span className="min-w-0 group-data-[collapsible=icon]:hidden">
             <span className="block truncate text-[0.9375rem] leading-6 font-semibold">{orgName}</span>
             <span className="text-muted-foreground block truncate text-xs">CRM</span>
@@ -39,13 +37,7 @@ export function Sidebar({ orgName }: { orgName: string }) {
             {NAV.map((item) => {
               const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`rounded-md px-3 py-2 text-sm transition-colors group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:text-center ${
-                    active ? 'bg-sidebar-accent font-medium' : 'hover:bg-sidebar-accent/70'
-                  }`}
-                >
+                <Link key={item.href} href={item.href} className={`rounded-md px-3 py-2 text-sm transition-colors group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:text-center ${active ? 'bg-sidebar-accent font-medium' : 'hover:bg-sidebar-accent/70'}`}>
                   <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                   <span aria-hidden className="hidden group-data-[collapsible=icon]:inline">•</span>
                 </Link>
