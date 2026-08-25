@@ -20,9 +20,9 @@ export type CrmCustomerProfile = {
   billingCustomerId: string
   ownerId: string | null
   status: CrmCustomerProfileStatus
-  createdAt: string | Date
-  updatedAt: string | Date
-  deletedAt: string | Date | null
+  createdAt: string
+  updatedAt: string
+  deletedAt: string | null
   deletedBy: string | null
   deletionReason: string | null
 }
