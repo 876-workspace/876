@@ -76,17 +76,6 @@ export const CLOUDFLARE_WORKERS = {
       'SESSION_COOKIE_SECRET',
     ],
   },
-  '876-crm': {
-    directory: 'apps/crm',
-    dependencies: ['876-api'],
-    migrationOwner: 'none',
-    readinessUrl: 'https://876-crm.1876.workers.dev/api/health',
-    requiredSecrets: [
-      'API_INTERNAL_KEY',
-      'CRM_API_876_KEY',
-      'SESSION_COOKIE_SECRET',
-    ],
-  },
   '876-console': {
     directory: 'apps/console',
     dependencies: [
