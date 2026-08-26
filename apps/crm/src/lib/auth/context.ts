@@ -2,6 +2,7 @@ import 'server-only'
 
 import type { PlatformRoutingMembership } from '@876/core/platform'
 import * as Sentry from '@sentry/nextjs'
+import { cookies } from 'next/headers'
 import { cache } from 'react'
 
 import { getPlatformClient } from '@/lib/876/platform-client'
@@ -48,11 +49,18 @@ export const getCrmContextResult = cache(
       return { status: 'unavailable' }
     }
 
+    const cookieStore = await cookies()
+    const activeOrgId = cookieStore.get('crm_active_org')?.value
+
     const memberships = membershipsResult.data.data.filter(isUsable)
     const selected =
+      (activeOrgId
+        ? memberships.find((m) => m.organization.id === activeOrgId)
+        : undefined) ??
       memberships.find(
         (membership) => membership.organization.id === session.user.orgId
-      ) ?? memberships[0]
+      ) ??
+      memberships[0]
     if (!selected) return { status: 'no-organization' }
 
     const subscription = await platform.subscriptions.retrieve({
