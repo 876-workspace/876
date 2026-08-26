@@ -1,7 +1,10 @@
 import type {
   CreateRequestInput,
+  CreateRequestNoteInput,
   DeleteRequestInput,
+  DeleteRequestNoteInput,
   UpdateRequestInput,
+  UpdateRequestNoteInput,
 } from '../../types/request.js'
 import * as tenants from '../tenants/tenants.service.js'
 
@@ -26,7 +29,6 @@ function serialize(
     customerId: request.customerId,
     number: request.number,
     subject: request.subject,
-    description: request.description,
     category: request.category,
     status: request.status,
     priority: request.priority,
@@ -41,6 +43,24 @@ function serialize(
       : null,
     createdAt: Math.floor(request.createdAt.getTime() / 1000),
     updatedAt: Math.floor(request.updatedAt.getTime() / 1000),
+  }
+}
+
+function serializeNote(
+  note: NonNullable<Awaited<ReturnType<typeof repository.retrieveNote>>>
+) {
+  return {
+    object: 'request_note' as const,
+    id: note.id,
+    tenantId: note.tenantId,
+    requestId: note.requestId,
+    body: note.body,
+    authorId: note.authorId,
+    internal: note.internal,
+    kind: note.kind,
+    editedAt: note.editedAt ? Math.floor(note.editedAt.getTime() / 1000) : null,
+    createdAt: Math.floor(note.createdAt.getTime() / 1000),
+    updatedAt: Math.floor(note.updatedAt.getTime() / 1000),
   }
 }
 
@@ -108,4 +128,63 @@ export async function remove(
   if (!current) return null
 
   return repository.remove({ id, ...input })
+}
+
+export async function listNotes(
+  organizationId: string,
+  requestId: string
+) {
+  const tenant = await requireTenant(organizationId)
+  const notes = await repository.listNotes(tenant.id, requestId)
+
+  return notes.map(serializeNote)
+}
+
+export async function createNote(
+  organizationId: string,
+  requestId: string,
+  input: CreateRequestNoteInput
+) {
+  const tenant = await requireTenant(organizationId)
+  const request = await repository.retrieve(tenant.id, requestId)
+  if (!request) throw crmError('crm/request-not-found')
+
+  const note = await repository.createNote({
+    tenantId: tenant.id,
+    requestId,
+    ...input,
+  })
+
+  return serializeNote(note)
+}
+
+export async function removeNote(
+  organizationId: string,
+  requestId: string,
+  id: string,
+  input: DeleteRequestNoteInput
+) {
+  const tenant = await requireTenant(organizationId)
+  const current = await repository.retrieveNote(tenant.id, requestId, id)
+  if (!current) return null
+  if (current.kind === 'DESCRIPTION')
+    throw crmError('crm/description-note-immutable')
+
+  return repository.removeNote({
+    id,
+    deletedBy: input.deletedBy,
+  })
+}
+
+export async function updateNote(
+  organizationId: string,
+  requestId: string,
+  id: string,
+  input: UpdateRequestNoteInput
+) {
+  const tenant = await requireTenant(organizationId)
+  const current = await repository.retrieveNote(tenant.id, requestId, id)
+  if (!current) return null
+
+  return serializeNote(await repository.updateNote(id, input))
 }

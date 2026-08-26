@@ -12,5 +12,10 @@ export function createRequestsRouter() {
   router.patch('/:id', requireInternal, controller.updateRequest)
   router.delete('/:id', requireInternal, controller.deleteRequest)
 
+  router.get('/:id/notes', requireInternal, controller.listRequestNotes)
+  router.post('/:id/notes', requireInternal, controller.createRequestNote)
+  router.delete('/:id/notes/:noteId', requireInternal, controller.deleteRequestNote)
+  router.patch('/:id/notes/:noteId', requireInternal, controller.updateRequestNote)
+
   return router
 }

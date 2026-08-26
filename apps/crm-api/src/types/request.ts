@@ -26,6 +26,8 @@ export type RequestSource =
   | 'API'
   | 'OTHER'
 
+export type RequestNoteKind = 'DESCRIPTION' | 'NOTE'
+
 export interface CrmRequest {
   object: 'request'
   id: string
@@ -33,7 +35,6 @@ export interface CrmRequest {
   customerId: string
   number: number
   subject: string
-  description: string | null
   category: RequestCategory
   status: RequestStatus
   priority: RequestPriority
@@ -49,6 +50,7 @@ export interface CrmRequest {
 export interface CreateRequestInput {
   customerId: string
   subject: string
+  /** The opening message. The service stores it as the request's DESCRIPTION note. */
   description?: string | null
   category?: RequestCategory
   priority?: RequestPriority
@@ -59,7 +61,6 @@ export interface CreateRequestInput {
 
 export interface UpdateRequestInput {
   subject?: string
-  description?: string | null
   category?: RequestCategory
   status?: RequestStatus
   priority?: RequestPriority
@@ -70,4 +71,33 @@ export interface UpdateRequestInput {
 export interface DeleteRequestInput {
   deletedBy: string
   reason?: string | null
+}
+
+export interface CrmRequestNote {
+  object: 'request_note'
+  id: string
+  tenantId: string
+  requestId: string
+  body: string
+  authorId: string
+  internal: boolean
+  kind: RequestNoteKind
+  editedAt: number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export interface CreateRequestNoteInput {
+  body: string
+  authorId: string
+  internal?: boolean
+}
+
+export interface UpdateRequestNoteInput {
+  body: string
+  editedBy: string
+}
+
+export interface DeleteRequestNoteInput {
+  deletedBy: string
 }
