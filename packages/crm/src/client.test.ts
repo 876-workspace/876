@@ -32,7 +32,6 @@ const crmRequest = {
   customerId: 'crm_cus_1',
   number: 1,
   subject: 'Need help',
-  description: null,
   category: 'SUPPORT',
   status: 'OPEN',
   priority: 'NORMAL',
@@ -155,6 +154,124 @@ describe('@876/crm client', () => {
     expect(created.data?.status).toBe('OPEN')
     expect(updated.data?.status).toBe('IN_PROGRESS')
     expect(deleted.data?.deleted).toBe(true)
+  })
+
+  it('returns a created request without a stored description', async () => {
+    fetch.mockResolvedValueOnce(json(crmRequest, 201))
+
+    const result = await client.requests.create('org_1', {
+      customerId: 'crm_cus_1',
+      subject: 'Need help',
+      description: 'The opening message.',
+      createdBy: 'usr_1',
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(
+      'http://crm.test/v1/organizations/org_1/requests',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          customerId: 'crm_cus_1',
+          subject: 'Need help',
+          description: 'The opening message.',
+          createdBy: 'usr_1',
+        }),
+      })
+    )
+    expect(result).toEqual({ data: crmRequest, error: null })
+  })
+
+  it('sends request notes CRUD and validates note resources', async () => {
+    const crmNote = {
+      object: 'request_note',
+      id: 'crm_note_1',
+      tenantId: 'crm_tenant_1',
+      requestId: 'crm_req_1',
+      body: 'Customer contacted via phone with extra details.',
+      authorId: 'usr_1',
+      internal: true,
+      kind: 'NOTE',
+      editedAt: null,
+      createdAt: 1,
+      updatedAt: 1,
+    }
+
+    fetch
+      .mockResolvedValueOnce(
+        json({
+          object: 'list',
+          data: [crmNote],
+          has_more: false,
+          total_count: 1,
+          url: '/v1/organizations/org_1/requests/crm_req_1/notes',
+        })
+      )
+      .mockResolvedValueOnce(json(crmNote, 201))
+      .mockResolvedValueOnce(
+        json({ object: 'request_note', id: 'crm_note_1', deleted: true })
+      )
+
+    const listed = await client.requestNotes.list('org_1', 'crm_req_1')
+    const created = await client.requestNotes.create('org_1', 'crm_req_1', {
+      body: 'Customer contacted via phone with extra details.',
+      authorId: 'usr_1',
+      internal: true,
+    })
+    const deleted = await client.requestNotes.delete(
+      'org_1',
+      'crm_req_1',
+      'crm_note_1',
+      { deletedBy: 'usr_1' }
+    )
+
+    expect(listed.error).toBeNull()
+    expect(listed.data?.data[0]?.id).toBe('crm_note_1')
+    expect(created.data?.body).toBe(
+      'Customer contacted via phone with extra details.'
+    )
+    expect(deleted.data?.deleted).toBe(true)
+
+    expect(fetch.mock.calls.map(([url]) => String(url))).toEqual([
+      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes',
+      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes',
+      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes/crm_note_1',
+    ])
+  })
+
+  it('updates a request note with the exact note endpoint and payload', async () => {
+    const crmNote = {
+      object: 'request_note',
+      id: 'crm_note_1',
+      tenantId: 'crm_tenant_1',
+      requestId: 'crm_req_1',
+      body: 'Updated details.',
+      authorId: 'usr_1',
+      internal: true,
+      kind: 'NOTE',
+      editedAt: 2,
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    fetch.mockResolvedValueOnce(json(crmNote))
+
+    const result = await client.requestNotes.update(
+      'org_1',
+      'crm_req_1',
+      'crm_note_1',
+      { body: 'Updated details.', editedBy: 'usr_2' }
+    )
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch.mock.calls[0]?.[0]).toBe(
+      'http://crm.test/v1/organizations/org_1/requests/crm_req_1/notes/crm_note_1'
+    )
+    expect(fetch.mock.calls[0]?.[1]).toMatchObject({
+      method: 'PATCH',
+      body: JSON.stringify({ body: 'Updated details.', editedBy: 'usr_2' }),
+    })
+    expect(result.data).toEqual(crmNote)
+    expect(result.error).toBeNull()
   })
 
   it('fails closed when the internal credential is absent', async () => {
