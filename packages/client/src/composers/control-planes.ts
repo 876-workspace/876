@@ -10,6 +10,12 @@ function createProvisioningSurface(
     catalog: {
       retrieve: provisioning.retrieveCatalog,
     },
+    setups: {
+      list: provisioning.setups.list,
+      retrieve: provisioning.setups.retrieve,
+      create: provisioning.setups.create,
+      update: provisioning.setups.update,
+    },
     draft: {
       retrieve: provisioning.retrieve,
       update: provisioning.replaceDraft,

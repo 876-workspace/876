@@ -13,6 +13,9 @@ import type {
   AdminProvisioningReconciliationResult,
   AdminProvisioningRun,
   AdminProvisioningRunStatus,
+  AdminProvisioningSetup,
+  AdminProvisioningSetupCreateParams,
+  AdminProvisioningSetupUpdateParams,
   AdminProvisioningTargetType,
   AdminProvisioningValidation,
 } from '../types'
@@ -81,6 +84,41 @@ export function createAdminProvisioningResource(runtime: AdminRuntime) {
         method: 'POST',
         path: `/provisioning/manifests/${targetPath(targetType, targetKey)}/publish`,
       })
+    },
+
+    setups: {
+      list() {
+        return adminRequest<AdminListResponse<AdminProvisioningSetup>>(
+          runtime,
+          {
+            method: 'GET',
+            path: '/provisioning/setups',
+          }
+        )
+      },
+
+      retrieve(setupKey: string) {
+        return adminRequest<AdminProvisioningSetup>(runtime, {
+          method: 'GET',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
+        })
+      },
+
+      create(body: AdminProvisioningSetupCreateParams) {
+        return adminRequest<AdminProvisioningSetup>(runtime, {
+          method: 'POST',
+          path: '/provisioning/setups',
+          body,
+        })
+      },
+
+      update(setupKey: string, body: AdminProvisioningSetupUpdateParams) {
+        return adminRequest<AdminProvisioningSetup>(runtime, {
+          method: 'PATCH',
+          path: `/provisioning/setups/${encodeURIComponent(setupKey)}`,
+          body,
+        })
+      },
     },
 
     runs: {
