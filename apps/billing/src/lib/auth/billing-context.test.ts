@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   isSignedSession: vi.fn(),
   getPlatformClient: vi.fn(),
   getRoutingMemberships: vi.fn(),
+  retrieveSubscription: vi.fn(),
   listTenants: vi.fn(),
   resolveMember: vi.fn(),
   getFeatures: vi.fn(),
@@ -126,9 +127,14 @@ describe('Billing context', () => {
     mocks.isSignedSession.mockReturnValue(true)
     mocks.getPlatformClient.mockResolvedValue({
       memberships: { listRouting: mocks.getRoutingMemberships },
+      subscriptions: { retrieve: mocks.retrieveSubscription },
     })
     mocks.getRoutingMemberships.mockResolvedValue({
       data: { data: [createMembership('org_123')] },
+      error: null,
+    })
+    mocks.retrieveSubscription.mockResolvedValue({
+      data: { status: 'active' },
       error: null,
     })
     mocks.listTenants.mockResolvedValue([tenant])
@@ -589,7 +595,61 @@ describe('Billing context', () => {
     expect(mocks.resolveMember).not.toHaveBeenCalled()
   })
 
-  it('resolves an existing workspace without consulting platform subscription state', async () => {
+  it.each([
+    ['active', 'active'],
+    ['trialing', 'active'],
+    ['blocked', 'blocked'],
+    ['canceled', 'none'],
+    ['past_due', 'none'],
+  ] as const)(
+    'maps a %s subscription to %s access',
+    async (status, expected) => {
+      mocks.retrieveSubscription.mockResolvedValue({
+        data: { status },
+        error: null,
+      })
+
+      const result = await getContext()
+
+      expect(result?.accessStatus).toBe(expected)
+      expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+      expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+        organizationId: 'org_123',
+        appSlug: '876-billing',
+      })
+    }
+  )
+
+  it('maps a missing Billing subscription to no access', async () => {
+    mocks.retrieveSubscription.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'subscription/not-found',
+        message: 'Subscription not found.',
+      },
+    })
+
+    const result = await getContext()
+
+    expect(result?.accessStatus).toBe('none')
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+      organizationId: 'org_123',
+      appSlug: '876-billing',
+    })
+  })
+
+  it('degrades a failed Billing subscription request to no access', async () => {
+    mocks.retrieveSubscription.mockRejectedValue(new Error('API unavailable'))
+
+    const result = await getContext()
+
+    expect(result?.accessStatus).toBe('none')
+    expect(mocks.retrieveSubscription).toHaveBeenCalledTimes(1)
+    expect(mocks.resolveMember).toHaveBeenCalledTimes(1)
+  })
+
+  it('resolves an existing workspace only when the platform subscription is active', async () => {
     const result = await getContext()
 
     expect(result).toEqual(
@@ -605,6 +665,10 @@ describe('Billing context', () => {
       'user_123',
       'owner'
     )
+    expect(mocks.retrieveSubscription).toHaveBeenCalledWith({
+      organizationId: 'org_123',
+      appSlug: '876-billing',
+    })
   })
 
   it('withholds permissions for a suspended Billing member', async () => {
