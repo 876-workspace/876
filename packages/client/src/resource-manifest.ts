@@ -146,7 +146,7 @@ export type CanonicalResource = keyof typeof RESOURCE_MANIFEST
  * exposed as `$876.entitlementPlans` and `$876.products` is Billing-only. See
  * ADR-011. (The review also flagged `$876.subscriptions`, but that was a misread
  * — `@876/admin`'s top-level `subscriptions` is `/billing/subscriptions`, and the
- * org→app entitlement is separately `$876.organizations.admin.subscriptions`.)
+ * org→app entitlement is separately `workspace.apps.entitlements`.)
  *
  * It is kept as a typed, asserted list so the surface-contract test fails if a
  * new collision is ever introduced.
