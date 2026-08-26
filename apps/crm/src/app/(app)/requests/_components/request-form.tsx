@@ -105,7 +105,7 @@ export function RequestForm({
         <FormRow label="Customer" required className={rowClassName}>
           <Select
             value={values.customerId}
-            onValueChange={(value) => set('customerId', value)}
+            onValueChange={(value) => set('customerId', value ?? '')}
             disabled={Boolean(requestId) || saving}
           >
             <SelectTrigger>
@@ -162,9 +162,7 @@ export function RequestForm({
               'FEEDBACK',
               'OTHER',
             ]}
-            onValueChange={(value) =>
-              set('category', value as RequestCategory)
-            }
+            onValueChange={(value) => set('category', value as RequestCategory)}
             disabled={saving}
           />
         </FormRow>
@@ -173,9 +171,7 @@ export function RequestForm({
           <RequestSelect
             value={values.priority}
             options={['LOW', 'NORMAL', 'HIGH', 'URGENT']}
-            onValueChange={(value) =>
-              set('priority', value as RequestPriority)
-            }
+            onValueChange={(value) => set('priority', value as RequestPriority)}
             disabled={saving}
           />
         </FormRow>
@@ -201,9 +197,7 @@ export function RequestForm({
                 'CLOSED',
                 'CANCELLED',
               ]}
-              onValueChange={(value) =>
-                set('status', value as RequestStatus)
-              }
+              onValueChange={(value) => set('status', value as RequestStatus)}
               disabled={saving}
             />
           </FormRow>
@@ -259,7 +253,11 @@ function RequestSelect({
   disabled?: boolean
 }) {
   return (
-    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select
+      value={value}
+      onValueChange={(next) => onValueChange(next ?? value)}
+      disabled={disabled}
+    >
       <SelectTrigger>
         <SelectValue />
       </SelectTrigger>
