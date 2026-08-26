@@ -1,15 +1,16 @@
 import { Router } from 'express'
 
+import { requireInternal } from '../../http/internal-auth.js'
 import * as controller from './customers.controller.js'
 
 export function createCustomersRouter() {
   const router = Router({ mergeParams: true })
 
-  router.get('/', controller.listCustomers)
-  router.post('/', controller.createCustomer)
-  router.get('/:id', controller.retrieveCustomer)
-  router.patch('/:id', controller.updateCustomer)
-  router.delete('/:id', controller.deleteCustomer)
+  router.get('/', requireInternal, controller.listCustomers)
+  router.post('/', requireInternal, controller.createCustomer)
+  router.get('/:id', requireInternal, controller.retrieveCustomer)
+  router.patch('/:id', requireInternal, controller.updateCustomer)
+  router.delete('/:id', requireInternal, controller.deleteCustomer)
 
   return router
 }

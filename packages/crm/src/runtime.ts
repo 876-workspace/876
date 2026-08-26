@@ -13,7 +13,7 @@ function resolveBaseUrl(baseUrl?: string): string {
   const configured = resolveClientBaseUrl(baseUrl, BaseUrlEnvKeys)
   if (configured) return configured.replace(/\/$/, '')
 
-  return 'http://localhost:4007'
+  return 'http://localhost:4010'
 }
 
 export function buildRuntime(options: ClientOptions) {
