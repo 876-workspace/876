@@ -53,8 +53,8 @@ resource.
 Every org is subscribed to `DEFAULT_ORG_APP_SLUGS` plus the app it signed up
 through.
 
-| Slug | What it is | Why it is a default |
-| --- | --- | --- |
+| Slug             | What it is                                                                             | Why it is a default                                                                       |
+| ---------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `876-enterprise` | The directory where an org manages itself — account details, users, teams, departments | Membership in the org is what admits users; the subscription backs the entitlement check. |
 
 In addition, the app the signup came through (the _source app_) is subscribed if
@@ -124,6 +124,45 @@ This is separate from user/business operations such as:
 await $876.customers.create(...)
 await $876.customers.list(...)
 ```
+
+---
+
+## Provisioning setups
+
+The day-zero finance configuration an organization is provisioned from is a
+named **setup**: `jamaica` today, with room for `united-states` and further
+Caribbean markets. A setup owns the finance manifest stored at
+`finance/<key>`, and exactly one setup is the platform default.
+
+```ts
+await workspace.provisioning.setups.list()
+await workspace.provisioning.setups.create({
+  key: 'united-states',
+  name: 'United States',
+  country_code: 'US',
+  currency_code: 'USD',
+  copy_from: 'jamaica',
+})
+await workspace.provisioning.setups.update('united-states', {
+  is_default: true,
+})
+```
+
+Rules worth knowing before touching this:
+
+- **New organizations get the default setup**, which is Jamaica unless an
+  operator changes it in Console (Settings → Organizations → Provisioning
+  setups).
+- **An organization keeps the setup it was provisioned with**
+  (`organizations.provisioning_setup_key`). Changing the platform default never
+  re-points an organization that has already been provisioned.
+- **A new setup is created by copying a published one**, so it can provision
+  from the moment it exists.
+- **A setup key is permanent.** Renaming one orphans its finance manifest.
+- **The default setup cannot be archived**, and neither can a setup that
+  organizations are already provisioned with.
+
+See ADR-015 for the reasoning.
 
 ---
 
