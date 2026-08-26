@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import {
   mirrorCoreSubscription,
@@ -48,7 +48,7 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await $876.organizations.admin.subscriptions.update(
+  const { data, error } = await workspace.apps.entitlements.update(
     orgId,
     appId,
     {
