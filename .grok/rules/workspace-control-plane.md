@@ -89,6 +89,9 @@ Current client-side Console control-plane families:
 - `workspace.apps.entitlements.*` — org-to-app entitlement administration (`list`, `retrieve`, `grant`, `update`). Console's `$876.organizations.admin` deliberately carries **no** `subscriptions` key, so this is the only path.
 - `workspace.modules.*` — application modules that shape organization-available functionality.
 - `workspace.features.*` — organization-level feature grants/overrides.
+- `workspace.provisioning.setups.*` — the named day-zero configurations (Jamaica, United States, …).
+  Each owns the finance manifest at `finance/<key>`, and exactly one is the platform default new
+  organizations are provisioned from.
 - `workspace.provisioning.*` — provisioning manifests, drafts, runs, notes, and reconciliation.
 
 Current Core backend orchestration families:
