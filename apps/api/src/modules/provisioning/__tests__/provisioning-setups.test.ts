@@ -323,6 +323,21 @@ describe('POST /provisioning/setups', () => {
   })
 })
 
+describe('POST /provisioning/setups reserved keys', () => {
+  it.each(['new', 'runs'])(
+    'refuses the reserved key %s that Console already routes',
+    async (key) => {
+      const response = await request(createApp())
+        .post('/provisioning/setups')
+        .set(AUTH)
+        .send({ key, name: 'Reserved' })
+
+      expect(response.status).toBe(422)
+      expect(provisioningSetup.create).not.toHaveBeenCalled()
+    }
+  )
+})
+
 describe('PATCH /provisioning/setups/:setup_key', () => {
   it('moves the platform default onto another setup in one transaction', async () => {
     const target = setupRow({

@@ -558,6 +558,13 @@ export type ProvisioningRunStatus = z.infer<typeof provisioningRunStatusSchema>
 
 export const provisioningSetupStatusSchema = z.enum(['active', 'archived'])
 
+/**
+ * Segments Console already routes under `/settings/orgs/provisioning`. A setup
+ * keyed with one of these would exist but be unreachable in the UI, so the key
+ * is refused at creation rather than discovered later.
+ */
+const RESERVED_SETUP_KEYS = new Set(['new', 'runs'])
+
 const setupKeySchema = z
   .string()
   .min(2)
@@ -566,6 +573,9 @@ const setupKeySchema = z
   .refine((value) => /^[a-z][a-z0-9-]*$/.test(value), {
     message:
       'A setup key is lowercase letters, digits, and hyphens, starting with a letter.',
+  })
+  .refine((value) => !RESERVED_SETUP_KEYS.has(value), {
+    message: `A setup key cannot be one of: ${[...RESERVED_SETUP_KEYS].join(', ')}.`,
   })
 
 export const provisioningSetupCreateSchema = z.strictObject({
