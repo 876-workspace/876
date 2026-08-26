@@ -82,7 +82,7 @@ new Billing endpoint.
 `provisionOrganization` receives a real `enqueueCustomerEnsure` at every creation
 site (admin `createOrganization`, business signup, product-app onboarding), so a
 new org appears in Billing at creation. `provisionOrgApps` continues to attach the
-default apps and the source app and to seed the `active` subscription from
+Enterprise default entitlement and the source app and to seed the `active` subscription from
 `findDefaultPriceForApp` — every product must have a free plan/price seeded so that
 lookup resolves.
 
