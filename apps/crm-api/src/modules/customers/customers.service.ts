@@ -1,12 +1,13 @@
 import { create876BillingIntegrationClient } from '@876/billing/integration'
 
+import type {
+  CreateCustomerInput,
+  DeleteCustomerInput,
+  UpdateCustomerInput,
+} from '../../types/customer.js'
 import * as tenants from '../tenants/tenants.service.js'
 
 import * as repository from './customers.repository.js'
-import type {
-  CreateCustomerInput,
-  UpdateCustomerInput,
-} from './customers.schemas.js'
 
 function finance() {
   return create876BillingIntegrationClient({
@@ -33,9 +34,34 @@ function resolveName(params: {
     .filter(Boolean)
     .join(' ')
   const company = params.companyName?.trim() ?? ''
+
   return params.customerKind === 'BUSINESS'
     ? company || person
     : person || company
+}
+
+function serializeProfile(profile: Awaited<ReturnType<typeof repository.retrieve>> & {}) {
+  if (!profile) return null
+
+  return {
+    ...profile,
+    createdAt: Math.floor(profile.createdAt.getTime() / 1000),
+    updatedAt: Math.floor(profile.updatedAt.getTime() / 1000),
+    deletedAt: profile.deletedAt
+      ? Math.floor(profile.deletedAt.getTime() / 1000)
+      : null,
+  }
+}
+
+function compose(
+  profile: NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>,
+  customer: Record<string, unknown> | null
+) {
+  return {
+    object: 'customer_profile' as const,
+    profile: serializeProfile(profile)!,
+    customer,
+  }
 }
 
 export async function list(organizationId: string) {
@@ -52,10 +78,10 @@ export async function list(organizationId: string) {
   const byId = new Map(
     result.data.data.map((customer) => [customer.id, customer])
   )
-  return profiles.map((profile) => ({
-    profile,
-    customer: byId.get(profile.billingCustomerId) ?? null,
-  }))
+
+  return profiles.map((profile) =>
+    compose(profile, byId.get(profile.billingCustomerId) ?? null)
+  )
 }
 
 export async function retrieve(organizationId: string, id: string) {
@@ -69,7 +95,7 @@ export async function retrieve(organizationId: string, id: string) {
   })
   if (result.error) throw new Error(result.error.message)
 
-  return { profile, customer: result.data.data[0] ?? null }
+  return compose(profile, result.data.data[0] ?? null)
 }
 
 export async function create(
@@ -101,7 +127,7 @@ export async function create(
     ownerId: input.ownerId ?? null,
   })
 
-  return { profile, customer: shared.data }
+  return compose(profile, shared.data)
 }
 
 export async function update(
@@ -135,16 +161,17 @@ export async function update(
     ...(input.status ? { status: input.status } : {}),
   })
 
-  return { profile, customer }
+  return compose(profile, customer)
 }
 
 export async function remove(
   organizationId: string,
   id: string,
-  params: { deletedBy: string; reason?: string | null }
+  params: DeleteCustomerInput
 ) {
   const tenant = await requireTenant(organizationId)
   const current = await repository.retrieve(tenant.id, id)
   if (!current) return null
+
   return repository.remove({ id: current.id, ...params })
 }
