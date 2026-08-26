@@ -10,7 +10,7 @@ import type {
 import type { CustomerCreateParams } from '@876/billing/admin'
 import type { IntervalUnit, SubscriptionStatus } from '@876/billing/admin'
 
-import { $876, billingAdmin, coreAdmin } from '@/lib/876'
+import { $876, billingAdmin, coreAdmin, workspace } from '@/lib/876'
 
 /**
  * One-way Console -> Billing mirror. Core stays the entitlement source of
@@ -387,10 +387,9 @@ export async function reconcileBillingMirror() {
 
       for (const org of orgResult.data.data) {
         try {
-          const subscriptionResult =
-            await $876.organizations.admin.subscriptions.list({
-              organizationId: org.id,
-            })
+          const subscriptionResult = await workspace.apps.entitlements.list({
+            organizationId: org.id,
+          })
           if (subscriptionResult.error) {
             failures += 1
             console.error(

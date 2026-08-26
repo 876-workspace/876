@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -22,7 +22,7 @@ export async function POST(
     expires_at?: number
   } | null
 
-  const { data, error } = await $876.apiKeys.create(appId, {
+  const { data, error } = await platform.apiKeys.create(appId, {
     name: body?.name,
     expires_at: body?.expires_at,
   })

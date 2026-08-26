@@ -87,12 +87,14 @@ the ownership and cutover decisions in ADR-001 and ADR-002.
 
 ## Bootstrap and cutover
 
-Bootstrapping publishes revision 1 for `organization/global`,
-`finance/shared`, and each first-party application. The finance bootstrap
-contains JMD, the existing payment modes and terms, invoice preferences, Tax
-Administration Jamaica, and the standard GCT rate.
+Bootstrapping publishes revision 1 for `organization/global`, the default
+provisioning setup's finance manifest (`finance/jamaica`), and each first-party
+application. The Jamaica bootstrap contains JMD, the existing payment modes and
+terms, invoice preferences, Tax Administration Jamaica, and the standard GCT
+rate. Further setups — United States, other Caribbean markets — are created in
+Console by copying a published one; see ADR-015.
 
 The hard cutover migrates only each active legacy recipe, resets its content to
 revision 1 under protocol version 1, moves Billing's shared defaults to
-`finance/shared`, and drops every `app_provisioning_*` table. There are no
+the finance manifest, and drops every `app_provisioning_*` table. There are no
 compatibility endpoints or type aliases.

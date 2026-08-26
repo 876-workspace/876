@@ -550,3 +550,115 @@ export type ProvisioningDraftReplace = z.infer<
   typeof provisioningDraftReplaceSchema
 >
 export type ProvisioningRunStatus = z.infer<typeof provisioningRunStatusSchema>
+
+// ---------------------------------------------------------------------------
+// Provisioning setups — named day-zero configurations (Jamaica, United States,
+// …). A setup owns the finance manifest stored at `finance/<key>`.
+// ---------------------------------------------------------------------------
+
+export const provisioningSetupStatusSchema = z.enum(['active', 'archived'])
+
+/**
+ * Segments Console already routes under `/settings/orgs/provisioning`. A setup
+ * keyed with one of these would exist but be unreachable in the UI, so the key
+ * is refused at creation rather than discovered later.
+ */
+const RESERVED_SETUP_KEYS = new Set(['new', 'runs'])
+
+const setupKeySchema = z
+  .string()
+  .min(2)
+  .max(60)
+  .transform((value) => value.trim().toLowerCase())
+  .refine((value) => /^[a-z][a-z0-9-]*$/.test(value), {
+    message:
+      'A setup key is lowercase letters, digits, and hyphens, starting with a letter.',
+  })
+  .refine((value) => !RESERVED_SETUP_KEYS.has(value), {
+    message: `A setup key cannot be one of: ${[...RESERVED_SETUP_KEYS].join(', ')}.`,
+  })
+
+export const provisioningSetupCreateSchema = z.strictObject({
+  key: setupKeySchema,
+  name: z
+    .string()
+    .min(1)
+    .max(120)
+    .transform((v) => v.trim()),
+  description: z.string().max(2000).nullable().optional().default(null),
+  country_code: z
+    .string()
+    .length(2)
+    .nullable()
+    .optional()
+    .default(null)
+    .transform((v) => (v == null ? null : v.toUpperCase())),
+  currency_code: z
+    .string()
+    .length(3)
+    .nullable()
+    .optional()
+    .default(null)
+    .transform((v) => (v == null ? null : v.toUpperCase())),
+  is_default: z.boolean().optional().default(false),
+  /**
+   * Setup key whose published finance manifest seeds the new setup. Omitted,
+   * the platform default is copied — a new setup always starts from a working
+   * configuration rather than an empty manifest that cannot provision.
+   */
+  copy_from: setupKeySchema.nullable().optional().default(null),
+})
+
+export const provisioningSetupUpdateSchema = z
+  .strictObject({
+    name: z.string().min(1).max(120).optional(),
+    description: z.string().max(2000).nullable().optional(),
+    country_code: z
+      .string()
+      .length(2)
+      .nullable()
+      .optional()
+      .transform((v) => (v == null ? v : v.toUpperCase())),
+    currency_code: z
+      .string()
+      .length(3)
+      .nullable()
+      .optional()
+      .transform((v) => (v == null ? v : v.toUpperCase())),
+    status: provisioningSetupStatusSchema.optional(),
+    is_default: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Provide at least one field to update.',
+  })
+
+export const provisioningSetupParamsSchema = z.strictObject({
+  setup_key: z.string(),
+})
+
+export const provisioningSetupResponseSchema = z
+  .object({
+    object: z.literal('provisioning_setup'),
+    id: z.string(),
+    key: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    country_code: z.string().nullable(),
+    currency_code: z.string().nullable(),
+    status: provisioningSetupStatusSchema,
+    is_default: z.boolean(),
+    manifest_target: z.string(),
+    published_revision: z.number().int().nullable(),
+    has_draft: z.boolean(),
+    organization_count: z.number().int(),
+    created_at: z.number().int(),
+    updated_at: z.number().int(),
+  })
+  .meta({ id: 'ProvisioningSetup' })
+
+export type ProvisioningSetupCreate = z.infer<
+  typeof provisioningSetupCreateSchema
+>
+export type ProvisioningSetupUpdate = z.infer<
+  typeof provisioningSetupUpdateSchema
+>

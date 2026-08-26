@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -23,7 +23,7 @@ export async function PATCH(
     return apiJson({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const { data, error } = await $876.organizationFeatures.update(
+  const { data, error } = await workspace.features.update(
     organizationId,
     featureId,
     body
@@ -46,7 +46,7 @@ export async function DELETE(
   if (response) return response
 
   const { organizationId, featureId } = await context.params
-  const { data, error } = await $876.organizationFeatures.revoke(
+  const { data, error } = await workspace.features.revoke(
     organizationId,
     featureId
   )

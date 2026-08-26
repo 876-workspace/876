@@ -16,6 +16,7 @@ import {
   serializeNote,
   serializeRevision,
   serializeRun,
+  serializeSetup,
 } from './provisioning.serializers'
 import type { ProvisioningDraftReplace } from './provisioning.schemas'
 
@@ -469,4 +470,221 @@ export async function deleteNote(
     id: noteId,
     deleted: true as const,
   }
+}
+
+// ---------------------------------------------------------------------------
+// Setups — named day-zero configurations, each owning `finance/<key>`.
+// ---------------------------------------------------------------------------
+
+async function setupContext(row: repository.SetupRow) {
+  const [summaries, organizationCount] = await Promise.all([
+    repository.findRevisionSummaries('finance', [row.key]),
+    repository.countOrganizationsForSetup(row.key),
+  ])
+  return {
+    publishedRevision:
+      summaries.find((s) => s.status === 'published')?.revision ?? null,
+    hasDraft: summaries.some((s) => s.status === 'draft'),
+    organizationCount,
+  }
+}
+
+export async function listSetups(): Promise<
+  ListObject<ReturnType<typeof serializeSetup>>
+> {
+  const rows = await repository.listSetups()
+  const keys = rows.map((row) => row.key)
+  const [summaries, counts] = await Promise.all([
+    keys.length ? repository.findRevisionSummaries('finance', keys) : [],
+    Promise.all(keys.map((key) => repository.countOrganizationsForSetup(key))),
+  ])
+  const data = rows.map((row, index) =>
+    serializeSetup(row, {
+      publishedRevision:
+        summaries.find(
+          (s) => s.targetKey === row.key && s.status === 'published'
+        )?.revision ?? null,
+      hasDraft: summaries.some(
+        (s) => s.targetKey === row.key && s.status === 'draft'
+      ),
+      organizationCount: counts[index] ?? 0,
+    })
+  )
+  return listObject({
+    data,
+    hasMore: false,
+    url: '/provisioning/setups',
+    totalCount: data.length,
+  })
+}
+
+async function requireSetup(key: string): Promise<repository.SetupRow> {
+  const row = await repository.findSetupByKey(key.trim().toLowerCase())
+  if (!row) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-not-found',
+      message: 'Provisioning setup was not found.',
+      httpStatus: 404,
+    })
+  }
+  return row
+}
+
+export async function retrieveSetup(key: string) {
+  const row = await requireSetup(key)
+  return serializeSetup(row, await setupContext(row))
+}
+
+export async function createSetup(body: {
+  key: string
+  name: string
+  description: string | null
+  country_code: string | null
+  currency_code: string | null
+  is_default: boolean
+  copy_from: string | null
+}) {
+  const existing = await repository.findSetupByKey(body.key)
+  if (existing) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-key-taken',
+      message: `Provisioning setup '${body.key}' already exists.`,
+      httpStatus: 409,
+    })
+  }
+
+  // A setup with no published manifest cannot provision anything, so a new one
+  // always starts from a working configuration: the named source, or the
+  // platform default.
+  const source = body.copy_from
+    ? await requireSetup(body.copy_from)
+    : await repository.findDefaultSetup()
+  const sourceRevision = source
+    ? await repository.findRevisionByStatus('finance', source.key, 'published')
+    : null
+  if (!sourceRevision) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-source-unavailable',
+      message:
+        'No published finance manifest is available to copy. Publish one first.',
+      httpStatus: 422,
+    })
+  }
+
+  const now = nowUnixSeconds()
+  let created = await repository.createSetup({
+    key: body.key,
+    name: body.name,
+    description: body.description,
+    countryCode: body.country_code,
+    currencyCode: body.currency_code,
+    now,
+  })
+
+  const draftInput = revisionAsDraft(sourceRevision as never)
+  await repository.replaceDraft('finance', created.key, {
+    reconciliation: 'create_missing',
+    preserveTenantOverrides: true,
+    financeDependency: 'none',
+    financeScopes: [],
+    resources: draftInput.resources as never,
+    steps: draftInput.steps as never,
+    now,
+  })
+  const locked = await repository.retrieveDraftForUpdate('finance', created.key)
+  if (locked) {
+    await repository.promoteDraft(
+      locked.manifest as never,
+      locked.draft as never,
+      now
+    )
+  }
+
+  if (body.is_default)
+    created = await repository.setDefaultSetup(created.id, now)
+
+  return serializeSetup(created, await setupContext(created))
+}
+
+export async function updateSetup(
+  key: string,
+  body: {
+    name?: string
+    description?: string | null
+    country_code?: string | null
+    currency_code?: string | null
+    status?: 'active' | 'archived'
+    is_default?: boolean
+  }
+) {
+  const setup = await requireSetup(key)
+  const now = nowUnixSeconds()
+
+  if (body.status === 'archived') {
+    if (setup.isDefault && body.is_default !== true) {
+      throw new AppHttpError({
+        code: 'provisioning/setup-default-required',
+        message:
+          'The default provisioning setup cannot be archived. Make another setup the default first.',
+        httpStatus: 409,
+      })
+    }
+    const organizationCount = await repository.countOrganizationsForSetup(
+      setup.key
+    )
+    if (organizationCount > 0) {
+      throw new AppHttpError({
+        code: 'provisioning/setup-in-use',
+        message: `${organizationCount} organization(s) are provisioned with this setup, so it cannot be archived.`,
+        httpStatus: 409,
+      })
+    }
+  }
+
+  if (body.is_default === false && setup.isDefault) {
+    throw new AppHttpError({
+      code: 'provisioning/setup-default-required',
+      message:
+        'Exactly one setup is the default. Make another setup the default instead of clearing this one.',
+      httpStatus: 409,
+    })
+  }
+
+  let updated = setup
+  const hasFieldEdits =
+    body.name !== undefined ||
+    body.description !== undefined ||
+    body.country_code !== undefined ||
+    body.currency_code !== undefined ||
+    body.status !== undefined
+
+  if (hasFieldEdits) {
+    updated = await repository.updateSetup(setup.id, {
+      ...(body.name === undefined ? {} : { name: body.name }),
+      ...(body.description === undefined
+        ? {}
+        : { description: body.description }),
+      ...(body.country_code === undefined
+        ? {}
+        : { countryCode: body.country_code }),
+      ...(body.currency_code === undefined
+        ? {}
+        : { currencyCode: body.currency_code }),
+      ...(body.status === undefined ? {} : { status: body.status }),
+      now,
+    })
+  }
+
+  if (body.is_default === true && !updated.isDefault) {
+    if (updated.status !== 'active') {
+      throw new AppHttpError({
+        code: 'provisioning/setup-archived',
+        message: 'An archived setup cannot be the platform default.',
+        httpStatus: 409,
+      })
+    }
+    updated = await repository.setDefaultSetup(updated.id, now)
+  }
+
+  return serializeSetup(updated, await setupContext(updated))
 }

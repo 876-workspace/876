@@ -128,7 +128,7 @@ nothing has been saved).
 
 | Consumer     | Package / client                                 | Credential                     | Surface                                                                                                 |
 | ------------ | ------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| Console      | `@876/admin` → `$876.onboarding.*`               | `x-internal-key` + app key     | Full onboarding resource (`packages/admin/src/resources/onboarding.ts`); used for `organization/global` |
+| Console      | `@876/admin` → `workspace.onboarding.*`          | `x-internal-key` + app key     | Full onboarding resource (`packages/admin/src/resources/onboarding.ts`); used for `organization/global` |
 | Product apps | `@876/core/platform` → `create876PlatformClient` | `x-internal-key` + app API key | Narrow bootstrap only (`packages/core/src/platform/index.ts`)                                           |
 
 Platform client onboarding methods:
@@ -254,8 +254,11 @@ provision is safe, tenant create is skipped when `ctx.tenant` already exists.
    in the product datastore, referenced by **opaque org id** only (no cross-DB
    FKs).
 
-Console continues to use `$876.onboarding.*` against `organization/global` for
-heavy KYB; product wizards use `organization/core` only.
+Console continues to use `workspace.onboarding.*` against `organization/global`
+for heavy KYB; product wizards use `organization/core` only. Onboarding prepares
+an organization's environment, so it sits on the workspace control plane rather
+than the `$876` resource facade — see
+[`workspace-control-plane.md`](../.claude/rules/workspace-control-plane.md).
 
 ## Design principles
 

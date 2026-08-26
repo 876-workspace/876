@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { buttonVariants } from '@876/ui/button'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { resolveApp } from '../_data'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 
@@ -24,8 +24,8 @@ async function AppProvisioningData({ params }: Props) {
   if (!app) notFound()
 
   const [manifestResult, catalogResult] = await Promise.all([
-    $876.provisioning.retrieve('application', app.id),
-    $876.provisioning.retrieveCatalog('application', app.id),
+    workspace.provisioning.draft.retrieve('application', app.id),
+    workspace.provisioning.catalog.retrieve('application', app.id),
   ])
   if (
     manifestResult.error &&

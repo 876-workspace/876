@@ -18,7 +18,9 @@ or duplicating a hand-authored form for every resource.
 
 ## Decision
 
-- Place `finance/shared` at **Organizations → Provisioning defaults** in Console.
+- Place the finance manifest at **Organizations → Provisioning setups** in
+  Console. (Superseded in part by ADR-015: the manifest is `finance/<setup>`
+  rather than `finance/shared`, and Console lists the setups.)
   Application-specific defaults remain on each application control-plane page.
 - Render one accordion per catalog resource type. Each accordion contains a
   table, an Add action, and a catalog-shaped inline editor.

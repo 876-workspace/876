@@ -35,3 +35,23 @@ export const VALIDATE_DRAFT_SUMMARY = 'Validate a provisioning draft'
 
 export const VALIDATE_DRAFT_DESCRIPTION =
   'Validates a proposed recipe without changing control-plane data.'
+
+export const LIST_SETUPS_SUMMARY = 'List provisioning setups'
+
+export const LIST_SETUPS_DESCRIPTION =
+  'Returns every named day-zero configuration. Exactly one is the platform default that new organizations are provisioned with.'
+
+export const RETRIEVE_SETUP_SUMMARY = 'Retrieve a provisioning setup'
+
+export const RETRIEVE_SETUP_DESCRIPTION =
+  'Returns one setup with its finance manifest target, published revision, and the number of organizations provisioned with it.'
+
+export const CREATE_SETUP_SUMMARY = 'Create a provisioning setup'
+
+export const CREATE_SETUP_DESCRIPTION =
+  'Creates a setup and seeds its finance manifest from an existing setup, so a new setup is publishable from the moment it exists. Pass copy_from to choose the source; the platform default is copied otherwise.'
+
+export const UPDATE_SETUP_SUMMARY = 'Update a provisioning setup'
+
+export const UPDATE_SETUP_DESCRIPTION =
+  'Renames a setup, edits its locale metadata, archives it, or makes it the platform default. A setup that organizations already use cannot be archived.'

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@876/ui/table'
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { DeviceActions } from './_components/device-actions'
 
 type Props = { params: Promise<{ id: string }> }
@@ -26,7 +26,7 @@ function formatWhen(seconds: number | null) {
 
 export default async function DevicePage({ params }: Props) {
   const { id } = await params
-  const result = await $876.devices.retrieve(id)
+  const result = await platform.devices.retrieve(id)
   if (result.error) notFound()
 
   const device = result.data
@@ -116,7 +116,7 @@ function Field({
  * strongest shared-device signal Console has.
  */
 async function AccountsOnDevice({ deviceId }: { deviceId: string }) {
-  const result = await $876.devices.listUsers(deviceId)
+  const result = await platform.devices.listUsers(deviceId)
   const rows = result.error ? [] : result.data.data
 
   return (
@@ -177,7 +177,7 @@ async function AccountsOnDevice({ deviceId }: { deviceId: string }) {
 }
 
 async function RecentAttempts({ deviceId }: { deviceId: string }) {
-  const result = await $876.devices.listAttempts(deviceId, { limit: 20 })
+  const result = await platform.devices.listAttempts(deviceId, { limit: 20 })
   const rows = result.error ? [] : result.data.data
 
   return (

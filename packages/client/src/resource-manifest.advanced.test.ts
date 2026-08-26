@@ -20,7 +20,9 @@ describe('ResourceManifest / contract / billing nouns exist', () => {
 
   it('all manifest entries have owner and meaning (contract)', () => {
     for (const [name, entry] of Object.entries(RESOURCE_MANIFEST)) {
-      expect(['core','billing','couriers','storage','widgets']).toContain(entry.owner)
+      expect(['core', 'billing', 'couriers', 'storage', 'widgets']).toContain(
+        entry.owner
+      )
       expect(entry.meaning.trim().length, `${name} meaning`).toBeGreaterThan(5)
     }
   })
@@ -30,11 +32,28 @@ describe('ResourceManifest / contract / billing nouns exist', () => {
   })
 
   it('paymentMethods and paymentIntents are distinct nouns', () => {
-    expect(RESOURCE_MANIFEST.paymentMethods.meaning).not.toBe(RESOURCE_MANIFEST.paymentIntents.meaning)
+    expect(RESOURCE_MANIFEST.paymentMethods.meaning).not.toBe(
+      RESOURCE_MANIFEST.paymentIntents.meaning
+    )
   })
 
   it('billing nouns are all owned by billing (ownership invariant)', () => {
-    const billingNouns = ['customers','products','plans','prices','invoices','payments','paymentModes','paymentMethods','paymentIntents','paymentProviders','paymentTerms','subscriptions','taxRates','bankAccounts'] as const
+    const billingNouns = [
+      'customers',
+      'products',
+      'plans',
+      'prices',
+      'invoices',
+      'payments',
+      'paymentModes',
+      'paymentMethods',
+      'paymentIntents',
+      'paymentProviders',
+      'paymentTerms',
+      'subscriptions',
+      'taxRates',
+      'bankAccounts',
+    ] as const
     for (const noun of billingNouns) {
       const entry = (RESOURCE_MANIFEST as any)[noun]
       if (entry) expect(entry.owner, `${noun} owner`).toBe('billing')

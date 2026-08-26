@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { resolveApp } from '../../_data'
 import {
   CreatePlanForm,
@@ -35,7 +35,7 @@ async function loadPlanSetup(slug: string): Promise<CreatePlanSetup> {
   const app = await resolveApp(slug)
   if (!app) throw new Error('App not found.')
 
-  const result = await $876.modules.list(app.id)
+  const result = await workspace.modules.list(app.id)
   if (result.error) throw new Error(result.error.message)
 
   return {

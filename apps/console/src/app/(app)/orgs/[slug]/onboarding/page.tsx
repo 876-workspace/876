@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { resolveOrg } from '../_data'
 import { OnboardingEditor } from './_components/onboarding-editor'
 
@@ -22,8 +22,8 @@ async function OrganizationOnboardingData({ params }: Props) {
   if (!org) notFound()
 
   const [catalogResult, sessionResult] = await Promise.all([
-    $876.onboarding.retrieveCatalog('organization', 'global', 'JM'),
-    $876.onboarding.retrieve(org.id, 'organization', 'global', 'JM'),
+    workspace.onboarding.retrieveCatalog('organization', 'global', 'JM'),
+    workspace.onboarding.retrieve(org.id, 'organization', 'global', 'JM'),
   ])
   if (catalogResult.error || !catalogResult.data)
     throw new Error(

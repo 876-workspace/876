@@ -2,11 +2,22 @@ import { createServiceClients } from '../internal/create-service-clients'
 import { requireCapability } from '../internal/require-capability'
 import { withAdmin } from '../internal/with-admin'
 import { createCoreSurface } from './base'
+import {
+  createPlatformControlPlane,
+  createWorkspaceControlPlane,
+} from './control-planes'
 import type { ConsoleServerClientOptions } from '../internal/types'
 
-export function createConsoleClient(options: ConsoleServerClientOptions) {
+/**
+ * Creates Console's three server-side surfaces from one set of service clients.
+ *
+ * - `$876` — resource/data plane
+ * - `workspace` — organization workspace control plane
+ * - `platform` — 876 operator control plane
+ */
+export function createConsoleSurfaces(options: ConsoleServerClientOptions) {
   const services = createServiceClients(options)
-  const platform = services.platform
+  const platformClient = services.platform
   const platformAdmin = requireCapability(
     services.platformAdmin,
     'platformAdmin'
@@ -33,9 +44,12 @@ export function createConsoleClient(options: ConsoleServerClientOptions) {
     'widgets.admin'
   )
 
-  const core = createCoreSurface({ platform, admin: platformAdmin })
+  const core = createCoreSurface({
+    platform: platformClient,
+    admin: platformAdmin,
+  })
 
-  return {
+  const $876 = {
     ...core,
     entitlementPlans: { admin: platformAdmin.products },
     plans: { admin: billingAdmin.plans },
@@ -53,6 +67,17 @@ export function createConsoleClient(options: ConsoleServerClientOptions) {
     notes: withAdmin(widgetsMember.notes, widgetsAdmin.notes),
     collections: widgetsMember.collections,
   }
+
+  return {
+    $876,
+    workspace: createWorkspaceControlPlane(platformAdmin),
+    platform: createPlatformControlPlane(platformAdmin),
+  }
 }
 
-export type Console876Client = ReturnType<typeof createConsoleClient>
+export function createConsoleClient(options: ConsoleServerClientOptions) {
+  return createConsoleSurfaces(options).$876
+}
+
+export type ConsoleSurfaces = ReturnType<typeof createConsoleSurfaces>
+export type Console876Client = ConsoleSurfaces['$876']

@@ -70,6 +70,7 @@ export const ENTITY_PREFIXES = {
   product: 'prd',
   refreshToken: 'ort',
   registeredApp: 'rap',
+  provisioningSetup: 'psu',
   provisioningManifest: 'pm',
   provisioningRevision: 'pmr',
   provisioningResource: 'prs',

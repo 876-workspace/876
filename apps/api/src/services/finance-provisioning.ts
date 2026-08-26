@@ -95,6 +95,12 @@ export type FinanceProvisioningRepository = {
     targetType: string,
     targetKey: string
   ): Promise<ProvisioningManifestRevisionRow | null>
+  /**
+   * The provisioning setup an organization is configured with — the key of its
+   * `finance/<key>` manifest. Null when no setup exists at all, which only
+   * happens before the provisioning seeds have run.
+   */
+  resolveFinanceSetupKey(organizationId: string): Promise<string | null>
   findLatestOutboxEvent(
     aggregateId: string
   ): Promise<FinanceProvisioningOutboxRow | null>
@@ -230,10 +236,10 @@ async function attachRun(
     now: number
   }
 ): Promise<ProvisioningRunRow> {
-  const financeRevision = await repository.findPublishedRevision(
-    'finance',
-    'shared'
-  )
+  const setupKey = await repository.resolveFinanceSetupKey(event.organizationId)
+  const financeRevision = setupKey
+    ? await repository.findPublishedRevision('finance', setupKey)
+    : null
   const run = await repository.createRunForEvent({
     organizationId: event.organizationId,
     appId: event.sourceAppId,

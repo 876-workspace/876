@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import type { AdminSubscriptionStatus } from '@876/admin'
 
-import { $876 } from '@/lib/876'
+import { $876, workspace } from '@/lib/876'
 
 /**
  * Resolve an organization by slug, including soft-deleted records so Mission
@@ -50,7 +50,7 @@ export const resolveOrgRoles = cache(async (orgId: string) => {
 
 export const resolveOrgSubscriptions = cache(
   async (orgId: string, status?: AdminSubscriptionStatus) => {
-    const result = await $876.organizations.admin.subscriptions.list({
+    const result = await workspace.apps.entitlements.list({
       organizationId: orgId,
       status,
     })

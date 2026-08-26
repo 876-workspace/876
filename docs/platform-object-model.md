@@ -75,8 +75,10 @@ commercial catalog** on every surface — resolving the one namespace collision 
 PR #254 review found. Add `$876.entitlementPlans` to the resource table when this
 section is next revised. (`$876.subscriptions.admin` was also reviewed as a
 possible collision but is **not** one — `@876/admin`'s top-level `subscriptions`
-is `/billing/subscriptions`, distinct from the org→app entitlement at
-`$876.organizations.admin.subscriptions`.) See [ADR-011](architecture/011-unified-facade-namespace-invariants.md)
+is `/billing/subscriptions`, distinct from the org→app entitlement, which now
+lives on the workspace control plane at `workspace.apps.entitlements`.) See
+[ADR-011](architecture/011-unified-facade-namespace-invariants.md),
+[`workspace-control-plane.md`](../.claude/rules/workspace-control-plane.md),
 and `packages/client/src/resource-manifest.ts`.
 
 ---
@@ -180,10 +182,13 @@ and `packages/client/src/resource-manifest.ts`.
 
 ### provisioning
 
-- Public: `$876.provisioning`
+- Public: `workspace.provisioning` — **not** `$876`. Provisioning configures an
+  organization's environment rather than operating on a business resource, so it
+  lives on the workspace control plane. See
+  [`workspace-control-plane.md`](../.claude/rules/workspace-control-plane.md).
 - Owner: Core (`@876/admin` control plane)
-- Verbs: `retrieve(targetType, targetKey)` → `GET /provisioning/manifests/{target}`, `validate` → `POST /.../validate`, `publish` → `POST /.../publish`, `published.retrieve` → `GET /.../published` (alias of `retrievePublished`), `catalog.retrieve` → `GET /provisioning/catalog/{target}` (alias of `retrieveCatalog`), `draft.update` → `PUT /.../draft` (alias of `replaceDraft`), `runs.list`/`retrieve`/`retry`/`reconcile`, `runs.claim` → `POST /provisioning/runs/application/claim` (alias of `claimApplication`), `runs.complete` → `POST /provisioning/runs/{id}/complete` (alias of `completeApplication`), `notes.list`/`create`/`delete`
-- Compatibility: existing long-form names (`retrievePublished`, `retrieveCatalog`, `replaceDraft`, `runs.claimApplication`, `runs.completeApplication`) remain as compatibility aliases; new nested forms delegate with no duplicate transport.
+- Verbs: `draft.retrieve(targetType, targetKey)` → `GET /provisioning/manifests/{target}`, `draft.validate` → `POST /.../validate`, `draft.publish` → `POST /.../publish`, `draft.update` → `PUT /.../draft`, `published.retrieve` → `GET /.../published`, `catalog.retrieve` → `GET /provisioning/catalog/{target}`, `runs.list`/`retrieve`/`retry`/`reconcile`, `runs.claim` → `POST /provisioning/runs/application/claim`, `runs.complete` → `POST /provisioning/runs/{id}/complete`, `notes.list`/`create`/`delete`
+- Compatibility: the long-form `@876/admin` names (`retrievePublished`, `retrieveCatalog`, `replaceDraft`, `runs.claimApplication`, `runs.completeApplication`) remain on the underlying admin client. The control plane exposes exactly one intent-named path per operation and does not re-export them.
 
 ### taxRates / taxAuthorities / bankAccounts / bankTransactions / discounts / paymentModes / paymentProviders
 

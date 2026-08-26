@@ -2,7 +2,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 
 export const runtime = 'nodejs'
 
@@ -12,7 +12,11 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
   if (!body || typeof body !== 'object')
     return apiJson({ error: 'Invalid onboarding answers.' }, { status: 400 })
-  const result = await $876.onboarding.validate('organization', 'global', body)
+  const result = await workspace.onboarding.validate(
+    'organization',
+    'global',
+    body
+  )
   if (result.error || !result.data)
     return apiJson(
       {

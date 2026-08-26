@@ -98,6 +98,36 @@ export function createFinanceProvisioningRepository(): FinanceProvisioningReposi
       } as ProvisioningManifestRevisionRow
     },
 
+    async resolveFinanceSetupKey(organizationId) {
+      const organization = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { provisioningSetupKey: true },
+      })
+      const assigned = organization?.provisioningSetupKey ?? null
+      if (assigned) {
+        const setup = await prisma.provisioningSetup.findFirst({
+          where: { key: assigned },
+          select: { key: true },
+        })
+        if (setup) return setup.key
+      }
+
+      const fallback = await prisma.provisioningSetup.findFirst({
+        where: { isDefault: true },
+        select: { key: true },
+      })
+      if (!fallback) return null
+
+      // An organization keeps the setup it was first provisioned with, so
+      // changing the platform default never silently re-points existing
+      // organizations at a different currency or tax regime.
+      await prisma.organization.updateMany({
+        where: { id: organizationId, provisioningSetupKey: null },
+        data: { provisioningSetupKey: fallback.key },
+      })
+      return fallback.key
+    },
+
     async findLatestOutboxEvent(aggregateId) {
       const row = await prisma.financeProvisioningOutbox.findFirst({
         where: { aggregateId },

@@ -24,6 +24,10 @@ import {
   provisioningRevisionResponseSchema,
   provisioningRunIdParamsSchema,
   provisioningRunResponseSchema,
+  provisioningSetupCreateSchema,
+  provisioningSetupParamsSchema,
+  provisioningSetupResponseSchema,
+  provisioningSetupUpdateSchema,
   provisioningValidationResponseSchema,
 } from './provisioning.schemas'
 
@@ -33,6 +37,75 @@ export function createProvisioningRouter(resolveGuards: GuardResolver) {
     prefix: '/provisioning',
     security: 'admin',
     resolveGuards,
+  })
+
+  // Setups — named day-zero configurations. Declared before the manifest
+  // routes so `/setups` can never be read as a manifest target.
+  api.get({
+    path: '/setups',
+    operationId: 'provisioning-list_setups',
+    summary: docs.LIST_SETUPS_SUMMARY,
+    description: docs.LIST_SETUPS_DESCRIPTION,
+    responses: {
+      200: {
+        description: 'Setups returned.',
+        schema: listObjectSchema(provisioningSetupResponseSchema),
+      },
+    },
+    handler: controller.listSetups,
+  })
+
+  api.post({
+    path: '/setups',
+    operationId: 'provisioning-create_setup',
+    summary: docs.CREATE_SETUP_SUMMARY,
+    description: docs.CREATE_SETUP_DESCRIPTION,
+    request: { body: provisioningSetupCreateSchema },
+    responses: {
+      201: {
+        description: 'Setup created.',
+        schema: provisioningSetupResponseSchema,
+      },
+      409: { description: 'Setup key already exists.' },
+      422: { description: 'No publishable source manifest.' },
+    },
+    handler: controller.createSetup,
+  })
+
+  api.get({
+    path: '/setups/:setup_key',
+    operationId: 'provisioning-retrieve_setup',
+    summary: docs.RETRIEVE_SETUP_SUMMARY,
+    description: docs.RETRIEVE_SETUP_DESCRIPTION,
+    request: { params: provisioningSetupParamsSchema },
+    responses: {
+      200: {
+        description: 'Setup returned.',
+        schema: provisioningSetupResponseSchema,
+      },
+      404: { description: 'Setup not found.' },
+    },
+    handler: controller.retrieveSetup,
+  })
+
+  api.patch({
+    path: '/setups/:setup_key',
+    operationId: 'provisioning-update_setup',
+    summary: docs.UPDATE_SETUP_SUMMARY,
+    description: docs.UPDATE_SETUP_DESCRIPTION,
+    request: {
+      params: provisioningSetupParamsSchema,
+      body: provisioningSetupUpdateSchema,
+    },
+    responses: {
+      200: {
+        description: 'Setup updated.',
+        schema: provisioningSetupResponseSchema,
+      },
+      404: { description: 'Setup not found.' },
+      409: { description: 'Setup cannot be archived or un-defaulted.' },
+    },
+    handler: controller.updateSetup,
   })
 
   // Catalog

@@ -9,9 +9,9 @@ vi.mock('@/lib/876', () => ({
   $876: {
     appSubscriptions: { list: mocks.listAppSubscriptions },
   },
-  coreAdmin: {
-    organizations: {
-      subscriptions: { list: mocks.listOrganizationSubscriptions },
+  workspace: {
+    apps: {
+      entitlements: { list: mocks.listOrganizationSubscriptions },
     },
   },
 }))

@@ -1,6 +1,6 @@
 import { apiJson } from '@876/core/api'
 
-import { $876 } from '@/lib/876'
+import { workspace } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const appId = typeof body.app_id === 'string' ? body.app_id.trim() : ''
   const organizationId =
     typeof body.organization_id === 'string' ? body.organization_id.trim() : ''
-  const result = await $876.provisioning.runs.reconcile({
+  const result = await workspace.provisioning.runs.reconcile({
     appId: appId || null,
     organizationId: organizationId || null,
   })

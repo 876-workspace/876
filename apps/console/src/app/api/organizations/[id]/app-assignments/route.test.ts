@@ -12,12 +12,10 @@ vi.mock('@/lib/auth/route-guard', () => ({
 }))
 
 vi.mock('@/lib/876', () => ({
-  $876: {
-    appAssignments: {
-      admin: {
-        list: mocks.list,
-        create: mocks.create,
-      },
+  workspace: {
+    apps: {
+      list: mocks.list,
+      assign: mocks.create,
     },
   },
 }))

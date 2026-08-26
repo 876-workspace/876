@@ -47,11 +47,12 @@ function newId() {
 export function FinanceProvisioningEditor({
   catalog,
   manifest: initialManifest,
-  target = { type: 'finance', key: 'shared' },
+  target,
 }: {
   catalog: AdminProvisioningCatalog
   manifest: AdminProvisioningManifest | null
-  target?: { type: 'finance' | 'application'; key: string }
+  /** `finance` targets a provisioning setup by key; `application` an app. */
+  target: { type: 'finance' | 'application'; key: string }
   heading?: string
   description?: string
 }) {
@@ -175,7 +176,7 @@ export function FinanceProvisioningEditor({
     const draft = buildFinanceDraft(catalog, rows, currentRevision)
     const validation =
       target.type === 'finance'
-        ? await client.financeProvisioning.validate(draft)
+        ? await client.provisioningSetups.validate(target.key, draft)
         : await client.provisioning.validate(target.key, draft)
     if (validation.error || !validation.data) {
       setMessage(
@@ -195,7 +196,7 @@ export function FinanceProvisioningEditor({
     }
     const saved =
       target.type === 'finance'
-        ? await client.financeProvisioning.replaceDraft(draft)
+        ? await client.provisioningSetups.replaceDraft(target.key, draft)
         : await client.provisioning.replaceDraft(target.key, draft)
     if (saved.error || !saved.data) {
       setMessage(saved.error?.message ?? 'Failed to save finance defaults.')
@@ -226,7 +227,7 @@ export function FinanceProvisioningEditor({
       if (!saved) return
       const published =
         target.type === 'finance'
-          ? await client.financeProvisioning.publish()
+          ? await client.provisioningSetups.publish(target.key)
           : await client.provisioning.publish(target.key)
       if (published.error || !published.data) {
         setMessage(
