@@ -9,8 +9,10 @@ import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
   ArrowUpTrayIcon,
+  ArrowsPointingInIcon,
   AtSymbolIcon,
   Bars3BottomLeftIcon,
+  BellAlertIcon,
   BoltIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
@@ -31,6 +33,7 @@ import {
   Cog6ToothIcon,
   CreditCardIcon,
   CircleStackIcon,
+  DocumentDuplicateIcon,
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   EnvelopeIcon,
@@ -57,6 +60,7 @@ import {
   PencilSquareIcon,
   PhoneIcon,
   PlusIcon,
+  PrinterIcon,
   QueueListIcon,
   RectangleGroupIcon,
   RectangleStackIcon,
@@ -101,7 +105,9 @@ export {
   ArrowTopRightOnSquareIcon,
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
+  ArrowsPointingInIcon,
   AtSymbolIcon,
+  BellAlertIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
   ChartBarIcon,
@@ -114,11 +120,13 @@ export {
   ChevronUpIcon,
   ClipboardDocumentIcon,
   ClipboardDocumentListIcon,
+  ClockIcon,
   CodeBracketIcon,
   Cog6ToothIcon,
   CommandLineIcon,
   CreditCardIcon,
   CircleStackIcon,
+  DocumentDuplicateIcon,
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   EnvelopeIcon,
@@ -141,6 +149,7 @@ export {
   MinusIcon,
   MoonIcon,
   PlusIcon,
+  PrinterIcon,
   QueueListIcon,
   RectangleStackIcon,
   ReceiptPercentIcon,
@@ -152,6 +161,7 @@ export {
   SunIcon,
   TagIcon,
   TableCellsIcon,
+  TrashIcon,
   TruckIcon,
   AdjustmentsHorizontalIcon,
   PaintBrushIcon,
@@ -175,6 +185,7 @@ export const ArrowUpFromLine = ArrowUpTrayIcon
 export const AtSign = AtSymbolIcon
 export const BarChart3 = ChartBarIcon
 export const Building2 = BuildingOffice2Icon
+export const Bell = BellAlertIcon
 export const Calendar = CalendarDaysIcon
 export const CheckCircle = CheckCircleIcon
 export const CheckCircle2 = CheckCircleIcon
@@ -186,6 +197,9 @@ export const ChevronsUpDown = ChevronUpDownIcon
 export const CircleCheckIcon = CheckCircleIcon
 export const ClipboardList = ClipboardDocumentListIcon
 export const Copy = ClipboardDocumentIcon
+export const Duplicate = DocumentDuplicateIcon
+export const Merge = ArrowsPointingInIcon
+export const Printer = PrinterIcon
 export const CreditCard = CreditCardIcon
 export const Database = CircleStackIcon
 export const ExternalLink = ArrowTopRightOnSquareIcon
