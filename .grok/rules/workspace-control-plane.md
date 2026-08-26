@@ -86,6 +86,7 @@ Current client-side Console control-plane families:
 
 - `workspace.onboarding.*` — organization onboarding catalogs, answers, validation, submission.
 - `workspace.apps.list()` / `.assign()` / `.unassign()` — member app assignment administration.
+- `workspace.apps.entitlements.*` — org-to-app entitlement administration (`list`, `retrieve`, `grant`, `update`). Console's `$876.organizations.admin` deliberately carries **no** `subscriptions` key, so this is the only path.
 - `workspace.modules.*` — application modules that shape organization-available functionality.
 - `workspace.features.*` — organization-level feature grants/overrides.
 - `workspace.provisioning.*` — provisioning manifests, drafts, runs, notes, and reconciliation.
@@ -99,9 +100,9 @@ Current Core backend orchestration families:
 
 **Only add a facade method when a call site migrates onto it.** A wrapper with no
 caller is a second permanent path to the same operation — the very thing the
-composition rules below forbid. Org app entitlement administration, for example,
-still lives at `$876.organizations.admin.subscriptions.*`; migrate those call
-sites before adding a `workspace` alias for them.
+composition rules below forbid. When a control family does move, remove it from
+`$876` in the same change: `workspace.apps.entitlements` exists precisely because
+`$876.organizations.admin.subscriptions` was removed alongside it.
 
 Specialized verbs such as `ensure`, `assign`, `reconcile`, `archive`, `restore`,
 and `publish` are allowed on the control planes because they describe workflow
@@ -135,9 +136,11 @@ already exists.
   and are authorized for that control plane.
 - Browser clients must never receive Console's privileged `workspace` or
   `platform` controls.
-- Do not keep deprecated aliases such as `$876.provisioning` or `$876.apiKeys`
-  after migrating a control family. Two permanent paths for the same operation
-  defeat the boundary.
+- Do not keep deprecated aliases such as `$876.provisioning`, `$876.apiKeys`, or
+  `$876.organizations.admin.subscriptions` after migrating a control family. Two
+  permanent paths for the same operation defeat the boundary. Where the migrated
+  family was nested inside a resource that stays on `$876`, omit that one key
+  from the admin projection rather than leaving a live duplicate.
 - A resource may still have an org-scoped `$876` representation while its
   administrative lifecycle lives under `workspace`. Example: session-tier
   `$876.appAssignments.list()` remains a resource read while privileged
