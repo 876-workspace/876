@@ -55,7 +55,8 @@ import {
 import { client } from '@/lib/client'
 import { formatDate } from '@/lib/format'
 
-import { Fact, formatMoney } from './billing-shared'
+import { Fact } from '@/features/billing/components/billing-fields'
+import { formatMoney } from '@/features/billing/price-options'
 
 export type AccountsView = 'grid' | 'table' | 'list'
 

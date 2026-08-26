@@ -23,11 +23,11 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { client } from '@/lib/client'
 import { formatDate } from '@/lib/format'
 
+import { StatusBadge } from '@/features/billing/components/billing-fields'
 import {
-  StatusBadge,
   buildPriceOptions,
   type PriceOption,
-} from './billing-shared'
+} from '@/features/billing/price-options'
 
 type Props = {
   orgSlug: string

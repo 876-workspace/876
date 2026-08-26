@@ -10,7 +10,7 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { useAsyncValue } from '@/hooks/use-async-value'
 import { client } from '@/lib/client'
 
-import { buildPriceOptions } from '@/app/(app)/orgs/[slug]/billing/_components/billing-shared'
+import { buildPriceOptions } from '@/features/billing/price-options'
 
 export type SubscriptionCreateSetup = {
   orgId: string
