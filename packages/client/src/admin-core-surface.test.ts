@@ -119,7 +119,7 @@ describe('admin core resource projections', () => {
     expect(core.organizationMembers.admin.list).toBe(adminMemberList)
     expect(core.appAssignments.list).toBe(platformAssignmentList)
     expect(core.appAssignments.admin).toBeUndefined()
-    expect(workspace.apps.assignments.list).toBe(adminAssignmentList)
+    expect(workspace.apps.list).toBe(adminAssignmentList)
     expect(core.invites.list).toBe(platformInviteList)
     expect(core.invites.admin.list).toBe(adminInviteList)
   })

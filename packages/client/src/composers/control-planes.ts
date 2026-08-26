@@ -39,10 +39,9 @@ export function createWorkspaceControlPlane(admin: Admin876Client) {
   return {
     onboarding: admin.onboarding,
     apps: {
-      assignments: admin.appAssignments,
-      entitlements: admin.organizations.subscriptions,
+      list: admin.appAssignments.list,
       assign: admin.appAssignments.create,
-      unassign: admin.appAssignments.delete,
+      unassign: admin.appAssignments.revoke,
     },
     modules: admin.modules,
     features: admin.organizationFeatures,

@@ -142,7 +142,8 @@ describe('platform surface completeness (regression guard for #255/#256)', () =>
   })
 
   it('separates resource, workspace, and operator control planes on console', () => {
-    const { $876, workspace, platform } = createConsoleSurfaces(consoleOptions())
+    const { $876, workspace, platform } =
+      createConsoleSurfaces(consoleOptions())
 
     for (const controlOnly of [
       'provisioning',
@@ -337,10 +338,8 @@ describe('facade delegation parity', () => {
     const listSessions = vi.fn()
     const revokeSession = vi.fn()
     const { createCoreSurface } = await import('./composers/base.ts')
-    const {
-      createWorkspaceControlPlane,
-      createPlatformControlPlane,
-    } = await import('./composers/control-planes.ts')
+    const { createWorkspaceControlPlane, createPlatformControlPlane } =
+      await import('./composers/control-planes.ts')
     const platformClient: any = {
       auth: { getSession, me: { listSessions, revokeSession } },
       oauth: {},
@@ -372,7 +371,7 @@ describe('facade delegation parity', () => {
       revokeForUser: vi.fn(),
     }
     const assignmentCreate = vi.fn()
-    const assignmentDelete = vi.fn()
+    const assignmentRevoke = vi.fn()
     const apiKeyCreate = vi.fn()
     const admin: any = {
       auditEvents: {},
@@ -402,8 +401,9 @@ describe('facade delegation parity', () => {
       roles: {},
       organizationMembers: {},
       appAssignments: {
+        list: vi.fn(),
         create: assignmentCreate,
-        delete: assignmentDelete,
+        revoke: assignmentRevoke,
       },
       invites: {},
     }
@@ -429,14 +429,17 @@ describe('facade delegation parity', () => {
     expect(has(core, 'apiKeys')).toBe(false)
 
     await workspace.provisioning.published.retrieve('application', 'app_123')
+    expect(retrievePublished).toHaveBeenCalledTimes(1)
     expect(retrievePublished).toHaveBeenCalledWith('application', 'app_123')
 
     await workspace.provisioning.catalog.retrieve('application', 'app_123')
+    expect(retrieveCatalog).toHaveBeenCalledTimes(1)
     expect(retrieveCatalog).toHaveBeenCalledWith('application', 'app_123')
 
     await workspace.provisioning.draft.update('application', 'app_123', {
       foo: 'bar',
     } as any)
+    expect(replaceDraft).toHaveBeenCalledTimes(1)
     expect(replaceDraft).toHaveBeenCalledWith('application', 'app_123', {
       foo: 'bar',
     })
@@ -445,6 +448,7 @@ describe('facade delegation parity', () => {
       organizationId: 'org_1',
       appId: 'app_1',
     } as any)
+    expect(claimApplication).toHaveBeenCalledTimes(1)
     expect(claimApplication).toHaveBeenCalledWith({
       organizationId: 'org_1',
       appId: 'app_1',
@@ -453,12 +457,13 @@ describe('facade delegation parity', () => {
     await workspace.provisioning.runs.complete('run_123', {
       status: 'succeeded',
     } as any)
+    expect(completeApplication).toHaveBeenCalledTimes(1)
     expect(completeApplication).toHaveBeenCalledWith('run_123', {
       status: 'succeeded',
     })
 
     expect(workspace.apps.assign).toBe(assignmentCreate)
-    expect(workspace.apps.unassign).toBe(assignmentDelete)
+    expect(workspace.apps.unassign).toBe(assignmentRevoke)
     expect(platform.apiKeys.create).toBe(apiKeyCreate)
   })
 })
