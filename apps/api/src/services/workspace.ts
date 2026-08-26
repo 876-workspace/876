@@ -157,14 +157,17 @@ export const workspace = {
         return ensureAppReady(financeDeps(), {
           organizationId: params.organizationId,
           appId: params.appId,
-          expectedFinanceDependency: params.expected,
-          trigger: params.trigger,
+          ...(params.expected
+            ? { expectedFinanceDependency: params.expected }
+            : {}),
+          ...(params.trigger ? { trigger: params.trigger } : {}),
         })
       }
 
-      return ensureOrgAppsFinanceReady(params.organizationId, {
-        appIds: params.appIds,
-      })
+      return ensureOrgAppsFinanceReady(
+        params.organizationId,
+        params.appIds ? { appIds: params.appIds } : {}
+      )
     },
 
     reconcile(params: {
@@ -179,7 +182,7 @@ export const workspace = {
         appId: params.appId ?? null,
         limit: params.limit ?? null,
         startingAfter: params.startingAfter ?? null,
-        trigger: params.trigger,
+        ...(params.trigger ? { trigger: params.trigger } : {}),
       })
     },
 
