@@ -14,6 +14,7 @@ import { isAppHttpError } from '@/platform/errors'
 
 import {
   isWorkOsHttpError,
+  isWorkOsNotFound,
   normalizeWorkOsError,
   WorkOsClient,
   WorkOsHttpError,
@@ -182,15 +183,17 @@ describe('the auth request path', () => {
 })
 
 describe('the normalized request path', () => {
+  // The status is the shared error registry's, not the mapper's: a registered
+  // code cannot have its status overridden at a call site.
   it.each([
     ['email_address_conflict', 'auth/email-already-exists', 409],
-    ['email_verification_required', 'auth/email-not-verified', 401],
+    ['email_verification_required', 'auth/email-not-verified', 403],
     ['invalid_credentials', 'auth/invalid-credentials', 401],
     ['password_reset_required', 'auth/invalid-credentials', 401],
-    ['account_selection_required', 'auth/oauth-failed', 400],
-    ['organization_not_found', 'auth/oauth-failed', 404],
-    ['membership_not_found', 'auth/oauth-failed', 404],
-    ['user_not_found', 'auth/oauth-failed', 404],
+    ['account_selection_required', 'auth/oauth-failed', 401],
+    ['organization_not_found', 'auth/oauth-failed', 401],
+    ['membership_not_found', 'auth/oauth-failed', 401],
+    ['user_not_found', 'auth/oauth-failed', 401],
     ['user_creation_error', 'auth/registration-failed', 400],
     ['external_id_already_used', 'organization/provider-conflict', 409],
   ])('maps %s to %s', (workosCode, expectedCode, expectedStatus) => {
@@ -210,20 +213,51 @@ describe('the normalized request path', () => {
     ).toBe('auth/invalid-credentials')
   })
 
-  it('falls back to oauth-failed at the upstream status', () => {
+  it('falls back to oauth-failed for an unmapped upstream code', () => {
     const normalized = normalizeWorkOsError(
       new WorkOsHttpError(418, { code: 'something_new' })
     )
 
     expect(normalized.code).toBe('auth/oauth-failed')
-    expect(normalized.httpStatus).toBe(418)
+    expect(normalized.httpStatus).toBe(401)
   })
 
-  it('falls back to 502 when the status is unusable', () => {
-    // An unrecognised provider failure is a bad gateway: the fault is upstream.
-    expect(normalizeWorkOsError(new WorkOsHttpError(0, {})).httpStatus).toBe(
-      502
-    )
+  it('reports an unusable upstream status as the registered oauth failure', () => {
+    const normalized = normalizeWorkOsError(new WorkOsHttpError(0, {}))
+
+    expect(normalized.code).toBe('auth/oauth-failed')
+    expect(normalized.httpStatus).toBe(401)
+  })
+
+  // The client-facing code and status are deliberately vague for every "not
+  // found", so recovery reads the server-only upstream cause instead.
+  it.each(['user_not_found', 'organization_not_found', 'membership_not_found'])(
+    'reports %s as an upstream not-found without disclosing it to the client',
+    (workosCode) => {
+      const normalized = normalizeWorkOsError(
+        new WorkOsHttpError(404, { code: workosCode })
+      )
+
+      expect(isWorkOsNotFound(normalized)).toBe(true)
+      expect(normalized.toClientError()).toEqual({
+        code: 'auth/oauth-failed',
+        message: 'Authentication provider error.',
+      })
+    }
+  )
+
+  it('does not report a mapped non-not-found failure as an upstream not-found', () => {
+    expect(
+      isWorkOsNotFound(
+        normalizeWorkOsError(
+          new WorkOsHttpError(400, { code: 'invalid_credentials' })
+        )
+      )
+    ).toBe(false)
+  })
+
+  it('does not report an error with no WorkOS cause as an upstream not-found', () => {
+    expect(isWorkOsNotFound(new Error('boom'))).toBe(false)
   })
 
   it('never leaks the upstream message to the client', () => {

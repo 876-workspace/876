@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AppHttpError } from '@/http/errors'
 import type { AuthEvent, AuthSession, ProviderUser } from '@/providers/auth'
+import {
+  WorkOsHttpError,
+  normalizeWorkOsError,
+} from '@/providers/workos/errors'
 import type { Mocked } from '@/test/mocked'
 
 import {
@@ -1235,14 +1239,13 @@ describe('AuthService.sendRecovery', () => {
     ).resolves.toBe('alejandra@example.com')
   })
 
-  it('swallows the unknown-user 404 so accounts cannot be enumerated', async () => {
+  // Built through the real normalizer, not hand-assembled: the guard reads the
+  // upstream WorkOS cause, and a fixture that fakes only the code and status
+  // asserts a shape the provider can no longer produce.
+  it('swallows the unknown-user failure so accounts cannot be enumerated', async () => {
     const { service, provider } = makeHarness()
     provider.sendRecovery.mockRejectedValue(
-      new AppHttpError({
-        code: 'auth/oauth-failed',
-        message: 'not found',
-        httpStatus: 404,
-      })
+      normalizeWorkOsError(new WorkOsHttpError(404, { code: 'user_not_found' }))
     )
 
     await expect(
@@ -1250,12 +1253,23 @@ describe('AuthService.sendRecovery', () => {
     ).resolves.toBe('ghost@example.com')
   })
 
-  it('does not swallow the same code at a different status', async () => {
+  it('does not swallow another failure carrying the same client-facing code', async () => {
+    const { service, provider } = makeHarness()
+    const failure = normalizeWorkOsError(
+      new WorkOsHttpError(400, { code: 'account_selection_required' })
+    )
+    provider.sendRecovery.mockRejectedValue(failure)
+
+    await expect(
+      service.sendRecovery({ email: 'alejandra@example.com' })
+    ).rejects.toBe(failure)
+  })
+
+  it('does not swallow a failure with no upstream WorkOS cause', async () => {
     const { service, provider } = makeHarness()
     const failure = new AppHttpError({
       code: 'auth/oauth-failed',
       message: 'bad request',
-      httpStatus: 400,
     })
     provider.sendRecovery.mockRejectedValue(failure)
 

@@ -6,6 +6,7 @@ import { getLogger } from '@/platform/logger'
 import { OWNER_ROLE_NAME } from '@/platform/permissions'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import { getAuthProvider } from '@/providers/workos/adapter'
+import { isWorkOsNotFound } from '@/providers/workos/errors'
 import {
   isAuthEvent,
   type AuthEvent,
@@ -1118,12 +1119,12 @@ export class AuthService {
     } catch (error) {
       // Swallow the unknown-user case so the response cannot be used to
       // enumerate which addresses have accounts.
-      if (
-        error instanceof AppHttpError &&
-        error.code === 'auth/oauth-failed' &&
-        error.httpStatus === 404
-      )
-        return email
+      //
+      // Read the upstream WorkOS failure, not the HTTP status: the shared error
+      // registry pins `auth/oauth-failed` at 401, so the 404 this once matched
+      // can no longer reach here and every unknown address was surfacing as an
+      // error — which is the disclosure this guard exists to prevent.
+      if (isWorkOsNotFound(error)) return email
       throw error
     }
     return email
