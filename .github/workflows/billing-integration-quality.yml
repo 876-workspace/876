@@ -10,14 +10,8 @@ on:
       - 'apps/api/src/services/__tests__/finance-provisioning*'
       - 'apps/api/src/workers/finance-provisioning*'
       - 'apps/api/src/workers/__tests__/finance-provisioning*'
-      - 'apps/api/wrangler.jsonc'
       - 'apps/billing-api/src/modules/finance-connections/**'
-      - 'apps/billing/wrangler.jsonc'
       - 'apps/invoice/src/lib/876/**'
-      - 'apps/invoice/wrangler.jsonc'
-      - 'apps/couriers/wrangler.jsonc'
-      - 'apps/console/wrangler.jsonc'
-      - 'scripts/check-billing-api-targets.mjs'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/billing-integration-quality.yml'
@@ -45,9 +39,6 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-
-      - name: Verify production Billing targets agree
-        run: node scripts/check-billing-api-targets.mjs
 
       - name: Typecheck shared server contracts
         run: pnpm --filter @876/server typecheck

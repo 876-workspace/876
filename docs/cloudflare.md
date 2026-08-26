@@ -1,3 +1,9 @@
+> **PARKED (2026-08-26).** 876 deploys to Vercel. Every Cloudflare config file,
+> deploy workflow, and preflight script described below now lives under
+> `parked/cloudflare/` and is not built, installed, or run. This document is kept
+> as the record of how the Cloudflare deployment worked, and as the restore
+> instructions if it is ever revived — see `parked/cloudflare/README.md`.
+
 # Cloudflare Deployment Guide
 
 Deploy the **876 monorepo** on [Cloudflare](https://developers.cloudflare.com/) as
