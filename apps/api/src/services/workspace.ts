@@ -1,51 +1,37 @@
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
-  enqueueCustomerArchiveForOrganization,
-  enqueueCustomerEnsureForOrganization,
-  type OrganizationRow as CustomerOrganizationRow,
-} from './billing-customer-sync'
-import { createBillingCustomerSyncRepository } from './billing-customer-sync.repository'
-import { applyBillingWorkspaceLifecycle } from './billing-workspace-lifecycle'
-import {
-  reconcileFinanceConnections,
-  type ProvisioningRunTrigger,
-} from './finance-provisioning'
-import { ensureAppReady } from './finance-provisioning-readiness'
-import { createFinanceProvisioningRepository } from './finance-provisioning.repository'
-import {
   assignMemberApps,
-  ensureDefaultContact,
-  ensureOrgAppSubscriptions,
   ensureOrgAppsFinanceReady,
   linkMembershipRole,
   provisionOrganization,
-  resolveMemberPermissions,
-  seedDefaultRoles,
 } from './provisioning'
-
-function customerDeps() {
-  return { repository: createBillingCustomerSyncRepository() }
-}
-
-function financeDeps() {
-  return { repository: createFinanceProvisioningRepository() }
-}
 
 /**
  * Internal organization-workspace control plane.
  *
  * `$876` remains the resource/data facade (`$876.invoices.create()`,
  * `$876.customers.list()`, ...). This object owns the orchestration needed to
- * prepare and govern the organization environment itself: app readiness,
- * default roles, member assignments, registry synchronization, and finance
- * workspace lifecycle.
+ * prepare and govern the organization environment itself.
  *
  * The descriptive implementation helpers stay in their owning modules. Callers
  * should prefer this facade so they read in terms of intent rather than outbox,
  * reconciliation, or repository mechanics.
+ *
+ * Only add a method here when a call site actually migrates onto it. A wrapper
+ * with no caller is a second permanent path to the same operation, which is
+ * exactly what `workspace-control-plane.md` forbids.
  */
 export const workspace = {
+  /**
+   * Prepare an organization's durable workspace: default roles, app
+   * entitlements, and relationship-registry synchronization.
+   *
+   * `finance: 'defer'` skips the shared finance readiness barrier; the caller
+   * must then run {@link workspace.finance.ensure} once the durable owner
+   * membership exists, so a finance outage cannot strand an org whose owner
+   * has no membership to route back to.
+   */
   async setup(
     organizationId: string,
     options: {
@@ -54,20 +40,18 @@ export const workspace = {
       now?: number
     } = {}
   ) {
-    return provisionOrganization(organizationId, options.now ?? nowUnixSeconds(), {
-      sourceAppId: options.sourceAppId ?? null,
-      deferFinanceReadiness: options.finance === 'defer',
-    })
+    return provisionOrganization(
+      organizationId,
+      options.now ?? nowUnixSeconds(),
+      {
+        sourceAppId: options.sourceAppId ?? null,
+        deferFinanceReadiness: options.finance === 'defer',
+      }
+    )
   },
 
   apps: {
-    ensure(
-      organizationId: string,
-      options: { sourceAppId?: string | null } = {}
-    ) {
-      return ensureOrgAppSubscriptions(organizationId, options)
-    },
-
+    /** Grant a member their organization's app assignments. */
     assign(params: {
       organizationId: string
       userId: string
@@ -75,21 +59,18 @@ export const workspace = {
       assignedBy?: string | null
       now?: number
     }) {
+      // Pass through rather than defaulting `sourceAppId`/`assignedBy` here;
+      // `assignMemberApps` already owns those defaults, and duplicating them
+      // gives the same value two definition sites.
       return assignMemberApps({
-        organizationId: params.organizationId,
-        userId: params.userId,
-        sourceAppId: params.sourceAppId ?? null,
-        assignedBy: params.assignedBy ?? null,
+        ...params,
         now: params.now ?? nowUnixSeconds(),
       })
     },
   },
 
   roles: {
-    ensure(organizationId: string, now = nowUnixSeconds()) {
-      return seedDefaultRoles(organizationId, now)
-    },
-
+    /** Point a membership at its organization's role row for `role`. */
     link(
       membership: {
         id: string
@@ -101,109 +82,15 @@ export const workspace = {
     ) {
       return linkMembershipRole(membership, now)
     },
-
-    permissions(membership: {
-      roleId: string | null
-      organizationId: string
-      role: string
-    }) {
-      return resolveMemberPermissions(membership)
-    },
-  },
-
-  contacts: {
-    ensure(
-      organizationId: string,
-      user: {
-        id: string
-        firstName: string
-        lastName: string | null
-        email: string | null
-        phone: string | null
-      },
-      now = nowUnixSeconds()
-    ) {
-      return ensureDefaultContact(organizationId, user, now)
-    },
-  },
-
-  customers: {
-    ensure(organization: CustomerOrganizationRow, now = nowUnixSeconds()) {
-      return enqueueCustomerEnsureForOrganization(
-        customerDeps(),
-        organization,
-        now
-      )
-    },
-
-    archive(organization: CustomerOrganizationRow, now = nowUnixSeconds()) {
-      return enqueueCustomerArchiveForOrganization(
-        customerDeps(),
-        organization,
-        now
-      )
-    },
   },
 
   finance: {
-    async ensure(params: {
-      organizationId: string
-      appId?: string
-      appIds?: string[]
-      expected?: 'embedded'
-      trigger?: ProvisioningRunTrigger
-    }) {
-      if (params.appId) {
-        return ensureAppReady(financeDeps(), {
-          organizationId: params.organizationId,
-          appId: params.appId,
-          ...(params.expected
-            ? { expectedFinanceDependency: params.expected }
-            : {}),
-          ...(params.trigger ? { trigger: params.trigger } : {}),
-        })
-      }
-
+    /** Run the shared finance readiness barrier for an org's apps. */
+    ensure(params: { organizationId: string; appIds?: string[] }) {
       return ensureOrgAppsFinanceReady(
         params.organizationId,
         params.appIds ? { appIds: params.appIds } : {}
       )
-    },
-
-    reconcile(params: {
-      organizationId?: string | null
-      appId?: string | null
-      limit?: number | null
-      startingAfter?: string | null
-      trigger?: ProvisioningRunTrigger
-    }) {
-      return reconcileFinanceConnections(financeDeps(), {
-        organizationId: params.organizationId ?? null,
-        appId: params.appId ?? null,
-        limit: params.limit ?? null,
-        startingAfter: params.startingAfter ?? null,
-        ...(params.trigger ? { trigger: params.trigger } : {}),
-      })
-    },
-
-    archive(params: {
-      organizationId: string
-      deletedBy?: string | null
-      reason?: string | null
-    }) {
-      return applyBillingWorkspaceLifecycle({
-        organizationId: params.organizationId,
-        action: 'archive',
-        deletedBy: params.deletedBy ?? null,
-        reason: params.reason ?? null,
-      })
-    },
-
-    restore(organizationId: string) {
-      return applyBillingWorkspaceLifecycle({
-        organizationId,
-        action: 'restore',
-      })
     },
   },
 } as const
