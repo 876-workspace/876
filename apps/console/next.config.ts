@@ -4,7 +4,6 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 import { devResourceHosts } from '../../scripts/dev-preview.mjs'
-import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -31,7 +30,6 @@ const nextConfig: NextConfig = {
   // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
   // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  webpack: externalizePrismaWasm,
   // Trace from the monorepo root so the include globs below can reach the
   // pnpm store. This matches Next's own monorepo auto-inference, so it does
   // not change the traced output layout OpenNext already consumes.
