@@ -107,7 +107,6 @@ export function CustomersTable({ customers }: Props) {
         columns={columns}
         data={customers}
         emptyState={emptyState}
-        className="text-[0.8125rem]"
         onRowClick={(customer) => router.push(`/customers/${customer.profileId}`)}
       />
     </div>
