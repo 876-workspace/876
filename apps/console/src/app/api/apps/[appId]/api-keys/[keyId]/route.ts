@@ -1,7 +1,7 @@
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { $876 } from '@/lib/876'
+import { platform } from '@/lib/876'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'
@@ -21,7 +21,7 @@ export async function PATCH(
     name?: string | null
   } | null
 
-  const { data, error } = await $876.apiKeys.update(appId, keyId, {
+  const { data, error } = await platform.apiKeys.update(appId, keyId, {
     name: body?.name ?? null,
   })
   if (error || !data) {
@@ -42,7 +42,7 @@ export async function DELETE(
   if (response) return response
 
   const { appId, keyId } = await params
-  const { data, error } = await $876.apiKeys.delete(appId, keyId)
+  const { data, error } = await platform.apiKeys.delete(appId, keyId)
   if (error || !data) {
     return apiJson(
       { error: error?.message ?? 'Failed to delete API key.' },
