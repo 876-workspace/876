@@ -33,9 +33,9 @@ export default async function CustomersPage() {
       {customers.length === 0 ? (
         <Empty>
           <EmptyHeader>
-            <EmptyTitle>No CRM customers yet</EmptyTitle>
+            <EmptyTitle>No customers yet</EmptyTitle>
             <EmptyDescription>
-              Add a customer to the shared 876 customer registry and enroll the relationship into CRM.
+              Add your first customer to get started.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
