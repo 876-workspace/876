@@ -4,7 +4,6 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 import { devResourceHosts } from '../../scripts/dev-preview.mjs'
-import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
 
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
@@ -31,27 +30,9 @@ const nextConfig: NextConfig = {
   // @opennextjs/cloudflare (unlike cacheComponents — see navigation-performance.md
   // Rule 5 / OpenNext #1225). Requires babel-plugin-react-compiler.
   reactCompiler: true,
-  webpack: externalizePrismaWasm,
-  // Trace from the monorepo root so the include globs below can reach the
-  // pnpm store. This matches Next's own monorepo auto-inference, so it does
-  // not change the traced output layout OpenNext already consumes.
+  // Trace from the monorepo root, matching Next's own monorepo inference, so
+  // the function bundle can reach the pnpm store.
   outputFileTracingRoot: path.join(__dirname, '../../'),
-  // `pg`'s Prisma adapter opens its socket through `pg-cloudflare`, but
-  // `pg/lib/stream.js` hides that `require('pg-cloudflare')` behind a runtime
-  // `isCloudflareRuntime()` check. @vercel/nft cannot statically resolve the
-  // dynamic require, so it copies only `pg-cloudflare/package.json` and the
-  // `default` `dist/empty.js` (which exports `CloudflareSocket === undefined`).
-  // On the Worker the real `workerd`-condition files are then missing, so
-  // `new CloudflareSocket()` throws `TypeError: … is not a constructor` and
-  // every DB-backed page fails with RSC error #441. Force the real socket
-  // (dist + esm) into the trace so OpenNext's workerd-condition esbuild pass
-  // resolves it. See OpenNext #1214 and node-postgres #3493.
-  outputFileTracingIncludes: {
-    '**/*': [
-      'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/dist/**',
-      'node_modules/.pnpm/pg-cloudflare@*/node_modules/pg-cloudflare/esm/**',
-    ],
-  },
   allowedDevOrigins: ['127.0.0.1', ...previewDevOrigins],
   async headers() {
     return [

@@ -17,23 +17,17 @@
 // its own sibling `*.prisma` file in this folder. The schema folder is wired in
 // `prisma.config.ts` (`schema: "prisma/schema"`).
 
-// runtime = "workerd" makes the generated client import Prisma's query-compiler
-// WASM as a module. The default (nodejs) compiles it from bytes at runtime,
-// which Cloudflare Workers refuses: "WebAssembly.Module(): Wasm code generation
-// disallowed by embedder".
+// runtime = "nodejs" loads the query compiler from a base64 `.mjs` module, so
+// Vercel's output tracer follows a plain import and ships the compiler inside
+// the function. The "workerd" runtime instead imports
+// `./query_compiler_fast_bg.wasm?module`, which the tracer cannot follow: the
+// `.wasm` was emitted to `.next/server/static/wasm/` and left out of the
+// lambda, so every query threw `ENOENT … .wasm` and each DB-backed page failed
+// with React error #441. It is also the runtime `prisma/seed.ts` and
+// `prisma/backfill.ts` need, since tsx cannot resolve a `?module` import.
 generator client {
   provider = "prisma-client"
   output   = "../../src/lib/db/generated/prisma"
-  runtime  = "workerd"
-}
-
-// Node-targeted client for prisma/seed.ts and prisma/backfill.ts. Those run
-// under tsx, which cannot resolve the workerd client's `?module` WASM import.
-// Generated on demand and gitignored — the workerd client above is the one
-// the app imports and the source of the exported model types.
-generator nodeClient {
-  provider = "prisma-client"
-  output   = "../../src/lib/db/generated/prisma-node"
   runtime  = "nodejs"
 }
 

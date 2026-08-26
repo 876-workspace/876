@@ -2,14 +2,12 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 
 import { devResourceHosts } from '../../scripts/dev-preview.mjs'
-import { externalizePrismaWasm } from '../../scripts/prisma-wasm-external.mjs'
 
 const previewDevOrigins = devResourceHosts()
 
 const nextConfig: NextConfig = {
   env: { NEXT_TELEMETRY_DISABLED: '1' },
   productionBrowserSourceMaps: false,
-  webpack: externalizePrismaWasm,
   allowedDevOrigins: previewDevOrigins,
 }
 

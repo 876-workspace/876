@@ -20,7 +20,7 @@ import { config } from 'dotenv'
 
 import { PrismaPg } from '@prisma/adapter-pg'
 
-import { PrismaClient } from '../src/lib/db/generated/prisma-node/client'
+import { PrismaClient } from '../src/lib/db/generated/prisma/client'
 import { SYSTEM_ROLE_DEFINITIONS } from '../src/lib/permissions'
 
 config({ path: ['.env.development.local', '.env'] })
