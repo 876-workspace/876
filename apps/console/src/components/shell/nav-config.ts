@@ -11,11 +11,6 @@ import {
 } from '@876/ui/icons'
 import type { IconComponent } from '@876/ui/icons'
 
-import {
-  CONSOLE_SETTINGS_OPTIONS,
-  type ConsoleSettingsOption,
-} from '@/app/(app)/settings/_lib/settings-options'
-
 /** A single child link rendered inside a dropdown item. */
 export type NavChild = {
   title: string
@@ -115,10 +110,3 @@ export const navConfig: NavGroup[] = [
     ],
   },
 ]
-
-/**
- * Settings options used on the /settings overview page and in global search.
- * Re-exported from the single source of truth at @/app/(app)/settings/_lib/settings-options.
- */
-export const SETTINGS_SECTIONS: ConsoleSettingsOption[] =
-  CONSOLE_SETTINGS_OPTIONS
