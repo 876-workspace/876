@@ -1,11 +1,16 @@
 import { getLogger } from '@/platform/logger'
+import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
+  countSetups,
+  createSetup,
   findAppBySlug,
   findPublished,
   findRevision,
+  findSetupByKey,
   publishDraft,
+  renameManifestTargetKey,
   replaceDraft,
 } from './provisioning.repository'
 
@@ -73,6 +78,20 @@ function resourceDef(
 ): ResourceDef {
   return { resource_type: resourceType, key, position, properties }
 }
+
+/**
+ * The platform's day-zero setup. Its finance manifest lives at
+ * `finance/jamaica`; further setups (United States, other Caribbean markets)
+ * are created in Console by copying this one and editing the values.
+ */
+export const DEFAULT_PROVISIONING_SETUP = {
+  key: 'jamaica',
+  name: 'Jamaica',
+  description:
+    'Jamaican dollar, Tax Administration Jamaica, and the standard GCT rate.',
+  countryCode: 'JM',
+  currencyCode: 'JMD',
+} as const
 
 export const FINANCE_BOOTSTRAP_RESOURCES: ResourceDef[] = [
   resourceDef('workspace', 'default', 0, [
@@ -348,6 +367,47 @@ async function seedStaticTarget(params: {
   return true
 }
 
+/**
+ * Ensures the Jamaica setup exists and owns the finance manifest.
+ *
+ * Installations that predate provisioning setups keep their manifest content:
+ * `finance/shared` is re-keyed rather than replaced, so the currencies, tax
+ * authority, and GCT rate an operator already edited survive.
+ */
+async function seedDefaultSetup(): Promise<void> {
+  const now = BigInt(nowUnixSeconds())
+  const existing = await findSetupByKey(DEFAULT_PROVISIONING_SETUP.key)
+  if (!existing) {
+    const isFirst = (await countSetups()) === 0
+    await createSetup({
+      id: generateId('provisioningSetup'),
+      key: DEFAULT_PROVISIONING_SETUP.key,
+      name: DEFAULT_PROVISIONING_SETUP.name,
+      description: DEFAULT_PROVISIONING_SETUP.description,
+      countryCode: DEFAULT_PROVISIONING_SETUP.countryCode,
+      currencyCode: DEFAULT_PROVISIONING_SETUP.currencyCode,
+      isDefault: isFirst,
+      now,
+    })
+    log.info(
+      { setup_key: DEFAULT_PROVISIONING_SETUP.key, is_default: isFirst },
+      'provisioning.seed.setup_created'
+    )
+  }
+
+  const renamed = await renameManifestTargetKey(
+    'finance',
+    'shared',
+    DEFAULT_PROVISIONING_SETUP.key,
+    now
+  )
+  if (renamed)
+    log.info(
+      { setup_key: DEFAULT_PROVISIONING_SETUP.key },
+      'provisioning.seed.finance_manifest_rekeyed'
+    )
+}
+
 async function seedApplication(
   definition: PlatformAppProvisioningDef
 ): Promise<boolean> {
@@ -459,9 +519,11 @@ export async function seedFirstPartyProvisioningManifests(): Promise<Provisionin
   if (orgResult) published += 1
   else skipped += 1
 
+  await seedDefaultSetup()
+
   const financeResult = await seedStaticTarget({
     targetType: 'finance',
-    targetKey: 'shared',
+    targetKey: DEFAULT_PROVISIONING_SETUP.key,
     resources: FINANCE_BOOTSTRAP_RESOURCES,
     steps: FINANCE_BOOTSTRAP_STEPS,
   })
