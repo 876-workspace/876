@@ -1,0 +1,39 @@
+'use client'
+
+import type {
+  CrmRequest,
+  CrmRequestCreateInput,
+  CrmRequestUpdateInput,
+} from '@876/client'
+
+import { request } from './request'
+
+export type RequestCreateInput = Omit<CrmRequestCreateInput, 'createdBy'>
+export type RequestUpdateInput = CrmRequestUpdateInput
+
+export const requests = {
+  create(params: RequestCreateInput) {
+    return request<CrmRequest>('/api/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  update(id: string, params: RequestUpdateInput) {
+    return request<CrmRequest>(`/api/requests/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  delete(id: string, reason?: string) {
+    return request<{ object: 'request'; id: string; deleted: true }>(
+      `/api/requests/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reason: reason ?? null }),
+      }
+    )
+  },
+}

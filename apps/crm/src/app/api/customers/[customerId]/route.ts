@@ -1,46 +1,58 @@
 import type { NextRequest } from 'next/server'
 
+import { $876 } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
-import { crmApi } from '@/lib/crm-api'
 
 type Context = { params: Promise<{ customerId: string }> }
 
-async function forward(response: Response) {
-  const body = await response.text()
-  return new Response(body, {
-    status: response.status,
-    headers: { 'content-type': response.headers.get('content-type') ?? 'application/json' },
-  })
-}
-
-function path(orgId: string, customerId: string) {
-  return `/v1/organizations/${encodeURIComponent(orgId)}/customers/${encodeURIComponent(customerId)}`
+function statusFor(code: string | undefined) {
+  return code === 'crm/customer-not-found' ? 404 : 400
 }
 
 export async function GET(_request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
-  if (!context) return Response.json({ error: 'Unauthorized.' }, { status: 401 })
+  if (!context)
+    return Response.json(
+      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      { status: 401 }
+    )
+
   const { customerId } = await route.params
-  return forward(await crmApi(path(context.orgId, customerId)))
+  const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
+  return Response.json(result, { status: result.error ? statusFor(result.error.code) : 200 })
 }
 
 export async function PATCH(request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
-  if (!context) return Response.json({ error: 'Unauthorized.' }, { status: 401 })
+  if (!context)
+    return Response.json(
+      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      { status: 401 }
+    )
+
   const { customerId } = await route.params
-  const body = await request.text()
-  return forward(await crmApi(path(context.orgId, customerId), { method: 'PATCH', body }))
+  const input = await request.json().catch(() => null)
+  const result = await $876.customerProfiles.update(
+    context.orgId,
+    customerId,
+    input as never
+  )
+  return Response.json(result, { status: result.error ? statusFor(result.error.code) : 200 })
 }
 
 export async function DELETE(request: NextRequest, route: Context) {
   const context = await getCrmApiContext()
-  if (!context) return Response.json({ error: 'Unauthorized.' }, { status: 401 })
+  if (!context)
+    return Response.json(
+      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      { status: 401 }
+    )
+
   const { customerId } = await route.params
-  const input = await request.json().catch(() => ({})) as { reason?: string | null }
-  return forward(
-    await crmApi(path(context.orgId, customerId), {
-      method: 'DELETE',
-      body: JSON.stringify({ deletedBy: context.userId, reason: input.reason ?? null }),
-    })
-  )
+  const input = (await request.json().catch(() => ({}))) as { reason?: string | null }
+  const result = await $876.customerProfiles.delete(context.orgId, customerId, {
+    deletedBy: context.userId,
+    reason: input.reason ?? null,
+  })
+  return Response.json(result, { status: result.error ? statusFor(result.error.code) : 200 })
 }

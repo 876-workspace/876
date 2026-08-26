@@ -17,21 +17,19 @@ function requireCustomerName(
     .join(' ')
   const company = value.companyName?.trim() ?? ''
 
-  if (value.customerKind === 'INDIVIDUAL' && !person) {
+  if (value.customerKind === 'INDIVIDUAL' && !person)
     ctx.addIssue({
       code: 'custom',
       path: ['firstName'],
       message: 'Enter the customer name.',
     })
-  }
 
-  if (value.customerKind === 'BUSINESS' && !company) {
+  if (value.customerKind === 'BUSINESS' && !company)
     ctx.addIssue({
       code: 'custom',
       path: ['companyName'],
       message: 'Enter the company name.',
     })
-  }
 }
 
 export const organizationParamsSchema = z.object({
@@ -68,6 +66,3 @@ export const deleteCustomerBodySchema = z.object({
   deletedBy: z.string().min(1),
   reason: z.string().trim().max(300).nullable().optional(),
 })
-
-export type CreateCustomerInput = z.infer<typeof createCustomerBodySchema>
-export type UpdateCustomerInput = z.infer<typeof updateCustomerBodySchema>

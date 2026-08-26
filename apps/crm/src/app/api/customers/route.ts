@@ -1,36 +1,46 @@
 import type { NextRequest } from 'next/server'
 
+import { $876 } from '@/lib/876'
 import { getCrmApiContext } from '@/lib/auth/api-context'
-import { crmApi } from '@/lib/crm-api'
-
-async function forward(response: Response) {
-  const body = await response.text()
-  return new Response(body, {
-    status: response.status,
-    headers: { 'content-type': response.headers.get('content-type') ?? 'application/json' },
-  })
-}
 
 export async function GET() {
   const context = await getCrmApiContext()
-  if (!context) return Response.json({ error: 'Unauthorized.' }, { status: 401 })
+  if (!context)
+    return Response.json(
+      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      { status: 401 }
+    )
 
-  return forward(await crmApi(`/v1/organizations/${encodeURIComponent(context.orgId)}/customers`))
+  const result = await $876.customerProfiles.list(context.orgId)
+  return Response.json(result, { status: result.error ? 502 : 200 })
 }
 
 export async function POST(request: NextRequest) {
   const context = await getCrmApiContext()
-  if (!context) return Response.json({ error: 'Unauthorized.' }, { status: 401 })
+  if (!context)
+    return Response.json(
+      { data: null, error: { code: 'crm/unauthorized', message: 'Unauthorized.' } },
+      { status: 401 }
+    )
 
   const input = await request.json().catch(() => null)
   const idempotencyKey = request.headers.get('x-idempotency-key')?.trim()
   if (!idempotencyKey)
-    return Response.json({ error: 'Missing idempotency key.' }, { status: 400 })
+    return Response.json(
+      {
+        data: null,
+        error: {
+          code: 'crm/idempotency-key-required',
+          message: 'Missing idempotency key.',
+        },
+      },
+      { status: 400 }
+    )
 
-  return forward(
-    await crmApi(`/v1/organizations/${encodeURIComponent(context.orgId)}/customers`, {
-      method: 'POST',
-      body: JSON.stringify({ ...input, idempotencyKey }),
-    })
-  )
+  const result = await $876.customerProfiles.create(context.orgId, {
+    ...(input as Record<string, unknown>),
+    idempotencyKey,
+  } as never)
+
+  return Response.json(result, { status: result.error ? 400 : 201 })
 }

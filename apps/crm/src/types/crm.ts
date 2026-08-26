@@ -1,104 +1,16 @@
-export type RequestStatus = 'open' | 'in_progress' | 'resolved' | 'closed'
-export type RequestPriority = 'low' | 'normal' | 'high'
-export type CrmCustomerProfileStatus = 'ACTIVE' | 'INACTIVE'
-
-export type RegistryCustomer = {
-  id: string
-  customerType: 'EXTERNAL' | 'CORE_USER' | 'CORE_ORGANIZATION'
-  customerKind: 'INDIVIDUAL' | 'BUSINESS'
-  name: string
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-}
-
-export type CrmCustomerProfile = {
-  id: string
-  tenantId: string
-  billingCustomerId: string
-  ownerId: string | null
-  status: CrmCustomerProfileStatus
-  createdAt: string
-  updatedAt: string
-  deletedAt: string | null
-  deletedBy: string | null
-  deletionReason: string | null
-}
-
-export type CrmCustomer = {
-  profile: CrmCustomerProfile
-  customer: RegistryCustomer | null
-}
-
-export type CrmCustomerCreateInput = {
-  idempotencyKey: string
-  customerKind: 'INDIVIDUAL' | 'BUSINESS'
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  ownerId?: string | null
-}
-
-export type CrmCustomerUpdateInput = {
-  customerKind: 'INDIVIDUAL' | 'BUSINESS'
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  ownerId?: string | null
-  status?: CrmCustomerProfileStatus
-}
-
-export type CrmContact = {
-  id: string
-  tenantId: string
-  customerId: string
-  name: string
-  email: string | null
-  phone: string | null
-  userId: string | null
-  createdAt: number
-  updatedAt: number
-}
-
-export type CrmRequest = {
-  id: string
-  tenantId: string
-  customerId: string
-  contactId: string | null
-  title: string
-  description: string | null
-  status: RequestStatus
-  priority: RequestPriority
-  categoryId: string | null
-  assigneeId: string | null
-  createdBy: string
-  createdAt: number
-  updatedAt: number
-  closedAt: number | null
-}
-
-export type CrmRequestNote = {
-  id: string
-  tenantId: string
-  requestId: string
-  authorId: string
-  content: string
-  createdAt: number
-  updatedAt: number
-}
-
-export type CrmRequestCategory = {
-  id: string
-  tenantId: string
-  name: string
-  slug: string
-  active: boolean
-  createdAt: number
-  updatedAt: number
-}
+export type {
+  CrmCustomer,
+  CrmCustomerList,
+  CrmCustomerProfile,
+  CrmCustomerProfileStatus,
+  CrmCustomerCreateInput,
+  CrmCustomerUpdateInput,
+  CrmRequest,
+  CrmRequestList,
+  RequestStatus,
+  RequestPriority,
+  RequestCategory,
+  RequestSource,
+  CrmRequestCreateInput,
+  CrmRequestUpdateInput,
+} from '@876/client'

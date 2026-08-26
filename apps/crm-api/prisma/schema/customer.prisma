@@ -15,9 +15,11 @@ model CustomerProfile {
   deletedBy         String?               @map("deleted_by")
   deletionReason    String?               @map("deletion_reason")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requests Request[]
 
   @@unique([tenantId, billingCustomerId])
+  @@unique([tenantId, id])
   @@index([tenantId, status, createdAt])
   @@index([ownerId])
   @@map("crm_customer_profiles")

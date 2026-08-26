@@ -9,12 +9,17 @@ import {
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 
-import { listCustomers } from '@/lib/crm/customers'
+import { $876 } from '@/lib/876'
+import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 export const metadata = { title: 'Customers' }
 
 export default async function CustomersPage() {
-  const customers = await listCustomers()
+  const context = await requireCrmContext()
+  const result = await $876.customerProfiles.list(context.orgId)
+  if (result.error) throw new Error(result.error.message)
+
+  const customers = result.data.data
 
   return (
     <Page>

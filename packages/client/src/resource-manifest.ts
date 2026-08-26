@@ -20,7 +20,12 @@
  */
 
 export type ServiceOwner =
-  'core' | 'billing' | 'couriers' | 'storage' | 'widgets'
+  | 'core'
+  | 'billing'
+  | 'couriers'
+  | 'crm'
+  | 'storage'
+  | 'widgets'
 
 export interface ResourceOwnership {
   /** The service that is authoritative for this canonical noun. */
@@ -124,6 +129,16 @@ export const RESOURCE_MANIFEST = {
   warehouses: { owner: 'couriers', meaning: 'courier warehouses' },
   mailboxes: { owner: 'couriers', meaning: 'courier mailboxes' },
   addresses: { owner: 'couriers', meaning: 'courier addresses' },
+
+  // CRM (owned by @876/crm)
+  customerProfiles: {
+    owner: 'crm',
+    meaning: 'CRM enrollment/profile for a shared billing customer relationship',
+  },
+  requests: {
+    owner: 'crm',
+    meaning: 'CRM customer service and relationship requests',
+  },
 
   // Shared infrastructure
   files: { owner: 'storage', meaning: 'stored files' },

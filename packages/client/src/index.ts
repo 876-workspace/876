@@ -70,3 +70,19 @@ export function create876Client({
 
 export type Client876 = ReturnType<typeof create876Client>
 export type { PlatformClientOptions }
+export type {
+  Customer as CrmCustomer,
+  CustomerList as CrmCustomerList,
+  CustomerProfile as CrmCustomerProfile,
+  CustomerProfileStatus as CrmCustomerProfileStatus,
+  CreateCustomerInput as CrmCustomerCreateInput,
+  UpdateCustomerInput as CrmCustomerUpdateInput,
+  CrmRequest,
+  RequestList as CrmRequestList,
+  RequestStatus,
+  RequestPriority,
+  RequestCategory,
+  RequestSource,
+  CreateRequestInput as CrmRequestCreateInput,
+  UpdateRequestInput as CrmRequestUpdateInput,
+} from '@876/crm'

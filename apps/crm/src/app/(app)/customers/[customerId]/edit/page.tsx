@@ -2,18 +2,21 @@ import { notFound } from 'next/navigation'
 
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
-import { retrieveCustomer } from '@/lib/crm/customers'
+import { $876 } from '@/lib/876'
+import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 import { CustomerForm, type CustomerFormValues } from '../../_components/customer-form'
 
 type Props = { params: Promise<{ customerId: string }> }
 
 export default async function EditCustomerPage({ params }: Props) {
+  const context = await requireCrmContext()
   const { customerId } = await params
-  const result = await retrieveCustomer(customerId)
-  if (!result) notFound()
+  const result = await $876.customerProfiles.retrieve(context.orgId, customerId)
+  if (result.error?.code === 'crm/customer-not-found') notFound()
+  if (result.error) throw new Error(result.error.message)
 
-  const { profile, customer } = result
+  const { profile, customer } = result.data
   const initial: CustomerFormValues = {
     customerKind: customer?.customerKind ?? 'INDIVIDUAL',
     firstName: customer?.firstName ?? '',

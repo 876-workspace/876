@@ -9,6 +9,7 @@ import {
   createCouriersClient,
   type Couriers876Client,
 } from './composers/couriers'
+import { createCrmClient, type Crm876Client } from './composers/crm'
 import { createBillingClient, type Billing876Client } from './composers/billing'
 import { createInvoiceClient, type Invoice876Client } from './composers/invoice'
 import {
@@ -20,6 +21,7 @@ import type {
   BillingServerClientOptions,
   ConsoleServerClientOptions,
   CouriersServerClientOptions,
+  CrmServerClientOptions,
   PlatformServerClientOptions,
   ServerClientOptions,
 } from './internal/types'
@@ -34,6 +36,9 @@ export function create876ServerClient(
   options: CouriersServerClientOptions
 ): Couriers876Client
 export function create876ServerClient(
+  options: CrmServerClientOptions
+): Crm876Client
+export function create876ServerClient(
   options: BillingServerClientOptions
 ): Billing876Client
 export function create876ServerClient(
@@ -47,6 +52,7 @@ export function create876ServerClient(
 ):
   | Console876Client
   | Couriers876Client
+  | Crm876Client
   | Billing876Client
   | Invoice876Client
   | Platform876Client {
@@ -55,6 +61,8 @@ export function create876ServerClient(
       return createConsoleClient(options)
     case 'couriers':
       return createCouriersClient(options)
+    case 'crm':
+      return createCrmClient(options)
     case 'billing':
       return createBillingClient(options)
     case 'invoice':
@@ -83,15 +91,18 @@ function assertNever(options: never): never {
 export type ServerClient876 =
   | Console876Client
   | Couriers876Client
+  | Crm876Client
   | Billing876Client
   | Invoice876Client
   | Platform876Client
 
 export type { Invoice876Client } from './composers/invoice'
 export type { Couriers876Client } from './composers/couriers'
+export type { Crm876Client } from './composers/crm'
 export type { Admin876ClientOptions } from '@876/admin'
 export type { IntegrationClientOptions as BillingIntegrationClientOptions } from '@876/billing/integration'
 export type { AdminClientOptions as CouriersAdminClientOptions } from '@876/couriers/admin'
+export type { ClientOptions as CrmClientOptions } from '@876/crm'
 export type { CreateWidgetsClientOptions } from '@876/widgets/server'
 export type { StorageClientOptions } from '@876/storage'
 export type { ServerClientOptions } from './internal/types'

@@ -9,36 +9,61 @@ import {
   updateCustomerBodySchema,
 } from './customers.schemas.js'
 
+function notFound(res: Response) {
+  return res.status(404).json({
+    data: null,
+    error: { code: 'crm/customer-not-found', message: 'Customer not found.' },
+  })
+}
+
 export async function listCustomers(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
-  res.json({ data: await service.list(organizationId) })
+  const data = await service.list(organizationId)
+
+  res.json({
+    data: {
+      object: 'list',
+      data,
+      has_more: false,
+      total_count: data.length,
+      url: `/v1/organizations/${organizationId}/customers`,
+    },
+    error: null,
+  })
 }
 
 export async function retrieveCustomer(req: Request, res: Response) {
   const { organizationId, id } = customerParamsSchema.parse(req.params)
   const data = await service.retrieve(organizationId, id)
-  if (!data) return res.status(404).json({ error: 'Customer not found.', code: 'crm/customer-not-found' })
-  res.json({ data })
+  if (!data) return notFound(res)
+
+  res.json({ data, error: null })
 }
 
 export async function createCustomer(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const input = createCustomerBodySchema.parse(req.body)
-  res.status(201).json({ data: await service.create(organizationId, input) })
+
+  res.status(201).json({
+    data: await service.create(organizationId, input),
+    error: null,
+  })
 }
 
 export async function updateCustomer(req: Request, res: Response) {
   const { organizationId, id } = customerParamsSchema.parse(req.params)
   const input = updateCustomerBodySchema.parse(req.body)
   const data = await service.update(organizationId, id, input)
-  if (!data) return res.status(404).json({ error: 'Customer not found.', code: 'crm/customer-not-found' })
-  res.json({ data })
+  if (!data) return notFound(res)
+
+  res.json({ data, error: null })
 }
 
 export async function deleteCustomer(req: Request, res: Response) {
   const { organizationId, id } = customerParamsSchema.parse(req.params)
   const input = deleteCustomerBodySchema.parse(req.body)
   const data = await service.remove(organizationId, id, input)
-  if (!data) return res.status(404).json({ error: 'Customer not found.', code: 'crm/customer-not-found' })
-  res.json({ data })
+  if (!data) return notFound(res)
+
+  res.json({ data, error: null })
 }

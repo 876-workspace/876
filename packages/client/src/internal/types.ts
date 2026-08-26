@@ -19,6 +19,7 @@ import type {
   AdminClientOptions as CouriersAdminClientOptions,
   CouriersAdminClient,
 } from '@876/couriers/admin'
+import type { ClientOptions as CrmClientOptions, CrmClient } from '@876/crm'
 import type { SDK876Client } from '@876/sdk'
 import type { ClientOptions as PlatformClientOptions } from '@876/sdk'
 import type { StorageClientOptions, StorageClient } from '@876/storage'
@@ -27,7 +28,6 @@ import type {
   WidgetsClient,
 } from '@876/widgets/server'
 import type { WidgetsAdminClient } from '@876/widgets/server/admin'
-import type { AppId } from '../context/types'
 
 export interface BaseServiceClientOptions {
   platformAdmin?: Admin876ClientOptions
@@ -40,6 +40,7 @@ export interface BaseServiceClientOptions {
     client?: CouriersClientOptions
     admin?: CouriersAdminClientOptions
   }
+  crm?: CrmClientOptions
   storage?: StorageClientOptions
   widgets?: {
     member?: CreateWidgetsClientOptions
@@ -59,9 +60,7 @@ export interface ConsoleServerClientOptions extends BaseServerOptions {
       admin: BillingAdminClientOptions
       integration: BillingIntegrationClientOptions
     }
-    couriers: {
-      admin: CouriersAdminClientOptions
-    }
+    couriers: { admin: CouriersAdminClientOptions }
     storage: StorageClientOptions
     widgets: {
       member: CreateWidgetsClientOptions
@@ -82,9 +81,14 @@ export interface CouriersServerClientOptions extends BaseServerOptions {
       integration?: BillingIntegrationClientOptions
     }
     storage: StorageClientOptions
-    widgets: {
-      member: CreateWidgetsClientOptions
-    }
+    widgets: { member: CreateWidgetsClientOptions }
+  }
+}
+
+export interface CrmServerClientOptions extends BaseServerOptions {
+  app: 'crm'
+  services: BaseServiceClientOptions & {
+    crm: CrmClientOptions
   }
 }
 
@@ -95,18 +99,14 @@ export interface BillingServerClientOptions extends BaseServerOptions {
       tenant: BillingClientOptions
       admin?: BillingAdminClientOptions
     }
-    widgets: {
-      member: CreateWidgetsClientOptions
-    }
+    widgets: { member: CreateWidgetsClientOptions }
   }
 }
 
 export interface InvoiceServerClientOptions extends BaseServerOptions {
   app: 'invoice'
   services: BaseServiceClientOptions & {
-    billing: {
-      tenant: BillingClientOptions
-    }
+    billing: { tenant: BillingClientOptions }
   }
 }
 
@@ -118,6 +118,7 @@ export interface PlatformServerClientOptions extends BaseServerOptions {
 export type ServerClientOptions =
   | ConsoleServerClientOptions
   | CouriersServerClientOptions
+  | CrmServerClientOptions
   | BillingServerClientOptions
   | InvoiceServerClientOptions
   | PlatformServerClientOptions
@@ -134,6 +135,7 @@ export interface ServiceClients {
     client?: CouriersClient
     admin?: CouriersAdminClient
   }
+  crm?: CrmClient
   storage?: StorageClient
   widgets?: {
     member?: WidgetsClient

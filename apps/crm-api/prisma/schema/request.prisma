@@ -1,0 +1,88 @@
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+enum RequestPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum RequestCategory {
+  GENERAL
+  SUPPORT
+  BILLING
+  SALES
+  COMPLAINT
+  FEEDBACK
+  OTHER
+}
+
+enum RequestSource {
+  CRM
+  EMAIL
+  PHONE
+  CHAT
+  WEB
+  API
+  OTHER
+}
+
+model Request {
+  id             String          @id
+  tenantId       String          @map("tenant_id")
+  customerId     String          @map("customer_id")
+  number         Int
+  subject        String
+  description    String?
+  category       RequestCategory @default(GENERAL)
+  status         RequestStatus   @default(OPEN)
+  priority       RequestPriority @default(NORMAL)
+  source         RequestSource   @default(CRM)
+  assigneeId     String?         @map("assignee_id")
+  createdBy      String          @map("created_by")
+  resolvedAt     DateTime?       @map("resolved_at")
+  closedAt       DateTime?       @map("closed_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  deletedAt      DateTime?       @map("deleted_at")
+  deletedBy      String?         @map("deleted_by")
+  deletionReason String?         @map("deletion_reason")
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer CustomerProfile @relation(fields: [tenantId, customerId], references: [tenantId, id], onDelete: Restrict)
+  notes    RequestNote[]
+
+  @@unique([tenantId, number])
+  @@unique([tenantId, id])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, customerId, createdAt])
+  @@index([tenantId, assigneeId, status])
+  @@map("crm_requests")
+}
+
+model RequestNote {
+  id        String    @id
+  tenantId  String    @map("tenant_id")
+  requestId String    @map("request_id")
+  body      String
+  authorId  String    @map("author_id")
+  internal  Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy String?   @map("deleted_by")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  request Request @relation(fields: [tenantId, requestId], references: [tenantId, id], onDelete: Cascade)
+
+  @@index([tenantId, requestId, createdAt])
+  @@index([tenantId, authorId, createdAt])
+  @@map("crm_request_notes")
+}

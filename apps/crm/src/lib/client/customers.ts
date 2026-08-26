@@ -1,24 +1,19 @@
 'use client'
 
+import type {
+  CrmCustomer,
+  CrmCustomerCreateInput,
+  CrmCustomerUpdateInput,
+} from '@876/client'
+
 import { request } from './request'
 
-export type CustomerInput = {
-  customerKind: 'INDIVIDUAL' | 'BUSINESS'
-  firstName?: string | null
-  lastName?: string | null
-  companyName?: string | null
-  email?: string | null
-  phone?: string | null
-  ownerId?: string | null
-}
-
-export type CustomerUpdateInput = CustomerInput & {
-  status: 'ACTIVE' | 'INACTIVE'
-}
+export type CustomerInput = Omit<CrmCustomerCreateInput, 'idempotencyKey'>
+export type CustomerUpdateInput = CrmCustomerUpdateInput
 
 export const customers = {
   create(params: CustomerInput, idempotencyKey: string) {
-    return request('/api/customers', {
+    return request<CrmCustomer>('/api/customers', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -28,17 +23,20 @@ export const customers = {
     })
   },
   update(id: string, params: CustomerUpdateInput) {
-    return request(`/api/customers/${encodeURIComponent(id)}`, {
+    return request<CrmCustomer>(`/api/customers/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(params),
     })
   },
   delete(id: string, reason?: string) {
-    return request(`/api/customers/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ reason: reason ?? null }),
-    })
+    return request<{ object: 'customer'; id: string; deleted: true }>(
+      `/api/customers/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reason: reason ?? null }),
+      }
+    )
   },
 }
