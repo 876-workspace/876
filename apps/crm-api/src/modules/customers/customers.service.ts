@@ -13,7 +13,7 @@ import * as repository from './customers.repository.js'
 function finance() {
   return create876BillingIntegrationClient({
     baseUrl: process.env.BILLING_API_URL,
-    apiKey: process.env.CRM_API_876_KEY,
+    internalKey: process.env.BILLING_INTERNAL_KEY,
   })
 }
 
