@@ -81,19 +81,12 @@ export function AddMemberDialog({ orgId, orgName, roles }: Props) {
   useEffect(() => {
     if (!open || createdInvite || createdMember) return
 
+    // Both early exits are pure: `selectUser` and `handleQuery` already clear
+    // the result list, the searched query, and the search error, so resetting
+    // them here only re-rendered the dialog a second time for no change.
     const value = query.trim()
-    if (selectedUser && value === selectedUser.email) {
-      setResults([])
-      setSearchedQuery(value)
-      setSearchError(null)
-      return
-    }
-    if (value.length < 2) {
-      setResults([])
-      setSearchedQuery('')
-      setSearchError(null)
-      return
-    }
+    if (selectedUser && value === selectedUser.email) return
+    if (value.length < 2) return
 
     let cancelled = false
     const timer = window.setTimeout(async () => {
